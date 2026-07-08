@@ -43,12 +43,12 @@ reason: "alternatives considered: un-gitignore the local ledger (merge conflicts
 
 ## Acceptance Criteria
 
-- [ ] RML-S-1: `execute merge` 完了後、当該 story のローカル ledger エントリが中央台帳に存在する。
-- [ ] RML-S-2: 同一 `entry_key` のエントリは中央台帳で 1 件に重複排除され、再実行しても件数が増えない。
-- [ ] RML-S-3: ローカル ledger が存在しない・エントリ 0 件の場合、merge は失敗せず、昇格結果 summary に `no_entries` を明示する。
-- [ ] RML-S-4: `usage report --gate-roi --json` が中央台帳から gate_id 別の件数・classification 分布・unclassified 件数を返す。
-- [ ] RML-S-5: 中央台帳の書き込みは決定的順序（entry_key ソート）で、同一入力から同一バイト列が生成される。
-- [ ] RML-S-6: テストが昇格・重複排除・空 ledger・report 読解の各経路を固定する。
+- [x] RML-S-1: `execute merge` 完了後、当該 story のローカル ledger エントリが中央台帳に存在する。
+- [x] RML-S-2: 同一 `entry_key` のエントリは中央台帳で 1 件に重複排除され、再実行しても件数が増えない。
+- [x] RML-S-3: ローカル ledger が存在しない・エントリ 0 件の場合、merge は失敗せず、昇格結果 summary に `no_entries` を明示する。
+- [x] RML-S-4: `usage report --gate-roi --json` が中央台帳から gate_id 別の件数・classification 分布・unclassified 件数を返す。
+- [x] RML-S-5: 中央台帳の書き込みは決定的順序（entry_key ソート）で、同一入力から同一バイト列が生成される。
+- [x] RML-S-6: テストが昇格・重複排除・空 ledger・report 読解の各経路を固定する。
 
 ## 既存挙動（inherited behavior）
 

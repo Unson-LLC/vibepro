@@ -13,6 +13,17 @@ diagrams:
         Commit --> Report["roi_ledger_promotion summary"]
         CentralLedger["central ledger"] --> Usage["usage report --gate-roi"]
         Usage --> Ritual["monthly gate-tuning ritual"]
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Actor["execute merge (post-merge automation, no interactive review)"] --> Surface["temp-worktree write path to docs/management/roi-ledger/ledger.json"]
+        Surface --> Asset["central ROI ledger (tracked, base-branch, read by monthly gate-tuning ritual)"]
+        Threat1["Corrupt/malformed central ledger silently overwritten"] --> Surface
+        Threat2["Duplicate/forged entry_key inflates gate ROI counts"] --> Surface
+        Threat3["Promotion commit diverges from canonical audit commit (extra unreviewed push)"] --> Surface
+        Surface --> Control1["RML-CONTRACT-004: corrupt central ledger -> status failed, never overwritten"]
+        Surface --> Control2["RML-CONTRACT-002: entry_key dedupe, existing entry always wins"]
+        Surface --> Control3["RML-CONTRACT-001: promotion writes inside the same temp-worktree commit as canonical audit persistence, no extra commit/push"]
 ---
 
 # Spec

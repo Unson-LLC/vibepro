@@ -28,8 +28,155 @@ const UNRESOLVED_STATUSES = new Set([
 const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|mjs|cjs|ts|tsx|jsx|go|rs|py|rb|php|java|kt|swift|c|cc|cpp|h|hpp|cs|scala|sql|prisma)$/i;
 const DOC_FILE_RE = /(?:^|\/)(?:docs|README|CHANGELOG|NOTICE|LICENSE|agent-instructions|skills)(?:\/|$)|\.(?:md|mdx|txt|rst)$/i;
 
+export const CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH = path.join('docs', 'management', 'roi-ledger', 'ledger.json');
+
 export function getGateOutcomeLedgerPath(repoRoot) {
   return path.join(getWorkspaceDir(repoRoot), 'gate-outcomes', 'ledger.json');
+}
+
+export function getCentralGateOutcomeLedgerPath(repoRoot) {
+  return path.join(path.resolve(repoRoot), CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
+}
+
+// Collects the local ledger entries that belong to a single story so they can be
+// promoted into the tracked central ledger during execute merge.
+export async function collectPromotableGateOutcomeEntries(repoRoot, storyId) {
+  const ledger = await readGateOutcomeLedger(repoRoot);
+  return (ledger.entries ?? []).filter((entry) => entry.story_id === storyId);
+}
+
+// Deterministic serialization of the central ledger: entries sorted by entry_key
+// and updated_at derived from the entries themselves (max resolved_at) so that
+// identical logical content always yields byte-identical output (RML-CONTRACT-003).
+export function serializeCentralGateOutcomeLedger(entries) {
+  const sorted = [...(entries ?? [])].sort((a, b) =>
+    String(a?.entry_key ?? '').localeCompare(String(b?.entry_key ?? '')));
+  const updatedAt = sorted.reduce((max, entry) => latestIso(max, entry?.resolved_at), null);
+  const doc = {
+    schema_version: LEDGER_SCHEMA_VERSION,
+    model: LEDGER_MODEL,
+    updated_at: updatedAt,
+    entries: sorted
+  };
+  return `${JSON.stringify(doc, null, 2)}\n`;
+}
+
+// Pure promotion computation: merge local (story-scoped) entries into the existing
+// central ledger by entry_key. Missing/empty local entries => no_entries; an
+// unparseable central ledger => failed (never silently overwritten).
+export function computeCentralLedgerPromotion({ localEntries = [], centralText = null } = {}) {
+  const centralPath = CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH;
+  if (!Array.isArray(localEntries) || localEntries.length === 0) {
+    return {
+      status: 'no_entries',
+      reason: 'no_local_ledger_entries_for_story',
+      promoted_count: 0,
+      duplicate_count: 0,
+      central_ledger_path: centralPath,
+      serialized: null
+    };
+  }
+
+  let existing = [];
+  if (centralText !== null && String(centralText).trim() !== '') {
+    let parsed;
+    try {
+      parsed = JSON.parse(centralText);
+    } catch {
+      return {
+        status: 'failed',
+        reason: 'central_ledger_parse_failed',
+        promoted_count: 0,
+        duplicate_count: 0,
+        central_ledger_path: centralPath,
+        serialized: null
+      };
+    }
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.entries)) {
+      return {
+        status: 'failed',
+        reason: 'central_ledger_shape_invalid',
+        promoted_count: 0,
+        duplicate_count: 0,
+        central_ledger_path: centralPath,
+        serialized: null
+      };
+    }
+    existing = parsed.entries;
+  }
+
+  const seen = new Set(existing.map((entry) => entry?.entry_key));
+  const merged = [...existing];
+  let promoted = 0;
+  let duplicate = 0;
+  for (const entry of localEntries) {
+    if (seen.has(entry.entry_key)) {
+      duplicate += 1;
+      continue;
+    }
+    seen.add(entry.entry_key);
+    merged.push(entry);
+    promoted += 1;
+  }
+  return {
+    status: 'promoted',
+    reason: null,
+    promoted_count: promoted,
+    duplicate_count: duplicate,
+    central_ledger_path: centralPath,
+    serialized: serializeCentralGateOutcomeLedger(merged)
+  };
+}
+
+export async function readCentralGateOutcomeLedger(repoRoot) {
+  const ledgerPath = getCentralGateOutcomeLedgerPath(repoRoot);
+  try {
+    const data = JSON.parse(await readFile(ledgerPath, 'utf8'));
+    return { status: 'ok', ledger: normalizeLedger(data) };
+  } catch (error) {
+    if (error.code === 'ENOENT') return { status: 'absent', ledger: emptyLedger() };
+    if (error instanceof SyntaxError) return { status: 'unparseable', ledger: emptyLedger() };
+    throw error;
+  }
+}
+
+// Gate ROI summary read from the central ledger for `usage report --gate-roi`.
+// unclassified_count is always reported explicitly and missing classification
+// data is counted as unclassified rather than silently dropped (RML-CONTRACT-005).
+export function summarizeGateRoi(ledger, { since = null } = {}) {
+  const sinceDate = since instanceof Date ? since : null;
+  const entries = (ledger?.entries ?? []).filter((entry) => isWithinSince(entry.resolved_at, sinceDate));
+  const byGate = new Map();
+  let unclassifiedTotal = 0;
+  for (const entry of entries) {
+    const gateId = entry.gate_id ?? 'unknown_gate';
+    if (!byGate.has(gateId)) {
+      byGate.set(gateId, {
+        gate_id: gateId,
+        count: 0,
+        classifications: Object.fromEntries([...GATE_OUTCOMES].map((outcome) => [outcome, 0])),
+        unclassified_count: 0
+      });
+    }
+    const item = byGate.get(gateId);
+    const rawOutcome = entry.outcome ?? null;
+    const outcome = rawOutcome && GATE_OUTCOMES.has(String(rawOutcome).trim())
+      ? String(rawOutcome).trim()
+      : 'unclassified';
+    item.count += 1;
+    item.classifications[outcome] += 1;
+    if (outcome === 'unclassified') {
+      item.unclassified_count += 1;
+      unclassifiedTotal += 1;
+    }
+  }
+  const gates = [...byGate.values()].sort((a, b) => a.gate_id.localeCompare(b.gate_id));
+  return {
+    schema_version: LEDGER_SCHEMA_VERSION,
+    entry_count: entries.length,
+    unclassified_count: unclassifiedTotal,
+    gates
+  };
 }
 
 export async function readGateOutcomeLedger(repoRoot) {

@@ -334,7 +334,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
@@ -549,7 +549,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
@@ -869,6 +869,7 @@ export async function runCli(argv, io = {}) {
           codexLogs: getOptions(rest, '--codex-log'),
           claudeLogs: getOptions(rest, '--claude-log'),
           subagentRoi: hasFlag(rest, '--subagent-roi'),
+          gateRoi: hasFlag(rest, '--gate-roi'),
           language: getOption(rest, '--language')
         });
         write(stdout, hasFlag(rest, '--json')

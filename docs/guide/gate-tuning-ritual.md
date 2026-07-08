@@ -8,17 +8,25 @@ in `.vibepro/` unread.
 ## Step 1: Read the gate-outcome ROI ledger
 
 ```bash
-vibepro usage report . --json
+vibepro usage report . --gate-roi --json
 ```
 
-Look at `gate_outcomes.distributions`. Each entry gives, per gate, how a previously
-unresolved gate got resolved: `source_fix`, `evidence_added`, `rewording_only`,
-`waiver`, or `unclassified`. `gate_outcomes.demotion_candidates` is pre-computed for
-gates with `total_count >= 2` and `rewording_only_rate >= 0.6`.
+The `--gate-roi` view reads the **tracked central ledger** at
+`docs/management/roi-ledger/ledger.json`, not the per-worktree gitignored
+`.vibepro/gate-outcomes/ledger.json`. `execute merge` promotes each merged story's
+local ledger entries into the central ledger by `entry_key` (dedup on re-run), so
+the central ledger is the one data source that survives worktree teardown.
 
-If `entry_count` is `0`, the ledger has no data yet (no story has resolved a
-required gate since the ledger started recording). Report that honestly — do not
-invent a distribution. Re-check next month.
+Look at `gate_roi.gates`. Each entry gives, per gate, how many previously unresolved
+gates got resolved and the classification distribution: `source_fix`,
+`evidence_added`, `rewording_only`, `waiver`, or `unclassified`. `gate_roi.unclassified_count`
+is the explicit total of entries a human still needs to classify — it is never
+hidden or coerced to zero. (`gate_outcomes.*` in the same report still reflects the
+local worktree ledger; use `gate_roi.*` for the cross-worktree picture.)
+
+If `gate_roi.entry_count` is `0`, the central ledger has no data yet (no story has
+merged a resolved required gate since promotion started). Report that honestly — do
+not invent a distribution. Re-check next month.
 
 ## Step 2: List demotion candidates
 
