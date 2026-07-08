@@ -2,7 +2,7 @@ export default {
   title: 'VibePro',
   description: 'Product-intent gates and review evidence for AI coding agents',
   cleanUrls: true,
-  srcExclude: ['management/**'],
+  srcExclude: ['management/**', 'playbooks/story-engineering-playbook/features/_feature-template/**'],
   themeConfig: {
     siteTitle: 'VibePro Manual',
     nav: [
