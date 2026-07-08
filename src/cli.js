@@ -1726,7 +1726,7 @@ export async function runCli(argv, io = {}) {
           status: getOption(rest, '--status'),
           secretLocation: getOption(rest, '--secret-location'),
           secretAction: getOption(rest, '--secret-action'),
-          stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(stdin) : '',
+          stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(io.stdin ?? process.stdin) : '',
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
         await reconcileExecutionState(repoRoot, {
