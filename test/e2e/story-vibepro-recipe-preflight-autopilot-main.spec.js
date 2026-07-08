@@ -270,6 +270,76 @@ test(`${STORY_ID} ac:5 pr autopilot report carries the machine-readable prefligh
   }
 });
 
+test(`${STORY_ID} ac:5 CLI text surface: pr autopilot default output renders the Preflight section through runCli`, async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rpa-e2e-autopilot-cli-'));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-pr-preflight-cli', '--title', 'Preflight CLI', '--view', 'dev', '--period', '2026-07']);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.execution = { managed_worktree: 'disabled' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const feature = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: init story repo']);
+  await git(repo, ['switch', '-c', 'feature/preflight-cli']);
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const feature = "updated";\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: change feature']);
+
+  // Seed a passing record without a durable artifact so the
+  // verify-status-artifact recipe detects and renders a row in the summary
+  // (the renderer lists detected recipes only; a clean story renders
+  // "- none detected").
+  const evidenceDir = path.join(repo, '.vibepro', 'pr', 'story-pr-preflight-cli');
+  await mkdir(evidenceDir, { recursive: true });
+  await writeFile(
+    path.join(evidenceDir, 'verification-evidence.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      story_id: 'story-pr-preflight-cli',
+      warnings: [],
+      commands: [{
+        kind: 'unit',
+        status: 'pass',
+        command: 'npm test',
+        summary: 'unit passed',
+        artifact: null,
+        observation: { targets: ['src/feature.js'], scenarios: ['ran unit'], values: { exit_code: '0' } },
+        executed_at: '2026-07-01T00:00:00.000Z'
+      }]
+    }, null, 2)
+  );
+
+  // Drive the real CLI dispatcher (not autopilotPullRequest directly) so the
+  // default human-readable output surface is asserted, matching the repo's
+  // runCli(['pr', 'prepare', ...]) test convention.
+  let out = '';
+  const stdout = { write(text) { out += text; } };
+  const stderr = { write() {} };
+  const cliResult = await runCli(
+    ['pr', 'autopilot', repo, '--story-id', 'story-pr-preflight-cli', '--base', 'main', '--dry-run'],
+    { stdout, stderr }
+  );
+  assert.equal(cliResult.exitCode, 0, 'pr autopilot exits 0 via the CLI dispatcher');
+  assert.match(out, /## Preflight/, 'default CLI output renders the Preflight section heading');
+  // In --dry-run mode detected auto_fix recipes render as "planned" and
+  // next_command recipes render their exact command.
+  assert.match(
+    out,
+    /- verify-status-artifact: planned/,
+    'default CLI output lists the detected auto_fix recipe row (planned in dry-run)'
+  );
+  assert.match(
+    out,
+    /- generic-token-clause-binding: next_command -> vibepro verify record/,
+    'default CLI output lists the detected next_command recipe row with its exact command'
+  );
+});
+
 test(`${STORY_ID} S-003 preflight workflow transitions recipe status to failed without aborting the autopilot flow`, async () => {
   const storyId = 'story-e2e-state-transitions';
   const root = await makeSyntheticRepo();

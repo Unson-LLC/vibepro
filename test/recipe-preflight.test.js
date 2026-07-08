@@ -70,7 +70,7 @@ function findResult(preflight, recipeId) {
 }
 
 // RPA-S-1
-test('verify-status-artifact: passing record without artifact gets a generated status artifact (strength becomes strong)', async () => {
+test('verify-status-artifact: passing record without artifact gets a generated, verified status artifact (the strong-strength precondition; strength itself is derived in pr-manager)', async () => {
   const root = await makeRepo();
   const storyId = 'story-a';
   await writeEvidence(root, storyId, [{
@@ -180,12 +180,21 @@ test('followup-decision-artifact: accepted followup with reason but no artifact 
     artifact: null
   }]);
 
+  const decisionRecordsPath = path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json');
+  const decisionBytesBefore = await readFile(decisionRecordsPath);
+
   const preflight = await runRecipePreflight(root, { storyId });
   const result = findResult(preflight, 'followup-decision-artifact');
   assert.equal(result.detected, true);
   assert.equal(result.action, 'next_command');
   assert.match(result.next_command, /vibepro decision record/);
   assert.match(result.next_command, /--artifact/);
+
+  // RPA-CONTRACT-001 negative assertion: preflight must never mutate decision
+  // records; the file must be byte-identical after the run, not just implied
+  // by the next_command action type.
+  const decisionBytesAfter = await readFile(decisionRecordsPath);
+  assert.ok(decisionBytesBefore.equals(decisionBytesAfter), 'decision-records.json is byte-identical after preflight');
 });
 
 test('followup-decision-artifact: accepted followup that already has an artifact is not detected', async () => {
