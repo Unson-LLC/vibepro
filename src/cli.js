@@ -50,6 +50,10 @@ import {
   validateUiuxIntake
 } from './uiux-intake.js';
 import {
+  createUiuxIaFlowMap,
+  renderUiuxIaFlowMapSummary
+} from './uiux-flow-map.js';
+import {
   auditDesignSsotCoverage,
   getDesignSsotStatus,
   initDesignSsot,
@@ -379,6 +383,7 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux map [repo] --id <story-id> [--uiux-intake <file>] [--route <path>] [--routes <csv>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -596,6 +601,7 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux map [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -1257,12 +1263,24 @@ export async function runCli(argv, io = {}) {
 
     if (command === 'uiux') {
       const area = rest[0];
-      const subcommand = rest[1];
-      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
       if (!area || area === '--help' || area === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: area ?? 'help' };
       }
+      if (area === 'map') {
+        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+        const result = await createUiuxIaFlowMap(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          uiuxIntake: getOption(rest, '--uiux-intake') ?? getOption(rest, '--intake'),
+          routes: parseDesignRoutes(rest)
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderUiuxIaFlowMapSummary(result));
+        return { exitCode: 0, command, subcommand: area, result };
+      }
+      const subcommand = rest[1];
+      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
       if (area !== 'intake') {
         write(stderr, `Unknown uiux command: ${area ?? ''}\n\n${renderHelp()}`);
         return { exitCode: 1, command };

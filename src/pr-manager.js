@@ -46,6 +46,7 @@ import {
   renderJourneyPrSection,
   summarizeJourneyForPr
 } from './journey-map.js';
+import { readUiuxIaFlowMapForPr } from './uiux-flow-map.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
 import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
@@ -2176,6 +2177,7 @@ ${firstLook}
 | Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
 | Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
 | Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
+| UI/UX IA flow map | ${preparation.pr_context?.uiux_ia_flow_map?.status ?? '-'} (${preparation.pr_context?.uiux_ia_flow_map?.artifact ?? '-'}) |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
@@ -4973,6 +4975,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
   });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
+  const designDiagramSpec = await readDesignDiagramSpec(repoRoot, {
+    storyId: story.story_id,
+    storySource: primaryStory,
+    inferredSpec
+  });
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
     inferredSpec,
     verificationEvidence: boundVerificationEvidence
@@ -5076,6 +5083,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const latestJourney = await readLatestJourneyMap(repoRoot);
   const curatedJourney = latestJourney ? await readCuratedJourneyMap(repoRoot, latestJourney.journey_id) : null;
   const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id, { curatedJourney });
+  const uiuxIaFlowMap = await readUiuxIaFlowMapForPr(repoRoot, story.story_id);
   const context = {
     story_source: primaryStory,
     story_source_integrity: storySourceIntegrity,
@@ -5105,6 +5113,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
     journey_map: journeyMap,
+    uiux_ia_flow_map: uiuxIaFlowMap,
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     managed_worktree: managedWorktreeContext,
@@ -5143,6 +5152,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     verificationEvidence: boundVerificationEvidence,
     decisionRecords: context.decision_records,
     inferredSpec,
+    designDiagramSpec,
     specDrift,
     changeClassification,
     engineeringJudgment,
@@ -5618,13 +5628,19 @@ async function readDesignQualityEvidence(repoRoot, storyId) {
   const hasExplicitGate = plan?.spec_gate?.mode === 'explicit' && plan?.spec_gate?.fallback_allowed === false;
   const hasDesignDag = plan?.design_quality_dag?.model === 'vibepro-design-quality-dag-v1';
   const captureStatus = capture?.status ?? 'missing';
-  const status = hasExplicitGate && hasDesignDag && captureStatus === 'pass'
+  const hasCaptureEvidence = ['pass', 'needs_setup'].includes(captureStatus);
+  const status = hasExplicitGate && hasDesignDag && hasCaptureEvidence
     ? 'ready_for_review'
     : 'needs_evidence';
   const missing = [];
   if (!hasExplicitGate) missing.push('explicit spec_gate');
   if (!hasDesignDag) missing.push('design_quality_dag');
-  if (captureStatus !== 'pass') missing.push(`screen capture (${captureStatus})`);
+  if (!hasCaptureEvidence) missing.push(`screen capture (${captureStatus})`);
+  const evidence_status = captureStatus === 'needs_setup'
+    ? 'needs_setup_recorded'
+    : captureStatus === 'pass'
+      ? 'captured'
+      : 'missing';
   return {
     schema_version: '0.1.0',
     status,
@@ -5632,12 +5648,20 @@ async function readDesignQualityEvidence(repoRoot, storyId) {
     model: plan?.design_quality_dag?.model ?? null,
     screen_count: Array.isArray(plan?.screens) ? plan.screens.length : 0,
     capture_status: captureStatus,
+    evidence_status,
     missing,
     artifacts: [
       toWorkspaceRelative(repoRoot, planPath),
       capture ? toWorkspaceRelative(repoRoot, capturePath) : null
     ].filter(Boolean)
   };
+}
+
+function buildDesignQualityGateReadyReason(designQualityEvidence) {
+  if (designQualityEvidence?.capture_status === 'needs_setup') {
+    return 'VibePro Design Quality DAG evidence is present and screen capture needs_setup record was captured';
+  }
+  return 'VibePro Design Quality DAG evidence is present and screen capture passed';
 }
 
 async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {}) {
@@ -6920,6 +6944,75 @@ function formatDownstreamDiagramRequirementHint(hint) {
   const trigger = hint.trigger_path ?? hint.trigger_signal ?? 'changed file';
   const firstLine = String(hint.minimal_diagram?.mermaid ?? '').split('\n')[0] || '<mermaid>';
   return `${hint.kind} triggered by ${trigger}; insert at ${hint.insertion_target} or ${hint.tracked_spec_guidance}; minimal diagram starts with \`${firstLine}\``;
+}
+
+async function readDesignDiagramSpec(repoRoot, { storyId, storySource = null, inferredSpec = null } = {}) {
+  const specs = [];
+  if (inferredSpec) specs.push(inferredSpec);
+  for (const ref of resolveDesignDiagramSpecRefs(storyId, storySource)) {
+    const spec = await readTrackedDesignDiagramSpec(repoRoot, ref);
+    if (spec) specs.push(spec);
+  }
+  const diagrams = [];
+  const seen = new Set();
+  for (const spec of specs) {
+    for (const diagram of Array.isArray(spec?.diagrams) ? spec.diagrams : []) {
+      if (!diagram?.kind || seen.has(diagram.kind)) continue;
+      seen.add(diagram.kind);
+      diagrams.push(diagram);
+    }
+  }
+  if (diagrams.length === 0) return inferredSpec;
+  return {
+    ...(inferredSpec ?? { schema_version: '0.1.0', story_id: storyId }),
+    diagrams
+  };
+}
+
+function resolveDesignDiagramSpecRefs(storyId, storySource = null) {
+  const refs = new Set();
+  for (const ref of storySource?.spec_docs ?? []) refs.add(normalizeRepoRelativePath(ref));
+  if (storyId) {
+    refs.add(`docs/specs/${storyId}.spec.json`);
+    refs.add(`docs/specs/${storyId}.json`);
+    refs.add(`docs/specs/${storyId}.md`);
+  }
+  return [...refs].filter(Boolean);
+}
+
+function normalizeRepoRelativePath(ref) {
+  if (!ref) return null;
+  return String(ref).replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+async function readTrackedDesignDiagramSpec(repoRoot, ref) {
+  const normalized = normalizeRepoRelativePath(ref);
+  if (!normalized || normalized.includes('..')) return null;
+  const fullPath = path.join(repoRoot, normalized);
+  try {
+    const content = await readFile(fullPath, 'utf8');
+    if (normalized.endsWith('.json')) return JSON.parse(content);
+    if (normalized.endsWith('.md') || normalized.endsWith('.markdown')) {
+      const diagrams = extractMarkdownSpecDiagrams(content);
+      return diagrams.length > 0 ? { diagrams } : null;
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+  return null;
+}
+
+function extractMarkdownSpecDiagrams(content) {
+  const diagrams = [];
+  const pattern = /^###\s+([A-Za-z0-9_-]+)[^\n]*\n+```mermaid\n([\s\S]*?)```/gm;
+  for (const match of content.matchAll(pattern)) {
+    diagrams.push({
+      kind: match[1],
+      mermaid: match[2].trim()
+    });
+  }
+  return diagrams;
 }
 
 function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
@@ -9622,6 +9715,7 @@ function buildGateDag({
   verificationEvidence,
   decisionRecords = null,
   inferredSpec = null,
+  designDiagramSpec = null,
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
@@ -9746,7 +9840,7 @@ function buildGateDag({
   const effectiveManagedWorktreeGate = managedWorktreeGate ?? buildManagedWorktreeGate(managedWorktreeContext);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
-  const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
+  const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec: designDiagramSpec ?? inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git, { verificationEvidence, agentReviews });
   const artifactConsistencyGate = buildArtifactConsistencyGate({
@@ -9765,10 +9859,11 @@ function buildGateDag({
     status: designQualityEvidence.status,
     required: true,
     reason: designQualityEvidence.status === 'ready_for_review'
-      ? 'VibePro Design Quality DAG evidence is present and screen capture passed'
+      ? buildDesignQualityGateReadyReason(designQualityEvidence)
       : `Design Quality DAG needs evidence: ${designQualityEvidence.missing?.join(', ') || 'missing quality evidence'}`,
     artifacts: designQualityEvidence.artifacts,
     screen_count: designQualityEvidence.screen_count,
+    evidence_status: designQualityEvidence.evidence_status,
     capture_status: designQualityEvidence.capture_status
   } : null;
   const visualQaGate = visualQaEvidence ? {

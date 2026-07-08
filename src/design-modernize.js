@@ -4,6 +4,10 @@ import path from 'node:path';
 
 import { deriveJourneyMap, getJourneyStatus } from './journey-map.js';
 import { resolveUiuxIntakeForPlan } from './uiux-intake.js';
+import {
+  renderUiuxIaFlowMapMarkdown,
+  resolveUiuxIaFlowMapForPlan
+} from './uiux-flow-map.js';
 
 const DEFAULT_SCREEN_ROUTES = ['/'];
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -24,6 +28,13 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   const journeyContext = await ensureJourneyContextForDesignModernize(root, {
     journeyId: options.journeyId,
     ensure: options.ensureJourneyContext !== false
+  });
+  const uiuxIaFlowMap = await resolveUiuxIaFlowMapForPlan(root, {
+    storyId,
+    uiuxIntake: options.uiuxIntake,
+    routes,
+    brief: options.brief,
+    journeyContext
   });
   const designSystem = normalizeDesignSystemBundle(bundle, {
     designSystemId: options.designSystemId,
@@ -56,6 +67,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
         'current_ui_code',
         'current_screen_capture',
         'product_information_architecture',
+        'ia_flow_map_before_screen_briefs',
         'structured_uiux_intake_when_present',
         'optional_brand_or_design_system_bundle'
       ],
@@ -76,6 +88,18 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       conflict_policy: uiuxIntake.coverage.authority_boundary.conflict_policy
     },
     uiux_intake_coverage: uiuxIntake.coverage,
+    uiux_ia_flow_map: {
+      status: uiuxIaFlowMap.map.status,
+      artifact: uiuxIaFlowMap.sourcePath,
+      markdown_artifact: uiuxIaFlowMap.markdownPath,
+      flow_archetype: uiuxIaFlowMap.map.flow_archetype,
+      flow_structure: uiuxIaFlowMap.map.flow_structure,
+      generated_head_sha: uiuxIaFlowMap.map.generated_head_sha,
+      current_ia_status: uiuxIaFlowMap.map.current_ia.status,
+      target_ia_status: uiuxIaFlowMap.map.target_ia.status,
+      target_evidence_status: uiuxIaFlowMap.map.target_ia.evidence_status
+    },
+    uiux_ia_flow_map_evidence: uiuxIaFlowMap.map,
     reference_design_system: designSystem,
     visual_foundations_reference: designSystem.visual_foundations ? {
       source: designSystem.visual_foundations.source,
@@ -100,6 +124,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
       visual_foundations_reference: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json',
       uiux_intake_coverage: '.vibepro/design-modernize/<story-id>/uiux-intake-coverage.json',
+      uiux_ia_flow_map: '.vibepro/design-modernize/<story-id>/ia-flow-map.json',
       derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
       journey_context: '.vibepro/design-modernize/<story-id>/journey-context.json',
       product_semantic_model: '.vibepro/design-modernize/<story-id>/product-semantic-model.json',
@@ -117,6 +142,8 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   await writeFile(path.join(outDir, 'design-modernize.json'), `${JSON.stringify(plan, null, 2)}\n`);
   await writeFile(path.join(outDir, 'design-modernize.md'), renderDesignModernizePlan(plan));
   await writeFile(path.join(outDir, 'uiux-intake-coverage.json'), `${JSON.stringify(uiuxIntake.coverage, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'ia-flow-map.json'), `${JSON.stringify(uiuxIaFlowMap.map, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'ia-flow-map.md'), renderUiuxIaFlowMapMarkdown(uiuxIaFlowMap.map));
   await writeFile(path.join(outDir, 'design-briefs.md'), renderDesignBriefs(plan));
   await writeFile(path.join(outDir, 'implementation-spec.md'), renderImplementationSpec(plan));
   await writeFile(path.join(outDir, 'design-constraint-graph.json'), `${JSON.stringify(designConstraintGraph, null, 2)}\n`);
@@ -397,6 +424,7 @@ export function renderDesignModernizePlan(plan) {
 | Design Intelligence | ${plan.design_intelligence.model} |
 | Journey Context | ${journey.status ?? 'unknown'} (${journey.artifact_kind ?? '-'}) |
 | UI/UX Intake | ${plan.uiux_intake_coverage?.status ?? 'unknown'} |
+| IA Flow Map | ${plan.uiux_ia_flow_map?.status ?? 'unknown'} (${plan.uiux_ia_flow_map?.flow_archetype ?? '-'}) |
 | Curated Journey | ${journey.curated ? 'yes' : 'no'} |
 | External generator required | ${plan.design_intelligence.external_generator_required} |
 | Reference Design System | ${plan.reference_design_system.title ?? '-'} (${plan.reference_design_system.id ?? '-'}) |
@@ -426,16 +454,28 @@ ${(journey.next_commands ?? []).map((command) => `- Next: \`${command}\``).join(
 
 ${(plan.uiux_intake_coverage?.guidance ?? []).map((item) => `- Guidance: ${item}`).join('\n') || '- Guidance: ready'}
 
+## IA Flow Map
+
+- Status: ${plan.uiux_ia_flow_map?.status ?? 'unknown'}
+- Artifact: ${plan.uiux_ia_flow_map?.artifact ?? '-'}
+- Flow archetype: ${plan.uiux_ia_flow_map?.flow_archetype ?? '-'}
+- Flow structure: ${plan.uiux_ia_flow_map?.flow_structure ?? '-'}
+- Generated HEAD: ${plan.uiux_ia_flow_map?.generated_head_sha ?? 'unavailable'}
+- Current IA: ${plan.uiux_ia_flow_map?.current_ia_status ?? '-'}
+- Target IA: ${plan.uiux_ia_flow_map?.target_ia_status ?? '-'}
+- Target evidence status: ${plan.uiux_ia_flow_map?.target_evidence_status ?? '-'}
+
 ## Workflow
 
 1. Graphify/Codex extract routes, components, state, CTA, data dependency, and preserved UX from current code.
 2. Resolve Journey context before treating the UI route set as a safe modernization surface.
-3. Capture current browser screenshots for each route before asking for visual redesign.
-4. Convert optional brand/design-system material into VibePro design constraints.
+3. Read the IA flow map before creating screen-level design briefs, keeping current IA and proposed target IA separate.
+4. Capture current browser screenshots for each route before asking for visual redesign.
+5. Convert optional brand/design-system material into VibePro design constraints.
    - Visual foundations are reference material only; current code, graph evidence, implementation mapping, and gates remain authoritative.
-5. Generate one screen-level design brief per route with invariants, allowed visual changes, anti-patterns, rubric, and Codex acceptance criteria.
-6. Use VibePro's Design Quality DAG to review Journey continuity, hierarchy, density, CTA priority, state clarity, accessibility, interaction continuity, and implementation fit.
-7. Implement with Codex using this spec, Journey context, Graphify evidence, current screenshots, and current code as the source of truth.
+6. Generate one screen-level design brief per route with invariants, allowed visual changes, anti-patterns, rubric, and Codex acceptance criteria.
+7. Use VibePro's Design Quality DAG to review Journey continuity, hierarchy, density, CTA priority, state clarity, accessibility, interaction continuity, and implementation fit.
+8. Implement with Codex using this spec, Journey context, Graphify evidence, current screenshots, and current code as the source of truth.
 
 ## Screens
 

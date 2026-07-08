@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "UI/UX IA flow map before screen briefs",
+      "mermaid": "flowchart LR\n  Story[Story doc] --> Map[IA flow map]\n  Intake[UI/UX intake] --> Map\n  Routes[Route evidence] --> CurrentIA[Current IA]\n  Map --> CurrentIA\n  Map --> TargetIA[Target IA]\n  TargetIA --> Proposed[Proposed target sequence]\n  CurrentIA --> Plan[design-modernize plan]\n  Proposed --> Plan\n  Plan --> Briefs[Screen briefs]\n  Map --> PR[PR prepare evidence]\n  Missing[Missing route evidence] --> NeedsRoute[needs_route_evidence]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "IA flow evidence freshness and invented-flow controls",
+      "mermaid": "flowchart LR\n  Evidence[Story, intake, route evidence] --> Builder[IA map builder]\n  Builder --> Artifact[IA map artifact]\n  Git[Current git HEAD] --> Artifact\n  Artifact --> PR[PR prepare evidence]\n  Missing[Missing route evidence] --> Unknown[needs_route_evidence]\n  Unknown --> Artifact\n  TargetOnly[Target-only flow claims] --> Proposed[proposed status]\n  Proposed --> Artifact\n  Invented[Invented current flow risk] --> Guard[confirmed/proposed separation]\n  Guard --> Artifact"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "UIFM-S-1",
+      "type": "scenario",
+      "statement": "VibePro provides `uiux map <repo> --id <story-id>` and writes story-scoped IA flow map JSON and Markdown artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-ia-flow-map.md" }],
+        "code_refs": [
+          { "file": "src/uiux-flow-map.js", "anchor": "export async function createUiuxIaFlowMap" },
+          { "file": "src/cli.js", "anchor": "createUiuxIaFlowMap" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIFM-S-1 UIFM-S-2 UIFM-S-5 uiux map writes IA flow map and keeps target-only claims proposed" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-flow-map.js", "must_contain": "ia-flow-map.json" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIFM-S-1" }]
+      }
+    },
+    {
+      "id": "UIFM-S-2",
+      "type": "invariant",
+      "statement": "The map separates current IA from target IA and marks target-only claims as proposed.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-ia-flow-map.md" }],
+        "code_refs": [{ "file": "src/uiux-flow-map.js", "anchor": "target_only_claim_policy" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "target-only claims proposed" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-flow-map.js", "must_contain": "target_ia" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "proposed" }]
+      }
+    },
+    {
+      "id": "UIFM-S-3",
+      "type": "contract",
+      "statement": "`design-modernize plan` resolves IA flow map evidence before screen briefs and writes the plan-scoped IA map artifact.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-ia-flow-map.md" }],
+        "code_refs": [
+          { "file": "src/design-modernize.js", "anchor": "resolveUiuxIaFlowMapForPlan" },
+          { "file": "src/design-modernize.js", "anchor": "ia_flow_map_before_screen_briefs" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIFM-S-3 design-modernize plan references IA flow map before screen briefs" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/design-modernize.js", "must_contain": "ia-flow-map.json" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIFM-S-3" }]
+      }
+    },
+    {
+      "id": "UIFM-S-4",
+      "type": "scenario",
+      "statement": "PR preparation exposes IA flow map status and artifact path in PR context and summary output.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-ia-flow-map.md" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "uiux_ia_flow_map" },
+          { "file": "src/uiux-flow-map.js", "anchor": "readUiuxIaFlowMapForPr" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy stories" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/pr-manager.js", "must_contain": "UI/UX IA flow map" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIFM-S-4" }]
+      }
+    },
+    {
+      "id": "UIFM-S-5",
+      "type": "invariant",
+      "statement": "Missing route evidence is reported as `needs_route_evidence` without creating invented screens.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-ia-flow-map.md" }],
+        "code_refs": [{ "file": "src/uiux-flow-map.js", "anchor": "needs_route_evidence" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIFM-S-1 UIFM-S-2 UIFM-S-5 uiux map writes IA flow map and keeps target-only claims proposed" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-flow-map.js", "must_contain": "No route evidence is available" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "needs_route_evidence" }]
+      }
+    }
+  ],
+  "open_questions": []
+}
