@@ -1268,6 +1268,147 @@ test('UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy storie
   assert.match(summary.stdout, /\.vibepro\/uiux\/story-pr-prepare\/ia-flow-map\.json/);
 });
 
+test('UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const visualResidualPath = path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json');
+  await mkdir(path.dirname(visualResidualPath), { recursive: true });
+  await writeJson(visualResidualPath, {
+    artifact_kind: 'visual_residual',
+    status: 'pass',
+    rows: [
+      {
+        route: '/dashboard',
+        viewport: 'mobile:390x844',
+        state: 'default',
+        screenshot_artifact: 'artifacts\\dashboard|mobile.png',
+        overflow_overlap_result: { status: 'pass' },
+        keyboard_focus_result: { status: 'pass' },
+        accessibility_result: { status: 'pass', artifact: 'artifacts/a11y-dashboard-mobile.json' },
+        command: 'npm run e2e:ui',
+        git_head: head
+      }
+    ]
+  });
+
+  const generated = await runCli([
+    'uiux',
+    'evidence',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--route',
+    '/dashboard',
+    '--viewport',
+    'mobile:390x844',
+    '--from',
+    '.vibepro/qa/story-pr-prepare-visual/visual-residual.json',
+    '--json'
+  ]);
+
+  assert.equal(generated.exitCode, 0);
+  assert.equal(generated.result.matrix.status, 'ready');
+  assert.equal(generated.result.matrix.rows[0].status, 'pass');
+  assert.equal(generated.result.matrix.rows[0].accessibility_result.status, 'pass');
+  assert.equal(generated.result.matrix.visual_residual_authority.status, 'pass');
+  assert.equal(generated.result.matrix.visual_residual_authority.artifact, '.vibepro/qa/story-pr-prepare-visual/visual-residual.json');
+  assert.equal(generated.result.matrix.missing_evidence.length, 0);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-pr-prepare', 'responsive-a11y-matrix.json')), true);
+  const markdownPath = path.join(repo, '.vibepro', 'uiux', 'story-pr-prepare', 'responsive-a11y-matrix.md');
+  assert.equal(await pathExists(markdownPath), true);
+  const markdown = await readFile(markdownPath, 'utf8');
+  assert.match(markdown, /artifacts\\\\dashboard\\\|mobile\.png/);
+});
+
+test('UIEA-S-3 uiux evidence does not accept screenshot-only rows without required metadata', async () => {
+  const repo = await makeGitRepoWithStory();
+  const evidencePath = path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
+  await writeJson(evidencePath, {
+    artifact_kind: 'visual_residual',
+    status: 'pass',
+    rows: [
+      {
+        screenshot_artifact: 'artifacts/orphan.png'
+      }
+    ]
+  });
+
+  const generated = await runCli([
+    'uiux',
+    'evidence',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--route',
+    '/dashboard',
+    '--viewport',
+    'mobile:390x844',
+    '--from',
+    '.vibepro/qa/story-pr-prepare-visual/visual-residual.json',
+    '--json'
+  ]);
+
+  assert.equal(generated.exitCode, 0);
+  assert.equal(generated.result.matrix.status, 'needs_evidence');
+  assert.equal(generated.result.matrix.rows[0].status, 'needs_evidence');
+  assert.equal(generated.result.matrix.rows[0].accessibility_result.status, 'missing');
+  for (const requiredField of [
+    'route',
+    'viewport',
+    'state',
+    'command',
+    'git_head',
+    'accessibility_result'
+  ]) {
+    assert.ok(generated.result.matrix.rows[0].missing_fields.includes(requiredField), requiredField);
+  }
+});
+
+test('UIEA-S-2 pr prepare summarizes missing responsive and accessibility matrix rows', async () => {
+  const repo = await makeGitRepoWithStory();
+  const evidencePath = path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
+  await writeJson(evidencePath, {
+    artifact_kind: 'visual_residual',
+    status: 'pass',
+    rows: [
+      {
+        route: '/dashboard',
+        viewport: 'mobile:390x844',
+        state: 'default',
+        screenshot_artifact: 'artifacts/dashboard-mobile.png'
+      }
+    ]
+  });
+  await runCli([
+    'uiux',
+    'evidence',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--route',
+    '/dashboard',
+    '--viewport',
+    'mobile:390x844',
+    '--from',
+    '.vibepro/qa/story-pr-prepare-visual/visual-residual.json',
+    '--json'
+  ]);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'uiux-responsive-a11y-change.js'), 'export const uiuxResponsiveA11y = true;\n');
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(prepare.exitCode, 0);
+  assert.equal(prepare.result.preparation.pr_context.uiux_responsive_a11y_matrix.status, 'needs_evidence');
+  assert.equal(prepare.result.preparation.pr_context.uiux_responsive_a11y_matrix.missing_evidence_count, 1);
+  assert.equal(prepare.result.preparation.pr_context.uiux_responsive_a11y_matrix.artifact, '.vibepro/uiux/story-pr-prepare/responsive-a11y-matrix.json');
+  const summary = await runCliWithStdout(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.match(summary.stdout, /UI\/UX responsive\/a11y matrix/);
+  assert.match(summary.stdout, /missing=1/);
+});
+
 test('UIFM-S-4 design quality gate accepts screen capture needs_setup evidence record', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'app'), { recursive: true });

@@ -1,0 +1,105 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Responsive and accessibility evidence matrix",
+      "mermaid": "flowchart LR\n  Story[Story doc] --> Evidence[uiux evidence]\n  Capture[Recorded verify/capture artifacts] --> Evidence\n  Residual[Visual residual analysis] --> Evidence\n  Evidence --> MatrixJSON[responsive-a11y-matrix.json]\n  Evidence --> MatrixMD[responsive-a11y-matrix.md]\n  MatrixJSON --> PR[pr prepare]\n  Missing[Missing row metadata] --> NeedsEvidence[needs_evidence]\n  PR --> Reviewer[Reviewer summary]"
+    },
+    {
+      "kind": "authority",
+      "title": "Matrix proof surface and visual residual authority",
+      "mermaid": "flowchart LR\n  Residual[Visual residual] --> Authority[Visual QA authority]\n  Matrix[Responsive/a11y matrix] --> OrganizedProof[Organized proof surface]\n  OrganizedProof -. does not waive .-> Authority\n  A11y[Accessibility status] --> Matrix\n  Screenshots[Screenshot metadata] --> Matrix\n  Head[Git HEAD binding] --> Matrix"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "UIEA-S-1",
+      "type": "scenario",
+      "statement": "VibePro provides `uiux evidence <repo> --id <story-id>` and writes story-scoped responsive/a11y matrix JSON and Markdown artifacts from recorded verify/capture artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md" }],
+        "code_refs": [
+          { "file": "src/uiux-responsive-a11y.js", "anchor": "export async function createResponsiveA11yMatrix" },
+          { "file": "src/cli.js", "anchor": "createResponsiveA11yMatrix" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-responsive-a11y.js", "must_contain": "responsive-a11y-matrix.json" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIEA-S-1" }]
+      }
+    },
+    {
+      "id": "UIEA-S-2",
+      "type": "contract",
+      "statement": "PR preparation exposes responsive/a11y matrix status, artifact path, and missing evidence count.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "uiux_responsive_a11y_matrix" },
+          { "file": "src/uiux-responsive-a11y.js", "anchor": "readResponsiveA11yMatrixForPr" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIEA-S-2 pr prepare summarizes missing responsive and accessibility matrix rows" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/pr-manager.js", "must_contain": "UI/UX responsive/a11y matrix" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIEA-S-2" }]
+      }
+    },
+    {
+      "id": "UIEA-S-3",
+      "type": "invariant",
+      "statement": "A screenshot-only row without recorded route, viewport, state, command, and git head metadata remains `needs_evidence`.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md" }],
+        "code_refs": [{ "file": "src/uiux-responsive-a11y.js", "anchor": "missing_fields" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIEA-S-3 uiux evidence does not accept screenshot-only rows without required metadata" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-responsive-a11y.js", "must_contain": "missing_fields" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIEA-S-3" }]
+      }
+    },
+    {
+      "id": "UIEA-S-4",
+      "type": "contract",
+      "statement": "Accessibility status is normalized to pass, fail, needs_setup, auth_required, resource_unavailable, or missing.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md" }],
+        "code_refs": [{ "file": "src/uiux-responsive-a11y.js", "anchor": "ACCESSIBILITY_STATUSES" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-responsive-a11y.js", "must_contain": "resource_unavailable" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIEA-S-4" }]
+      }
+    },
+    {
+      "id": "UIEA-S-5",
+      "type": "invariant",
+      "statement": "Visual residual authority is preserved in the matrix metadata and remains distinct from matrix readiness.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md" }],
+        "code_refs": [{ "file": "src/uiux-responsive-a11y.js", "anchor": "visual_residual_authority" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibility matrix from recorded artifacts" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-responsive-a11y.js", "must_contain": "does not waive residual findings" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIEA-S-5" }]
+      }
+    }
+  ],
+  "open_questions": []
+}
