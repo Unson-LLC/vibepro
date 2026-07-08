@@ -1,0 +1,239 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "uiux-responsive-a11y-evidence-matrix",
+  "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+  "generated_at": "2026-07-08T12:57:31.311Z",
+  "generated_head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+  "generated_git_context": {
+    "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+    "status": "recorded"
+  },
+  "status": "needs_evidence",
+  "routes": [
+    "/"
+  ],
+  "viewports": [
+    {
+      "id": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "id": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "visual_residual_authority": {
+    "status": "pass",
+    "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json",
+    "note": "Visual residual analysis remains authoritative when present; this matrix organizes proof and does not waive residual findings."
+  },
+  "source_evidence": {
+    "type": "visual_residual",
+    "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+  },
+  "accessibility_checks": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "state": "default",
+      "status": "missing",
+      "artifact": null,
+      "command": null
+    },
+    {
+      "route": "/",
+      "viewport": "tablet",
+      "state": "default",
+      "status": "missing",
+      "artifact": null,
+      "command": null
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "state": "default",
+      "status": "missing",
+      "artifact": null,
+      "command": null
+    }
+  ],
+  "missing_evidence": [
+    {
+      "route": "/",
+      "viewport": "mobile",
+      "state": "default",
+      "status": "needs_evidence",
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "reason": "needs_evidence"
+    },
+    {
+      "route": "/",
+      "viewport": "tablet",
+      "state": "default",
+      "status": "needs_evidence",
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "reason": "needs_evidence"
+    },
+    {
+      "route": "/",
+      "viewport": "desktop",
+      "state": "default",
+      "status": "needs_evidence",
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "reason": "needs_evidence"
+    }
+  ],
+  "rows": [
+    {
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "route": "/",
+      "screen": "/",
+      "viewport": {
+        "id": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "state": "default",
+      "status": "needs_evidence",
+      "screenshot_artifact": null,
+      "overflow_overlap_result": {
+        "status": "missing",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      },
+      "keyboard_focus_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "accessibility_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "command": null,
+      "git_head": null,
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "evidence_source": {
+        "type": "visual_residual",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      }
+    },
+    {
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "route": "/",
+      "screen": "/",
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "state": "default",
+      "status": "needs_evidence",
+      "screenshot_artifact": null,
+      "overflow_overlap_result": {
+        "status": "missing",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      },
+      "keyboard_focus_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "accessibility_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "command": null,
+      "git_head": null,
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "evidence_source": {
+        "type": "visual_residual",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      }
+    },
+    {
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "route": "/",
+      "screen": "/",
+      "viewport": {
+        "id": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "state": "default",
+      "status": "needs_evidence",
+      "screenshot_artifact": null,
+      "overflow_overlap_result": {
+        "status": "missing",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      },
+      "keyboard_focus_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "accessibility_result": {
+        "status": "missing",
+        "artifact": null
+      },
+      "command": null,
+      "git_head": null,
+      "missing_fields": [
+        "route",
+        "viewport",
+        "state",
+        "screenshot_artifact",
+        "command",
+        "git_head",
+        "accessibility_result"
+      ],
+      "evidence_source": {
+        "type": "visual_residual",
+        "artifact": ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+      }
+    }
+  ]
+}

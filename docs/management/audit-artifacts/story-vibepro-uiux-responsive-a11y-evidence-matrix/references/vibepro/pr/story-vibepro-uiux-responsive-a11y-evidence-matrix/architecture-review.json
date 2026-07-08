@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+  "created_at": "2026-07-08T13:07:04.269Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md, docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T13:07:02.987Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+      "branch": "codex/vibepro-uiux-responsive-a11y-evidence-matrix",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "1db2b587cb65f3b0b8b9a817a4404979753da950",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

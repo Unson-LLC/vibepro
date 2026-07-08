@@ -1,0 +1,344 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-08T13:01:32.962Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:artifact_consistency|stale_evidence|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:definition_of_done|needs_evidence|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:agent_review|needs_review|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|review:join:gate|needs_review|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|review:record:gate:gate_evidence|needs_review|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|review:preflight:gate:gate_evidence|failed|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|review:dispatch_batch:gate|failed|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:visual_qa|needs_review|ready_for_review|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:visual_qa",
+      "gate_type": "visual_qa_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "ready_for_review",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node bin/vibepro.js verify visual . --id story-vibepro-uiux-responsive-a11y-evidence-matrix --current-dir .vibepro/qa/current --qa-id story-vibepro-uiux-responsive-a11y-evidence-matrix-visual --json && node bin/vibepro.js uiux evidence . --id story-vibepro-uiux-responsive-a11y-evidence-matrix --route / --json",
+          "status": "pass",
+          "recorded_at": "2026-07-08T13:01:03.355Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-responsive-a11y-evidence-matrix|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-08T12:57:22.091Z|2026-07-08T13:01:32.957Z",
+      "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T12:57:22.091Z",
+      "resolved_at": "2026-07-08T13:01:32.957Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md",
+          "docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/uiux-prepare.js",
+          "src/uiux-responsive-a11y.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    }
+  ]
+}

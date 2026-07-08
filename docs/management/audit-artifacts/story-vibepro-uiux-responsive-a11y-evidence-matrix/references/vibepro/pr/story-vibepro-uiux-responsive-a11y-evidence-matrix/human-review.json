@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+  "created_at": "2026-07-08T13:07:04.269Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Visual QA is ready_for_review; 0 run(s) exceed the 5% residual threshold.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/decision-records.json",
+    "visual_qa": [
+      ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/residual-analysis.md",
+      ".vibepro/qa/story-vibepro-uiux-responsive-a11y-evidence-matrix-visual/visual-residual.json"
+    ]
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-uiux-responsive-a11y-evidence-matrix.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.md, docs/specs/story-vibepro-uiux-responsive-a11y-evidence-matrix.spec.json)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1,
+        "waiver": 1
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix",
+          "expected_root": null,
+          "expected_head_sha": "dfe7db0d6e31115ab06500e8ff7bd1c874e74bdd",
+          "current_head_sha": "dfe7db0d6e31115ab06500e8ff7bd1c874e74bdd",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783514796979-0e8a7446",
+        "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Scope reviewability accepted for UI/UX responsive/a11y evidence matrix workflow",
+        "reason": "scope_reviewed=true; decision_record=accepted; changed files are one VibePro UI/UX evidence workflow spanning CLI command, matrix generator, PR summary wiring, tests, Story/Spec/Architecture, and Design SSOT lineage. review_owner_map=one reviewer can evaluate the same contract end to end: missing route/viewport/state/git-head/a11y evidence must stay explicit, visual residual remains authoritative, and PR prepare surfaces the matrix. Splitting implementation from docs/registry would stale current-head evidence and reduce reviewability.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-uiux-responsive-a11y-evidence-matrix/split-plan.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix",
+            "expected_root": null,
+            "expected_head_sha": "dfe7db0d6e31115ab06500e8ff7bd1c874e74bdd",
+            "current_head_sha": "dfe7db0d6e31115ab06500e8ff7bd1c874e74bdd",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "dfe7db0d6e31115ab06500e8ff7bd1c874e74bdd",
+          "current_branch": "codex/vibepro-uiux-responsive-a11y-evidence-matrix",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-08T12:46:36.979Z"
+        },
+        "recorded_at": "2026-07-08T12:46:36.980Z"
+      }
+    },
+    "visual_qa": {
+      "status": "ready_for_review",
+      "threshold_pct": 5,
+      "checked_runs": 1,
+      "needs_review_count": 0
+    },
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": 1,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T13:07:02.987Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-responsive-a11y-evidence-matrix/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+      "branch": "codex/vibepro-uiux-responsive-a11y-evidence-matrix",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "1db2b587cb65f3b0b8b9a817a4404979753da950",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

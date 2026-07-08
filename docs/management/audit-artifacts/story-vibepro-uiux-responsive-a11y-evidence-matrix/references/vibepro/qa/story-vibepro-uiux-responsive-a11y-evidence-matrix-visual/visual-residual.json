@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "visual_residual",
+  "qa_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix-visual",
+  "story_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix",
+  "created_at": "2026-07-08T12:57:30.540Z",
+  "status": "pass",
+  "thresholdPct": 5,
+  "meanAbsResidualPct": 0,
+  "probes": [
+    {
+      "probe_id": "story-vibepro-uiux-responsive-a11y-evidence-matrix-home",
+      "status": "compared",
+      "meanAbsResidualPct": 0,
+      "current_screenshot": ".vibepro/qa/current/story-vibepro-uiux-responsive-a11y-evidence-matrix-home.png",
+      "baseline_screenshot": ".vibepro/qa/baseline/story-vibepro-uiux-responsive-a11y-evidence-matrix-home.png"
+    }
+  ],
+  "source": {
+    "current_dir": ".vibepro/qa/current",
+    "flow_run_id": null,
+    "flow_verification_json": null
+  },
+  "git_context": {
+    "head_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+    "current_branch": "codex/vibepro-uiux-responsive-a11y-evidence-matrix",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T12:57:30.723Z"
+  }
+}
