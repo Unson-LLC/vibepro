@@ -18,6 +18,7 @@ import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { preparePullRequest } from '../src/pr-manager.js';
+import { projectPrPrepareForLlm } from '../src/canonical-audit.js';
 import { scanPublicDiscovery } from '../src/public-discovery-scanner.js';
 import { renderAgentReviewPrSection } from '../src/agent-review.js';
 import { writeInferredSpec } from '../src/spec-store.js';
@@ -1312,6 +1313,142 @@ test('UIFM-S-4 design quality gate accepts screen capture needs_setup evidence r
   assert.equal(designQualityGate.capture_status, 'needs_setup');
   assert.equal(designQualityGate.evidence_status, 'needs_setup_recorded');
   assert.match(designQualityGate.reason, /needs_setup record/);
+});
+
+test('UIOC-S-1 UIOC-S-2 UIOC-S-3 UIOC-S-5 uiux prepare writes readiness cockpit and reruns on dirty worktrees', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const designSystemId = storyId;
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+---
+# UI/UX Cockpit Story
+
+`);
+
+  const template = await runCli(['uiux', 'intake', 'template', repo, '--id', storyId, '--route', '/dashboard', '--json']);
+  const intakePath = path.join(repo, '.vibepro', 'uiux', storyId, 'uiux-intake.json');
+  await writeJson(intakePath, fillUiuxIntake(template.result.intake));
+  await runCli(['uiux', 'intake', 'validate', repo, '--id', storyId, '--json']);
+  await runCli(['uiux', 'map', repo, '--id', storyId, '--route', '/dashboard', '--json']);
+
+  await mkdir(path.join(repo, '.vibepro', 'design-modernize', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'design-modernize', storyId, 'journey-context.json'), {
+    curation_status: 'curated',
+    curated: true,
+    handoff_available: true
+  });
+  await writeFile(path.join(repo, '.vibepro', 'design-modernize', storyId, 'visual-hypothesis-prompts.md'), '# Visual Hypotheses\n');
+
+  await mkdir(path.join(repo, '.vibepro', 'design-system', designSystemId, 'validation'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'design-system', designSystemId, 'design-system.json'), {
+    design_system_id: designSystemId,
+    authority: 'vibepro_native_design_system',
+    semantic_tokens: { action_primary: { value: '#1d4ed8' } },
+    theme_tokens: { spacing_2: '8px' }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'design-system', designSystemId, 'evidence-coverage.json'), {
+    status: 'ready'
+  });
+  await writeJson(path.join(repo, '.vibepro', 'design-system', designSystemId, 'style-preset.json'), {
+    selected_preset: { id: 'operator_developer_cockpit' },
+    confidence: 0.8
+  });
+  await writeJson(path.join(repo, '.vibepro', 'design-system', designSystemId, 'validation', `${storyId}.json`), {
+    summary: { status: 'pass' }
+  });
+
+  await writeJson(path.join(repo, '.vibepro', 'uiux', storyId, 'responsive-a11y-matrix.json'), {
+    status: 'ready',
+    viewports: ['mobile', 'desktop'],
+    accessibility_checks: ['keyboard', 'contrast'],
+    missing_evidence: []
+  });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'visual-pass'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'visual-pass', 'visual-residual.json'), { status: 'pass' });
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+    commands: [{
+      kind: 'e2e',
+      status: 'pass',
+      command: `node bin/vibepro.js uiux prepare . --id ${storyId} --json`,
+      observed: {
+        flow_replay: 'pass',
+        artifact_replay: 'pass',
+        scenario_clause_e2e: 'pass'
+      },
+      artifact: `.vibepro/evidence-artifacts/${storyId}/workflow-replay-status.json`
+    }]
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    pr_context: {
+      gate_dag: {
+        overall_status: 'ready_for_review',
+        nodes: [],
+        summary: { needs_evidence_count: 0 }
+      }
+    }
+  });
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath).catch(() => ({}));
+  manifest.latest_visual_qa_run = 'visual-pass';
+  manifest.visual_qa_runs = [{
+    qa_id: 'visual-pass',
+    artifacts: { visual_residual_json: '.vibepro/qa/visual-pass/visual-residual.json' }
+  }];
+  await writeJson(manifestPath, manifest);
+
+  const prepared = await runCli(['uiux', 'prepare', repo, '--id', storyId, '--design-system-id', designSystemId, '--base', 'main', '--json']);
+
+  assert.equal(prepared.exitCode, 0);
+  assert.equal(prepared.result.readiness.status, 'ready');
+  assert.equal(prepared.result.readiness.allowed_statuses.includes('needs_design_system'), true);
+  assert.equal(prepared.result.artifacts.readiness, `.vibepro/uiux/${storyId}/uiux-readiness.json`);
+  assert.equal(prepared.result.artifacts.cockpit, `.vibepro/uiux/${storyId}/uiux-cockpit.html`);
+  assert.equal(prepared.result.readiness.sections.verification_evidence.flow_source, 'verification_evidence');
+  assert.equal(prepared.result.readiness.artifact_links.flow_verification.ref, `.vibepro/pr/${storyId}/verification-evidence.json`);
+  assert.equal(prepared.result.readiness.artifact_links.gate_dag.ref, `.vibepro/pr/${storyId}/pr-prepare.json`);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', storyId, 'uiux-readiness.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', storyId, 'uiux-cockpit.html')), true);
+  const cockpit = await readFile(path.join(repo, '.vibepro', 'uiux', storyId, 'uiux-cockpit.html'), 'utf8');
+  assert.match(cockpit, /uiux-intake-coverage\.json/);
+  assert.match(cockpit, /source artifacts/);
+  assert.doesNotMatch(cockpit, /"schema_version"/);
+  const cockpitDir = path.join(repo, '.vibepro', 'uiux', storyId);
+  const hrefs = [...cockpit.matchAll(/href="([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(hrefs.includes('uiux-intake-coverage.json'));
+  assert.ok(hrefs.includes('../../../docs/management/stories/active/story-pr-prepare.md'));
+  assert.ok(hrefs.includes('../../pr/story-pr-prepare/pr-prepare.json'));
+  assert.ok(hrefs.includes('../../pr/story-pr-prepare/verification-evidence.json'));
+  assert.equal(await pathExists(path.resolve(cockpitDir, 'uiux-intake-coverage.json')), true);
+  assert.equal(await pathExists(path.resolve(cockpitDir, '../../../docs/management/stories/active/story-pr-prepare.md')), true);
+  assert.equal(await pathExists(path.resolve(cockpitDir, '../../design-system/story-pr-prepare/design-system.json')), true);
+  assert.equal(await pathExists(path.resolve(cockpitDir, '../../pr/story-pr-prepare/pr-prepare.json')), true);
+  assert.equal(await pathExists(path.resolve(cockpitDir, '../../pr/story-pr-prepare/verification-evidence.json')), true);
+
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'dirty-ui.js'), 'export const dirtyUi = true;\n');
+  const rerun = await runCli(['uiux', 'prepare', repo, '--id', storyId, '--design-system-id', designSystemId, '--json']);
+
+  assert.equal(rerun.exitCode, 0);
+  assert.equal(rerun.result.readiness.status, 'ready');
+  assert.equal(rerun.result.readiness.git.dirty, true);
+});
+
+test('UIOC-S-4 design-ssot view points reviewers to UI/UX cockpit artifacts', async () => {
+  const view = projectPrPrepareForLlm({
+    story: { story_id: 'story-uiux-cockpit' },
+    created_at: '2026-07-08T00:00:00.000Z',
+    artifact: '.vibepro/pr/story-uiux-cockpit/pr-prepare.json',
+    pr_context: {
+      design_ssot_reconciliation: { status: 'pass' }
+    }
+  }, 'design-ssot');
+
+  assert.equal(view.view, 'design-ssot');
+  assert.equal(view.artifact_refs.uiux_readiness, '.vibepro/uiux/story-uiux-cockpit/uiux-readiness.json');
+  assert.equal(view.artifact_refs.uiux_cockpit, '.vibepro/uiux/story-uiux-cockpit/uiux-cockpit.html');
 });
 
 test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {
