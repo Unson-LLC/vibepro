@@ -253,7 +253,7 @@ const followupDecisionArtifactRecipe = {
         '--status accepted',
         `--summary ${shellQuote(target.summary ?? 'accepted followup')}`,
         `--reason ${shellQuote(target.reason ?? '<reason>')}`,
-        '--artifact <path/to/tracking-artifact>'
+        "--artifact '<path/to/tracking-artifact>'"
       ].filter(Boolean).join(' ')
     };
   }
@@ -278,7 +278,7 @@ const designDiagramsFinalSpecRecipe = {
     return {
       detected: true,
       reason: `diagram(s) [${missing.join(', ')}] appear in the spec doc but not in the final spec diagrams[]; the design_diagrams gate reads only the final spec artifact`,
-      next_command: `vibepro spec write . --id ${shellQuote(storyId)} --final --input <spec.json with diagrams[] including: ${missing.join(', ')}>`
+      next_command: `vibepro spec write . --id ${shellQuote(storyId)} --final --input '<spec.json with diagrams[] including: ${missing.join(', ')}>'`
     };
   }
 };
