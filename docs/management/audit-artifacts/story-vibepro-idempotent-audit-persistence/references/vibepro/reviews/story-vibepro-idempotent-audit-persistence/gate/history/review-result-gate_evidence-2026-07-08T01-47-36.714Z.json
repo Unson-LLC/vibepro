@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-idempotent-audit-persistence",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "HIGH: normalizeCanonicalAuditSourceData strips pr_merge.canonical_audit but not pr_merge.roi_ledger_promotion, which merge-manager.js attaches between the two persistence passes via the identical bookkeeping mechanism. On the compact evidence path this leaks into raw_artifact_manifest digests, defeating IAP-CONTRACT-002/003 dedupe and reproducing the duplicate-commit bug for merges that cross the compact budget (reviewer reproduced empirically). MEDIUM: withCanonicalAuditBookkeeping test helper simulates only canonical_audit injection, never roi_ledger_promotion, so 9/9 focused + 3/3 CLI + 860/860 full suite stay silently green.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Traced merge-manager.js double-promotion sequence against the fix's field stripping, ran focused tests (9/9), wrote standalone repro scripts against src/canonical-audit.js on both the default path (no leak) and compact path (leak reproduced: promoted_at and 3 files differ across passes).",
+    "evidence": "standalone Node repro against promoteCanonicalAuditArtifacts with overBudget verification-evidence fixture (digest/promoted_at mismatch reproduced); node --test focused 9/9",
+    "inputs": [
+      "src/canonical-audit.js",
+      "src/merge-manager.js",
+      "test/canonical-audit-idempotent-persistence.test.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-idempotent-audit-persistence/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial: diff looked complete against its own spec with all tests green -> final: needs_changes, because tracing the exact merge-manager call sequence revealed roi_ledger_promotion is injected identically to canonical_audit but not excluded, empirically reproducing the duplicate-commit mismatch on the compact path"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-iap",
+    "actual_root": "/private/tmp/vibepro-iap",
+    "expected_root": null,
+    "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+    "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-iap",
+      "actual_root": "/private/tmp/vibepro-iap",
+      "expected_root": null,
+      "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+      "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T01:47:36.714Z",
+  "git_context": {
+    "head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+    "current_branch": "claude/idempotent-audit-persistence",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T01:47:36.684Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+    "surface_files": [
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "f24e6d1a0296f55165a6908ae59454f18f06d07b19796fc773d0b1109f910d8b",
+        "size": 104740
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "0db6c994851f0468662d2f96628629c0f04ec9bc3cdb63f2aefd843f64fc2195",
+        "size": 43326
+      },
+      {
+        "path": "test/canonical-audit-idempotent-persistence.test.js",
+        "sha256": "5de9f851b97bad2de86bbed1974ba6a461b24e61eb0433eff9f16a4208997d5e",
+        "size": 10935
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "e8e9504e1d1edaf60f41693103b45b957a209d61057885137c7c285237c2010f",
+        "size": 1032295
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e554dc0976133b4ae2fed29dfe706ab4db58ad46bb4d44319469333d6c226738"
+  },
+  "source_fingerprint": "0fd8161de2520f2c2c06cbc8c653f5a7ee93730f95d51f75d74677ef485d0bbe",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a62cd676c31de7ec0",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a62cd676c31de7ec0",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-idempotent-audit-persistence/gate/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-idempotent-audit-persistence/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-idempotent-audit-persistence",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Round-2: the roi_ledger_promotion exclusion fix fully closes round 1's HIGH finding. normalizeCanonicalAuditSourceData now excludes both pr_merge.canonical_audit and pr_merge.roi_ledger_promotion, matching the only two fields merge-manager.js injects between promotion passes (verified by re-enumerating merge-object writes in lines 330-430; status/stop_reason change only on a failure branch outside this path). Test helper now models pass-2-only field presence with the real shape. Reviewer independently ran focused suite at ca76367c: 9/9 pass. Rebase commit is a 0-diff no-op for both risk-surface files (identical sha256), so recorded evidence stays content-accurate.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the fix diff, re-enumerated all merge-object field writes between the two promotion passes in merge-manager.js, verified test helper shape/timing parity with merge-manager.js:390, self-ran focused tests at current head, compared surface-file hashes across the rebase.",
+    "evidence": "node --test test/canonical-audit-idempotent-persistence.test.js (9/9 at ca76367c, run by reviewer); git diff 0e21970f ca76367c -- src/canonical-audit.js src/merge-manager.js (0 lines)",
+    "inputs": [
+      "src/canonical-audit.js",
+      "src/merge-manager.js",
+      "test/canonical-audit-idempotent-persistence.test.js",
+      ".vibepro/pr/story-vibepro-idempotent-audit-persistence/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial: the exclusion list might still miss other fields injected between passes -> final: pass, because re-enumerating every merge-object write between the two passes confirmed canonical_audit and roi_ledger_promotion are the only injected fields and the regression test now fails without the fix"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-iap",
+    "actual_root": "/private/tmp/vibepro-iap",
+    "expected_root": null,
+    "expected_head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+    "current_head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-iap",
+      "actual_root": "/private/tmp/vibepro-iap",
+      "expected_root": null,
+      "expected_head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+      "current_head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T06:20:28.339Z",
+  "git_context": {
+    "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+    "current_branch": "claude/idempotent-audit-persistence",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T06:20:28.314Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+    "surface_files": [
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "ae16d4ab7a0140e2776d74fe98fb83f9017de2b342ec8993debcdf1c0ffd2edc",
+        "size": 104914
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "0db6c994851f0468662d2f96628629c0f04ec9bc3cdb63f2aefd843f64fc2195",
+        "size": 43326
+      },
+      {
+        "path": "test/canonical-audit-idempotent-persistence.test.js",
+        "sha256": "fb9b473a1755f11a9dbe97b1eff9fee6bf945535d896bf278f8a25d8e59edfcd",
+        "size": 11457
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ebedc21675deae700389dd6065c78c3cd93d6bf8e860a869c71f30f29f2c767e"
+  },
+  "source_fingerprint": "af86dae62ec1e0e48cb225bd0f6be6f386699fa36babfd8369a86761ce05f3cf",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a3c4110c8476c750e",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a3c4110c8476c750e",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-idempotent-audit-persistence/gate/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-idempotent-audit-persistence/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

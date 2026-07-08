@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-idempotent-audit-persistence",
+  "updated_at": "2026-07-08T01:39:35.360Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-iap",
+      "actual_root": "/private/tmp/vibepro-iap",
+      "expected_root": null,
+      "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+      "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783474775358-fb907783",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-reviewer-readable diff; review owner map declared (canonical-audit src first, then focused test, then docs)",
+      "reason": "scope_reviewed: the 8-file diff is one intent (idempotent canonical audit persistence) readable by a single reviewer in one pass. review_owner_map: gate_evidence review subagent owns src/canonical-audit.js and test/canonical-audit-idempotent-persistence.test.js inspection; coordinator owns docs/design-ssot lineage. No split needed; bundled docs preserve story-spec traceability.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-iap",
+          "actual_root": "/private/tmp/vibepro-iap",
+          "expected_root": null,
+          "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+        "current_branch": "claude/idempotent-audit-persistence",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T01:39:35.351Z"
+      },
+      "recorded_at": "2026-07-08T01:39:35.360Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783474310659-802bf950",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split needed: single-intent diff, clean 2-commit branch, splitting docs from code would break traceability",
+      "reason": "No split needed: the diff is a single-intent change (deterministic bundle generation + idempotent persistence dedupe) with its tests and story docs; splitting docs from code would break story-spec traceability. Clean branch confirmed: 2 commits on top of origin/main, both story-scoped.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-iap",
+          "actual_root": "/private/tmp/vibepro-iap",
+          "expected_root": null,
+          "expected_head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+          "current_head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "current_branch": "claude/idempotent-audit-persistence",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T01:31:50.652Z"
+      },
+      "recorded_at": "2026-07-08T01:31:50.660Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783474309098-a0a89e4b",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope justified: single-intent idempotent canonical audit persistence change with its tests and story docs",
+      "reason": "Bundled scope justified: one intent (idempotent canonical audit persistence) across src/canonical-audit.js plus its focused test, CLI test coverage, story/architecture doc updates, and design-ssot lineage. Review owner map: single reviewer reads src/canonical-audit.js diff first, then test/canonical-audit-idempotent-persistence.test.js, then docs. scope_reviewed: 7-file diff traces to the single IAP story; no unrelated changes.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-iap",
+          "actual_root": "/private/tmp/vibepro-iap",
+          "expected_root": null,
+          "expected_head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+          "current_head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "current_branch": "claude/idempotent-audit-persistence",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T01:31:49.089Z"
+      },
+      "recorded_at": "2026-07-08T01:31:49.099Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-iap",
+        "actual_root": "/private/tmp/vibepro-iap",
+        "expected_root": null,
+        "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+        "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783474775358-fb907783",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-reviewer-readable diff; review owner map declared (canonical-audit src first, then focused test, then docs)",
+      "reason": "scope_reviewed: the 8-file diff is one intent (idempotent canonical audit persistence) readable by a single reviewer in one pass. review_owner_map: gate_evidence review subagent owns src/canonical-audit.js and test/canonical-audit-idempotent-persistence.test.js inspection; coordinator owns docs/design-ssot lineage. No split needed; bundled docs preserve story-spec traceability.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-iap",
+          "actual_root": "/private/tmp/vibepro-iap",
+          "expected_root": null,
+          "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+        "current_branch": "claude/idempotent-audit-persistence",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T01:39:35.351Z"
+      },
+      "recorded_at": "2026-07-08T01:39:35.360Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/decision-records.json"
+}

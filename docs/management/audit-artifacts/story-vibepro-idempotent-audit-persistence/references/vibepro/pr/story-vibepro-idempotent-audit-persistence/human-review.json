@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-idempotent-audit-persistence",
+  "created_at": "2026-07-08T06:20:49.011Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-idempotent-audit-persistence.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-idempotent-audit-persistence.md)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-iap",
+          "actual_root": "/private/tmp/vibepro-iap",
+          "expected_root": null,
+          "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783474775358-fb907783",
+        "story_id": "story-vibepro-idempotent-audit-persistence",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "scope_reviewed: single-reviewer-readable diff; review owner map declared (canonical-audit src first, then focused test, then docs)",
+        "reason": "scope_reviewed: the 8-file diff is one intent (idempotent canonical audit persistence) readable by a single reviewer in one pass. review_owner_map: gate_evidence review subagent owns src/canonical-audit.js and test/canonical-audit-idempotent-persistence.test.js inspection; coordinator owns docs/design-ssot lineage. No split needed; bundled docs preserve story-spec traceability.",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-prepare.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-iap",
+            "actual_root": "/private/tmp/vibepro-iap",
+            "expected_root": null,
+            "expected_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+            "current_head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+          "current_branch": "claude/idempotent-audit-persistence",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-08T01:39:35.351Z"
+        },
+        "recorded_at": "2026-07-08T01:39:35.360Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T06:20:47.340Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-current-runtime"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.local/bin/vibepro",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-current-runtime/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+      "branch": null,
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e0b80efc37035d2f9effa1739a67d4d8d3de6d63",
+      "origin_main_relation": "behind",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

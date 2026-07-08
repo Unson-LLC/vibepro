@@ -1,0 +1,793 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-08T06:20:31.584Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:senior_gap_judgment|block|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:artifact_consistency|stale_evidence|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:definition_of_done|needs_evidence|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:agent_review|needs_review|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:join:gate|needs_review|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:record:gate:gate_evidence|needs_review|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:preflight:gate:gate_evidence|failed|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:dispatch_batch:gate|failed|passed|2026-07-08T06:17:33.773Z|2026-07-08T06:20:31.574Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:17:33.773Z",
+      "resolved_at": "2026-07-08T06:20:31.574Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:common_judgment_spine|needs_evidence|passed|2026-07-08T06:15:45.303Z|2026-07-08T06:16:03.422Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T06:15:45.303Z",
+      "resolved_at": "2026-07-08T06:16:03.422Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e21970f71d92254d6dd009998432443bff9dbc2",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:gate:gate_evidence|missing|stale|2026-07-08T01:38:42.536Z|2026-07-08T06:15:45.303Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "stale",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:38:42.536Z",
+      "resolved_at": "2026-07-08T06:15:45.303Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e21970f71d92254d6dd009998432443bff9dbc2",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|review:prepare:gate|needs_review|passed|2026-07-08T01:38:42.536Z|2026-07-08T06:15:45.303Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:38:42.536Z",
+      "resolved_at": "2026-07-08T06:15:45.303Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e21970f71d92254d6dd009998432443bff9dbc2",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-07-08T01:38:42.536Z|2026-07-08T06:15:45.303Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:38:42.536Z",
+      "resolved_at": "2026-07-08T06:15:45.303Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e21970f71d92254d6dd009998432443bff9dbc2",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:common_judgment_spine|needs_evidence|passed|2026-07-08T01:36:58.486Z|2026-07-08T01:38:42.536Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:36:58.486Z",
+      "resolved_at": "2026-07-08T01:38:42.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ddea8975b6b2b6028d31cac983575e9e4363a96e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:split_resolution|needs_review|passed|2026-07-08T01:31:33.523Z|2026-07-08T01:32:03.986Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:31:33.523Z",
+      "resolved_at": "2026-07-08T01:32:03.986Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:bug_physics_deterministic_byte_replay|needs_evidence|passed|2026-07-08T01:29:57.208Z|2026-07-08T01:31:26.398Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:bug_physics_deterministic_byte_replay",
+      "gate_type": "bug_physics_profile_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:29:57.208Z",
+      "resolved_at": "2026-07-08T01:31:26.398Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:bug_physics_triage|needs_evidence|passed|2026-07-08T01:29:57.208Z|2026-07-08T01:31:26.398Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:bug_physics_triage",
+      "gate_type": "bug_physics_triage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:29:57.208Z",
+      "resolved_at": "2026-07-08T01:31:26.398Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:artifact_consistency|stale_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:integration|needs_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "npm test",
+          "status": "pass",
+          "recorded_at": "2026-07-08T01:29:53.996Z"
+        },
+        {
+          "kind": "verification_command",
+          "command": "node --test --test-name-pattern=CAA-VERIFY test/vibepro-cli.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-08T01:29:53.996Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:unit|needs_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:responsibility_authority|needs_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-08T01:20:44.780Z|2026-07-08T01:29:57.208Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T01:20:44.780Z",
+      "resolved_at": "2026-07-08T01:29:57.208Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3d4cbde5411db70f961a62c43c7822350cec921a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-idempotent-audit-persistence.md",
+          "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:e2e|needs_evidence|not_required|2026-07-07T15:38:36.365Z|2026-07-07T15:39:16.914Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "not_required",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-07T15:38:36.365Z",
+      "resolved_at": "2026-07-07T15:39:16.914Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "47860ea077b895013fbe4b97e43d055e69430b23",
+        "changed_files": [
+          "design-ssot.json",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:requirement|needs_review|passed|2026-07-07T15:38:36.365Z|2026-07-07T15:39:16.914Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:requirement",
+      "gate_type": "requirement_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-07T15:38:36.365Z",
+      "resolved_at": "2026-07-07T15:39:16.914Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "47860ea077b895013fbe4b97e43d055e69430b23",
+        "changed_files": [
+          "design-ssot.json",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:design_ssot_reconciliation|needs_review|passed|2026-07-07T15:38:36.365Z|2026-07-07T15:39:16.914Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-07T15:38:36.365Z",
+      "resolved_at": "2026-07-07T15:39:16.914Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "47860ea077b895013fbe4b97e43d055e69430b23",
+        "changed_files": [
+          "design-ssot.json",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:design_diagrams|needs_evidence|not_required|2026-07-07T15:38:36.365Z|2026-07-07T15:39:16.914Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "not_required",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-07T15:38:36.365Z",
+      "resolved_at": "2026-07-07T15:39:16.914Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "47860ea077b895013fbe4b97e43d055e69430b23",
+        "changed_files": [
+          "design-ssot.json",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-idempotent-audit-persistence|gate:story_source_integrity|story_source_mismatch|passed|2026-07-07T15:38:36.365Z|2026-07-07T15:39:16.914Z",
+      "story_id": "story-vibepro-idempotent-audit-persistence",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-07T15:38:36.365Z",
+      "resolved_at": "2026-07-07T15:39:16.914Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "47860ea077b895013fbe4b97e43d055e69430b23",
+        "changed_files": [
+          "design-ssot.json",
+          "src/canonical-audit.js",
+          "test/canonical-audit-idempotent-persistence.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    }
+  ]
+}

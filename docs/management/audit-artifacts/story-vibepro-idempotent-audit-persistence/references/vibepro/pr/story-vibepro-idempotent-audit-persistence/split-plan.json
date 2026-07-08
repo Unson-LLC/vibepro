@@ -1,0 +1,232 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-idempotent-audit-persistence",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "baseからのcommitが 4 件あり、Story外の変更混入を確認する必要がある",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 3 changed files が一致し、7 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 3809,
+    "edge_count": 8515,
+    "matched_file_count": 3,
+    "related_file_count": 7,
+    "investigation_files": [
+      "src/cli.js",
+      "src/evidence-cost-budget.js",
+      "src/merge-manager.js",
+      "src/pr-manager.js",
+      "src/public-discovery-scanner.js",
+      "src/usage-report.js",
+      "src/workspace.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/canonical-audit.js",
+        "matched_nodes": [
+          "src_canonical_audit_js",
+          "src_canonical_audit_getcanonicalauditdir",
+          "src_canonical_audit_projectprprepareforllm",
+          "src_canonical_audit_bindstoryplaceholders",
+          "src_canonical_audit_summarizeprprepareforllm",
+          "src_canonical_audit_summarizegatestatusforllm",
+          "src_canonical_audit_summarizegatedagforllm",
+          "src_canonical_audit_summarizegatelistforllm"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/evidence-cost-budget.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js",
+          "src/usage-report.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "test/canonical-audit-idempotent-persistence.test.js",
+        "matched_nodes": [
+          "test_canonical_audit_idempotent_persistence_test_js",
+          "test_canonical_audit_idempotent_persistence_test_writejson",
+          "test_canonical_audit_idempotent_persistence_test_snapshotdir",
+          "test_canonical_audit_idempotent_persistence_test_differingfiles",
+          "test_canonical_audit_idempotent_persistence_test_seedmergeinputs",
+          "test_canonical_audit_idempotent_persistence_test_basemerge",
+          "test_canonical_audit_idempotent_persistence_test_withcanonicalauditbookkeeping",
+          "test_canonical_audit_idempotent_persistence_test_writeprmerge"
+        ],
+        "related_files": [
+          "src/public-discovery-scanner.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng",
+          "test_vibepro_cli_test_encodepng",
+          "test_vibepro_cli_test_pngchunk",
+          "test_vibepro_cli_test_uint32"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md",
+        "docs/architecture/vibepro-idempotent-audit-persistence.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 2,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-idempotent-audit-persistence-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/canonical-audit.js",
+        "test/canonical-audit-idempotent-persistence.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [
+        "src/cli.js",
+        "src/evidence-cost-budget.js",
+        "src/merge-manager.js",
+        "src/pr-manager.js",
+        "src/public-discovery-scanner.js",
+        "src/usage-report.js",
+        "src/workspace.js"
+      ],
+      "suggested_branch": "feat/vibepro-idempotent-audit-persistence-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-idempotent-audit-persistence-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/canonical-audit-idempotent-persistence.test.js",
+          "vibepro pr prepare . --story-id story-vibepro-idempotent-audit-persistence"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/canonical-audit-idempotent-persistence.test.js",
+        "vibepro pr prepare . --story-id story-vibepro-idempotent-audit-persistence"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-idempotent-audit-persistence-requirements-ssot with 2 files",
+      "command": "git switch -c feat/vibepro-idempotent-audit-persistence-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-idempotent-audit-persistence.md docs/architecture/vibepro-idempotent-audit-persistence.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-idempotent-audit-persistence-runtime-behavior with 3 files",
+      "command": "git switch -c feat/vibepro-idempotent-audit-persistence-runtime-behavior <base> && git add src/canonical-audit.js test/canonical-audit-idempotent-persistence.test.js test/vibepro-cli.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-idempotent-audit-persistence-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-idempotent-audit-persistence-misc-follow-up <base> && git add design-ssot.json"
+    }
+  ]
+}
