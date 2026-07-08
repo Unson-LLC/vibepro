@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-uiux-structured-intake",
   "source": "execute_merge",
-  "generated_at": "2026-07-08T05:03:20.680Z",
+  "generated_at": "2026-07-08T05:03:24.654Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -119,13 +119,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2979,
+      "compressed_bytes": 2975,
       "expanded_bytes": 12418,
       "expanded_line_count": 335,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9003,
-    "raw_source_artifact_code_ratio": 10.629,
+    "raw_source_artifact_lines": 9093,
+    "raw_source_artifact_code_ratio": 10.736,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -246,7 +246,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-uiux-structured-intake",
-    "generated_at": "2026-07-08T05:03:20.680Z",
+    "generated_at": "2026-07-08T05:03:24.654Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -351,10 +351,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-uiux-structured-intake/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ae817a1f2933e0b28cfa87b69175ae09de5d35095e6877d5e42d9c53037e3e36",
-    "compressed_hash": "sha256:a3586f421c5dc2d9d051e478cd54897df737972d827e8b7c19911a68e1868687",
+    "content_hash": "sha256:7e3d03d678d0a6e4f9ebd64a374be8589df343dc5871a7ba8c7ef15ae57735e6",
+    "compressed_hash": "sha256:088ccc003504a4e4d91aedd0c3e27eb8723a27434fafe783cff76ec13c8015b7",
     "expanded_bytes": 12418,
-    "compressed_bytes": 2979,
+    "compressed_bytes": 2975,
     "expanded_line_count": 335,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -373,7 +373,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-uiux-structured-intake",
     "cost": {
-      "compressed_bytes": 2979,
+      "compressed_bytes": 2975,
       "expanded_bytes": 12418,
       "expanded_line_count": 335,
       "persisted_line_count": 1
