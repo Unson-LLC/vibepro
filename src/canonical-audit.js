@@ -498,23 +498,29 @@ function canonicalAuditBundlesLogicallyEqual(a, b) {
   }
 }
 
-// The pr_merge source artifact carries `canonical_audit` — bookkeeping about where
-// this very bundle was copied on the base branch. It is absent on the first
-// promotion pass and only populated (with a volatile temp-worktree path, base head
-// sha and persistence commit sha) on the second pass, which structurally defeats
-// idempotent persistence. This self-referential mechanics metadata is not judgment
-// evidence, so it is excluded from the promoted/persisted canonical view. It remains
-// in the local `.vibepro/pr/<story>/pr-merge.json` execution artifact and the merge
-// result JSON, so no audit information is lost.
+// The pr_merge source artifact carries `canonical_audit` and
+// `roi_ledger_promotion` — bookkeeping about where this very bundle (and the
+// central ROI ledger promoted alongside it) was copied on the base branch. Both
+// are absent on the first promotion pass and only populated (with volatile
+// temp-worktree paths, base head shas and persistence commit shas) after the
+// first persistence call, which structurally defeats idempotent persistence.
+// This self-referential mechanics metadata is not judgment evidence, so it is
+// excluded from the promoted/persisted canonical view. It remains in the local
+// `.vibepro/pr/<story>/pr-merge.json` execution artifact and the merge result
+// JSON, so no audit information is lost.
 function normalizeCanonicalAuditSourceData(kind, data) {
   if (kind === 'pr_merge' && data && typeof data === 'object' && !Array.isArray(data)) {
-    // Always drop `canonical_audit` and advertise the exclusion, whether or not the
-    // field is present on this pass. The first promotion pass runs before the field
-    // exists and the second after it is populated; recording the exclusion
+    // Always drop both fields and advertise the exclusions, whether or not the
+    // fields are present on this pass. The first promotion pass runs before they
+    // exist and the second after they are populated; recording the exclusions
     // unconditionally keeps the promoted view (data and excluded_from_audit) identical
     // across both passes so persistence dedupe (IAP-S-1) can reach `already_present`.
-    const { canonical_audit, ...rest } = data;
-    return { data: rest, excluded: ['pr_merge.canonical_audit'], reserialize: true };
+    const { canonical_audit, roi_ledger_promotion, ...rest } = data;
+    return {
+      data: rest,
+      excluded: ['pr_merge.canonical_audit', 'pr_merge.roi_ledger_promotion'],
+      reserialize: true
+    };
   }
   return { data, excluded: [], reserialize: false };
 }

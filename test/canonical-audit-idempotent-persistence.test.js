@@ -116,6 +116,17 @@ function withCanonicalAuditBookkeeping(merge, storyId) {
         base_head_sha: 'd'.repeat(40),
         worktree_path: `/tmp/vibepro-canonical-audit-${storyId}-${Date.now()}`
       }
+    },
+    // merge-manager.js attaches ROI ledger promotion bookkeeping to the merge
+    // object between the two promotion passes via the same mechanism as
+    // canonical_audit; it must be excluded from the promoted view too, or the
+    // second pass diverges on the compact path (reviewer-found regression).
+    roi_ledger_promotion: {
+      status: 'promoted',
+      promoted_count: 2,
+      duplicate_count: 0,
+      central_ledger_path: 'docs/management/roi-ledger/ledger.json',
+      commit_sha: 'c'.repeat(40)
     }
   };
 }
