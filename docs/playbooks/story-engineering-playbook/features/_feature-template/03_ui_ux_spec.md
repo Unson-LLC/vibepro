@@ -33,6 +33,11 @@ UIがある場合のみ、このファイルに画面構成・操作フロー・
 本番実装の正本ではありません。
 
 - [Design Artifacts](../../design/artifacts/README.md)
+- [VibePro UI/UX structured intake](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-structured-intake.md)
+- [VibePro IA flow map](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md)
+- [VibePro style preset token gate](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-style-preset-token-gate.md)
+- [VibePro responsive/a11y evidence matrix](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-responsive-a11y-evidence-matrix.md)
+- [VibePro UI/UX one-command cockpit](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md)
 
 | 画面・状態 | 画像 |
 |---|---|
@@ -133,6 +138,7 @@ UIがある場合のみ、このファイルに画面構成・操作フロー・
 - 画像やHTMLを本番コードへ直接移植しないでください
 - 指定されたUIライブラリ・既存コンポーネントを優先してください
 - 追加ライブラリが必要な場合は、実装前に確認してください
+- prompt、外部Design System、画像、HTML案はvisual hypothesisです。ready判定はStory、Spec、Architecture、現行route code、VibePro-native Design System、現在の検証証跡、Gate DAGを優先してください
 
 ## 12. 関連資料
 

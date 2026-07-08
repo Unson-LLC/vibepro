@@ -3312,6 +3312,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md",
+            "required": true,
+            "relationship": "documents",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -3330,6 +3337,13 @@
           "path": "docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md",
           "required": true,
           "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md",
+          "required": true,
+          "relationship": "documents",
           "last_reviewed_root_hash": null
         },
         {
@@ -3401,5 +3415,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-08T12:26:26.783Z"
+  "updated_at": "2026-07-08T13:33:38.875Z"
 }

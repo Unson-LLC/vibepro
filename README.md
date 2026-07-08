@@ -45,6 +45,7 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 - Diagnosis packs for UI, security, performance, architecture, PR readiness, and launch readiness
 - Agent review requests and risk-adaptive review evidence recording
 - `vibepro pr create` path enforcement so unresolved gates and waiver reasons are captured
+- A single UI/UX preparation path from Story intake through native Design System, modernization evidence, responsive/accessibility checks, review cockpit, and PR readiness
 - `design-system derive` for VibePro-native Design System artifacts from existing routes, code, style evidence, and optional Graphify context
 - `design-modernize` planning and derived Design System generation for existing UI modernization without changing current information architecture
 - Skills and Codex instruction installation for standardizing AI-driven workflows
@@ -413,6 +414,30 @@ npx vibepro execute merge /path/to/repo --story-id <story-id> --pr <pr-number> -
 ```
 
 The second `pr create` call refreshes an existing open PR instead of creating a duplicate when base/head match. `execute merge` is the VibePro merge boundary: it verifies readiness, merges through GitHub, writes `pr-merge.json`, and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
+
+### Prepare A UI/UX Modernization PR
+
+Use this path when the starting point is a UI/UX intent rather than a narrow code defect. The workflow starts from an existing Story and ends when `pr prepare` reports readiness for the current HEAD.
+
+```bash
+npx vibepro story list /path/to/repo
+npx vibepro journey handoff /path/to/repo --id <journey-id>
+npx vibepro design-system derive /path/to/repo \
+  --id <ds-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --from-code
+npx vibepro design-modernize plan /path/to/repo \
+  --id <story-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --base-url http://127.0.0.1:3000
+npx vibepro verify visual /path/to/repo --id <story-id> --base-url http://127.0.0.1:3000
+npx vibepro uiux evidence /path/to/repo --id <story-id>
+npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
+```
+
+Intake prompts, external design bundles, screenshots, and generated visual hypotheses are guidance. They do not become implementation truth. Readiness is decided by the Story, Spec, Architecture, current route code, VibePro-native Design System, current verification evidence, Agent Review evidence, and Gate DAG.
 
 ### Modernize An Existing UI
 
