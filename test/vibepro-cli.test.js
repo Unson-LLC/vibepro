@@ -1192,6 +1192,53 @@ test('UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy storie
   assert.match(summary.stdout, /\.vibepro\/uiux\/story-pr-prepare\/ia-flow-map\.json/);
 });
 
+test('UIFM-S-4 design quality gate accepts screen capture needs_setup evidence record', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+    export default function Page() {
+      return <main><button>Start setup</button><p>Workspace onboarding</p></main>;
+    }
+  `);
+
+  const plan = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'Onboarding flow for workspace setup',
+    '--json'
+  ]);
+  assert.equal(plan.exitCode, 0);
+
+  const capture = await runCli([
+    'design-modernize',
+    'capture',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--json'
+  ]);
+  assert.equal(capture.exitCode, 0);
+  assert.equal(capture.result.result.status, 'needs_setup');
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const designQualityGate = prepare.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:design_quality');
+
+  assert.equal(designQualityGate.status, 'ready_for_review');
+  assert.equal(designQualityGate.capture_status, 'needs_setup');
+  assert.equal(designQualityGate.evidence_status, 'needs_setup_recorded');
+  assert.match(designQualityGate.reason, /needs_setup record/);
+});
+
 test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'home', '_components'), { recursive: true });

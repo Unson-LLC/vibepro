@@ -5628,13 +5628,19 @@ async function readDesignQualityEvidence(repoRoot, storyId) {
   const hasExplicitGate = plan?.spec_gate?.mode === 'explicit' && plan?.spec_gate?.fallback_allowed === false;
   const hasDesignDag = plan?.design_quality_dag?.model === 'vibepro-design-quality-dag-v1';
   const captureStatus = capture?.status ?? 'missing';
-  const status = hasExplicitGate && hasDesignDag && captureStatus === 'pass'
+  const hasCaptureEvidence = ['pass', 'needs_setup'].includes(captureStatus);
+  const status = hasExplicitGate && hasDesignDag && hasCaptureEvidence
     ? 'ready_for_review'
     : 'needs_evidence';
   const missing = [];
   if (!hasExplicitGate) missing.push('explicit spec_gate');
   if (!hasDesignDag) missing.push('design_quality_dag');
-  if (captureStatus !== 'pass') missing.push(`screen capture (${captureStatus})`);
+  if (!hasCaptureEvidence) missing.push(`screen capture (${captureStatus})`);
+  const evidence_status = captureStatus === 'needs_setup'
+    ? 'needs_setup_recorded'
+    : captureStatus === 'pass'
+      ? 'captured'
+      : 'missing';
   return {
     schema_version: '0.1.0',
     status,
@@ -5642,12 +5648,20 @@ async function readDesignQualityEvidence(repoRoot, storyId) {
     model: plan?.design_quality_dag?.model ?? null,
     screen_count: Array.isArray(plan?.screens) ? plan.screens.length : 0,
     capture_status: captureStatus,
+    evidence_status,
     missing,
     artifacts: [
       toWorkspaceRelative(repoRoot, planPath),
       capture ? toWorkspaceRelative(repoRoot, capturePath) : null
     ].filter(Boolean)
   };
+}
+
+function buildDesignQualityGateReadyReason(designQualityEvidence) {
+  if (designQualityEvidence?.capture_status === 'needs_setup') {
+    return 'VibePro Design Quality DAG evidence is present and screen capture needs_setup record was captured';
+  }
+  return 'VibePro Design Quality DAG evidence is present and screen capture passed';
 }
 
 async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {}) {
@@ -9845,10 +9859,11 @@ function buildGateDag({
     status: designQualityEvidence.status,
     required: true,
     reason: designQualityEvidence.status === 'ready_for_review'
-      ? 'VibePro Design Quality DAG evidence is present and screen capture passed'
+      ? buildDesignQualityGateReadyReason(designQualityEvidence)
       : `Design Quality DAG needs evidence: ${designQualityEvidence.missing?.join(', ') || 'missing quality evidence'}`,
     artifacts: designQualityEvidence.artifacts,
     screen_count: designQualityEvidence.screen_count,
+    evidence_status: designQualityEvidence.evidence_status,
     capture_status: designQualityEvidence.capture_status
   } : null;
   const visualQaGate = visualQaEvidence ? {
