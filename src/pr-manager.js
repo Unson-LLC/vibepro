@@ -47,6 +47,7 @@ import {
   summarizeJourneyForPr
 } from './journey-map.js';
 import { readUiuxIaFlowMapForPr } from './uiux-flow-map.js';
+import { readResponsiveA11yMatrixForPr } from './uiux-responsive-a11y.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
 import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
@@ -2178,6 +2179,7 @@ ${firstLook}
 | Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
 | Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
 | UI/UX IA flow map | ${preparation.pr_context?.uiux_ia_flow_map?.status ?? '-'} (${preparation.pr_context?.uiux_ia_flow_map?.artifact ?? '-'}) |
+| UI/UX responsive/a11y matrix | ${preparation.pr_context?.uiux_responsive_a11y_matrix?.status ?? '-'} missing=${preparation.pr_context?.uiux_responsive_a11y_matrix?.missing_evidence_count ?? '-'} (${preparation.pr_context?.uiux_responsive_a11y_matrix?.artifact ?? '-'}) |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
@@ -5084,6 +5086,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const curatedJourney = latestJourney ? await readCuratedJourneyMap(repoRoot, latestJourney.journey_id) : null;
   const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id, { curatedJourney });
   const uiuxIaFlowMap = await readUiuxIaFlowMapForPr(repoRoot, story.story_id);
+  const uiuxResponsiveA11yMatrix = await readResponsiveA11yMatrixForPr(repoRoot, story.story_id);
   const context = {
     story_source: primaryStory,
     story_source_integrity: storySourceIntegrity,
@@ -5114,6 +5117,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     network_contracts: networkContracts,
     journey_map: journeyMap,
     uiux_ia_flow_map: uiuxIaFlowMap,
+    uiux_responsive_a11y_matrix: uiuxResponsiveA11yMatrix,
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     managed_worktree: managedWorktreeContext,

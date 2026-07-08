@@ -434,7 +434,7 @@ function buildNextCommands({ storyId, designSystemId, baseRef, sections, blockin
     commands.push(`vibepro design-system validate . --id ${designSystemId} --story-id ${storyId} --base ${base}`);
   }
   if (sections.responsive_a11y_matrix.status !== 'ready') {
-    commands.push(`vibepro uiux matrix . --id ${storyId} --route <path>`);
+    commands.push(`vibepro uiux evidence . --id ${storyId} --route <path>`);
   }
   if (sections.visual_hypotheses.status !== 'ready' || sections.verification_evidence.status !== 'ready') {
     commands.push(`vibepro design-modernize plan . --id ${storyId} --route <path>`);
