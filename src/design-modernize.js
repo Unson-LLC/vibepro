@@ -8,6 +8,7 @@ import {
   renderUiuxIaFlowMapMarkdown,
   resolveUiuxIaFlowMapForPlan
 } from './uiux-flow-map.js';
+import { renderStylePresetMarkdown, resolveUiuxStylePreset } from './uiux-style-presets.js';
 
 const DEFAULT_SCREEN_ROUTES = ['/'];
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -47,11 +48,20 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
     routes,
     screens
   });
+  const uiuxStylePreset = resolveUiuxStylePreset({
+    intake: uiuxIntake.intake,
+    brief: options.brief,
+    routes,
+    product,
+    semanticModel: productSemanticModel,
+    designSystem
+  });
   const derivedDesignSystem = buildDerivedDesignSystem({
     product,
     semanticModel: productSemanticModel,
     screens,
-    referenceDesignSystem: designSystem
+    referenceDesignSystem: designSystem,
+    stylePreset: uiuxStylePreset
   });
   const designConstraintGraph = buildDesignConstraintGraph(designSystem, screens, derivedDesignSystem);
   const visualHypothesis = buildVisualHypothesisPlan({ storyId, product, screens, designConstraintGraph });
@@ -69,6 +79,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
         'product_information_architecture',
         'ia_flow_map_before_screen_briefs',
         'structured_uiux_intake_when_present',
+        'product_archetype_style_preset_guidance',
         'optional_brand_or_design_system_bundle'
       ],
       external_generator_required: false,
@@ -88,6 +99,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       conflict_policy: uiuxIntake.coverage.authority_boundary.conflict_policy
     },
     uiux_intake_coverage: uiuxIntake.coverage,
+    uiux_style_preset: uiuxStylePreset,
     uiux_ia_flow_map: {
       status: uiuxIaFlowMap.map.status,
       artifact: uiuxIaFlowMap.sourcePath,
@@ -124,6 +136,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
       visual_foundations_reference: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json',
       uiux_intake_coverage: '.vibepro/design-modernize/<story-id>/uiux-intake-coverage.json',
+      uiux_style_preset: '.vibepro/design-modernize/<story-id>/style-preset.json',
       uiux_ia_flow_map: '.vibepro/design-modernize/<story-id>/ia-flow-map.json',
       derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
       journey_context: '.vibepro/design-modernize/<story-id>/journey-context.json',
@@ -142,6 +155,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   await writeFile(path.join(outDir, 'design-modernize.json'), `${JSON.stringify(plan, null, 2)}\n`);
   await writeFile(path.join(outDir, 'design-modernize.md'), renderDesignModernizePlan(plan));
   await writeFile(path.join(outDir, 'uiux-intake-coverage.json'), `${JSON.stringify(uiuxIntake.coverage, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'style-preset.json'), `${JSON.stringify(uiuxStylePreset, null, 2)}\n`);
   await writeFile(path.join(outDir, 'ia-flow-map.json'), `${JSON.stringify(uiuxIaFlowMap.map, null, 2)}\n`);
   await writeFile(path.join(outDir, 'ia-flow-map.md'), renderUiuxIaFlowMapMarkdown(uiuxIaFlowMap.map));
   await writeFile(path.join(outDir, 'design-briefs.md'), renderDesignBriefs(plan));
@@ -185,11 +199,19 @@ export async function deriveProductDesignSystem(repoRoot, options = {}) {
     routes,
     screens
   });
+  const uiuxStylePreset = resolveUiuxStylePreset({
+    brief: options.brief,
+    routes,
+    product,
+    semanticModel: productSemanticModel,
+    designSystem: referenceDesignSystem
+  });
   const derivedDesignSystem = buildDerivedDesignSystem({
     product,
     semanticModel: productSemanticModel,
     screens,
-    referenceDesignSystem
+    referenceDesignSystem,
+    stylePreset: uiuxStylePreset
   });
   const result = {
     schema_version: '0.1.0',
@@ -200,6 +222,7 @@ export async function deriveProductDesignSystem(repoRoot, options = {}) {
     external_generator_required: false,
     authority: 'vibepro_internal_design_constraints',
     product_semantic_model: productSemanticModel,
+    uiux_style_preset: uiuxStylePreset,
     derived_design_system: derivedDesignSystem,
     component_role_map: derivedDesignSystem.component_role_map,
     composition_guidelines: derivedDesignSystem.composition_guidelines,
@@ -424,6 +447,7 @@ export function renderDesignModernizePlan(plan) {
 | Design Intelligence | ${plan.design_intelligence.model} |
 | Journey Context | ${journey.status ?? 'unknown'} (${journey.artifact_kind ?? '-'}) |
 | UI/UX Intake | ${plan.uiux_intake_coverage?.status ?? 'unknown'} |
+| Style Preset | ${plan.uiux_style_preset?.selected_preset?.id ?? plan.uiux_style_preset?.selection?.status ?? 'missing'} (${plan.uiux_style_preset?.selection?.status ?? '-'}) |
 | IA Flow Map | ${plan.uiux_ia_flow_map?.status ?? 'unknown'} (${plan.uiux_ia_flow_map?.flow_archetype ?? '-'}) |
 | Curated Journey | ${journey.curated ? 'yes' : 'no'} |
 | External generator required | ${plan.design_intelligence.external_generator_required} |
@@ -453,6 +477,10 @@ ${(journey.next_commands ?? []).map((command) => `- Next: \`${command}\``).join(
 - Conflict policy: ${plan.uiux_intake?.conflict_policy ?? '-'}
 
 ${(plan.uiux_intake_coverage?.guidance ?? []).map((item) => `- Guidance: ${item}`).join('\n') || '- Guidance: ready'}
+
+## Style Preset
+
+${renderStylePresetMarkdown(plan.uiux_style_preset)}
 
 ## IA Flow Map
 
@@ -622,6 +650,9 @@ async function readDesignSystemBundle(repoRoot, bundlePath) {
 async function writeDerivedDesignSystemArtifacts(outDir, { storyId, productSemanticModel, derivedDesignSystem }) {
   await writeFile(path.join(outDir, 'product-semantic-model.json'), `${JSON.stringify(productSemanticModel, null, 2)}\n`);
   await writeFile(path.join(outDir, 'derived-design-system.json'), `${JSON.stringify(derivedDesignSystem, null, 2)}\n`);
+  if (derivedDesignSystem.style_preset) {
+    await writeFile(path.join(outDir, 'style-preset.json'), `${JSON.stringify(derivedDesignSystem.style_preset, null, 2)}\n`);
+  }
   await writeFile(path.join(outDir, 'component-role-map.json'), `${JSON.stringify(derivedDesignSystem.component_role_map, null, 2)}\n`);
   await writeFile(path.join(outDir, 'ds-gate.json'), `${JSON.stringify(buildDesignSystemGate({ storyId, derivedDesignSystem }), null, 2)}\n`);
   await writeFile(path.join(outDir, 'composition-guidelines.md'), renderCompositionGuidelines(derivedDesignSystem));
@@ -772,7 +803,7 @@ export function buildProductSemanticModel({ product, brief, routes, screens }) {
   };
 }
 
-export function buildDerivedDesignSystem({ product, semanticModel, screens, referenceDesignSystem }) {
+export function buildDerivedDesignSystem({ product, semanticModel, screens, referenceDesignSystem, stylePreset = null }) {
   const routeIntents = semanticModel.route_intents.map((item) => item.intent);
   const componentSamples = unique([
     ...screens.flatMap((screen) => screen.evidence.files.flatMap((file) => file.components)),
@@ -793,12 +824,20 @@ export function buildDerivedDesignSystem({ product, semanticModel, screens, refe
     foundations: {
       theme_order: ['color_ramps', 'typography', 'spacing', 'radii', 'motion', 'shadows'],
       token_dependency_order: ['raw_theme', 'semantic_tokens', 'recipes', 'component_roles', 'composition_rules'],
-      density_policy: semanticModel.primary_domain === 'hotel_discovery' ? 'mobile_dense_scannable' : 'preserve_current_density',
+      style_preset_id: stylePreset?.selected_preset?.id ?? null,
+      density_policy: stylePreset?.selected_preset?.density
+        ?? (semanticModel.primary_domain === 'hotel_discovery' ? 'mobile_dense_scannable' : 'preserve_current_density'),
+      layout_posture: stylePreset?.selected_preset?.layout_posture ?? 'preserve_current_product_layout',
+      color_posture: stylePreset?.selected_preset?.color_posture ?? 'semantic_tokens_first',
       typography_policy: semanticModel.language_policy === 'japanese_ui_first'
         ? 'compact_japanese_mobile_scale_with_tabular_numerals'
         : 'preserve_current_readability_scale',
-      motion_policy: ['snappy_utility_feedback', 'spatial_context_for_sheets_and_overlays', 'respect_reduced_motion']
+      typography_posture: stylePreset?.selected_preset?.typography_posture ?? 'preserve_current_readability_scale',
+      motion_policy: stylePreset?.selected_preset?.motion_posture
+        ? [stylePreset.selected_preset.motion_posture, 'respect_reduced_motion']
+        : ['snappy_utility_feedback', 'spatial_context_for_sheets_and_overlays', 'respect_reduced_motion']
     },
+    style_preset: stylePreset,
     semantic_tokens: {
       color_roles: colorRoles,
       state_semantics: ['loading', 'empty', 'error', 'selected', 'disabled', 'success', 'available', 'limited', 'unavailable'],
@@ -1054,6 +1093,10 @@ export function buildDesignSystemGate({ storyId, derivedDesignSystem }) {
       {
         id: 'DS-GATE-VISUAL-HYPOTHESIS',
         statement: 'Image generation is treated as candidate evidence with critique notes, never as implementation authority.'
+      },
+      {
+        id: 'DS-GATE-STYLE-PRESET-TOKEN-AUTHORITY',
+        statement: 'Product archetype style preset is guidance only; native tokens, component roles, Story, Spec, Architecture, route code, and gate evidence remain authoritative.'
       },
       {
         id: 'DS-GATE-ANTI-PATTERN',

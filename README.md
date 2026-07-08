@@ -459,7 +459,8 @@ npx vibepro design-system diff /path/to/repo \
 
 npx vibepro design-system validate /path/to/repo \
   --id <ds-id> \
-  --story-id <story-id>
+  --story-id <story-id> \
+  --base origin/main
 
 npx vibepro design-ssot init /path/to/repo \
   --id <root-id> \
@@ -502,7 +503,7 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-system export-design-md` writes and prints `.vibepro/design-system/<ds-id>/DESIGN.md` from the current native DS. `design-system lint` validates DESIGN.md structure, token references, section order, contrast, prose intent, and Do/Don't coverage. `design-system diff` compares the current DESIGN.md artifact with a selected git base ref and reports token, section, and lint regressions.
 
-`design-system validate` checks the native DS against a selected Story/Spec/Architecture context before implementation. It writes `.vibepro/design-system/<ds-id>/validation/<story-id>.json` and `.md`, and explicitly reports DS drift, CTA priority, state semantics, component roles, navigation/density policy, Story alignment, and likely secret leakage.
+`design-system validate` checks the native DS against a selected Story/Spec/Architecture context before implementation. It writes `.vibepro/design-system/<ds-id>/validation/<story-id>.json` and `.md`, and explicitly reports DS drift, CTA priority, state semantics, component roles, navigation/density policy, style-token drift for changed UI files when `--base` is provided, Story alignment, and likely secret leakage.
 
 `design-ssot` is for design document lineage, not visual design authority. It stores durable root/child relationships in repo-committed registry files such as `design-ssot.json` or `docs/design-ssot/*.json`, then writes generated reconciliation evidence under `.vibepro/design-ssot/` and `.vibepro/pr/<story-id>/design-ssot-reconciliation.json`. `pr prepare` projects this as `gate:design_ssot_reconciliation` between path/surface discovery and Responsibility Authority, so root-only changes, missing required children, frontmatter gaps, stale root hash bindings, and deterministic ADR supersession conflicts are visible before PR creation.
 

@@ -982,6 +982,8 @@ test('uiux intake template and validate writes story-scoped coverage', async () 
   assert.equal(template.exitCode, 0);
   assert.equal(template.result.coverage.status, 'needs_intake_detail');
   assert.equal(template.result.coverage.summary.missing, 18);
+  assert.equal(template.result.coverage.style_preset.selected_preset.id, 'operator_developer_cockpit');
+  assert.equal(template.result.coverage.style_preset.selection.status, 'inferred');
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake.md')), true);
 
@@ -1003,8 +1005,81 @@ test('uiux intake template and validate writes story-scoped coverage', async () 
   assert.equal(validate.result.coverage.status, 'ready_for_design');
   assert.equal(validate.result.coverage.summary.explicit, 18);
   assert.equal(validate.result.coverage.summary.missing, 0);
+  assert.equal(validate.result.coverage.style_preset.selected_preset.id, 'operator_developer_cockpit');
   const coverage = await readJson(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake-coverage.json'));
   assert.equal(coverage.authority_boundary.conflict_policy, 'current_route_code_and_verified_contracts_win_over_intake_text');
+});
+
+test('UIST-S-1 UIST-S-4 UI/UX intake and modernize plan record bounded style preset selection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+    export default function Page() {
+      return <main><button>Review evidence</button><p>Operator cockpit dashboard</p></main>;
+    }
+  `);
+
+  const template = await runCli([
+    'uiux',
+    'intake',
+    'template',
+    repo,
+    '--id',
+    'story-style-preset',
+    '--route',
+    '/',
+    '--json'
+  ]);
+  assert.equal(template.exitCode, 0);
+  assert.equal(template.result.coverage.style_preset.selected_preset.id, 'operator_developer_cockpit');
+
+  const intakePath = path.join(repo, '.vibepro', 'uiux', 'story-style-preset', 'uiux-intake.json');
+  const intake = fillUiuxIntake(await readJson(intakePath));
+  intake.style_preset = {
+    status: 'explicit',
+    preset_id: 'b2b_saas',
+    confidence: 0.91,
+    rationale: 'Workspace customers use dashboard and account settings flows.',
+    evidence: ['test-fixture:workspace-saas']
+  };
+  await writeJson(intakePath, intake);
+
+  const validate = await runCli([
+    'uiux',
+    'intake',
+    'validate',
+    repo,
+    '--id',
+    'story-style-preset',
+    '--brief',
+    'Workspace B2B SaaS dashboard',
+    '--json'
+  ]);
+  assert.equal(validate.exitCode, 0);
+  assert.equal(validate.result.coverage.style_preset.selected_preset.id, 'b2b_saas');
+  assert.equal(validate.result.coverage.style_preset.selection.status, 'explicit');
+  assert.equal(validate.result.coverage.style_preset.authority_boundary.token_authority, 'native_design_system_tokens_and_component_roles');
+
+  const plan = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-style-preset',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'Workspace B2B SaaS dashboard',
+    '--json'
+  ]);
+  assert.equal(plan.exitCode, 0);
+  assert.equal(plan.result.plan.uiux_style_preset.selected_preset.id, 'b2b_saas');
+  assert.equal(plan.result.plan.derived_design_system.foundations.style_preset_id, 'b2b_saas');
+  assert.ok(plan.result.plan.design_intelligence.reference_sources.includes('product_archetype_style_preset_guidance'));
+  assert.ok(plan.result.plan.derived_design_system.style_preset.authority_boundary.conflict_policy.includes('never_overrides'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-style-preset', 'style-preset.json')), true);
 });
 
 test('design-modernize plan writes UI/UX intake coverage and flags vague-only briefs', async () => {
@@ -1513,12 +1588,14 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(nativeDesignSystem.result.result.source_evidence.graphify.status, 'available');
   assert.equal(nativeDesignSystem.result.result.source_evidence.graphify.edge_count, 2);
   assert.equal(nativeDesignSystem.result.result.product_semantics.primary_domain, 'hotel_discovery');
+  assert.equal(nativeDesignSystem.result.result.style_preset.selected_preset.id, 'mobile_discovery');
   assert.equal(nativeDesignSystem.result.result.screen_patterns.patterns.length, 2);
   assert.ok(nativeDesignSystem.result.result.semantic_tokens.color_roles.some((role) => role.name === 'availability_positive'));
   assert.ok(nativeDesignSystem.result.result.component_roles.roles.some((role) => role.name === 'AIPhoneCTA'));
   assert.equal(nativeDesignSystem.result.result.ds_gate.fallback_allowed, false);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'design-system.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'product-semantics.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'style-preset.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'theme-tokens.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'semantic-tokens.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'component-roles.json')), true);
@@ -1596,6 +1673,8 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STATE-SEMANTICS').status, 'pass');
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-COMPONENT-ROLES').status, 'pass');
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-NAV-DENSITY').status, 'pass');
+  assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STYLE-PRESET-COVERAGE').status, 'pass');
+  assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STYLE-TOKEN-DRIFT').status, 'pass');
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN').status, 'pass');
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.md')), true);
@@ -1789,6 +1868,111 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(capture.result.result.status, 'needs_setup');
   assert.match(capture.result.result.setup.next_commands[0], /base-url/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'screen-capture.json')), true);
+});
+
+test('UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+    import '../components/button.css';
+
+    export default function Page() {
+      return <main><button className="vp-button">Review gate evidence</button></main>;
+    }
+  `);
+  await writeFile(path.join(repo, 'src', 'components', 'button.css'), `
+    :root {
+      --vp-color-action: #2563eb;
+      --vp-space-2: 8px;
+      --vp-radius-sm: 4px;
+    }
+    .vp-button {
+      color: var(--vp-color-action);
+      padding: var(--vp-space-2);
+      border-radius: var(--vp-radius-sm);
+    }
+  `);
+
+  const derived = await runCli([
+    'design-system',
+    'derive',
+    repo,
+    '--id',
+    'workspace',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'Internal operator dashboard for gate evidence review',
+    '--json'
+  ]);
+  assert.equal(derived.exitCode, 0);
+  assert.equal(derived.result.result.style_preset.selected_preset.id, 'operator_developer_cockpit');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: derive workspace design system']);
+
+  await writeFile(path.join(repo, 'src', 'components', 'button.css'), `
+    /* Regression guard: issue references like #117/#118 in changed files are not color drift. */
+    .vp-button {
+      color: #ff00aa;
+      padding: 7px;
+      border-radius: 19px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+    }
+  `);
+  await git(repo, ['add', 'src/components/button.css']);
+  await git(repo, ['commit', '-m', 'feat: add direct button styles']);
+
+  const validation = await runCli([
+    'design-system',
+    'validate',
+    repo,
+    '--id',
+    'workspace',
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+
+  assert.equal(validation.exitCode, 0);
+  const stylePresetFinding = validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STYLE-PRESET-COVERAGE');
+  const driftFinding = validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STYLE-TOKEN-DRIFT');
+  assert.equal(stylePresetFinding.status, 'pass');
+  assert.equal(driftFinding.status, 'needs_review');
+  assert.equal(validation.result.result.style_token_drift.changed_files.includes('src/components/button.css'), true);
+  assert.equal(validation.result.result.style_token_drift.drift.some((item) => item.value === '#117' || item.value === '#118'), false);
+  assert.ok(validation.result.result.style_token_drift.drift.some((item) => item.category === 'color' && item.value === '#ff00aa'));
+  assert.ok(validation.result.result.style_token_drift.drift.some((item) => item.category === 'radius' && item.value === '19px'));
+  assert.ok(validation.result.result.style_token_drift.drift.some((item) => item.category === 'spacing' && item.value === '7px'));
+  assert.ok(validation.result.result.style_token_drift.drift.some((item) => item.category === 'shadow'));
+
+  const designSystem = await readJson(path.join(repo, '.vibepro', 'design-system', 'workspace', 'design-system.json'));
+  designSystem.style_preset = {
+    selection: {
+      status: 'not_applicable',
+      rationale: 'Command-line package has no rendered product UI in this story.',
+      evidence: ['story-pr-prepare:non-web-surface']
+    }
+  };
+  await writeJson(path.join(repo, '.vibepro', 'design-system', 'workspace', 'design-system.json'), designSystem);
+  const notApplicable = await runCli([
+    'design-system',
+    'validate',
+    repo,
+    '--id',
+    'workspace',
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(notApplicable.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STYLE-PRESET-COVERAGE').status, 'pass');
+  assert.equal(notApplicable.result.result.style_token_drift.status, 'not_applicable');
 });
 
 test('init fails explicitly instead of masking corrupt VibePro config', async () => {
