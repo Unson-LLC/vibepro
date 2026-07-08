@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is sufficient on final HEAD ade65272 after recording design-system validate --base origin/main as strict-head verification evidence; subagent finding gate-evidence-ds-validate-not-head-bound is resolved.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-ds-validate-not-head-bound",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/verification-evidence.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Subagent inspected review request, current HEAD/clean state, story/spec/spec JSON/architecture, implementation, tests, verification evidence, design-system validation artifact, evidence reuse, pr-prepare, and review summary; after remediation it confirmed DS validate is strict-head-bound in verification-evidence.json and gate_evidence can pass.",
+    "evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40d4-5790-7110-94ec-966b691f4553.md",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-uiux-style-preset-token-gate.md",
+      "docs/specs/story-vibepro-uiux-style-preset-token-gate.md",
+      "docs/specs/story-vibepro-uiux-style-preset-token-gate.spec.json",
+      "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md",
+      "src/uiux-style-presets.js",
+      "src/uiux-intake.js",
+      "src/design-modernize.js",
+      "src/design-system.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/verification-evidence.json",
+      ".vibepro/design-system/story-vibepro-uiux-style-preset-token-gate/validation/story-vibepro-uiux-style-preset-token-gate.json",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial: needs_changes because DS validate pass artifact was not represented in strict-head verification evidence -> final: pass because DS validate was rerun and recorded with git_context.head_sha=ade65272, dirty=false, content_binding.status=strict_head, style_token_drift.status=pass, and drift_count=0"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "expected_root": null,
+    "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+    "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "expected_root": null,
+      "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+      "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T08:31:36.183Z",
+  "git_context": {
+    "head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+    "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T08:31:36.182Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "d11e0887d96cd7e68b2b429368fa391424a1f95d30ad4521d508ad1fa4560a3e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f40d4-5790-7110-94ec-966b691f4553",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40d4-5790-7110-94ec-966b691f4553.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40d4-5790-7110-94ec-966b691f4553.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

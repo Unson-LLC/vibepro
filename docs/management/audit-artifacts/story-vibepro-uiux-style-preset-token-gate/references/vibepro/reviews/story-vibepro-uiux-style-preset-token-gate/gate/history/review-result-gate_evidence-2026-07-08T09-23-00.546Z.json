@@ -1,0 +1,113 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is current-head bound for HEAD 2894fb6b8702; verification commands and DS validation artifacts are strict-head/current, with no gate_evidence blocker found.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request/dispatch, HEAD/status, pr prepare blocking-gates, verification-evidence strict bindings, DS validate style-token artifact, review summary, evidence reuse status, and diff/code/tests for the style preset token gate.",
+    "evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-DF00AE7B-C4EA-41C4-9C09-C37D5899166A.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/review-request-gate_evidence.md",
+      ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/parallel-dispatch.md",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/evidence-reuse.json",
+      ".vibepro/design-system/story-vibepro-uiux-style-preset-token-gate/validation/story-vibepro-uiux-style-preset-token-gate.json",
+      "src/uiux-style-presets.js",
+      "src/design-system.js",
+      "src/design-modernize.js",
+      "src/uiux-intake.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: needs_review because previous gate_evidence review was strict-head-bound to ade65272 and artifact_consistency reported stale evidence -> final: pass because this current review lifecycle, verification-evidence commands, and DS validate artifact are bound to 2894fb6b8702 with dirty=false and no contradictory evidence was found"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "expected_root": null,
+    "expected_head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+    "current_head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "expected_root": null,
+      "expected_head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+      "current_head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T09:23:00.546Z",
+  "git_context": {
+    "head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+    "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T09:23:00.545Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "16c5ad16901bdfd6de86dc4e392d33215e5bbd08bb3d64a0048db3df4d8938df",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "DF00AE7B-C4EA-41C4-9C09-C37D5899166A",
+    "agent_role": null,
+    "model": "gpt-5-codex",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-DF00AE7B-C4EA-41C4-9C09-C37D5899166A.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-DF00AE7B-C4EA-41C4-9C09-C37D5899166A.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

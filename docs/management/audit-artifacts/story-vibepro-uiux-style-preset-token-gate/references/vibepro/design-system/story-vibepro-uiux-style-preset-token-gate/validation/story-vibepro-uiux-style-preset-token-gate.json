@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "design-system-validation",
+  "design_system_id": "story-vibepro-uiux-style-preset-token-gate",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "generated_at": "2026-07-08T09:00:08.545Z",
+  "output": {
+    "language": "ja"
+  },
+  "authority": {
+    "design_system": "vibepro_native_design_system",
+    "implementation": "current code, Story, Spec, Architecture, and VibePro gates remain authoritative",
+    "generated_visuals": "reference_only"
+  },
+  "story_context": {
+    "story_id": "story-vibepro-uiux-style-preset-token-gate",
+    "sources": [
+      {
+        "path": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md",
+        "kind": "architecture"
+      }
+    ],
+    "ui_signal": true,
+    "design_system_signal": true,
+    "cta_signal": false,
+    "state_signal": false,
+    "navigation_signal": true,
+    "density_signal": true
+  },
+  "style_token_drift": {
+    "schema_version": "0.1.0",
+    "base": "origin/main",
+    "status": "pass",
+    "changed_files": [
+      "src/cli.js",
+      "src/design-modernize.js",
+      "src/design-system.js",
+      "src/uiux-intake.js",
+      "src/uiux-style-presets.js"
+    ],
+    "changed_file_source": "git_diff:origin/main",
+    "drift_count": 0,
+    "drift": [],
+    "findings": [
+      {
+        "id": "DS-VALIDATE-STYLE-PRESET-COVERAGE",
+        "status": "pass",
+        "summary": "Style preset operator_developer_cockpit is recorded as inferred.",
+        "release_blocking": false
+      },
+      {
+        "id": "DS-VALIDATE-STYLE-TOKEN-DRIFT",
+        "status": "pass",
+        "summary": "5 changed UI/style file(s) checked with no one-off style drift.",
+        "drift": [],
+        "release_blocking": false
+      }
+    ]
+  },
+  "summary": {
+    "status": "pass",
+    "pass": 11,
+    "needs_review": 0,
+    "needs_evidence": 0,
+    "block": 0
+  },
+  "findings": [
+    {
+      "id": "DS-VALIDATE-DRIFT",
+      "status": "pass",
+      "summary": "Design System authority is VibePro-native.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-CTA-PRIORITY",
+      "status": "pass",
+      "summary": "1 CTA hierarchy item(s) are defined.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STATE-SEMANTICS",
+      "status": "pass",
+      "summary": "9 state semantic rule(s) are defined.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-COMPONENT-ROLES",
+      "status": "pass",
+      "summary": "5 component role(s) are defined.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-NAV-DENSITY",
+      "status": "pass",
+      "summary": "Navigation and density policies are both defined.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STORY-CONTEXT",
+      "status": "pass",
+      "summary": "1 Story/Spec/Architecture source(s) found.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STORY-UI-SIGNAL",
+      "status": "pass",
+      "summary": "Story context contains UI/Design System signals.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STORY-DS-ALIGNMENT",
+      "status": "pass",
+      "summary": "Story signals are covered by Design System sections.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STYLE-PRESET-COVERAGE",
+      "status": "pass",
+      "summary": "Style preset operator_developer_cockpit is recorded as inferred.",
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-STYLE-TOKEN-DRIFT",
+      "status": "pass",
+      "summary": "5 changed UI/style file(s) checked with no one-off style drift.",
+      "drift": [],
+      "release_blocking": false
+    },
+    {
+      "id": "DS-VALIDATE-SECRET-SCAN",
+      "status": "pass",
+      "summary": "No likely secret material detected in DS artifacts.",
+      "release_blocking": false
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "updated_at": "2026-07-08T08:54:15.041Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "expected_root": null,
+      "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+      "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783500855041-b322baf6",
+      "story_id": "story-vibepro-uiux-style-preset-token-gate",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_security_boundary",
+      "source_status": "block",
+      "summary": "Waive security-boundary blocker as a false-positive axis activation for this UI/UX style preset gate change.",
+      "reason": "The changed files do not alter auth, permission, secret handling, sandboxing, path access, network access, or trust boundaries. The security axis was activated by broad docs/spec path signals, while the actual implementation surface is style preset selection, design-system artifact writing, and style-token drift validation. Current HEAD evidence covers the real failure modes through DS validate style-token drift/no-drift checks and broad regression; no security-boundary negative path is applicable to this diff.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "expected_root": null,
+          "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T08:54:15.040Z"
+      },
+      "recorded_at": "2026-07-08T08:54:15.041Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783500797569-5d1d26ec",
+      "story_id": "story-vibepro-uiux-style-preset-token-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT lineage review accepted for this story-local doc set.",
+      "reason": "The unregistered design docs are the story-local Story, Spec, Architecture, and design-system validate spec update introduced by this PR. They are internally linked through story_id/story docs and reviewed as the canonical story-local design lineage for this change; no existing design root was modified or contradicted.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "expected_root": null,
+          "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T08:53:17.569Z"
+      },
+      "recorded_at": "2026-07-08T08:53:17.570Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783500789222-bcd8be0c",
+      "story_id": "story-vibepro-uiux-style-preset-token-gate",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:judgment_axis_security_boundary",
+      "source_status": "block",
+      "summary": "Security-boundary axis is a false positive for this change.",
+      "reason": "The diff adds UI/UX style preset resolution, design-system artifact generation, style-token drift validation, CLI help/option wiring, docs, and tests. It does not alter auth, permission, secret handling, sandbox, path access, network, or trust boundary behavior. Negative-path coverage is represented by style-token drift/no-drift tests and DS secret scan for the actual touched surface, not by security-boundary tests.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "expected_root": null,
+          "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T08:53:09.221Z"
+      },
+      "recorded_at": "2026-07-08T08:53:09.222Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "waiver": 1,
+      "needs_review": 1,
+      "noise": 1
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+        "expected_root": null,
+        "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783500855041-b322baf6",
+      "story_id": "story-vibepro-uiux-style-preset-token-gate",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_security_boundary",
+      "source_status": "block",
+      "summary": "Waive security-boundary blocker as a false-positive axis activation for this UI/UX style preset gate change.",
+      "reason": "The changed files do not alter auth, permission, secret handling, sandboxing, path access, network access, or trust boundaries. The security axis was activated by broad docs/spec path signals, while the actual implementation surface is style preset selection, design-system artifact writing, and style-token drift validation. Current HEAD evidence covers the real failure modes through DS validate style-token drift/no-drift checks and broad regression; no security-boundary negative path is applicable to this diff.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+          "expected_root": null,
+          "expected_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "current_head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ade65272c3e694a27fc45927c862e897eb2729e5",
+        "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T08:54:15.040Z"
+      },
+      "recorded_at": "2026-07-08T08:54:15.041Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/decision-records.json"
+}

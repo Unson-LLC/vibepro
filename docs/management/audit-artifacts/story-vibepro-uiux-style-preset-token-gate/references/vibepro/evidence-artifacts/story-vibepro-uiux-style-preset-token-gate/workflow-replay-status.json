@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "head": "2894fb6b8702a6451d46acf70e164723be088170",
+  "base": "origin/main",
+  "flow_replay": "pass",
+  "artifact_replay": "pass",
+  "scenario_clause_e2e": "pass",
+  "design_ssot_reconcile": "pass",
+  "typecheck": "pass",
+  "focused_tests": "pass",
+  "broad_regression": "pass"
+}

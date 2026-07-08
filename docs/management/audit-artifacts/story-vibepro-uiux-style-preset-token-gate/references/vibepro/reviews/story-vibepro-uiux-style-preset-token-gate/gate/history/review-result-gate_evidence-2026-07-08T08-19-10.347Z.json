@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence passed after resolving subagent concern with current design-system validate --base and pr prepare gate-evidence artifacts.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected story, spec, architecture, implementation, tests, verification evidence, design-system validate output, and pr prepare gate-evidence output.",
+    "evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40c9-b939-7033-8dbb-2378e616891a.md",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-uiux-style-preset-token-gate.md",
+      "docs/specs/story-vibepro-uiux-style-preset-token-gate.md",
+      "docs/specs/story-vibepro-uiux-style-preset-token-gate.spec.json",
+      "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md",
+      "src/uiux-style-presets.js",
+      "src/uiux-intake.js",
+      "src/design-modernize.js",
+      "src/design-system.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-uiux-style-preset-token-gate/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial: concern due missing PR gate artifacts -> final: pass because current design-system validate --base passed and pr prepare gate-evidence artifacts were generated"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+    "expected_root": null,
+    "expected_head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+    "current_head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-style-preset-token-gate",
+      "expected_root": null,
+      "expected_head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+      "current_head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T08:19:10.347Z",
+  "git_context": {
+    "head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+    "current_branch": "codex/vibepro-uiux-style-preset-token-gate",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "bc5a13bc72db85500f75811d2b6c1ee4547756081c3541ee24badffcf0feb0bc",
+    "user_status_fingerprint_hash": "bc5a13bc72db85500f75811d2b6c1ee4547756081c3541ee24badffcf0feb0bc",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T08:19:10.345Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "5ca5b016fe914ff1becc8cbe9ef353e47494880d",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4d4a1c1383c16737f18493375385af191587f2006f2ee450c510d670e5233f64",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f40c9-b939-7033-8dbb-2378e616891a",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40c9-b939-7033-8dbb-2378e616891a.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-uiux-style-preset-token-gate/gate/gate-evidence-subagent-019f40c9-b939-7033-8dbb-2378e616891a.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
