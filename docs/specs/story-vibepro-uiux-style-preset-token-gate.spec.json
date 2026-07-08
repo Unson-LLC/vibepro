@@ -1,0 +1,106 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-style-preset-token-gate",
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Style preset to token compliance flow",
+      "mermaid": "flowchart LR\n  Intake[UI/UX intake] --> Preset[Style preset resolver]\n  Story[Story and brief] --> Preset\n  Routes[Route evidence] --> Preset\n  Preset --> Plan[design-modernize plan]\n  Preset --> DerivedDS[Derived Design System]\n  DerivedDS --> Gate[DS gate]\n  ChangedUI[Changed UI/style files] --> Validate[design-system validate]\n  Tokens[Native DS tokens] --> Validate\n  Validate --> Drift[style-token drift findings]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "Preset authority and style drift controls",
+      "mermaid": "flowchart LR\n  Preset[Preset guidance] --> Boundary[Authority boundary]\n  Boundary --> Tokens[Native DS tokens]\n  Boundary --> Components[Component roles]\n  OneOff[One-off style literals] --> DriftGate[Style-token drift gate]\n  DriftGate --> Review[needs_review]\n  NotApplicable[not_applicable] --> Evidence[Rationale and evidence]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "UIST-S-1",
+      "type": "scenario",
+      "statement": "UI/UX intake and design-modernize plan record selected style preset with evidence and confidence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md" }],
+        "code_refs": [
+          { "file": "src/uiux-intake.js", "anchor": "style_preset" },
+          { "file": "src/design-modernize.js", "anchor": "uiux_style_preset" },
+          { "file": "src/uiux-style-presets.js", "anchor": "resolveUiuxStylePreset" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIST-S-1 UIST-S-4 UI/UX intake and modernize plan record bounded style preset selection" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-style-presets.js", "must_contain": "resolveUiuxStylePreset" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIST-S-1" }]
+      }
+    },
+    {
+      "id": "UIST-S-2",
+      "type": "invariant",
+      "statement": "Presets are guidance only and never override native DS, Story, Spec, Architecture, route code, or gate evidence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md" }],
+        "code_refs": [{ "file": "src/uiux-style-presets.js", "anchor": "authority_boundary" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-style-presets.js", "must_contain": "style_preset_guidance_never_overrides" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIST-S-2" }]
+      }
+    },
+    {
+      "id": "UIST-S-3",
+      "type": "contract",
+      "statement": "design-system validate reports changed UI/style one-off color, typography, radius, shadow, or spacing values as style-token drift.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md" }],
+        "code_refs": [
+          { "file": "src/design-system.js", "anchor": "validateStylePresetTokenDrift" },
+          { "file": "src/cli.js", "anchor": "--base" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/design-system.js", "must_contain": "DS-VALIDATE-STYLE-TOKEN-DRIFT" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIST-S-3" }]
+      }
+    },
+    {
+      "id": "UIST-S-4",
+      "type": "invariant",
+      "statement": "Default product archetype is operator/developer cockpit, not marketing landing page.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md" }],
+        "code_refs": [{ "file": "src/uiux-style-presets.js", "anchor": "DEFAULT_STYLE_PRESET_ID" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIST-S-1 UIST-S-4 UI/UX intake and modernize plan record bounded style preset selection" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-style-presets.js", "must_contain": "operator_developer_cockpit" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIST-S-4" }]
+      }
+    },
+    {
+      "id": "UIST-S-5",
+      "type": "scenario",
+      "statement": "Non-web or low-style repos can mark style preset coverage not_applicable only with explicit rationale and evidence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-style-preset-token-gate.md" }],
+        "code_refs": [{ "file": "src/design-system.js", "anchor": "not_applicable" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIST-S-2 UIST-S-3 UIST-S-5 design-system validate reports style token drift from changed UI files" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/design-system.js", "must_contain": "style preset coverage is explicitly not_applicable" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIST-S-5" }]
+      }
+    }
+  ],
+  "open_questions": []
+}

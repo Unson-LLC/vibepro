@@ -313,9 +313,9 @@ Existing UI modernization:
       Lint DESIGN.md structure, token references, prose intent, Do/Don'ts, and contrast.
   vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
       Compare the current DESIGN.md artifact with the selected git base ref.
-  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
+  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id> [--base <base-ref>]
       Validate DS drift, CTA priority, state semantics, component roles,
-      navigation/density policy, and secret leakage before UI implementation.
+      navigation/density policy, style-token drift, and secret leakage before UI implementation.
   Review .vibepro/design-system/<ds-id>/evidence-coverage.json and ds-gate.json,
   then use design-modernize derive-system or plan for screen-level work. Generated
   visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
@@ -372,7 +372,7 @@ Usage:
   vibepro design-system export-design-md [repo] --id <ds-id> [--json]
   vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
   vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
-  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
+  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--base <base-ref>] [--json]
   vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
   vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
   vibepro design-ssot status [repo] [--id <root-id>] [--json]
@@ -528,9 +528,9 @@ base branch:
       DESIGN.mdの構造、token reference、prose intent、Do/Don't、contrastを検査します。
   vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
       current DESIGN.md artifactをgit base ref上のartifactと比較します。
-  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
+  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id> [--base <base-ref>]
       DS drift、CTA優先度、状態意味、component role、navigation/density、secret混入を
-      Story/Spec/Architecture文脈に対して検証します。
+      Story/Spec/Architecture文脈に対して検証し、base指定時は変更UIファイルのstyle-token driftも検出します。
   .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
   その後に design-modernize derive-system または plan で画面別作業へ進みます。
   生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
@@ -590,7 +590,7 @@ Usage:
   vibepro design-system export-design-md [repo] --id <ds-id> [--json]
   vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
   vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
-  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
+  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--base <base-ref>] [--json]
   vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
   vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
   vibepro design-ssot status [repo] [--id <root-id>] [--json]
@@ -1117,6 +1117,7 @@ export async function runCli(argv, io = {}) {
           id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           storyId: getOption(rest, '--story-id') ?? getOption(rest, '--story'),
+          base: getOption(rest, '--base'),
           language
         });
         write(stdout, hasFlag(rest, '--json')

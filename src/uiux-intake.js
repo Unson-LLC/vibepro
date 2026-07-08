@@ -1,6 +1,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import {
+  DEFAULT_STYLE_PRESET_ID,
+  listUiuxStylePresets,
+  renderStylePresetMarkdown,
+  resolveUiuxStylePreset
+} from './uiux-style-presets.js';
+
 const INTAKE_SCHEMA_VERSION = '0.1.0';
 const STATUS_EXPLICIT = 'explicit';
 const STATUS_INFERRED = 'inferred';
@@ -98,6 +105,7 @@ export async function resolveUiuxIntakeForPlan(repoRoot, options = {}) {
 
 export function buildUiuxIntakeCoverage({ storyId, intake, brief, routes = [], sourcePath = null, missingArtifact = false }) {
   const normalized = normalizeIntakeFields(intake);
+  const stylePreset = resolveUiuxStylePreset({ intake, brief, routes });
   const fields = UIUX_INTAKE_FIELDS.map((definition) => {
     const field = normalized.get(definition.id);
     const status = normalizeFieldStatus(field, { missingArtifact });
@@ -139,6 +147,7 @@ export function buildUiuxIntakeCoverage({ storyId, intake, brief, routes = [], s
     },
     authority_boundary: buildAuthorityBoundary(),
     summary,
+    style_preset: stylePreset,
     brief: brief ? {
       status: vagueBrief.detected ? 'vague_only' : 'available',
       needs_intake_detail: vagueBrief.detected,
@@ -163,11 +172,17 @@ export function renderUiuxIntakeCoverageSummary({ outDir, coverage }) {
 | Inferred | ${coverage.summary.inferred} |
 | Missing | ${coverage.summary.missing} |
 | Not applicable | ${coverage.summary.not_applicable} |
+| Style preset | ${coverage.style_preset?.selected_preset?.id ?? coverage.style_preset?.selection?.status ?? 'missing'} |
+| Style preset confidence | ${coverage.style_preset?.selection?.confidence ?? '-'} |
 | Output | ${outDir} |
 
 ## Missing Required Fields
 
 ${coverage.missing_required_fields.length === 0 ? '- none' : coverage.missing_required_fields.map((field) => `- ${field}`).join('\n')}
+
+## Style Preset
+
+${renderStylePresetMarkdown(coverage.style_preset)}
 
 ## Guidance
 
@@ -182,6 +197,7 @@ export function renderUiuxIntakeTemplateSummary({ outDir, intake, coverage }) {
 |------|-------|
 | Story | ${intake.story_id} |
 | Fields | ${Object.keys(intake.fields).length} |
+| Default style preset | ${intake.style_preset?.preset_id ?? '-'} |
 | Coverage status | ${coverage.status} |
 | Output | ${outDir} |
 
@@ -193,6 +209,17 @@ export function renderUiuxIntakeTemplate(intake) {
   return `# ${intake.story_id} UI/UX Intake
 
 This artifact captures structured UI/UX direction. It is reference input only; current code, route evidence, screenshots, and VibePro specs remain authoritative when conflicts appear.
+
+## Style Preset
+
+- Field: \`style_preset\`
+- Status: ${intake.style_preset.status}
+- Preset: ${intake.style_preset.preset_id}
+- Confidence: ${intake.style_preset.confidence}
+- Rationale: ${intake.style_preset.rationale}
+- Evidence: ${(intake.style_preset.evidence ?? []).join(', ')}
+- Supported presets: ${listUiuxStylePresets().map((preset) => preset.id).join(', ')}
+- Note: preset guidance is bounded by native Design System tokens and component roles.
 
 ${UIUX_INTAKE_FIELDS.map((field) => {
   const value = intake.fields[field.id];
@@ -218,6 +245,14 @@ function buildTemplateIntake({ storyId, routes }) {
     authority: 'reference_only_uiux_intake',
     authority_boundary: buildAuthorityBoundary(),
     routes,
+    style_preset: {
+      status: STATUS_INFERRED,
+      preset_id: DEFAULT_STYLE_PRESET_ID,
+      confidence: 0.55,
+      rationale: 'Default VibePro archetype is operator/developer cockpit unless structured product evidence selects another preset.',
+      evidence: ['default_archetype_policy'],
+      supported_presets: listUiuxStylePresets().map((preset) => preset.id)
+    },
     fields: Object.fromEntries(UIUX_INTAKE_FIELDS.map((field) => [
       field.id,
       {

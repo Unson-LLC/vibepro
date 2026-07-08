@@ -13,6 +13,7 @@ import {
 } from './design-modernize.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { localizedText } from './language.js';
+import { resolveUiuxStylePreset } from './uiux-style-presets.js';
 
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -41,11 +42,18 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
     routes,
     screens
   });
+  const stylePreset = resolveUiuxStylePreset({
+    brief: options.brief,
+    routes,
+    product,
+    semanticModel: productSemantics
+  });
   const derivedDesignSystem = buildDerivedDesignSystem({
     product,
     semanticModel: productSemantics,
     screens,
-    referenceDesignSystem: { status: 'not_provided', title: product }
+    referenceDesignSystem: { status: 'not_provided', title: product },
+    stylePreset
   });
   const styleEvidence = await collectStyleEvidence(root);
   const sourceEvidence = await collectSourceEvidence(root);
@@ -91,6 +99,7 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
     },
     visual_foundations: visualFoundations,
     product_semantics: productSemantics,
+    style_preset: stylePreset,
     theme_tokens: styleEvidence.theme_tokens,
     semantic_tokens: semanticTokens,
     component_roles: derivedDesignSystem.component_role_map,
@@ -492,9 +501,14 @@ export async function validateDesignSystem(repoRoot, options = {}) {
 
   const storyContext = await collectDesignValidationStoryContext(root, storyId);
   const artifactTexts = await readDesignSystemArtifactTexts(outDir);
+  const styleTokenDrift = await validateStylePresetTokenDrift(root, {
+    designSystem,
+    base: options.base
+  });
   const findings = [
     ...validateDesignSystemShape(designSystem),
     ...validateDesignSystemStoryDrift({ designSystem, storyContext }),
+    ...styleTokenDrift.findings,
     ...validateSecretLeakage(artifactTexts)
   ];
   const result = {
@@ -510,6 +524,7 @@ export async function validateDesignSystem(repoRoot, options = {}) {
       generated_visuals: 'reference_only'
     },
     story_context: storyContext,
+    style_token_drift: styleTokenDrift,
     summary: summarizeValidationStatus(findings),
     findings
   };
@@ -640,6 +655,10 @@ function createEmptyDesignSystem({ designSystemId, product, language }) {
       current_ui_code: [],
       style_files: []
     },
+    style_preset: resolveUiuxStylePreset({
+      product,
+      brief: 'VibePro scaffold defaults to operator/developer cockpit until evidence marks another product archetype or not_applicable.'
+    }),
     product_semantics: {
       schema_version: '0.1.0',
       product,
@@ -799,6 +818,7 @@ async function writeDesignSystemArtifacts(outDir, designSystem) {
   const artifacts = {
     'design-system.json': designSystem,
     'product-semantics.json': designSystem.product_semantics,
+    'style-preset.json': designSystem.style_preset,
     'theme-tokens.json': designSystem.theme_tokens,
     'semantic-tokens.json': designSystem.semantic_tokens,
     'component-roles.json': designSystem.component_roles,
@@ -2498,6 +2518,148 @@ function validateDesignSystemStoryDrift({ designSystem, storyContext }) {
   return findings;
 }
 
+async function validateStylePresetTokenDrift(root, { designSystem, base }) {
+  const stylePreset = designSystem.style_preset ?? resolveUiuxStylePreset({ designSystem });
+  if (stylePreset?.selection?.status === 'not_applicable') {
+    const evidence = stylePreset.selection.evidence ?? [];
+    const hasRationale = Boolean(stylePreset.selection.rationale);
+    return {
+      schema_version: '0.1.0',
+      base: base ?? null,
+      status: hasRationale && evidence.length > 0 ? 'not_applicable' : 'needs_evidence',
+      changed_files: [],
+      drift_count: 0,
+      findings: [
+        validationFinding({
+          id: 'DS-VALIDATE-STYLE-PRESET-COVERAGE',
+          status: hasRationale && evidence.length > 0 ? 'pass' : 'needs_evidence',
+          summary: hasRationale && evidence.length > 0
+            ? 'Style preset coverage is explicitly not_applicable with rationale and evidence.'
+            : 'Style preset not_applicable requires explicit rationale and evidence.'
+        })
+      ],
+      drift: []
+    };
+  }
+
+  const changedFiles = await collectChangedUiStyleFiles(root, base);
+  const allowed = collectAllowedStyleLiterals(designSystem);
+  const drift = [];
+  for (const file of changedFiles.files) {
+    const content = await readFile(path.join(root, file), 'utf8').catch(() => '');
+    const lines = content.split(/\r?\n/);
+    lines.forEach((line, index) => {
+      for (const item of collectLineStyleDrift(line, allowed)) {
+        drift.push({
+          file,
+          line: index + 1,
+          category: item.category,
+          value: item.value,
+          property: item.property
+        });
+      }
+    });
+  }
+  const presetStatus = stylePreset?.selected_preset?.id ? 'pass' : 'needs_evidence';
+  const driftStatus = drift.length > 0 ? 'needs_review' : 'pass';
+  return {
+    schema_version: '0.1.0',
+    base: base ?? null,
+    status: presetStatus === 'needs_evidence' ? 'needs_evidence' : driftStatus,
+    changed_files: changedFiles.files,
+    changed_file_source: changedFiles.source,
+    drift_count: drift.length,
+    drift: drift.slice(0, 120),
+    findings: [
+      validationFinding({
+        id: 'DS-VALIDATE-STYLE-PRESET-COVERAGE',
+        status: presetStatus,
+        summary: stylePreset?.selected_preset?.id
+          ? `Style preset ${stylePreset.selected_preset.id} is recorded as ${stylePreset.selection.status}.`
+          : 'Style preset coverage is missing.'
+      }),
+      validationFinding({
+        id: 'DS-VALIDATE-STYLE-TOKEN-DRIFT',
+        status: driftStatus,
+        summary: drift.length > 0
+          ? `${drift.length} changed one-off style value(s) bypass native token policy.`
+          : changedFiles.files.length > 0
+            ? `${changedFiles.files.length} changed UI/style file(s) checked with no one-off style drift.`
+            : `No changed UI/style files found${base ? ` from ${base}` : ''}.`,
+        drift: drift.slice(0, 20)
+      })
+    ]
+  };
+}
+
+async function collectChangedUiStyleFiles(root, base) {
+  if (!base) {
+    return { source: 'base_not_provided', files: [] };
+  }
+  const args = ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`];
+  let stdout = '';
+  try {
+    ({ stdout } = await execFileAsync('git', args, { cwd: root, encoding: 'utf8' }));
+  } catch {
+    try {
+      ({ stdout } = await execFileAsync('git', ['diff', '--name-only', '--diff-filter=ACMR', base], { cwd: root, encoding: 'utf8' }));
+    } catch {
+      return { source: 'git_diff_unavailable', files: [] };
+    }
+  }
+  const files = stdout.split('\n')
+    .map((file) => file.trim())
+    .filter(Boolean)
+    .filter((file) => isUiOrStyleFile(file));
+  return { source: `git_diff:${base}`, files: unique(files) };
+}
+
+function isUiOrStyleFile(file) {
+  const ext = path.extname(file);
+  if (STYLE_EXTENSIONS.has(ext)) return true;
+  if (!SOURCE_EXTENSIONS.has(ext)) return false;
+  return /(^|\/)(app|pages|components|ui|src|screens|layouts?)(\/|$)|component|screen|layout|page|route/i.test(file);
+}
+
+function collectAllowedStyleLiterals(designSystem) {
+  return new Set([
+    ...(designSystem.theme_tokens?.color_values ?? []),
+    ...(designSystem.theme_tokens?.spacing_values ?? []),
+    ...(designSystem.theme_tokens?.css_variables ?? []).map((token) => `var(${token})`)
+  ].map((value) => String(value).trim()).filter(Boolean));
+}
+
+function collectLineStyleDrift(line, allowed) {
+  const text = String(line ?? '');
+  if (/^\s*(\/\/|\/\*|\*)/.test(text)) return [];
+  if (!text.trim() || /var\(|token|theme|cssVar|className=/.test(text)) return [];
+  const findings = [];
+  for (const value of collectColorValues(text)) {
+    if (!allowed.has(value)) findings.push({ category: 'color', value, property: inferStyleProperty(text) });
+  }
+  const spacingValues = collectSpacingValues(text).filter((value) => value !== '0px' && value !== '0rem' && value !== '0em');
+  const property = inferStyleProperty(text);
+  for (const value of spacingValues) {
+    if (allowed.has(value)) continue;
+    if (/font-?size|fontSize|line-?height|lineHeight|letter-?spacing|letterSpacing/i.test(text)) {
+      findings.push({ category: 'typography', value, property });
+    } else if (/border-?radius|borderRadius|radius/i.test(text)) {
+      findings.push({ category: 'radius', value, property });
+    } else if (/(margin|padding|gap|inset|top|right|bottom|left|width|height|minHeight|maxHeight|minWidth|maxWidth)/i.test(text)) {
+      findings.push({ category: 'spacing', value, property });
+    }
+  }
+  if (/box-?shadow|boxShadow/i.test(text) && !/none|null|undefined/.test(text)) {
+    findings.push({ category: 'shadow', value: text.trim().slice(0, 120), property });
+  }
+  return findings;
+}
+
+function inferStyleProperty(line) {
+  const match = String(line ?? '').match(/([A-Za-z-]+)\s*[:=]/);
+  return match?.[1] ?? null;
+}
+
 function validateSecretLeakage(artifactTexts) {
   const matches = [];
   for (const artifact of artifactTexts) {
@@ -2512,11 +2674,12 @@ function validateSecretLeakage(artifactTexts) {
   })];
 }
 
-function validationFinding({ id, status, summary }) {
+function validationFinding({ id, status, summary, ...details }) {
   return {
     id,
     status,
     summary,
+    ...details,
     release_blocking: status === 'block'
   };
 }
