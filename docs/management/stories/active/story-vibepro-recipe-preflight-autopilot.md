@@ -48,12 +48,12 @@ VibePro フローを一度通した agent は速い。#292 は初見でレビュ
 
 ## Acceptance Criteria
 
-- [ ] RPA-S-1: 収載 6 レシピそれぞれについて、該当状態を作った synthetic リポジトリで preflight が検出し、`auto_fix` または `next_command` を報告する。
-- [ ] RPA-S-2: auto_fix の成果物（status JSON artifact、カタログエントリ）は手作業版とスキーマ互換で、後続の gate 評価が strong/resolved と判定する。
-- [ ] RPA-S-3: preflight は gate の判定結果・waiver・review verdict を作成も変更もしない。
-- [ ] RPA-S-4: 該当なしの story では preflight は no-op で、autopilot の既存挙動が変化しない。
-- [ ] RPA-S-5: preflight 結果は autopilot 報告の `preflight` セクションに `{ recipe_id, detected, action_taken, next_command }` の機械可読形式で出る。
-- [ ] RPA-S-6: レシピ追加が registry へのエントリ追加だけで済む構造であることをテストが固定する（既存レシピの変更なしに 7 件目を追加できる）。
+- [x] RPA-S-1: 収載 6 レシピそれぞれについて、該当状態を作った synthetic リポジトリで preflight が検出し、`auto_fix` または `next_command` を報告する。
+- [x] RPA-S-2: auto_fix の成果物（status JSON artifact、カタログエントリ）は手作業版とスキーマ互換で、後続の gate 評価が strong/resolved と判定する。
+- [x] RPA-S-3: preflight は gate の判定結果・waiver・review verdict を作成も変更もしない。
+- [x] RPA-S-4: 該当なしの story では preflight は no-op で、autopilot の既存挙動が変化しない。
+- [x] RPA-S-5: preflight 結果は autopilot 報告の `preflight` セクションに `{ recipe_id, detected, action_taken, next_command }` の機械可読形式で出る。
+- [x] RPA-S-6: レシピ追加が registry へのエントリ追加だけで済む構造であることをテストが固定する（既存レシピの変更なしに 7 件目を追加できる）。
 
 ## 既存挙動（inherited behavior）
 

@@ -16,6 +16,18 @@ diagrams:
         Suggest --> Report
         Skip --> Report
         Report --> Phases["existing autopilot phases (unchanged)"]
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Autopilot["pr autopilot"] --> Preflight["preflight phase"]
+        Preflight --> Registry["recipe registry (detect only reads on-disk state)"]
+        Registry -. must not call .-> Network["network / remote APIs"]
+        Registry -. must not call .-> LLM["LLM / subagent dispatch"]
+        Registry -. must not mutate .-> Verdicts["gate results / waivers / review lifecycles (RPA-CONTRACT-001)"]
+        Registry -- auto_fix --> Fix["writes artifacts operators already produce by hand"]
+        Fix -. must stay within .-> Boundary[".vibepro/ + declared spec/story paths only"]
+        Registry -- detection failure --> Isolate["action_taken: failed, run continues (RPA-CONTRACT-005)"]
+        Fix --> CleanStory["clean story: byte-identical no-op (RPA-CONTRACT-004)"]
 ---
 
 # Spec
@@ -100,7 +112,13 @@ list every registered recipe exactly once per run, in registry order.
 ## Verification
 
 - Focused tests cover each recipe's detection and action on synthetic
-  repositories, the clean-story no-op, failure isolation, and registry
-  extension.
+  repositories, the clean-story no-op, failure isolation (including
+  corrupt-JSON parse failures and unexpected evidence schema shapes), and
+  registry extension: `test/recipe-preflight.test.js`.
+- The autopilot workflow replay (preflight section shape and unchanged
+  downstream phases) is covered by the `pr autopilot` cases in
+  `test/vibepro-cli.test.js`.
+- The registry implementation lives in `src/recipe-preflight.js`; the single
+  wiring point is `autopilotPullRequest` in `src/pr-manager.js`.
 - `npm run typecheck` and the full `npm test` suite pass with no new
   failures.

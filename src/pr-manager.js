@@ -24,6 +24,7 @@ import { readDrift, readInferredSpec } from './spec-store.js';
 import { buildTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
+import { runRecipePreflight } from './recipe-preflight.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import {
   renderPerformancePrSection,
@@ -1462,6 +1463,13 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
   const dryRun = options.dryRun === true;
   const operations = [];
   const reviewPreparations = [];
+  // Preflight runs first (before gate evaluation): detect recipe-known evidence
+  // pitfalls and either auto-fix schema-identical artifacts or report the exact
+  // next command. It never touches gate verdicts, waivers, or review records.
+  const preflight = await runRecipePreflight(root, {
+    storyId: options.storyId,
+    dryRun
+  });
   let prepareResult = await preparePullRequest(root, options);
   let { preparation } = prepareResult;
   let gateStatus = preparation.gate_status
@@ -1553,6 +1561,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
     if (run.exit_code !== 0) {
       return buildAutopilotResult(root, prepareResult, {
         dryRun,
+        preflight,
         operations,
         reviewPreparations,
         stopReason: 'verification_failed',
@@ -1597,6 +1606,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
     if (ci.failures.length > 0 || ci.pending.length > 0) {
       return buildAutopilotResult(root, prepareResult, {
         dryRun,
+        preflight,
         operations,
         reviewPreparations,
         stopReason: ci.failures.length > 0 ? 'ci_failed' : 'ci_incomplete',
@@ -1649,6 +1659,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       });
       return buildAutopilotResult(root, prepareResult, {
         dryRun,
+        preflight,
         operations,
         reviewPreparations,
         stopReason: 'review_prepare_requires_human_judgment',
@@ -1686,6 +1697,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
 
   return buildAutopilotResult(root, prepareResult, {
     dryRun,
+    preflight,
     operations,
     reviewPreparations,
     stopReason: null,
@@ -1707,6 +1719,21 @@ export function renderPrAutopilotSummary(result) {
   const nextCommands = autopilot.next_commands?.length
     ? autopilot.next_commands.map((command) => `- ${command}`).join('\n')
     : '- none';
+  const preflightResults = autopilot.preflight?.results?.filter((item) => item.detected) ?? [];
+  const preflight = preflightResults.length
+    ? preflightResults.map((item) => {
+      // Keep every rendered line attached to its bullet: the reason explains
+      // why the recipe fired, and multiline next_commands (e.g. frontmatter
+      // guidance) are indented so they cannot read as orphaned paragraphs.
+      const lines = [`- ${item.recipe_id}: ${item.action_taken ?? item.action}${item.reason ? ` — ${item.reason}` : ''}`];
+      if (item.next_command) {
+        const [first, ...rest] = String(item.next_command).split('\n');
+        lines.push(`    next: ${first}`);
+        for (const continuation of rest) lines.push(`    ${continuation}`);
+      }
+      return lines.join('\n');
+    }).join('\n')
+    : '- none detected';
   return `# PR Autopilot
 
 | 項目 | 内容 |
@@ -1718,6 +1745,10 @@ export function renderPrAutopilotSummary(result) {
 | Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
 | Automated steps | ${autopilot.automated_step_count} |
 | Human judgments | ${autopilot.human_judgment_count} |
+
+## Preflight
+
+${preflight}
 
 ## Safe Operations
 
@@ -1860,6 +1891,7 @@ function hasConcreteReviewPrepareInputs(action) {
 
 function buildAutopilotResult(root, prepareResult, {
   dryRun,
+  preflight = null,
   operations,
   reviewPreparations,
   stopReason,
@@ -1897,6 +1929,7 @@ function buildAutopilotResult(root, prepareResult, {
     story_id: preparation.story.story_id,
     created_at: new Date().toISOString(),
     dry_run: dryRun,
+    preflight: preflight ?? { schema_version: '0.1.0', results: [] },
     status: ready
       ? 'ready_for_pr_create'
       : dryRun
