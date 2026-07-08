@@ -1,0 +1,212 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-08T07:37:26.649Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|gate:senior_gap_judgment|needs_review|passed|2026-07-08T07:35:14.163Z|2026-07-08T07:37:26.645Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T07:35:14.163Z",
+      "resolved_at": "2026-07-08T07:37:26.645Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|gate:responsibility_authority|needs_evidence|passed|2026-07-08T07:35:14.163Z|2026-07-08T07:37:26.645Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T07:35:14.163Z",
+      "resolved_at": "2026-07-08T07:37:26.645Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|gate:senior_gap_judgment|needs_review|passed|2026-07-08T07:27:41.133Z|2026-07-08T07:28:28.248Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T07:27:41.133Z",
+      "resolved_at": "2026-07-08T07:28:28.248Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|gate:responsibility_authority|needs_evidence|passed|2026-07-08T07:27:41.133Z|2026-07-08T07:28:28.248Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test --test-name-pattern 'root registry resolves VibePro core responsibility authorities|pr prepare projects responsibility authority|resolver accepts verify-record git context|session efficiency audit|AUTCOST-SCENARIO|bounded session window|story source|story_source|gate:story_source_integrity|mismatched story source|selected_story_id|repo status|buildNextCommands|story diagnose|--pre-architecture|DIJ-SCENARIO-004' test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/story-discovery.test.js test/vibepro-cli.test.js test/design-input-judgment.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-08T07:28:20.948Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T07:27:41.133Z",
+      "resolved_at": "2026-07-08T07:28:28.248Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|review:prepare:gate|needs_review|passed|2026-07-08T05:48:22.477Z|2026-07-08T05:49:35.973Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T05:48:22.477Z",
+      "resolved_at": "2026-07-08T05:49:35.973Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ffcf45166a78d3819540acfd04894b02629ff60a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-ia-flow-map|review:prepare:gate|needs_review|passed|2026-07-08T05:48:22.477Z|2026-07-08T05:49:35.972Z",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T05:48:22.477Z",
+      "resolved_at": "2026-07-08T05:49:35.972Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ffcf45166a78d3819540acfd04894b02629ff60a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+          "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+          "docs/specs/story-vibepro-uiux-ia-flow-map.spec.json",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/uiux-flow-map.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    }
+  ]
+}

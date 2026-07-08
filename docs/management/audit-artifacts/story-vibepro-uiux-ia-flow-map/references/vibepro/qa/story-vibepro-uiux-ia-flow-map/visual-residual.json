@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "visual_residual",
+  "qa_id": "story-vibepro-uiux-ia-flow-map",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "created_at": "2026-07-08T07:22:55.083Z",
+  "status": "pass",
+  "thresholdPct": 5,
+  "meanAbsResidualPct": 0,
+  "probes": [
+    {
+      "probe_id": "story-vibepro-uiux-ia-flow-map",
+      "status": "compared",
+      "meanAbsResidualPct": 0,
+      "current_screenshot": ".vibepro/qa/current/story-vibepro-uiux-ia-flow-map.png",
+      "baseline_screenshot": ".vibepro/qa/baseline/story-vibepro-uiux-ia-flow-map.png"
+    }
+  ],
+  "source": {
+    "current_dir": ".vibepro/qa/current",
+    "flow_run_id": null,
+    "flow_verification_json": null
+  },
+  "git_context": {
+    "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "current_branch": "codex/vibepro-uiux-ia-flow-map",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T07:22:55.246Z"
+  }
+}

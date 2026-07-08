@@ -1,0 +1,107 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head gate_evidence review passed on 0c35872134c6dbb79ef5cc4c894dd9e9929a743f: verification evidence and PR gate behavior are bound to the current HEAD, previous stale build evidence is resolved, and the remaining stale gate_evidence artifact is replaced by this record.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/gate-evidence-subagent-019f4093-b12b-7fb2-9aea-13dd216c88c9.md"
+  ],
+  "inspection": {
+    "summary": "Subagent inspected git status/head, review request/plan, pr-prepare, verification evidence, review summary, IA/design artifacts, screen-capture setup record, changed files vs origin/main, and relevant source/test/spec surfaces read-only.",
+    "evidence": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/gate-evidence-subagent-019f4093-b12b-7fb2-9aea-13dd216c88c9.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/review-request-gate_evidence.md",
+      ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/review-plan.json",
+      ".vibepro/pr/story-vibepro-uiux-ia-flow-map/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-uiux-ia-flow-map/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Previous gate_evidence judgment was needs_changes because build evidence and review result were stale; current judgment is pass because build/typecheck/unit/integration evidence is current-head bound, docs:build failure is explicitly recorded as current-head needs_setup, design capture setup state is explicit, and this result replaces the prior stale strict-head review artifact."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+    "expected_root": null,
+    "expected_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "current_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+      "expected_root": null,
+      "expected_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+      "current_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T07:18:10.110Z",
+  "git_context": {
+    "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "current_branch": "codex/vibepro-uiux-ia-flow-map",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T07:18:10.109Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "e7f4f034c93a669259da9ec243ddf2aa4cf3ae0ad538b4e55f6890a0d5b1ba11",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f4093-b12b-7fb2-9aea-13dd216c88c9",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/gate-evidence-subagent-019f4093-b12b-7fb2-9aea-13dd216c88c9.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/gate-evidence-subagent-019f4093-b12b-7fb2-9aea-13dd216c88c9.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

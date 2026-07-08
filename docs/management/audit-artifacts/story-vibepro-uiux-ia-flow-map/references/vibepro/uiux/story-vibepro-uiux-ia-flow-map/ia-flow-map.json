@@ -1,0 +1,86 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "uiux-ia-flow-map",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "generated_at": "2026-07-08T07:10:15.375Z",
+  "generated_head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+  "generated_git_context": {
+    "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "status": "recorded"
+  },
+  "status": "ready_for_design_flow",
+  "flow_archetype": "marketing_landing_page",
+  "flow_structure": "mixed_product_marketing_structure",
+  "source_evidence": {
+    "story": "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+    "uiux_intake": ".vibepro/uiux/story-vibepro-uiux-ia-flow-map/uiux-intake.json",
+    "journey_context": null
+  },
+  "route_evidence": {
+    "status": "available",
+    "source": "explicit_or_discovered_routes",
+    "missing_sources": [],
+    "routes": [
+      {
+        "route": "/",
+        "evidence_status": "confirmed"
+      }
+    ]
+  },
+  "current_ia": {
+    "status": "confirmed_from_route_evidence",
+    "routes": [
+      {
+        "route": "/",
+        "evidence_status": "confirmed"
+      }
+    ],
+    "note": "Current IA is limited to routes that have explicit or discovered evidence."
+  },
+  "target_ia": {
+    "status": "proposed_from_story_and_intake",
+    "evidence_status": "proposed",
+    "flow_structure": "mixed_product_marketing_structure",
+    "sequence": [
+      {
+        "route": "/",
+        "order": 1,
+        "role": "landing_information_block",
+        "evidence_status": "proposed",
+        "reason": "Target IA is a planning hypothesis until implementation or runtime evidence confirms it."
+      }
+    ],
+    "target_only_claim_policy": "target-only claims are proposed until backed by route, runtime, or implementation evidence"
+  },
+  "unknown_flow": [
+    "Structured UI/UX intake is missing; target decisions and CTAs remain proposed.",
+    "Journey context artifact is missing or not readable; cross-screen continuity is not confirmed."
+  ],
+  "non_goals": [],
+  "screens": [
+    {
+      "route": "/",
+      "evidence_status": "confirmed",
+      "purpose": "landing information block",
+      "primary_user_decision": "whether_to_continue_to_conversion",
+      "primary_cta": {
+        "label": "continue_to_conversion",
+        "evidence_status": "proposed"
+      },
+      "secondary_cta": {
+        "label": "learn_more",
+        "evidence_status": "proposed"
+      },
+      "required_data": [
+        "offer_content",
+        "trust_or_proof_points"
+      ],
+      "states": {
+        "loading": "required_unknown_until_screen_evidence",
+        "empty": "required_unknown_until_screen_evidence",
+        "error": "required_unknown_until_screen_evidence"
+      },
+      "next_screen": null
+    }
+  ]
+}

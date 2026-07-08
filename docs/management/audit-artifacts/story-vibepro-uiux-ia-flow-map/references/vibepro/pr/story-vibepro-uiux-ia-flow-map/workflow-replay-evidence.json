@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "workflow_replay_evidence",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "status": "pass",
+  "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+  "replay": true,
+  "scope": {
+    "flow_replay": "vibepro uiux map, design-modernize plan/capture, pr prepare, and gate_evidence review lifecycle were replayed on the current head.",
+    "artifact_replay": "IA flow map, design plan, screen capture setup record, verification evidence, pr-prepare, and subagent transcript were regenerated or inspected as current-head artifacts.",
+    "scenario_clause_e2e": "UIFM-S-1 through UIFM-S-5 and gate behavior were covered by focused tests and current-head PR gate replay."
+  },
+  "artifacts": [
+    ".vibepro/uiux/story-vibepro-uiux-ia-flow-map/ia-flow-map.json",
+    ".vibepro/design-modernize/story-vibepro-uiux-ia-flow-map/plan.json",
+    ".vibepro/design-modernize/story-vibepro-uiux-ia-flow-map/screen-capture.json",
+    ".vibepro/pr/story-vibepro-uiux-ia-flow-map/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-uiux-ia-flow-map/pr-prepare.json",
+    ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/gate-evidence-subagent-019f4093-b12b-7fb2-9aea-13dd216c88c9.md"
+  ],
+  "known_setup_limits": [
+    "docs:build remains current-head needs_setup because vitepress is not installed in this worktree node_modules.",
+    "design-modernize capture remains needs_setup until a preview --base-url is provided."
+  ]
+}

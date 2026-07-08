@@ -1,0 +1,280 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "stage": "gate",
+  "roles": [
+    "gate_evidence"
+  ],
+  "created_at": "2026-07-08T07:13:48.069Z",
+  "output": {
+    "language": "ja"
+  },
+  "git_context": {
+    "head_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+    "current_branch": "codex/vibepro-uiux-ia-flow-map",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T07:13:48.063Z"
+  },
+  "evidence_reuse": {
+    "status": "stale",
+    "fresh": false,
+    "first_input": false,
+    "evidence_key": "evk_a0fb121798357947bf1162e85b272917",
+    "verification_summary_fingerprint": "sha256:33cc57d94286c7a9a74c7f686a8aee801658332d289004cf0495308f15b2e256",
+    "current_verification_summary_fingerprint": "sha256:33cc57d94286c7a9a74c7f686a8aee801658332d289004cf0495308f15b2e256",
+    "verification_evidence_updated_at": "2026-07-08T07:11:38.369Z",
+    "current_verification_evidence_updated_at": "2026-07-08T07:11:38.369Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-08T07:11:38.369Z",
+        "git_recorded_at": "2026-07-08T07:11:38.367Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-08T07:11:22.149Z",
+        "git_recorded_at": "2026-07-08T07:11:22.147Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-08T07:10:38.208Z",
+        "git_recorded_at": "2026-07-08T07:10:38.207Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-07-08T07:10:29.132Z",
+        "git_recorded_at": "2026-07-08T07:10:29.130Z"
+      }
+    ],
+    "current_verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-08T07:11:38.369Z",
+        "git_recorded_at": "2026-07-08T07:11:38.367Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-08T07:11:22.149Z",
+        "git_recorded_at": "2026-07-08T07:11:22.147Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-08T07:10:38.208Z",
+        "git_recorded_at": "2026-07-08T07:10:38.207Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-07-08T07:10:29.132Z",
+        "git_recorded_at": "2026-07-08T07:10:29.130Z"
+      }
+    ],
+    "artifact_status": "stale",
+    "artifact": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/evidence-reuse.json",
+    "preferred_order": [],
+    "stale_reasons": [
+      {
+        "field": "head_sha",
+        "previous": "b656933c205cd0676a530df6688966925cc63984",
+        "current": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+        "reason": "head_sha changed"
+      },
+      {
+        "field": "verification_summary_fingerprint",
+        "previous": "sha256:467ba00dcafd3518bc9875d537089530aaca322a2ad5255fdbf0366a741afb54",
+        "current": "sha256:33cc57d94286c7a9a74c7f686a8aee801658332d289004cf0495308f15b2e256",
+        "reason": "verification_summary_fingerprint changed"
+      },
+      {
+        "field": "verification_evidence_updated_at",
+        "previous": "2026-07-08T07:02:49.254Z",
+        "current": "2026-07-08T07:11:38.369Z",
+        "reason": "verification_evidence_updated_at changed"
+      },
+      {
+        "field": "verification_command_timestamps",
+        "previous": [
+          {
+            "kind": "build",
+            "executed_at": "2026-07-08T07:02:49.254Z",
+            "git_recorded_at": "2026-07-08T07:02:49.251Z"
+          },
+          {
+            "kind": "unit",
+            "executed_at": "2026-07-08T06:58:05.764Z",
+            "git_recorded_at": "2026-07-08T06:58:05.763Z"
+          },
+          {
+            "kind": "typecheck",
+            "executed_at": "2026-07-08T06:58:05.739Z",
+            "git_recorded_at": "2026-07-08T06:58:05.737Z"
+          },
+          {
+            "kind": "integration",
+            "executed_at": "2026-07-08T06:48:03.043Z",
+            "git_recorded_at": "2026-07-08T06:48:03.007Z"
+          }
+        ],
+        "current": [
+          {
+            "kind": "integration",
+            "executed_at": "2026-07-08T07:11:38.369Z",
+            "git_recorded_at": "2026-07-08T07:11:38.367Z"
+          },
+          {
+            "kind": "unit",
+            "executed_at": "2026-07-08T07:11:22.149Z",
+            "git_recorded_at": "2026-07-08T07:11:22.147Z"
+          },
+          {
+            "kind": "typecheck",
+            "executed_at": "2026-07-08T07:10:38.208Z",
+            "git_recorded_at": "2026-07-08T07:10:38.207Z"
+          },
+          {
+            "kind": "build",
+            "executed_at": "2026-07-08T07:10:29.132Z",
+            "git_recorded_at": "2026-07-08T07:10:29.130Z"
+          }
+        ],
+        "reason": "verification_command_timestamps changed"
+      },
+      {
+        "field": "risk_surface_fingerprint",
+        "previous": "sha256:4950300d07e545d0ce80770eb72d9b4e48757ed2f1101d5f3a05c5ac612382e8",
+        "current": "sha256:7b706cb60a5e3511a279abf1c7b3a71a45f2445c04af3cfe2d7ffb65b879ae55",
+        "reason": "risk_surface_fingerprint changed"
+      }
+    ],
+    "reason": "Evidence reuse artifact is not fresh for the current review context."
+  },
+  "bounded_artifact_handoff": {
+    "budget_bytes": 16384,
+    "over_budget_count": 3,
+    "items": [
+      {
+        "artifact": "decision-index.json",
+        "bytes": 20681,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/decision-index.summary.json",
+        "full_artifact_path": "decision-index.json",
+        "bounded": true
+      },
+      {
+        "artifact": "design-ssot-reconciliation.json",
+        "bytes": 312298,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/design-ssot-reconciliation.summary.json",
+        "full_artifact_path": "design-ssot-reconciliation.json",
+        "bounded": true
+      },
+      {
+        "artifact": "senior-gap-judgment.json",
+        "bytes": 50463,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/senior-gap-judgment.summary.json",
+        "full_artifact_path": "senior-gap-judgment.json",
+        "bounded": true
+      }
+    ]
+  },
+  "review_policy": {
+    "stage": "gate",
+    "roles": [
+      "gate_evidence"
+    ],
+    "defaults": {
+      "timeout_ms": 600000,
+      "model_policy": null
+    },
+    "role_policies": {
+      "gate_evidence": {
+        "mode": "required"
+      }
+    }
+  },
+  "source_fingerprint": "993b3716c06d4a88d5728bce3be18eedf2be93da503f03e78037c11b4d5002b3",
+  "instructions": [
+    "coordinator runtimeがsubagent capabilityを提供する場合、listed role reviewを別々のCodex/Claude Code subagentでdispatchする。",
+    "VibeProはreview resultを記録するが、subagent自体は実行しない。",
+    "Agent Review Gateがこのstageを要求する場合、このprepare outputはlisted reviewを取得するためのcoordinator指示である。runtimeがsubagentをspawnできない場合は、silent skipせずblockするかhuman waiver decisionを記録する。",
+    "すべてのrole reviewはmandatory review lensをすべて含める。roleのpassは、role concern、regression_guard、path_surface_coverageが十分に満たされたことだけを意味する。",
+    "coordinatorにsubagent capabilityがある場合は、listed reviewerを直接dispatchし、parallel_subagent provenanceを記録する。",
+    "parallel実行はstage内だけに限定する。このstageの必須roleがすべてcloseされrecordされるまで、別stageのreviewをdispatchしない。",
+    "subagent resultを受け取ったら、review記録前にそのsubagent thread/sessionをcloseまたはshutdownし、--agent-closedでlifecycle closureを記録する。",
+    "各reviewerはstatus pass, needs_changes, blockのいずれかと具体的なfindingを返す。"
+  ],
+  "mandatory_review_lenses": [
+    {
+      "id": "regression_guard",
+      "title": "Regression / デグレ確認",
+      "prompt": "この変更で、今回のStory対象外を含む既存のユーザー導線・API契約・データ状態・運用手順・性能・アクセシビリティ・セキュリティ境界が壊れていないか確認する。",
+      "pass_condition": "既存挙動への影響範囲が説明され、必要な自動テスト・E2E・手動確認・証跡、または非該当理由がある。",
+      "block_condition": "既存挙動の破壊、互換性のないAPI/DB/UI変更、主要導線の未検証、または「通った」根拠がStory対象の新規導線だけに偏っている。"
+    },
+    {
+      "id": "path_surface_coverage",
+      "title": "Path & Surface Coverage / 経路と出力面の網羅",
+      "prompt": "変更対象の全入力経路、派生経路、出力面を列挙し、主要経路だけでなくlegacy/fallback/document/config/API/UI/report/gate artifactなどの別経路に同じ契約が効いているか確認する。抑止・除外・候補化する挙動はsilentにせず、ユーザーが判断できるwarning/candidate/finding/evidenceとして残るか確認する。",
+      "pass_condition": "影響する入力経路と出力面が説明され、各経路に対する実装・証跡・非該当理由がある。テストはpre-fix実装なら失敗する具体的なfixture/assertionを含み、source artifactだけでなくsummary/report/gate/internal synthesisなど利用者が読む面も検証している。",
+      "block_condition": "主要経路だけを直して別経路が未確認、suppressionがsilent、出力artifact間で矛盾、または追加テストがpre-fixを落とせない形になっている。"
+    }
+  ],
+  "agent_skill_discipline": {
+    "contract": "vibepro_agent_skill_contract",
+    "required": true,
+    "common_rationalizations": [
+      "tests_pass_so_review_done",
+      "small_change_no_spec_or_evidence",
+      "manual_review_replaces_required_subagent",
+      "server_logs_prove_user_perceived_behavior",
+      "missing_path_probably_unaffected"
+    ],
+    "red_flags": [
+      "missing_inspection_inputs",
+      "missing_judgment_delta",
+      "happy_path_only",
+      "not_current_head_bound",
+      "evidence_instruction_injection"
+    ]
+  },
+  "parallel_dispatch": {
+    "required": true,
+    "mode": "policy_aware_parallel_reviews",
+    "subagent_count": 1,
+    "artifact": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/parallel-dispatch.md",
+    "stage_parallelism": {
+      "scope": "single_stage",
+      "stage": "gate",
+      "rule": "Dispatch only this stage in parallel; wait for all roles to close and record before starting any later stage."
+    },
+    "coordinator_behavior": {
+      "expected": "dispatch_parallel_subagents",
+      "user_confirmation_required_by_vibepro": false,
+      "runner_policy_may_require_user_delegation": false,
+      "subagent_lifecycle": "close_before_record",
+      "closure_required_for_pass": true,
+      "serial_stage_barrier": "complete_stage_before_next_stage",
+      "fallback": "If the runtime cannot spawn subagents, block or record a human waiver decision; manual_review does not satisfy Agent Review Gate."
+    },
+    "record_commands": {
+      "gate_evidence": "vibepro review record . --id story-vibepro-uiux-ia-flow-map --stage gate --role gate_evidence --status <pass|needs_changes|block> --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id \"<subagent-id>\" --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript <artifact> --agent-closed"
+    }
+  },
+  "requests": [
+    {
+      "role": "gate_evidence",
+      "artifact": ".vibepro/reviews/story-vibepro-uiux-ia-flow-map/gate/review-request-gate_evidence.md",
+      "prompt_summary": "証跡のfreshness、command reliability、gate bindingを確認する。",
+      "model_policy": null
+    }
+  ]
+}

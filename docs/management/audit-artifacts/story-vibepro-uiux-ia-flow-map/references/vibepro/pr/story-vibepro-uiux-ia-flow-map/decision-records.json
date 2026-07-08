@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "updated_at": "2026-07-08T07:04:14.520Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+      "expected_root": null,
+      "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+      "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783494254519-06bfc842",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Split resolution accepted: keep Story 2 as one bundled PR because docs/spec/source/tests form one reviewable IA flow-map unit.",
+      "reason": "The three commits are a single story progression, and changed files are limited to the IA flow-map gate, its docs/spec, Design SSOT registry, and focused regression tests.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "expected_root": null,
+          "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "current_branch": "codex/vibepro-uiux-ia-flow-map",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T07:04:14.519Z"
+      },
+      "recorded_at": "2026-07-08T07:04:14.520Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783494240035-06cf9569",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: one reviewer can review the UI/UX IA flow-map Story 2 branch as a coherent contract, implementation, and verification change.",
+      "reason": "Review owner is the gate/IA-flow-map reviewer; the PR contains no unrelated runtime path, secret, deployment, or product UI implementation beyond the map/gate surfaces.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-uiux-ia-flow-map.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "expected_root": null,
+          "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "current_branch": "codex/vibepro-uiux-ia-flow-map",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T07:04:00.034Z"
+      },
+      "recorded_at": "2026-07-08T07:04:00.035Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783494229158-4877d6a7",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep Story 2 changes bundled for review: the branch contains one coherent IA flow map implementation across Story, Spec, Architecture, CLI/source wiring, tests, and Design SSOT links; no unrelated runtime/product change is included.",
+      "reason": "A single reviewer can evaluate the contract, implementation, and regression coverage together. Splitting would separate gate behavior from its tests/spec and weaken AC traceability for UIFM-S-1 through UIFM-S-5.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-uiux-ia-flow-map.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "expected_root": null,
+          "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "current_branch": "codex/vibepro-uiux-ia-flow-map",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T07:03:49.158Z"
+      },
+      "recorded_at": "2026-07-08T07:03:49.159Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+        "expected_root": null,
+        "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783494254519-06bfc842",
+      "story_id": "story-vibepro-uiux-ia-flow-map",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Split resolution accepted: keep Story 2 as one bundled PR because docs/spec/source/tests form one reviewable IA flow-map unit.",
+      "reason": "The three commits are a single story progression, and changed files are limited to the IA flow-map gate, its docs/spec, Design SSOT registry, and focused regression tests.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "expected_root": null,
+          "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "b656933c205cd0676a530df6688966925cc63984",
+        "current_branch": "codex/vibepro-uiux-ia-flow-map",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T07:04:14.519Z"
+      },
+      "recorded_at": "2026-07-08T07:04:14.520Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/decision-records.json"
+}

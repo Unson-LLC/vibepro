@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "design-modernize-capture",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "generated_at": "2026-07-08T07:10:15.465Z",
+  "status": "needs_setup",
+  "base_url": null,
+  "screenshots": [],
+  "setup": {
+    "next_commands": [
+      "Run the target app and pass --base-url http://localhost:<port>"
+    ]
+  }
+}

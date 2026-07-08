@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-ia-flow-map",
+  "created_at": "2026-07-08T07:37:58.952Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Visual QA is ready_for_review; 0 run(s) exceed the 5% residual threshold.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-uiux-ia-flow-map/decision-records.json",
+    "visual_qa": [
+      ".vibepro/qa/story-vibepro-uiux-ia-flow-map/residual-analysis.md",
+      ".vibepro/qa/story-vibepro-uiux-ia-flow-map/visual-residual.json"
+    ]
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-uiux-ia-flow-map.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-uiux-ia-flow-map.md, docs/specs/story-vibepro-uiux-ia-flow-map.spec.json)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+          "expected_root": null,
+          "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783494254519-06bfc842",
+        "story_id": "story-vibepro-uiux-ia-flow-map",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "Split resolution accepted: keep Story 2 as one bundled PR because docs/spec/source/tests form one reviewable IA flow-map unit.",
+        "reason": "The three commits are a single story progression, and changed files are limited to the IA flow-map gate, its docs/spec, Design SSOT registry, and focused regression tests.",
+        "reviewer": "codex",
+        "artifact": "docs/specs/story-vibepro-uiux-ia-flow-map.md",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map",
+            "expected_root": null,
+            "expected_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+            "current_head_sha": "b656933c205cd0676a530df6688966925cc63984",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "b656933c205cd0676a530df6688966925cc63984",
+          "current_branch": "codex/vibepro-uiux-ia-flow-map",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-08T07:04:14.519Z"
+        },
+        "recorded_at": "2026-07-08T07:04:14.520Z"
+      }
+    },
+    "visual_qa": {
+      "status": "ready_for_review",
+      "threshold_pct": 5,
+      "checked_runs": 1,
+      "needs_review_count": 0
+    },
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": 1,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T07:37:57.347Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-ia-flow-map/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+      "branch": "codex/vibepro-uiux-ia-flow-map",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f0bab83e05f4304f58d39ddf2bc66b9fc949d961",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
