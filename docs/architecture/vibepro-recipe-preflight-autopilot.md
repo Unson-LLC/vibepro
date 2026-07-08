@@ -2,7 +2,7 @@
 story_id: story-vibepro-recipe-preflight-autopilot
 title: VibePro Recipe Preflight Autopilot Architecture
 parent_design: vibepro-recipe-preflight-autopilot
-status: draft
+status: implemented
 ---
 
 # Architecture
@@ -60,6 +60,25 @@ waivers, close reviews, or mark anything verified that was not.
   `story-catalog-registration` (auto_fix, appended entry echoed in report).
 - Adding a recipe requires only appending a registry entry; no existing
   recipe or autopilot phase changes.
+
+## Execution Topology
+
+Preflight adds no process, worker, retry loop, or network surface. It runs
+synchronously as the first phase inside the existing `pr autopilot` process;
+each recipe detection is a pure function of on-disk state, and auto-fixes
+write only the artifacts operators previously wrote by hand.
+
+```mermaid
+flowchart LR
+  Autopilot["pr autopilot (single process)"] --> Preflight["preflight phase (first, synchronous)"]
+  Preflight --> Registry["recipe registry (ordered, deterministic)"]
+  Registry --> Detect["detection: pure read of repo state"]
+  Detect --> Fix["auto_fix: same artifacts as manual commands"]
+  Detect --> Suggest["next_command: exact command + reason"]
+  Fix --> Report["preflight section in autopilot report"]
+  Suggest --> Report
+  Report --> Phases["existing autopilot phases (unchanged)"]
+```
 
 ## Flow
 
