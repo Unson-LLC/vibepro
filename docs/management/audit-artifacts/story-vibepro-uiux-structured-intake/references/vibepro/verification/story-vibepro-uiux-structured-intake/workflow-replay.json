@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-structured-intake",
+  "status": "pass",
+  "head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+  "flow_replay": true,
+  "artifact_replay": true,
+  "scenario_clause_e2e": true,
+  "review_surface": true,
+  "commands": [
+    "npm run typecheck",
+    "node --test --test-name-pattern \"uiux intake|design-modernize plan writes UI/UX\" test/vibepro-cli.test.js",
+    "node --test test/cli-smoke.test.js"
+  ]
+}

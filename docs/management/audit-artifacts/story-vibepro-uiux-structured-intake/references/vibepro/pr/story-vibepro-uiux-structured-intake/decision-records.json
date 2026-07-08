@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-structured-intake",
+  "updated_at": "2026-07-08T04:28:00.194Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+      "expected_root": null,
+      "expected_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+      "current_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783484880194-558376ec",
+      "story_id": "story-vibepro-uiux-structured-intake",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted_followup",
+      "summary": "scope_reviewability accepted follow-up: current PR stays coherent as one structured intake to design-modernize workflow; remaining ownership evidence is supplied by the gate agent review stage and is non-blocking once recorded.",
+      "reason": "boundary: changed source docs registry and tests all serve one workflow from UIUX intake template and validation to design-modernize plan coverage. accepted_followups: review ownership is tracked through the gate agent review lifecycle, and no separate cleanup or runtime UI surface is hidden in this PR.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-structured-intake/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "expected_root": null,
+          "expected_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+          "current_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+        "current_branch": "codex/vibepro-uiux-structured-intake",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T04:28:00.193Z"
+      },
+      "recorded_at": "2026-07-08T04:28:00.194Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783484655520-dc8d9d59",
+      "story_id": "story-vibepro-uiux-structured-intake",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "scope_reviewability accepted: this PR is one reviewer sized because all changed source, docs, registry, and tests serve the single structured intake to design-modernize plan workflow; review_owner_map and split_plan are explicit.",
+      "reason": "review_owner_map: uiux-intake owns intake artifact semantics; design-modernize owns plan consumption; cli owns command surface; story spec architecture and design-ssot own contract context; tests own regression coverage. split_plan: current_branch_pr is appropriate because there is no unrelated cleanup or separate runtime UI surface bundled.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "expected_root": null,
+          "expected_head_sha": "1008e867ea389aeb258a1ad342454d40eb52bb6a",
+          "current_head_sha": "1008e867ea389aeb258a1ad342454d40eb52bb6a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1008e867ea389aeb258a1ad342454d40eb52bb6a",
+        "current_branch": "codex/vibepro-uiux-structured-intake",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T04:24:15.519Z"
+      },
+      "recorded_at": "2026-07-08T04:24:15.520Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783484430177-16f22279",
+      "story_id": "story-vibepro-uiux-structured-intake",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "scope_reviewability accepted: one reviewer can review this PR as a single UI/UX structured-intake workflow change; review_owner_map is CLI/design-modernize/spec-doc ownership, and split_plan remains current_branch_pr because source, CLI wiring, docs, and tests all serve the same intake-to-plan flow.",
+      "reason": "review_owner_map: src/uiux-intake.js owns intake artifact semantics, src/design-modernize.js owns plan consumption, src/cli.js owns command surface, [REDACTED:0d094b793380] own contract context, tests own regression coverage. split_plan: no unrelated cleanup or runtime UI surface is bundled.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "expected_root": null,
+          "expected_head_sha": "c548f1fb5a03010cba6c52158d307bb60dc4d25d",
+          "current_head_sha": "c548f1fb5a03010cba6c52158d307bb60dc4d25d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c548f1fb5a03010cba6c52158d307bb60dc4d25d",
+        "current_branch": "codex/vibepro-uiux-structured-intake",
+        "dirty": true,
+        "status_fingerprint": "M design-ssot.json",
+        "recorded_at": "2026-07-08T04:20:30.176Z"
+      },
+      "recorded_at": "2026-07-08T04:20:30.177Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+        "expected_root": null,
+        "expected_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+        "current_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783484880194-558376ec",
+      "story_id": "story-vibepro-uiux-structured-intake",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted_followup",
+      "summary": "scope_reviewability accepted follow-up: current PR stays coherent as one structured intake to design-modernize workflow; remaining ownership evidence is supplied by the gate agent review stage and is non-blocking once recorded.",
+      "reason": "boundary: changed source docs registry and tests all serve one workflow from UIUX intake template and validation to design-modernize plan coverage. accepted_followups: review ownership is tracked through the gate agent review lifecycle, and no separate cleanup or runtime UI surface is hidden in this PR.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-structured-intake/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-structured-intake",
+          "expected_root": null,
+          "expected_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+          "current_head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "43fb3725e0d641b96f8e6657f1e5786974b8aae9",
+        "current_branch": "codex/vibepro-uiux-structured-intake",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T04:28:00.193Z"
+      },
+      "recorded_at": "2026-07-08T04:28:00.194Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-structured-intake/decision-records.json"
+}
