@@ -419,8 +419,113 @@ function isPassingGateStatus(status) {
 export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source = 'execute_merge', merge = null, now = null } = {}) {
   if (!storyId) throw new Error('canonical audit promotion requires storyId');
   const root = path.resolve(repoRoot);
-  const promotedAt = now ?? new Date().toISOString();
   const canonicalDir = getCanonicalAuditDir(root, storyId);
+  const candidatePromotedAt = now ?? new Date().toISOString();
+  // IAP-CONTRACT-002: when the regenerated bundle's logical content matches the
+  // previously promoted bundle, carry the existing promoted_at forward so identical
+  // inputs compress to identical bytes and the persistence dedupe check (IAP-S-2)
+  // can reach `already_present` instead of committing an identical-message duplicate.
+  const existingBundle = await readExistingCanonicalBundle(canonicalDir);
+  const reusablePromotedAt = typeof existingBundle?.promoted_at === 'string'
+    ? existingBundle.promoted_at
+    : candidatePromotedAt;
+  let result = await writeCanonicalAuditArtifacts(root, {
+    storyId,
+    source,
+    merge,
+    promotedAt: reusablePromotedAt,
+    canonicalDir
+  });
+  if (
+    existingBundle
+    && reusablePromotedAt !== candidatePromotedAt
+    && !canonicalAuditBundlesLogicallyEqual(existingBundle, result.bundle)
+  ) {
+    // IAP-CONTRACT-003 real delta: the logical content genuinely changed, so record it
+    // with a fresh promoted_at rather than reusing the previous promotion timestamp.
+    result = await writeCanonicalAuditArtifacts(root, {
+      storyId,
+      source,
+      merge,
+      promotedAt: candidatePromotedAt,
+      canonicalDir
+    });
+  }
+  return result;
+}
+
+// Reads the previously promoted canonical bundle for logical-content comparison.
+// IAP-CONTRACT-004: a missing or unparseable bundle is treated as absent so
+// generation falls back to fresh content (duplication is acceptable, loss is not).
+async function readExistingCanonicalBundle(canonicalDir) {
+  try {
+    return JSON.parse(await readFile(path.join(canonicalDir, 'audit-bundle.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// Fields that legitimately vary between two regenerations of identical logical
+// content: the promotion timestamp and hashes derived from the compressed member.
+const VOLATILE_CANONICAL_BUNDLE_KEYS = new Set([
+  'promoted_at',
+  'generated_at',
+  'content_hash',
+  'compressed_hash',
+  'replayed_at'
+]);
+
+function stripVolatileCanonicalFields(value) {
+  if (Array.isArray(value)) return value.map(stripVolatileCanonicalFields);
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const [key, nested] of Object.entries(value)) {
+      if (VOLATILE_CANONICAL_BUNDLE_KEYS.has(key)) continue;
+      out[key] = stripVolatileCanonicalFields(nested);
+    }
+    return out;
+  }
+  return value;
+}
+
+function canonicalAuditBundlesLogicallyEqual(a, b) {
+  try {
+    return JSON.stringify(stripVolatileCanonicalFields(a)) === JSON.stringify(stripVolatileCanonicalFields(b));
+  } catch {
+    // IAP-CONTRACT-004: if comparison cannot run, fail toward a fresh timestamp
+    // (duplicated commit) rather than silently reusing a stale one.
+    return false;
+  }
+}
+
+// The pr_merge source artifact carries `canonical_audit` and
+// `roi_ledger_promotion` — bookkeeping about where this very bundle (and the
+// central ROI ledger promoted alongside it) was copied on the base branch. Both
+// are absent on the first promotion pass and only populated (with volatile
+// temp-worktree paths, base head shas and persistence commit shas) after the
+// first persistence call, which structurally defeats idempotent persistence.
+// This self-referential mechanics metadata is not judgment evidence, so it is
+// excluded from the promoted/persisted canonical view. It remains in the local
+// `.vibepro/pr/<story>/pr-merge.json` execution artifact and the merge result
+// JSON, so no audit information is lost.
+function normalizeCanonicalAuditSourceData(kind, data) {
+  if (kind === 'pr_merge' && data && typeof data === 'object' && !Array.isArray(data)) {
+    // Always drop both fields and advertise the exclusions, whether or not the
+    // fields are present on this pass. The first promotion pass runs before they
+    // exist and the second after they are populated; recording the exclusions
+    // unconditionally keeps the promoted view (data and excluded_from_audit) identical
+    // across both passes so persistence dedupe (IAP-S-1) can reach `already_present`.
+    const { canonical_audit, roi_ledger_promotion, ...rest } = data;
+    return {
+      data: rest,
+      excluded: ['pr_merge.canonical_audit', 'pr_merge.roi_ledger_promotion'],
+      reserialize: true
+    };
+  }
+  return { data, excluded: [], reserialize: false };
+}
+
+async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, promotedAt, canonicalDir }) {
   const inventory = await collectAuditSourceInventory(root, storyId, canonicalDir);
   const costSummary = buildCanonicalEvidenceCostSummary({
     artifactLineCount: inventory.artifact_line_count,
@@ -1089,11 +1194,19 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
 async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, type, stage = null }) {
   const text = await readTextIfExists(sourcePath);
   if (text === null) return null;
-  const rawLineCount = countTextLines(text);
-  const rawDigest = `sha256:${sha256Hex(text)}`;
   const sourceReferences = extractVibeProReferences(text);
+  const normalization = type === 'json'
+    ? normalizeCanonicalAuditSourceData(kind, JSON.parse(text))
+    : { data: null, excluded: [], reserialize: false };
+  // For self-referential kinds the raw digest/line counts are derived from a
+  // canonicalized representation so they stay byte-stable across promotion passes.
+  const rawText = normalization.reserialize
+    ? `${JSON.stringify(normalization.data, null, 2)}\n`
+    : text;
+  const rawLineCount = countTextLines(rawText);
+  const rawDigest = `sha256:${sha256Hex(rawText)}`;
   const scoped = type === 'json'
-    ? applyCanonicalAuditScope(kind, JSON.parse(text))
+    ? applyCanonicalAuditScope(kind, normalization.data)
     : {
         data: null,
         content: text,
@@ -1116,7 +1229,7 @@ async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, typ
     digest: rawDigest,
     audit_digest: `sha256:${sha256Hex(auditText)}`,
     audit_scope: scoped.audit_scope,
-    excluded_from_audit: scoped.excluded_from_audit,
+    excluded_from_audit: [...new Set([...(scoped.excluded_from_audit ?? []), ...normalization.excluded])],
     source_references: sourceReferences,
     data: scoped.data,
     content: scoped.content
@@ -2194,8 +2307,8 @@ async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts,
     });
     return;
   }
-  const data = JSON.parse(text);
-  const scoped = applyCanonicalAuditScope(kind, data);
+  const normalization = normalizeCanonicalAuditSourceData(kind, JSON.parse(text));
+  const scoped = applyCanonicalAuditScope(kind, normalization.data);
   await mkdir(path.dirname(targetPath), { recursive: true });
   await writeFile(targetPath, `${JSON.stringify(scoped.data, null, 2)}\n`);
   artifacts.push({
@@ -2203,7 +2316,7 @@ async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts,
     source: toWorkspaceRelative(root, sourcePath),
     canonical_path: toWorkspaceRelative(root, targetPath),
     audit_scope: scoped.audit_scope,
-    excluded_from_audit: scoped.excluded_from_audit,
+    excluded_from_audit: [...new Set([...(scoped.excluded_from_audit ?? []), ...normalization.excluded])],
     source_references: extractVibeProReferences(text)
   });
 }
