@@ -22,7 +22,7 @@ parent_design: vibepro-uiux-ia-flow-map
 
 ## Diagrams
 
-### information_flow
+### flow
 
 ```mermaid
 flowchart LR
@@ -39,3 +39,18 @@ flowchart LR
   Missing[Missing route evidence] --> NeedsRoute[needs_route_evidence]
 ```
 
+### threat_model
+
+```mermaid
+flowchart LR
+  Evidence[Story, intake, route evidence] --> Builder[IA map builder]
+  Builder --> Artifact[IA map artifact]
+  Git[Current git HEAD] --> Artifact
+  Artifact --> PR[PR prepare evidence]
+  Missing[Missing route evidence] --> Unknown[needs_route_evidence]
+  Unknown --> Artifact
+  TargetOnly[Target-only flow claims] --> Proposed[proposed status]
+  Proposed --> Artifact
+  Invented[Invented current flow risk] --> Guard[confirmed/proposed separation]
+  Guard --> Artifact
+```

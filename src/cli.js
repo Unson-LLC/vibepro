@@ -601,6 +601,7 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux map [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]

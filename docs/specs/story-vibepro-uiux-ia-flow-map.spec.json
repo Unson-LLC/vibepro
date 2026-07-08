@@ -3,9 +3,14 @@
   "story_id": "story-vibepro-uiux-ia-flow-map",
   "diagrams": [
     {
-      "kind": "information_flow",
+      "kind": "flow",
       "title": "UI/UX IA flow map before screen briefs",
       "mermaid": "flowchart LR\n  Story[Story doc] --> Map[IA flow map]\n  Intake[UI/UX intake] --> Map\n  Routes[Route evidence] --> CurrentIA[Current IA]\n  Map --> CurrentIA\n  Map --> TargetIA[Target IA]\n  TargetIA --> Proposed[Proposed target sequence]\n  CurrentIA --> Plan[design-modernize plan]\n  Proposed --> Plan\n  Plan --> Briefs[Screen briefs]\n  Map --> PR[PR prepare evidence]\n  Missing[Missing route evidence] --> NeedsRoute[needs_route_evidence]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "IA flow evidence freshness and invented-flow controls",
+      "mermaid": "flowchart LR\n  Evidence[Story, intake, route evidence] --> Builder[IA map builder]\n  Builder --> Artifact[IA map artifact]\n  Git[Current git HEAD] --> Artifact\n  Artifact --> PR[PR prepare evidence]\n  Missing[Missing route evidence] --> Unknown[needs_route_evidence]\n  Unknown --> Artifact\n  TargetOnly[Target-only flow claims] --> Proposed[proposed status]\n  Proposed --> Artifact\n  Invented[Invented current flow risk] --> Guard[confirmed/proposed separation]\n  Guard --> Artifact"
     }
   ],
   "clauses": [
@@ -101,4 +106,3 @@
   ],
   "open_questions": []
 }
-

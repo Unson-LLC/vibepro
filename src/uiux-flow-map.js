@@ -1,7 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 const FLOW_MAP_SCHEMA_VERSION = '0.1.0';
+const execFileAsync = promisify(execFile);
 
 const ARCHETYPES = [
   ['marketing_landing_page', /\b(marketing|landing|lp|hero|pricing|signup|conversion|lead)\b|ランディング|価格|資料請求|問い合わせ/i],
@@ -16,7 +19,8 @@ export async function createUiuxIaFlowMap(repoRoot, options = {}) {
   const outDir = path.join(root, '.vibepro', 'uiux', storyId);
   const mapPath = path.join(outDir, 'ia-flow-map.json');
   const context = await readFlowMapContext(root, { ...options, storyId });
-  const map = buildUiuxIaFlowMap({ storyId, ...context });
+  const generatedHeadSha = await resolveGeneratedHeadSha(root);
+  const map = buildUiuxIaFlowMap({ storyId, generatedHeadSha, ...context });
 
   await mkdir(outDir, { recursive: true });
   await writeFile(mapPath, `${JSON.stringify(map, null, 2)}\n`);
@@ -69,6 +73,7 @@ export function renderUiuxIaFlowMapSummary({ outDir, artifact, map }) {
 | Status | ${map.status} |
 | Archetype | ${map.flow_archetype} |
 | Structure | ${map.flow_structure} |
+| Generated HEAD | ${map.generated_head_sha ?? 'unavailable'} |
 | Screens | ${map.screens.length} |
 | Artifact | ${artifact} |
 | Output | ${outDir} |
@@ -92,6 +97,7 @@ export function renderUiuxIaFlowMapMarkdown(map) {
 - Status: ${map.status}
 - Flow archetype: ${map.flow_archetype}
 - Flow structure: ${map.flow_structure}
+- Generated HEAD: ${map.generated_head_sha ?? 'unavailable'}
 - Current IA: ${map.current_ia.status}
 - Target IA: ${map.target_ia.status}
 
@@ -126,7 +132,7 @@ ${map.non_goals.length === 0 ? '- none declared' : map.non_goals.map((item) => `
 `;
 }
 
-function buildUiuxIaFlowMap({ storyId, storyText, storyPath, brief, intake, intakePath, routes, routeSource, journeyContext }) {
+function buildUiuxIaFlowMap({ storyId, generatedHeadSha, storyText, storyPath, brief, intake, intakePath, routes, routeSource, journeyContext }) {
   const normalizedRoutes = normalizeRoutes(routes);
   const routeEvidenceStatus = normalizedRoutes.length > 0 ? 'available' : 'missing';
   const routeEvidence = {
@@ -165,6 +171,11 @@ function buildUiuxIaFlowMap({ storyId, storyText, storyPath, brief, intake, inta
     workflow: 'uiux-ia-flow-map',
     story_id: storyId,
     generated_at: new Date().toISOString(),
+    generated_head_sha: generatedHeadSha,
+    generated_git_context: {
+      head_sha: generatedHeadSha,
+      status: generatedHeadSha ? 'recorded' : 'unavailable'
+    },
     status: normalizedRoutes.length > 0 ? 'ready_for_design_flow' : 'needs_route_evidence',
     flow_archetype: flowArchetype,
     flow_structure: flowStructure,
@@ -370,8 +381,19 @@ function summarizeIaFlowMapForPr(map, artifact) {
     target_ia_status: map.target_ia?.status ?? null,
     target_evidence_status: map.target_ia?.evidence_status ?? null,
     route_evidence_status: map.route_evidence?.status ?? null,
+    generated_head_sha: map.generated_head_sha ?? null,
     screen_count: Array.isArray(map.screens) ? map.screens.length : 0
   };
+}
+
+async function resolveGeneratedHeadSha(repoRoot) {
+  try {
+    const { stdout } = await execFileAsync('git', ['-C', repoRoot, 'rev-parse', 'HEAD']);
+    const headSha = stdout.trim();
+    return headSha || null;
+  } catch {
+    return null;
+  }
 }
 
 function hasIntakeField(intake, fieldId) {

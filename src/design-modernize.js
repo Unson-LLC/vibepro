@@ -94,6 +94,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       markdown_artifact: uiuxIaFlowMap.markdownPath,
       flow_archetype: uiuxIaFlowMap.map.flow_archetype,
       flow_structure: uiuxIaFlowMap.map.flow_structure,
+      generated_head_sha: uiuxIaFlowMap.map.generated_head_sha,
       current_ia_status: uiuxIaFlowMap.map.current_ia.status,
       target_ia_status: uiuxIaFlowMap.map.target_ia.status,
       target_evidence_status: uiuxIaFlowMap.map.target_ia.evidence_status
@@ -459,6 +460,7 @@ ${(plan.uiux_intake_coverage?.guidance ?? []).map((item) => `- Guidance: ${item}
 - Artifact: ${plan.uiux_ia_flow_map?.artifact ?? '-'}
 - Flow archetype: ${plan.uiux_ia_flow_map?.flow_archetype ?? '-'}
 - Flow structure: ${plan.uiux_ia_flow_map?.flow_structure ?? '-'}
+- Generated HEAD: ${plan.uiux_ia_flow_map?.generated_head_sha ?? 'unavailable'}
 - Current IA: ${plan.uiux_ia_flow_map?.current_ia_status ?? '-'}
 - Target IA: ${plan.uiux_ia_flow_map?.target_ia_status ?? '-'}
 - Target evidence status: ${plan.uiux_ia_flow_map?.target_evidence_status ?? '-'}
