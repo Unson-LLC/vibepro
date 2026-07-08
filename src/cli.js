@@ -44,6 +44,12 @@ import {
   validateDesignSystem
 } from './design-system.js';
 import {
+  createUiuxIntakeTemplate,
+  renderUiuxIntakeCoverageSummary,
+  renderUiuxIntakeTemplateSummary,
+  validateUiuxIntake
+} from './uiux-intake.js';
+import {
   auditDesignSsotCoverage,
   getDesignSsotStatus,
   initDesignSsot,
@@ -369,8 +375,10 @@ Usage:
   vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
-  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
+  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--uiux-intake <file>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
+  vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -584,8 +592,10 @@ Usage:
   vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
-  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
+  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--uiux-intake <file>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
+  vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -640,7 +650,7 @@ export const TOP_LEVEL_COMMANDS = [
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'gate', 'spec', 'report',
-  'audit', 'design-modernize', 'design-system', 'design-ssot', 'explore', 'performance',
+  'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
   'nocodb', 'repo-status'
 ];
 
@@ -1198,6 +1208,7 @@ export async function runCli(argv, io = {}) {
           product: getOption(rest, '--product'),
           routes: parseDesignRoutes(rest),
           brief: getOption(rest, '--brief'),
+          uiuxIntake: getOption(rest, '--uiux-intake') ?? getOption(rest, '--intake'),
           baseUrl: getOption(rest, '--base-url'),
           designSystemId: getOption(rest, '--design-system-id'),
           designSystemTitle: getOption(rest, '--design-system-title'),
@@ -1241,6 +1252,44 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown design-modernize command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'uiux') {
+      const area = rest[0];
+      const subcommand = rest[1];
+      const repoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+      if (!area || area === '--help' || area === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: area ?? 'help' };
+      }
+      if (area !== 'intake') {
+        write(stderr, `Unknown uiux command: ${area ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command };
+      }
+      if (subcommand === 'template') {
+        const result = await createUiuxIntakeTemplate(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          routes: parseDesignRoutes(rest)
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderUiuxIntakeTemplateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'validate') {
+        const result = await validateUiuxIntake(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          intakeFile: getOption(rest, '--intake'),
+          brief: getOption(rest, '--brief'),
+          routes: parseDesignRoutes(rest)
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.coverage, null, 2)}\n`
+          : renderUiuxIntakeCoverageSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown uiux intake command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

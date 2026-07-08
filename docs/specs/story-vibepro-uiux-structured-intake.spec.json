@@ -1,0 +1,134 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-structured-intake",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "UI/UX intake authority boundary",
+      "mermaid": "flowchart LR\n  Author[Story author] --> Intake[UI/UX intake artifact]\n  Intake --> Coverage[Coverage summary]\n  Brief[Free-form brief] --> Coverage\n  Coverage --> Plan[design-modernize plan]\n  Plan --> Review[PR and review artifacts]\n  Threat[Unverified vague or conflicting UI direction] --> Intake\n  Intake --> Boundary[Authority boundary]\n  Boundary --> Code[Current route code and verified contracts]\n  Boundary --> Spec[VibePro story, spec, and architecture artifacts]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "SI-001",
+      "type": "scenario",
+      "statement": "When a story needs UI/UX intake, VibePro writes story-scoped JSON, Markdown, and coverage artifacts under .vibepro/uiux/<story-id>/.",
+      "rationale": "The CLI command must create a durable intake starting point before design-modernize planning.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }, { "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [
+          { "file": "src/uiux-intake.js", "anchor": "export async function createUiuxIntakeTemplate" },
+          { "file": "src/cli.js", "anchor": "createUiuxIntakeTemplate(repoRoot" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "uiux intake template and validate writes story-scoped coverage" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-intake.js", "must_contain": "uiux-intake-coverage.json" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "uiux intake template and validate writes story-scoped coverage" }]
+      }
+    },
+    {
+      "id": "SI-002",
+      "type": "invariant",
+      "statement": "The intake schema includes required fields for product/service, users, jobs, purpose, scope, authority, style, tone, color, typography, component, state, spacing, responsive, accessibility, and token policy.",
+      "rationale": "UI/UX work needs structured inputs rather than vague aesthetic requests.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [{ "file": "src/uiux-intake.js", "anchor": "export const UIUX_INTAKE_FIELDS" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "fillUiuxIntake" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [
+          { "file_glob": "src/uiux-intake.js", "must_contain": "design_token_policy" },
+          { "file_glob": "src/uiux-intake.js", "must_contain": "accessibility_policy" }
+        ],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "fillUiuxIntake" }]
+      }
+    },
+    {
+      "id": "SI-003",
+      "type": "scenario",
+      "statement": "When intake validation runs, VibePro reports field coverage using explicit, inferred, missing, and not_applicable statuses in machine-readable JSON.",
+      "rationale": "Coverage must be inspectable by later gates and not hidden in prose.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [
+          { "file": "src/uiux-intake.js", "anchor": "export async function validateUiuxIntake" },
+          { "file": "src/uiux-intake.js", "anchor": "function buildUiuxIntakeCoverage" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "uiux intake template and validate writes story-scoped coverage" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-intake.js", "must_contain": "not_applicable" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "not_applicable" }]
+      }
+    },
+    {
+      "id": "SI-004",
+      "type": "contract",
+      "statement": "design-modernize plan resolves the story intake when present and writes .vibepro/design-modernize/<story-id>/uiux-intake-coverage.json.",
+      "rationale": "Structured UI/UX inputs must be part of design-modernize evidence rather than a separate manual note.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [
+          { "file": "src/design-modernize.js", "anchor": "resolveUiuxIntakeForPlan" },
+          { "file": "src/design-modernize.js", "anchor": "uiux-intake-coverage.json" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "design-modernize plan writes UI/UX intake coverage and flags vague-only briefs" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/design-modernize.js", "must_contain": "uiux_intake_coverage" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "uiux-intake-coverage.json" }]
+      }
+    },
+    {
+      "id": "SI-005",
+      "type": "scenario",
+      "statement": "When a plan only receives a vague free-form brief, VibePro keeps the plan command usable but marks coverage as needs_intake_detail with intake guidance.",
+      "rationale": "Free-form briefs remain supported, but vague aesthetic-only direction cannot be treated as complete UI/UX input.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [
+          { "file": "src/uiux-intake.js", "anchor": "needs_intake_detail" },
+          { "file": "src/cli.js", "anchor": "uiuxIntake: getOption(rest, '--uiux-intake')" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "flags vague-only briefs" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-intake.js", "must_contain": "detectVagueBrief" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "needs_intake_detail" }]
+      }
+    },
+    {
+      "id": "SI-006",
+      "type": "invariant",
+      "statement": "Coverage output states that current route code, verified contracts, screenshots, and VibePro story/spec/architecture artifacts win over conflicting intake text.",
+      "rationale": "Structured intake is reference material and must not become an unchecked implementation authority.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-structured-intake.md" }],
+        "code_refs": [
+          { "file": "src/uiux-intake.js", "anchor": "function buildAuthorityBoundary" },
+          { "file": "src/design-modernize.js", "anchor": "conflict_policy" }
+        ],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "authority_boundary" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-intake.js", "must_contain": "current route code" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "authority_boundary" }]
+      }
+    }
+  ],
+  "open_questions": []
+}

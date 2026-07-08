@@ -105,6 +105,22 @@ async function pathExists(filePath) {
   }
 }
 
+function fillUiuxIntake(intake) {
+  return {
+    ...intake,
+    fields: Object.fromEntries(Object.entries(intake.fields).map(([id, field]) => [
+      id,
+      {
+        ...field,
+        status: 'explicit',
+        value: `${field.label ?? id} for ${intake.story_id}`,
+        rationale: `Required for ${intake.story_id}.`,
+        evidence: ['test-fixture']
+      }
+    ]))
+  };
+}
+
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
@@ -947,6 +963,111 @@ test('open decision records remain blocking until classified', async () => {
   assert.equal(decisionGate.status, 'needs_review');
   assert.equal(decisionGate.open_decisions[0].source, 'check:ui');
   assert.equal(prepare.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:decision_record'), true);
+});
+
+test('uiux intake template and validate writes story-scoped coverage', async () => {
+  const repo = await makeRepo();
+  const template = await runCli([
+    'uiux',
+    'intake',
+    'template',
+    repo,
+    '--id',
+    'story-uiux-intake',
+    '--route',
+    '/dashboard',
+    '--json'
+  ]);
+
+  assert.equal(template.exitCode, 0);
+  assert.equal(template.result.coverage.status, 'needs_intake_detail');
+  assert.equal(template.result.coverage.summary.missing, 18);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake.md')), true);
+
+  const intakePath = path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake.json');
+  const intake = await readJson(intakePath);
+  await writeJson(intakePath, fillUiuxIntake(intake));
+
+  const validate = await runCli([
+    'uiux',
+    'intake',
+    'validate',
+    repo,
+    '--id',
+    'story-uiux-intake',
+    '--json'
+  ]);
+
+  assert.equal(validate.exitCode, 0);
+  assert.equal(validate.result.coverage.status, 'ready_for_design');
+  assert.equal(validate.result.coverage.summary.explicit, 18);
+  assert.equal(validate.result.coverage.summary.missing, 0);
+  const coverage = await readJson(path.join(repo, '.vibepro', 'uiux', 'story-uiux-intake', 'uiux-intake-coverage.json'));
+  assert.equal(coverage.authority_boundary.conflict_policy, 'current_route_code_and_verified_contracts_win_over_intake_text');
+});
+
+test('design-modernize plan writes UI/UX intake coverage and flags vague-only briefs', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+    export default function Page() {
+      return <main><button>Start setup</button><p>Workspace onboarding</p></main>;
+    }
+  `);
+
+  const template = await runCli([
+    'uiux',
+    'intake',
+    'template',
+    repo,
+    '--id',
+    'story-uiux-plan',
+    '--route',
+    '/',
+    '--json'
+  ]);
+  assert.equal(template.exitCode, 0);
+  const intakePath = path.join(repo, '.vibepro', 'uiux', 'story-uiux-plan', 'uiux-intake.json');
+  await writeJson(intakePath, fillUiuxIntake(await readJson(intakePath)));
+
+  const withIntake = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-uiux-plan',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'make it better',
+    '--json'
+  ]);
+  assert.equal(withIntake.exitCode, 0);
+  assert.equal(withIntake.result.plan.uiux_intake_coverage.status, 'ready_for_design');
+  assert.equal(withIntake.result.plan.uiux_intake_coverage.summary.explicit, 18);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-uiux-plan', 'uiux-intake-coverage.json')), true);
+
+  const vagueOnly = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-vague-only',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'make it better',
+    '--json'
+  ]);
+  assert.equal(vagueOnly.exitCode, 0);
+  assert.equal(vagueOnly.result.plan.uiux_intake_coverage.status, 'needs_intake_detail');
+  assert.equal(vagueOnly.result.plan.uiux_intake_coverage.brief.needs_intake_detail, true);
+  assert.ok(vagueOnly.result.plan.uiux_intake_coverage.guidance.some((item) => /uiux intake template/.test(item)));
 });
 
 test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {

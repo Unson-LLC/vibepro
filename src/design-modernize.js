@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { deriveJourneyMap, getJourneyStatus } from './journey-map.js';
+import { resolveUiuxIntakeForPlan } from './uiux-intake.js';
 
 const DEFAULT_SCREEN_ROUTES = ['/'];
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -13,6 +14,12 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   const storyId = options.storyId ?? 'design-modernize';
   const product = options.product ?? inferProductName(root);
   const routes = await resolveDesignRoutes(root, options.routes);
+  const uiuxIntake = await resolveUiuxIntakeForPlan(root, {
+    storyId,
+    intakeFile: options.uiuxIntake,
+    brief: options.brief,
+    routes
+  });
   const bundle = await readDesignSystemBundle(root, options.designSystemBundle);
   const journeyContext = await ensureJourneyContextForDesignModernize(root, {
     journeyId: options.journeyId,
@@ -49,6 +56,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
         'current_ui_code',
         'current_screen_capture',
         'product_information_architecture',
+        'structured_uiux_intake_when_present',
         'optional_brand_or_design_system_bundle'
       ],
       external_generator_required: false,
@@ -61,6 +69,13 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       }
     },
     journey_context: journeyContext,
+    uiux_intake: {
+      status: uiuxIntake.coverage.status,
+      artifact: uiuxIntake.sourcePath,
+      authority: uiuxIntake.coverage.source.authority,
+      conflict_policy: uiuxIntake.coverage.authority_boundary.conflict_policy
+    },
+    uiux_intake_coverage: uiuxIntake.coverage,
     reference_design_system: designSystem,
     visual_foundations_reference: designSystem.visual_foundations ? {
       source: designSystem.visual_foundations.source,
@@ -84,6 +99,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       visual_hypothesis_candidates: '.vibepro/design-modernize/<story-id>/visual-hypotheses/',
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
       visual_foundations_reference: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json',
+      uiux_intake_coverage: '.vibepro/design-modernize/<story-id>/uiux-intake-coverage.json',
       derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
       journey_context: '.vibepro/design-modernize/<story-id>/journey-context.json',
       product_semantic_model: '.vibepro/design-modernize/<story-id>/product-semantic-model.json',
@@ -100,6 +116,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   await mkdir(outDir, { recursive: true });
   await writeFile(path.join(outDir, 'design-modernize.json'), `${JSON.stringify(plan, null, 2)}\n`);
   await writeFile(path.join(outDir, 'design-modernize.md'), renderDesignModernizePlan(plan));
+  await writeFile(path.join(outDir, 'uiux-intake-coverage.json'), `${JSON.stringify(uiuxIntake.coverage, null, 2)}\n`);
   await writeFile(path.join(outDir, 'design-briefs.md'), renderDesignBriefs(plan));
   await writeFile(path.join(outDir, 'implementation-spec.md'), renderImplementationSpec(plan));
   await writeFile(path.join(outDir, 'design-constraint-graph.json'), `${JSON.stringify(designConstraintGraph, null, 2)}\n`);
@@ -379,6 +396,7 @@ export function renderDesignModernizePlan(plan) {
 | Product | ${plan.product} |
 | Design Intelligence | ${plan.design_intelligence.model} |
 | Journey Context | ${journey.status ?? 'unknown'} (${journey.artifact_kind ?? '-'}) |
+| UI/UX Intake | ${plan.uiux_intake_coverage?.status ?? 'unknown'} |
 | Curated Journey | ${journey.curated ? 'yes' : 'no'} |
 | External generator required | ${plan.design_intelligence.external_generator_required} |
 | Reference Design System | ${plan.reference_design_system.title ?? '-'} (${plan.reference_design_system.id ?? '-'}) |
@@ -395,6 +413,18 @@ export function renderDesignModernizePlan(plan) {
 - Gate: ${journey.gate?.status ?? '-'} - ${journey.gate?.reason ?? journey.reason ?? '-'}
 
 ${(journey.next_commands ?? []).map((command) => `- Next: \`${command}\``).join('\n') || '- Next: -'}
+
+## UI/UX Intake
+
+- Status: ${plan.uiux_intake_coverage?.status ?? 'unknown'}
+- Artifact: ${plan.uiux_intake?.artifact ?? '-'}
+- Explicit: ${plan.uiux_intake_coverage?.summary?.explicit ?? 0}
+- Inferred: ${plan.uiux_intake_coverage?.summary?.inferred ?? 0}
+- Missing: ${plan.uiux_intake_coverage?.summary?.missing ?? 0}
+- Not applicable: ${plan.uiux_intake_coverage?.summary?.not_applicable ?? 0}
+- Conflict policy: ${plan.uiux_intake?.conflict_policy ?? '-'}
+
+${(plan.uiux_intake_coverage?.guidance ?? []).map((item) => `- Guidance: ${item}`).join('\n') || '- Guidance: ready'}
 
 ## Workflow
 
@@ -443,6 +473,13 @@ export function renderImplementationSpec(plan) {
 - Authority: ${journey.authority ?? '-'}
 - Gate: ${journey.gate?.status ?? '-'} - ${journey.gate?.reason ?? journey.reason ?? '-'}
 - Next commands: ${(journey.next_commands ?? []).length === 0 ? '-' : journey.next_commands.map((command) => `\`${command}\``).join(', ')}
+
+## UI/UX Intake
+
+- Status: ${plan.uiux_intake_coverage?.status ?? 'unknown'}
+- Artifact: ${plan.uiux_intake?.artifact ?? '-'}
+- Missing required fields: ${(plan.uiux_intake_coverage?.missing_required_fields ?? []).join(', ') || '-'}
+- Conflict policy: ${plan.uiux_intake?.conflict_policy ?? '-'}
 
 ## Invariants
 
