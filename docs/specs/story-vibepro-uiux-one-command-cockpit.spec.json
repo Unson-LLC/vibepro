@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "UI/UX prepare cockpit flow",
+      "mermaid": "flowchart LR\n  Story[Story] --> Prepare[uiux prepare]\n  Intake[UI/UX intake coverage] --> Prepare\n  IA[IA flow map] --> Prepare\n  Journey[Journey context] --> Prepare\n  DS[Design System evidence] --> Prepare\n  Gates[PR gates] --> Prepare\n  Prepare --> JSON[uiux-readiness.json]\n  Prepare --> HTML[uiux-cockpit.html]"
+    },
+    {
+      "kind": "authority",
+      "title": "Cockpit authority boundary",
+      "mermaid": "flowchart LR\n  HTML[Cockpit HTML] --> Navigation[Navigation surface]\n  JSON[Readiness JSON] --> Projection[Bounded read model]\n  Story[Story/Spec/Architecture] --> Authority[Authority]\n  Code[Current code] --> Authority\n  Gates[VibePro gates] --> Authority\n  Navigation -. links .-> Authority"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "UIOC-S-1",
+      "type": "scenario",
+      "statement": "uiux prepare creates story-scoped readiness JSON and cockpit HTML.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-one-command-cockpit.md" }],
+        "code_refs": [{ "file": "src/uiux-prepare.js", "anchor": "prepareUiuxCockpit" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIOC-S-1" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-prepare.js", "must_contain": "uiux-readiness.json" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIOC-S-1" }]
+      }
+    },
+    {
+      "id": "UIOC-S-2",
+      "type": "contract",
+      "statement": "Readiness status is one of the allowed UI/UX cockpit statuses and includes reasons.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-one-command-cockpit.md" }],
+        "code_refs": [{ "file": "src/uiux-prepare.js", "anchor": "ALLOWED_STATUSES" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIOC-S-2" }]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-prepare.js", "must_contain": "needs_design_system" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIOC-S-2" }]
+      }
+    },
+    {
+      "id": "UIOC-S-3",
+      "type": "invariant",
+      "statement": "Cockpit HTML links to source artifacts and does not embed full JSON dumps.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-one-command-cockpit.md" }],
+        "code_refs": [{ "file": "src/uiux-prepare.js", "anchor": "artifact_links" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIOC-S-3" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-prepare.js", "must_contain": "source_of_truth" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIOC-S-3" }]
+      }
+    },
+    {
+      "id": "UIOC-S-4",
+      "type": "contract",
+      "statement": "design-ssot bounded PR view points reviewers to UI/UX readiness and cockpit artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-one-command-cockpit.md" }],
+        "code_refs": [{ "file": "src/canonical-audit.js", "anchor": "uiux_cockpit" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIOC-S-4" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/canonical-audit.js", "must_contain": "uiux_cockpit" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIOC-S-4" }]
+      }
+    },
+    {
+      "id": "UIOC-S-5",
+      "type": "invariant",
+      "statement": "uiux prepare is idempotent and safe on dirty worktrees because it only writes VibePro UI/UX artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-uiux-one-command-cockpit.md" }],
+        "code_refs": [{ "file": "src/uiux-prepare.js", "anchor": ".vibepro/uiux" }],
+        "test_refs": [{ "file": "test/vibepro-cli.test.js", "anchor": "UIOC-S-5" }]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/uiux-prepare.js", "must_contain": "collectGitContext" }],
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "UIOC-S-5" }]
+      }
+    }
+  ],
+  "open_questions": []
+}

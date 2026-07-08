@@ -127,7 +127,9 @@ export function projectPrPrepareForLlm(preparation, view = 'canonical-summary') 
       ...base,
       design_ssot_reconciliation: scopedDesignSsotReconciliation(context.design_ssot_reconciliation, excluded),
       artifact_refs: {
-        design_ssot_reconciliation: artifactRefs.design_ssot_reconciliation
+        design_ssot_reconciliation: artifactRefs.design_ssot_reconciliation,
+        uiux_readiness: artifactRefs.uiux_readiness,
+        uiux_cockpit: artifactRefs.uiux_cockpit
       },
       excluded_from_view: [...new Set(excluded)]
     });
@@ -347,6 +349,7 @@ function buildPrPrepareArtifactRefs(preparation, context) {
   // Default resolution routes over-budget artifacts to their bounded summary; a
   // full-path pointer is preserved under full_artifact_refs for deep dives.
   const budget = preparation?.artifact_budget ?? null;
+  const storyId = preparation?.story?.story_id ?? preparation?.story_id ?? '<story-id>';
   const fullRefs = {};
   const resolve = (filename, key) => {
     const fullPath = prPrepareArtifactPath(preparation, filename);
@@ -366,6 +369,8 @@ function buildPrPrepareArtifactRefs(preparation, context) {
     gate_dag: context.gate_dag ? resolve('gate-dag.json', 'gate_dag') : null,
     traceability: prPrepareArtifactPath(preparation, 'traceability.json'),
     design_ssot_reconciliation: context.design_ssot_reconciliation ? resolve('design-ssot-reconciliation.json', 'design_ssot_reconciliation') : null,
+    uiux_readiness: `.vibepro/uiux/${storyId}/uiux-readiness.json`,
+    uiux_cockpit: `.vibepro/uiux/${storyId}/uiux-cockpit.html`,
     senior_gap_judgment: context.senior_gap_judgment ? resolve('senior-gap-judgment.json', 'senior_gap_judgment') : null,
     pr_body: prPrepareArtifactPath(preparation, 'pr-body.md')
   });

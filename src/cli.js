@@ -54,6 +54,10 @@ import {
   renderUiuxIaFlowMapSummary
 } from './uiux-flow-map.js';
 import {
+  prepareUiuxCockpit,
+  renderUiuxPrepareSummary
+} from './uiux-prepare.js';
+import {
   auditDesignSsotCoverage,
   getDesignSsotStatus,
   initDesignSsot,
@@ -384,6 +388,7 @@ Usage:
   vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
   vibepro uiux map [repo] --id <story-id> [--uiux-intake <file>] [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -602,6 +607,7 @@ Usage:
   vibepro uiux intake template [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
   vibepro uiux intake validate [repo] --id <story-id> [--intake <file>] [--brief <text>] [--route <path>] [--routes <csv>] [--json]
   vibepro uiux map [repo] --id <story-id> [--route <path>] [--routes <csv>] [--json]
+  vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
@@ -1278,6 +1284,18 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderUiuxIaFlowMapSummary(result));
+        return { exitCode: 0, command, subcommand: area, result };
+      }
+      if (area === 'prepare') {
+        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+        const result = await prepareUiuxCockpit(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          designSystemId: getOption(rest, '--design-system-id') ?? getOption(rest, '--design-system'),
+          baseRef: getOption(rest, '--base')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.readiness, null, 2)}\n`
+          : renderUiuxPrepareSummary(result));
         return { exitCode: 0, command, subcommand: area, result };
       }
       const subcommand = rest[1];
