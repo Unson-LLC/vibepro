@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-roi-measurement-loop-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Round-2 diff (7d3d6941..6b4145f0) is docs-only lineage/architecture updates plus a test-only CI fixture identity fix; no source changes. The fixture fix adds git identity config immediately after clone, before any commit, resolving the CI empty-ident failure without weakening assertions. Independent focused re-run under GIT_CONFIG_GLOBAL=/dev/null passed 11/11 matching the head-bound integration record. RML-CONTRACT-001-005 remain covered; round-1 low findings carried over as followups.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed 7d3d6941..6b4145f0 in full (design-ssot.json, architecture doc, integration test), confirmed identity config precedes all git write ops, independently re-ran the integration test under CI-equivalent env (11/11 pass), cross-checked verification-evidence.json head binding against /tmp/vibepro-rml-ledger2.log and fulltest log.",
+    "evidence": "node --test test/gate-outcome-ledger-promotion-integration.test.js with GIT_CONFIG_GLOBAL=/dev/null (11/11 pass, run by reviewer); /tmp/vibepro-rml-ledger2.log; /tmp/vibepro-rml-fulltest.log",
+    "inputs": [
+      "design-ssot.json",
+      "docs/architecture/vibepro-roi-measurement-loop-closure.md",
+      "test/gate-outcome-ledger-promotion-integration.test.js",
+      ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial: the CI fix could mask a real regression or weaken test rigor -> final: pass, because it is a pure environment-setup addition placed before any commit call, verified by an independent CI-equivalent re-run passing 11/11"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rml",
+    "actual_root": "/private/tmp/vibepro-rml",
+    "expected_root": null,
+    "expected_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+    "current_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rml",
+      "actual_root": "/private/tmp/vibepro-rml",
+      "expected_root": null,
+      "expected_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+      "current_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T01:28:41.940Z",
+  "git_context": {
+    "head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+    "current_branch": "claude/roi-measurement-loop-closure",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T01:28:41.914Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "de66a150073360734fcc456b4a56bf8b8b9ab3abf3f8d735b0d8cd3bd56ce266",
+        "size": 96460
+      },
+      {
+        "path": "docs/architecture/vibepro-roi-measurement-loop-closure.md",
+        "sha256": "69e2a90936cd7c9123e2bc2b873ea6eabfb5c572ab6251d1d5aa8e942111ff30",
+        "size": 4632
+      },
+      {
+        "path": "test/gate-outcome-ledger-promotion-integration.test.js",
+        "sha256": "2b58455cb5a303a357574577e1314f5fb865ac6891cc46833700683f2362b15f",
+        "size": 8964
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "9aec38befcef1127a1c20fab10eed5b53d2083a564008097a0edacc2468a8563"
+  },
+  "source_fingerprint": "a2fba9e43e886167ac9b792ff3a09f2f623691061a56ea4a65d694469f9a550f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a1eec34554dcb68ef",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a1eec34554dcb68ef",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict-r2.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

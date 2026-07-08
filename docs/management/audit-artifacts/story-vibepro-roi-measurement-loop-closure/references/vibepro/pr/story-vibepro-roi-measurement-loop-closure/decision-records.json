@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-roi-measurement-loop-closure",
+  "updated_at": "2026-07-07T20:36:53.740Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rml",
+      "actual_root": "/private/tmp/vibepro-rml",
+      "expected_root": null,
+      "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+      "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783456613738-1526afc2",
+      "story_id": "story-vibepro-roi-measurement-loop-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Clean-branch/split recommendation resolved: keeping this Story on a single branch/PR is correct. All 3 commits are the Story's own implementation, its own focused/integration/e2e verification, and its own spec/story doc updates for the same acceptance criteria (RML-S-1..6 / RML-CONTRACT-001..005); splitting would separate the contract from the tests that prove it.",
+      "reason": "Verified via git log --oneline and git diff --stat origin/main...HEAD that no unrelated files or other stories are present on this branch.",
+      "reviewer": "claude-code",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rml",
+          "actual_root": "/private/tmp/vibepro-rml",
+          "expected_root": null,
+          "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+        "current_branch": "claude/roi-measurement-loop-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T20:36:53.731Z"
+      },
+      "recorded_at": "2026-07-07T20:36:53.740Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783456592506-301ee11a",
+      "story_id": "story-vibepro-roi-measurement-loop-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope is intentional and Story-scoped: all 3 commits (feat ledger promotion wiring, docs marking acceptance criteria implemented, test+spec threat-model diagram addition) implement and verify the single Story story-vibepro-roi-measurement-loop-closure end-to-end (src/merge-manager.js promotion wiring, src/usage-report.js --gate-roi read path, src/gate-outcome-ledger.js central ledger model, plus focused/integration/e2e tests and the spec/story docs for the same contracts RML-CONTRACT-001..005). Splitting would separate a contract from its own verification evidence.",
+      "reason": "3 commits on this branch are all part of the same Story implementation + its own tests/docs; no unrelated changes are bundled. Confirmed via git log and git diff --stat against origin/main.",
+      "reviewer": "claude-code",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rml",
+          "actual_root": "/private/tmp/vibepro-rml",
+          "expected_root": null,
+          "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+        "current_branch": "claude/roi-measurement-loop-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T20:36:32.498Z"
+      },
+      "recorded_at": "2026-07-07T20:36:32.507Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438432703-c9a8cba9",
+      "story_id": "story-vibepro-roi-measurement-loop-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewability reviewed: single-intent PR (ROI ledger promotion + gate-roi report), 8 files, one review owner; review owner map recorded per surface with blast radius",
+      "reason": "One reviewer can read this PR as a single coherent decision: all changed files serve the ledger promotion intent (RML-CONTRACT-001..005); no unrelated decisions are bundled; owner map artifact enumerates each surface with its blast radius and review role",
+      "reviewer": "claude-code",
+      "artifact": ".vibepro/evidence-status/scope-review-owner-map.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rml",
+          "actual_root": "/private/tmp/vibepro-rml",
+          "expected_root": null,
+          "expected_head_sha": "ec72fa6a121255945c3bf876e958fca7634b6fe8",
+          "current_head_sha": "ec72fa6a121255945c3bf876e958fca7634b6fe8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ec72fa6a121255945c3bf876e958fca7634b6fe8",
+        "current_branch": "claude/roi-measurement-loop-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:33:52.691Z"
+      },
+      "recorded_at": "2026-07-07T15:33:52.704Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-rml",
+        "actual_root": "/private/tmp/vibepro-rml",
+        "expected_root": null,
+        "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+        "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783456613738-1526afc2",
+      "story_id": "story-vibepro-roi-measurement-loop-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Clean-branch/split recommendation resolved: keeping this Story on a single branch/PR is correct. All 3 commits are the Story's own implementation, its own focused/integration/e2e verification, and its own spec/story doc updates for the same acceptance criteria (RML-S-1..6 / RML-CONTRACT-001..005); splitting would separate the contract from the tests that prove it.",
+      "reason": "Verified via git log --oneline and git diff --stat origin/main...HEAD that no unrelated files or other stories are present on this branch.",
+      "reviewer": "claude-code",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rml",
+          "actual_root": "/private/tmp/vibepro-rml",
+          "expected_root": null,
+          "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+        "current_branch": "claude/roi-measurement-loop-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T20:36:53.731Z"
+      },
+      "recorded_at": "2026-07-07T20:36:53.740Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-records.json"
+}

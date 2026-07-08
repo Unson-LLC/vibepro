@@ -1,0 +1,699 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-roi-measurement-loop-closure",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-08T01:31:56.729Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:ec608d555f1538281e4e4642fc529c0f8e79d5c9e030c8f8094dbfac8ad8515a",
+    "compressed_hash": "sha256:5ad88b07a8aeae77f51d1dcab02f0deb203c982a06f44bd84fe103f9f1cad2c4",
+    "expanded_bytes": 13732,
+    "compressed_bytes": 3484,
+    "expanded_line_count": 351,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-roi-measurement-loop-closure",
+    "cost": {
+      "compressed_bytes": 3484,
+      "expanded_bytes": 13732,
+      "expanded_line_count": 351,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/297",
+    "merge_commit_sha": "d51162b68ef70eb7305562cf858d179b024f042b",
+    "merged_at": "2026-07-08T01:31:55Z",
+    "current_head_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...6b4145f0d26fe27956c9da027395b38f46b5ef9b"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 44,
+    "copied_reference_count": 35,
+    "unresolved_reference_count": 4,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-roi-measurement-loop-closure"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:ec608d555f1538281e4e4642fc529c0f8e79d5c9e030c8f8094dbfac8ad8515a"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:e309627c81cb9defc8278aa2df33a15860d5ceb37ecb33cd1620255b36ea0ee7",
+      "audit_digest": "sha256:e309627c81cb9defc8278aa2df33a15860d5ceb37ecb33cd1620255b36ea0ee7",
+      "line_count": 206,
+      "raw_line_count": 206,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:44df49c4a8c983cdbb74fb3f96d88c5fd9eb0ce557ecc96e9b54f9a8c5303480",
+      "audit_digest": "sha256:1a204003275da2844da83bdd643ee87e6346c5eeedf384efed7bc4586c228119",
+      "line_count": 3735,
+      "raw_line_count": 22574,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:80c6a5c1e446cefe7f2a1dc2b9b065f59db0e90d1fcd49b11c9231b4d3f28c0c",
+      "audit_digest": "sha256:dfd7608708c0500e836800debf1a502ed9d1a7c8ee5663a9266582c6e696fc1d",
+      "line_count": 1635,
+      "raw_line_count": 3789,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:2206a90693740293f4c2db80331f65ad418399c0b21c342756d31ccc8bb01560",
+      "audit_digest": "sha256:799deae96846fc362878543b948b96eab012c387b812bef31818ec047bb28b20",
+      "line_count": 1492,
+      "raw_line_count": 3643,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:9901b893422800dd0638e631c63d11018da8dc5da0024d2c9322721971d52120",
+      "audit_digest": "sha256:f8b5ce94cb4332f53bf194e2892670021e5dfda9d6c103a8c31ecc6f4b225704",
+      "line_count": 52,
+      "raw_line_count": 712,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:5dc112ca6379e8e3ce3146bc06a4a1988874e542e979d4a2e3bb87d1629c8f82",
+      "audit_digest": "sha256:0e8459fcdbd9fd90b04ba221ef888c3f9fb7bba3cd19f7208601bfe09b59cc78",
+      "line_count": 1676,
+      "raw_line_count": 3887,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:38cd5863215b265faae54deedf5364be5b05122162f33df4ace30fe45a9813ea",
+      "audit_digest": "sha256:38cd5863215b265faae54deedf5364be5b05122162f33df4ace30fe45a9813ea",
+      "line_count": 292,
+      "raw_line_count": 292,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:d199876c2c0a5985467af0bf50eef44ad93ee728ea0295c716995a90db3c01ae",
+      "audit_digest": "sha256:581d25a947508151480c5ca0cb0c593c0d02671b7f5cb6c5e3d30d31941cdf73",
+      "line_count": 85,
+      "raw_line_count": 554,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:c997d32075bc2c67a414eb906ddc5e070e75665455d32349da6377c2482a5731",
+      "audit_digest": "sha256:c997d32075bc2c67a414eb906ddc5e070e75665455d32349da6377c2482a5731",
+      "line_count": 84,
+      "raw_line_count": 84,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:e2468c13f6d9241953ffb33beeaafbddcdf3b0c6643ba2524d801b8261c8fda0",
+      "audit_digest": "sha256:e2468c13f6d9241953ffb33beeaafbddcdf3b0c6643ba2524d801b8261c8fda0",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:6f02ac4a167c9fe9970d8e34b56ea21a2d607834c8fe3e757490610fbb625776",
+      "audit_digest": "sha256:6f02ac4a167c9fe9970d8e34b56ea21a2d607834c8fe3e757490610fbb625776",
+      "line_count": 122,
+      "raw_line_count": 122,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
+      "digest": "sha256:b6799c2533b5f07a0c2c4fa6b60a8e13b203570414398017b5d2ccb20d39e843",
+      "audit_digest": "sha256:b6799c2533b5f07a0c2c4fa6b60a8e13b203570414398017b5d2ccb20d39e843",
+      "line_count": 256,
+      "raw_line_count": 256,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence-status/scope-review-owner-map.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/evidence-status/scope-review-owner-map.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict-r2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict-r2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-14-26.956Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-14-26.956Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-28-41.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-28-41.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/diagnostics/2026-07-07T102443Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence-status/scope-review-owner-map.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/evidence-status/scope-review-owner-map.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/pr/story-vibepro-roi-measurement-loop-closure/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict-r2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict-r2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-14-26.956Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-14-26.956Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-28-41.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/history/review-result-gate_evidence-2026-07-08T01-28-41.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/references/vibepro/stories/story-vibepro-roi-measurement-loop-closure/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5163646
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102443Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 967392
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4754995
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    }
+  ]
+}

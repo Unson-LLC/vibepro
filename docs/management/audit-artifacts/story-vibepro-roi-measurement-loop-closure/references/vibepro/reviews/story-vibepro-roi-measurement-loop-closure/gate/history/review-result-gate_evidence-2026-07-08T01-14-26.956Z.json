@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-roi-measurement-loop-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Central-ledger promotion rides the same temp-worktree commit as canonical audit persistence (RML-CONTRACT-001, proven by real-git integration test), entry_key dedupe holds against actually-pushed ledger bytes (RML-CONTRACT-002), corrupt central ledger fails closed without overwrite (RML-CONTRACT-004), unclassified_count explicit in JSON and text render paths (RML-CONTRACT-005), --gate-roi opt-in and backward compatible. 11/11 targeted tests pass, non-tautological. Two low findings recorded as followups: integration test mirrors persistCanonicalAuditToBase staging instead of calling it; local ledger never pruned after promotion.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read src/gate-outcome-ledger.js in full, src/merge-manager.js persistence wiring (355-425, 955-1095), src/usage-report.js gate-roi paths, src/cli.js flag wiring, central ledger seed, both test files in full; independently ran node --test on both ledger test files (11/11 pass) from the worktree; tailed /tmp/vibepro-rml-fulltest.log confirming no failures.",
+    "evidence": "node --test test/gate-outcome-ledger-central-promotion.test.js test/gate-outcome-ledger-promotion-integration.test.js (11/11 pass, run by reviewer); /tmp/vibepro-rml-fulltest.log tail",
+    "inputs": [
+      "src/gate-outcome-ledger.js",
+      "src/merge-manager.js",
+      "src/usage-report.js",
+      "src/cli.js",
+      "docs/management/roi-ledger/ledger.json",
+      "test/gate-outcome-ledger-central-promotion.test.js",
+      "test/gate-outcome-ledger-promotion-integration.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: promotion might create a follow-up commit or silently overwrite a corrupt central ledger -> final: pass, because stagePaths only includes the central ledger when status=promoted within the same audit-persistence commit, failed parse surfaces as merge warning without overwrite, and the real-git integration tests would fail against any pre-fix implementation"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rml",
+    "actual_root": "/private/tmp/vibepro-rml",
+    "expected_root": null,
+    "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+    "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rml",
+      "actual_root": "/private/tmp/vibepro-rml",
+      "expected_root": null,
+      "expected_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+      "current_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T01:14:26.956Z",
+  "git_context": {
+    "head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+    "current_branch": "claude/roi-measurement-loop-closure",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T01:14:26.914Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "7d3d69418cbbf4dae6c9c3eddf003c9cc6725514",
+    "surface_files": [
+      {
+        "path": "docs/management/roi-ledger/ledger.json",
+        "sha256": "77ff1cffef2ee3eaf985fd20bdcc609c549062d3ebb5f110d0477ec6cbdfe283",
+        "size": 116
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "1a88aee98b6923ffebf2303980f13ed62e3e09e6e0e42a5a970fd72501401406",
+        "size": 157038
+      },
+      {
+        "path": "src/gate-outcome-ledger.js",
+        "sha256": "8817f040b8f646c7cd5bb51a8c7ca82d5f5f24ef06be388a8002d8da1886e15d",
+        "size": 19489
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "0db6c994851f0468662d2f96628629c0f04ec9bc3cdb63f2aefd843f64fc2195",
+        "size": 43326
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "9a07fdb4c5dd53fc0f8a1dedab5ad24b7a838beea9347867ed3968bfcb1a7a0f",
+        "size": 97084
+      },
+      {
+        "path": "test/gate-outcome-ledger-central-promotion.test.js",
+        "sha256": "47933b95fb3c6c3a9d5bc2ba20f93b6e969d4651a6efe83645b063bba279afa0",
+        "size": 8096
+      },
+      {
+        "path": "test/gate-outcome-ledger-promotion-integration.test.js",
+        "sha256": "3613ffa8b3874d7a163efb5c8177694d8ff028a61956418b094d7431f9c15218",
+        "size": 8755
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c05cbe3942c41176d4f4101f01f186bba170f70b18843cd117211c658ccab1f1"
+  },
+  "source_fingerprint": "71d6dd43c53ea849be54ccf3fbd01042b3854e5b7338994cf5449b40f3a7de32",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a5509f26cd0955a17",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a5509f26cd0955a17",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/gate-evidence-verdict.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-roi-measurement-loop-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

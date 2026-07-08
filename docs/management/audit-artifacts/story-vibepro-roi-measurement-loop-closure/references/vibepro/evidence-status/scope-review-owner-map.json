@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "review_owner_map",
+  "story_id": "story-vibepro-roi-measurement-loop-closure",
+  "intent": "single intent: promote gate-outcome ROI ledger entries into a tracked central ledger at execute merge and expose usage report --gate-roi",
+  "owners": [
+    { "surface": "src/gate-outcome-ledger.js", "owner_review_role": "gate:gate_evidence", "blast_radius": "central ledger serialization/dedupe helpers (new exports only)" },
+    { "surface": "src/merge-manager.js", "owner_review_role": "gate:gate_evidence", "blast_radius": "post-merge canonical audit persistence step (promotion rides existing commit)" },
+    { "surface": "src/usage-report.js", "owner_review_role": "gate:gate_evidence", "blast_radius": "additive --gate-roi read path and render section" },
+    { "surface": "src/cli.js", "owner_review_role": "gate:gate_evidence", "blast_radius": "flag parsing + help text only" },
+    { "surface": "docs/guide/gate-tuning-ritual.md", "owner_review_role": "gate:gate_evidence", "blast_radius": "ritual read-path doc update" },
+    { "surface": "docs/management/roi-ledger/ledger.json", "owner_review_role": "gate:gate_evidence", "blast_radius": "seeded empty central ledger" },
+    { "surface": "test/gate-outcome-ledger-central-promotion.test.js", "owner_review_role": "gate:gate_evidence", "blast_radius": "new focused test file" }
+  ],
+  "split_assessment": "no unrelated decisions bundled; all files serve the single promotion/report intent (RML-CONTRACT-001..005)"
+}
