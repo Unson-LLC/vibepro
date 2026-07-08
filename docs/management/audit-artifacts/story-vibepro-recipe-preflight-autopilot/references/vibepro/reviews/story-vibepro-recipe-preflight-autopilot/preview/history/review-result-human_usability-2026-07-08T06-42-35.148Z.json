@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "needs_changes",
+  "summary": "MEDIUM preflight-multiline-next-command-breaks-bullet: architecture-reason-frontmatter's next_command embeds a literal newline and renderPrAutopilotSummary renders it inline, producing an orphaned second line with no bullet marker (reproduced on a synthetic repo); ambiguous with multiple detected recipes and uncovered by the CLI-surface e2e (which exercises only single-line rows). MEDIUM preflight-summary-drops-reason: the rendered text omits each recipe's reason field, so non-JSON operators see only recipe_id + command with no explanation. LOW preflight-no-user-doc-coverage: no docs mention pr autopilot or the Preflight section (pre-existing gap, lower priority). Shell-quoting fix from round 1 verified correct.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Ran ad-hoc scripts against the real runRecipePreflight + renderPrAutopilotSummary path on synthetic repos (reproducing the multiline break and verifying the quoting fix), executed the e2e suite (8/8), grepped docs for preflight/autopilot coverage (zero hits).",
+    "evidence": "synthetic-repo render reproduction (2 runs, by reviewer); node --test e2e spec (8/8); docs grep (0 hits)",
+    "inputs": [
+      "src/recipe-preflight.js",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: only re-verify the quoting fix -> final: needs_changes, because exercising the same rendering path more broadly surfaced a reproducible multiline-bullet break and a missing-reason usability gap"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rpa",
+    "actual_root": "/private/tmp/vibepro-rpa",
+    "expected_root": null,
+    "expected_head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+    "current_head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+      "current_head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T06:42:35.148Z",
+  "git_context": {
+    "head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+    "current_branch": "claude/recipe-preflight-autopilot",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T06:42:35.121Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "a263a616eed912017eb4303c5ead5d01cc597b33",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "1a88aee98b6923ffebf2303980f13ed62e3e09e6e0e42a5a970fd72501401406",
+        "size": 157038
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7cb75527a875a83fbffa383da48e65da52f10fa0cfae7b39281eef7881ff2998",
+        "size": 611962
+      },
+      {
+        "path": "src/recipe-preflight.js",
+        "sha256": "e026680c21a0cade8bee7f2901c13f8b6b58d5bdce0ed95fd1abd66059d590bf",
+        "size": 21357
+      },
+      {
+        "path": "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js",
+        "sha256": "7381d930d576db1065b30cd00daf00d8373450072f2f54a13432c534ceba7995",
+        "size": 17077
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "367532ec8e6036654170c88ea4f5225d6972ddb5fc03ffdc62623ac5f0bb109e"
+  },
+  "source_fingerprint": "8aceb72d636cdf18a09ee8b6def300d3bd080e698e725d19ed420395dc4c5b2b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a854c67d9d3343d86",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a854c67d9d3343d86",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

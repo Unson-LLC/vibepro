@@ -1,0 +1,1399 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-08T14:41:56.349Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:16555ba772a8fde18651e12f5daf21802cc6c30f3befdba5cc0fd22679226a94",
+    "compressed_hash": "sha256:02bd588a16f4a47a798d0914d107dd8b2f72e40b8a16af8a1d3a935cb858ba62",
+    "expanded_bytes": 32429,
+    "compressed_bytes": 6290,
+    "expanded_line_count": 764,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-recipe-preflight-autopilot",
+    "cost": {
+      "compressed_bytes": 6290,
+      "expanded_bytes": 32429,
+      "expanded_line_count": 764,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/307",
+    "merge_commit_sha": "f51a4528aeff97cbbdff6f474ee0191d1d5a90e3",
+    "merged_at": "2026-07-08T14:41:54Z",
+    "current_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...1b9625011b8ea95bd299f641f83ce5e369d4e45b"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 91,
+    "copied_reference_count": 66,
+    "unresolved_reference_count": 9,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-recipe-preflight-autopilot"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:16555ba772a8fde18651e12f5daf21802cc6c30f3befdba5cc0fd22679226a94"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:59ace20db11ee957fb96cfa18efd375a0a942120638848d2d5f1b02c43b8449a",
+      "audit_digest": "sha256:59ace20db11ee957fb96cfa18efd375a0a942120638848d2d5f1b02c43b8449a",
+      "line_count": 206,
+      "raw_line_count": 206,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:09f26dd6a592368884555f156584d2fbe512ab7767043fb2546cd45cf18e4eae",
+      "audit_digest": "sha256:00031f668172b903b72b929895f744e8997e97c9736b6b7c299e005219c44a0b",
+      "line_count": 6637,
+      "raw_line_count": 27858,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:5937f0a1435ca4290277e8d30c886894e4761f0539325ba152556876d6aa070a",
+      "audit_digest": "sha256:104e02a337e813de86789c41db21602359da1a1d0871c2c7ef2bfa8910cd0d3b",
+      "line_count": 2264,
+      "raw_line_count": 5291,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:e9de13e784ac3e6a7f7bce41cfb245b6806ba51dba1169b9b20a9ed1078f08af",
+      "audit_digest": "sha256:6ea69ce984fe966831a50acaf93fe1f7e1b48afb7accfc0810f4300df665d611",
+      "line_count": 2146,
+      "raw_line_count": 5159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:2b253b38a2741ab94e5a1dc0f95843af6ae22ba9c9e34fd5fd7fe2b8cbc76bd0",
+      "audit_digest": "sha256:2d6009ad15148d7af6f249b3ccee3e32eafc8a5ee4d09d5bf46af8e68c12a169",
+      "line_count": 52,
+      "raw_line_count": 857,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:5ac0880c8176c3050b68880c26f934ce1058f3d467232d211216cea82899871e",
+      "audit_digest": "sha256:dbe150566f263a058cded5ddb64c0c210c9c26a1fe017a94cdd7f7a453e53c36",
+      "line_count": 2330,
+      "raw_line_count": 5399,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:329387156e11c828452ca7414d2c6e60cd4a80a3f8c72372ac5e527aaa95f6b6",
+      "audit_digest": "sha256:329387156e11c828452ca7414d2c6e60cd4a80a3f8c72372ac5e527aaa95f6b6",
+      "line_count": 482,
+      "raw_line_count": 482,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:dd282f0089261fb8610a9b5da9756e8378e14cd450ec21a50715b1fa5db86b62",
+      "audit_digest": "sha256:c461ee08ad30bf9edb7d64fa4b897255d60c3d0ddbb8d876f9dac30beb67cbf7",
+      "line_count": 85,
+      "raw_line_count": 535,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:99f0b4b4754151fa96f86abe022fc08a2f90c6fcb23bac1f41379c2e401636f5",
+      "audit_digest": "sha256:99f0b4b4754151fa96f86abe022fc08a2f90c6fcb23bac1f41379c2e401636f5",
+      "line_count": 134,
+      "raw_line_count": 134,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:a7b36b44f3401a9ec1e6cf1d39b222ef8137d9a46b30ede4164885401d747773",
+      "audit_digest": "sha256:a7b36b44f3401a9ec1e6cf1d39b222ef8137d9a46b30ede4164885401d747773",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:67742f4778af2e6e2a60692522cb33586ac5e70faaddb49c17d47162c41d0a92",
+      "audit_digest": "sha256:67742f4778af2e6e2a60692522cb33586ac5e70faaddb49c17d47162c41d0a92",
+      "line_count": 115,
+      "raw_line_count": 115,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:ad1c1d23639c6e8198ea13ff1163d9926d6fa79412af43bf1f89720405d33057",
+      "audit_digest": "sha256:ad1c1d23639c6e8198ea13ff1163d9926d6fa79412af43bf1f89720405d33057",
+      "line_count": 312,
+      "raw_line_count": 312,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:93f94c4c3d91972860eeaa38f0140854a17c6b1fb31defc306a4bcfc40554c20",
+      "audit_digest": "sha256:93f94c4c3d91972860eeaa38f0140854a17c6b1fb31defc306a4bcfc40554c20",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:91e96055f4b39b6932787709b03131d725e4c3428dc163709e12a80e9f0aa5d3",
+      "audit_digest": "sha256:91e96055f4b39b6932787709b03131d725e4c3428dc163709e12a80e9f0aa5d3",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:aab4bc08f810a0b0fd3d27e6abd290a56fb8c894d63c3130260d12ce76c94f61",
+      "audit_digest": "sha256:aab4bc08f810a0b0fd3d27e6abd290a56fb8c894d63c3130260d12ce76c94f61",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:ec8cd6efa7ac34882581448e05c35053afcaab78c18e1806b712761d2d154f64",
+      "audit_digest": "sha256:ec8cd6efa7ac34882581448e05c35053afcaab78c18e1806b712761d2d154f64",
+      "line_count": 117,
+      "raw_line_count": 117,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:01e6c3dc41e2fb4b9b7187d09279553011c578f11aee5f7b961eeddafc7a1f17",
+      "audit_digest": "sha256:01e6c3dc41e2fb4b9b7187d09279553011c578f11aee5f7b961eeddafc7a1f17",
+      "line_count": 121,
+      "raw_line_count": 121,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:acfd6ec01249e4c41552f0d8f178528e5ecb61c57260c11ba4b386eae45c05e4",
+      "audit_digest": "sha256:acfd6ec01249e4c41552f0d8f178528e5ecb61c57260c11ba4b386eae45c05e4",
+      "line_count": 406,
+      "raw_line_count": 406,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:37a320f6816637327ee4dc28fad30df8503d11a91067a4ad70293e0bf6c26c77",
+      "audit_digest": "sha256:37a320f6816637327ee4dc28fad30df8503d11a91067a4ad70293e0bf6c26c77",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:632db0d7eb03208ec5d46c0491de50ba12df23633e25259ed8c7f500975c98e8",
+      "audit_digest": "sha256:632db0d7eb03208ec5d46c0491de50ba12df23633e25259ed8c7f500975c98e8",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:378ba7d3c390568b8131b199f6c02d538a1a2a31a02c2f67b207ebf4d9a1bc4e",
+      "audit_digest": "sha256:378ba7d3c390568b8131b199f6c02d538a1a2a31a02c2f67b207ebf4d9a1bc4e",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:0a9e4c052cf43a13b7ea82ea3eaea479b1bafa8724e741f1ffb203a93945beda",
+      "audit_digest": "sha256:0a9e4c052cf43a13b7ea82ea3eaea479b1bafa8724e741f1ffb203a93945beda",
+      "line_count": 115,
+      "raw_line_count": 115,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:55d963aa59d9b49ebade01ada8c4c159f73ed0f2efa8e5d3270f4e51ac8a42f7",
+      "audit_digest": "sha256:55d963aa59d9b49ebade01ada8c4c159f73ed0f2efa8e5d3270f4e51ac8a42f7",
+      "line_count": 115,
+      "raw_line_count": 115,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:21209dc7224d96ace975c2303e07aa871082540dd1f422b102b288a1c449b4f5",
+      "audit_digest": "sha256:21209dc7224d96ace975c2303e07aa871082540dd1f422b102b288a1c449b4f5",
+      "line_count": 402,
+      "raw_line_count": 402,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:dd482aa7b99487ab0f457cb6aab02ed7ee5efca0b4424613c6e6a23851522bf4",
+      "audit_digest": "sha256:dd482aa7b99487ab0f457cb6aab02ed7ee5efca0b4424613c6e6a23851522bf4",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:eef902f03052effa45d2ed1ad4302ccfb67ceb5ce045fa40fda6c6ad1a8074d9",
+      "audit_digest": "sha256:eef902f03052effa45d2ed1ad4302ccfb67ceb5ce045fa40fda6c6ad1a8074d9",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-request-network_runtime.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:566e5ffc0b265e939097582d59e95ecce0c756515ca85334f1567dcfd748d0cd",
+      "audit_digest": "sha256:566e5ffc0b265e939097582d59e95ecce0c756515ca85334f1567dcfd748d0cd",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:8dfc82863ac9a3fdcba8c53c6cc1e5bf4ede0c29ce338015ce87b8e299b728ac",
+      "audit_digest": "sha256:8dfc82863ac9a3fdcba8c53c6cc1e5bf4ede0c29ce338015ce87b8e299b728ac",
+      "line_count": 115,
+      "raw_line_count": 115,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-result-network_runtime.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:f95b75e7404b45aba8ce226595e2f45ba1a580f8abbb3068bf6928b15fa07f03",
+      "audit_digest": "sha256:f95b75e7404b45aba8ce226595e2f45ba1a580f8abbb3068bf6928b15fa07f03",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:d18ef3e219676e9ccc7c0f86d0144001efb3305a98e899af0fdcfc36c4afb91d",
+      "audit_digest": "sha256:d18ef3e219676e9ccc7c0f86d0144001efb3305a98e899af0fdcfc36c4afb91d",
+      "line_count": 408,
+      "raw_line_count": 408,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:aabd719b4cd9e41ce5b4cb7b9a800c7025132089da1d3158f29b74bee59e4878",
+      "audit_digest": "sha256:aabd719b4cd9e41ce5b4cb7b9a800c7025132089da1d3158f29b74bee59e4878",
+      "line_count": 234,
+      "raw_line_count": 234,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-request-e2e_ux.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:b9851aed4e984a009f4f6ee9a10aefbe38011ee57e73a1d18816ae6399b3abaa",
+      "audit_digest": "sha256:b9851aed4e984a009f4f6ee9a10aefbe38011ee57e73a1d18816ae6399b3abaa",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-request-gate_coverage.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:06c75547a2c9639f3c27335ef3959eaacfb54eff4ce6b12817a92181cbc0260f",
+      "audit_digest": "sha256:06c75547a2c9639f3c27335ef3959eaacfb54eff4ce6b12817a92181cbc0260f",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-result-e2e_ux.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:686a76c95efeb5fc182ca02ed0ce800f9857080c870e2738abadb454ef90b155",
+      "audit_digest": "sha256:686a76c95efeb5fc182ca02ed0ce800f9857080c870e2738abadb454ef90b155",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-result-gate_coverage.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:559e4d30740870d2abd48ee90f54c5735d798f5d5cec74ceb69bb72bb587caa9",
+      "audit_digest": "sha256:559e4d30740870d2abd48ee90f54c5735d798f5d5cec74ceb69bb72bb587caa9",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/audit-replay-bundle.json.gz",
+      "digest": "sha256:4065e7806e637205a48a07cdb85ef038a13e328a2dd72b5089232f850bbc36aa",
+      "audit_digest": "sha256:4065e7806e637205a48a07cdb85ef038a13e328a2dd72b5089232f850bbc36aa",
+      "line_count": 543,
+      "raw_line_count": 543,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T01-54-21.325Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T01-54-21.325Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-29-09.760Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-29-09.760Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-49-43.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-49-43.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-27-44.241Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-27-44.241Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-34-35.832Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-34-35.832Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-request-regression_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/architecture_spec/review-request-regression_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/architecture_spec/review-result-regression_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T12-35-17.906Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T12-35-17.906Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T14-31-00.436Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T14-31-00.436Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T12-35-59.017Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T12-35-59.017Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T14-31-04.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T14-31-04.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-31-56.845Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-31-56.845Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-35-10.876Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-35-10.876Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-32-37.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-32-37.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-36-01.732Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-36-01.732Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-request-ux_completion.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/implementation/review-request-ux_completion.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/implementation/review-result-ux_completion.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-42-35.148Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-42-35.148Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-46-32.308Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-46-32.308Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T14-30-56.130Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T14-30-56.130Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-request-human_usability.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/preview/review-request-human_usability.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-request-network_runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/preview/review-request-network_runtime.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/preview/review-result-human_usability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/review-result-network_runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/preview/review-result-network_runtime.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T01-58-03.559Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T01-58-03.559Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-27-45.427Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-27-45.427Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-37-26.788Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-37-26.788Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-50-35.123Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-50-35.123Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T14-27-54.018Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T14-27-54.018Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T01-56-45.936Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T01-56-45.936Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-26-18.567Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-26-18.567Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-51-02.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-51-02.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T14-27-59.169Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T14-27-59.169Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-request-e2e_ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/test_plan/review-request-e2e_ux.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-request-gate_coverage.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/test_plan/review-request-gate_coverage.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-result-e2e_ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/test_plan/review-result-e2e_ux.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-result-gate_coverage.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/reviews/test_plan/review-result-gate_coverage.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-recipe-preflight-autopilot/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/spec/story-vibepro-recipe-preflight-autopilot/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/diagnostics/2026-07-07T102819Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/pr/story-vibepro-recipe-preflight-autopilot/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T01-54-21.325Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T01-54-21.325Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-29-09.760Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-29-09.760Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-49-43.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T06-49-43.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-27-44.241Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-27-44.241Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-34-35.832Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/history/review-result-regression_risk-2026-07-08T14-34-35.832Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T12-35-17.906Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T12-35-17.906Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T14-31-00.436Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-gate_evidence-2026-07-08T14-31-00.436Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T12-35-59.017Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T12-35-59.017Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T14-31-04.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/history/review-result-release_risk-2026-07-08T14-31-04.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-31-56.845Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-31-56.845Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-35-10.876Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-runtime_contract-2026-07-08T06-35-10.876Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-32-37.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-32-37.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-36-01.732Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/history/review-result-ux_completion-2026-07-08T06-36-01.732Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-42-35.148Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-42-35.148Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-46-32.308Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T06-46-32.308Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T14-30-56.130Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-human_usability-2026-07-08T14-30-56.130Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T01-58-03.559Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T01-58-03.559Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-27-45.427Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-27-45.427Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-37-26.788Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-37-26.788Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-50-35.123Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-50-35.123Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T14-27-54.018Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T14-27-54.018Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T01-56-45.936Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T01-56-45.936Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-26-18.567Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-26-18.567Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-51-02.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T06-51-02.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T14-27-59.169Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-gate_coverage-2026-07-08T14-27-59.169Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-recipe-preflight-autopilot/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/spec/story-vibepro-recipe-preflight-autopilot/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-recipe-preflight-autopilot/references/vibepro/stories/story-vibepro-recipe-preflight-autopilot/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5178780
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T102819Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 967392
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4776315
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-26-18.567Z.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-49-43.544Z.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-recipe-preflight-autopilot/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification-artifacts/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

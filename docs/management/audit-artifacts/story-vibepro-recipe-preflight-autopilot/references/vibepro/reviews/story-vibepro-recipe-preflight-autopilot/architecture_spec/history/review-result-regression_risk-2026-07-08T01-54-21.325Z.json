@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Preflight wiring into pr autopilot is strictly additive: a single preflight variable threaded through unchanged return paths plus an additive summary section; no existing control flow, gate evaluation, or phase ordering altered. RPA-CONTRACT-001 proven by exhaustive write-site enumeration in src/recipe-preflight.js (two writeFile sites matching exactly the two declared auto_fix recipes). Per-recipe try/catch guarantees failure isolation (RPA-CONTRACT-005). Focused 19/19, e2e 7/7, full suite 868/868.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed src/pr-manager.js against origin/main confirming additive-only wiring; enumerated all write sites in src/recipe-preflight.js and traced recordVerificationEvidence write target; self-ran focused tests (19/19); cross-checked full-suite and e2e logs including the ac:3 no-verdict-writes and ac:4 clean-story-no-op assertions.",
+    "evidence": "node --test test/recipe-preflight.test.js (19/19, run by reviewer); /tmp/vibepro-rpa-fulltest.log; /tmp/vibepro-rpa-e2e2.log",
+    "inputs": [
+      "docs/architecture/vibepro-recipe-preflight-autopilot.md",
+      "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+      "src/recipe-preflight.js",
+      "src/pr-manager.js",
+      "test/recipe-preflight.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: new first-phase wiring could silently change autopilot control flow or leak writes into gate state -> final: pass, because the diff is strictly additive and exhaustive write-site enumeration plus e2e acceptance tests prove no verdict/waiver/review/decision writes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rpa",
+    "actual_root": "/private/tmp/vibepro-rpa",
+    "expected_root": null,
+    "expected_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "current_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+      "current_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T01:54:21.325Z",
+  "git_context": {
+    "head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "current_branch": "claude/recipe-preflight-autopilot",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T01:54:21.289Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-recipe-preflight-autopilot.md",
+        "sha256": "0c0331b647c66e2306b99c414fbdb0d6533193561572cc31048ecf1c64956835",
+        "size": 5000
+      },
+      {
+        "path": "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+        "sha256": "3be557806bded2ce78b2566bdbf5e3ca692b7bf04d0fd534f45f034a70259704",
+        "size": 5900
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7cb75527a875a83fbffa383da48e65da52f10fa0cfae7b39281eef7881ff2998",
+        "size": 611962
+      },
+      {
+        "path": "src/recipe-preflight.js",
+        "sha256": "60629e83dfcabc5fb8898834a49377d4f7c7d5c6e8eed9259522bc3111e0f98e",
+        "size": 21353
+      },
+      {
+        "path": "test/recipe-preflight.test.js",
+        "sha256": "e7d4177b65e887d0fd976e4ed846e86fb70da4f330aad61a1f6982a2028f8e55",
+        "size": 17928
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6d3172a2c13a0c1a42bcc43255ecdd7c87a7e1abbc68c9e24453e94d5b6ff50c"
+  },
+  "source_fingerprint": "47cadf37d6a598fce2e42cac3b04015ef3e0473bc97ca7eefcff463b7a0d8b14",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a6e800a73f84708f3",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a6e800a73f84708f3",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

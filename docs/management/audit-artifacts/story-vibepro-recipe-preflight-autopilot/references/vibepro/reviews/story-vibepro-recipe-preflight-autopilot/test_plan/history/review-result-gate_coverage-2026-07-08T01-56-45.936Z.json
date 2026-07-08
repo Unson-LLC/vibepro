@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "needs_changes",
+  "summary": "MEDIUM contract-001-negative-assertion-gap: RPA-CONTRACT-001 negative guarantee is only byte-verified for config.json in the clean-story case; followup-decision-artifact tests write decision-records.json but never re-read it post-run to assert byte-identity, so a future recipe accidentally writing decision/gate/review files would pass this suite. LOW contract-002-strength-not-exercised-end-to-end: the strength-becomes-strong test asserts only the precondition (artifact present, verified) without invoking pr-manager's actual strength derivation; scope the claim or cross-reference. Coverage for CONTRACT-003/004/005/006 is solid with positive+negative pairs; 19/19 pass.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Mapped each RPA-CONTRACT to its assertions in test/recipe-preflight.test.js (425 lines) against src/recipe-preflight.js (533 lines); grepped pr-manager.js strength derivation; self-ran focused suite (19/19) and cross-checked full-suite log.",
+    "evidence": "node --test test/recipe-preflight.test.js (19/19, run by reviewer); /tmp/vibepro-rpa-fulltest.log; /tmp/vibepro-rpa-focused2.log",
+    "inputs": [
+      "test/recipe-preflight.test.js",
+      "src/recipe-preflight.js",
+      "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+      "src/pr-manager.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: green 19/19 suggested full contract coverage -> final: needs_changes, because checking each contract against its assertions individually revealed CONTRACT-001's negative path lacks a decision-records.json read-back assertion"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rpa",
+    "actual_root": "/private/tmp/vibepro-rpa",
+    "expected_root": null,
+    "expected_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "current_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+      "current_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T01:56:45.936Z",
+  "git_context": {
+    "head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "current_branch": "claude/recipe-preflight-autopilot",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T01:56:45.910Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "9369c9408beda52483b47a36e0e3315138efde34",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+        "sha256": "3be557806bded2ce78b2566bdbf5e3ca692b7bf04d0fd534f45f034a70259704",
+        "size": 5900
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7cb75527a875a83fbffa383da48e65da52f10fa0cfae7b39281eef7881ff2998",
+        "size": 611962
+      },
+      {
+        "path": "src/recipe-preflight.js",
+        "sha256": "60629e83dfcabc5fb8898834a49377d4f7c7d5c6e8eed9259522bc3111e0f98e",
+        "size": 21353
+      },
+      {
+        "path": "test/recipe-preflight.test.js",
+        "sha256": "e7d4177b65e887d0fd976e4ed846e86fb70da4f330aad61a1f6982a2028f8e55",
+        "size": 17928
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "dbfcb1f23face3e4d57295757cab93e9524675e647d82188c74d61675e65138d"
+  },
+  "source_fingerprint": "cef6925463fed754bef945eaf0cf60c8c0208326c42626ac95fac42bd6c06473",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aea5d383f98b85c38",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "aea5d383f98b85c38",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

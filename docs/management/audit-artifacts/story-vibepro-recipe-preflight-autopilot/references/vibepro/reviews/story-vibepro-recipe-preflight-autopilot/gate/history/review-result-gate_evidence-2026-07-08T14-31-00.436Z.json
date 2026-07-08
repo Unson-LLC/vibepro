@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Every verification record binds to head 269bf4f7 with matching content hashes; reviewer independently re-ran unit (19/19) and e2e (8/8) and confirmed the full-suite log 910/910 matches the integration record exactly. The final spec now carries flow/threat_model/state diagrams. New failure-mode scenarios map to RPA-CONTRACT-004/005 coverage, and the release_note/rollout_plan/rollback_instruction claims are grounded verbatim in the guide section and the architecture Rollback text.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Parsed verification-evidence.json bindings, re-ran both suites, read the full-suite log, grepped the guide and architecture docs for the claimed grounding text, parsed spec.json diagrams.",
+    "evidence": "node --test unit (19/19) and e2e (8/8) at 269bf4f7, run by reviewer; /tmp/vibepro-rpa-fulltest-rebased2.log (910/910)",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/verification-evidence.json",
+      ".vibepro/spec/story-vibepro-recipe-preflight-autopilot/spec.json",
+      "docs/guide/ai-pr-workflow.md",
+      "docs/architecture/vibepro-recipe-preflight-autopilot.md"
+    ]
+  },
+  "judgment_delta": [
+    "no change from prior pass; verified by independent re-execution rather than trusting recorded evidence alone"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rpa",
+    "actual_root": "/private/tmp/vibepro-rpa",
+    "expected_root": null,
+    "expected_head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+    "current_head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+      "current_head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T14:31:00.436Z",
+  "git_context": {
+    "head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+    "current_branch": "claude/recipe-preflight-autopilot",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T14:31:00.411Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "269bf4f781d0db9c02a28c170c4fa6ec0ef8a541",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-recipe-preflight-autopilot.md",
+        "sha256": "0c0331b647c66e2306b99c414fbdb0d6533193561572cc31048ecf1c64956835",
+        "size": 5000
+      },
+      {
+        "path": "docs/guide/ai-pr-workflow.md",
+        "sha256": "5b3c1dcad6122ca566378d51b8a4bd2f6d11eb3df1e954c7b1a7a2d7ecd917ad",
+        "size": 3004
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0432d1a71dbca2accedbcd7a2c1d3cb5ad736881ab4b0f3b0e644d0243de53f0"
+  },
+  "source_fingerprint": "e20e509871f3f2104322de5c6fe14869d6281dddcdd6028e29fd5a742e325633",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a0cec242bea5104c7",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a0cec242bea5104c7",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

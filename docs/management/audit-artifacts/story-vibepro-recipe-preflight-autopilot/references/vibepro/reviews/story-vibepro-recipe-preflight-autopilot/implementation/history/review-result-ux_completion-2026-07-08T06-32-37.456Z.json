@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "stage": "implementation",
+  "role": "ux_completion",
+  "status": "needs_changes",
+  "summary": "MEDIUM ux-next-command-shell-unsafe-placeholder: followup-decision-artifact and design-diagrams-final-spec emit next_command strings that read as directly-runnable vibepro commands but contain unquoted <...> placeholders, which bash parses as redirection — pasting them verbatim produces a syntax error (reviewer reproduced via bash -c). Inconsistent with generic-token-clause-binding which shellQuotes its fallback and with architecture-reason-frontmatter which uses an explicit comment-prefixed non-command convention. Fix by quoting the placeholder segments or adopting the comment-prefix convention. Other UX surfaces (machine-readable results, planned/failed state distinction, artifacts[] traceability) are solid.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read all 6 recipes and the render section, checked spec scenarios and test assertions (regex-only, no shell-validity check), ran the e2e suite (8/8), and executed both offending next_command strings via bash -c reproducing the syntax errors.",
+    "evidence": "bash -c reproduction of both next_command strings (syntax error); node --test e2e spec (8/8, run by reviewer)",
+    "inputs": [
+      "src/recipe-preflight.js",
+      "src/pr-manager.js",
+      "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+      "test/recipe-preflight.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: 4/6 recipes use shellQuote consistently suggesting uniform copy-paste safety -> final: needs_changes, because actually executing the 2 offending strings proved they fail as shell input rather than serving as copy-paste-ready commands"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-rpa",
+    "actual_root": "/private/tmp/vibepro-rpa",
+    "expected_root": null,
+    "expected_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+    "current_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+      "current_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T06:32:37.456Z",
+  "git_context": {
+    "head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+    "current_branch": "claude/recipe-preflight-autopilot",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T06:32:37.406Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+        "sha256": "3be557806bded2ce78b2566bdbf5e3ca692b7bf04d0fd534f45f034a70259704",
+        "size": 5900
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7cb75527a875a83fbffa383da48e65da52f10fa0cfae7b39281eef7881ff2998",
+        "size": 611962
+      },
+      {
+        "path": "src/recipe-preflight.js",
+        "sha256": "60629e83dfcabc5fb8898834a49377d4f7c7d5c6e8eed9259522bc3111e0f98e",
+        "size": 21353
+      },
+      {
+        "path": "test/recipe-preflight.test.js",
+        "sha256": "4588f0ed88c0fde6f09788c87bd720cbb9be46bc78c602be2e0f03a2329d76df",
+        "size": 18538
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6a8eda218b259fd883c9a709b5ea075fe0b146821f3cb29f2d22d269dc096cf2"
+  },
+  "source_fingerprint": "fc501d2ea155211cceacd53c835121909e09c9960fc8b2b8afdf1fe0d7b8b370",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a752bd3e079ecff47",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a752bd3e079ecff47",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/implementation/review-request-ux_completion.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

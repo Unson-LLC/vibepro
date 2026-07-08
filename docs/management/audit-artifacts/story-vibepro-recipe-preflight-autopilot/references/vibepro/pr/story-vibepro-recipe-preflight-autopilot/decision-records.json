@@ -1,0 +1,354 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "updated_at": "2026-07-08T14:36:27.393Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-rpa",
+      "actual_root": "/private/tmp/vibepro-rpa",
+      "expected_root": null,
+      "expected_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+      "current_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783521387392-89d9c738",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:failure_mode_coverage",
+      "source_status": null,
+      "summary": "provider_failure mode is not applicable: preflight has zero external provider, API, HTTP, or network dependency by contract",
+      "reason": "Non-applicability: RPA-CONTRACT-003 requires detection to be a pure function of on-disk state, and the network_runtime review verified the full transitive dependency chain contains no provider/API/HTTP/network call sites (only local git via execFile on the fix path). There is no external provider surface whose failure this story could exercise; the failure modes this story does own (recipe exceptions, unparseable inputs, schema mismatches) are covered by executable unit evidence.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+          "current_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T14:36:27.384Z"
+      },
+      "recorded_at": "2026-07-08T14:36:27.393Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783493436415-38c00435",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "review:test_plan:e2e_ux",
+      "source_status": null,
+      "summary": "Followup: tighten the generic-token-clause-binding e2e regex to next_command only (currently accepts planned too)",
+      "reason": "e2e_ux round-4 LOW finding assertion-precision: the alternation next_command|planned is looser than the recipe's fixed action label; tightening deferred to avoid re-staling the review matrix for a cosmetic regex change with no false-pass risk today.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-49-43.544Z.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "0fad45493e85af580e7ff2b691a763c8bb637120",
+          "current_head_sha": "0fad45493e85af580e7ff2b691a763c8bb637120",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0fad45493e85af580e7ff2b691a763c8bb637120",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T06:50:36.406Z"
+      },
+      "recorded_at": "2026-07-08T06:50:36.417Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783492070935-54ead173",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "review:test_plan:e2e_ux",
+      "source_status": null,
+      "summary": "Followup: assert non-dry-run applied-state CLI text (auto_fixed wording) in a future change; row format is a shared code path so risk is low",
+      "reason": "e2e_ux round-2 LOW finding rpa-cli-applied-state-still-unasserted: the dry-run e2e fixes the heading and row format, but the applied action_taken wording on non-dry-run runs is not asserted on the CLI text surface. Deferred as followup because the rendering row format is a shared code path already asserted in dry-run form.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/test_plan/history/review-result-e2e_ux-2026-07-08T06-26-18.567Z.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+          "current_head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6e069364f087d95542e17815996ddc95372602b4",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T06:27:50.924Z"
+      },
+      "recorded_at": "2026-07-08T06:27:50.937Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783456611088-39ebd551",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "2 commits on this branch (feat: recipe registry + wiring; docs: threat_model diagram + responsibility-authority registration) are both scoped to story-vibepro-recipe-preflight-autopilot; no unrelated Story or repo-control changes are mixed in",
+      "reason": "Commit 1 implements the preflight registry and pr-manager.js wiring with tests; commit 2 adds the threat_model diagram required by gate:design_diagrams and registers src/recipe-preflight.js in responsibility-authority.json required by gate:responsibility_authority. Both are strictly part of closing out this single story; git diff origin/main..HEAD touches only src/recipe-preflight.js, src/pr-manager.js, test/recipe-preflight.test.js, test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js, test/vibepro-cli.test.js, responsibility-authority.json, and this story's own docs (story/architecture/spec).",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-recipe-preflight-autopilot.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+          "current_head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T20:36:51.081Z"
+      },
+      "recorded_at": "2026-07-07T20:36:51.090Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783456297471-b31aa8f7",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope: recipe registry module + pr-manager wiring + docs (architecture/spec/story) + unit + e2e tests are one coherent feature; splitting would leave the wiring commit untestable without its registry or vice versa",
+      "reason": "The 8 changed files (src/recipe-preflight.js, src/pr-manager.js wiring, test/recipe-preflight.test.js, test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js, test/vibepro-cli.test.js, and the story/architecture/spec docs) implement a single preflight phase; the registry module has no caller without the pr-manager.js wiring, and the wiring has no behavior without the registry, so a split PR would ship a non-functional half in each part. No unrelated changes are bundled in.",
+      "reviewer": null,
+      "artifact": "docs/architecture/vibepro-recipe-preflight-autopilot.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+          "current_head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c6385b6026f1a3d7abe12e33a8b0f9d7d7de16b8",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T20:31:37.461Z"
+      },
+      "recorded_at": "2026-07-07T20:31:37.473Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438552765-0a095ca2",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope reviewability accepted: this PR is one cohesive decision boundary, the recipe preflight registry for pr autopilot. Changed files are src/recipe-preflight.js (new module), a single wiring point plus report section in src/pr-manager.js, the focused test suite test/recipe-preflight.test.js, one assertion block in test/vibepro-cli.test.js, and the story/spec doc updates for the same story. One reviewer can read it as a single judgment.",
+      "reason": "Diff is 6 files all bound to story-vibepro-recipe-preflight-autopilot; scope.status=reviewable from pr prepare and the blast radius is limited to the autopilot entry path (preflight runs strictly before existing phases and never mutates gate results per RPA-CONTRACT-001). No split is warranted.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/senior-gap-judgment.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "1404d8bcc217f603266062895335a7730f075910",
+          "current_head_sha": "1404d8bcc217f603266062895335a7730f075910",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1404d8bcc217f603266062895335a7730f075910",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:35:52.756Z"
+      },
+      "recorded_at": "2026-07-07T15:35:52.767Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-rpa",
+        "actual_root": "/private/tmp/vibepro-rpa",
+        "expected_root": null,
+        "expected_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+        "current_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783521387392-89d9c738",
+      "story_id": "story-vibepro-recipe-preflight-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:failure_mode_coverage",
+      "source_status": null,
+      "summary": "provider_failure mode is not applicable: preflight has zero external provider, API, HTTP, or network dependency by contract",
+      "reason": "Non-applicability: RPA-CONTRACT-003 requires detection to be a pure function of on-disk state, and the network_runtime review verified the full transitive dependency chain contains no provider/API/HTTP/network call sites (only local git via execFile on the fix path). There is no external provider surface whose failure this story could exercise; the failure modes this story does own (recipe exceptions, unparseable inputs, schema mismatches) are covered by executable unit evidence.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-recipe-preflight-autopilot/preview/history/review-result-network_runtime-2026-07-08T06-39-26.306Z.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-rpa",
+          "actual_root": "/private/tmp/vibepro-rpa",
+          "expected_root": null,
+          "expected_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+          "current_head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+        "current_branch": "claude/recipe-preflight-autopilot",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T14:36:27.384Z"
+      },
+      "recorded_at": "2026-07-08T14:36:27.393Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-recipe-preflight-autopilot/decision-records.json"
+}

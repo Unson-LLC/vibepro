@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "execution": {
+    "managed_worktree": "preferred"
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-vibepro-diagnosis-commercialization-roadmap",
+        "title": "M1: VibePro 診断→商用化ロードマップ",
+        "ssot": "NocoDB",
+        "horizon": null,
+        "view": null,
+        "period": null,
+        "started_at": null,
+        "due_at": null
+      },
+      {
+        "story_id": "story-vibepro-recipe-preflight-autopilot",
+        "title": "dogfood で学習した非自明レシピを autopilot preflight として製品に吸収する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": null,
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": null,
+        "due_at": null
+      }
+    ],
+    "current_story_id": "story-vibepro-recipe-preflight-autopilot"
+  }
+}

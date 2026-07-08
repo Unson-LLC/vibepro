@@ -1,0 +1,268 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-recipe-preflight-autopilot",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Preflight never creates or mutates gate results, waivers, review lifecycle records, or decision records; its only writes are operator-equivalent artifacts (verification status artifacts, story catalog entries).",
+      "rationale": "Preflight repairs evidence shape, never evidence truth (Story RPA-CONTRACT-001).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "RPA-S-3 preflight does not create or change gate verdicts, waivers, or review verdicts"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "RPA-CONTRACT-001"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "story-catalog-registration: unregistered story is appended"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Every auto_fix output is schema-compatible with its hand-made counterpart and accepted at the same strength (a generated status artifact makes the verify record cross-check verified, promoting spine strength to strong).",
+      "rationale": "Auto-fix parity with manual artifacts (Story RPA-CONTRACT-002).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "RPA-S-2 auto_fix outputs are schema-compatible and accepted strong/resolved"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "verify-status-artifact"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "verify-status-artifact: passing record without artifact gets a generated status artifact"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "Recipe detections are pure functions of on-disk repository state and perform no network calls or LLM invocations.",
+      "rationale": "Deterministic, LLM-free detection (Story RPA-CONTRACT-003).",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "RPA-CONTRACT-003"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "clean story: preflight is a no-op"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "When none of the registered conditions hold, preflight writes nothing, reports detected:false for every recipe, and leaves downstream autopilot behavior identical.",
+      "rationale": "No-op on clean stories (Story RPA-CONTRACT-004).",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "RPA-CONTRACT-004"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "clean story: preflight is a no-op"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "A recipe that throws during detection or fails during auto_fix is reported with action_taken:\"failed\" and never aborts preflight or the autopilot run.",
+      "rationale": "Failure isolation (Story RPA-CONTRACT-005).",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "RPA-CONTRACT-005"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "failure isolation: a recipe that throws is reported failed"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "C-006",
+      "type": "contract",
+      "statement": "Adding a recipe requires only appending a registry entry; the report lists every registered recipe exactly once per run, in registry order.",
+      "rationale": "Open registry (Story RPA-CONTRACT-006).",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "RECIPE_REGISTRY"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "open registry: a seventh recipe added by append runs after the existing six"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a passing verify record without a status artifact, when preflight runs, then a status artifact is generated from the recorded exit code and the record's spine strength evaluates to strong.",
+      "rationale": "Scenario RPA-S-1.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "RPA-S-1"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "verifyStatusArtifactRecipe"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/recipe-preflight.test.js",
+            "case": "verify-status-artifact"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a seventh registry entry added in a test, when preflight runs, then it executes after the existing six with no changes to them.",
+      "rationale": "Scenario RPA-S-8 fixes registry extensibility.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "RPA-S-6 registry extension"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/recipe-preflight.js",
+            "anchor": "runRecipePreflight"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js",
+            "case": "S-002 a seventh registry entry runs after the existing six"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T10:29:22.505Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "When pr autopilot runs the preflight workflow, each recipe transitions through detected status to auto_fix applied, next_command suggested, or failed state, and the autopilot flow resumes downstream phases without abort.",
+      "rationale": "Workflow state transitions of the preflight phase inside pr autopilot (RPA-CONTRACT-005 failure isolation expressed as flow states).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "background",
+            "text_snippet": "レシピ失敗は action_taken failed で続行（preflightで全体を止めない）"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "runRecipePreflight"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js",
+            "case": "S-003 preflight workflow transitions recipe status to failed without aborting the autopilot flow"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T15:43:47.036Z",
+      "last_revised_at": "2026-07-08T13:06:57.395Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  Autopilot[\"pr autopilot\"] --> Preflight[\"preflight phase (first)\"]\n  Preflight --> Registry[\"recipe registry (ordered)\"]\n  Registry --> Detect[\"detection(repo state, story id)\"]\n  Detect -- auto_fix --> Fix[\"apply fix, record artifacts\"]\n  Detect -- next_command --> Suggest[\"record exact command + reason\"]\n  Detect -- not detected --> Skip[\"detected: false\"]\n  Fix --> Report[\"preflight section in autopilot report\"]\n  Suggest --> Report\n  Skip --> Report\n  Report --> Phases[\"existing autopilot phases (unchanged)\"]",
+      "rationale": "Preflight phase runs first and writes the preflight section before existing autopilot phases (Spec diagram)."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Autopilot[\"pr autopilot\"] --> Preflight[\"preflight phase\"]\n  Preflight --> Registry[\"recipe registry (detect only reads on-disk state)\"]\n  Registry -. must not call .-> Network[\"network / remote APIs\"]\n  Registry -. must not call .-> LLM[\"LLM / subagent dispatch\"]\n  Registry -. must not mutate .-> Verdicts[\"gate results / waivers / review lifecycles (RPA-CONTRACT-001)\"]\n  Registry -- auto_fix --> Fix[\"writes artifacts operators already produce by hand\"]\n  Fix -. must stay within .-> Boundary[\".vibepro/ + declared spec/story paths only\"]\n  Registry -- detection failure --> Isolate[\"action_taken: failed, run continues (RPA-CONTRACT-005)\"]\n  Fix --> CleanStory[\"clean story: byte-identical no-op (RPA-CONTRACT-004)\"]",
+      "rationale": "Preflight detection/auto_fix boundary: no network/LLM calls, no verdict mutation, writes confined to .vibepro/ and declared spec/story paths (threat model for the preflight phase)."
+    },
+    {
+      "kind": "state",
+      "mermaid": "stateDiagram-v2\n  [*] --> NotDetected: detection() false\n  [*] --> Detected: detection() true\n  Detected --> Planned: dry_run (auto_fix deferred, no writes)\n  Detected --> AutoFixed: auto_fix applied (artifacts recorded)\n  Detected --> Suggested: next_command emitted (exact command + reason)\n  Detected --> Failed: detect/fix threw (action_taken failed, run continues)\n  AutoFixed --> [*]\n  Suggested --> [*]\n  Planned --> [*]\n  Failed --> [*]\n  NotDetected --> [*]",
+      "entities": [
+        "NotDetected",
+        "Detected",
+        "Planned",
+        "AutoFixed",
+        "Suggested",
+        "Failed"
+      ]
+    }
+  ],
+  "generated_at": "2026-07-07T15:43:47.030Z",
+  "previous_spec_id": "2026-07-07T15:43:47.030Z"
+}
