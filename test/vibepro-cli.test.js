@@ -1070,6 +1070,117 @@ test('design-modernize plan writes UI/UX intake coverage and flags vague-only br
   assert.ok(vagueOnly.result.plan.uiux_intake_coverage.guidance.some((item) => /uiux intake template/.test(item)));
 });
 
+test('UIFM-S-1 UIFM-S-2 UIFM-S-5 uiux map writes IA flow map and keeps target-only claims proposed', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-uiux-map.md'), `# IA map story
+
+Marketing landing page and dashboard product app flow.
+
+## Non-goals
+
+- Do not replace Journey authority.
+`);
+
+  const mapped = await runCli([
+    'uiux',
+    'map',
+    repo,
+    '--id',
+    'story-uiux-map',
+    '--route',
+    '/',
+    '--route',
+    '/pricing',
+    '--json'
+  ]);
+
+  assert.equal(mapped.exitCode, 0);
+  assert.equal(mapped.result.map.status, 'ready_for_design_flow');
+  assert.equal(mapped.result.map.flow_archetype, 'marketing_landing_page');
+  assert.equal(mapped.result.map.flow_structure, 'mixed_product_marketing_structure');
+  assert.equal(mapped.result.map.current_ia.routes[0].evidence_status, 'confirmed');
+  assert.equal(mapped.result.map.target_ia.evidence_status, 'proposed');
+  assert.equal(mapped.result.map.target_ia.sequence[0].evidence_status, 'proposed');
+  assert.equal(mapped.result.map.non_goals[0], 'Do not replace Journey authority.');
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-map', 'ia-flow-map.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-uiux-map', 'ia-flow-map.md')), true);
+
+  const missingRoutes = await runCli([
+    'uiux',
+    'map',
+    repo,
+    '--id',
+    'story-uiux-map',
+    '--json'
+  ]);
+
+  assert.equal(missingRoutes.exitCode, 0);
+  assert.equal(missingRoutes.result.map.status, 'needs_route_evidence');
+  assert.equal(missingRoutes.result.map.route_evidence.status, 'missing');
+  assert.equal(missingRoutes.result.map.screens.length, 0);
+  assert.ok(missingRoutes.result.map.unknown_flow.some((item) => /No route evidence/.test(item)));
+});
+
+test('UIFM-S-3 design-modernize plan references IA flow map before screen briefs', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+    export default function Page() {
+      return <main><button>Start setup</button><p>Workspace onboarding</p></main>;
+    }
+  `);
+
+  const result = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-uiux-ia-plan',
+    '--product',
+    'Workspace',
+    '--route',
+    '/',
+    '--brief',
+    'Onboarding flow for workspace setup',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.plan.uiux_ia_flow_map.status, 'ready_for_design_flow');
+  assert.equal(result.result.plan.uiux_ia_flow_map.flow_archetype, 'onboarding_flow');
+  assert.ok(result.result.plan.design_intelligence.reference_sources.includes('ia_flow_map_before_screen_briefs'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-uiux-ia-plan', 'ia-flow-map.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-uiux-ia-plan', 'ia-flow-map.md')), true);
+  const markdown = await readFile(path.join(repo, '.vibepro', 'design-modernize', 'story-uiux-ia-plan', 'design-modernize.md'), 'utf8');
+  assert.ok(markdown.indexOf('## IA Flow Map') < markdown.indexOf('## Workflow'));
+});
+
+test('UIFM-S-4 pr prepare surfaces IA flow map evidence path for UI-heavy stories', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli([
+    'uiux',
+    'map',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--route',
+    '/dashboard',
+    '--json'
+  ]);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'uiux-map-change.js'), 'export const uiuxMap = true;\n');
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+
+  assert.equal(prepare.exitCode, 0);
+  assert.equal(prepare.result.preparation.pr_context.uiux_ia_flow_map.status, 'ready_for_design_flow');
+  assert.equal(prepare.result.preparation.pr_context.uiux_ia_flow_map.artifact, '.vibepro/uiux/story-pr-prepare/ia-flow-map.json');
+  const summary = await runCliWithStdout(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.match(summary.stdout, /UI\/UX IA flow map/);
+  assert.match(summary.stdout, /\.vibepro\/uiux\/story-pr-prepare\/ia-flow-map\.json/);
+});
+
 test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'home', '_components'), { recursive: true });

@@ -46,6 +46,7 @@ import {
   renderJourneyPrSection,
   summarizeJourneyForPr
 } from './journey-map.js';
+import { readUiuxIaFlowMapForPr } from './uiux-flow-map.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
 import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
@@ -2176,6 +2177,7 @@ ${firstLook}
 | Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
 | Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
 | Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
+| UI/UX IA flow map | ${preparation.pr_context?.uiux_ia_flow_map?.status ?? '-'} (${preparation.pr_context?.uiux_ia_flow_map?.artifact ?? '-'}) |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
@@ -5076,6 +5078,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const latestJourney = await readLatestJourneyMap(repoRoot);
   const curatedJourney = latestJourney ? await readCuratedJourneyMap(repoRoot, latestJourney.journey_id) : null;
   const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id, { curatedJourney });
+  const uiuxIaFlowMap = await readUiuxIaFlowMapForPr(repoRoot, story.story_id);
   const context = {
     story_source: primaryStory,
     story_source_integrity: storySourceIntegrity,
@@ -5105,6 +5108,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
     journey_map: journeyMap,
+    uiux_ia_flow_map: uiuxIaFlowMap,
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     managed_worktree: managedWorktreeContext,
