@@ -1721,7 +1721,18 @@ export function renderPrAutopilotSummary(result) {
     : '- none';
   const preflightResults = autopilot.preflight?.results?.filter((item) => item.detected) ?? [];
   const preflight = preflightResults.length
-    ? preflightResults.map((item) => `- ${item.recipe_id}: ${item.action_taken ?? item.action}${item.next_command ? ` -> ${item.next_command}` : ''}`).join('\n')
+    ? preflightResults.map((item) => {
+      // Keep every rendered line attached to its bullet: the reason explains
+      // why the recipe fired, and multiline next_commands (e.g. frontmatter
+      // guidance) are indented so they cannot read as orphaned paragraphs.
+      const lines = [`- ${item.recipe_id}: ${item.action_taken ?? item.action}${item.reason ? ` — ${item.reason}` : ''}`];
+      if (item.next_command) {
+        const [first, ...rest] = String(item.next_command).split('\n');
+        lines.push(`    next: ${first}`);
+        for (const continuation of rest) lines.push(`    ${continuation}`);
+      }
+      return lines.join('\n');
+    }).join('\n')
     : '- none detected';
   return `# PR Autopilot
 

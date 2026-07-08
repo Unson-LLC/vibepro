@@ -314,6 +314,17 @@ test(`${STORY_ID} ac:5 CLI text surface: pr autopilot default output renders the
     }, null, 2)
   );
 
+  // Seed the multiline-guidance recipe too: a story doc referencing
+  // architecture (parent_design) with no reason: key makes
+  // architecture-reason-frontmatter emit its multiline next_command, so the
+  // orphan-line assertion below exercises real multiline rendering.
+  const storyDocDir = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(storyDocDir, { recursive: true });
+  await writeFile(
+    path.join(storyDocDir, 'story-pr-preflight-cli.md'),
+    '---\nstory_id: story-pr-preflight-cli\ntitle: Preflight CLI\nparent_design: design-preflight-cli\n---\n\n# Story\n'
+  );
+
   // Drive the real CLI dispatcher (not autopilotPullRequest directly) so the
   // default human-readable output surface is asserted, matching the repo's
   // runCli(['pr', 'prepare', ...]) test convention.
@@ -327,17 +338,31 @@ test(`${STORY_ID} ac:5 CLI text surface: pr autopilot default output renders the
   assert.equal(cliResult.exitCode, 0, 'pr autopilot exits 0 via the CLI dispatcher');
   assert.match(out, /## Preflight/, 'default CLI output renders the Preflight section heading');
   // In --dry-run mode detected auto_fix recipes render as "planned" and
-  // next_command recipes render their exact command.
+  // next_command recipes render their exact command on an indented
+  // "next:" line so multiline guidance stays attached to its bullet.
   assert.match(
     out,
-    /- verify-status-artifact: planned/,
-    'default CLI output lists the detected auto_fix recipe row (planned in dry-run)'
+    /- verify-status-artifact: planned — .+/,
+    'default CLI output lists the detected auto_fix recipe row with its reason (planned in dry-run)'
   );
   assert.match(
     out,
-    /- generic-token-clause-binding: next_command -> vibepro verify record/,
-    'default CLI output lists the detected next_command recipe row with its exact command'
+    /- generic-token-clause-binding: (next_command|planned) — .+\n    next: vibepro verify record/,
+    'default CLI output lists the detected next_command recipe row with reason and an indented next: command line'
   );
+  // Multiline next_commands (architecture-reason-frontmatter guidance) must
+  // render with every continuation line indented, never as an orphaned
+  // paragraph outside the bullet (human_usability review finding).
+  assert.match(
+    out,
+    /- architecture-reason-frontmatter: (next_command|planned) — .+\n    next: # add to .+frontmatter:\n    reason: /,
+    'multiline next_command renders with indented continuation lines attached to its bullet'
+  );
+  const preflightSection = out.split('## Preflight')[1].split('##')[0];
+  const orphanLines = preflightSection.split('\n').filter(
+    (line) => line.trim() && !line.startsWith('- ') && !line.startsWith('    ')
+  );
+  assert.deepEqual(orphanLines, [], 'every Preflight line is either a bullet or indented continuation');
 });
 
 test(`${STORY_ID} S-003 preflight workflow transitions recipe status to failed without aborting the autopilot flow`, async () => {
