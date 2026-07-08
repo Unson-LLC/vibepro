@@ -2,7 +2,7 @@
 story_id: story-vibepro-roi-measurement-loop-closure
 title: VibePro ROI Measurement Loop Closure Architecture
 parent_design: vibepro-roi-measurement-loop-closure
-status: draft
+status: implemented
 ---
 
 # Architecture
@@ -37,6 +37,26 @@ No new CLI command. Two additive surfaces:
 Central ledger shape: same `vibepro-gate-outcome-ledger-v3` entry schema,
 wrapped with `{ schema_version, model, updated_at, entries: [] }`, entries
 sorted by `entry_key` so regeneration from identical input is byte-identical.
+
+## Execution Topology
+
+The promotion path adds no new process, worker, or retry loop. It runs
+synchronously inside the existing `execute merge` post-merge persistence
+step, in the same temp worktree and the same commit as canonical audit
+persistence, so there is no new deadlock or evidence-loss surface.
+
+```mermaid
+flowchart LR
+  Merge["execute merge (single process)"] --> Persist["post-merge persistence step"]
+  Persist --> TempWT["temp worktree on origin/base"]
+  TempWT --> Audit["stage canonical audit artifacts"]
+  TempWT --> Ledger["stage central ledger promotion (same commit)"]
+  Audit --> Commit["one commit + one push"]
+  Ledger --> Commit
+  Commit --> Cleanup["worktree remove (finally block)"]
+  Local["local .vibepro/gate-outcomes/ledger.json (read-only input)"] --> Ledger
+  Central["docs/management/roi-ledger/ledger.json"] --> Usage["usage report --gate-roi (read-only)"]
+```
 
 ## Flow
 
