@@ -1,0 +1,21 @@
+{
+  "story_id": "story-vibepro-uiux-docs-feature-map",
+  "head_sha": "ad693313e2909b0835612d08219daf8b51646d05",
+  "generated_at": "2026-07-08T14:11:20.000Z",
+  "status": "pass",
+  "command": "node --test test/session-efficiency-audit.test.js",
+  "tests": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0
+  },
+  "responsibility_contract": {
+    "id": "VIBE-CORE-COST-001",
+    "responsibility": "vibepro.runtime_cost.telemetry_ingestion",
+    "evidence": [
+      "integration_runtime_path",
+      "negative_path",
+      "unit_regression"
+    ]
+  }
+}

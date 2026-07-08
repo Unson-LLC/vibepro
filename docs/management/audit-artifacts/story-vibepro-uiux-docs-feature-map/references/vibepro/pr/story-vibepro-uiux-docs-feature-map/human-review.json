@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-docs-feature-map",
+  "created_at": "2026-07-08T14:28:45.485Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-uiux-docs-feature-map/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: ADR unnecessary: alternatives considered were adding a new UI/UX CLI workflow versus documenting the existing workflow; compatibility impact is limited to docs and VitePress page discovery with no API, CLI, schema, or runtime migration; rollback plan is to revert the docs/config commit; boundary is README, feature-map, and playbook documentation only, with no product implementation side effect; accepted followups are none."
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map",
+          "expected_root": null,
+          "expected_head_sha": "7f73f53ccaf49ad704c229eeb59547a73e98403d",
+          "current_head_sha": "7f73f53ccaf49ad704c229eeb59547a73e98403d",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783516607056-578de424",
+        "story_id": "story-vibepro-uiux-docs-feature-map",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "architecture",
+        "source_status": "needs_review",
+        "summary": "ADR not required for UI/UX documentation discoverability update.",
+        "reason": "The change adds guide/README/playbook documentation and VitePress srcExclude for packaged playbook templates; it does not introduce a new runtime architecture, API boundary, persistence model, or execution topology.",
+        "reviewer": "codex",
+        "artifact": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map",
+            "expected_root": null,
+            "expected_head_sha": "7f73f53ccaf49ad704c229eeb59547a73e98403d",
+            "current_head_sha": "7f73f53ccaf49ad704c229eeb59547a73e98403d",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "7f73f53ccaf49ad704c229eeb59547a73e98403d",
+          "current_branch": "codex/vibepro-uiux-docs-feature-map",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-08T13:16:47.056Z"
+        },
+        "recorded_at": "2026-07-08T13:16:47.057Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T14:28:42.331Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-docs-feature-map/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ad693313e2909b0835612d08219daf8b51646d05",
+      "branch": "codex/vibepro-uiux-docs-feature-map",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "6b2739e4f99aa85ad2ab2312836b4255efa02409",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

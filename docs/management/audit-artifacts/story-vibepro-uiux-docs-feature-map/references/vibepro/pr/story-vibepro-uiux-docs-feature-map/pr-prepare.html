@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VibePro PR Prepare</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --fg: #14171f;
+      --muted: #667085;
+      --panel: #ffffff;
+      --panel-2: #f0f3f8;
+      --border: #d7dee8;
+      --good: #0f766e;
+      --warn: #a16207;
+      --danger: #b42318;
+      --info: #1d4ed8;
+      --neutral: #475467;
+      --code: #eef2f7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --fg: #e8edf5;
+        --muted: #9aa8bc;
+        --panel: #101827;
+        --panel-2: #172235;
+        --border: #2d3a4f;
+        --code: #1d2939;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1220px, calc(100% - 24px)); margin: 16px auto 40px; }
+    .topbar, section, article.card, .lane, .timeline-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 20px; margin-bottom: 12px; }
+    .brand { font-weight: 700; color: var(--info); }
+    section { padding: 18px; margin: 12px 0; }
+    h1, h2, h3 { margin: 0 0 10px; line-height: 1.25; letter-spacing: 0; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
+    .meta, .muted, .eyebrow { color: var(--muted); }
+    .meta, .eyebrow { margin: 0; font-size: 12px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; }
+    .hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+    .hero h2 { font-size: 22px; margin: 4px 0; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; background: transparent; border: 0; padding: 0; }
+    .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 92px; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin: 6px 0; font-size: 20px; overflow-wrap: anywhere; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: transparent; border: 0; padding: 0; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .flow-step { position: relative; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; min-height: 110px; overflow-wrap: anywhere; }
+    .flow-step:not(:last-child)::after { content: "->"; position: absolute; right: -12px; top: 44px; color: var(--muted); }
+    .cards, .node-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .card { padding: 14px; overflow-wrap: anywhere; }
+    .card p { margin: 6px 0 0; }
+    .lane-board { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 10px; overflow-x: auto; }
+    .lane { padding: 14px; min-width: 240px; }
+    .lane ul, .card ul { padding-left: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; overflow-wrap: anywhere; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top; }
+    th { background: var(--panel-2); }
+    code, pre { background: var(--code); border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { padding: 0.1rem 0.3rem; }
+    pre { padding: 10px; overflow: auto; white-space: pre-wrap; }
+    .timeline { display: grid; gap: 10px; }
+    .timeline-item { padding: 12px; }
+    .status { display: inline-block; border-radius: 999px; padding: 4px 10px; font-weight: 700; font-size: 12px; border: 1px solid currentColor; }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+    .info { color: var(--info); }
+    .neutral { color: var(--neutral); }
+    .dag-svg { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+    .dag-node { fill: var(--panel); stroke: var(--border); }
+    .dag-text { fill: var(--fg); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .dag-edge { stroke: var(--muted); stroke-width: 1.5; marker-end: url(#arrow); }
+    @media (max-width: 860px) {
+      .metrics, .grid-2, .flow, .cards, .node-grid { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+      .hero, .topbar { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main data-vibepro-report="pr-prepare">
+    <header class="topbar">
+      <div>
+        <h1>VibePro PR Prepare</h1>
+        <p class="meta">Generated by VibePro at 2026-07-08T14:28:45.485Z</p>
+      </div>
+      <span class="brand">VibePro</span>
+    </header>
+
+      <section class="hero" data-overall-status="ready_for_review">
+        <div>
+          <p class="eyebrow">Story-driven review artifact</p>
+          <h2>UI/UX workflow documentation and feature-map discoverability</h2>
+          <p class="muted">story-vibepro-uiux-docs-feature-map / origin/main -> HEAD</p>
+        </div>
+        <span class="status good">ready_for_review</span>
+      </section>
+      <section class="metrics"><article class="metric"><span>Scope</span><strong>reviewable</strong><span>current_branch_pr</span></article><article class="metric"><span>Gate DAG</span><strong>ready_for_review</strong><span>0 unresolved</span></article><article class="metric"><span>Execution Gate</span><strong>ready</strong><span>pr create allowed</span></article><article class="metric"><span>Agent Reviews</span><strong>not_required</strong><span>0 unmet</span></article><article class="metric"><span>Requirement</span><strong>pass</strong><span>0 contradictions</span></article><article class="metric"><span>Split Plan</span><strong>split_recommended</strong><span>3 lanes</span></article></section>
+
+    <section>
+      <h2>Where To Look First</h2>
+      <div class="cards">
+        <article class="card good">
+          <h3>1. Gate blockers</h3>
+          <p>No unresolved gates. Check scope and branch before PR creation.</p>
+        </article>
+        <article class="card info">
+          <h3>2. Agent handoff</h3>
+          <p>Hand .vibepro/pr/story-vibepro-uiux-docs-feature-map/pr-body.md / .vibepro/pr/story-vibepro-uiux-docs-feature-map/gate-dag.html / .vibepro/pr/story-vibepro-uiux-docs-feature-map/split-plan.html to the coding agent. pr-prepare.json, decision-index.json, and evidence-plan.json are the source of truth; pr-body.md is the concise GitHub decision brief. Use Gate DAG and split-plan artifacts for detail when generated.</p>
+        </article>
+        <article class="card good">
+          <h3>3. Requirement Consistency</h3>
+          <p>No clear contradiction was found between Story/Spec/Architecture and known implementation branches.</p>
+        </article>
+      </div>
+    </section>
+
+      <section>
+        <h2>Story -> Architecture -> Spec -> Code -> Gate</h2>
+        <div class="flow">
+    <article class="flow-step" data-flow-step="Story">
+      <h3>Story</h3>
+      <p>story-vibepro-uiux-docs-feature-map</p>
+      <span class="status good">present</span>
+    </article>
+
+    <article class="flow-step" data-flow-step="Architecture">
+      <h3>Architecture</h3>
+      <p>ADR不要: ADR unnecessary: alternatives considered were adding a new UI/UX CLI workflow versus documenting the existing workflow; compatibility impact is limited to docs and VitePress page discovery with no API, CLI, schema, or runtime migration; rollback plan is to revert the docs/config commit; boundary is README, feature-map, and playbook documentation only, with no product implementation side effect; accepted followups are none.</p>
+      <span class="status good">satisfied</span>
+    </article>
+
+    <article class="flow-step" data-flow-step="Spec">
+      <h3>Spec</h3>
+      <p>1 files</p>
+      <span class="status good">present</span>
+    </article>
+
+    <article class="flow-step" data-flow-step="Code">
+      <h3>Code</h3>
+      <p>0 files</p>
+      <span class="status neutral">not_required</span>
+    </article>
+
+    <article class="flow-step" data-flow-step="Gates">
+      <h3>Gates</h3>
+      <p>ready_for_review</p>
+      <span class="status good">ready_for_review</span>
+    </article>
+  </div>
+      </section>
+
+    <section>
+      <h2>Human Review Focus</h2>
+      <div class="cards">
+
+          <article class="card info">
+            <h3>Review</h3>
+
+            <p>Storyの受け入れ基準と実装差分が対応しているか</p>
+          </article>
+
+          <article class="card info">
+            <h3>Review</h3>
+
+            <p>ADRなしで既存設計の範囲に収まっているか</p>
+          </article>
+
+          <article class="card info">
+            <h3>Review</h3>
+
+            <p>テスト差分: test/uiux-docs-feature-map.test.js</p>
+          </article>
+
+      </div>
+    </section>
+
+
+    <section>
+      <h2>Engineering Judgment</h2>
+      <div class="metrics">
+        <article class="metric"><span>Route</span><strong>agent_workflow</strong><span>agent_workflow_dag</span></article>
+        <article class="metric"><span>Active Axes</span><strong>1</strong><span>senior first scan</span></article>
+        <article class="metric"><span>Suppressed Axes</span><strong>1</strong><span>precision filtered</span></article>
+        <article class="metric"><span>accepted_followup</span><strong>0</strong><span>accepted but not passed</span></article>
+        <article class="metric"><span>Confidence</span><strong>82%</strong><span>classifier</span></article>
+      </div>
+      <div class="cards">
+        <article class="card neutral">
+          <h3>public_contract: active_passed</h3>
+          <p class="muted">gate=passed; confidence=80%</p>
+          <p>この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 / required=story_spec_traceability, contract_doc, compat_or_output_test, current_verification matched=story_spec_traceability:story/spec docs in diff, contract_doc:architecture/policy/spec docs in diff, compat_or_output_test:test files in diff, semantic_invariant_test:test files in diff, focused_test:node --test test/responsibility-authority.test.js test/pr-readiness-gate-status.test.js test/review-evidence-handling.test.js test/review-repair.test.js test/evidence-summary-reuse.test.js test/traceability-autobind.test.js test/session-efficiency-audit.test.js test/story-discovery.test.js test/engineering-judgment-activation-precision.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), current_verification:node --test test/responsibility-authority.test.js test/pr-readiness-gate-status.test.js test/review-evidence-handling.test.js test/review-repair.test.js test/evidence-summary-reuse.test.js test/traceability-autobind.test.js test/session-efficiency-audit.test.js test/story-discovery.test.js test/engineering-judgment-activation-precision.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), runtime_path_evidence:node --test test/responsibility-authority.test.js test/pr-readiness-gate-status.test.js test/review-evidence-handling.test.js test/review-repair.test.js test/evidence-summary-reuse.test.js test/traceability-autobind.test.js test/session-efficiency-audit.test.js test/story-discovery.test.js test/engineering-judgment-activation-precision.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), focused_test:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), current_verification:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), runtime_path_evidence:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), integration_runtime_path:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), negative_path:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), negative_path_test:node --test test/uiux-docs-feature-map.test.js &amp;&amp; node --test test/session-efficiency-audit.test.js (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/runtime-cost-integration-status.json), focused_test:npm run docs:build (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/docs-build-typecheck-status.json), current_verification:npm run docs:build (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/docs-build-typecheck-status.json), runtime_path_evidence:npm run docs:build (artifact=.vibepro/manual-verification/story-vibepro-uiux-docs-feature-map/docs-build-typecheck-status.json), scope_reviewed:scope.status=reviewable, split_plan:scope.status=reviewable</p>
+        </article>
+
+        <article class="card warn">
+          <h3>execution_topology: suppressed</h3>
+          <p class="muted">suppressed by precision filter</p>
+          <p>candidates=surface:workflow_or_agent, text:execution_topology / precision=insufficient_signal:execution_topology has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists</p>
+        </article>
+      </div>
+    </section>
+
+
+    <section>
+      <h2>Execution Gate</h2>
+      <div class="metrics">
+        <article class="metric"><span>Status</span><strong>ready</strong><span>pr create allowed</span></article>
+        <article class="metric"><span>Blocking Gates</span><strong>0</strong><span>critical</span></article>
+        <article class="metric"><span>PR Create</span><strong>allowed</strong><span>VibePro gate</span></article>
+        <article class="metric"><span>Schema</span><strong>0.1.0</strong><span>execution gate</span></article>
+      </div>
+      <div class="cards">
+        <article class="card good">
+          <h3>Ready</h3>
+
+          <p>Critical blockers are resolved for VibePro PR creation.</p>
+        </article>
+      </div>
+      <h3>Required Actions</h3>
+      <p class="muted">No blocking actions.</p>
+    </section>
+
+
+    <section>
+      <h2>Agent Review Gate</h2>
+      <div class="metrics">
+        <article class="metric"><span>Status</span><strong>not_required</strong><span>not required</span></article>
+        <article class="metric"><span>Required Roles</span><strong>0</strong><span>policy</span></article>
+        <article class="metric"><span>Unmet Roles</span><strong>0</strong><span>missing/stale/block</span></article>
+        <article class="metric"><span>Checkpoint Unmet</span><strong>0</strong><span>checkpoint</span></article>
+        <article class="metric"><span>Stale Results</span><strong>0</strong><span>current git binding</span></article>
+      </div>
+
+      <h3>Unmet Required Reviews</h3>
+      <div class="cards">
+        <article class="card good">
+          <h3>No unmet reviews</h3>
+
+          <p>PR-final and checkpoint agent review roles passed for the current git state.</p>
+        </article>
+      </div>
+      <h3>Stage Summary</h3>
+      <div class="cards">
+        <article class="card good">
+          <h3>gate: pass</h3>
+          <p class="muted">gate</p>
+          <p>pass=3, missing=0, stale=0, block=0</p>
+        </article>
+      </div>
+    </section>
+
+
+    <section>
+      <h2>PR Lifecycle Artifact Freshness</h2>
+      <p class="muted">Overall: current. HEAD binding prevents stale pr-create / pr-merge artifacts from looking current.</p>
+
+    <table>
+      <thead><tr><th>Kind</th><th>Status</th><th>Artifact</th><th>Artifact HEAD</th><th>Current HEAD</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>pr_create</td><td>current</td><td>.vibepro/pr/story-vibepro-uiux-docs-feature-map/pr-create.json</td><td>ad693313e290</td><td>ad693313e290</td><td>pr-create artifact is bound to the current HEAD ad693313e290</td></tr><tr><td>pr_merge</td><td>current</td><td>.vibepro/pr/story-vibepro-uiux-docs-feature-map/pr-merge.json</td><td>ad693313e290</td><td>ad693313e290</td><td>pr-merge artifact is bound to the current HEAD ad693313e290</td></tr>
+      </tbody>
+    </table>
+
+    </section>
+
+
+    <section>
+      <h2>Requirement Consistency</h2>
+      <div class="metrics">
+        <article class="metric"><span>Status</span><strong>pass</strong><span>requirement gate</span></article>
+        <article class="metric"><span>Invariants</span><strong>3</strong><span>extracted</span></article>
+        <article class="metric"><span>Scenario Gaps</span><strong>0</strong><span>needs review</span></article>
+        <article class="metric"><span>Contradictions</span><strong>0</strong><span>potential bugs</span></article>
+      </div>
+      <article class="card good">
+        <h3>What To Add Next</h3>
+        <p>No clear contradiction was found between Story/Spec/Architecture and known implementation branches.</p>
+      </article>
+      <div class="cards">
+        <article class="card info">
+          <h3>Invariant</h3>
+          <p class="muted">inferred_spec:docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md</p>
+          <p>UI/UX workflow preparation must be discoverable from README and the feature map before a user reaches PR preparation commands.</p>
+        </article>
+
+        <article class="card info">
+          <h3>Invariant</h3>
+          <p class="muted">inferred_spec:docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md</p>
+          <p>The implementation is docs-only: CLI behavior, API behavior, config schema, runtime behavior, and PR creation semantics remain out of scope.</p>
+        </article>
+
+        <article class="card info">
+          <h3>Invariant</h3>
+          <p class="muted">inferred_spec:docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md</p>
+          <p>The UI/UX playbook template must require visual hypothesis capture and VibePro-native Design System alignment before PR preparation.</p>
+        </article>
+      </div>
+    </section>
+
+
+    <section>
+      <h2>Network Contract Findings</h2>
+      <div class="metrics">
+        <article class="metric"><span>Status</span><strong>pass</strong><span>route contract</span></article>
+        <article class="metric"><span>API Calls</span><strong>0</strong><span>detected</span></article>
+        <article class="metric"><span>Missing Routes</span><strong>0</strong><span>block</span></article>
+        <article class="metric"><span>Introduced Calls</span><strong>0</strong><span>diff</span></article>
+      </div>
+      <div class="cards"><article class="card good"><h3>No findings</h3><p>API client calls and route files are aligned.</p></article></div>
+    </section>
+
+      <section>
+        <h2>Graphify Impact</h2>
+
+    <div class="metrics">
+      <article class="metric"><span>Graph</span><strong>missing</strong><span>.vibepro/graphify/graph.json</span></article>
+      <article class="metric"><span>Matched Files</span><strong>0</strong><span>changed files</span></article>
+      <article class="metric"><span>Related Files</span><strong>0</strong><span>inspect candidates</span></article>
+      <article class="metric"><span>Graph Size</span><strong>0/0</strong><span>nodes / edges</span></article>
+    </div>
+    <p class="muted">.vibepro/graphify/graph.json が見つからない</p>
+
+      </section>
+      <section>
+        <h2>Changed File Groups</h2>
+
+    <table>
+      <thead><tr><th>Group</th><th>Count</th><th>Files</th></tr></thead>
+      <tbody>
+        <tr><td>story_docs</td><td>1</td><td>docs/management/stories/active/story-vibepro-uiux-docs-feature-map.md</td></tr><tr><td>specifications</td><td>1</td><td>docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md</td></tr><tr><td>tests</td><td>1</td><td>test/uiux-docs-feature-map.test.js</td></tr><tr><td>other</td><td>10</td><td>README.ja.md<br>README.md<br>design-ssot.json<br>docs/.vitepress/config.mjs<br>docs/guide/feature-map.md<br>docs/ja/guide/feature-map.md<br>docs/playbooks/story-engineering-playbook/design/02_information_architecture.md<br>docs/playbooks/story-engineering-playbook/design/07_state_guidelines.md<br>docs/playbooks/story-engineering-playbook/design/08_copy_guidelines.md<br>docs/playbooks/story-engineering-playbook/features/index.md</td></tr>
+      </tbody>
+    </table>
+
+      </section>
+      <section class="grid-2">
+        <div>
+          <h2>Artifacts</h2>
+
+    <table>
+      <thead><tr><th>Item</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>PR body draft</td><td>.vibepro/pr/story-vibepro-uiux-docs-feature-map/pr-body.md</td></tr><tr><td>Gate DAG HTML</td><td>.vibepro/pr/story-vibepro-uiux-docs-feature-map/gate-dag.html</td></tr><tr><td>Split Plan HTML</td><td>.vibepro/pr/story-vibepro-uiux-docs-feature-map/split-plan.html</td></tr>
+      </tbody>
+    </table>
+
+        </div>
+        <div>
+          <h2>Next Commands</h2>
+          <div><p><code>npx vibepro pr create . --story-id story-vibepro-uiux-docs-feature-map --base origin/main --head codex/vibepro-uiux-docs-feature-map</code></p></div>
+        </div>
+      </section>
+
+  </main>
+</body>
+</html>

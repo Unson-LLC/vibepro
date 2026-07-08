@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "story_id": "story-vibepro-uiux-docs-feature-map",
+  "head_sha": "ad693313e2909b0835612d08219daf8b51646d05",
+  "status": "pass",
+  "generated_at": "2026-07-08T14:07:08.000Z",
+  "checks": [
+    {
+      "name": "focused_public_contract_test",
+      "status": "pass",
+      "command": "node --test test/uiux-docs-feature-map.test.js",
+      "summary": "README, Japanese README, English/Japanese feature maps, playbook template, Story frontmatter, VitePress source exclusion scope, and public playbook link targets expose the UI/UX modernization workflow consistently."
+    },
+    {
+      "name": "docs_build",
+      "status": "pass",
+      "command": "npm run docs:build"
+    },
+    {
+      "name": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck"
+    },
+    {
+      "name": "compat_or_output_test",
+      "status": "pass",
+      "summary": "Docs-only UI/UX workflow mapping preserves CLI/API/schema/runtime behavior; public docs output is verified by the focused Node test and VitePress build with the playbook corpus not broadly excluded."
+    },
+    {
+      "name": "impact_scope_explained",
+      "status": "pass",
+      "summary": "Story impact scope explicitly limits the change to README/guide copy, VitePress navigation visibility, playbook template, minimal playbook link targets, Story metadata, and Design SSOT registration."
+    },
+    {
+      "name": "responsibility_authority_regression",
+      "status": "pass",
+      "command": "node --test test/responsibility-authority.test.js test/pr-readiness-gate-status.test.js test/review-evidence-handling.test.js test/review-repair.test.js test/evidence-summary-reuse.test.js test/traceability-autobind.test.js test/session-efficiency-audit.test.js test/story-discovery.test.js test/engineering-judgment-activation-precision.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+      "summary": "72 focused responsibility-boundary regression tests passed for gate DAG, PR lifecycle, agent review lifecycle, evidence lifecycle, runtime cost telemetry, Story source integrity, engineering judgment, and managed worktree locality."
+    },
+    {
+      "name": "public_contract",
+      "status": "pass",
+      "summary": "Changed surfaces are README/docs/VitePress navigation/design SSOT Story registration only; no CLI/API/config schema/output contract changes."
+    },
+    {
+      "name": "design_ssot_registration",
+      "status": "pass",
+      "summary": "Story is registered under design root vibepro-uiux-one-command-cockpit with parent_design frontmatter and relationship documents."
+    },
+    {
+      "name": "current_head_verification",
+      "status": "pass",
+      "head_sha": "ad693313e2909b0835612d08219daf8b51646d05"
+    }
+  ]
+}
