@@ -1,0 +1,1627 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-08T11:51:20.554Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:senior_gap_judgment|needs_review|passed|2026-07-08T11:50:29.075Z|2026-07-08T11:51:20.551Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:50:29.075Z",
+      "resolved_at": "2026-07-08T11:51:20.551Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "codex/vibepro-ui-journey-e2e-dogfood",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:responsibility_authority|needs_evidence|passed|2026-07-08T11:50:29.075Z|2026-07-08T11:51:20.551Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:50:29.075Z",
+      "resolved_at": "2026-07-08T11:51:20.551Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "codex/vibepro-ui-journey-e2e-dogfood",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:senior_gap_judgment|block|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:definition_of_done|needs_evidence|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:agent_review|needs_review|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:gate|needs_review|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:record:gate:gate_evidence|needs_review|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:gate:gate_evidence|needs_review|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:preflight:gate:gate_evidence|failed|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:dispatch_batch:gate|failed|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_execution_topology|needs_evidence|passed|2026-07-08T11:41:36.664Z|2026-07-08T11:47:07.562Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_execution_topology",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:41:36.664Z",
+      "resolved_at": "2026-07-08T11:47:07.562Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:artifact_consistency|stale_evidence|passed|2026-07-08T11:30:34.407Z|2026-07-08T11:34:52.269Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:30:34.407Z",
+      "resolved_at": "2026-07-08T11:34:52.269Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:preview|needs_review|passed|2026-07-08T11:30:34.407Z|2026-07-08T11:34:52.269Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:preview",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:30:34.407Z",
+      "resolved_at": "2026-07-08T11:34:52.269Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:record:preview:human_usability|needs_review|passed|2026-07-08T11:30:34.407Z|2026-07-08T11:34:52.269Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:record:preview:human_usability",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:30:34.407Z",
+      "resolved_at": "2026-07-08T11:34:52.269Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:preflight:preview:human_usability|failed|passed|2026-07-08T11:30:34.407Z|2026-07-08T11:34:52.269Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:preflight:preview:human_usability",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:30:34.407Z",
+      "resolved_at": "2026-07-08T11:34:52.269Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:dispatch_batch:preview|failed|passed|2026-07-08T11:30:34.407Z|2026-07-08T11:34:52.269Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:dispatch_batch:preview",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:30:34.407Z",
+      "resolved_at": "2026-07-08T11:34:52.269Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:responsibility_authority|needs_evidence|passed|2026-07-08T11:22:03.959Z|2026-07-08T11:30:34.407Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:22:03.959Z",
+      "resolved_at": "2026-07-08T11:30:34.407Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_ux_surface|needs_evidence|passed|2026-07-08T11:13:02.001Z|2026-07-08T11:22:03.959Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_ux_surface",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:13:02.001Z",
+      "resolved_at": "2026-07-08T11:22:03.959Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:common_judgment_spine|needs_evidence|passed|2026-07-08T11:13:02.001Z|2026-07-08T11:22:03.959Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:13:02.001Z",
+      "resolved_at": "2026-07-08T11:22:03.959Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:visual_qa|needs_review|ready_for_review|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:visual_qa",
+      "gate_type": "visual_qa_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "ready_for_review",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node bin/vibepro.js verify visual . --id story-vibepro-ui-journey-e2e-dogfood --current-dir .vibepro/qa/current --qa-id story-vibepro-ui-journey-e2e-dogfood-visual --json",
+          "status": "pass",
+          "recorded_at": "2026-07-08T11:10:59.799Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:e2e|needs_evidence|passed|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:integration|needs_evidence|passed|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test test/story-discovery.test.js test/session-efficiency-audit.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js test/e2e/story-vibepro-pr-ship-command-main.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-08T11:10:59.799Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:unit|needs_evidence|passed|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:design_ssot_reconciliation|needs_review|passed|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-08T11:08:14.461Z|2026-07-08T11:13:02.001Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:08:14.461Z",
+      "resolved_at": "2026-07-08T11:13:02.001Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "65121fceaf6b7649d8e332226378584f932abbc4",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:definition_of_done|needs_evidence|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:agent_review|needs_review|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:gate|needs_review|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:preview|needs_review|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:preview",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:design_diagrams|needs_evidence|satisfied|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_execution_topology|needs_evidence|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_execution_topology",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:story_source_integrity|story_source_mismatch|passed|2026-07-08T11:04:53.152Z|2026-07-08T11:06:35.536Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T11:04:53.152Z",
+      "resolved_at": "2026-07-08T11:06:35.536Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:definition_of_done|needs_evidence|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:agent_review|needs_review|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:gate|needs_review|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:record:gate:gate_evidence|needs_review|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:gate:gate_evidence|missing|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:prepare:gate|needs_review|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:dispatch_batch:gate|needs_review|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_execution_topology|needs_evidence|passed|2026-07-08T10:59:59.532Z|2026-07-08T11:04:35.670Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_execution_topology",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:59:59.532Z",
+      "resolved_at": "2026-07-08T11:04:35.670Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:join:preview|needs_review|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:join:preview",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:record:preview:human_usability|needs_review|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:record:preview:human_usability",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:preview:human_usability|missing|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:preview:human_usability",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:preflight:preview:human_usability|failed|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:preflight:preview:human_usability",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:dispatch_batch:preview|failed|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:dispatch_batch:preview",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:responsibility_authority|needs_evidence|passed|2026-07-08T10:56:24.330Z|2026-07-08T10:59:59.532Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test test/responsibility-authority.test.js test/risk-adaptive-gate.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-08T10:59:32.711Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:56:24.330Z",
+      "resolved_at": "2026-07-08T10:59:59.532Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-08T10:53:40.648Z|2026-07-08T10:56:24.330Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:53:40.648Z",
+      "resolved_at": "2026-07-08T10:56:24.330Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|review:prepare:preview|needs_review|passed|2026-07-08T10:53:40.648Z|2026-07-08T10:56:24.330Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "review:prepare:preview",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:53:40.648Z",
+      "resolved_at": "2026-07-08T10:56:24.330Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:integration|needs_evidence|passed|2026-07-08T10:53:40.648Z|2026-07-08T10:56:24.330Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node bin/vibepro.js pr prepare . --base origin/main --story-id story-vibepro-ui-journey-e2e-dogfood --allow-extra-files --json",
+          "status": "pass",
+          "recorded_at": "2026-07-08T10:56:17.799Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:53:40.648Z",
+      "resolved_at": "2026-07-08T10:56:24.330Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-08T10:53:40.648Z|2026-07-08T10:56:24.330Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:53:40.648Z",
+      "resolved_at": "2026-07-08T10:56:24.330Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-ui-journey-e2e-dogfood|gate:common_judgment_spine|needs_evidence|passed|2026-07-08T10:53:40.648Z|2026-07-08T10:56:24.330Z",
+      "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-08T10:53:40.648Z",
+      "resolved_at": "2026-07-08T10:56:24.330Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fc8db80a5b0320791e111b230baf85bbbcd14c0a",
+        "changed_files": [
+          "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+          "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+          "journey-judgments.json",
+          "src/components/review-cockpit-preview.html",
+          "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+        ]
+      }
+    }
+  ]
+}

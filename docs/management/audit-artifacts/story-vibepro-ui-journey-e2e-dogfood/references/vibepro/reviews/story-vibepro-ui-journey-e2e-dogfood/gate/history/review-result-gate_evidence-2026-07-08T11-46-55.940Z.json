@@ -1,0 +1,113 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence and mandatory lenses pass on current-head evidence.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Required inputs, current git state, gate/review artifacts, verification evidence, visual PNG metadata/rendering, stale-text search, and dogfood report/test assertions were inspected read-only against head bc41fca1736deec302d297eb5ac41fabed10eb2a.",
+    "evidence": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.json",
+      ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/verification-evidence.json",
+      ".vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/visual-residual.json",
+      ".vibepro/qa/current/review-cockpit-preview.png",
+      ".vibepro/qa/baseline/review-cockpit-preview.png",
+      ".vibepro/design-ssot/vibepro-ui-journey-e2e-producer-contracts/reconciliation.json",
+      ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-result-human_usability.json",
+      ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-kepler-pass.md",
+      "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+      "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concerns were missing engineering_judgment_regression, stale human_usability provenance, stale gate_evidence blocker text, stale path references, overclaimed PR/merge completion, and placeholder visual evidence; final judgment is pass because verification evidence, responsibility authority, current closed preview review with transcript, regenerated gate artifacts, guarded report/test assertions, and real visual residual evidence all bind to current head."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-ui-journey-e2e-dogfood",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-ui-journey-e2e-dogfood",
+    "expected_root": null,
+    "expected_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "current_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-ui-journey-e2e-dogfood",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-ui-journey-e2e-dogfood",
+      "expected_root": null,
+      "expected_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+      "current_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-08T11:46:55.940Z",
+  "git_context": {
+    "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "current_branch": "codex/vibepro-ui-journey-e2e-dogfood",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T11:46:55.940Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "46f107f791107e3d291c2504ef02ec2e4b889bf6e666a8b38b6ab9d3a3f7057c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f4188-e4aa-7061-9c78-3d0221fbfed8",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-darwin-pass.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

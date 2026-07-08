@@ -1,0 +1,786 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-08T11:53:16.741Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:ffbeb3db4338a9c3ac2effaded1bb7a1f10ed2a5067c6902df47690dae5b116e",
+    "compressed_hash": "sha256:908ab40680da3cf86b48270b22b1097b4adc295a735a05cd9f17381fe1be5df0",
+    "expanded_bytes": 15267,
+    "compressed_bytes": 3351,
+    "expanded_line_count": 407,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-ui-journey-e2e-dogfood",
+    "cost": {
+      "compressed_bytes": 3351,
+      "expanded_bytes": 15267,
+      "expanded_line_count": 407,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/303",
+    "merge_commit_sha": "fa86a0d96614254951eeb6f9ebd1cd91ed6faeba",
+    "merged_at": "2026-07-08T11:53:15Z",
+    "current_head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...bc41fca1736deec302d297eb5ac41fabed10eb2a"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 48,
+    "copied_reference_count": 37,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-ui-journey-e2e-dogfood"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:ffbeb3db4338a9c3ac2effaded1bb7a1f10ed2a5067c6902df47690dae5b116e"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:bedfc4c355a34e3167025da1353de7de78548190face5685c00571905470c6a6",
+      "audit_digest": "sha256:bedfc4c355a34e3167025da1353de7de78548190face5685c00571905470c6a6",
+      "line_count": 204,
+      "raw_line_count": 204,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:011fde6e781b636e6f55b1611bacf633bbfa68857a9fba31f05268d008796c79",
+      "audit_digest": "sha256:c20f9c00804c25668095c63823b1cfa0646bf2c0fc0ad72a404614bdb086631e",
+      "line_count": 3764,
+      "raw_line_count": 20676,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:10d3ec24864630f0954a9a84a1b2854b3f5832be057a2c2d1310df39e9dd3976",
+      "audit_digest": "sha256:f3678ba628ccd351e7366f7fadf14f5d572af8f3c30582310a32a2a235665ff0",
+      "line_count": 1714,
+      "raw_line_count": 3530,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:760adfa2694984c5a7b7ddfe7517ed292d913f3753cfa7deee69c5aa7c16b1f4",
+      "audit_digest": "sha256:f2ba04b90d6ff64c07541becc604f1a4b220a6eecb557e305b15199d374609ba",
+      "line_count": 1572,
+      "raw_line_count": 3367,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:7b82d0b42e1f6f99854799da34f69011455195d181677488fe92be20780bfdcc",
+      "audit_digest": "sha256:4523585b819ae39dd8022e9832c3efcca31a4c23e9dc40ea252ed929072dda97",
+      "line_count": 21,
+      "raw_line_count": 592,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:ba985af666e72395db759cdfa59f5e3e61c8dcd352e3c48525ebd022f70341ce",
+      "audit_digest": "sha256:913f7fc056b5c1ca2cace5c1c84d77c53a2e9072193fe85a6b6b315e04d11d86",
+      "line_count": 1755,
+      "raw_line_count": 3590,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:bcad4a4e0730099f8e6abfb0d040d8e42c08355ef0b5d0d5f5ddc2c0a36b9993",
+      "audit_digest": "sha256:bcad4a4e0730099f8e6abfb0d040d8e42c08355ef0b5d0d5f5ddc2c0a36b9993",
+      "line_count": 343,
+      "raw_line_count": 343,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:a3cfd8baf6c032266a65aa92d08a845acf10d84760eb10fb39fc722f51aa5597",
+      "audit_digest": "sha256:e82a193c2c4da1532fe126ef8c7053de4026cb526caa183bca7663d42be3e500",
+      "line_count": 58,
+      "raw_line_count": 421,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:c9ca24a7160b3172677167b1a496203f5ab7bebaacdcf7e9e4d986c63bfd6937",
+      "audit_digest": "sha256:c9ca24a7160b3172677167b1a496203f5ab7bebaacdcf7e9e4d986c63bfd6937",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:4849ee0b61832e0adf8b6c2542f165eccd3856b70d6ee08f8192bec9dddde6f9",
+      "audit_digest": "sha256:4849ee0b61832e0adf8b6c2542f165eccd3856b70d6ee08f8192bec9dddde6f9",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:fe27103eb4ecbae828496327282519ca15266a3bb06d24c2fdf8536a1e824ea9",
+      "audit_digest": "sha256:fe27103eb4ecbae828496327282519ca15266a3bb06d24c2fdf8536a1e824ea9",
+      "line_count": 114,
+      "raw_line_count": 114,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:b88648c03b9e9e8d9b3ec9792846f32fe4a0f7720d62e7493b91882193d0e21b",
+      "audit_digest": "sha256:b88648c03b9e9e8d9b3ec9792846f32fe4a0f7720d62e7493b91882193d0e21b",
+      "line_count": 279,
+      "raw_line_count": 279,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:ae34b26ec66593f89d6a710097d016ab4fcd062d414266a2505fee2452aa7eae",
+      "audit_digest": "sha256:ae34b26ec66593f89d6a710097d016ab4fcd062d414266a2505fee2452aa7eae",
+      "line_count": 84,
+      "raw_line_count": 84,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:c42257f5fdc50c56fcde0a91dfe11f4c1f1a310d0d40cca17f3acd8cb510df90",
+      "audit_digest": "sha256:c42257f5fdc50c56fcde0a91dfe11f4c1f1a310d0d40cca17f3acd8cb510df90",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:c4c5996debebf250e9d1e0bb4b19737d8624b73506a5ec21314fdd34b0055bee",
+      "audit_digest": "sha256:c4c5996debebf250e9d1e0bb4b19737d8624b73506a5ec21314fdd34b0055bee",
+      "line_count": 112,
+      "raw_line_count": 112,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/audit-replay-bundle.json.gz",
+      "digest": "sha256:33cc4106853aabdf6974e5e00aef7bdd0f15dfdf70451f4f56f2068d6e4674db",
+      "audit_digest": "sha256:33cc4106853aabdf6974e5e00aef7bdd0f15dfdf70451f4f56f2068d6e4674db",
+      "line_count": 247,
+      "raw_line_count": 247,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/design-ssot/vibepro-ui-journey-e2e-producer-contracts/reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/design-ssot/vibepro-ui-journey-e2e-producer-contracts/reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/journeys/default-product-journey.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/journeys/default-product-journey.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/baseline/review-cockpit-preview.png",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/baseline/review-cockpit-preview.png",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/current/review-cockpit-preview.png",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/current/review-cockpit-preview.png",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/residual-analysis.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/residual-analysis.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/visual-residual.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/visual-residual.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-darwin-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-darwin-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-erdos-needs-changes.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-erdos-needs-changes.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-lifecycle-subagent.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-lifecycle-subagent.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-04-28.926Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-04-28.926Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-29-07.994Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-29-07.994Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-41-22.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-41-22.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-46-55.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-46-55.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T10-59-53.748Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T10-59-53.748Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T11-34-41.143Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T11-34-41.143Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-kepler-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-kepler-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-subagent.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-subagent.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-request-human_usability.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/reviews/preview/review-request-human_usability.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/reviews/preview/review-result-human_usability.json",
+      "resolution": "canonical_artifact"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/design-ssot/vibepro-ui-journey-e2e-producer-contracts/reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/design-ssot/vibepro-ui-journey-e2e-producer-contracts/reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/journeys/default-product-journey.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/journeys/default-product-journey.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/baseline/review-cockpit-preview.png",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/baseline/review-cockpit-preview.png",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/current/review-cockpit-preview.png",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/current/review-cockpit-preview.png",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/residual-analysis.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/residual-analysis.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/visual-residual.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/qa/story-vibepro-ui-journey-e2e-dogfood-visual/visual-residual.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-darwin-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-darwin-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-erdos-needs-changes.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-erdos-needs-changes.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-lifecycle-subagent.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-lifecycle-subagent.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-04-28.926Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-04-28.926Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-29-07.994Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-29-07.994Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-41-22.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-41-22.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-46-55.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/history/review-result-gate_evidence-2026-07-08T11-46-55.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T10-59-53.748Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T10-59-53.748Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T11-34-41.143Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/history/review-result-human_usability-2026-07-08T11-34-41.143Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-kepler-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-kepler-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-subagent.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/human-usability-subagent.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ui-journey-e2e-dogfood/references/vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-ui-journey-e2e-dogfood/gate/gate-evidence-heisenberg-needs-changes.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-ui-journey-e2e-dogfood/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

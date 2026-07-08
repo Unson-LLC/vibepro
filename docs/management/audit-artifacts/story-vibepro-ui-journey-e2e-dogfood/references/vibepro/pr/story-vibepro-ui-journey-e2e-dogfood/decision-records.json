@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+  "artifact": ".vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/decision-records.json",
+  "summary": {
+    "total": 0,
+    "open": 0,
+    "by_type": {},
+    "by_status": {},
+    "warnings": [],
+    "latest": null
+  },
+  "decisions": []
+}

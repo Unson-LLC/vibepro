@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "visual_residual",
+  "qa_id": "story-vibepro-ui-journey-e2e-dogfood-visual",
+  "story_id": "story-vibepro-ui-journey-e2e-dogfood",
+  "created_at": "2026-07-08T11:19:12.047Z",
+  "status": "pass",
+  "thresholdPct": 5,
+  "meanAbsResidualPct": 0,
+  "probes": [
+    {
+      "probe_id": "review-cockpit-preview",
+      "status": "compared",
+      "meanAbsResidualPct": 0,
+      "current_screenshot": ".vibepro/qa/current/review-cockpit-preview.png",
+      "baseline_screenshot": ".vibepro/qa/baseline/review-cockpit-preview.png"
+    }
+  ],
+  "source": {
+    "current_dir": ".vibepro/qa/current",
+    "flow_run_id": null,
+    "flow_verification_json": null
+  },
+  "git_context": {
+    "head_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+    "current_branch": "codex/vibepro-ui-journey-e2e-dogfood",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T11:19:12.255Z"
+  }
+}
