@@ -49,6 +49,24 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -69,6 +87,20 @@
         {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-ui-journey-e2e-dogfood.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-ui-journey-e2e-dogfood.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-ui-journey-e2e-dogfood.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -3311,5 +3343,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-08T09:45:00.000Z"
+  "updated_at": "2026-07-08T11:07:22.661Z"
 }
