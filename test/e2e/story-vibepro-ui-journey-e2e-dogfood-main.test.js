@@ -247,7 +247,13 @@ status: active
 
   const report = await readFile(new URL('../../docs/reference/vibepro-ui-journey-e2e-dogfood.md', import.meta.url), 'utf8');
   assert.match(report, /vibepro execute merge/, `${STORY_ID} ac:3 UJD-S-3 dogfood route is declared as VibePro execute merge`);
+  assert.match(report, /src\/components\/review-cockpit-preview\.html/, `${STORY_ID} ac:1 UJD-S-1 report names the real VibePro UI source surface`);
+  assert.match(report, /merge readiness/i, `${STORY_ID} ac:5 UJD-S-5 report states the pre-merge boundary as readiness`);
+  assert.match(report, /pending until a PR exists/i, `${STORY_ID} ac:3 UJD-S-3 report does not overclaim pre-PR merge completion`);
+  assert.match(report, /\.vibepro\/pr\/story-vibepro-ui-journey-e2e-dogfood\/pr-merge\.json/, `${STORY_ID} ac:3 UJD-S-3 report names the post-PR VibePro merge evidence source`);
+  assert.doesNotMatch(report, /real-project dogfood run remains unproven|Not completed in this implementation PR/i, `${STORY_ID} ac:4 UJD-S-4 report no longer claims the real dogfood route is unproven`);
   assert.doesNotMatch(report, /gh pr create/, `${STORY_ID} ac:3 UJD-S-3 dogfood route does not document raw gh pr create bypass`);
+  assert.doesNotMatch(report, /test\/journey-map\.test\.js/, `${STORY_ID} ac:4 UJD-S-4 report references the current e2e test path`);
   assert.match(report, /Manual command count/, `${STORY_ID} ac:4 UJD-S-4 report records measured command count`);
   assert.match(report, /Friction/, `${STORY_ID} ac:4 UJD-S-4 report records friction`);
   assert.match(report, /Workaround/, `${STORY_ID} ac:4 UJD-S-4 report records workarounds`);

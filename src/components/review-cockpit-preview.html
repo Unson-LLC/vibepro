@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VibePro Review Cockpit Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --surface: #ffffff;
+      --surface-subtle: #f4f6f8;
+      --text: #17202a;
+      --muted: #5d6673;
+      --border: #d9dee7;
+      --focus: #0f6cbd;
+      --pass: #166534;
+      --wait: #92400e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--surface-subtle);
+      color: var(--text);
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(960px, calc(100% - 32px));
+      margin: 24px auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    header,
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    h1,
+    h2 {
+      margin: 0 0 8px;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .gate-list {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gate {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-subtle);
+    }
+
+    .gate strong {
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      min-width: 112px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 4px 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .passed {
+      color: var(--pass);
+    }
+
+    .review {
+      color: var(--wait);
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Review Cockpit Preview</h1>
+      <p>Static UI surface for dogfooding Journey and Visual QA gates against VibePro review artifacts.</p>
+    </header>
+    <section aria-labelledby="gate-summary">
+      <h2 id="gate-summary">Gate Summary</h2>
+      <ul class="gate-list">
+        <li class="gate"><strong>Journey Context Gate</strong><span class="status passed">passed</span></li>
+        <li class="gate"><strong>Visual QA Gate</strong><span class="status review">ready for review</span></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

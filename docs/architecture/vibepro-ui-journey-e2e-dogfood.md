@@ -2,6 +2,7 @@
 story_id: story-vibepro-ui-journey-e2e-dogfood
 title: UI Journey End-to-End Dogfood Architecture
 status: draft
+parent_design: vibepro-ui-journey-e2e-producer-contracts
 ---
 
 # Architecture
@@ -46,7 +47,9 @@ flowchart LR
 
 ## Boundary and Rollback
 
-- Boundary: dogfood report under `docs/reference/`, one e2e test, and
-  follow-up story documents. No runtime code changes belong to this story.
+- Boundary: dogfood report under `docs/reference/`, one e2e test, follow-up
+  story documents, and one maintained static VibePro review-cockpit preview
+  used as the real UI-source dogfood subject. No product feature work belongs
+  to this story.
 - Rollback: the report and test are additive; reverting them removes only the
   frozen route coverage.

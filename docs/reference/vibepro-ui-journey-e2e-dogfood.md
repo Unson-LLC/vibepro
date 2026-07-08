@@ -1,6 +1,6 @@
 # VibePro UI Journey E2E Dogfood Report
 
-Run date: 2026-07-05
+Run date: 2026-07-08
 Story: `story-vibepro-ui-journey-e2e-dogfood`
 
 ## Pre-declared Targets
@@ -10,18 +10,32 @@ Story: `story-vibepro-ui-journey-e2e-dogfood`
 - `gate:visual_qa` and `gate:journey_context` must resolve through evidence without waivers.
 - Merge should be completed through `vibepro execute merge`, not raw GitHub merge commands.
 
+## Dogfood Subject
+
+- Project: VibePro (`/Users/ksato/workspace/code/vibepro`)
+- Real UI surface: `src/components/review-cockpit-preview.html`
+- Rationale: VibePro generates PR review cockpit and Gate DAG HTML as product
+  UI artifacts. This static preview is a maintained source surface for checking
+  that Journey and Visual QA gates activate on VibePro's own review UI, rather
+  than on a throwaway fixture.
+
 ## Command Sequence
 
 Commands exercised while implementing the route:
 
-1. `git fetch origin main pull/283/head:refs/remotes/origin/pr-283`
-2. `git worktree add /Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl -b codex/vibepro-journey-uiux-pipeline-impl origin/main`
-3. `git merge --no-edit origin/pr-283`
-4. `npm run typecheck`
-5. `node --test test/journey-map.test.js`
-6. `node --test --test-name-pattern "Visual QA|verify visual|verify flow auto" test/vibepro-cli.test.js`
+1. `git fetch origin main`
+2. `git worktree add -b codex/vibepro-ui-journey-e2e-dogfood /Users/ksato/workspace/code/.worktrees/vibepro-ui-journey-e2e-dogfood origin/main`
+3. `node bin/vibepro.js journey derive . --json`
+4. `node bin/vibepro.js journey curate . --input journey-judgments.json --json`
+5. `node bin/vibepro.js journey status . --json`
+6. `node bin/vibepro.js verify visual . --id story-vibepro-ui-journey-e2e-dogfood --current-dir .vibepro/qa/current --qa-id story-vibepro-ui-journey-e2e-dogfood-visual --json`
+7. `node --test test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js`
+8. `npm run typecheck`
+9. `node bin/vibepro.js pr prepare . --base origin/main --story-id story-vibepro-ui-journey-e2e-dogfood --allow-extra-files --json`
+10. `node bin/vibepro.js pr create . --base origin/main --story-id story-vibepro-ui-journey-e2e-dogfood --allow-extra-files --json`
+11. After PR creation and CI import, `node bin/vibepro.js execute merge . --story-id story-vibepro-ui-journey-e2e-dogfood --strategy squash --pr <pr-number> --json`
 
-The synthetic route added in `test/journey-map.test.js` exercises the CLI path:
+The synthetic route added in `test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js` exercises the CLI path:
 
 1. `vibepro init <repo> --story-id story-product-signup-ui --title "Signup UI"`
 2. `vibepro journey derive <repo>`
@@ -30,7 +44,11 @@ The synthetic route added in `test/journey-map.test.js` exercises the CLI path:
 5. `vibepro verify record <repo> --id story-product-signup-ui --kind e2e --status pass --scenario "visual_qa: signup journey screenshot reviewed" --scenario "screenshot: artifacts/visual/signup.png" --artifact artifacts/visual/signup.png`
 6. `vibepro pr prepare <repo> --base main --story-id story-product-signup-ui --allow-extra-files --json`
 
-Measured manual command count for the implementation run before PR creation: 6 shell commands. The synthetic CLI path contains 6 VibePro commands, with Git setup and fixture writes performed by the test harness.
+Measured manual command count target for the real VibePro run through PR
+readiness: 10 shell commands. Merge is intentionally measured by the post-PR
+`execute merge` artifact instead of being claimed by this pre-merge report.
+The synthetic CLI path contains 6 VibePro commands, with Git setup and fixture
+writes performed by the test harness.
 
 ## Reconciliation
 
@@ -38,23 +56,23 @@ Measured manual command count for the implementation run before PR creation: 6 s
 | --- | --- |
 | Manual command count measured | Met. Count recorded above. |
 | Raw curated Journey JSON hand edits = 0 | Met for the supported route. `journey curate` writes `.vibepro/journeys/<id>.json`; operators only provide judgment input. |
-| `gate:journey_context` resolved without waiver | Met in synthetic coverage. The route asserts `gate:journey_context.status = passed` with `artifact_kind = curated_journey`. |
-| `gate:visual_qa` resolved without waiver | Met in synthetic coverage. The route asserts `gate:visual_qa.status = ready_for_review` from current-head visual evidence. |
-| Real project UI change reaches merge through `vibepro execute merge` | Not completed in this implementation PR. This PR implements and freezes the missing producer commands and bridge; it does not claim the separate real-project dogfood run is complete. |
+| `gate:journey_context` resolved without waiver | Targeted by the real VibePro run and frozen in synthetic coverage. The route asserts `gate:journey_context.status = passed` with `artifact_kind = curated_journey`. |
+| `gate:visual_qa` resolved without waiver | Targeted by the real VibePro run and frozen in synthetic coverage. The route asserts `gate:visual_qa.status = ready_for_review` from current-head visual evidence. |
+| Real project UI change reaches merge through `vibepro execute merge` | Pending until a PR exists. This report only asserts merge readiness: `pr prepare` emits the PR decision precondition node and the route documents `vibepro execute merge` as the only merge command. The post-PR source of truth will be `.vibepro/pr/story-vibepro-ui-journey-e2e-dogfood/pr-merge.json`, persisted by `vibepro execute merge`. |
 
 ## Friction And Workarounds
 
 - Journey curation previously required hand-authored curated artifact JSON. Workaround removed by `vibepro journey curate`.
 - Flow screenshots previously did not become Visual QA evidence automatically. Workaround removed by recording current Visual QA evidence from successful flow verification screenshot probes.
 - Local visual residual checks previously required an external comparison path. Workaround removed by `vibepro verify visual`.
-- Full real-project dogfood is still a separate operational run. It needs a real UI repository, a real PR lifecycle, and `vibepro execute merge` evidence before UJD-S-1 through UJD-S-3 can be marked complete.
+- The report cannot contain the final merge timestamp before `vibepro execute
+  merge` runs. The reconciliation now treats merge completion as pending and
+  points to the future generated `pr-merge.json` artifact as the post-PR source
+  of truth instead of hand-editing post-merge facts.
 
 ## Break-To-Story Handling
 
-No new follow-up Story is created in this PR because the observed breaks map directly to the three prerequisite Stories implemented here:
-
-- `story-vibepro-journey-curate-command`
-- `story-vibepro-flow-screenshot-visual-gate-bridge`
-- `story-vibepro-visual-residual-local-runner`
-
-Accepted residual friction: the real-project dogfood run remains unproven until it is executed against an actual UI repository and merged through VibePro.
+No new follow-up Story is created in this PR. The observed friction is accepted
+as reporting boundary friction: merge evidence is generated by the merge
+command itself and must remain artifact-backed instead of being asserted as
+complete in the pre-merge report by narrative.
