@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-idempotent-audit-persistence",
   "source": "execute_merge",
-  "promoted_at": "2026-07-08T06:23:39.888Z",
+  "promoted_at": "2026-07-08T06:23:44.346Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:9ac07305196c96ca732101fbb470a614cb9cc763dcae3a4c9b5e0f4dff33de8b",
-    "compressed_hash": "sha256:d6c5f873c48d67c3495f739643b29836d168a997748ea5215e5ea03ed2de054d",
+    "content_hash": "sha256:d0503fe59c4eeeab603074a3e15da005ab5b51816224a82931a695116108c421",
+    "compressed_hash": "sha256:6f18054e10127cd4732ea828b7fd61030f6c8538a073ec62b75992254e7b4fb7",
     "expanded_bytes": 14640,
-    "compressed_bytes": 3731,
+    "compressed_bytes": 3729,
     "expanded_line_count": 364,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-idempotent-audit-persistence",
     "cost": {
-      "compressed_bytes": 3731,
+      "compressed_bytes": 3729,
       "expanded_bytes": 14640,
       "expanded_line_count": 364,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:9ac07305196c96ca732101fbb470a614cb9cc763dcae3a4c9b5e0f4dff33de8b"
+      "content_hash": "sha256:d0503fe59c4eeeab603074a3e15da005ab5b51816224a82931a695116108c421"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-idempotent-audit-persistence/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence/audit-replay-bundle.json.gz",
-      "digest": "sha256:ea2f469b3b7009713d0b66785429d141162f32fdff599b129d5c775b97a89a0a",
-      "audit_digest": "sha256:175966d50b50f361a5fcb51eea69a31664b298fb596c1508d42a047cdf6df830",
-      "line_count": 1513,
-      "raw_line_count": 3546,
+      "digest": "sha256:2e10f49f3eb968ec1d69645ce32c62b5a52e62a11c1eff6593356937f3dc60f5",
+      "audit_digest": "sha256:2ad34d6eb8edb299abba5197becbeb8b19ecd457a697e1a5571d899079d14e91",
+      "line_count": 1603,
+      "raw_line_count": 3636,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",

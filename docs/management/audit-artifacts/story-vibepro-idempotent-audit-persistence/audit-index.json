@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-idempotent-audit-persistence",
   "source": "execute_merge",
-  "generated_at": "2026-07-08T06:23:39.888Z",
+  "generated_at": "2026-07-08T06:23:44.346Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -115,13 +115,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3731,
+      "compressed_bytes": 3729,
       "expanded_bytes": 14640,
       "expanded_line_count": 364,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8719,
-    "raw_source_artifact_code_ratio": 16.639,
+    "raw_source_artifact_lines": 8809,
+    "raw_source_artifact_code_ratio": 16.811,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -257,7 +257,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-idempotent-audit-persistence",
-    "generated_at": "2026-07-08T06:23:39.888Z",
+    "generated_at": "2026-07-08T06:23:44.346Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -362,10 +362,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-idempotent-audit-persistence/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:9ac07305196c96ca732101fbb470a614cb9cc763dcae3a4c9b5e0f4dff33de8b",
-    "compressed_hash": "sha256:d6c5f873c48d67c3495f739643b29836d168a997748ea5215e5ea03ed2de054d",
+    "content_hash": "sha256:d0503fe59c4eeeab603074a3e15da005ab5b51816224a82931a695116108c421",
+    "compressed_hash": "sha256:6f18054e10127cd4732ea828b7fd61030f6c8538a073ec62b75992254e7b4fb7",
     "expanded_bytes": 14640,
-    "compressed_bytes": 3731,
+    "compressed_bytes": 3729,
     "expanded_line_count": 364,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -384,7 +384,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-idempotent-audit-persistence",
     "cost": {
-      "compressed_bytes": 3731,
+      "compressed_bytes": 3729,
       "expanded_bytes": 14640,
       "expanded_line_count": 364,
       "persisted_line_count": 1
