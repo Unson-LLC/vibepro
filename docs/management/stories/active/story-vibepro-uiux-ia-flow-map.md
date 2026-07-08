@@ -1,18 +1,15 @@
 ---
----
-story_id: story-vibepro-uiux-ia-flow-map
-parent_design: vibepro-uiux-ia-flow-map
----
-
 story_id: story-vibepro-uiux-ia-flow-map
 title: UI/UX IA and screen-flow map before per-screen modernization
 status: active
 view: dev
 period: 2026-07
-source:
-  type: operator_feedback
-  title: "Qiita UI/UX prompt checklist gap review"
-  url: https://qiita.com/yusuke_ando_vj/items/dd17a285217a15841a3a
+parent_design: vibepro-uiux-ia-flow-map
+source_type: operator_feedback
+source_title: "Qiita UI/UX prompt checklist gap review"
+source_url: https://qiita.com/yusuke_ando_vj/items/dd17a285217a15841a3a
+spec_docs:
+  - docs/specs/story-vibepro-uiux-ia-flow-map.md
 related_stories:
   - story-vibepro-journey-ai-handoff-context
   - story-vibepro-design-modernize-journey-context

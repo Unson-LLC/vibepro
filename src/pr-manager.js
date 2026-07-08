@@ -4975,6 +4975,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
   });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
+  const designDiagramSpec = await readDesignDiagramSpec(repoRoot, {
+    storyId: story.story_id,
+    storySource: primaryStory,
+    inferredSpec
+  });
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
     inferredSpec,
     verificationEvidence: boundVerificationEvidence
@@ -5147,6 +5152,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     verificationEvidence: boundVerificationEvidence,
     decisionRecords: context.decision_records,
     inferredSpec,
+    designDiagramSpec,
     specDrift,
     changeClassification,
     engineeringJudgment,
@@ -6924,6 +6930,75 @@ function formatDownstreamDiagramRequirementHint(hint) {
   const trigger = hint.trigger_path ?? hint.trigger_signal ?? 'changed file';
   const firstLine = String(hint.minimal_diagram?.mermaid ?? '').split('\n')[0] || '<mermaid>';
   return `${hint.kind} triggered by ${trigger}; insert at ${hint.insertion_target} or ${hint.tracked_spec_guidance}; minimal diagram starts with \`${firstLine}\``;
+}
+
+async function readDesignDiagramSpec(repoRoot, { storyId, storySource = null, inferredSpec = null } = {}) {
+  const specs = [];
+  if (inferredSpec) specs.push(inferredSpec);
+  for (const ref of resolveDesignDiagramSpecRefs(storyId, storySource)) {
+    const spec = await readTrackedDesignDiagramSpec(repoRoot, ref);
+    if (spec) specs.push(spec);
+  }
+  const diagrams = [];
+  const seen = new Set();
+  for (const spec of specs) {
+    for (const diagram of Array.isArray(spec?.diagrams) ? spec.diagrams : []) {
+      if (!diagram?.kind || seen.has(diagram.kind)) continue;
+      seen.add(diagram.kind);
+      diagrams.push(diagram);
+    }
+  }
+  if (diagrams.length === 0) return inferredSpec;
+  return {
+    ...(inferredSpec ?? { schema_version: '0.1.0', story_id: storyId }),
+    diagrams
+  };
+}
+
+function resolveDesignDiagramSpecRefs(storyId, storySource = null) {
+  const refs = new Set();
+  for (const ref of storySource?.spec_docs ?? []) refs.add(normalizeRepoRelativePath(ref));
+  if (storyId) {
+    refs.add(`docs/specs/${storyId}.spec.json`);
+    refs.add(`docs/specs/${storyId}.json`);
+    refs.add(`docs/specs/${storyId}.md`);
+  }
+  return [...refs].filter(Boolean);
+}
+
+function normalizeRepoRelativePath(ref) {
+  if (!ref) return null;
+  return String(ref).replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+async function readTrackedDesignDiagramSpec(repoRoot, ref) {
+  const normalized = normalizeRepoRelativePath(ref);
+  if (!normalized || normalized.includes('..')) return null;
+  const fullPath = path.join(repoRoot, normalized);
+  try {
+    const content = await readFile(fullPath, 'utf8');
+    if (normalized.endsWith('.json')) return JSON.parse(content);
+    if (normalized.endsWith('.md') || normalized.endsWith('.markdown')) {
+      const diagrams = extractMarkdownSpecDiagrams(content);
+      return diagrams.length > 0 ? { diagrams } : null;
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+  return null;
+}
+
+function extractMarkdownSpecDiagrams(content) {
+  const diagrams = [];
+  const pattern = /^###\s+([A-Za-z0-9_-]+)[^\n]*\n+```mermaid\n([\s\S]*?)```/gm;
+  for (const match of content.matchAll(pattern)) {
+    diagrams.push({
+      kind: match[1],
+      mermaid: match[2].trim()
+    });
+  }
+  return diagrams;
 }
 
 function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
@@ -9626,6 +9701,7 @@ function buildGateDag({
   verificationEvidence,
   decisionRecords = null,
   inferredSpec = null,
+  designDiagramSpec = null,
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
@@ -9750,7 +9826,7 @@ function buildGateDag({
   const effectiveManagedWorktreeGate = managedWorktreeGate ?? buildManagedWorktreeGate(managedWorktreeContext);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
-  const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
+  const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec: designDiagramSpec ?? inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git, { verificationEvidence, agentReviews });
   const artifactConsistencyGate = buildArtifactConsistencyGate({

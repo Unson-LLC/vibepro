@@ -17897,6 +17897,91 @@ title: PR準備
   );
 });
 
+test('pr prepare accepts required design diagrams from tracked story spec json', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'checkout'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [ ] checkout flowの入力画面から確認画面へ進める
+- [ ] checkout flowの確認画面から完了画面へ進める
+- [ ] checkout flowの失敗時は再試行できる
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare.spec.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    diagrams: [
+      { kind: 'flow', mermaid: 'flowchart LR\n  Input --> Confirm' }
+    ],
+    clauses: []
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'app', 'checkout', 'page.tsx'), 'export default function Checkout() { return <button>Pay</button>; }\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add checkout flow with tracked spec json diagram']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const designGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:design_diagrams');
+  assert.equal(designGate.status, 'satisfied');
+  assert.deepEqual(designGate.provided_diagrams, ['flow']);
+  assert.deepEqual(designGate.missing_diagrams, []);
+});
+
+test('pr prepare accepts required design diagrams from tracked markdown diagrams section', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'checkout'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+spec_docs:
+  - docs/specs/story-pr-prepare.md
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [ ] checkout flowの入力画面から確認画面へ進める
+- [ ] checkout flowの確認画面から完了画面へ進める
+- [ ] checkout flowの失敗時は再試行できる
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+---
+
+# Spec
+
+## Diagrams
+
+### flow
+
+\`\`\`mermaid
+flowchart LR
+  Input --> Confirm
+\`\`\`
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'checkout', 'page.tsx'), 'export default function Checkout() { return <button>Pay</button>; }\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add checkout flow with tracked spec markdown diagram']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const designGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:design_diagrams');
+  assert.equal(designGate.status, 'satisfied');
+  assert.deepEqual(designGate.provided_diagrams, ['flow']);
+  assert.deepEqual(designGate.missing_diagrams, []);
+});
+
 test('DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
