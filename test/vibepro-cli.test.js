@@ -1281,7 +1281,7 @@ test('UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibili
         route: '/dashboard',
         viewport: 'mobile:390x844',
         state: 'default',
-        screenshot_artifact: 'artifacts/dashboard-mobile.png',
+        screenshot_artifact: 'artifacts\\dashboard|mobile.png',
         overflow_overlap_result: { status: 'pass' },
         keyboard_focus_result: { status: 'pass' },
         accessibility_result: { status: 'pass', artifact: 'artifacts/a11y-dashboard-mobile.json' },
@@ -1314,7 +1314,10 @@ test('UIEA-S-1 UIEA-S-4 UIEA-S-5 uiux evidence writes responsive and accessibili
   assert.equal(generated.result.matrix.visual_residual_authority.artifact, '.vibepro/qa/story-pr-prepare-visual/visual-residual.json');
   assert.equal(generated.result.matrix.missing_evidence.length, 0);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-pr-prepare', 'responsive-a11y-matrix.json')), true);
-  assert.equal(await pathExists(path.join(repo, '.vibepro', 'uiux', 'story-pr-prepare', 'responsive-a11y-matrix.md')), true);
+  const markdownPath = path.join(repo, '.vibepro', 'uiux', 'story-pr-prepare', 'responsive-a11y-matrix.md');
+  assert.equal(await pathExists(markdownPath), true);
+  const markdown = await readFile(markdownPath, 'utf8');
+  assert.match(markdown, /artifacts\\\\dashboard\\\|mobile\.png/);
 });
 
 test('UIEA-S-3 uiux evidence does not accept screenshot-only rows without required metadata', async () => {
