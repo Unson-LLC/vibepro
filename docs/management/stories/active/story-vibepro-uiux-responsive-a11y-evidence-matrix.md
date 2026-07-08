@@ -3,6 +3,8 @@ story_id: story-vibepro-uiux-responsive-a11y-evidence-matrix
 title: UI/UX responsive and accessibility evidence matrix
 status: active
 view: dev
+parent_design:
+  - vibepro-uiux-responsive-a11y-evidence-matrix
 period: 2026-07
 source:
   type: operator_feedback
