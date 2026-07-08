@@ -2921,7 +2921,7 @@ function groupChangedFiles(files) {
     else if (isPolicyDocPath(target)) groups.policy_docs.push(file);
     else if (isResponsibilityAuthorityMetadataPath(target)) groups.responsibility_authority_metadata.push(file);
     else if (isContractMetadataPath(target)) groups.contract_metadata.push(file);
-    else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
+    else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('Tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target) || /(Tests?|Spec)\.swift$/.test(target)) groups.tests.push(file);
     else if (isSourcePath(target)) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
     else if (isRepoControlPath(target)) groups.repo_control.push(file);
@@ -2998,7 +2998,8 @@ function isRootSourcePath(filePath) {
     || filePath.startsWith('lib/')
     || filePath.startsWith('api/')
     || filePath.startsWith('mcp/')
-    || filePath.startsWith('scripts/');
+    || filePath.startsWith('scripts/')
+    || filePath.startsWith('Sources/');
 }
 
 function isRepoControlPath(filePath) {
@@ -6401,6 +6402,7 @@ function parseStoryDoc(file, content) {
     root_cause: extractSectionText(content, ['根本原因', '原因', 'Root Cause', 'Cause']),
     solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
+    impact_scope: extractImpactScopeStatement(content),
     acceptance_criteria: extractAcceptanceCriteria(content),
     related_stories: normalizeFrontmatterList(
       frontmatter.related_stories
@@ -6503,6 +6505,16 @@ function extractSectionText(content, headings) {
     if (summary) return summary;
   }
   return null;
+}
+
+function extractImpactScopeStatement(content) {
+  const source = String(content ?? '');
+  const tokenMatch = source.match(/impact_scope_explained\s*[:：]\s*(.+?)(?:\n\s*\n|\n#|$)/is);
+  if (tokenMatch) {
+    const statement = compactStorySourceText(tokenMatch[1].replace(/\s+/g, ' '));
+    if (statement) return statement;
+  }
+  return extractSectionText(source, ['影響範囲', 'Impact Scope', 'Impact範囲', 'Scope of Impact']);
 }
 
 function extractStoryIntro(content) {
@@ -8473,6 +8485,13 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
       strength_reason: 'spec clauses explain the changed scope',
       binding_status: 'n/a',
       artifact_quality: 'spec_clause'
+    }));
+  } else if (storySource?.impact_scope) {
+    docs.push(buildEvidenceItem('impact_scope_explained', storySource.impact_scope, {
+      strength: 'supporting',
+      strength_reason: 'story doc explicitly explains the change impact scope',
+      binding_status: 'n/a',
+      artifact_quality: 'impact_scope_statement'
     }));
   }
   const currentRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', surfaceProfile);
