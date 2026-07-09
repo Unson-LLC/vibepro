@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-audit-automation-memory-guard",
+  "created_at": "2026-07-09T15:32:57.815Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-audit-automation-memory-guard.md, docs/architecture/vibepro-downstream-ref-topology-traceability.md, docs/architecture/vibepro-judgment-axis-activation-preconditions.md, docs/architecture/vibepro-session-attribution-boundary-guard.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-audit-automation-memory-guard.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-audit-automation-memory-guard.md, docs/architecture/vibepro-downstream-ref-topology-traceability.md, docs/architecture/vibepro-judgment-axis-activation-preconditions.md, docs/architecture/vibepro-session-attribution-boundary-guard.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-audit-automation-memory-guard.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-09T15:32:56.569Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "branch": "codex/audit-window-improvements-impl",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "670f7b40a64a5352c41d76bbc35d7bd87bc080dc",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-audit-automation-memory-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head evidence is fresh, focused command evidence is reliable, and PR creation remains blocked until lifecycle-backed review is recorded.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected requested review inputs, preferred evidence artifacts, bounded summaries, PR/gate outputs, source/test diffs, verification evidence, local git head, and focused tests.",
+    "evidence": "HEAD ccea8bb668539ee9c36df41b4d7bef341348d0d3; node --test test/session-efficiency-audit.test.js test/engineering-judgment-activation-precision.test.js passed 22/22",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-audit-automation-memory-guard/gate/review-request-gate_evidence.md",
+      ".vibepro/reviews/story-vibepro-audit-automation-memory-guard/gate/parallel-dispatch.md",
+      ".vibepro/pr/story-vibepro-audit-automation-memory-guard/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-audit-automation-memory-guard/decision-index.json",
+      ".vibepro/pr/story-vibepro-audit-automation-memory-guard/evidence-plan.json",
+      ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-audit-automation-memory-guard/verification-evidence.json",
+      "src/session-efficiency-audit.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "test/session-efficiency-audit.test.js",
+      "test/engineering-judgment-activation-precision.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "evidence freshness concern -> pass because evidence-reuse reports evidence_key_match, stale_reasons=[], fresh_use_allowed=true, current_head_bound artifacts, and local HEAD equals ccea8bb668539ee9c36df41b4d7bef341348d0d3.",
+    "command reliability concern -> pass because recorded typecheck, integration, unit, and focused e2e evidence are strict-head bound, and focused tests were rerun successfully during review.",
+    "gate binding concern -> pass because unresolved agent-review gates were explicit before recording and PR create remained blocked until this lifecycle-backed record.",
+    "regression_guard lens -> pass because existing audit session-cost automation-memory behavior, token accounting, docs-only axis suppression, and current-head focused regression coverage are verified.",
+    "path_surface_coverage lens -> pass because missing/corrupt memory, explicit fallback, valid memory, commit readback, CLI exit codes, PR body, traceability, and bounded summary surfaces are represented."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+    "expected_root": null,
+    "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+    "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+      "expected_root": null,
+      "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-09T15:27:22.826Z",
+  "git_context": {
+    "head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+    "current_branch": "codex/audit-window-improvements-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-09T15:27:22.826Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "d6f05cef472fe3d424d25b67e2046361717a4b88b26ef644d0435e006b549e21",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f4778-3f01-73b1-b4cd-662e4a44ca04",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-audit-automation-memory-guard/gate/subagent-019f4778-3f01-73b1-b4cd-662e4a44ca04-transcript.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-audit-automation-memory-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1.close_agent:019f4778-3f01-73b1-b4cd-662e4a44ca04",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

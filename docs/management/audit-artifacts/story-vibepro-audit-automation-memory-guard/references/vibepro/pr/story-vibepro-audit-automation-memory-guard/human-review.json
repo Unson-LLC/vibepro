@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-audit-automation-memory-guard",
+  "created_at": "2026-07-09T15:32:57.815Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-audit-automation-memory-guard.md, docs/architecture/vibepro-downstream-ref-topology-traceability.md, docs/architecture/vibepro-judgment-axis-activation-preconditions.md, docs/architecture/vibepro-session-attribution-boundary-guard.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-audit-automation-memory-guard.md)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "expected_root": null,
+          "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783610354440-8355877a",
+        "story_id": "story-vibepro-audit-automation-memory-guard",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:pr_scope_judgment",
+        "source_status": "needs_split",
+        "summary": "P0-P3 audit-window improvements are intentionally bundled for one runtime-contract PR",
+        "reason": "The four designed stories share the same audit-window contract and the same runtime seams: [REDACTED:b3ae548f7af6], session attribution in audit/pr prepare, judgment-axis activation precision, and PR traceability artifacts. Splitting them would force duplicate design-ssot, responsibility-authority, common-spine, and Agent Review evidence while making the dogfood audit behavior harder to validate end-to-end. The bundled diff remains reviewable because production code changes are concentrated in src/session-efficiency-audit.js, src/pr-manager.js, src/cli.js, and focused regression tests; the additional files are Story/Architecture/Spec lineage for those four additive gates.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": true,
+          "hit_count": 1
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+            "expected_root": null,
+            "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+            "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "current_branch": "codex/audit-window-improvements-impl",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-09T15:19:14.439Z"
+        },
+        "recorded_at": "2026-07-09T15:19:14.440Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-09T15:32:56.569Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "branch": "codex/audit-window-improvements-impl",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "670f7b40a64a5352c41d76bbc35d7bd87bc080dc",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

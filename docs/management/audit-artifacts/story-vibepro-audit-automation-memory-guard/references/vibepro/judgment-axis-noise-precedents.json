@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-audit-automation-memory-guard",
+      "decision_id": "decision-1783610086229-2ca8fa75",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff is broad in documentation count but narrow in product behavior: it adds one CLI memory guard, advisory attribution metadata, a judgment-axis precision precondition, and PR artifact traceability. Tests and design-ssot evidence are focused on these shared seams, so splitting would duplicate the same evidence and make the audit-window contract harder to review.",
+      "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-09T15:16:07.319Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-audit-automation-memory-guard",
+  "updated_at": "2026-07-09T15:19:14.440Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+      "expected_root": null,
+      "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783610354440-8355877a",
+      "story_id": "story-vibepro-audit-automation-memory-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "P0-P3 audit-window improvements are intentionally bundled for one runtime-contract PR",
+      "reason": "The four designed stories share the same audit-window contract and the same runtime seams: [REDACTED:b3ae548f7af6], session attribution in audit/pr prepare, judgment-axis activation precision, and PR traceability artifacts. Splitting them would force duplicate design-ssot, responsibility-authority, common-spine, and Agent Review evidence while making the dogfood audit behavior harder to validate end-to-end. The bundled diff remains reviewable because production code changes are concentrated in src/session-efficiency-audit.js, src/pr-manager.js, src/cli.js, and focused regression tests; the additional files are Story/Architecture/Spec lineage for those four additive gates.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "expected_root": null,
+          "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+        "current_branch": "codex/audit-window-improvements-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-09T15:19:14.439Z"
+      },
+      "recorded_at": "2026-07-09T15:19:14.440Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783610086229-2ca8fa75",
+      "story_id": "story-vibepro-audit-automation-memory-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Bundled scope is reviewable by one reviewer",
+      "reason": "The diff is broad in documentation count but narrow in product behavior: it adds one CLI memory guard, advisory attribution metadata, a judgment-axis precision precondition, and PR artifact traceability. Tests and design-ssot evidence are focused on these shared seams, so splitting would duplicate the same evidence and make the audit-window contract harder to review.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "expected_root": null,
+          "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+        "current_branch": "codex/audit-window-improvements-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-09T15:14:46.229Z"
+      },
+      "recorded_at": "2026-07-09T15:14:46.230Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+        "expected_root": null,
+        "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+        "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783610354440-8355877a",
+      "story_id": "story-vibepro-audit-automation-memory-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "P0-P3 audit-window improvements are intentionally bundled for one runtime-contract PR",
+      "reason": "The four designed stories share the same audit-window contract and the same runtime seams: [REDACTED:b3ae548f7af6], session attribution in audit/pr prepare, judgment-axis activation precision, and PR traceability artifacts. Splitting them would force duplicate design-ssot, responsibility-authority, common-spine, and Agent Review evidence while making the dogfood audit behavior harder to validate end-to-end. The bundled diff remains reviewable because production code changes are concentrated in src/session-efficiency-audit.js, src/pr-manager.js, src/cli.js, and focused regression tests; the additional files are Story/Architecture/Spec lineage for those four additive gates.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/charming-lamport-915b50",
+          "expected_root": null,
+          "expected_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "current_head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ccea8bb668539ee9c36df41b4d7bef341348d0d3",
+        "current_branch": "codex/audit-window-improvements-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-09T15:19:14.439Z"
+      },
+      "recorded_at": "2026-07-09T15:19:14.440Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-audit-automation-memory-guard/decision-records.json"
+}
