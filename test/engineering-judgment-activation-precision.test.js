@@ -75,6 +75,27 @@ This note mentions workflow, review, artifact, and gate wording for human docume
   const reviewCockpit = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
   assert.match(reviewCockpit, /Suppressed Axes/);
   assert.match(reviewCockpit, /execution_topology: suppressed/);
+
+  const refTopology = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'ref-topology.json'), 'utf8'));
+  assert.equal(refTopology.fetch_performed, false);
+  assert.equal(refTopology.refs.base_ref, 'main');
+  assert.equal(refTopology.base_selection.rule, 'cli_option');
+});
+
+test('docs-only security path wording is suppressed until stronger topology or risk evidence appears', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'architecture', 'security-token-copy.md'), '# Security Token Copy\n\nA docs-only note about token naming.\n');
+  await git(repo, ['add', 'docs/architecture/security-token-copy.md']);
+  await git(repo, ['commit', '-m', 'docs: add security token wording']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'security_boundary');
+  assert.equal(axis.status, 'inactive');
+  assert.equal(axis.activation_precision.status, 'insufficient_signal');
+  assert.match(axis.activation_precision.reason, /docs\/UI composition/);
+  assert.equal(axis.activation_precision.composition.docs_or_ui_composition_only, true);
 });
 
 test('non-text workflow corroboration activates execution topology axis', async () => {

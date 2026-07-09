@@ -196,6 +196,8 @@ import {
 } from './canonical-audit.js';
 import {
   collectSessionEfficiencyAudit,
+  commitAuditAutomationMemory,
+  preflightAuditAutomationMemory,
   renderSessionEfficiencyAudit
 } from './session-efficiency-audit.js';
 import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
@@ -354,6 +356,8 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
+  vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
+  vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
   vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
@@ -574,6 +578,8 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
+  vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
+  vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
   vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
@@ -915,6 +921,38 @@ export async function runCli(argv, io = {}) {
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'memory') {
+        const action = rest[1];
+        const memoryRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        if (action === 'preflight') {
+          const result = await preflightAuditAutomationMemory(memoryRepoRoot, {
+            memoryPath: getOption(rest, '--memory') ?? getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
+            fallbackLastRun: getOption(rest, '--fallback-last-run'),
+            fallbackHours: getOption(rest, '--fallback-hours'),
+            now: getOption(rest, '--now')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderAuditMemoryResult(result));
+          return { exitCode: ['ready', 'fallback'].includes(result.status) ? 0 : 2, command, subcommand, action, result };
+        }
+        if (action === 'commit') {
+          const result = await commitAuditAutomationMemory(memoryRepoRoot, {
+            memoryPath: getOption(rest, '--memory') ?? getOption(rest, '--automation-memory') ?? io.env?.VIBEPRO_AUTOMATION_MEMORY ?? null,
+            lastRun: getOption(rest, '--last-run'),
+            windowStart: getOption(rest, '--window-start'),
+            windowEnd: getOption(rest, '--window-end'),
+            note: getOption(rest, '--note'),
+            now: getOption(rest, '--now')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderAuditMemoryResult(result));
+          return { exitCode: result.status === 'committed' ? 0 : 2, command, subcommand, action, result };
+        }
+        write(stderr, `Unknown audit memory action: ${action ?? ''}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand };
       }
       if (subcommand === 'replay') {
         const result = await replayCanonicalAuditBundle(repoRoot, {
@@ -2845,6 +2883,17 @@ function defaultSessionId(env = process.env) {
     ?? env?.CODEX_SESSION_ID
     ?? env?.CLAUDE_SESSION_ID
     ?? null;
+}
+
+function renderAuditMemoryResult(result) {
+  return [
+    `audit-memory: ${result.status}`,
+    `memory: ${result.memory_path ?? '-'}`,
+    `window: ${result.window_start ?? '-'} -> ${result.window_end ?? '-'}`,
+    `fallback: ${result.fallback_used ? result.source ?? 'used' : 'no'}`,
+    result.artifact ? `artifact: ${result.artifact}` : null,
+    result.required_action ? `required_action: ${result.required_action}` : null
+  ].filter(Boolean).join('\n') + '\n';
 }
 
 function renderHelp(language = null) {
