@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import {
-  collectSessionEfficiencyAudit
+  collectSessionEfficiencyAudit,
+  commitAuditAutomationMemory,
+  preflightAuditAutomationMemory
 } from '../src/session-efficiency-audit.js';
 
 const execFileAsync = promisify(execFile);
@@ -777,4 +779,131 @@ test('AIL-SCENARIO-003 session efficiency audit reports observed detached artifa
   assert.equal(result.story_artifacts.lineage.status, 'detached_artifact_observed');
   assert.equal(result.story_artifacts.lineage.detached_candidates[0].exists, false);
   assert.deepEqual(result.audit_readiness.blockers, ['story_artifacts_detached_unavailable']);
+});
+
+test('audit memory preflight blocks missing memory unless fallback is explicit and commit readback verifies the window', async () => {
+  const { root } = await createFixture();
+  const memoryPath = path.join(root, '.vibepro', 'automation-memory.md');
+
+  const missing = await preflightAuditAutomationMemory(root, {
+    memoryPath,
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.equal(missing.status, 'blocked');
+  assert.equal(missing.fallback_used, false);
+
+  const fallback = await preflightAuditAutomationMemory(root, {
+    memoryPath,
+    fallbackLastRun: '2026-06-27T13:00:00Z',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.equal(fallback.status, 'fallback');
+  assert.equal(fallback.fallback_used, true);
+  assert.equal(fallback.window_start, '2026-06-27T13:00:00.000Z');
+
+  const fallbackHours = await preflightAuditAutomationMemory(root, {
+    memoryPath,
+    fallbackHours: '2',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.equal(fallbackHours.status, 'fallback');
+  assert.equal(fallbackHours.source, 'fallback_hours');
+  assert.equal(fallbackHours.window_start, '2026-06-27T12:00:00.000Z');
+  assert.equal(fallbackHours.window_end, '2026-06-27T14:00:00.000Z');
+
+  await mkdir(path.dirname(memoryPath), { recursive: true });
+  await writeFile(memoryPath, '# audit notes\n\nOperator note that should remain outside the machine block.\n');
+
+  const committed = await commitAuditAutomationMemory(root, {
+    memoryPath,
+    lastRun: '2026-06-27T14:00:00Z',
+    windowStart: '2026-06-27T13:00:00Z',
+    windowEnd: '2026-06-27T14:00:00Z',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.equal(committed.status, 'committed');
+  assert.equal(committed.readback.last_run, '2026-06-27T14:00:00.000Z');
+
+  const memoryText = await readFile(memoryPath, 'utf8');
+  assert.match(memoryText, /Operator note that should remain outside the machine block/);
+
+  const ready = await preflightAuditAutomationMemory(root, {
+    memoryPath,
+    now: '2026-06-27T14:05:00.000Z'
+  });
+  assert.equal(ready.status, 'ready');
+  assert.equal(ready.source, 'automation-memory-daily-window');
+  assert.equal(ready.last_run, '2026-06-27T14:00:00.000Z');
+  assert.equal(ready.window_start, '2026-06-27T13:00:00.000Z');
+  assert.equal(ready.window_end, '2026-06-27T14:00:00.000Z');
+});
+
+test('audit memory preflight reports corrupt memory and CLI exits non-zero without fallback', async () => {
+  const { root } = await createFixture();
+  const memoryPath = path.join(root, '.vibepro', 'automation-memory.md');
+  await mkdir(path.dirname(memoryPath), { recursive: true });
+  await writeFile(memoryPath, [
+    '# vibepro-value-audit memory',
+    'Last run: not-a-date',
+    'Window = also-bad to still-bad',
+    ''
+  ].join('\n'));
+
+  const corrupt = await preflightAuditAutomationMemory(root, {
+    memoryPath,
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.equal(corrupt.status, 'blocked');
+  assert.equal(corrupt.fallback_used, false);
+  assert.match(corrupt.reason, /did not contain a parseable/);
+
+  await assert.rejects(
+    execFileAsync(process.execPath, [
+      CLI_BIN,
+      'audit',
+      'memory',
+      'preflight',
+      root,
+      '--memory',
+      memoryPath,
+      '--now',
+      '2026-06-27T14:00:00.000Z',
+      '--json'
+    ], { encoding: 'utf8' }),
+    (error) => {
+      assert.equal(error.code, 2);
+      const output = JSON.parse(error.stdout);
+      assert.equal(output.status, 'blocked');
+      assert.equal(output.fallback_used, false);
+      return true;
+    }
+  );
+});
+
+test('session efficiency audit adds advisory attribution without changing token accounting', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const lines = [
+    ...sessionLines({ sessionId, cwd: root, storyId }),
+    {
+      timestamp: '2026-06-27T13:01:00.000Z',
+      type: 'response_item',
+      payload: { text: 'follow-up note for STR-999 from a parent session' }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session.token_accounting.status, 'available');
+  assert.equal(result.attribution.status, 'available');
+  assert.equal(result.attribution.categories.strict > 0, true);
+  assert.equal(result.attribution.categories.other_story > 0, true);
+  assert.equal(result.attribution.mixed_parent, true);
+  assert.equal(result.attribution.mode, 'advisory');
 });

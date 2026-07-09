@@ -317,6 +317,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = path.join(prDir, 'pr-body.md');
   const designSsotPath = path.join(prDir, 'design-ssot-reconciliation.json');
   const seniorGapJudgmentPath = path.join(prDir, 'senior-gap-judgment.json');
+  const refTopologyPath = path.join(prDir, 'ref-topology.json');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
@@ -486,6 +487,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const decisionIndexJson = `${JSON.stringify(decisionIndex, null, 2)}\n`;
   const designSsotJson = `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`;
   const seniorGapJudgmentJson = `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`;
+  const refTopologyJson = `${JSON.stringify(reviewGit.ref_topology ?? null, null, 2)}\n`;
   const splitPlanJson = `${JSON.stringify(splitPlan, null, 2)}\n`;
   const decisionRecordsJson = `${JSON.stringify(prContext.decision_records, null, 2)}\n`;
   const gateDagJson = writeGateDagDump ? `${JSON.stringify(prContext.gate_dag, null, 2)}\n` : null;
@@ -495,6 +497,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     { filename: 'decision-index.json', content: decisionIndexJson },
     { filename: 'design-ssot-reconciliation.json', content: designSsotJson },
     { filename: 'senior-gap-judgment.json', content: seniorGapJudgmentJson },
+    { filename: 'ref-topology.json', content: refTopologyJson },
     { filename: 'split-plan.json', content: splitPlanJson },
     { filename: 'decision-records.json', content: decisionRecordsJson },
     ...(gateDagJson !== null ? [{ filename: 'gate-dag.json', content: gateDagJson }] : [])
@@ -538,6 +541,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     evidence_reuse: evidenceReuse,
     artifact_budget: artifactBudgetReport,
     gate_status: gateStatus,
+    session_boundary: buildSessionBoundaryAdvisory({
+      storyId: story.story_id,
+      env: options.env ?? process.env,
+      git: reviewGit
+    }),
     authorization_scoring: authorizationScoring,
     workspace: {
       initialized: workspace.initialized,
@@ -558,6 +566,16 @@ export async function preparePullRequest(repoRoot, options = {}) {
       pr_prepare_stages: progress.snapshot()
     }
   };
+  const usedForDecision = buildUsedForDecisionSummary({
+    verificationEvidence: prContext.verification_evidence,
+    gateDag: prContext.gate_dag,
+    engineeringJudgment: prContext.engineering_judgment,
+    gateStatus,
+    decisionRecords: prContext.decision_records
+  });
+  if (usedForDecision) {
+    preparation.used_for_decision = usedForDecision;
+  }
 
   const lifecycleArtifacts = workspace.initialized
     ? await progress.stage('inspect_pr_lifecycle_artifacts', () => inspectPrLifecycleArtifacts(root, story.story_id, {
@@ -576,6 +594,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(decisionIndexPath, decisionIndexJson, { signal });
     await writeFile(designSsotPath, designSsotJson, { signal });
     await writeFile(seniorGapJudgmentPath, seniorGapJudgmentJson, { signal });
+    await writeFile(refTopologyPath, refTopologyJson, { signal });
     await writeFile(bodyPath, prBody, { signal });
     if (writeGateDagDump) {
       await writeFile(gateDagJsonPath, gateDagJson, { signal });
@@ -674,6 +693,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
         latest_gate_dag: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
         latest_senior_gap_judgment: toWorkspaceRelative(root, seniorGapJudgmentPath),
+        latest_ref_topology: toWorkspaceRelative(root, refTopologyPath),
         latest_gate_dag_report: writeHtmlReports ? toWorkspaceRelative(root, gateDagReportPath) : null,
         latest_split_plan: toWorkspaceRelative(root, splitPlanJsonPath),
         latest_split_plan_report: writeHtmlReports ? toWorkspaceRelative(root, splitPlanReportPath) : null,
@@ -728,6 +748,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       pr_body: bodyPath,
       design_ssot_reconciliation: designSsotPath,
       senior_gap_judgment: seniorGapJudgmentPath,
+      ref_topology: refTopologyPath,
       gate_dag: writeGateDagDump ? gateDagJsonPath : null,
       gate_dag_report: writeHtmlReports ? gateDagReportPath : null,
       split_plan: splitPlanJsonPath,
@@ -2699,6 +2720,15 @@ async function collectGitState(repoRoot, options) {
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const fingerprints = await collectGitStatusFingerprints(repoRoot);
   const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
+  const refTopology = await collectRefTopology(repoRoot, {
+    baseRef,
+    headRef,
+    currentBranch,
+    baseSha,
+    headSha,
+    mergeBaseSha,
+    baseRefExplicit: Boolean(options.baseRef)
+  });
   const dirtyFiles = await hydrateChangedFileContent(repoRoot, parseStatus(fingerprints.user_status_output));
   const rawDirtyFiles = await hydrateChangedFileContent(repoRoot, parseStatus(fingerprints.status_output));
   const changedFiles = includesDirtyInChangedFiles
@@ -2718,6 +2748,7 @@ async function collectGitState(repoRoot, options) {
       headSha,
       mergeBaseSha
     }),
+    ref_topology: refTopology,
     origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
     raw_dirty: rawDirtyFiles.length > 0,
@@ -2819,6 +2850,96 @@ async function resolveBaseRef(repoRoot) {
   return 'HEAD~1';
 }
 
+async function collectRefTopology(repoRoot, { baseRef, headRef, currentBranch, baseSha, headSha, mergeBaseSha, baseRefExplicit = false } = {}) {
+  const remoteNames = (await gitOptional(repoRoot, ['remote']))
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const remotes = [];
+  for (const name of remoteNames) {
+    remotes.push({
+      name,
+      url: await gitOptional(repoRoot, ['remote', 'get-url', name]) || null
+    });
+  }
+  const refs = parseForEachRefOutput(await gitOptional(repoRoot, [
+    'for-each-ref',
+    '--format=%(refname:short)\t%(objectname)',
+    'refs/heads',
+    'refs/remotes'
+  ]));
+  const branchNames = [...new Set([
+    currentBranch,
+    stripRemotePrefix(baseRef),
+    stripRemotePrefix(headRef),
+    ...refs
+      .filter((ref) => ref.name.startsWith('origin/'))
+      .map((ref) => stripRemotePrefix(ref.name))
+  ].filter(Boolean))].sort();
+  const refsByName = new Map(refs.map((ref) => [ref.name, ref.sha]));
+  const branches = branchNames.map((branch) => {
+    const localSha = refsByName.get(branch) ?? null;
+    const remoteRefs = Object.fromEntries(remoteNames.map((remote) => {
+      const refName = `${remote}/${branch}`;
+      return [remote, refsByName.get(refName) ?? null];
+    }));
+    const remoteShas = Object.values(remoteRefs).filter(Boolean);
+    const uniqueRemoteShas = [...new Set(remoteShas)];
+    return {
+      branch,
+      local_sha: localSha,
+      remotes: remoteRefs,
+      divergence: {
+        local_vs_remote: Boolean(localSha && uniqueRemoteShas.length > 0 && !uniqueRemoteShas.includes(localSha)),
+        remote_disagreement: uniqueRemoteShas.length > 1
+      }
+    };
+  });
+  return {
+    schema_version: '0.1.0',
+    fetch_performed: false,
+    remotes,
+    refs: {
+      base_ref: baseRef,
+      head_ref: headRef,
+      current_branch: currentBranch || null,
+      base_sha: baseSha || null,
+      head_sha: headSha || null,
+      merge_base_sha: mergeBaseSha || null
+    },
+    base_selection: {
+      ref: baseRef,
+      explicit: baseRefExplicit,
+      rule: baseRefExplicit
+        ? 'cli_option'
+        : 'origin_head_then_origin_develop_origin_main_develop_main_master_then_HEAD~1'
+    },
+    branches,
+    divergence_flags: {
+      head_contains_base: Boolean(baseSha && headSha && mergeBaseSha === baseSha),
+      branch_divergence_detected: branches.some((branch) => branch.divergence.local_vs_remote || branch.divergence.remote_disagreement)
+    }
+  };
+}
+
+function parseForEachRefOutput(output) {
+  return output
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .map((line) => {
+      const [name, sha] = line.split('\t');
+      return { name, sha };
+    })
+    .filter((ref) => ref.name && ref.sha);
+}
+
+function stripRemotePrefix(ref) {
+  const value = String(ref ?? '');
+  const match = value.match(/^[^/]+\/(.+)$/);
+  return match ? match[1] : value === 'HEAD' || value.includes('~') ? null : value;
+}
+
 async function getChangedFiles(repoRoot, baseRef, headRef) {
   const output = await gitOptional(repoRoot, ['diff', '--name-status', `${baseRef}...${headRef}`])
     || await git(repoRoot, ['diff', '--name-status', baseRef, headRef]);
@@ -2905,6 +3026,74 @@ function buildCommitMessageHealth(commits, { baseRef, headRef }) {
       'refs/jj/keep/*'
     ],
     note: 'PR readiness uses the explicit base..head range; internal refs such as refs/jj/keep/* are not treated as PR commits.'
+  };
+}
+
+function buildUsedForDecisionSummary({
+  verificationEvidence = null,
+  gateDag = null,
+  engineeringJudgment = null,
+  gateStatus = null,
+  decisionRecords = null
+} = {}) {
+  const acceptedDecisionCount = (decisionRecords?.decisions ?? []).filter((decision) => decision.status === 'accepted').length;
+  if (acceptedDecisionCount > 0) return null;
+  const currentPassing = collectCurrentPassingVerificationEvidence(verificationEvidence);
+  if (currentPassing.length === 0) return null;
+  const activeAxes = (engineeringJudgment?.judgment_axes ?? [])
+    .filter((axis) => axis.status !== 'inactive')
+    .map((axis) => ({
+      axis: axis.axis,
+      status: axis.status,
+      matched_current_verification: (axis.matched_evidence ?? []).some((item) => item.kind === 'current_verification')
+    }));
+  const verificationGates = (gateDag?.nodes ?? [])
+    .filter((gate) => gate.status === 'passed' && /verification|test|ci|evidence/i.test(`${gate.id ?? ''} ${gate.label ?? ''} ${gate.reason ?? ''}`))
+    .map((gate) => ({
+      id: gate.id,
+      label: gate.label ?? null,
+      status: gate.status
+    }));
+  return {
+    schema_version: '0.1.0',
+    status: 'advisory',
+    emitted_because: 'accepted_decision_count_zero',
+    accepted_decision_count: 0,
+    readiness: {
+      overall_status: gateStatus?.overall_status ?? gateDag?.overall_status ?? null,
+      ready_for_pr_create: gateStatus?.ready_for_pr_create ?? null
+    },
+    verification_evidence: currentPassing.map((command) => ({
+      kind: command.kind ?? null,
+      status: command.status ?? null,
+      command: command.command ?? null,
+      artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
+      binding_status: command.binding?.status ?? null,
+      supports: {
+        axes: activeAxes.filter((axis) => axis.matched_current_verification).map((axis) => axis.axis),
+        gates: verificationGates.map((gate) => gate.id).filter(Boolean),
+        readiness: gateStatus?.overall_status ?? gateDag?.overall_status ?? null
+      }
+    })),
+    axes: activeAxes,
+    gates: verificationGates
+  };
+}
+
+function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
+  const sessionId = env?.VIBEPRO_SESSION_ID ?? env?.CODEX_SESSION_ID ?? env?.CLAUDE_SESSION_ID ?? null;
+  return {
+    schema_version: '0.1.0',
+    status: sessionId ? 'observed' : 'not_observed',
+    mode: 'advisory',
+    blocking: false,
+    story_id: storyId,
+    session_id: sessionId,
+    branch: git?.current_branch ?? null,
+    head_sha: git?.head_sha ?? null,
+    note: sessionId
+      ? 'PR prepare captured the current runtime session id as advisory boundary context; mixed sessions are detected by `vibepro audit session-cost` and do not block PR preparation.'
+      : 'No runtime session id was present; run `vibepro audit session-cost --infer-session --story-id <id>` for detailed attribution if boundary evidence is needed.'
   };
 }
 
@@ -5101,6 +5290,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     inferredSpec,
     agentReviews
   });
+  const judgmentAxisNoisePrecedents = await recordAndAttachJudgmentAxisNoisePrecedents(repoRoot, {
+    storyId: story.story_id,
+    engineeringJudgment,
+    decisionRecords
+  });
   const designInputJudgment = buildDesignInputJudgmentContext({
     latestStoryRun: designInputStoryRun ?? latestStoryRun,
     latestEvidence: designInputEvidence ?? latestEvidence,
@@ -5131,6 +5325,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     responsibility_authority: responsibilityAuthority,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
+    judgment_axis_noise_precedents: judgmentAxisNoisePrecedents,
     design_input_judgment: designInputJudgment,
     pre_implementation_judgment: preImplementationJudgment,
     graph_context: graphContext,
@@ -7509,6 +7704,92 @@ function buildEngineeringJudgmentClassification({
   };
 }
 
+async function recordAndAttachJudgmentAxisNoisePrecedents(repoRoot, {
+  storyId,
+  engineeringJudgment,
+  decisionRecords = null
+} = {}) {
+  const workspaceDir = getWorkspaceDir(repoRoot);
+  const ledgerPath = path.join(workspaceDir, 'judgment-axis-noise-precedents.json');
+  const existing = await readJsonIfExists(ledgerPath) ?? {
+    schema_version: '0.1.0',
+    model: 'vibepro-judgment-axis-noise-precedent-ledger-v1',
+    entries: []
+  };
+  const entries = Array.isArray(existing.entries) ? existing.entries : [];
+  const byFingerprint = new Map(entries.map((entry) => [entry.fingerprint, entry]));
+  const axes = engineeringJudgment?.judgment_axes ?? [];
+  for (const axis of axes) {
+    const fingerprint = buildJudgmentAxisNoiseFingerprint(axis);
+    axis.activation_precision.prior_noise_precedents = byFingerprint.has(fingerprint)
+      ? [summarizeJudgmentAxisNoisePrecedent(byFingerprint.get(fingerprint))]
+      : [];
+  }
+  const acceptedDecisions = (decisionRecords?.decisions ?? [])
+    .filter((decision) => decision.status === 'accepted' && /^gate:judgment_axis_/.test(decision.source ?? ''));
+  let changed = false;
+  for (const decision of acceptedDecisions) {
+    const axisName = String(decision.source).replace(/^gate:judgment_axis_/, '');
+    const axis = axes.find((item) => item.axis === axisName);
+    if (!axis) continue;
+    const fingerprint = buildJudgmentAxisNoiseFingerprint(axis);
+    if (byFingerprint.has(fingerprint)) continue;
+    const entry = {
+      fingerprint,
+      axis: axis.axis,
+      story_id: storyId,
+      decision_id: decision.decision_id ?? null,
+      source: decision.source,
+      reason: decision.reason ?? decision.summary ?? null,
+      artifact: decision.artifact ?? null,
+      activation_candidates: axis.activation_candidates ?? [],
+      activation_precision_status: axis.activation_precision?.status ?? null,
+      recorded_at: new Date().toISOString(),
+      note: 'Advisory precedent only; matching this fingerprint never auto-closes future gates.'
+    };
+    entries.push(entry);
+    byFingerprint.set(fingerprint, entry);
+    axis.activation_precision.prior_noise_precedents = [summarizeJudgmentAxisNoisePrecedent(entry)];
+    changed = true;
+  }
+  if (changed) {
+    await mkdir(path.dirname(ledgerPath), { recursive: true });
+    await writeFile(ledgerPath, `${JSON.stringify({
+      schema_version: '0.1.0',
+      model: 'vibepro-judgment-axis-noise-precedent-ledger-v1',
+      entries
+    }, null, 2)}\n`);
+  }
+  return {
+    schema_version: '0.1.0',
+    status: 'advisory',
+    artifact: toWorkspaceRelative(repoRoot, ledgerPath),
+    entry_count: entries.length,
+    matched_count: axes.reduce((sum, axis) => sum + (axis.activation_precision?.prior_noise_precedents?.length ?? 0), 0),
+    auto_close: false
+  };
+}
+
+function buildJudgmentAxisNoiseFingerprint(axis) {
+  return [
+    axis.axis,
+    ...(axis.activation_candidates ?? []).map((signal) => String(signal)).sort()
+  ].join('|');
+}
+
+function summarizeJudgmentAxisNoisePrecedent(entry) {
+  return {
+    fingerprint: entry.fingerprint,
+    story_id: entry.story_id ?? null,
+    decision_id: entry.decision_id ?? null,
+    source: entry.source ?? null,
+    reason: entry.reason ?? null,
+    artifact: entry.artifact ?? null,
+    recorded_at: entry.recorded_at ?? null,
+    auto_close: false
+  };
+}
+
 function buildDesignInputJudgmentContext({
   latestStoryRun = null,
   latestEvidence = null,
@@ -7691,7 +7972,13 @@ function buildSeniorJudgmentAxes({
 
   return JUDGMENT_AXIS_DEFINITIONS.map((definition) => {
     const activationCandidates = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
-    const precision = classifyAxisActivationPrecision(definition.axis, activationCandidates);
+    const precision = classifyAxisActivationPrecision(definition.axis, activationCandidates, {
+      fileGroups,
+      prRoute,
+      changeClassification,
+      codeTopologyContext,
+      scope
+    });
     const activationSignals = precision.active_signals;
     const active = precision.status === 'active';
     const evidence = classifySeniorAxisEvidence({
@@ -7744,7 +8031,8 @@ function buildSeniorJudgmentAxes({
         status: precision.status,
         reason: precision.reason,
         candidate_count: activationCandidates.length,
-        non_text_signal_count: precision.non_text_signal_count
+        non_text_signal_count: precision.non_text_signal_count,
+        composition: precision.composition ?? null
       },
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
@@ -7764,14 +8052,16 @@ function buildSeniorJudgmentAxes({
   });
 }
 
-function classifyAxisActivationPrecision(axis, candidates = []) {
+function classifyAxisActivationPrecision(axis, candidates = [], context = {}) {
   const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  const composition = summarizeAxisActivationComposition(context);
   if (uniqueCandidates.length === 0) {
     return {
       status: 'no_signal',
       reason: `No ${axis} signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context`,
       active_signals: [],
-      non_text_signal_count: 0
+      non_text_signal_count: 0,
+      composition
     };
   }
   const nonTextSignals = uniqueCandidates.filter((signal) => isCorroboratingActivationSignal(axis, signal));
@@ -7780,7 +8070,17 @@ function classifyAxisActivationPrecision(axis, candidates = []) {
       status: 'insufficient_signal',
       reason: `${axis} has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists`,
       active_signals: [],
-      non_text_signal_count: 0
+      non_text_signal_count: 0,
+      composition
+    };
+  }
+  if (isDocUiCompositionPathOnlyAxisCandidate(axis, uniqueCandidates, nonTextSignals, composition)) {
+    return {
+      status: 'insufficient_signal',
+      reason: `${axis} candidates came only from path/file-group signals in a docs/UI composition diff; suppressing activation until route, risk-surface, code-topology, scope, network-contract, source, or test evidence corroborates it`,
+      active_signals: [],
+      non_text_signal_count: nonTextSignals.length,
+      composition
     };
   }
   if (axis === 'public_contract') {
@@ -7790,7 +8090,8 @@ function classifyAxisActivationPrecision(axis, candidates = []) {
         status: 'insufficient_signal',
         reason: 'public_contract candidates were present, but no contract-correlated non-text signal was found',
         active_signals: [],
-        non_text_signal_count: nonTextSignals.length
+        non_text_signal_count: nonTextSignals.length,
+        composition
       };
     }
   }
@@ -7798,8 +8099,63 @@ function classifyAxisActivationPrecision(axis, candidates = []) {
     status: 'active',
     reason: `${axis} activated from ${nonTextSignals.length} non-text corroborating signal(s)`,
     active_signals: uniqueCandidates,
-    non_text_signal_count: nonTextSignals.length
+    non_text_signal_count: nonTextSignals.length,
+    composition
   };
+}
+
+function summarizeAxisActivationComposition({
+  fileGroups = {},
+  prRoute = null,
+  changeClassification = null,
+  codeTopologyContext = null,
+  scope = null
+} = {}) {
+  const docsCount = (fileGroups.story_docs?.count ?? 0)
+    + (fileGroups.architecture_docs?.count ?? 0)
+    + (fileGroups.specifications?.count ?? 0)
+    + (fileGroups.policy_docs?.count ?? 0);
+  const sourceCount = fileGroups.source?.count ?? 0;
+  const testCount = fileGroups.tests?.count ?? 0;
+  const uiCount = (fileGroups.source?.files ?? []).filter((file) => isUiExperiencePath(file)).length;
+  const codeTopologySignals = codeTopologyContext?.signals ?? [];
+  const riskSurfaces = changeClassification?.risk_surfaces ?? [];
+  return {
+    docs_count: docsCount,
+    source_count: sourceCount,
+    test_count: testCount,
+    ui_source_count: uiCount,
+    route_type: prRoute?.route_type ?? null,
+    risk_surface_count: riskSurfaces.length,
+    code_topology_signal_count: codeTopologySignals.length,
+    scope_status: scope?.status ?? null,
+    docs_or_ui_composition_only: docsCount > 0
+      && sourceCount === 0
+      && testCount === 0
+      && ['docs_only', 'design_or_ui_change'].includes(prRoute?.route_type ?? 'docs_only')
+  };
+}
+
+function isUiExperiencePath(filePath) {
+  return /(^|\/)(app|pages|components|ui|views|screens|routes)\//.test(String(filePath ?? ''))
+    || /\.(tsx|jsx|css|scss|sass|less)$/.test(String(filePath ?? ''));
+}
+
+function isDocUiCompositionPathOnlyAxisCandidate(axis, candidates, nonTextSignals, composition) {
+  const suppressibleAxes = new Set([
+    'rollback_sensitive',
+    'security_boundary',
+    'data_state',
+    'execution_topology',
+    'ux_surface',
+    'performance_semantic'
+  ]);
+  if (!suppressibleAxes.has(axis)) return false;
+  if (!composition?.docs_or_ui_composition_only) return false;
+  const strongPrefixes = /^(pr_route|risk_profile|code_topology|scope|network_contract|graphify|mixed_surface):/;
+  if (candidates.some((signal) => strongPrefixes.test(String(signal)))) return false;
+  return nonTextSignals.length > 0
+    && nonTextSignals.every((signal) => /^(changed_path|file_group):/.test(String(signal)));
 }
 
 function isCorroboratingActivationSignal(axis, signal) {

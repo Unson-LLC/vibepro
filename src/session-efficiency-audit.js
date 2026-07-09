@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readdir, readFile, realpath, stat } from 'node:fs/promises';
+import { mkdir, readdir, readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -40,6 +40,8 @@ const SESSION_EXPOSURE_BUCKETS = [
   }
 ];
 const SESSION_EXPOSURE_BUCKET_BY_ID = Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, bucket]));
+const AUDIT_MEMORY_BLOCK_START = '<!-- vibepro:audit-memory:start -->';
+const AUDIT_MEMORY_BLOCK_END = '<!-- vibepro:audit-memory:end -->';
 const SESSION_EXPOSURE_SIGNALS = [
   {
     bucketId: 'audit_evidence',
@@ -133,6 +135,15 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const session = selectedSessionId && sessionFiles.length > 0
     ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
+  const sessionAttribution = selectedSessionId && sessionFiles.length > 0
+    ? await buildSessionAttribution(sessionFiles, {
+      repoRoot: root,
+      storyId,
+      windowStart: effectiveWindowStart,
+      windowEnd: effectiveWindowEnd,
+      sessionCwd: session.cwd
+    })
+    : buildUnavailableSessionAttribution(selectedSessionId);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
@@ -163,6 +174,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
     observed_worktree_matches_repo: observedWorktreeMatchesRepo,
+    attribution: sessionAttribution,
     session,
     process_manager: processMetadata ? {
       status: 'available',
@@ -189,6 +201,108 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
       git
     })
   };
+}
+
+export async function preflightAuditAutomationMemory(repoRoot, {
+  memoryPath,
+  fallbackLastRun = null,
+  fallbackHours = null,
+  now = null,
+  writeArtifact = true
+} = {}) {
+  if (!memoryPath) throw new Error('audit memory preflight requires --memory <path>');
+  const root = path.resolve(repoRoot);
+  const checkedAt = now ?? new Date().toISOString();
+  const sourcePath = resolveUserPath(memoryPath);
+  const memory = await resolveAutomationMemoryWindow(sourcePath, { now: checkedAt });
+  let result;
+  if (['available', 'partial'].includes(memory.status) && memory.window_start && memory.window_end) {
+    result = {
+      schema_version: '0.1.0',
+      artifact_kind: 'vibepro_audit_memory_preflight',
+      status: 'ready',
+      memory_path: sourcePath,
+      source: memory.source ?? memory.status,
+      last_run: memory.last_run ?? null,
+      window_start: memory.window_start,
+      window_end: memory.window_end,
+      fallback_used: false,
+      reason: memory.reason ?? null,
+      checked_at: checkedAt
+    };
+  } else {
+    result = buildAuditMemoryFallbackPreflight({
+      sourcePath,
+      memory,
+      fallbackLastRun,
+      fallbackHours,
+      checkedAt
+    });
+  }
+  if (writeArtifact) {
+    result.artifact = await writeAuditMemoryArtifact(root, 'preflight', result, checkedAt);
+  }
+  return result;
+}
+
+export async function commitAuditAutomationMemory(repoRoot, {
+  memoryPath,
+  lastRun,
+  windowStart,
+  windowEnd,
+  note = null,
+  now = null,
+  writeArtifact = true
+} = {}) {
+  if (!memoryPath) throw new Error('audit memory commit requires --memory <path>');
+  const sourcePath = resolveUserPath(memoryPath);
+  const checkedAt = now ?? new Date().toISOString();
+  const normalized = {
+    last_run: requireIso(lastRun ?? windowEnd ?? checkedAt, '--last-run'),
+    window_start: requireIso(windowStart, '--window-start'),
+    window_end: requireIso(windowEnd ?? checkedAt, '--window-end')
+  };
+  if (normalizeTimeMs(normalized.window_start) > normalizeTimeMs(normalized.window_end)) {
+    throw new Error('audit memory commit requires --window-start to be before --window-end');
+  }
+  await mkdir(path.dirname(sourcePath), { recursive: true });
+  let existing = '';
+  try {
+    existing = await readFile(sourcePath, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const nextText = replaceAuditMemoryBlock(existing, renderAuditMemoryBlock({
+    ...normalized,
+    note,
+    committed_at: checkedAt
+  }));
+  const tempPath = `${sourcePath}.tmp-${process.pid}-${Date.now()}`;
+  await writeFile(tempPath, nextText);
+  await rename(tempPath, sourcePath);
+  const readback = await resolveAutomationMemoryWindow(sourcePath, { now: checkedAt });
+  const readbackMatches = readback.last_run === normalized.last_run
+    && readback.window_start === normalized.window_start
+    && readback.window_end === normalized.window_end;
+  const result = {
+    schema_version: '0.1.0',
+    artifact_kind: 'vibepro_audit_memory_commit',
+    status: readbackMatches ? 'committed' : 'verification_failed',
+    memory_path: sourcePath,
+    fallback_used: false,
+    last_run: normalized.last_run,
+    window_start: normalized.window_start,
+    window_end: normalized.window_end,
+    readback,
+    checked_at: checkedAt
+  };
+  if (!readbackMatches) {
+    throw new Error(`audit memory commit readback mismatch for ${sourcePath}`);
+  }
+  if (writeArtifact) {
+    result.artifact = await writeAuditMemoryArtifact(path.resolve(repoRoot), 'commit', result, checkedAt);
+  }
+  return result;
 }
 
 export function renderSessionEfficiencyAudit(result) {
@@ -699,6 +813,7 @@ async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null 
     };
   }
 
+  const lastRun = extractLastRun(text);
   const windows = extractAutomationWindows(text);
   if (windows.length > 0) {
     windows.sort((a, b) => (
@@ -710,18 +825,19 @@ async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null 
       status: 'available',
       source: latest.source,
       source_path: filePath,
+      last_run: lastRun,
       window_start: latest.window_start,
       window_end: latest.window_end,
       reason: null
     };
   }
 
-  const lastRun = extractLastRun(text);
   if (lastRun) {
     return {
       status: 'partial',
       source: 'automation-memory-last-run',
       source_path: filePath,
+      last_run: lastRun,
       window_start: lastRun,
       window_end: now ?? new Date().toISOString(),
       reason: 'automation memory did not contain an explicit daily window; used Last run as start and now as end'
@@ -735,6 +851,188 @@ async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null 
     window_start: null,
     window_end: null
   };
+}
+
+function buildAuditMemoryFallbackPreflight({ sourcePath, memory, fallbackLastRun = null, fallbackHours = null, checkedAt }) {
+  const fallbackIso = fallbackLastRun ? normalizeIso(fallbackLastRun) : null;
+  if (fallbackLastRun && !fallbackIso) {
+    throw new Error(`Invalid --fallback-last-run value: ${fallbackLastRun}`);
+  }
+  if (fallbackIso) {
+    return {
+      schema_version: '0.1.0',
+      artifact_kind: 'vibepro_audit_memory_preflight',
+      status: 'fallback',
+      memory_path: sourcePath,
+      source: 'fallback_last_run',
+      window_start: fallbackIso,
+      window_end: normalizeIso(checkedAt),
+      fallback_used: true,
+      fallback_reason: memory.reason ?? memory.status,
+      checked_at: checkedAt
+    };
+  }
+  if (fallbackHours !== null && fallbackHours !== undefined) {
+    const hours = Number(fallbackHours);
+    if (!Number.isFinite(hours) || hours <= 0) {
+      throw new Error(`Invalid --fallback-hours value: ${fallbackHours}`);
+    }
+    const endMs = normalizeTimeMs(checkedAt) ?? Date.now();
+    return {
+      schema_version: '0.1.0',
+      artifact_kind: 'vibepro_audit_memory_preflight',
+      status: 'fallback',
+      memory_path: sourcePath,
+      source: 'fallback_hours',
+      window_start: new Date(endMs - (hours * 60 * 60 * 1000)).toISOString(),
+      window_end: new Date(endMs).toISOString(),
+      fallback_used: true,
+      fallback_hours: hours,
+      fallback_reason: memory.reason ?? memory.status,
+      checked_at: checkedAt
+    };
+  }
+  return {
+    schema_version: '0.1.0',
+    artifact_kind: 'vibepro_audit_memory_preflight',
+    status: 'blocked',
+    memory_path: sourcePath,
+    source: memory.source ?? null,
+    window_start: null,
+    window_end: null,
+    fallback_used: false,
+    reason: memory.reason ?? 'automation memory did not contain a usable audit window or last-run marker',
+    required_action: 'Provide a readable memory file with a window/Last run marker, or pass --fallback-last-run/--fallback-hours to make fallback explicit.',
+    checked_at: checkedAt
+  };
+}
+
+function requireIso(value, label) {
+  const normalized = normalizeIso(value);
+  if (!normalized) throw new Error(`audit memory commit requires ${label} <iso>`);
+  return normalized;
+}
+
+function renderAuditMemoryBlock({ last_run, window_start, window_end, note = null, committed_at }) {
+  const noteLine = note ? `Note: ${String(note).replace(/\n/g, ' ')}` : 'Note:';
+  return [
+    AUDIT_MEMORY_BLOCK_START,
+    'schema_version: 0.1.0',
+    `Last run: ${last_run}`,
+    `Window = ${window_start} to ${window_end}`,
+    `Committed at: ${committed_at}`,
+    noteLine,
+    AUDIT_MEMORY_BLOCK_END,
+    ''
+  ].join('\n');
+}
+
+function replaceAuditMemoryBlock(existingText, block) {
+  const text = existingText ?? '';
+  const startIndex = text.indexOf(AUDIT_MEMORY_BLOCK_START);
+  const endIndex = text.indexOf(AUDIT_MEMORY_BLOCK_END);
+  if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+    const before = text.slice(0, startIndex).trimEnd();
+    const after = text.slice(endIndex + AUDIT_MEMORY_BLOCK_END.length).trimStart();
+    return [before, block.trimEnd(), after].filter(Boolean).join('\n\n') + '\n';
+  }
+  return `${block}${text}`;
+}
+
+async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
+  const safeTimestamp = checkedAt.replace(/[:.]/g, '').replace(/Z$/, 'Z');
+  const dir = path.join(getWorkspaceDir(repoRoot), 'executions', 'audit-memory');
+  await mkdir(dir, { recursive: true });
+  const filePath = path.join(dir, `${safeTimestamp}-${action}.json`);
+  await writeFile(filePath, `${JSON.stringify(result, null, 2)}\n`);
+  return toWorkspaceRelative(repoRoot, filePath);
+}
+
+async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
+  const entries = await readCodexSessionEntries(filePaths);
+  const startMs = normalizeTimeMs(windowStart);
+  const endMs = normalizeTimeMs(windowEnd);
+  const buckets = {
+    strict: [],
+    worktree_associated: [],
+    other_story: [],
+    unclassified: []
+  };
+  const storyRefs = new Set();
+  const currentStory = String(storyId ?? '');
+  const repoPath = path.resolve(repoRoot);
+  const repoName = path.basename(repoPath);
+  const sessionCwdMatchesRepo = sessionCwd ? await matchesRepo(sessionCwd, repoRoot) : false;
+
+  for (const { entry, sourcePath, line } of entries) {
+    const eventAt = normalizeTimeMs(entry.timestamp);
+    if (!isInsideWindow(eventAt, startMs, endMs)) continue;
+    const text = JSON.stringify(entry);
+    const refs = extractStoryRefs(text);
+    for (const ref of refs) storyRefs.add(ref);
+    const item = {
+      source_path: sourcePath,
+      line,
+      timestamp: entry.timestamp ?? null,
+      type: entry.type ?? null
+    };
+    if (currentStory && refs.includes(currentStory)) {
+      buckets.strict.push(item);
+    } else if (refs.some((ref) => ref !== currentStory)) {
+      buckets.other_story.push({ ...item, story_refs: refs });
+    } else if (sessionCwdMatchesRepo || text.includes(repoPath) || text.includes(repoName)) {
+      buckets.worktree_associated.push(item);
+    } else {
+      buckets.unclassified.push(item);
+    }
+  }
+
+  const counts = Object.fromEntries(Object.entries(buckets).map(([key, value]) => [key, value.length]));
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  const associated = counts.strict + counts.worktree_associated;
+  const divergence = total === 0 ? 0 : Number(((counts.other_story + counts.unclassified) / total).toFixed(3));
+  return {
+    schema_version: '0.1.0',
+    status: total > 0 ? 'available' : 'unavailable',
+    mode: 'advisory',
+    event_count: total,
+    categories: counts,
+    associated_event_count: associated,
+    divergence_ratio: divergence,
+    mixed_parent: [...storyRefs].some((ref) => ref !== currentStory),
+    detected_story_refs: [...storyRefs].sort(),
+    session_cwd_matches_repo: sessionCwdMatchesRepo,
+    note: 'Advisory attribution only; mixed sessions are surfaced but do not block audit readiness.'
+  };
+}
+
+function buildUnavailableSessionAttribution(sessionId) {
+  return {
+    schema_version: '0.1.0',
+    status: 'unavailable',
+    mode: 'advisory',
+    session_id: sessionId ?? null,
+    event_count: 0,
+    categories: {
+      strict: 0,
+      worktree_associated: 0,
+      other_story: 0,
+      unclassified: 0
+    },
+    associated_event_count: 0,
+    divergence_ratio: 0,
+    mixed_parent: false,
+    detected_story_refs: [],
+    note: 'No selected session JSONL files were available for attribution.'
+  };
+}
+
+function extractStoryRefs(text) {
+  const refs = new Set();
+  for (const match of String(text ?? '').matchAll(/\b(?:story-[a-z0-9][a-z0-9-]*|STR-\d+|BFD-\d+|TSK-\d+)\b/gi)) {
+    refs.add(match[0]);
+  }
+  return [...refs];
 }
 
 function extractAutomationWindows(text) {
