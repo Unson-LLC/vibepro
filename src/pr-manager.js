@@ -5365,6 +5365,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     },
     risks: []
   };
+  const scopeBoundary = await readScopeBoundaryIfExists(repoRoot, story.story_id);
   context.gate_dag = buildGateDag({
     repoRoot,
     story,
@@ -5396,6 +5397,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     environmentGraph,
     git,
     scope,
+    scopeBoundary,
     prRoute,
     graphContext,
     codeTopologyContext,
@@ -9365,6 +9367,104 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
   };
 }
 
+const SCOPE_BOUNDARY_TEST_FILE_PATTERN = /(^|\/)(tests?|__tests__|spec)\//i;
+const SCOPE_BOUNDARY_TEST_FILE_SUFFIX_PATTERN = /\.(test|spec)\.[jt]sx?$/;
+
+function isScopeBoundaryTestFile(filePath) {
+  return SCOPE_BOUNDARY_TEST_FILE_PATTERN.test(filePath) || SCOPE_BOUNDARY_TEST_FILE_SUFFIX_PATTERN.test(filePath);
+}
+
+function globToRegExp(pattern) {
+  const normalized = pattern.replaceAll('\\', '/');
+  const isDirPrefix = normalized.endsWith('/');
+  let source = '';
+  for (let i = 0; i < normalized.length; i += 1) {
+    const char = normalized[i];
+    if (char === '*') {
+      if (normalized[i + 1] === '*') {
+        source += '.*';
+        i += 1;
+        // consume an optional following slash so `a/**/b` also matches `a/b`
+        if (normalized[i + 1] === '/') i += 1;
+      } else {
+        source += '[^/]*';
+      }
+    } else {
+      source += char.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  if (isDirPrefix) source += '.*';
+  return new RegExp(`^${source}$`);
+}
+
+function matchesAnyGlob(filePath, patterns) {
+  if (!Array.isArray(patterns) || patterns.length === 0) return false;
+  const normalizedFile = String(filePath).replaceAll('\\', '/');
+  return patterns.some((pattern) => globToRegExp(String(pattern)).test(normalizedFile));
+}
+
+async function readScopeBoundaryIfExists(repoRoot, storyId) {
+  if (!storyId) return null;
+  const taskPath = path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+  try {
+    const taskState = JSON.parse(await readFile(taskPath, 'utf8'));
+    return taskState?.scope_boundary ?? null;
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    return null;
+  }
+}
+
+function buildScopeBoundaryGate({ scopeBoundary = null, git = null, decisionRecords = null } = {}) {
+  if (!scopeBoundary) return null;
+  const declared = scopeBoundary.declared === true;
+  const allowedPaths = Array.isArray(scopeBoundary.allowed_paths) ? scopeBoundary.allowed_paths : [];
+  const changedFiles = (git?.changed_files ?? [])
+    .map((file) => (typeof file === 'string' ? file : file.path))
+    .filter(Boolean)
+    .filter((file) => !isWorkspaceArtifactPath(file) && !isScopeBoundaryTestFile(file));
+  const outOfScopeFiles = declared
+    ? changedFiles.filter((file) => !matchesAnyGlob(file, allowedPaths))
+    : [];
+  const acceptedDecision = declared && outOfScopeFiles.length > 0
+    ? (findAcceptedDecisionForSource(decisionRecords, 'gate:scope_boundary')
+      ?? findAcceptedDecisionForSource(decisionRecords, 'gate:split_resolution'))
+    : null;
+  const status = !declared
+    ? 'not_declared'
+    : outOfScopeFiles.length === 0
+      ? 'passed'
+      : acceptedDecision
+        ? 'passed_with_waiver'
+        : 'needs_scope_correction';
+  return {
+    id: 'gate:scope_boundary',
+    type: 'scope_boundary_gate',
+    label: 'Story Scope Boundary Gate',
+    status,
+    required: declared,
+    declared,
+    allowed_paths: allowedPaths,
+    out_of_scope_files: outOfScopeFiles,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
+    required_actions: status === 'needs_scope_correction' ? [
+      `Split ${outOfScopeFiles.length} file(s) outside the declared scope into a separate Story PR, or update the story's --allowed-paths and rerun \`vibepro task create --from-plan\` + \`vibepro pr prepare\`.`,
+      'Alternatively, record an accepted decision against `gate:scope_boundary` (or `gate:split_resolution`) if the bundled scope is intentional.'
+    ] : [],
+    reason: !declared
+      ? 'Story has no declared scope boundary (informational only; does not block PR creation).'
+      : status === 'passed'
+        ? `All ${changedFiles.length} reviewable changed file(s) match the declared scope boundary (${allowedPaths.length} pattern(s)).`
+        : status === 'passed_with_waiver'
+          ? `Scope boundary violation is covered by an accepted decision: ${acceptedDecision.summary ?? acceptedDecision.source}`
+          : `${outOfScopeFiles.length} changed file(s) fall outside the declared scope boundary: ${outOfScopeFiles.slice(0, 5).join(', ')}${outOfScopeFiles.length > 5 ? ', ...' : ''}`
+  };
+}
+
 function buildRouteSpecificJudgmentGates(engineeringJudgment, evidenceContext = {}) {
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
   const definitions = {
@@ -10138,6 +10238,7 @@ function buildGateDag({
   environmentGraph = null,
   git = null,
   scope = null,
+  scopeBoundary = null,
   prRoute = null,
   graphContext = null,
   codeTopologyContext = null,
@@ -10227,6 +10328,7 @@ function buildGateDag({
     codeTopologyContext
   });
   const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
+  const scopeBoundaryGate = buildScopeBoundaryGate({ scopeBoundary, git, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
   const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
   const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
@@ -10373,6 +10475,7 @@ function buildGateDag({
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
     prScopeJudgmentGate,
+    ...(scopeBoundaryGate ? [scopeBoundaryGate] : []),
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
     ...(bugPhysicsContradictionGate ? [bugPhysicsContradictionGate] : []),
@@ -10445,7 +10548,12 @@ function buildGateDag({
         { from: gate.id, to: 'gate:pr_scope_judgment' }
       ])
       : [{ from: 'gate:common_judgment_spine', to: 'gate:pr_scope_judgment' }]),
-    { from: 'gate:pr_scope_judgment', to: 'gate:bug_physics_triage' },
+    ...(scopeBoundaryGate
+      ? [
+        { from: 'gate:pr_scope_judgment', to: 'gate:scope_boundary' },
+        { from: 'gate:scope_boundary', to: 'gate:bug_physics_triage' }
+      ]
+      : [{ from: 'gate:pr_scope_judgment', to: 'gate:bug_physics_triage' }]),
     ...(routeSpecificJudgmentGates.length > 0
       ? routeSpecificJudgmentGates.flatMap((gate) => [
         { from: 'gate:bug_physics_triage', to: gate.id },
@@ -10570,6 +10678,7 @@ function buildGateDag({
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
     prScopeJudgmentGate,
+    scopeBoundaryGate,
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
     bugPhysicsContradictionGate,
@@ -10625,6 +10734,7 @@ function buildGateDag({
       judgment_axis_count: judgmentAxisGates.length,
       judgment_axis_accepted_followup_count: judgmentAxisGates.filter((gate) => gate.status === 'accepted_followup').length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
+      scope_boundary_status: scopeBoundaryGate?.status ?? null,
       bug_physics_classes: bugPhysicsTriage?.classes ?? [],
       bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,
       pr_route: prRoute?.route_type ?? null,
@@ -13741,6 +13851,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'story_source_integrity_gate',
       'engineering_judgment_spine_gate',
       'pr_scope_judgment_gate',
+      'scope_boundary_gate',
       'pr_route_gate',
       'pr_body_contract_gate',
       'mirror_source_traceability_gate',
@@ -13838,6 +13949,7 @@ function isUnresolvedGateStatus(status) {
     'needs_split',
     'needs_rebase',
     'needs_changes',
+    'needs_scope_correction',
     'contradicted',
     'missing_coverage',
     'partial_surface',
@@ -13866,6 +13978,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
+      if (gate.id === 'gate:scope_boundary') return 'Story Scope Boundary Gate requires changed files to match the story\'s declared --allowed-paths, or an accepted decision against `gate:scope_boundary`/`gate:split_resolution` for the out-of-scope files.';
       if (gate.id === 'gate:responsibility_authority') return 'Responsibility Authority Gate requires each matched cross-story responsibility to resolve to registered authority and current-head evidence, or an explicit decision for no_registered_authority.';
       if (gate.id === 'gate:design_ssot_reconciliation') return 'Design SSOT Reconciliation Gate requires root/child design docs to be linked, current enough, and free of deterministic supersession conflicts; review `.vibepro/pr/<story-id>/design-ssot-reconciliation.json`.';
       if (gate.id === 'gate:senior_gap_judgment') return 'Senior Gap Judgment Gate requires ideal/current/gap/decision/residual-risk evidence to be explicit; review `.vibepro/pr/<story-id>/senior-gap-judgment.json`.';
@@ -13943,6 +14056,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_scope_judgment' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:scope_boundary' && gate.status === 'needs_scope_correction') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;

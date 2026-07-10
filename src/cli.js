@@ -439,7 +439,7 @@ Usage:
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task list [repo] [--id <story-id>]
-  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
+  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
   vibepro task show [repo] --task <task-id> [--id <story-id>]
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
@@ -652,7 +652,7 @@ Usage:
   vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
-  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
+  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
@@ -2287,6 +2287,7 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
           limit: parseNumberOption(rest, '--limit'),
+          allowedPaths: parseAllowedPathsOption(getOption(rest, '--allowed-paths')),
           language
         });
         write(stdout, hasFlag(rest, '--json')
@@ -3063,6 +3064,12 @@ function parseNumberOption(args, name) {
   const number = Number(value);
   if (!Number.isFinite(number)) throw new Error(`${name} must be a number`);
   return number;
+}
+
+function parseAllowedPathsOption(value) {
+  if (!value) return undefined;
+  const parsed = value.split(',').map((item) => item.trim()).filter(Boolean);
+  return parsed.length > 0 ? parsed : undefined;
 }
 
 function renderPrPrepareProgressEvent(event) {
