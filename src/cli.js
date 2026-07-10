@@ -374,6 +374,7 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
@@ -596,6 +597,7 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
@@ -645,6 +647,7 @@ Usage:
   vibepro performance compare [repo] --id <story-id> [--metric-id <id>] [--before-label <label>] [--after-label <label>] [--json]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
+  vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
@@ -653,6 +656,9 @@ Usage:
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--allowed-paths <globs>] [--json]
+  vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
+  vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
+  vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
