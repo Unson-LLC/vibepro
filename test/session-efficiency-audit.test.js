@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -536,6 +536,183 @@ test('SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches ca
   assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
   assert.equal(result.observed_worktree_matches_repo, true);
   assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), false);
+});
+
+test('SCWN-SCENARIO-001 managed worktree session cwd is inferred without story or process signals', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const managedWorktree = path.join(root, '.claude', 'worktrees', 'session-wt');
+  await mkdir(path.dirname(managedWorktree), { recursive: true });
+  await git(root, ['worktree', 'add', '--detach', managedWorktree, 'HEAD']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: managedWorktree }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.session_selection.candidates[0].cwd_match_method, 'git_common_dir');
+  assert.equal(result.observed_worktree_matches_repo, true);
+  assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), false);
+});
+
+test('SCWN-SCENARIO-002 deleted but registered out-of-tree worktree cwd still matches the repo', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const outOfTreeRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-oot-'));
+  const goneWorktree = path.join(outOfTreeRoot, 'repo-task-a');
+  await git(root, ['worktree', 'add', '--detach', goneWorktree, 'HEAD']);
+  const recordedCwd = await realpath(goneWorktree);
+  await rm(goneWorktree, { recursive: true, force: true });
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: recordedCwd }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.session_selection.candidates[0].cwd_match_method, 'registered_worktree');
+  assert.equal(result.observed_worktree_matches_repo, true);
+  assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), false);
+});
+
+test('SCWN-SCENARIO-002 pruned managed worktree cwd still matches via managed worktree path pattern', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const prunedWorktree = path.join(root, '.claude', 'worktrees', 'wt-pruned');
+  await mkdir(path.dirname(prunedWorktree), { recursive: true });
+  await git(root, ['worktree', 'add', '--detach', prunedWorktree, 'HEAD']);
+  const recordedCwd = await realpath(prunedWorktree);
+  await rm(prunedWorktree, { recursive: true, force: true });
+  await git(root, ['worktree', 'prune']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: recordedCwd }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.session_selection.candidates[0].cwd_match_method, 'managed_worktree_path');
+  assert.equal(result.observed_worktree_matches_repo, true);
+});
+
+test('SCWN-SCENARIO-003 worktree-style cwd from another repo does not match', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const otherRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-other-'));
+  await git(otherRoot, ['init']);
+  await git(otherRoot, ['config', 'user.email', 'vibepro@example.test']);
+  await git(otherRoot, ['config', 'user.name', 'VibePro Test']);
+  await writeFile(path.join(otherRoot, 'README.md'), 'other repo\n');
+  await git(otherRoot, ['add', 'README.md']);
+  await git(otherRoot, ['commit', '-m', 'base']);
+  const otherWorktree = path.join(otherRoot, '.worktrees', 'other-task');
+  await mkdir(path.dirname(otherWorktree), { recursive: true });
+  await git(otherRoot, ['worktree', 'add', '--detach', otherWorktree, 'HEAD']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: otherWorktree }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.notEqual(result.session_selection.status, 'inferred');
+  assert.equal(result.session_id, null);
+  const candidate = result.session_selection.candidates?.find((item) => item.session_id === sessionId);
+  if (candidate) {
+    assert.equal(candidate.cwd_matches_repo, false);
+    assert.equal(candidate.cwd_match_method, null);
+  }
+});
+
+test('SCWN-SCENARIO-004 repo root inside a managed worktree matches canonical repo session cwd', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const managedWorktree = path.join(root, '.claude', 'worktrees', 'audit-wt');
+  await mkdir(path.dirname(managedWorktree), { recursive: true });
+  await git(root, ['worktree', 'add', '--detach', managedWorktree, 'HEAD']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(managedWorktree, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.observed_worktree_matches_repo, true);
+});
+
+test('SCWN-CONTRACT-004 cwd-only match without token or final answer events meets the confidence threshold', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${[
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: root }
+    },
+    {
+      timestamp: '2026-06-27T13:00:20.000Z',
+      type: 'response_item',
+      payload: { text: 'working quietly with no token events' }
+    }
+  ].map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-28T13:00:00.000Z',
+    windowEnd: '2026-06-28T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-28T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.score >= 50, true);
 });
 
 test('SCATTR-SCENARIO-005 worktree cwd match alone is decisive even without other signals', async () => {

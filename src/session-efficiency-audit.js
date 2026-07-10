@@ -157,7 +157,8 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
-  const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
+  const observedWorktreeAffinity = await resolveRepoAffinity(observedRoot, root);
+  const observedWorktreeMatchesRepo = observedWorktreeAffinity.matches;
   const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId, {
     sessionFiles
   });
@@ -184,6 +185,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
     observed_worktree_matches_repo: observedWorktreeMatchesRepo,
+    observed_worktree_match_method: observedWorktreeAffinity.method,
     attribution: sessionAttribution,
     session,
     process_manager: processMetadata ? {
@@ -464,6 +466,7 @@ async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, window
   const sessionsRoot = path.join(codexHome, 'sessions');
   const files = await collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd });
   const processEntries = await readProcessEntries(codexHome);
+  const affinityCache = new Map();
   const candidates = [];
   for (const filePath of files) {
     const candidate = await summarizeSessionCandidate(filePath, {
@@ -471,7 +474,8 @@ async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, window
       storyId,
       windowStart,
       windowEnd,
-      processEntries
+      processEntries,
+      affinityCache
     });
     if (!candidate) continue;
     if (!candidate.window_overlap && !candidate.cwd_matches_repo && !candidate.story_ref_found) continue;
@@ -494,6 +498,7 @@ function mergeSessionCandidateGroup(group) {
   const sorted = [...group].sort(compareSessionCandidates);
   const best = sorted[0];
   const cwdMatchesRepo = group.some((candidate) => candidate.cwd_matches_repo);
+  const cwdMatchMethod = group.find((candidate) => candidate.cwd_match_method)?.cwd_match_method ?? null;
   const storyRefFound = group.some((candidate) => candidate.story_ref_found);
   const windowOverlap = group.some((candidate) => candidate.window_overlap);
   const tokenEventCount = group.reduce((sum, candidate) => sum + candidate.token_event_count, 0);
@@ -522,6 +527,7 @@ function mergeSessionCandidateGroup(group) {
     source_path: best.source_path,
     source_paths: sourcePaths,
     cwd_matches_repo: cwdMatchesRepo,
+    cwd_match_method: cwdMatchMethod,
     story_ref_found: storyRefFound,
     window_overlap: windowOverlap,
     first_event_at: firstEventAt,
@@ -657,7 +663,7 @@ async function readProcessEntries(codexHome) {
   }
 }
 
-async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowStart, windowEnd, processEntries = [] } = {}) {
+async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowStart, windowEnd, processEntries = [], affinityCache = null } = {}) {
   let text;
   try {
     text = await readFile(filePath, 'utf8');
@@ -696,7 +702,10 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
   const processEntry = processEntries.find((entry) => entry?.conversationId === sessionId) ?? null;
   const processCwd = processEntry?.cwd ?? null;
   const effectiveCwd = processCwd ?? cwd;
-  const cwdMatchesRepo = effectiveCwd ? await matchesRepo(effectiveCwd, repoRoot) : false;
+  const cwdAffinity = effectiveCwd
+    ? await resolveRepoAffinity(effectiveCwd, repoRoot, affinityCache)
+    : { matches: false, method: null };
+  const cwdMatchesRepo = cwdAffinity.matches;
   const windowOverlap = overlapsWindow(firstEventMs, lastEventMs, normalizeTimeMs(windowStart), normalizeTimeMs(windowEnd));
   // See mergeSessionCandidateGroup(): a proven cwd match must reach the
   // confidence threshold on its own.
@@ -714,6 +723,7 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
     source_path: filePath,
     cwd: effectiveCwd,
     cwd_matches_repo: cwdMatchesRepo,
+    cwd_match_method: cwdAffinity.method,
     process_cwd_available: Boolean(processCwd),
     story_ref_found: storyRefFound,
     window_overlap: windowOverlap,
@@ -731,15 +741,94 @@ function inferSessionIdFromFile(filePath) {
 }
 
 async function matchesRepo(candidatePath, repoRoot) {
-  if (await sameExistingPath(candidatePath, repoRoot)) return true;
+  const affinity = await resolveRepoAffinity(candidatePath, repoRoot);
+  return affinity.matches;
+}
+
+const MANAGED_WORKTREE_SEGMENT_RE = /[\\/]\.(?:claude[\\/]worktrees|worktrees)[\\/]/;
+
+async function resolveRepoAffinity(candidatePath, repoRoot, cache = null) {
+  const cacheKey = cache ? `${path.resolve(candidatePath)}::${path.resolve(repoRoot)}` : null;
+  if (cache?.has(cacheKey)) return cache.get(cacheKey);
+  const affinity = await computeRepoAffinity(candidatePath, repoRoot);
+  cache?.set(cacheKey, affinity);
+  return affinity;
+}
+
+async function computeRepoAffinity(candidatePath, repoRoot) {
+  if (await sameExistingPath(candidatePath, repoRoot)) {
+    return { matches: true, method: 'exact' };
+  }
   try {
     const [candidateCommonDir, repoCommonDir] = await Promise.all([
       gitCommonDir(candidatePath),
       gitCommonDir(repoRoot)
     ]);
-    return candidateCommonDir !== null && repoCommonDir !== null && await sameExistingPath(candidateCommonDir, repoCommonDir);
+    if (candidateCommonDir !== null && repoCommonDir !== null && await sameExistingPath(candidateCommonDir, repoCommonDir)) {
+      return { matches: true, method: 'git_common_dir' };
+    }
   } catch {
-    return false;
+    // Fall through to registry/path-based normalization for unreadable candidates.
+  }
+  if (await matchesManagedWorktreePath(candidatePath, repoRoot)) {
+    return { matches: true, method: 'managed_worktree_path' };
+  }
+  if (await matchesRegisteredWorktree(candidatePath, repoRoot)) {
+    return { matches: true, method: 'registered_worktree' };
+  }
+  return { matches: false, method: null };
+}
+
+async function matchesRegisteredWorktree(candidatePath, repoRoot) {
+  const registered = await listRegisteredWorktreePaths(repoRoot);
+  if (registered.length === 0) return false;
+  const candidate = await canonicalizePath(candidatePath);
+  for (const worktreePath of registered) {
+    const normalized = await canonicalizePath(worktreePath);
+    if (candidate === normalized || candidate.startsWith(`${normalized}${path.sep}`)) return true;
+  }
+  return false;
+}
+
+async function listRegisteredWorktreePaths(repoRoot) {
+  try {
+    const { stdout } = await execFileAsync('git', ['worktree', 'list', '--porcelain'], { cwd: repoRoot, encoding: 'utf8' });
+    return stdout
+      .split('\n')
+      .filter((line) => line.startsWith('worktree '))
+      .map((line) => line.slice('worktree '.length).trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function matchesManagedWorktreePath(candidatePath, repoRoot) {
+  const candidateRoot = await canonicalizePath(stripManagedWorktreeSegments(candidatePath));
+  const repoCanonicalRoot = await canonicalizePath(stripManagedWorktreeSegments(repoRoot));
+  if (candidateRoot !== repoCanonicalRoot) return false;
+  // Require that at least one side actually sits inside a managed worktree
+  // segment so two arbitrary equal paths do not silently re-match here.
+  return MANAGED_WORKTREE_SEGMENT_RE.test(candidatePath) || MANAGED_WORKTREE_SEGMENT_RE.test(repoRoot);
+}
+
+function stripManagedWorktreeSegments(value) {
+  const resolved = path.resolve(String(value ?? ''));
+  const match = MANAGED_WORKTREE_SEGMENT_RE.exec(resolved);
+  if (!match) return resolved;
+  return resolved.slice(0, match.index);
+}
+
+async function canonicalizePath(value) {
+  const resolved = path.resolve(String(value ?? ''));
+  try {
+    return await realpath(resolved);
+  } catch {
+    // The path may no longer exist (deleted worktree). Canonicalize the
+    // longest existing ancestor so symlinked temp roots still compare equal.
+    const parent = path.dirname(resolved);
+    if (parent === resolved) return resolved;
+    return path.join(await canonicalizePath(parent), path.basename(resolved));
   }
 }
 
@@ -780,6 +869,7 @@ function renderSessionCandidate(candidate) {
     source_paths: candidate.source_paths ?? [candidate.source_path].filter(Boolean),
     cwd: candidate.cwd,
     cwd_matches_repo: candidate.cwd_matches_repo,
+    cwd_match_method: candidate.cwd_match_method ?? null,
     story_ref_found: candidate.story_ref_found,
     window_overlap: candidate.window_overlap,
     first_event_at: candidate.first_event_at,
