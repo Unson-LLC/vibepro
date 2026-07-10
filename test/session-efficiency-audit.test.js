@@ -302,6 +302,87 @@ test('session efficiency audit estimates audit artifact token exposure from Code
   assert.match(accounting.top_exposures[0].sample, /pr-prepare\.json/);
 });
 
+test('SCCB-SCENARIO-001 compaction replacement_history text is bucketed as replayed_context, not audit_evidence/test', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const artifactPath = path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json');
+  const lines = [
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: root }
+    },
+    {
+      timestamp: '2026-06-27T13:00:05.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 100, output_tokens: 20, total_tokens: 120 } }
+      }
+    },
+    // A real audit_evidence hit from fresh reasoning, unaffected by this fix.
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'response_item',
+      payload: {
+        type: 'function_call_output',
+        output: `Command: cat ${artifactPath}\nOutput:\n${JSON.stringify({ story: { story_id: storyId } })}`
+      }
+    },
+    // Codex re-quotes prior goal/permissions/audit-artifact text after compaction.
+    // This must NOT double-count into audit_evidence/test even though its content
+    // mentions .vibepro/ and test/ paths.
+    {
+      timestamp: '2026-06-27T13:00:20.000Z',
+      type: 'compacted',
+      payload: {
+        message: '',
+        replacement_history: [
+          {
+            type: 'message',
+            role: 'developer',
+            content: [
+              {
+                type: 'input_text',
+                text: `<permissions instructions>\nGoal: finish ${storyId}. Evidence lives under .vibepro/pr/${storyId}/pr-prepare.json and test/app.test.js. Run npm run test.`
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 300, output_tokens: 70, total_tokens: 370 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:20.000Z',
+      type: 'event_msg',
+      payload: { type: 'final_answer' }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  const accounting = result.session.artifact_token_accounting;
+  assert.equal(accounting.status, 'available');
+  assert.equal(accounting.buckets.audit_evidence.event_count, 1);
+  assert.equal(accounting.buckets.test.event_count, 0);
+  assert.equal(accounting.buckets.replayed_context.event_count, 1);
+  assert.equal(accounting.buckets.replayed_context.estimated_tokens > 0, true);
+  assert.deepEqual(accounting.buckets.replayed_context.matched_signals, ['compaction_replacement_history']);
+});
+
 test('session efficiency audit infers the matching Codex session from repo cwd and window', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
   const result = await collectSessionEfficiencyAudit(root, {
@@ -455,6 +536,69 @@ test('SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches ca
   assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
   assert.equal(result.observed_worktree_matches_repo, true);
   assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), false);
+});
+
+test('SCATTR-SCENARIO-005 worktree cwd match alone is decisive even without other signals', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const siblingWorktree = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-worktree-signal-less-'));
+  await git(root, ['worktree', 'add', '--detach', siblingWorktree, 'HEAD']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  // Only session_meta (cwd) and a non-token/non-final event: no story ref, no
+  // token_count/final_answer events, and timestamps outside the requested window.
+  const lines = [
+    {
+      timestamp: '2026-06-27T10:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: siblingWorktree }
+    },
+    {
+      timestamp: '2026-06-27T10:00:01.000Z',
+      type: 'event_msg',
+      payload: { type: 'task_started', started_at: 1782558001 }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.session_selection.candidates[0].score, 50);
+});
+
+test('SCATTR-SCENARIO-006 cwd under a different repo worktree directory does not match', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const otherRepoWorktreesDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-other-repo-worktrees-'));
+  const otherRepoRoot = path.join(otherRepoWorktreesDir, '.worktrees', 'other-project-feature');
+  await mkdir(otherRepoRoot, { recursive: true });
+  await git(otherRepoRoot, ['init']);
+  await git(otherRepoRoot, ['config', 'user.email', 'vibepro@example.test']);
+  await git(otherRepoRoot, ['config', 'user.name', 'VibePro Test']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: otherRepoRoot, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, false);
 });
 
 test('SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch', async () => {
