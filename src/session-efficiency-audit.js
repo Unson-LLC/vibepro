@@ -35,10 +35,20 @@ const SESSION_EXPOSURE_BUCKETS = [
     label: 'test/'
   },
   {
+    id: 'replayed_context',
+    label: '再送された文脈（compaction後のgoal/permissions等の再掲）/ replayed carryover context after compaction'
+  },
+  {
     id: 'unattributed',
     label: 'unattributed Codex development in daily window'
   }
 ];
+// Codex session JSONL emits a top-level `type: "compacted"` entry when the
+// runtime compacts context; its payload.replacement_history re-quotes prior
+// goal/permissions/system text so the model can resume. That re-quoted text is
+// carryover noise, not fresh evidence-gathering or reasoning, so it must be
+// classified into its own bucket instead of inflating audit_evidence/test/etc.
+const COMPACTION_REPLAY_ENTRY_TYPES = new Set(['compacted', 'compaction', 'context_compacted']);
 const SESSION_EXPOSURE_BUCKET_BY_ID = Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, bucket]));
 const AUDIT_MEMORY_BLOCK_START = '<!-- vibepro:audit-memory:start -->';
 const AUDIT_MEMORY_BLOCK_END = '<!-- vibepro:audit-memory:end -->';
@@ -493,8 +503,13 @@ function mergeSessionCandidateGroup(group) {
   const lastEventAt = maxIso(group.map((candidate) => candidate.last_event_at));
   const sourcePaths = [...new Set(group.map((candidate) => candidate.source_path).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
+  // cwd_matches_repo is only ever true when matchesRepo() has already proven the
+  // session's cwd is the same repository (same path, or same git-common-dir as a
+  // sibling git worktree). That proof is decisive on its own, so its weight must
+  // reach the resolveSessionSelection() confidence threshold (score >= 50) even
+  // when no other corroborating signal is present.
   const score = [
-    cwdMatchesRepo ? 45 : 0,
+    cwdMatchesRepo ? 50 : 0,
     storyRefFound ? 30 : 0,
     windowOverlap ? 20 : 0,
     processCwdAvailable ? 10 : 0,
@@ -683,8 +698,10 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
   const effectiveCwd = processCwd ?? cwd;
   const cwdMatchesRepo = effectiveCwd ? await matchesRepo(effectiveCwd, repoRoot) : false;
   const windowOverlap = overlapsWindow(firstEventMs, lastEventMs, normalizeTimeMs(windowStart), normalizeTimeMs(windowEnd));
+  // See mergeSessionCandidateGroup(): a proven cwd match must reach the
+  // confidence threshold on its own.
   const score = [
-    cwdMatchesRepo ? 45 : 0,
+    cwdMatchesRepo ? 50 : 0,
     storyRefFound ? 30 : 0,
     windowOverlap ? 20 : 0,
     processCwd ? 10 : 0,
@@ -1247,7 +1264,10 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
   const text = textParts.join('\n').trim();
   if (!text) return null;
   const estimatedTokens = estimateTextTokens(text);
-  const classification = classifySessionExposureText(text, { storyId });
+  const isReplayedContext = COMPACTION_REPLAY_ENTRY_TYPES.has(entry?.type);
+  const classification = isReplayedContext
+    ? { bucket_id: 'replayed_context', matched_signals: ['compaction_replacement_history'] }
+    : classifySessionExposureText(text, { storyId });
   return {
     matched: Boolean(classification),
     bucket_id: classification?.bucket_id ?? 'unattributed',
