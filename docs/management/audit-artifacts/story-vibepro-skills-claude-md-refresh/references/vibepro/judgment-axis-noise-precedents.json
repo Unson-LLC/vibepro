@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "decision_id": "decision-1783655409426-2059288b",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "Docs-only guidance change; operator action is limited to reinstalling bundled skills in target repos, which skills verify reports as outdated until done",
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-10T03:50:14.887Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "decision_id": "decision-1783655406927-1d09e539",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Diff is 10 files, all agent-guidance markdown plus the two test assertions that pin that guidance; no runtime source; split would separate skills from the tests that assert them",
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-10T03:50:14.887Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"status":"pass","exit_code":0,"cmp_exit":0,"command":"vibepro skills lint . && cmp -s CLAUDE.md AGENTS.md"}

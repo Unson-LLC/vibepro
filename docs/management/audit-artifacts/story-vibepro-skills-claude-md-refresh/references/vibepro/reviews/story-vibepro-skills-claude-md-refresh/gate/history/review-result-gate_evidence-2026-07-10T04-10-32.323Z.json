@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review at current head after story-doc wording fix; prior full review at 94354979 passed (evidence honestly matches executed commands, CLI-surface claims verified against live CLI). Delta since prior head is 2 story-doc lines only; evidence re-recorded and head-bound at current head with clean tree. Verdict pass holds.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "git diff 94354979..HEAD limited to story doc wording; verification-evidence.json all pass bound to current head; verify-artifacts status JSONs pass",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-skills-claude-md-refresh.md",
+      ".vibepro/pr/story-vibepro-skills-claude-md-refresh/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Prior pass at 94354979 -> pass at current head because delta is limited to the story-doc accuracy fix and evidence was rebound to the new head"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_head_sha": "cbb2c3ab2eadf2a2db46f3f3114ba4b4450e571e",
+    "current_head_sha": "cbb2c3ab2eadf2a2db46f3f3114ba4b4450e571e",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "path": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "branch": "claude/vibepro-skills-claude-md-993cdd",
+      "actual_branch": "claude/vibepro-skills-claude-md-993cdd",
+      "current_head_sha": "cbb2c3ab2eadf2a2db46f3f3114ba4b4450e571e",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-10T04:10:32.323Z",
+  "git_context": {
+    "head_sha": "cbb2c3ab2eadf2a2db46f3f3114ba4b4450e571e",
+    "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T04:10:32.310Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "cbb2c3ab2eadf2a2db46f3f3114ba4b4450e571e",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-skills-claude-md-refresh.md",
+        "sha256": "5825d88eee0ac0c49caa0eef7ab88a8a35fb11a35940211e0e046730edcba89c",
+        "size": 4039
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "52738c83f684a02e94eb30e07923e951d5ac7791e9715d0b31af00e53fb6a7ff"
+  },
+  "source_fingerprint": "e17f0670c6d8a7b4606fbaffe264cc2386735c373d071bee39af28a510f9249b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a1beadcd115d31221",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

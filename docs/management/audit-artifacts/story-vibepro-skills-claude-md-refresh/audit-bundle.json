@@ -1,0 +1,899 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-10T07:29:15.694Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:601989dde27174943fb18be33024caba54a771816659d86359a2cd0cf2b740a8",
+    "compressed_hash": "sha256:b8886a1658ca015fb9ef4283731658ba1c8016157d4443c6814b3f6f9799d0af",
+    "expanded_bytes": 16189,
+    "compressed_bytes": 3612,
+    "expanded_line_count": 408,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-skills-claude-md-refresh",
+    "cost": {
+      "compressed_bytes": 3612,
+      "expanded_bytes": 16189,
+      "expanded_line_count": 408,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/313",
+    "merge_commit_sha": "2ae1c61a36ac2e3aa5e5d68f39dbfd5ed799d19e",
+    "merged_at": "2026-07-10T07:29:14Z",
+    "current_head_sha": "6beee312d4f08e31cb2f19bbc9c72e7ba90206b8",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...6beee312d4f08e31cb2f19bbc9c72e7ba90206b8"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 60,
+    "copied_reference_count": 47,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-skills-claude-md-refresh"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:601989dde27174943fb18be33024caba54a771816659d86359a2cd0cf2b740a8"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:a4f3912016a30bfd9671ba684f0a15c49401884cb19540e86c2e970ee64d4bbc",
+      "audit_digest": "sha256:a4f3912016a30bfd9671ba684f0a15c49401884cb19540e86c2e970ee64d4bbc",
+      "line_count": 199,
+      "raw_line_count": 199,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:5b89cafa21e6e1e79dfde90ed4738e919f1bbe5883de4724cec166eb5b17a39f",
+      "audit_digest": "sha256:fb76a681d147a44bdf2db693426514de3e379bb10af891e0a24944c81eec5ad5",
+      "line_count": 3896,
+      "raw_line_count": 24669,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:9f26ed6000deb8f85254d5cc0458c2ae20c66512d0f6b5c2dd46e8fdd3ada51f",
+      "audit_digest": "sha256:d7212aeafd085792be78d921662446e79971af66624235fb620917814203a082",
+      "line_count": 1527,
+      "raw_line_count": 3492,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:cfdab4226d9c898346686796acb9a7e1d44db0d9f9d0300cb111764714d7c2fc",
+      "audit_digest": "sha256:3477e5469bac7871f15cab03ae2fe8fc2b31b8068e5379eaeecf3f278da5cdf4",
+      "line_count": 1383,
+      "raw_line_count": 3327,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:b4cda21c8d9b2f83a3503d52ffd72150bcedaab25a1b9f70ae1b1470e9f0dd20",
+      "audit_digest": "sha256:20677e8d9ce3243cd13c857b73869b54f81649a8346711ae5b0927661d60edb6",
+      "line_count": 52,
+      "raw_line_count": 639,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:53ddc81e76be50cd37061db762016fcc64cdd9ecbe8642b1e8d00075f124bcdd",
+      "audit_digest": "sha256:26f0027975d97f0f6aa6de762ad98bdde52e617dd891276171e83c354030ed37",
+      "line_count": 1875,
+      "raw_line_count": 3871,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:c127dafb38cc0b3505b7d3bc72a8295a3ed5afecfa775ca79cb5ae19c0e5e1dd",
+      "audit_digest": "sha256:c127dafb38cc0b3505b7d3bc72a8295a3ed5afecfa775ca79cb5ae19c0e5e1dd",
+      "line_count": 370,
+      "raw_line_count": 370,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:dabaa41e2553f382a445b9d5aa938bb63ca5ddb3d78c49d494f081bd296e1dad",
+      "audit_digest": "sha256:c7197cde38faf5ca6b1bdcd721ca5c47bcc8532e1d0d96de817d04d105c39480",
+      "line_count": 36,
+      "raw_line_count": 342,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:480c6e2b4eb54fd173e424fa055b25f3424ab8b1da485459958a3612bc9979f5",
+      "audit_digest": "sha256:480c6e2b4eb54fd173e424fa055b25f3424ab8b1da485459958a3612bc9979f5",
+      "line_count": 159,
+      "raw_line_count": 159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:fd596bd9e975a38a8d9350985855606d5a067bda00625974d5f9c690b7d51f4c",
+      "audit_digest": "sha256:fd596bd9e975a38a8d9350985855606d5a067bda00625974d5f9c690b7d51f4c",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-pr_split_scope.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:cd085896089022faa2891f4a650da5c82e7584852b9285465279ae77855298bf",
+      "audit_digest": "sha256:cd085896089022faa2891f4a650da5c82e7584852b9285465279ae77855298bf",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:41f3931039b88f1778814a5cd638fbf0e7b8efc04423be94ec1e2bdcfcab5e5a",
+      "audit_digest": "sha256:41f3931039b88f1778814a5cd638fbf0e7b8efc04423be94ec1e2bdcfcab5e5a",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:e27e049b524d0cd603bab4173f856ebf582df7f86f108f030a7cf1149d72dd14",
+      "audit_digest": "sha256:e27e049b524d0cd603bab4173f856ebf582df7f86f108f030a7cf1149d72dd14",
+      "line_count": 110,
+      "raw_line_count": 110,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-pr_split_scope.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:e96f200c1468e37ca311151833446c68f00674e129a708db57a7aeca40fe3107",
+      "audit_digest": "sha256:e96f200c1468e37ca311151833446c68f00674e129a708db57a7aeca40fe3107",
+      "line_count": 110,
+      "raw_line_count": 110,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:c37c2cbe7facb2cd250a91bf6dbda9fad99d8c4794553afe50e974e4f2f075bc",
+      "audit_digest": "sha256:c37c2cbe7facb2cd250a91bf6dbda9fad99d8c4794553afe50e974e4f2f075bc",
+      "line_count": 110,
+      "raw_line_count": 110,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/audit-replay-bundle.json.gz",
+      "digest": "sha256:5a09a51456c2936f762290d11da4ceb6288eb5881955c3498c767ed4c88df594",
+      "audit_digest": "sha256:5a09a51456c2936f762290d11da4ceb6288eb5881955c3498c767ed4c88df594",
+      "line_count": 578,
+      "raw_line_count": 578,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-05-38.687Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-05-38.687Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-10-32.323Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-10-32.323Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-13-46.923Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-13-46.923Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-05-46.049Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-05-46.049Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-10-35.778Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-10-35.778Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-13-49.898Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-13-49.898Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-10-39.554Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-10-39.554Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-13-53.043Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-13-53.043Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-request-pr_split_scope.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-pr_split_scope.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-result-pr_split_scope.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/skills-lint-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/skills-lint.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/skills-lint.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/unit-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/unit-status.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/diagnostics/2026-07-10T030724Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-05-38.687Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-05-38.687Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-10-32.323Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-10-32.323Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-13-46.923Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-gate_evidence-2026-07-10T04-13-46.923Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-05-46.049Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-05-46.049Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-10-35.778Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-10-35.778Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-13-49.898Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-pr_split_scope-2026-07-10T04-13-49.898Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-10-39.554Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-10-39.554Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-13-53.043Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/history/review-result-release_risk-2026-07-10T04-13-53.043Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/stories/story-vibepro-skills-claude-md-refresh/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/skills-lint-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/skills-lint.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/skills-lint.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verify-artifacts/unit-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-skills-claude-md-refresh/references/vibepro/verify-artifacts/unit-status.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5378636
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T030724Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 965058
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5037748
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-skills-claude-md-refresh/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-skills-claude-md-refresh/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

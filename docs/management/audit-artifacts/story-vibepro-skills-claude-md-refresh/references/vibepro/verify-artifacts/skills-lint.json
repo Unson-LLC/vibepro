@@ -1,0 +1,162 @@
+{
+  "mode": "lint",
+  "target_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+  "target_dir": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887/.claude/skills",
+  "overall_status": "pass",
+  "required_sections": [
+    "When to Use",
+    "Common Rationalizations",
+    "Red Flags",
+    "Verification"
+  ],
+  "process_section_aliases": [
+    "core process",
+    "process",
+    "workflow",
+    "required workflow",
+    "operating order",
+    "diagnosis packages",
+    "review order"
+  ],
+  "skills": [
+    {
+      "name": "vibepro-codebase-memory",
+      "description": "Use when VibePro work needs codebase-memory-mcp impact context for changed files, call paths, routes, symbols, or risk hints without treating topology as correctness evidence.",
+      "status": "pass",
+      "source_path": "skills/vibepro-codebase-memory/SKILL.md",
+      "target_path": ".claude/skills/vibepro-codebase-memory/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-diagnosis-packages",
+      "description": "Use when the user asks VibePro to check UI, security, performance, architecture, PR readiness, launch readiness, or performance improvement evidence.",
+      "status": "pass",
+      "source_path": "skills/vibepro-diagnosis-packages/SKILL.md",
+      "target_path": ".claude/skills/vibepro-diagnosis-packages/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-gate-evidence",
+      "description": "Use when recording VibePro verification or review evidence, writing Architecture/Spec artifacts, or resolving blocked gates when pr prepare reports needs_verification, needs_review, or unresolved gate ids.",
+      "status": "pass",
+      "source_path": "skills/vibepro-gate-evidence/SKILL.md",
+      "target_path": ".claude/skills/vibepro-gate-evidence/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-human-review",
+      "description": "Use when reviewing VibePro PR preparation artifacts, deciding whether to proceed, split, add evidence, waive with reason, or block.",
+      "status": "pass",
+      "source_path": "skills/vibepro-human-review/SKILL.md",
+      "target_path": ".claude/skills/vibepro-human-review/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-meeting-minutes-editor",
+      "description": "Use when generating, reviewing, or repairing Japanese business meeting minutes from transcripts, Slack attachments, recordings, or Meeting Pack inputs.",
+      "status": "pass",
+      "source_path": "skills/vibepro-meeting-minutes-editor/SKILL.md",
+      "target_path": ".claude/skills/vibepro-meeting-minutes-editor/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-story-refactor",
+      "description": "Use when refactoring with VibePro so the agent follows Story -> Architecture -> Spec -> Task -> Code -> Gate -> PR instead of editing code first.",
+      "status": "pass",
+      "source_path": "skills/vibepro-story-refactor/SKILL.md",
+      "target_path": ".claude/skills/vibepro-story-refactor/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    },
+    {
+      "name": "vibepro-workflow",
+      "description": "Use when working with VibePro CLI, Graphify, Story diagnosis, task planning, PR preparation, Gate evidence, or VibePro review artifacts.",
+      "status": "pass",
+      "source_path": "skills/vibepro-workflow/SKILL.md",
+      "target_path": ".claude/skills/vibepro-workflow/SKILL.md",
+      "sections": {
+        "frontmatter_name": true,
+        "frontmatter_description": true,
+        "process": true,
+        "required": {
+          "When to Use": true,
+          "Common Rationalizations": true,
+          "Red Flags": true,
+          "Verification": true
+        }
+      },
+      "issues": []
+    }
+  ],
+  "summary": {
+    "pass": 7,
+    "issue_count": 0,
+    "error_count": 0,
+    "warning_count": 0
+  }
+}

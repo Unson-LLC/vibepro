@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Single-commit PR reads as one coherent reviewer judgment (guidance refresh + new skill + root entrypoint + Codex sync + pinning test assertions + design-ssot lineage). Mechanical split plan recommends 4 lanes but lanes are interdependent (test lane assertions require skills lane), so accepted waivers are the correct resolution. No runtime source touched; skills discovery is readdir-based so no code change needed. Two low record-accuracy findings on waiver wording and stale split-plan artifact.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "split-waiver-reason-imprecise",
+      "detail": "split_resolution waiver says repo_control classification comes from SKILL.md files but the repo-control lane actually contains CLAUDE.md/AGENTS.md; conclusion unchanged"
+    },
+    {
+      "severity": "low",
+      "id": "split-plan-stale-vs-decisions",
+      "detail": "split-plan.json still says split_recommended with isolated lanes contradicting interdependence; superseded by accepted waivers but not regenerated"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "split-plan-stale-vs-decisions",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "waiver decisions supersede the mechanical plan; plan regenerates on next pr prepare",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "split-waiver-reason-imprecise",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "record-accuracy nit; scope_reviewed decision at current head describes the diff accurately",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read review request, split-plan.json, decision-records.json, diffs of test file and design-ssot.json, src/skills-manager.js; ran focused skills test and cmp at head 94354979",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/pr/story-vibepro-skills-claude-md-refresh/split-plan.json",
+      ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json",
+      "test/vibepro-cli.test.js",
+      "design-ssot.json",
+      "src/skills-manager.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that split_recommended plan conflicts with single-PR waivers -> pass, because actual diff shows lanes interdependent, no runtime source changes, and accepted decisions explicitly resolve single-PR scope"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "current_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "path": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "branch": "claude/vibepro-skills-claude-md-993cdd",
+      "actual_branch": "claude/vibepro-skills-claude-md-993cdd",
+      "current_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-10T04:05:46.049Z",
+  "git_context": {
+    "head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T04:05:45.999Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "8fd747766c239f6715f2af86304a452e49ea1c7a440b3713a4d96d40587e7991",
+        "size": 125879
+      },
+      {
+        "path": "src/skills-manager.js",
+        "sha256": "4c9abf96ca36bb6dbdb7f005b7d251443f05c50b958798408e847124ad47fe9b",
+        "size": 10632
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "84e6aecc31a6055085deb3ffa658b439efb20c083f1dbb60601069731888b462",
+        "size": 1067640
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6250937355414b82f0d269c0a70bc0c16ed84863afd0bc0dee4a5482311356cb"
+  },
+  "source_fingerprint": "37bb353bb90c1b6b0a75fd41b6fa709ab4cc83cdad2ff65a7514174ddde0afba",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a6e33a341fd4c7f38",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

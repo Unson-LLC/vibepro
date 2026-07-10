@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Verification evidence honestly matches executed commands; all records head-bound to 94354979 with clean tree; status artifacts agree with claimed outcomes; full-suite result (924/922/2, failures were old assertions) matches coordinator log; reviewer independently re-ran the two updated tests (pass), cmp CLAUDE.md/AGENTS.md (identical), and verified every CLI-surface claim in refreshed guidance against live CLI (check list, execute start, uiux, review lifecycle flags, audit/trace/usage, pr prepare views). One low finding: full suite not re-run at final head, disclosed as reconstruction.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "full-suite-not-rerun-at-final-head",
+      "detail": "Full 924-test suite ran once pre-assertion-update; only the two changed tests re-run at final head; evidence discloses this honestly and diff touches only those test blocks"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "full-suite-not-rerun-at-final-head",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "CI will re-run the full suite on the PR and be imported via verify import-ci",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read verification-evidence.json, spec.json, status/lint artifacts, full diff; re-ran updated tests at head; verified guidance claims against node bin/vibepro.js --help / check list / skills list",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/pr/story-vibepro-skills-claude-md-refresh/verification-evidence.json",
+      ".vibepro/spec/story-vibepro-skills-claude-md-refresh/spec.json",
+      "skills/vibepro-gate-evidence/SKILL.md",
+      "skills/vibepro-workflow/SKILL.md",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that recorded pass unit evidence misrepresented a failing suite -> pass, because suite summary matches disclosed pre-update failures and independent focused re-run at current head passes; CLI-surface claims verified against live CLI rather than trusted"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+    "expected_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "current_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "path": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887",
+      "branch": "claude/vibepro-skills-claude-md-993cdd",
+      "actual_branch": "claude/vibepro-skills-claude-md-993cdd",
+      "current_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-10T04:05:38.687Z",
+  "git_context": {
+    "head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T04:05:38.646Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+    "surface_files": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "ac631187ca7e6bc2524c4ec10ee764ed5e844029a1633b1fd028b72b52be8667",
+        "size": 3953
+      },
+      {
+        "path": "CLAUDE.md",
+        "sha256": "ac631187ca7e6bc2524c4ec10ee764ed5e844029a1633b1fd028b72b52be8667",
+        "size": 3953
+      },
+      {
+        "path": "skills/vibepro-gate-evidence/SKILL.md",
+        "sha256": "9cd25b1e2491e63636e3010dec2b7694a39bed939cd34b0e3d3efea4a737ca47",
+        "size": 8851
+      },
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "d13b47d5db2fb01f88bdec2159c65fc334e010c3e499646c96f970d38d3649b7",
+        "size": 20760
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "84e6aecc31a6055085deb3ffa658b439efb20c083f1dbb60601069731888b462",
+        "size": 1067640
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "43d35ddcdafb5c45a28b03feb400b3f5b1de93eb9efc2c8f97f5ccd59925a3b6"
+  },
+  "source_fingerprint": "4aa432da9094e77ca328a942ca6aeb6e668a8b2a4bee9619144ee7c1b2110ebb",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a1f13184e432b5122",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skills-claude-md-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

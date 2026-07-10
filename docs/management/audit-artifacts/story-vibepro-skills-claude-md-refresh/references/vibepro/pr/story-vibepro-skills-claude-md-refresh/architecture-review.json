@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "created_at": "2026-07-10T07:07:50.393Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: ",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-skills-claude-md-refresh.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: "
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-skills-claude-md-refresh.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-10T07:07:48.115Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/crazy-lamport-138887/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "6beee312d4f08e31cb2f19bbc9c72e7ba90206b8",
+      "branch": "claude/vibepro-skills-claude-md-993cdd",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "a5f9127d64c3c6d91494ee3345b34f007da8d9cb",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

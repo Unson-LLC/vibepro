@@ -1,0 +1,217 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-skills-claude-md-refresh",
+  "updated_at": "2026-07-10T03:50:09.428Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783655409426-2059288b",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops followup: release_note lives in pr-body.md; rollout_plan is vibepro skills install --force / codex install --force in target repos; rollback_instruction is a single git revert; observability_evidence is the skills lint/verify JSON reports",
+      "reason": "Docs-only guidance change; operator action is limited to reinstalling bundled skills in target repos, which skills verify reports as outdated until done",
+      "reviewer": null,
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/skills-lint-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+        "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T03:50:09.417Z"
+      },
+      "recorded_at": "2026-07-10T03:50:09.428Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783655406927-1d09e539",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: single-intent docs/guidance PR (skills refresh + root CLAUDE.md/AGENTS.md + test assertion sync); one reviewer can read it as one consistent judgment; review owner is the repository maintainer (k.sato)",
+      "reason": "Diff is 10 files, all agent-guidance markdown plus the two test assertions that pin that guidance; no runtime source; split would separate skills from the tests that assert them",
+      "reviewer": null,
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/skills-lint-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+        "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T03:50:06.918Z"
+      },
+      "recorded_at": "2026-07-10T03:50:06.929Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783653314005-4b1849d7",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Single-lane docs change: all files are agent guidance markdown for the same story; split lanes not applicable, branch is clean single-commit over origin/main",
+      "reason": "No mixed runtime/test/control lanes; repo_control classification comes from SKILL.md guidance files which are the story subject itself",
+      "reviewer": null,
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "0ec01adcc1cc8c13bd5ed13ebc1a805c2fc2770d",
+        "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T03:15:13.993Z"
+      },
+      "recorded_at": "2026-07-10T03:15:14.008Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783653304318-ea316259",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled docs-only scope is intentional: skill refresh, new gate-evidence skill, root CLAUDE.md/AGENTS.md, Codex rules sync all serve one intent (align agent guidance with shipped CLI); no runtime source changed",
+      "reason": "Splitting markdown guidance updates would break cross-references between skills and the new root entrypoint; diff is docs/markdown plus story doc only",
+      "reviewer": null,
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "0ec01adcc1cc8c13bd5ed13ebc1a805c2fc2770d",
+        "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T03:15:04.301Z"
+      },
+      "recorded_at": "2026-07-10T03:15:04.323Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2,
+      "waiver": 2
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783655409426-2059288b",
+      "story_id": "story-vibepro-skills-claude-md-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops followup: release_note lives in pr-body.md; rollout_plan is vibepro skills install --force / codex install --force in target repos; rollback_instruction is a single git revert; observability_evidence is the skills lint/verify JSON reports",
+      "reason": "Docs-only guidance change; operator action is limited to reinstalling bundled skills in target repos, which skills verify reports as outdated until done",
+      "reviewer": null,
+      "artifact": ".vibepro/verify-artifacts/skills-lint-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/skills-lint-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "94354979f0dc753f6779fbafd27a031ba78d2f64",
+        "current_branch": "claude/vibepro-skills-claude-md-993cdd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T03:50:09.417Z"
+      },
+      "recorded_at": "2026-07-10T03:50:09.428Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-skills-claude-md-refresh/decision-records.json"
+}
