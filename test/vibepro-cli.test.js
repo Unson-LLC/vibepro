@@ -4577,8 +4577,9 @@ test('skills commands list install and verify bundled VibePro skills', async () 
 
   const listResult = await runCli(['skills', 'list']);
   assert.equal(listResult.exitCode, 0);
-  assert.equal(listResult.result.skills.length, 6);
+  assert.equal(listResult.result.skills.length, 7);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-gate-evidence'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-codebase-memory'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-meeting-minutes-editor'), true);
@@ -4606,7 +4607,8 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
   const meetingMinutesSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-meeting-minutes-editor', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
-  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check performance/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check list/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro execute start/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /name: vibepro-codebase-memory/);
   assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /codebase-memory-mcp cli detect_changes/);
   assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
@@ -4653,7 +4655,9 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   assert.match(installedContent, /VIBEPRO_CODEX_START/);
   assert.match(installedContent, /review-cockpit\.html/);
   assert.match(installedContent, /vibepro pr create/);
-  assert.match(installedContent, /vibepro check performance/);
+  assert.match(installedContent, /vibepro check list/);
+  assert.match(installedContent, /agent-harness/);
+  assert.match(installedContent, /vibepro-gate-evidence/);
   assert.match(installedContent, /vibepro performance compare/);
   assert.match(installedContent, /server logs alone/);
 

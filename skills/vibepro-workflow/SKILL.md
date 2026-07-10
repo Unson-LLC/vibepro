@@ -29,14 +29,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
    - Before implementation or PR readiness, rerun the consistency gates after Architecture/Spec exist.
    - `vibepro story derive <repo> --run-graphify`
    - `vibepro story map <repo>`
-7. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set:
-   - `vibepro check list`
-   - `vibepro check ui <repo>`
-   - `vibepro check security <repo>`
-   - `vibepro check performance <repo>`
-   - `vibepro check architecture <repo>`
-   - `vibepro check pr-readiness <repo> --base <ref> --head <ref>`
-   - `vibepro check launch-readiness <repo>`
+7. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set. Run `vibepro check list` for the current registry, then `vibepro check <pack> <repo>`. Registered packs include `ui`, `security`, `performance`, `architecture`, `pr-readiness` (`--base <ref> --head <ref>`), `launch-readiness`, `agent-harness`, `public-discovery`, `self-dogfood`, `oss-readiness`, `regression-risk`, and `all`.
 8. For performance improvement stories, define and record Story-level performance evidence before claiming speedups:
    - `vibepro performance define <repo> --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> --evidence-source <type>`
    - `vibepro performance record <repo> --id <story-id> --metric-id <id> --label before|after --status completed --duration-ms <ms> --evidence-source <type:ref:summary>`
@@ -51,26 +44,33 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
    - `vibepro design-modernize plan <repo> --id <story-id> --product <name> --routes <csv> --base-url <url>`
    - Treat `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` as implementation constraints.
    - External Design System bundles, screenshots, and image-generated ideas are visual hypotheses. The VibePro-derived Design System, current UI evidence, Story/Spec, and Gate DAG remain authoritative.
-11. Plan work from VibePro evidence: `vibepro story plan <repo>`.
-12. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
-13. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
-14. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready. Also inspect `decision-index.json` and `evidence-plan.json` when present so skipped or depth-limited artifacts are not mistaken for missing evidence.
-15. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-16. Run parallel subagent review:
+11. For UI/UX requests that start from user intent rather than existing screens, use the uiux preparation cockpit before implementation:
+   - `vibepro uiux intake template <repo> --id <story-id>` then fill and `vibepro uiux intake validate <repo> --id <story-id>`
+   - `vibepro uiux map <repo> --id <story-id>`
+   - `vibepro uiux evidence <repo> --id <story-id>`
+   - `vibepro uiux prepare <repo> --id <story-id>`
+12. Plan work from VibePro evidence: `vibepro story plan <repo>`.
+13. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`. Use `vibepro task brief|plan|handoff <repo> --task <task-id>` for task-scoped context.
+14. During implementation, checkpoint progress with `vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> <repo> --story-id <story-id>` and check gate state early with `vibepro gate check <repo> --story-id <story-id>` instead of discovering blocks at PR time.
+15. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`. Record verification evidence with `vibepro verify record`, and import CI results with `vibepro verify import-ci <repo> --id <story-id> --pr <n>` instead of rerunning full suites locally when a PR exists.
+16. Read the `pr prepare --summary-json` or `--view` output first, then `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready. Also inspect `decision-index.json` and `evidence-plan.json` when present so skipped or depth-limited artifacts are not mistaken for missing evidence.
+17. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+18. Run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
-   - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
+   - Register each review lifecycle with `vibepro review start` using the real subagent id, then dispatch the listed Codex/Claude Code subagents in parallel, one role per subagent. Close each lifecycle with `vibepro review close --close-reason completed` after the subagent returns. Use `vibepro review repair <repo> --story-id <id>` to generate the repair command sequence for incomplete review evidence.
    - After each subagent returns, close/shutdown that review subagent before recording the result. Do not leave review subagents running.
    - Record every result with `vibepro review record` and include subagent provenance plus closed lifecycle evidence:
      - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id> --agent-closed` plus `--agent-thread-id` or `--agent-call-id` when available.
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-17. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
-18. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
-19. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
-20. After the PR exists, wait for remote checks, import CI evidence, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
-21. Merge through `vibepro execute merge`; do not use raw GitHub merge as the normal VibePro completion path. `execute merge` writes `pr-merge.json` and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
+19. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
+20. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
+21. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+22. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
+23. Merge through `vibepro execute merge <repo> --story-id <id> --strategy merge` (`--infer-session` or `--session-id auto` attaches session cost accounting); do not use raw GitHub merge as the normal VibePro completion path. `execute merge` writes `pr-merge.json` and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
+24. After merge, close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
 
 ## Human Artifact Language
 
@@ -79,12 +79,18 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 - Preserve user-provided text and external evidence text unless the artifact explicitly asks for translation or localization.
 - When CLI-generated artifacts are incomplete and the agent fills them manually, match the repository language policy instead of defaulting to English.
 
-## Managed Worktree Status
+## Managed Worktree Execution
 
-- Recent VibePro Story / Spec / Architecture documents define a future managed worktree Execution DAG, but this is not evidence that the installed CLI already creates, reuses, or enforces managed worktrees.
-- Do not claim VibePro created a worktree unless a real command result records that state.
-- Until `vibepro execute start` actually reports managed worktree creation or reuse, create normal git worktrees manually when isolation is needed, and keep implementation, verification, review, PR preparation, and PR creation in that isolated worktree.
-- When a future VibePro CLI reports managed worktree state, prefer that state and run the rest of the VibePro flow from the reported worktree.
+- `vibepro execute start <repo> --story-id <id>` creates or reuses a managed worktree and reports its state (`managed_worktree: preferred/created|reused`). Prefer this over creating git worktrees manually for VibePro work.
+- Use `vibepro execute status|next|reconcile` to inspect and advance the Execution DAG, and `vibepro execute merge` to complete it.
+- Run implementation, verification, review, PR preparation, and PR creation from the reported worktree. Do not claim VibePro created a worktree unless the command output records that state.
+- Create branches from inside the worktree. Running `git switch -c` from another checkout (for example the canonical repo) creates the branch in the wrong place.
+
+## Context Economy
+
+- Do not read full PR artifacts into agent context first. Start from `vibepro pr prepare <repo> --story-id <id> --summary-json` or a limited `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>`.
+- Drill down into full JSON artifacts only for the specific gate ids or paths the summary flags.
+- For evidence recording, gate troubleshooting, spec/architecture write validators, and review lifecycle details, use the `vibepro-gate-evidence` Skill.
 
 ## Guardrails
 
@@ -164,6 +170,8 @@ Before saying VibePro confirmed the work, name the exact VibePro command or arti
 - `.vibepro/pr/<story-id>/split-plan.json`: split lanes and Graphify investigation scope. `split-plan.html` is an optional view.
 - `.vibepro/pr/<story-id>/pr-create.json`: PR create or existing-PR refresh lifecycle evidence.
 - `.vibepro/pr/<story-id>/pr-merge.json`: merge lifecycle evidence from `vibepro execute merge`.
+- `docs/management/audit-artifacts/<story-id>/`: canonical persisted audit artifacts written at merge time.
+- `.vibepro/uiux/<story-id>/`: uiux intake, map, evidence, and prepare artifacts for intent-first UI/UX work.
 - `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`: required parallel subagent dispatch instructions when Agent Review Gate is unresolved.
 - `.vibepro/checks/<pack>/<run-id>/check.json`: purpose-level diagnosis package evidence.
 - `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.
