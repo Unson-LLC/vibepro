@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-help-missing-commands",
+  "created_at": "2026-07-10T13:07:39.947Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-cli-help-missing-commands.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-cli-help-missing-commands.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-cli-help-missing-commands/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-cli-help-missing-commands.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-cli-help-missing-commands.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-10T13:07:32.561Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "747ecfe4750bfbe7a502999da1633bdb2b3bf218",
+      "branch": "claude/bold-torvalds-30d996",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "74cc1db90a0be3b01a5714825bb0506f063d51da",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,781 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-help-missing-commands",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-10T13:08:30.188Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:cf95551615616d1ad5efa82accac777cfdc1caa51478552d5d13777dcdb585d8",
+    "compressed_hash": "sha256:f32fb9326c82824d8eb40558cedcaae18056884c0802972315b41b43576a9b46",
+    "expanded_bytes": 13610,
+    "compressed_bytes": 3367,
+    "expanded_line_count": 357,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-cli-help-missing-commands",
+    "cost": {
+      "compressed_bytes": 3367,
+      "expanded_bytes": 13610,
+      "expanded_line_count": 357,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/315",
+    "merge_commit_sha": "9a658fe64a665e77b36c03709d0bd6019f4d81b9",
+    "merged_at": "2026-07-10T13:08:28Z",
+    "current_head_sha": "747ecfe4750bfbe7a502999da1633bdb2b3bf218",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...747ecfe4750bfbe7a502999da1633bdb2b3bf218"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 51,
+    "copied_reference_count": 42,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-cli-help-missing-commands"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:cf95551615616d1ad5efa82accac777cfdc1caa51478552d5d13777dcdb585d8"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:bf4f81c3485e3932e4abdd8ea319a4694e0f53a30e97e3e1dd79bdb5e69d2b0e",
+      "audit_digest": "sha256:bf4f81c3485e3932e4abdd8ea319a4694e0f53a30e97e3e1dd79bdb5e69d2b0e",
+      "line_count": 264,
+      "raw_line_count": 264,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:3f0e35f86fc6adbcee5a0ee904c4ebe035592c392ed949688faad2859a6e6af5",
+      "audit_digest": "sha256:a6befd9264c94ccce7a0c5d6aaa0c1a2e98ef3761c85f594ad51616abb5696d5",
+      "line_count": 3337,
+      "raw_line_count": 26068,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:a38d18cdf24dc2b2ea63bf62415ae350cbd4c2e485e3d645dd6c3304b863666b",
+      "audit_digest": "sha256:1e72a89d0c102030855b2b0d677cdeeb8de0e374896361b65b91703dbf1af419",
+      "line_count": 1371,
+      "raw_line_count": 3457,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:aa0564b2399d248f91005ba0ca55ecc3bd4aaceb14398a752f85b742ab783ae6",
+      "audit_digest": "sha256:fbbc54d436633ccb566901427f03ff6772d7ba998833217ad6c576dd001abaa0",
+      "line_count": 1339,
+      "raw_line_count": 3504,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:5418aa0699d8d167ec4a126172254aad97d216b5d95e6ef4492d7e377c78c1dd",
+      "audit_digest": "sha256:cd1bdf6725e40ad864eeb337c2d60d2e3870918161839509331a7a7bf479a72c",
+      "line_count": 28,
+      "raw_line_count": 753,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:7ca365c1a3d1036e4cd1fd928dce9bdf764a480c0fc6c33016178c96c096efc2",
+      "audit_digest": "sha256:5ff96cc7fc9f2e97721ea0dc6e35eded900f67ad64baec93544f86f78bb65931",
+      "line_count": 1523,
+      "raw_line_count": 3724,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:5653e7afe3d8c0d96c73da920f3cce45c9adc46ea1c764e556eb4b6501c381d5",
+      "audit_digest": "sha256:5653e7afe3d8c0d96c73da920f3cce45c9adc46ea1c764e556eb4b6501c381d5",
+      "line_count": 323,
+      "raw_line_count": 323,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:f8744c9f13b3b465f609399ad9968a202264e8eff67f3c12ad09accddac65e7c",
+      "audit_digest": "sha256:4ea2c39f9be1955617b92fb5de310cd1cd68fdf7bc6eaa5c3e73e6af00001f35",
+      "line_count": 61,
+      "raw_line_count": 414,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:5f8f0dfd81965c37f5c5ea9337085f499c2a8021d9d483dc907ec54015cbc922",
+      "audit_digest": "sha256:5f8f0dfd81965c37f5c5ea9337085f499c2a8021d9d483dc907ec54015cbc922",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:3a283e7a062a7fb6974ecf6c7e7e273910df0b54a6aab9dd765eec4e0e2af581",
+      "audit_digest": "sha256:3a283e7a062a7fb6974ecf6c7e7e273910df0b54a6aab9dd765eec4e0e2af581",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:53ccf96eb15ed84668ec11a1f9263c8a03ec616a326ce1dfbbdaaf7292d7c6d5",
+      "audit_digest": "sha256:53ccf96eb15ed84668ec11a1f9263c8a03ec616a326ce1dfbbdaaf7292d7c6d5",
+      "line_count": 127,
+      "raw_line_count": 127,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/audit-replay-bundle.json.gz",
+      "digest": "sha256:88e19d9443103be8749592cd38638576892714590ab6b55ec0853839c8472273",
+      "audit_digest": "sha256:88e19d9443103be8749592cd38638576892714590ab6b55ec0853839c8472273",
+      "line_count": 289,
+      "raw_line_count": 289,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T04-57-29.127Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T04-57-29.127Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T13-07-14.674Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T13-07-14.674Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/diagnostics/2026-07-10T044128Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T04-57-29.127Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T04-57-29.127Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T13-07-14.674Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/history/review-result-gate_evidence-2026-07-10T13-07-14.674Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-cli-help-missing-commands/references/vibepro/stories/story-vibepro-cli-help-missing-commands/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5382212
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-10T044128Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 965058
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5040820
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-cli-help-missing-commands/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-cli-help-missing-commands/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

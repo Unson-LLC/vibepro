@@ -1,0 +1,189 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-cli-help-missing-commands",
+  "updated_at": "2026-07-10T07:02:24.072Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+      "expected_root": null,
+      "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+      "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783666944070-078d31ad",
+      "story_id": "story-vibepro-cli-help-missing-commands",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope is a single-intent, 6-line additive doc change to the CLI help strings plus its pinning test; one reviewer reads it as one coherent judgment. No split required.",
+      "reason": "Reviewable as a single unit: the only runtime edit is to help-string constants in src/cli.js; blast radius and the single-stage gate/gate_evidence review owner map are documented in the attached rationale. Splitting adds overhead without improving reviewability.",
+      "reviewer": "ksato",
+      "artifact": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+          "expected_root": null,
+          "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+          "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+        "current_branch": "claude/bold-torvalds-30d996",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T07:02:24.062Z"
+      },
+      "recorded_at": "2026-07-10T07:02:24.072Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+        "expected_root": null,
+        "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+        "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783666944070-078d31ad",
+      "story_id": "story-vibepro-cli-help-missing-commands",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope is a single-intent, 6-line additive doc change to the CLI help strings plus its pinning test; one reviewer reads it as one coherent judgment. No split required.",
+      "reason": "Reviewable as a single unit: the only runtime edit is to help-string constants in src/cli.js; blast radius and the single-stage gate/gate_evidence review owner map are documented in the attached rationale. Splitting adds overhead without improving reviewability.",
+      "reviewer": "ksato",
+      "artifact": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/cli-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-help-missing-commands/verification-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+          "expected_root": null,
+          "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+          "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+        "current_branch": "claude/bold-torvalds-30d996",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T07:02:24.062Z"
+      },
+      "recorded_at": "2026-07-10T07:02:24.072Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-cli-help-missing-commands/decision-records.json"
+}

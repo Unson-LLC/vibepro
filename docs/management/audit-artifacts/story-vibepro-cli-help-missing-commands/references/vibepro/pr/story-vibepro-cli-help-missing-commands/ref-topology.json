@@ -1,0 +1,1591 @@
+{
+  "schema_version": "0.1.0",
+  "fetch_performed": false,
+  "remotes": [
+    {
+      "name": "origin",
+      "url": "https://github.com/Unson-LLC/vibepro.git"
+    }
+  ],
+  "refs": {
+    "base_ref": "origin/main",
+    "head_ref": "HEAD",
+    "current_branch": "claude/bold-torvalds-30d996",
+    "base_sha": "74cc1db90a0be3b01a5714825bb0506f063d51da",
+    "head_sha": "747ecfe4750bfbe7a502999da1633bdb2b3bf218",
+    "merge_base_sha": "74cc1db90a0be3b01a5714825bb0506f063d51da"
+  },
+  "base_selection": {
+    "ref": "origin/main",
+    "explicit": true,
+    "rule": "cli_option"
+  },
+  "branches": [
+    {
+      "branch": "chore/codex-moonchild",
+      "local_sha": "af740856fca47fc4bee36ea8b6be5609264fae49",
+      "remotes": {
+        "origin": "af740856fca47fc4bee36ea8b6be5609264fae49"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "chore/vibepro-oss-agent-review",
+      "local_sha": "7c887fb52f7b5cff60af7abbf6fbaa848990b824",
+      "remotes": {
+        "origin": "7c887fb52f7b5cff60af7abbf6fbaa848990b824"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "chore/vibepro-oss-planning-metadata",
+      "local_sha": "3196f8eafd8466bd8578de2397f6db04b472b225",
+      "remotes": {
+        "origin": "3196f8eafd8466bd8578de2397f6db04b472b225"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/audit-window-improvements-cb912b",
+      "local_sha": "354fc0ea3373c7efde5d6ec1229573506fe4560b",
+      "remotes": {
+        "origin": "c9a34976adec98aea6c408ab3f4e13b1276f8225"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/bold-torvalds-30d996",
+      "local_sha": "747ecfe4750bfbe7a502999da1633bdb2b3bf218",
+      "remotes": {
+        "origin": "747ecfe4750bfbe7a502999da1633bdb2b3bf218"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/charming-lamport-915b50",
+      "local_sha": "c9f05b1faac92442f53fcb3bdb30256a34f901d3",
+      "remotes": {
+        "origin": "5a1ab6510ccef836682e48f1e215e343c18527e9"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/ci-gate-check",
+      "local_sha": "de99d05925c2aa12a1e65ce2f02626bc677fe76f",
+      "remotes": {
+        "origin": "de99d05925c2aa12a1e65ce2f02626bc677fe76f"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/crazy-lamport-138887",
+      "local_sha": "4cca7d5887a11d6da11daa9886cb9aeef3a8453c",
+      "remotes": {
+        "origin": "4cca7d5887a11d6da11daa9886cb9aeef3a8453c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/festive-proskuriakova-fbf353",
+      "local_sha": "32b1afa57216719bac7827fcb716510a7eb47a7e",
+      "remotes": {
+        "origin": "32b1afa57216719bac7827fcb716510a7eb47a7e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/gate-tuning-loop",
+      "local_sha": "025850b00c8da55dfe330d2a42f52d960861bd6c",
+      "remotes": {
+        "origin": "025850b00c8da55dfe330d2a42f52d960861bd6c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/idempotent-audit-persistence",
+      "local_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
+      "remotes": {
+        "origin": "ca76367c6dce46cb34156d10947a94eeb9c0c402"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/pr-artifact-size-budget",
+      "local_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+      "remotes": {
+        "origin": "73219fb8ed42c7af9d0474ec726ebbd097dd6968"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/recipe-preflight-autopilot",
+      "local_sha": "1b9625011b8ea95bd299f641f83ce5e369d4e45b",
+      "remotes": {
+        "origin": "1b9625011b8ea95bd299f641f83ce5e369d4e45b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/roi-measurement-loop-closure",
+      "local_sha": "6b4145f0d26fe27956c9da027395b38f46b5ef9b",
+      "remotes": {
+        "origin": "6b4145f0d26fe27956c9da027395b38f46b5ef9b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/speed-side-pipeline-stories",
+      "local_sha": "90fe3fc3c6d8e4472c730018ebc154e340d83c5d",
+      "remotes": {
+        "origin": "90fe3fc3c6d8e4472c730018ebc154e340d83c5d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/story-vibepro-agent-review-independence-provenance",
+      "local_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+      "remotes": {
+        "origin": "2b3c65fa51978aa41f5b6022af190b467bb58e3b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/story-vibepro-cli-status-honesty",
+      "local_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "remotes": {
+        "origin": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/story-vibepro-story-scope-boundary-gate",
+      "local_sha": "f86747596f6757a47f1d8bfee134a2e92b78f848",
+      "remotes": {
+        "origin": "f86747596f6757a47f1d8bfee134a2e92b78f848"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-audit-improvements-a2e242",
+      "local_sha": "115c879f3416c9792b156debaf06897b30ea8809",
+      "remotes": {
+        "origin": "115c879f3416c9792b156debaf06897b30ea8809"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-audit-improvements-story2-b7f3",
+      "local_sha": "0eb6cad07c119a693f22a2fb669f19eabdde060d",
+      "remotes": {
+        "origin": "0eb6cad07c119a693f22a2fb669f19eabdde060d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-audit-improvements-story3-e91c",
+      "local_sha": "f31ad450b23b3cf91f7b74a939ff0b4bb9f1e6b4",
+      "remotes": {
+        "origin": "f31ad450b23b3cf91f7b74a939ff0b4bb9f1e6b4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-cli-stdin-swift-impactscope",
+      "local_sha": null,
+      "remotes": {
+        "origin": "415966e0398ed554b5904a95cdeda40465adcfa4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-session-time-cwd-normalization",
+      "local_sha": "2a417621d4d1a0fe597bd71ab730f09fed9c38a9",
+      "remotes": {
+        "origin": "2a417621d4d1a0fe597bd71ab730f09fed9c38a9"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/vibepro-skills-claude-md-993cdd",
+      "local_sha": "6beee312d4f08e31cb2f19bbc9c72e7ba90206b8",
+      "remotes": {
+        "origin": "6beee312d4f08e31cb2f19bbc9c72e7ba90206b8"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/visual-residual-runner",
+      "local_sha": "f57b533d8a6986151a1352a636bf5efa1da038b2",
+      "remotes": {
+        "origin": "f57b533d8a6986151a1352a636bf5efa1da038b2"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/zealous-wescoff-eaca69",
+      "local_sha": "fb264c2fb31b600b1db16cc751c6d0972241cb4a",
+      "remotes": {
+        "origin": "fb264c2fb31b600b1db16cc751c6d0972241cb4a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/complete-engineering-judgment-spine-story",
+      "local_sha": "63cc5e30a8c5804a79b5e49264f001778537b428",
+      "remotes": {
+        "origin": "63cc5e30a8c5804a79b5e49264f001778537b428"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/content-scoped-evidence-freshness",
+      "local_sha": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
+      "remotes": {
+        "origin": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/design-md-gate",
+      "local_sha": "568a0453bcc133242c749b813e7b3c7b82fe3917",
+      "remotes": {
+        "origin": "568a0453bcc133242c749b813e7b3c7b82fe3917"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/engineering-judgment-surface-evidence",
+      "local_sha": "8fd83499a19c1d8df1db38d0d12ff41932bc984f",
+      "remotes": {
+        "origin": "8fd83499a19c1d8df1db38d0d12ff41932bc984f"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/fix-pr-scope-edge-test",
+      "local_sha": "dfc940e091fe4736f51d5d86fad220ca7ff1dbce",
+      "remotes": {
+        "origin": "dfc940e091fe4736f51d5d86fad220ca7ff1dbce"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/graphify-path-diagnostics",
+      "local_sha": "d9c81c3b51ad9313e431c2b61ed9a3a8de848e5e",
+      "remotes": {
+        "origin": "d9c81c3b51ad9313e431c2b61ed9a3a8de848e5e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/issue-166-risk-adaptive-light-gates",
+      "local_sha": "641a6757386c5f36c40be6323889003091b63c85",
+      "remotes": {
+        "origin": "641a6757386c5f36c40be6323889003091b63c85"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/issue-270-agent-review-minimal-recovery",
+      "local_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+      "remotes": {
+        "origin": "f433abf9d546f6e347e8e85c63736034be76df38"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/issue245-design-input-judgment",
+      "local_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+      "remotes": {
+        "origin": "8aab12a565ec4875446c96a90d3f4cb8336c12fd"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/oss-engineering-judgment-pr-message",
+      "local_sha": "42f1f12e2e8cf4001f92bf80d0392eb30db9f2a6",
+      "remotes": {
+        "origin": "42f1f12e2e8cf4001f92bf80d0392eb30db9f2a6"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/patton-journey-map",
+      "local_sha": "6c279b3afaac098575b0a2a51441bbd8bdba7534",
+      "remotes": {
+        "origin": "6c279b3afaac098575b0a2a51441bbd8bdba7534"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/pr-readiness-status-ssot",
+      "local_sha": "1f0c0f41d604a6bb78feecfb5bfb59a70de69431",
+      "remotes": {
+        "origin": "1f0c0f41d604a6bb78feecfb5bfb59a70de69431"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/review-judgment-delta-handoff",
+      "local_sha": "6fe74ddd1fca1562a9c876e31478343c989482b6",
+      "remotes": {
+        "origin": "6fe74ddd1fca1562a9c876e31478343c989482b6"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-contract-dag",
+      "local_sha": "c0680a5d35bfced39c58418164e3f1a919c97315",
+      "remotes": {
+        "origin": "c0680a5d35bfced39c58418164e3f1a919c97315"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-engineering-judgment-spine-evidence",
+      "local_sha": "95ff0fdf41939ada672308c4b54eb2e2fe848c08",
+      "remotes": {
+        "origin": "95ff0fdf41939ada672308c4b54eb2e2fe848c08"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-failure-mode-coverage-gate",
+      "local_sha": "de12b995772becff780dc82067d061bec19eafd3",
+      "remotes": {
+        "origin": "de12b995772becff780dc82067d061bec19eafd3"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-gate-artifact-consistency",
+      "local_sha": "1d6021a9856439d49ea68b303c6160f9ee80af3a",
+      "remotes": {
+        "origin": "1d6021a9856439d49ea68b303c6160f9ee80af3a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-path-surface-matrix-gate",
+      "local_sha": "a907d0b53c24ce1fe9656903d91fdf9ce0b4c554",
+      "remotes": {
+        "origin": "a907d0b53c24ce1fe9656903d91fdf9ce0b4c554"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-pr-scope-judgment-gate",
+      "local_sha": "60d68add3b1c0279f7dc636335bc332d50ed6f15",
+      "remotes": {
+        "origin": "60d68add3b1c0279f7dc636335bc332d50ed6f15"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-review-inspection-required-gate",
+      "local_sha": "3dd365b92cd2ceace5a55a9fe754099eaedb45ee",
+      "remotes": {
+        "origin": "3dd365b92cd2ceace5a55a9fe754099eaedb45ee"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-source-integrity-gate",
+      "local_sha": "cf455c490094df4f0da0bae106cd38e0f97f24cd",
+      "remotes": {
+        "origin": "cf455c490094df4f0da0bae106cd38e0f97f24cd"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/usage-report-worktree-hints",
+      "local_sha": "2dbd18be312d38f436565c7386e053a684e4cacc",
+      "remotes": {
+        "origin": "2dbd18be312d38f436565c7386e053a684e4cacc"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-architecture-readiness-gate",
+      "local_sha": "abb39c9d25277536ffde32ca8f3d7cf46dd214ea",
+      "remotes": {
+        "origin": "abb39c9d25277536ffde32ca8f3d7cf46dd214ea"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-artifact-consistency-details",
+      "local_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      "remotes": {
+        "origin": "4cd9e442c2370739a52f1b10ce317fc690131ce8"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-artifact-value-ledger-clean",
+      "local_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "remotes": {
+        "origin": "8abfdc9ff29259fde67cd3730b357503dbf1134c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-audit-bundle-budget",
+      "local_sha": "f1563e551a3d3264b5ccead32a45199d598febe6",
+      "remotes": {
+        "origin": "f1563e551a3d3264b5ccead32a45199d598febe6"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-audit-replay-budget",
+      "local_sha": "e3ea9fce6607424438813e79af579b208b5c3cbe",
+      "remotes": {
+        "origin": "e3ea9fce6607424438813e79af579b208b5c3cbe"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-audit-replay-command-surface-pr",
+      "local_sha": "553cc113761fd21df0f0e3254c00b4aabb6fb4b3",
+      "remotes": {
+        "origin": "553cc113761fd21df0f0e3254c00b4aabb6fb4b3"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-audit-scope-pruning",
+      "local_sha": "5f865082986689e6c9c41edef9456fc77c317818",
+      "remotes": {
+        "origin": "5f865082986689e6c9c41edef9456fc77c317818"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-automation-readable-value-audit",
+      "local_sha": "7e4852c76ac8bedfe99d12f2b9edbdca3edf85be",
+      "remotes": {
+        "origin": "7e4852c76ac8bedfe99d12f2b9edbdca3edf85be"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-automation-runtime-cost",
+      "local_sha": "05c98226e0deb278d03ffc82cbd55fa295bf2f49",
+      "remotes": {
+        "origin": "05c98226e0deb278d03ffc82cbd55fa295bf2f49"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-budget-policy-semantics",
+      "local_sha": "a38de4f4fc093f266b1ec9a4a30e89c594d045b8",
+      "remotes": {
+        "origin": "a38de4f4fc093f266b1ec9a4a30e89c594d045b8"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-codebase-memory-skill",
+      "local_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+      "remotes": {
+        "origin": "df5dfaca27821307b8598a75c1ca01224371be9b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-compressed-audit-replay",
+      "local_sha": "f4658325c375c5d4d4f8dcc3642b3a00d4a46af8",
+      "remotes": {
+        "origin": "f4658325c375c5d4d4f8dcc3642b3a00d4a46af8"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-concise-pr-body",
+      "local_sha": "8d35ab3a1f4678662485959794d3d6cdb3590ec9",
+      "remotes": {
+        "origin": "8d35ab3a1f4678662485959794d3d6cdb3590ec9"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-cost-closure",
+      "local_sha": "02d6b053d5640b1a7d0c05ea8c82f80945b05c98",
+      "remotes": {
+        "origin": "02d6b053d5640b1a7d0c05ea8c82f80945b05c98"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-design-ssot-reconciliation-clean",
+      "local_sha": "6ec108a6ad9f1b2a9c0b6eb106dcd94a2ec9e779",
+      "remotes": {
+        "origin": "6ec108a6ad9f1b2a9c0b6eb106dcd94a2ec9e779"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-e2e-delete-only-gate",
+      "local_sha": "feb5d8ec5161d7b053d49849f16af0f0684c03ed",
+      "remotes": {
+        "origin": "feb5d8ec5161d7b053d49849f16af0f0684c03ed"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-engineering-judgment-activation-precision-clean2",
+      "local_sha": "b068a05da8b9ff111d514854e25e42d5dd2988ea",
+      "remotes": {
+        "origin": "43734a854e992cf4b7106d23bb795899ee414943"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-engineering-judgment-activation-precision-clean3",
+      "local_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+      "remotes": {
+        "origin": "2918c431eab88b253b76f1f22b71027c81169a2d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+      "local_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+      "remotes": {
+        "origin": "6f37221772ccda84b34104ac66cda543f5ee501f"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-engineering-judgment-evidence-strength",
+      "local_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+      "remotes": {
+        "origin": "a10ccc0453fc85c0472781be8a1e407a601a0c8e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-evidence-cost-budget",
+      "local_sha": "4ca9a5c9f83b7c5ad1fceb686483c72d0e0db8c4",
+      "remotes": {
+        "origin": "4ca9a5c9f83b7c5ad1fceb686483c72d0e0db8c4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-evidence-cost-followup-stories",
+      "local_sha": "9d3c7227478feca27c3727cc8562d77e535d9cb5",
+      "remotes": {
+        "origin": "9d3c7227478feca27c3727cc8562d77e535d9cb5"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-evidence-reuse-metric-semantics",
+      "local_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+      "remotes": {
+        "origin": "dad6af613919fdda2918aa54b2e984eb675af24c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-evidence-summary-reuse",
+      "local_sha": "43d9b1bc8c9293617b82704d546f9055b9dbfbf9",
+      "remotes": {
+        "origin": "43d9b1bc8c9293617b82704d546f9055b9dbfbf9"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-execute-merge-doc-sync",
+      "local_sha": "939c3049e9a22c5a77701153e416de40dbf1e237",
+      "remotes": {
+        "origin": "939c3049e9a22c5a77701153e416de40dbf1e237"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-execution-judgment-status-integrity",
+      "local_sha": "9a01422a967ea5569477d2be728b8be9bf98b6d5",
+      "remotes": {
+        "origin": "9a01422a967ea5569477d2be728b8be9bf98b6d5"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-fake-value-hardening",
+      "local_sha": "7703c3400d483f4048ad9eded4a6ab3bdd73f707",
+      "remotes": {
+        "origin": "7703c3400d483f4048ad9eded4a6ab3bdd73f707"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-grow-responsibility-authority",
+      "local_sha": "2b367ed2a0899dc0c51101cf325e03fed8f4383e",
+      "remotes": {
+        "origin": "2b367ed2a0899dc0c51101cf325e03fed8f4383e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-human-doc-language-coverage",
+      "local_sha": "54c914d1aa2773e425d5db30ef78b339f185d0be",
+      "remotes": {
+        "origin": "54c914d1aa2773e425d5db30ef78b339f185d0be"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-journey-ai-handoff",
+      "local_sha": "93eef64cd53a3a0c7b0be5ce97419781b1db316b",
+      "remotes": {
+        "origin": "93eef64cd53a3a0c7b0be5ce97419781b1db316b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-layer-aware-e2e-gate",
+      "local_sha": "280fe13ee046f02d5e15bc0f15fdf4cb743f9aaf",
+      "remotes": {
+        "origin": "a25e34f7adcfbf67240d8d3feca11b361e99d652"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-managed-worktree-execution",
+      "local_sha": "dc711775a7457fa809ed10c0a85d42935b27e817",
+      "remotes": {
+        "origin": "cc9b5e7517808f6e7dcf4455fa5689207b62c5f8"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-managed-worktree-gate",
+      "local_sha": "b4abe0eb2de2fa81cc24b55fc6d6a7549ec1a7fa",
+      "remotes": {
+        "origin": "b4abe0eb2de2fa81cc24b55fc6d6a7549ec1a7fa"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-manual-pr-body-flow",
+      "local_sha": "f2ea6fdd7eed08d52c09a3de13fb282eb6a8cc32",
+      "remotes": {
+        "origin": "f2ea6fdd7eed08d52c09a3de13fb282eb6a8cc32"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-model-policy-55-examples",
+      "local_sha": "d28cf5be8128bd388f76e79265bb3aa718840089",
+      "remotes": {
+        "origin": "d28cf5be8128bd388f76e79265bb3aa718840089"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-model-policy-preflight",
+      "local_sha": "96a383762b0d6aa002142a42787147cbd78e8658",
+      "remotes": {
+        "origin": "96a383762b0d6aa002142a42787147cbd78e8658"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-pr-body-limit-guard",
+      "local_sha": "ff802e16e10defb6c1771468f42c435865e68f7a",
+      "remotes": {
+        "origin": "ff802e16e10defb6c1771468f42c435865e68f7a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-pr-ship-command",
+      "local_sha": "a3e19bdb6a4e6b1608267b86d348052cdb215116",
+      "remotes": {
+        "origin": "a3e19bdb6a4e6b1608267b86d348052cdb215116"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-pre-spec-readiness-gate",
+      "local_sha": "077be23f09b0ef750bb5378fa940b861cd1ef5a2",
+      "remotes": {
+        "origin": "077be23f09b0ef750bb5378fa940b861cd1ef5a2"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-progressive-gates",
+      "local_sha": "406d7352dc2f88da9e72503093700f4514fff7d1",
+      "remotes": {
+        "origin": "406d7352dc2f88da9e72503093700f4514fff7d1"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-residual-risk-closure",
+      "local_sha": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+      "remotes": {
+        "origin": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-resolve-runtime-metrics-gates",
+      "local_sha": "23b30fc19de568b21897c0ac0aa6bf04285f8ab0",
+      "remotes": {
+        "origin": "23b30fc19de568b21897c0ac0aa6bf04285f8ab0"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-responsibility-authority-registry",
+      "local_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+      "remotes": {
+        "origin": "97a4ef427e93511255ebcae104d2bdd20cef648b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-review-status-required-only",
+      "local_sha": "b1562e4f02702eb10811ed342447d959837f9944",
+      "remotes": {
+        "origin": "b1562e4f02702eb10811ed342447d959837f9944"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-senior-gap-judgment",
+      "local_sha": "93f7ea12b2100e0277b1efa08438c2d3ffc90489",
+      "remotes": {
+        "origin": "93f7ea12b2100e0277b1efa08438c2d3ffc90489"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-session-efficiency-audit",
+      "local_sha": "259d48cf5198b842ce27980e968f6d15058df630",
+      "remotes": {
+        "origin": "259d48cf5198b842ce27980e968f6d15058df630"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-ui-journey-e2e-dogfood",
+      "local_sha": "bc41fca1736deec302d297eb5ac41fabed10eb2a",
+      "remotes": {
+        "origin": "bc41fca1736deec302d297eb5ac41fabed10eb2a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-uiux-docs-feature-map",
+      "local_sha": "ad693313e2909b0835612d08219daf8b51646d05",
+      "remotes": {
+        "origin": "ad693313e2909b0835612d08219daf8b51646d05"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-uiux-ia-flow-map",
+      "local_sha": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f",
+      "remotes": {
+        "origin": "0c35872134c6dbb79ef5cc4c894dd9e9929a743f"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-uiux-one-command-cockpit",
+      "local_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+      "remotes": {
+        "origin": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-uiux-responsive-a11y-evidence-matrix",
+      "local_sha": "3d71746067b29d231c660d63eae0a6534d41a8b4",
+      "remotes": {
+        "origin": "3d71746067b29d231c660d63eae0a6534d41a8b4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-uiux-style-preset-token-gate",
+      "local_sha": "2894fb6b8702a6451d46acf70e164723be088170",
+      "remotes": {
+        "origin": "2894fb6b8702a6451d46acf70e164723be088170"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-usage-report",
+      "local_sha": "4b52342feb59bbf86e89a66af0e2d8809489cb1c",
+      "remotes": {
+        "origin": "4b52342feb59bbf86e89a66af0e2d8809489cb1c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/vibepro-value-audit-story-split",
+      "local_sha": "3acc9a6e62d4404c07c1c0db777901a7eabce370",
+      "remotes": {
+        "origin": "3acc9a6e62d4404c07c1c0db777901a7eabce370"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/visual-evidence-gate-ux",
+      "local_sha": "560b35468609a8a0f7192dd6dd9393b9a92d75b0",
+      "remotes": {
+        "origin": "560b35468609a8a0f7192dd6dd9393b9a92d75b0"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "dependabot/github_actions/actions/checkout-7",
+      "local_sha": null,
+      "remotes": {
+        "origin": "97c54d61148725adc5074df1bd8f2c3664d3ab0a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "docs/design-system-derive-guidance",
+      "local_sha": "1b25c02b138b5c5d74c8510c669acd48ed40b305",
+      "remotes": {
+        "origin": "1b25c02b138b5c5d74c8510c669acd48ed40b305"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "docs/vibepro-config-settings",
+      "local_sha": "cfd684770ffdec4feac8f567dc59cd8efe397f63",
+      "remotes": {
+        "origin": "cfd684770ffdec4feac8f567dc59cd8efe397f63"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/brainbase-preset",
+      "local_sha": "a5dcae1d4dc70b29c298f0651e100c70071d5129",
+      "remotes": {
+        "origin": "a5dcae1d4dc70b29c298f0651e100c70071d5129"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/cluster-depth-tuning",
+      "local_sha": "5d8b084348bcd743384c91cee4e04c0225d76071",
+      "remotes": {
+        "origin": "5d8b084348bcd743384c91cee4e04c0225d76071"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/dag-strict-enforcement",
+      "local_sha": "18523b0dfe42fee789480b8561ba8af03523d20a",
+      "remotes": {
+        "origin": "18523b0dfe42fee789480b8561ba8af03523d20a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/design-system-bundle-ingest",
+      "local_sha": "37c635a62342fe208b12ec78c1a53352c6c25461",
+      "remotes": {
+        "origin": "37c635a62342fe208b12ec78c1a53352c6c25461"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/flow-verification-evidence",
+      "local_sha": "3d37e7762b6f79731446b493a3d1c954e0c648ea",
+      "remotes": {
+        "origin": "3d37e7762b6f79731446b493a3d1c954e0c648ea"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/modular-web-coverage-patterns",
+      "local_sha": "9894882c1cb413a37c479d810fb7ce5f39c1f365",
+      "remotes": {
+        "origin": "9894882c1cb413a37c479d810fb7ce5f39c1f365"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/must-have-diagram-gate",
+      "local_sha": "4bc70adf6f2ce7a5c74cce5af83ae026f7a69678",
+      "remotes": {
+        "origin": "4bc70adf6f2ce7a5c74cce5af83ae026f7a69678"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/native-design-system-derive",
+      "local_sha": "4e1677a0749b6e5337f1b8476acb14fa1d5ebbcd",
+      "remotes": {
+        "origin": "4e1677a0749b6e5337f1b8476acb14fa1d5ebbcd"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/pr-gate-guard",
+      "local_sha": "1b0a251d15c6b9ecaf28ef8c8e11fb858dca12bf",
+      "remotes": {
+        "origin": "1b0a251d15c6b9ecaf28ef8c8e11fb858dca12bf"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/pr-route-gate-dag",
+      "local_sha": "c38babda18ac97df0fce6aa08993330e916d5ed2",
+      "remotes": {
+        "origin": "c38babda18ac97df0fce6aa08993330e916d5ed2"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/product-signals-preset",
+      "local_sha": "f4b9cded032b02ecfe8ee671881764d3ba0603e6",
+      "remotes": {
+        "origin": "f4b9cded032b02ecfe8ee671881764d3ba0603e6"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/source-recovery-consistency",
+      "local_sha": "99a8725d2ab0558c1135ca83ed92b5308d781c49",
+      "remotes": {
+        "origin": "99a8725d2ab0558c1135ca83ed92b5308d781c49"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/story-candidates",
+      "local_sha": "255570f6f818fd18327f46794cff202b1a3703f1",
+      "remotes": {
+        "origin": "255570f6f818fd18327f46794cff202b1a3703f1"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/vibepro-decision-record-gate",
+      "local_sha": "5d3955036495e31c2483e44a09992c6211406d4c",
+      "remotes": {
+        "origin": "68c7c6de14f33b51823657b84968c20d9c27c5d5"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/vibepro-derived-design-system",
+      "local_sha": "42696fc4b33520b904394c94c40ab618a3a75e1e",
+      "remotes": {
+        "origin": "2f7a0b73d45d00443c3054665b7b6f8244c3db59"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/vibepro-oss-readiness-check-pack",
+      "local_sha": "b41585b96eba80d2aec4f2897ad8d46376d4b676",
+      "remotes": {
+        "origin": "b41585b96eba80d2aec4f2897ad8d46376d4b676"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/vibepro-regression-risk-coverage",
+      "local_sha": "d130d9db121aa45d0302e94062d89607b7a535ba",
+      "remotes": {
+        "origin": "d130d9db121aa45d0302e94062d89607b7a535ba"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/vibepro-regression-risk-graphify",
+      "local_sha": "62f786e93cc4dd57c36c2f7285c674f2c2086a05",
+      "remotes": {
+        "origin": "62f786e93cc4dd57c36c2f7285c674f2c2086a05"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "feat/visual-ds-brief-ingestion",
+      "local_sha": "422f396084d39b49df05c73c7da2a363c0605ae3",
+      "remotes": {
+        "origin": "422f396084d39b49df05c73c7da2a363c0605ae3"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "fix/oss-apache2-readiness-docs",
+      "local_sha": "1f441dc9da72f373fc6b16e6226fe19765b46a33",
+      "remotes": {
+        "origin": "1f441dc9da72f373fc6b16e6226fe19765b46a33"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "fix/self-dogfood-gate-enforcement",
+      "local_sha": "50ed8817c77dfa221cbd71032a152d9e85aff6f4",
+      "remotes": {
+        "origin": "50ed8817c77dfa221cbd71032a152d9e85aff6f4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "fix/story-discovery-user-stories",
+      "local_sha": "c984e9a1f16930aa3cec8ea29fd8d187ba62e397",
+      "remotes": {
+        "origin": "c984e9a1f16930aa3cec8ea29fd8d187ba62e397"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "fix/vibepro-env-graph-gap-keys",
+      "local_sha": null,
+      "remotes": {
+        "origin": "9da8e2fcbd47a1706dffc1bfd665d7bde97a07df"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "main",
+      "local_sha": "b2f242eedddd4e8537b72772b7bd7179dbf00e72",
+      "remotes": {
+        "origin": "74cc1db90a0be3b01a5714825bb0506f063d51da"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "nextjs-renewal",
+      "local_sha": null,
+      "remotes": {
+        "origin": "024029d7f5540c3fb7123c343cf46a6e66c20502"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "push-rxpxvkqtzywx",
+      "local_sha": "1926e8d7e85d0b7397d3fd582f7747852ff520b8",
+      "remotes": {
+        "origin": "1926e8d7e85d0b7397d3fd582f7747852ff520b8"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "refactor/profiler-scope-rename",
+      "local_sha": "7e9abad6e78cf653de16cb67d2d7745e82a8f181",
+      "remotes": {
+        "origin": "7e9abad6e78cf653de16cb67d2d7745e82a8f181"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "session-1776321176717",
+      "local_sha": "7bc251136ba755e2052b313e7e64e2198e7039ad",
+      "remotes": {
+        "origin": "7bc251136ba755e2052b313e7e64e2198e7039ad"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "session/session-1776321176717",
+      "local_sha": "7bc251136ba755e2052b313e7e64e2198e7039ad",
+      "remotes": {
+        "origin": "7bc251136ba755e2052b313e7e64e2198e7039ad"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "session/session-1777377820685",
+      "local_sha": null,
+      "remotes": {
+        "origin": "970fcd55d051cd1de29ed1c71568ea9b1937f08c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "session/session-1778466745436",
+      "local_sha": null,
+      "remotes": {
+        "origin": "ebf784c9075041ac3e22de166fe3c53c0ff0cb76"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-ci-evidence-fast-lane",
+      "local_sha": "c93add26d289e4b8a4256fd84f2f42a29a9db57c",
+      "remotes": {
+        "origin": "4be417a54b2c57d850ce4748a37733ca17cb28df"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-managed-worktree-execution-dag-1k3pbc",
+      "local_sha": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c",
+      "remotes": {
+        "origin": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-review-lifecycle-repair-loop",
+      "local_sha": "2bfa5c647d478aad62e893e3e9a87058fe3e3061",
+      "remotes": {
+        "origin": "bbb79068b49bd8421bef34b1f7d2db8cd288b397"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-traceability-evidence-promotion",
+      "local_sha": "fdf5138b425da2d16b1622dea5bb7aecc3b97fda",
+      "remotes": {
+        "origin": "0215b1c7d0d280550af54ef15f794907679454c9"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-verification-observation-artifacts",
+      "local_sha": "0d332ee8a6fab42e615f6ad4a246cd2c7acbc6bd",
+      "remotes": {
+        "origin": "0d332ee8a6fab42e615f6ad4a246cd2c7acbc6bd"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    }
+  ],
+  "divergence_flags": {
+    "head_contains_base": true,
+    "branch_divergence_detected": true
+  }
+}

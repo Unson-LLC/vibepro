@@ -1,0 +1,114 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-help-missing-commands",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Additive-only documentation of 6 already-implemented runtime subcommands (check list in HELP_EN+HELP_JA; story map and task brief|plan|handoff in HELP_JA). Every documented command resolves to a real runtime handler; no existing Usage line removed/reworded; main's task-create --allowed-paths line preserved through the rebase. Pinned by tests for both ja and en.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified diff is purely additive across both help strings and the pinning test; confirmed live handlers: check list -> packId==='list' branch (ran, listed packs), story map -> story 'map' subcommand, task brief|plan|handoff -> task subcommands; rendered ja and en help both print all new lines; focused help test passes.",
+    "evidence": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro--claude-worktrees-zealous-wescoff-eaca69/00cbb6b7-c865-4dfd-8bee-a95217911120/subagents/agent-acdf994b27588c3c8.jsonl",
+    "inputs": [
+      "src/cli.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Started neutral; confirming each of the 6 documented commands resolves to a real exercisable handler and that the pinning test asserts both ja and en, plus that the rebase kept --allowed-paths and dropped no Usage line, moved judgment to pass."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+    "expected_root": null,
+    "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+    "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/zealous-wescoff-eaca69",
+      "expected_root": null,
+      "expected_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+      "current_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-10T04:57:29.127Z",
+  "git_context": {
+    "head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+    "current_branch": "claude/bold-torvalds-30d996",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T04:57:29.098Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "e12be5ea09db67bb9a81f548d6312f3a9bce3c5d",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "b4a1b84dcc4eace61e90803323249cee4a463c73015ec73e5f15ed871cca34e4",
+        "size": 166411
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "96253a34cdd48062054ef886d928222d9c5a71cbd573621c3d37fa524a61e05b",
+        "size": 1068047
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "f8ad79433847241ad0499708b0563da0f804bd48c818ec7873e3d3bf7e0a4e29"
+  },
+  "source_fingerprint": "e375230fdc985a34ecbf6a7e1a92df7fbf694472151eff9f0d88c86ce9ab20d3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "acdf994b27588c3c8",
+    "agent_role": null,
+    "model": "claude-opus-4-8",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../.claude/projects/-Users-ksato-workspace-code-vibepro--claude-worktrees-zealous-wescoff-eaca69/00cbb6b7-c865-4dfd-8bee-a95217911120/subagents/agent-acdf994b27588c3c8.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-cli-help-missing-commands/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro--claude-worktrees-zealous-wescoff-eaca69/00cbb6b7-c865-4dfd-8bee-a95217911120/subagents/agent-acdf994b27588c3c8.jsonl",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

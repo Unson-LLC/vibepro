@@ -1,0 +1,249 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-cli-help-missing-commands",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 2 changed files が一致し、90 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 4056,
+    "edge_count": 9011,
+    "matched_file_count": 2,
+    "related_file_count": 90,
+    "investigation_files": [
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/codex-manager.js",
+      "src/decision-records.js",
+      "src/design-modernize.js",
+      "src/design-ssot.js",
+      "src/design-system.js",
+      "src/diagnostic-engine.js",
+      "src/doctor.js",
+      "src/environment-graph.js",
+      "src/execution-state.js",
+      "src/explore-evidence.js",
+      "src/flow-verifier.js",
+      "src/graphify-adapter.js",
+      "src/journey-map.js",
+      "src/language.js",
+      "src/managed-worktree-gate.js",
+      "src/managed-worktree.js",
+      "src/merge-manager.js",
+      "src/nocodb-story-sync.js",
+      "src/performance-evidence.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_resolvediagnosisphaseoption",
+          "src_cli_getoption",
+          "src_cli_defaultsessionid",
+          "src_cli_renderauditmemoryresult",
+          "src_cli_renderhelp",
+          "src_cli_rendercheckpointlist"
+        ],
+        "related_files": [
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/architecture-store.js",
+          "src/brainbase-importer.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/codex-manager.js",
+          "src/decision-records.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng",
+          "test_vibepro_cli_test_encodepng",
+          "test_vibepro_cli_test_pngchunk",
+          "test_vibepro_cli_test_uint32"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "same_pr_allowed",
+      "files": [
+        "docs/management/stories/active/story-vibepro-cli-help-missing-commands.md",
+        "docs/specs/vibepro-cli-help-missing-commands.md",
+        "docs/architecture/vibepro-cli-help-missing-commands.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-cli-help-missing-commands-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/cli.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 2,
+      "graph_investigation_files": [
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/architecture-store.js",
+        "src/brainbase-importer.js",
+        "src/canonical-audit.js",
+        "src/check-packs.js",
+        "src/checkpoint-manager.js",
+        "src/ci-evidence.js",
+        "src/codex-manager.js",
+        "src/decision-records.js"
+      ],
+      "suggested_branch": "feat/vibepro-cli-help-missing-commands-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-cli-help-missing-commands-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-name-pattern='help command prints discoverable usage|check list prints available diagnosis packs' test/vibepro-cli.test.js",
+          "npm run typecheck"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test --test-name-pattern='help command prints discoverable usage|check list prints available diagnosis packs' test/vibepro-cli.test.js",
+        "npm run typecheck"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-cli-help-missing-commands-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-cli-help-missing-commands-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-cli-help-missing-commands.md docs/specs/vibepro-cli-help-missing-commands.md docs/architecture/vibepro-cli-help-missing-commands.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-cli-help-missing-commands-runtime-behavior with 2 files",
+      "command": "git switch -c feat/vibepro-cli-help-missing-commands-runtime-behavior <base> && git add src/cli.js test/vibepro-cli.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-cli-help-missing-commands-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-cli-help-missing-commands-misc-follow-up <base> && git add design-ssot.json"
+    }
+  ]
+}
