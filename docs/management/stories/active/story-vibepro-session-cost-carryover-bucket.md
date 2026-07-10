@@ -5,6 +5,7 @@ architecture_docs:
   - docs/architecture/vibepro-session-cost-carryover-bucket.md
 spec_docs:
   - docs/specs/vibepro-session-cost-carryover-bucket.md
+parent_design: vibepro-session-cost-carryover-bucket
 ---
 
 # Story: Session cost accounting should not count compaction replay as audit evidence
