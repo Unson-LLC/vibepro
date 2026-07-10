@@ -272,42 +272,50 @@ export async function executeMerge(repoRoot, options = {}) {
   merge.git.diff_stats = diffStatsResult.diff_stats;
   merge.git.diff_line_stats = diffStatsResult.diff_line_stats;
 
-  const blockingReasons = [];
-  if (merge.preconditions.gate_ready !== true) blockingReasons.push('gate_not_ready');
-  if (!merge.preconditions.clean_worktree) blockingReasons.push('dirty_worktree');
-  if (merge.preconditions.base_freshness.status !== 'passed') blockingReasons.push('base_not_fresh');
-  if (merge.preconditions.remote_head_match.status !== 'passed') blockingReasons.push('remote_head_mismatch');
-  if (merge.preconditions.checks_ready.status !== 'passed') blockingReasons.push('checks_not_ready');
-  if (merge.preconditions.review_policy.status !== 'passed') blockingReasons.push('review_policy_not_satisfied');
-  if (merge.preconditions.open_pull_request.status !== 'passed') blockingReasons.push('pr_not_mergeable');
-  if (blockingReasons.length > 0) {
-    merge.status = 'blocked';
-    merge.stop_reason = blockingReasons.join(',');
-    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+  // A PR that is already MERGED can never satisfy the OPEN-PR preconditions
+  // again (squash merge makes origin/<base> a non-ancestor of the branch head
+  // and the PR is no longer OPEN). Blocking here would misreport a completed
+  // merge as blocked forever, so reconcile the external merge instead.
+  const externallyMerged = prView.state === 'MERGED';
+
+  if (!externallyMerged) {
+    const blockingReasons = [];
+    if (merge.preconditions.gate_ready !== true) blockingReasons.push('gate_not_ready');
+    if (!merge.preconditions.clean_worktree) blockingReasons.push('dirty_worktree');
+    if (merge.preconditions.base_freshness.status !== 'passed') blockingReasons.push('base_not_fresh');
+    if (merge.preconditions.remote_head_match.status !== 'passed') blockingReasons.push('remote_head_mismatch');
+    if (merge.preconditions.checks_ready.status !== 'passed') blockingReasons.push('checks_not_ready');
+    if (merge.preconditions.review_policy.status !== 'passed') blockingReasons.push('review_policy_not_satisfied');
+    if (merge.preconditions.open_pull_request.status !== 'passed') blockingReasons.push('pr_not_mergeable');
+    if (blockingReasons.length > 0) {
+      merge.status = 'blocked';
+      merge.stop_reason = blockingReasons.join(',');
+      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+      return { merge, artifacts };
+    }
+
+    merge.commands.push(formatCommand(prMergeCommand));
+    if (deleteBranch) {
+      merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
+    }
+
+    const mergeResult = await runCommand(
+      root,
+      prMergeCommand,
+      options,
+      { cwd: os.tmpdir() }
+    );
+    merge.results.push(mergeResult);
+    if (mergeResult.exit_code !== 0) {
+      merge.status = 'failed';
+      merge.stop_reason = 'gh_merge_failed';
+      merge.error = `Command failed: ${mergeResult.command}`;
+      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+      return { merge, artifacts };
+    }
   }
 
-  merge.commands.push(formatCommand(prMergeCommand));
-  if (deleteBranch) {
-    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
-  }
-
-  const mergeResult = await runCommand(
-    root,
-    prMergeCommand,
-    options,
-    { cwd: os.tmpdir() }
-  );
-  merge.results.push(mergeResult);
-  if (mergeResult.exit_code !== 0) {
-    merge.status = 'failed';
-    merge.stop_reason = 'gh_merge_failed';
-    merge.error = `Command failed: ${mergeResult.command}`;
-    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
-  }
-
-  if (deleteBranch && merge.pr.head_ref_name) {
+  if (!externallyMerged && deleteBranch && merge.pr.head_ref_name) {
     const remoteDeleteArgs = ['git', ['push', 'origin', '--delete', merge.pr.head_ref_name]];
     merge.branch_cleanup.remote.attempted = true;
     merge.branch_cleanup.remote.command = formatCommand(remoteDeleteArgs);
@@ -352,7 +360,32 @@ export async function executeMerge(repoRoot, options = {}) {
     merge.git.diff_stats.refs.merge_commit_sha = merge.merge_commit_sha ?? null;
   }
 
-  merge.status = 'merged';
+  if (externallyMerged) {
+    if (mergedViewResult.exit_code !== 0) {
+      merge.status = 'blocked';
+      merge.stop_reason = 'pr_merged_externally_unverified';
+      merge.warnings.push('PR is already merged, but the merged PR view could not be fetched to verify the merge commit.');
+      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+      return { merge, artifacts };
+    }
+    const mergeCommitOnBase = merge.merge_commit_sha
+      ? await gitIsAncestor(root, merge.merge_commit_sha, `origin/${baseBranch}`)
+      : false;
+    if (!mergeCommitOnBase) {
+      merge.status = 'blocked';
+      merge.stop_reason = 'pr_merged_externally_unverified';
+      merge.warnings.push(
+        `PR is already merged, but merge commit ${merge.merge_commit_sha ?? '(unknown)'} could not be confirmed on origin/${baseBranch}; run \`git fetch origin ${baseBranch}\` and retry, or verify the PR manually.`
+      );
+      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+      return { merge, artifacts };
+    }
+    merge.warnings.push(
+      `PR was already merged externally at ${merge.merged_at ?? 'unknown time'} (commit ${merge.merge_commit_sha}); reconciled as merged_externally instead of blocking.`
+    );
+  }
+
+  merge.status = externallyMerged ? 'merged_externally' : 'merged';
   merge.stop_reason = null;
   let artifacts = await writePrMergeArtifacts(root, storyId, merge);
   await bindStoryTraceability(root, {

@@ -62,12 +62,14 @@ export async function initDesignSsot(repoRoot, options = {}) {
   };
   await writeRegistry(root, registryPath, nextRegistry);
   const snapshot = await writeDesignSsotRegistrySnapshot(root, entry.id, nextRegistry, registryPath);
+  const normalizedRoots = nextRegistry.design_roots.map((item) => normalizeDesignRoot(item, registryPath));
   return {
     schema_version: '0.1.0',
     workflow: 'design-ssot-init',
     status: 'passed',
     registry: registryPath,
     design_root: entry,
+    registry_summary: buildRegistrySummary(normalizedRoots, [registryPath]),
     artifacts: snapshot
   };
 }

@@ -185,7 +185,7 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
     target: options.target ?? DEFAULT_TARGET
   });
   const merge = mergeResult?.merge;
-  if (!merge || merge.status !== 'merged') return result;
+  if (!merge || !['merged', 'merged_externally'].includes(merge.status)) return result;
   const state = {
     ...result.state,
     completion_status: 'merged',
@@ -462,7 +462,7 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReviewSat
   }
   if (readyForPrCreate) phases.push('ready_for_pr_create');
   if (prCreated) phases.push('create_pr');
-  if (prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged') phases.push('merge_ready');
+  if (['ready_to_merge', 'merged', 'merged_externally'].includes(prMerge?.status)) phases.push('merge_ready');
   if (merged) phases.push('merge');
   return phases;
 }

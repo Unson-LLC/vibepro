@@ -1197,10 +1197,7 @@ export async function runCli(argv, io = {}) {
           : renderDesignSsotStatus({
             status: result.status,
             registry_sources: [result.registry],
-            summary: {
-              design_root_count: 1,
-              child_link_count: result.design_root.child_links.length
-            },
+            summary: result.registry_summary,
             design_roots: [result.design_root]
           }));
         return { exitCode: 0, command, subcommand, result };
