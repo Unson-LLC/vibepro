@@ -53,18 +53,23 @@ export async function recordDecision(repoRoot, options = {}) {
   const summaryRedaction = redactSecrets(rawText);
   const reasonRedaction = redactSecrets(options.reason ?? '');
   const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
+  const decisionStatus = normalizeStatus(options.status);
+  const verificationEvidenceSummary = decisionStatus === 'accepted'
+    ? await buildVerificationEvidenceSummary(root, storyId)
+    : null;
   const decision = {
     schema_version: '0.1.0',
     decision_id: options.decisionId ?? `decision-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
     story_id: storyId,
     type,
-    status: normalizeStatus(options.status),
+    status: decisionStatus,
     source: normalizeNullable(options.source),
     source_status: normalizeNullable(options.sourceStatus),
     summary: summaryRedaction.text,
     reason: reasonRedaction.text || null,
     reviewer: normalizeNullable(options.reviewer),
     artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
+    verification_evidence_summary: verificationEvidenceSummary,
     secret_exposure: type === 'secret_exposure' ? {
       location: options.secretLocation,
       action: options.secretAction,
@@ -178,6 +183,28 @@ export function summarizeDecisionRecords(records) {
     warnings: Array.isArray(records?.warnings) ? records.warnings : [],
     latest: decisions[0] ?? null
   };
+}
+
+// Retrieves a 1-hop summary of the verification artifacts (from
+// `verify record` / verification-evidence.json) that backed an `accepted`
+// decision, so downstream consumers (pr-manager.js, cross-repo handoff flows)
+// do not have to separately open and cross-reference verification-evidence.json.
+async function buildVerificationEvidenceSummary(repoRoot, storyId) {
+  const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(evidencePath, 'utf8'));
+  } catch {
+    return { count: 0, entries: [] };
+  }
+  const commands = Array.isArray(parsed?.commands) ? parsed.commands : [];
+  const fallbackPath = toWorkspaceRelative(repoRoot, evidencePath);
+  const entries = commands.map((command) => ({
+    path: command?.artifact ?? fallbackPath,
+    type: command?.kind ?? null,
+    result: command?.status ?? null
+  }));
+  return { count: entries.length, entries };
 }
 
 async function readDecisionRecords(repoRoot, storyId) {
