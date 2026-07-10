@@ -2453,6 +2453,24 @@ export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
   const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
   const agentReviewMinimalRecoveryPlan = unresolvedGates.find((gate) => gate.id === 'gate:agent_review')?.minimal_recovery_plan ?? null;
   const fastLaneNode = (gateDag?.nodes ?? []).find((node) => node.id === 'gate:fast_lane');
+  const agentReviewNode = (gateDag?.nodes ?? []).find((node) => node.id === 'gate:agent_review');
+  const reviewerIndependence = agentReviewNode?.reviewer_independence ?? null;
+  const agentReviewIndependence = reviewerIndependence
+    ? reviewerIndependence.same_session_review_count > 0
+      ? {
+        status: 'same_session_warning',
+        enforcement: 'warning_only',
+        same_session_reviews: reviewerIndependence.same_session_reviews,
+        unknown_identity_review_count: reviewerIndependence.unknown_identity_review_count,
+        note: `Reviewer independence is not established: ${reviewerIndependence.same_session_review_count} review(s) were recorded by the same session as the implementation (${reviewerIndependence.same_session_reviews.join(', ')}). Warning only; the Agent Review Gate status is unchanged.`
+      }
+      : {
+        status: 'no_same_session_reviews',
+        enforcement: 'warning_only',
+        same_session_reviews: [],
+        unknown_identity_review_count: reviewerIndependence.unknown_identity_review_count
+      }
+    : null;
   return {
     schema_version: '0.1.0',
     overall_status: overallStatus,
@@ -2464,6 +2482,7 @@ export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     critical_unresolved_gate_count: criticalGates.length,
     unresolved_gates: unresolvedGates,
     critical_unresolved_gates: criticalGates,
+    agent_review_independence: agentReviewIndependence,
     next_required_actions: executionGate.required_actions,
     agent_review_instruction: agentReviewAction,
     agent_review_minimal_recovery_plan: agentReviewMinimalRecoveryPlan,
@@ -12438,6 +12457,7 @@ function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
   const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const requiredActions = buildAgentReviewRequiredActions(agentReviews, status, unmet);
   const minimalRecoveryPlan = buildAgentReviewMinimalRecoveryPlan(agentReviews, status, unmet);
+  const reviewerIndependence = buildAgentReviewerIndependence(agentReviews);
   return {
     id: 'gate:agent_review',
     type: 'agent_review_gate',
@@ -12449,6 +12469,12 @@ function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
       : status === 'not_required'
         ? 'No source/API/UI/performance policy required staged agent reviews'
         : `${unmet.length} PR-final and ${checkpointUnmet.length} checkpoint agent review role(s) are missing, stale, or blocking; run the listed checkpoint/review commands and record their provenance.`,
+    reviewer_independence: reviewerIndependence,
+    ...(reviewerIndependence.same_session_review_count > 0 ? {
+      warnings: [
+        `${reviewerIndependence.same_session_review_count} recorded review(s) declare reviewer_identity=same_session (${reviewerIndependence.same_session_reviews.join(', ')}); reviewer independence is not established. This is a warning only and does not change the gate status.`
+      ]
+    } : {}),
     summary: agentReviews.summary,
     parallel_dispatch: agentReviews.parallel_dispatch,
     dispatch_contract: {
@@ -12463,6 +12489,33 @@ function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
     required_actions: requiredActions,
     unmet_required_reviews: unmet.slice(0, 20),
     unmet_checkpoint_reviews: checkpointUnmet.slice(0, 20)
+  };
+}
+
+function buildAgentReviewerIndependence(agentReviews) {
+  const sameSessionReviews = [];
+  let unknownIdentityCount = 0;
+  let recordedCount = 0;
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage?.roles ?? []) {
+      const provenance = role?.agent_provenance;
+      if (!provenance) continue;
+      recordedCount += 1;
+      const relation = provenance.reviewer_identity?.relation ?? 'unknown';
+      if (relation === 'same_session') {
+        sameSessionReviews.push(`${stage.stage}:${role.role}`);
+      } else if (relation === 'unknown') {
+        unknownIdentityCount += 1;
+      }
+    }
+  }
+  return {
+    schema_version: '0.1.0',
+    enforcement: 'warning_only',
+    recorded_review_count: recordedCount,
+    same_session_review_count: sameSessionReviews.length,
+    same_session_reviews: sameSessionReviews,
+    unknown_identity_review_count: unknownIdentityCount
   };
 }
 

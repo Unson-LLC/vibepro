@@ -2488,8 +2488,44 @@ function buildAgentProvenance(repoRoot, options = {}) {
     },
     evidence_strength: 'missing'
   };
+  provenance.reviewer_identity = buildReviewerIdentity(options, provenance);
   provenance.evidence_strength = classifyAgentProvenance(provenance);
   return provenance;
+}
+
+const REVIEWER_IDENTITY_RELATIONS = new Set(['same_session', 'separate_session', 'unknown']);
+
+function buildReviewerIdentity(options, provenance) {
+  const implementationSessionId = normalizeNullable(options.implementationSessionId);
+  const reviewerSessionId = provenance.session_id ?? provenance.thread_id ?? null;
+  const declared = String(options.reviewerIdentity ?? '').trim().toLowerCase().replace(/-/g, '_');
+  if (declared) {
+    if (!REVIEWER_IDENTITY_RELATIONS.has(declared)) {
+      throw new Error(
+        `review record --reviewer-identity must be one of: same_session, separate_session, unknown (got "${options.reviewerIdentity}")`
+      );
+    }
+    return {
+      relation: declared,
+      reviewer_session_id: reviewerSessionId,
+      implementation_session_id: implementationSessionId,
+      source: 'cli_flag'
+    };
+  }
+  if (implementationSessionId && reviewerSessionId) {
+    return {
+      relation: implementationSessionId === reviewerSessionId ? 'same_session' : 'separate_session',
+      reviewer_session_id: reviewerSessionId,
+      implementation_session_id: implementationSessionId,
+      source: 'derived_session_ids'
+    };
+  }
+  return {
+    relation: 'unknown',
+    reviewer_session_id: reviewerSessionId,
+    implementation_session_id: implementationSessionId,
+    source: 'undeclared'
+  };
 }
 
 function buildSyntheticLifecycleEntryFromReviewResult(result, repoRoot, resultPath) {
