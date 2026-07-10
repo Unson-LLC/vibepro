@@ -6,6 +6,11 @@ When the user asks for VibePro work:
 
 - Start from Story, then Architecture, then Spec, then Task, then Code, then Gate, then PR.
 - Do not edit code first for VibePro refactors unless the user explicitly asks for an emergency fix.
+- Prefer `vibepro execute start <repo> --story-id <id>` for isolated execution; it creates or reuses a managed worktree and records that state. Create branches only from inside the target worktree.
+- Read `vibepro pr prepare --summary-json` or a limited `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>` before opening full JSON artifacts.
+- For evidence recording rules, review lifecycle order (`prepare` → `start` → dispatch → `close` → `record --agent-closed --inspection-input <ref>`), spec write validators, and gate troubleshooting, follow the `vibepro-gate-evidence` Skill.
+- After merge, close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay`, `vibepro audit session-cost`, `vibepro trace backfill|declare`, `vibepro usage report --subagent-roi --gate-roi`.
+- For intent-first UI/UX work, use `vibepro uiux intake template|validate` → `uiux map` → `uiux evidence` → `uiux prepare` before implementation.
 - Use Graphify evidence before changing auth, data flow, runtime boundaries, UI state machines, or shared services.
 - Treat `review-cockpit.html` as the human control plane and `human-review.json` as the machine-readable decision record.
 - After implementation, run `vibepro pr prepare <repo> --story-id <story-id>` or the task-scoped equivalent.
@@ -22,14 +27,7 @@ When the user asks for VibePro work:
 - Do not call raw `gh pr create` directly for VibePro work. Use `vibepro pr create` so Gate evidence and waiver checks are preserved.
 - If Gates are unresolved, either add evidence, split the PR, block the PR, or record an explicit waiver reason.
 - Keep JSON outputs as source-of-truth artifacts and HTML outputs as human review artifacts.
-- When the user asks for a purpose-level check, use diagnosis packages instead of guessing low-level scanners:
-  - `vibepro check list`
-  - `vibepro check ui <repo>`
-  - `vibepro check security <repo>`
-  - `vibepro check performance <repo>`
-  - `vibepro check architecture <repo>`
-  - `vibepro check pr-readiness <repo> --base <ref> --head <ref>`
-  - `vibepro check launch-readiness <repo>`
+- When the user asks for a purpose-level check, use diagnosis packages instead of guessing low-level scanners. Run `vibepro check list` for the current registry, then `vibepro check <pack> <repo>`. Registered packs include `ui`, `security`, `performance`, `architecture`, `pr-readiness` (`--base <ref> --head <ref>`), `launch-readiness`, `agent-harness`, `public-discovery`, `self-dogfood`, `oss-readiness`, `regression-risk`, and `all`.
 - For performance improvement claims, define and compare Story-level performance evidence:
   - `vibepro performance define <repo> --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> --evidence-source <type>`
   - `vibepro performance record <repo> --id <story-id> --metric-id <id> --label before|after --status completed --duration-ms <ms> --evidence-source <type:ref:summary>`
