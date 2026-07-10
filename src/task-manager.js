@@ -38,7 +38,7 @@ export async function createTasksFromPlan(repoRoot, options = {}) {
   const results = [];
   for (const [storyId, candidates] of Object.entries(byStory)) {
     const story = resolvePlanStory(plan, storyId);
-    const taskState = buildPlanTaskState({ story, plan, candidates });
+    const taskState = buildPlanTaskState({ story, plan, candidates, allowedPaths: options.allowedPaths });
     const tasksDir = path.join(getWorkspaceDir(root), 'stories', storyId, 'tasks');
     await mkdir(tasksDir, { recursive: true });
     const jsonPath = path.join(tasksDir, 'tasks.json');
@@ -717,7 +717,32 @@ function resolvePlanStory(plan, storyId) {
   };
 }
 
-function buildPlanTaskState({ story, plan, candidates }) {
+function buildScopeBoundary({ candidates, allowedPaths }) {
+  const normalizedAllowedPaths = Array.isArray(allowedPaths)
+    ? [...new Set(allowedPaths.map((item) => String(item).trim()).filter(Boolean))]
+    : [];
+  if (normalizedAllowedPaths.length > 0) {
+    return {
+      schema_version: '0.1.0',
+      declared: true,
+      allowed_paths: normalizedAllowedPaths,
+      source: 'cli_declared',
+      recorded_at: new Date().toISOString()
+    };
+  }
+  const derived = [...new Set(
+    candidates.flatMap((candidate) => Array.isArray(candidate.target_files) ? candidate.target_files : [])
+  )];
+  return {
+    schema_version: '0.1.0',
+    declared: false,
+    allowed_paths: derived,
+    source: derived.length > 0 ? 'derived_from_target_files' : 'none',
+    recorded_at: new Date().toISOString()
+  };
+}
+
+function buildPlanTaskState({ story, plan, candidates, allowedPaths }) {
   const tasks = candidates.map((candidate, index) => ({
     id: candidate.id,
     source_type: candidate.source_type ?? 'story_plan_candidate',
@@ -755,6 +780,7 @@ function buildPlanTaskState({ story, plan, candidates }) {
       gate_status: plan.summary?.coverage_status ?? 'unknown',
       source_plan_generated_at: plan.generated_at
     },
+    scope_boundary: buildScopeBoundary({ candidates, allowedPaths }),
     tasks
   };
 }
