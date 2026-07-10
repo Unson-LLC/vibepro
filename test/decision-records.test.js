@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 import { recordDecision } from '../src/decision-records.js';
 import { recordVerificationEvidence } from '../src/verification-evidence.js';
+
+const execFileAsync = promisify(execFile);
+const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
 async function makeWorkspaceRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-decision-evidence-summary-'));
@@ -95,4 +101,33 @@ test('DRES-SCENARIO-003 accepted decision with no verification-evidence.json yet
   });
 
   assert.deepEqual(result.decision.verification_evidence_summary, { count: 0, entries: [] });
+});
+
+test('DRES-SCENARIO-004 CLI end-to-end: vibepro decision record exposes verification_evidence_summary via --json', async () => {
+  const root = await makeWorkspaceRepo();
+  const storyId = 'STR-DRES-4';
+
+  await execFileAsync('node', [
+    CLI_BIN, 'verify', 'record', root,
+    '--id', storyId,
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'echo ok',
+    '--summary', 'e2e smoke unit pass'
+  ], { encoding: 'utf8' });
+
+  const { stdout } = await execFileAsync('node', [
+    CLI_BIN, 'decision', 'record', root,
+    '--id', storyId,
+    '--type', 'needs_review',
+    '--summary', 'e2e smoke accepted decision',
+    '--status', 'accepted',
+    '--json'
+  ], { encoding: 'utf8' });
+
+  const result = JSON.parse(stdout);
+  assert.equal(result.decision.status, 'accepted');
+  assert.equal(result.decision.verification_evidence_summary.count, 1);
+  assert.equal(result.decision.verification_evidence_summary.entries[0].type, 'unit');
+  assert.equal(result.decision.verification_evidence_summary.entries[0].result, 'pass');
 });
