@@ -2630,6 +2630,11 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro harness learn \[repo\]/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|self-dogfood\|oss-readiness\|regression-risk\|all>/);
+  assert.match(output, /vibepro check list/);
+  assert.match(output, /vibepro story map \[repo\] \[--json\]/);
+  assert.match(output, /vibepro task brief \[repo\] --task <task-id>/);
+  assert.match(output, /vibepro task plan \[repo\] --task <task-id>/);
+  assert.match(output, /vibepro task handoff \[repo\] --task <task-id>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
@@ -2673,6 +2678,11 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /product-local Design System/);
   assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);
   assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
+  assert.match(englishOutput, /vibepro check list/);
+  assert.match(englishOutput, /vibepro story map \[repo\] \[--json\]/);
+  assert.match(englishOutput, /vibepro task brief \[repo\] --task <task-id>/);
+  assert.match(englishOutput, /vibepro task plan \[repo\] --task <task-id>/);
+  assert.match(englishOutput, /vibepro task handoff \[repo\] --task <task-id>/);
   assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>.*--cost-accounting <json>.*--session-id <id>/);
 });
 
