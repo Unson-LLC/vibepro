@@ -5,6 +5,7 @@ architecture_docs:
   - docs/architecture/vibepro-session-time-cwd-normalization.md
 spec_docs:
   - docs/specs/vibepro-session-time-cwd-normalization.md
+parent_design: vibepro-session-time-cwd-normalization
 ---
 
 # Story: Session inference should treat git-common-dir cwd matches as decisive

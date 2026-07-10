@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-session-time-cwd-normalization
 title: Design Diagrams for story-vibepro-session-time-cwd-normalization
+parent_design: vibepro-session-time-cwd-normalization
 ---
 
 # Design Diagrams

@@ -3640,7 +3640,76 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-session-time-cwd-normalization",
+      "title": "Session Time cwd Normalization",
+      "root_doc": "docs/architecture/vibepro-session-time-cwd-normalization.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-session-time-cwd-normalization.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-session-time-cwd-normalization.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-session-time-cwd-normalization.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-session-time-cwd-normalization.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-session-time-cwd-normalization.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-session-time-cwd-normalization.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-09T14:53:49.822Z"
+  "updated_at": "2026-07-10T02:45:13.921Z"
 }

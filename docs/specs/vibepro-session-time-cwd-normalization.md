@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-session-time-cwd-normalization
 title: VibePro Session Time cwd Normalization Spec
+parent_design: vibepro-session-time-cwd-normalization
 ---
 
 # Spec
