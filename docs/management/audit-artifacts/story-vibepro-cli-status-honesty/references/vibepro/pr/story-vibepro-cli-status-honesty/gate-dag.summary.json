@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "gate-dag.json",
+  "source_bytes": 212118,
+  "source_content_hash": "sha256:d73a2c146183edc0e9b47540e80e74bb06a63fcda2481b5d217014d4e668249a",
+  "conclusion": {
+    "status_fields": {
+      "model": "story-acceptance-verification-dag",
+      "overall_status": "ready_for_review"
+    },
+    "top_level_counts": {
+      "nodes_count": 95,
+      "edges_count": 132
+    }
+  },
+  "highlights": [
+    "model=story-acceptance-verification-dag",
+    "overall_status=ready_for_review"
+  ],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "gate-dag.json"
+}

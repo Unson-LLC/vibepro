@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-status-honesty",
+  "created_at": "2026-07-10T08:28:14.650Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-cli-status-honesty/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-cli-status-honesty/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-cli-status-honesty/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-cli-status-honesty/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-cli-status-honesty/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-cli-status-honesty/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-cli-status-honesty.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-cli-status-honesty.md)"
+    },
+    "decision_records": {
+      "total": 1,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1
+      },
+      "by_status": {
+        "accepted": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+          "expected_root": null,
+          "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+          "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783671722754-3f951236",
+        "story_id": "story-vibepro-cli-status-honesty",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "Scope reviewability confirmed: two status-honesty fixes with one shared intent (CLI output must match observed evidence); review_owner_map: src/merge-manager.js + src/execution-state.js (merge reconcile) and src/design-ssot.js + src/cli.js (init totals) are owned by this story's single reviewer; blast radius bounded by the 11 declared allowed_paths",
+        "reason": "All changed files serve the single decision question of status honesty. gate:scope_boundary passed proving the diff matches the declared scope; the two sub-fixes share the same failure mode (status contradicts evidence) and the same test file, so splitting would duplicate fixtures without improving reviewability.",
+        "reviewer": "claude_code",
+        "artifact": ".vibepro/pr/story-vibepro-cli-status-honesty/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/verification/cli-status-honesty-e2e/run-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-cli-status-honesty/verification-evidence.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-cli-status-honesty/verification-evidence.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-cli-status-honesty/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+            "expected_root": null,
+            "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+            "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+          "current_branch": "claude/story-vibepro-cli-status-honesty",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-10T08:22:02.746Z"
+        },
+        "recorded_at": "2026-07-10T08:22:02.756Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-10T08:28:12.628Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "branch": "claude/story-vibepro-cli-status-honesty",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b34039114b89bad3f251196a43e0705923716f52",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

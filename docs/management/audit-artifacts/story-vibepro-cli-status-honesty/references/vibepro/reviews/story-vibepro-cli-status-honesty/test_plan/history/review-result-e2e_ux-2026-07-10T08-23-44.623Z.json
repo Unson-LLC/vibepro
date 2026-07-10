@@ -1,0 +1,114 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-status-honesty",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "E2E flows exercise the real CLI over real git repos + bare remote + fake gh for both fixes; user-visible outputs (status, stop_reason, human rendering) asserted; pre-fix-failing assertions confirmed; 9/9 pass at current head",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the 4 runCli e2e flows and the S/ac-marker spec twins; re-ran them at head 220a8580 (9 pass)",
+    "evidence": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/transcripts/e2e_ux-claude-code.md",
+    "inputs": [
+      "test/cli-status-honesty.test.js",
+      "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: reconcile fixture might fake the ancestor check -> final pass because the fixture performs a genuine external squash merge on the bare remote so gitIsAncestor runs against real history"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "expected_root": null,
+    "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "expected_root": null,
+      "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-10T08:23:44.623Z",
+  "git_context": {
+    "head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_branch": "claude/story-vibepro-cli-status-honesty",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T08:23:44.599Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "surface_files": [
+      {
+        "path": "test/cli-status-honesty.test.js",
+        "sha256": "780fc529d900c3932acb3c4964320958646b20cf95d56798e308ee973996d422",
+        "size": 11365
+      },
+      {
+        "path": "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+        "sha256": "6c462d6a1e93872b4ac927f3e89ca9e6e1b9c5a23bc3fd8d34faa23ce7280490",
+        "size": 3685
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "84735cd6ef45a491bd23c2ac5716d0489f1259357590e0a022537ff90dd63877"
+  },
+  "source_fingerprint": "6de6335d835db46ac73a25382b00a0b8a1c1852803f01f265b1b136a2bff904a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-code-e2e-ux-csh",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/transcripts/e2e_ux-claude-code.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

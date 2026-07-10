@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "ref-topology.json",
+  "source_bytes": 45744,
+  "source_content_hash": "sha256:50f6977c105bb62ed5cedf8761210553d16ffd053189a94dfdfecd7aa303e1a3",
+  "conclusion": {
+    "status_fields": {},
+    "top_level_counts": {
+      "remotes_count": 1,
+      "branches_count": 141
+    }
+  },
+  "highlights": [],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "ref-topology.json"
+}

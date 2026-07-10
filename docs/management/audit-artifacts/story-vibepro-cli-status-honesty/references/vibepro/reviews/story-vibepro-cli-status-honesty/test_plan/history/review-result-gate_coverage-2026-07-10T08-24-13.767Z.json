@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-status-honesty",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "All workflow-heavy gates resolved with real evidence (final spec scenario clauses, current e2e with flow replay markers and S/ac coverage, verified artifact); scope boundary declared and passed; no waivers used",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the regenerated gate DAG, spec.json clause anchors, scope boundary node, and evidence bindings at head 220a8580",
+    "evidence": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/transcripts/gate_coverage-claude-code.md",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-cli-status-honesty/pr-prepare.json",
+      ".vibepro/spec/story-vibepro-cli-status-honesty/spec.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: workflow-heavy gates might be satisfied by marker text alone -> final pass because the S/ac marker spec has a runnable .test.js twin and the underlying flows are executed against real git fixtures in the unit e2e suite"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "expected_root": null,
+    "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "expected_root": null,
+      "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-10T08:24:13.767Z",
+  "git_context": {
+    "head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_branch": "claude/story-vibepro-cli-status-honesty",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T08:24:13.758Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4685fcc5959f7b16c4853bf5c8603d6859ae8afc944d1a919668faf4c0c1db3e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-code-gate-coverage-csh",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/transcripts/gate_coverage-claude-code.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

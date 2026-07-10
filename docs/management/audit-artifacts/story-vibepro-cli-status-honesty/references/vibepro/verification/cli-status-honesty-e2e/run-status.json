@@ -1,0 +1,9 @@
+{
+ "status": "pass",
+ "exit_code": 0,
+ "observed": {
+  "tests_pass": 9,
+  "tests_fail": 0,
+  "suite": "node --test test/cli-status-honesty.test.js test/e2e/story-vibepro-cli-status-honesty-main.test.js"
+ }
+}

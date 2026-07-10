@@ -1,0 +1,120 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-status-honesty",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "OPEN-PR merge behavior is byte-compatible (blocking block wrapped unchanged in !externallyMerged); reconcile only activates on the previously-dead-end MERGED path; execution-state and design-ssot changes are additive; traceability/design-ssot/canonical-audit suites re-run green at this head",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected merge-manager/execution-state/design-ssot/cli diffs and architecture+spec invariants (INV-CSH-1..3); re-ran traceability-promotion, design-ssot, canonical-audit suites and typecheck at head 220a8580",
+    "evidence": ".vibepro/reviews/story-vibepro-cli-status-honesty/architecture_spec/transcripts/regression_risk-claude-code.md",
+    "inputs": [
+      "src/merge-manager.js",
+      "src/execution-state.js",
+      "docs/specs/vibepro-cli-status-honesty.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: reconcile could weaken OPEN-PR gating or break status consumers -> final pass because the OPEN block is unmodified inside a guard, the reconcile path was previously a guaranteed dead-end, and no consumer switches exhaustively on merge status"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+    "expected_root": null,
+    "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-cli-status-honesty",
+      "expected_root": null,
+      "expected_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "current_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-10T08:23:05.389Z",
+  "git_context": {
+    "head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "current_branch": "claude/story-vibepro-cli-status-honesty",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T08:23:05.364Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "220a85803ddcf03fc495f0cac8f9e0d6ad716d99",
+    "surface_files": [
+      {
+        "path": "docs/specs/vibepro-cli-status-honesty.md",
+        "sha256": "39784f5d1e0258d773ec04da61baac92b9b2942bcb0840d1b7350c33045304be",
+        "size": 5299
+      },
+      {
+        "path": "src/execution-state.js",
+        "sha256": "3f0a2c4520dbe8248640eb22bf95da9013fe51ac9000ab297fea2ef86034ca81",
+        "size": 40323
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "198ef4d041a84d0675da2b63ee51a68acdc083f75eb8f3a086517a61551342c2",
+        "size": 45094
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fcb8ad6830ffbbe67f933bd877955878e6e45d03c408b24342a0cec8ab6b5ec0"
+  },
+  "source_fingerprint": "25a389efe5bebf4d338b901ce19cbc59a4f32d8696a57a24be3f45d05312584b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-code-regression-risk-csh",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/architecture_spec/transcripts/regression_risk-claude-code.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-cli-status-honesty/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,186 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cli-status-honesty",
+  "clauses": [
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "execute merge workflow: when gh pr view reports state MERGED, the merge status state machine transitions resolving -> reconciling -> merged_externally after verifying the merge commit is an ancestor of origin/<base>, recording merge_commit_sha and merged_at.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "merged_externally"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/cli-status-honesty.test.js"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/cli-status-honesty.test.js",
+            "must_include": "merged_externally"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-10T08:14:18.092Z",
+      "last_revised_at": "2026-07-10T08:14:18.092Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "execute merge workflow failure transition: a MERGED PR whose merge commit cannot be confirmed on origin/<base> transitions to the blocked status with stop_reason pr_merged_externally_unverified and never fabricates a merge record.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "pr_merged_externally_unverified"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/cli-status-honesty.test.js"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/cli-status-honesty.test.js",
+            "must_include": "pr_merged_externally_unverified"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-10T08:14:18.092Z",
+      "last_revised_at": "2026-07-10T08:14:18.092Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "OPEN PR merge workflow keeps today's state transitions: preconditions gate the flow and the merged status is only reached after gh pr merge succeeds; the reconcile path never changes OPEN-PR behavior.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "externallyMerged"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/traceability-promotion.test.js"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/traceability-promotion.test.js",
+            "must_include": "execute merge promotes traceability lifecycle"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-10T08:14:18.092Z",
+      "last_revised_at": "2026-07-10T08:14:18.092Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "design-ssot init status flow reports registry totals derived from the post-write registry state (design_root_count, child_link_count) for fresh and multi-root registries, and re-init of an existing id does not inflate the counts.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/design-ssot.js",
+            "anchor": "registry_summary"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/cli-status-honesty.test.js"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/cli-status-honesty.test.js",
+            "must_include": "registry_summary"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-10T08:14:18.092Z",
+      "last_revised_at": "2026-07-10T08:14:18.092Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "merged_externally is only reported when the externally merged commit is confirmed reachable from the locally fetched origin/<base>; gh output alone is never trusted for the merge record.",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "gitIsAncestor"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/cli-status-honesty.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-10T08:14:18.092Z",
+      "last_revised_at": "2026-07-10T08:14:18.092Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "state",
+      "mermaid": "stateDiagram-v2\n    [*] --> resolving\n    resolving --> blocked : preconditions fail (OPEN)\n    resolving --> merging : OPEN and preconditions pass\n    merging --> merged : gh pr merge ok\n    merging --> failed : gh_merge_failed\n    resolving --> reconciling : state == MERGED\n    reconciling --> merged_externally : merge commit on origin/base\n    reconciling --> blocked : pr_merged_externally_unverified\n    merged --> [*]\n    merged_externally --> [*]\n    blocked --> [*]\n    failed --> [*]",
+      "entities": [
+        "resolving",
+        "reconciling",
+        "merged_externally",
+        "blocked",
+        "merged"
+      ]
+    },
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  View[gh pr view] --> Branch{state}\n  Branch -->|OPEN| Preconditions[preconditions -> gh pr merge -> merged]\n  Branch -->|MERGED| MergedView[merged view fetch]\n  MergedView --> Verify{ancestor of origin/base}\n  Verify -->|yes| Reconciled[merged_externally + post-merge pipeline]\n  Verify -->|no| Unverified[blocked pr_merged_externally_unverified]"
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Spoof[spoofed merged claim from gh output] --> Verify[local git merge-base --is-ancestor check against fetched origin/base]\n  Fabricate[risk of fabricated merge record] --> FailClosed[unverified external merge stays blocked; sha never invented]\n  Downgrade[risk of weakening OPEN gating] --> Scope[reconcile only on state==MERGED dead-end path]\n  Registry[init misreporting registry contents] --> Honest[totals from post-write registry via buildRegistrySummary]"
+    }
+  ],
+  "open_questions": [],
+  "generated_at": "2026-07-10T08:14:18.086Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}

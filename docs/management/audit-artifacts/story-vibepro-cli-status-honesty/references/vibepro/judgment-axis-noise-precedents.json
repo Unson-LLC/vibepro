@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cli-status-honesty",
+      "decision_id": "decision-1783671722754-3f951236",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All changed files serve the single decision question of status honesty. gate:scope_boundary passed proving the diff matches the declared scope; the two sub-fixes share the same failure mode (status contradicts evidence) and the same test file, so splitting would duplicate fixtures without improving reviewability.",
+      "artifact": ".vibepro/pr/story-vibepro-cli-status-honesty/split-plan.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-10T08:27:12.903Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

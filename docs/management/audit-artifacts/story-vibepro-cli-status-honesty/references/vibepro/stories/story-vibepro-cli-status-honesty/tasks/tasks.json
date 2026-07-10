@@ -1,0 +1,506 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-10T08:19:36.213Z",
+  "story": {
+    "story_id": "story-vibepro-cli-status-honesty",
+    "title": "story-vibepro-cli-status-honesty",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-10T073818Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-10T07:38:27.715Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": true,
+    "allowed_paths": [
+      "docs/management/stories/active/story-vibepro-cli-status-honesty.md",
+      "docs/architecture/vibepro-cli-status-honesty.md",
+      "docs/specs/vibepro-cli-status-honesty.md",
+      "src/merge-manager.js",
+      "src/execution-state.js",
+      "src/design-ssot.js",
+      "src/cli.js",
+      "test/cli-status-honesty.test.js",
+      "test/e2e/story-vibepro-cli-status-honesty-main.spec.ts",
+      "test/e2e/story-vibepro-cli-status-honesty-main.test.js",
+      "design-ssot.json"
+    ],
+    "source": "cli_declared",
+    "recorded_at": "2026-07-10T08:19:36.219Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-cli-status-honesty-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-cli-status-honesty-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "medium",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/ci-evidence.js",
+        "src/evidence-cost-budget.js",
+        "src/evidence-depth-planner.js",
+        "src/evidence-reuse.js",
+        "src/explore-evidence.js",
+        "src/nocodb-story-sync.js",
+        "src/performance-evidence.js",
+        "src/repo-status.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/ci-evidence.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/evidence-cost-budget.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/evidence-depth-planner.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/evidence-reuse.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/explore-evidence.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/performance-evidence.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/repo-status.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-cli-status-honesty-cross_community_architecture_review",
+          "story_id": "story-vibepro-cli-status-honesty",
+          "title": "CLI status output must match the observable evidence",
+          "type": "cross_community_architecture_review",
+          "severity": "medium",
+          "reason": "Graphify上で複数communityに跨り、ADRは存在するため、ADRと実依存の対応確認が必要。",
+          "potential_bug": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。",
+          "recommended_review": "ADRの対象境界とGraphifyのaffected_communities/hub_nodesが一致しているか確認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "present",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "high",
+            "open_questions": [
+              "period"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "operational_change",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-cli-status-honesty.md",
+              "docs/specs/vibepro-cli-status-honesty.md",
+              "docs/architecture/vibepro-cli-status-honesty.md"
+            ],
+            "files": [
+              "src/ci-evidence.js",
+              "src/evidence-cost-budget.js",
+              "src/evidence-depth-planner.js",
+              "src/evidence-reuse.js",
+              "src/explore-evidence.js",
+              "src/nocodb-story-sync.js",
+              "src/performance-evidence.js",
+              "src/repo-status.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-cli-status-honesty.md"
+            ],
+            "spec": [
+              "docs/specs/vibepro-cli-status-honesty.md"
+            ],
+            "architecture": [
+              "docs/architecture/vibepro-cli-status-honesty.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/ci-evidence.js",
+              "src/evidence-cost-budget.js",
+              "src/evidence-depth-planner.js",
+              "src/evidence-reuse.js",
+              "src/explore-evidence.js",
+              "src/nocodb-story-sync.js",
+              "src/performance-evidence.js",
+              "src/repo-status.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/language.js",
+              "src/diagnostic-engine.js",
+              "src/agent-review.js",
+              "src/doctor.js",
+              "src/architecture-profiler.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 293
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 127
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 2,
+                "degree": 126
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 126
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 3,
+                "node_count": 153,
+                "edge_count": 403
+              },
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 274
+              },
+              {
+                "id": 18,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 28,
+                "edge_count": 61
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 2,
+                "edge_count": 12
+              },
+              {
+                "id": 24,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 46,
+                "edge_count": 121
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 29,
+                "edge_count": 110
+              },
+              {
+                "id": 41,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 29,
+                "edge_count": 67
+              },
+              {
+                "id": 15,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 37
+              },
+              {
+                "id": 21,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 27
+              },
+              {
+                "id": 39,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 10,
+                "edge_count": 23
+              },
+              {
+                "id": 13,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              },
+              {
+                "id": 9,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              }
+            ],
+            "related_edge_count": 1067,
+            "impact_score": 0.1179,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 12,
+        "matched_file_count": 12,
+        "matched_files": [
+          "src/ci-evidence.js",
+          "src/evidence-cost-budget.js",
+          "src/evidence-depth-planner.js",
+          "src/evidence-reuse.js",
+          "src/explore-evidence.js",
+          "src/nocodb-story-sync.js",
+          "src/performance-evidence.js",
+          "src/repo-status.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 461,
+        "affected_communities": [
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 3,
+            "node_count": 153,
+            "edge_count": 403
+          },
+          {
+            "id": 5,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 274
+          },
+          {
+            "id": 18,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 28,
+            "edge_count": 61
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 2,
+            "edge_count": 12
+          },
+          {
+            "id": 24,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 46,
+            "edge_count": 121
+          },
+          {
+            "id": 1,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 29,
+            "edge_count": 110
+          },
+          {
+            "id": 41,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 29,
+            "edge_count": 67
+          },
+          {
+            "id": 15,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 37
+          },
+          {
+            "id": 21,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 27
+          },
+          {
+            "id": 39,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 10,
+            "edge_count": 23
+          },
+          {
+            "id": 13,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 4
+          },
+          {
+            "id": 9,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 4
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_cli_runcli",
+            "label": "runCli()",
+            "source_file": "src/cli.js",
+            "community": 1,
+            "degree": 293
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 5,
+            "degree": 128
+          },
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 127
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 2,
+            "degree": 126
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 126
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/pr-manager.js",
+          "src/language.js",
+          "src/diagnostic-engine.js",
+          "src/agent-review.js",
+          "src/doctor.js",
+          "src/architecture-profiler.js"
+        ],
+        "related_edge_count": 1067,
+        "impact_score": 0.1179,
+        "community_span": 12,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    }
+  ]
+}
