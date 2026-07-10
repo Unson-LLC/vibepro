@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-agent-review-independence-provenance",
+      "decision_id": "decision-1783674086890-05b85b30",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All changed files serve the single decision question of reviewer independence auditability. gate:scope_boundary passed proving the diff matches the declared scope; warning-only enforcement means no split is warranted.",
+      "artifact": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/split-plan.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-10T09:02:19.666Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

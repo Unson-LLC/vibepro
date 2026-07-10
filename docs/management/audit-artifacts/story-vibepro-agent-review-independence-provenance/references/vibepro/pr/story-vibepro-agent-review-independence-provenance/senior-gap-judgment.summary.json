@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "senior-gap-judgment.json",
+  "source_bytes": 16588,
+  "source_content_hash": "sha256:999be87cc707f15f9ff73eb00ebc11ccc45fc8580d86f6e060a04db01a32cb53",
+  "conclusion": {
+    "status_fields": {
+      "model": "vibepro-senior-gap-judgment-v1"
+    },
+    "top_level_counts": {
+      "gaps_count": 1,
+      "residual_risks_count": 1,
+      "followups_count": 1
+    }
+  },
+  "highlights": [
+    "model=vibepro-senior-gap-judgment-v1"
+  ],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "senior-gap-judgment.json"
+}

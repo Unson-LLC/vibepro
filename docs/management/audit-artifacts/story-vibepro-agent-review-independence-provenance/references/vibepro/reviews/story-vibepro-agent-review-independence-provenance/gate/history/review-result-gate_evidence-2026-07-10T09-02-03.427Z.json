@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-review-independence-provenance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Evidence current-head-bound at 2b3c65fa with verified artifact; reviewer_identity precedence and warning-only enforcement verified against tests; legacy compatibility proven by artifact-mutation test; full suite 947 pass",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected agent-review/pr-manager/cli diffs, all 5 e2e tests incl. legacy simulation, evidence bindings, and grep-verified the only writer/readers of reviewer_identity; re-ran targeted suites (5+110) and typecheck at this head",
+    "evidence": ".vibepro/reviews/story-vibepro-agent-review-independence-provenance/gate/transcripts/gate_evidence-claude-code.md",
+    "inputs": [
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "test/agent-review-independence.test.js",
+      ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: identity plumbing could alter provenance grading or penalize legacy records -> final pass because reviewer_identity is added before grading which reads none of it (asserted), and absent identity normalizes to unknown with no warning (asserted)"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+    "expected_root": null,
+    "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+    "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+      "expected_root": null,
+      "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+      "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-10T09:02:03.427Z",
+  "git_context": {
+    "head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+    "current_branch": "claude/story-vibepro-agent-review-independence-provenance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-10T09:02:03.395Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "dc9776b0d5f650ebc98bc430a59d4ebc4a0ea05b716512d4f0d093edeaf89ba9",
+        "size": 144497
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "791bac584a3686f94b8171a42b636d1fef6b8abbf29aaf1ec90b8ac6dbd7ec92",
+        "size": 638681
+      },
+      {
+        "path": "test/agent-review-independence.test.js",
+        "sha256": "52f52ac63c4be348f48f77c1b94eb18a6c40c51ea09b29cdd750fa9fe41dea48",
+        "size": 8836
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0865029dafa397ccb5f4a8a53cbd9b24c74f95626d74b3c996d300dfc3d47c30"
+  },
+  "source_fingerprint": "b03014aca7a9859564e869e28ab449bf1ebac112617c4dd0d5ecf2136f11b69c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-code-gate-evidence-arip",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-agent-review-independence-provenance/gate/transcripts/gate_evidence-claude-code.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-review-independence-provenance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "same_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

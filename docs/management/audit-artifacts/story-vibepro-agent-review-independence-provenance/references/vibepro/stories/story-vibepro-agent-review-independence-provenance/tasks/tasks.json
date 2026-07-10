@@ -1,0 +1,475 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-10T08:38:54.325Z",
+  "story": {
+    "story_id": "story-vibepro-agent-review-independence-provenance",
+    "title": "story-vibepro-agent-review-independence-provenance",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-10T083825Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-10T08:38:51.520Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": true,
+    "allowed_paths": [
+      "docs/management/stories/active/story-vibepro-agent-review-independence-provenance.md",
+      "docs/architecture/vibepro-agent-review-independence-provenance.md",
+      "docs/specs/vibepro-agent-review-independence-provenance.md",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "test/agent-review-independence.test.js",
+      "design-ssot.json"
+    ],
+    "source": "cli_declared",
+    "recorded_at": "2026-07-10T08:38:54.336Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-agent-review-independence-provenance-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-agent-review-independence-provenance-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "medium",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-review.js",
+        "src/authorization-scoring.js",
+        "src/nocodb-story-sync.js",
+        "src/responsibility-authority.js",
+        "src/review-repair.js",
+        "src/session-efficiency-audit.js",
+        "src/session-learning.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/agent-harness-map.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/agent-harness-scanner.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/agent-review.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/authorization-scoring.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/responsibility-authority.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/review-repair.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/session-efficiency-audit.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-agent-review-independence-provenance-cross_community_architecture_review",
+          "story_id": "story-vibepro-agent-review-independence-provenance",
+          "title": "Agent Review provenance must expose reviewer/implementer session identity",
+          "type": "cross_community_architecture_review",
+          "severity": "medium",
+          "reason": "Graphify上で複数communityに跨り、ADRは存在するため、ADRと実依存の対応確認が必要。",
+          "potential_bug": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。",
+          "recommended_review": "ADRの対象境界とGraphifyのaffected_communities/hub_nodesが一致しているか確認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "present",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "high",
+            "open_questions": [
+              "period"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "operational_change",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-agent-review-independence-provenance.md",
+              "docs/specs/vibepro-agent-review-independence-provenance.md",
+              "docs/architecture/vibepro-agent-review-independence-provenance.md"
+            ],
+            "files": [
+              "src/agent-harness-map.js",
+              "src/agent-harness-scanner.js",
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/review-repair.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-agent-review-independence-provenance.md"
+            ],
+            "spec": [
+              "docs/specs/vibepro-agent-review-independence-provenance.md"
+            ],
+            "architecture": [
+              "docs/architecture/vibepro-agent-review-independence-provenance.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/agent-harness-map.js",
+              "src/agent-harness-scanner.js",
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/review-repair.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/language.js",
+              "src/execution-state.js",
+              "src/architecture-profiler.js",
+              "src/check-packs.js",
+              "src/story-manager.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 295
+              },
+              {
+                "id": "src_agent_review_js",
+                "label": "agent-review.js",
+                "source_file": "src/agent-review.js",
+                "community": 3,
+                "degree": 145
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 127
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 126
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 3,
+                "node_count": 27,
+                "edge_count": 118
+              },
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 274
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 28,
+                "edge_count": 90
+              },
+              {
+                "id": 3,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 145,
+                "edge_count": 396
+              },
+              {
+                "id": 13,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 88,
+                "edge_count": 212
+              },
+              {
+                "id": 25,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 45,
+                "edge_count": 83
+              },
+              {
+                "id": 33,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 23,
+                "edge_count": 48
+              },
+              {
+                "id": 15,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 41
+              },
+              {
+                "id": 50,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 12,
+                "edge_count": 26
+              },
+              {
+                "id": 38,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 7,
+                "edge_count": 12
+              }
+            ],
+            "related_edge_count": 1227,
+            "impact_score": 0.1354,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 12,
+        "matched_file_count": 12,
+        "matched_files": [
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/authorization-scoring.js",
+          "src/nocodb-story-sync.js",
+          "src/responsibility-authority.js",
+          "src/review-repair.js",
+          "src/session-efficiency-audit.js",
+          "src/session-learning.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 524,
+        "affected_communities": [
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 3,
+            "node_count": 27,
+            "edge_count": 118
+          },
+          {
+            "id": 5,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 274
+          },
+          {
+            "id": 1,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 28,
+            "edge_count": 90
+          },
+          {
+            "id": 3,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 145,
+            "edge_count": 396
+          },
+          {
+            "id": 13,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 88,
+            "edge_count": 212
+          },
+          {
+            "id": 25,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 45,
+            "edge_count": 83
+          },
+          {
+            "id": 33,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 23,
+            "edge_count": 48
+          },
+          {
+            "id": 15,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 41
+          },
+          {
+            "id": 50,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 12,
+            "edge_count": 26
+          },
+          {
+            "id": 38,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 7,
+            "edge_count": 12
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_cli_runcli",
+            "label": "runCli()",
+            "source_file": "src/cli.js",
+            "community": 1,
+            "degree": 295
+          },
+          {
+            "id": "src_agent_review_js",
+            "label": "agent-review.js",
+            "source_file": "src/agent-review.js",
+            "community": 3,
+            "degree": 145
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 5,
+            "degree": 128
+          },
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 127
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 126
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/pr-manager.js",
+          "src/language.js",
+          "src/execution-state.js",
+          "src/architecture-profiler.js",
+          "src/check-packs.js",
+          "src/story-manager.js"
+        ],
+        "related_edge_count": 1227,
+        "impact_score": 0.1354,
+        "community_span": 10,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    }
+  ]
+}

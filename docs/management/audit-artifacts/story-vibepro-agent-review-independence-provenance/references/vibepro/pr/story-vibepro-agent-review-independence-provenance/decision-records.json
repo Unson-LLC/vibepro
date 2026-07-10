@@ -1,0 +1,189 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-agent-review-independence-provenance",
+  "updated_at": "2026-07-10T09:01:26.891Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+      "expected_root": null,
+      "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+      "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783674086890-05b85b30",
+      "story_id": "story-vibepro-agent-review-independence-provenance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope reviewability confirmed: one decision (make reviewer identity auditable in provenance); review_owner_map: src/agent-review.js (provenance write) and src/pr-manager.js (gate/gate_status surfacing) plus src/cli.js flag passthrough are owned by this story's single reviewer; blast radius bounded by the 8 declared allowed_paths",
+      "reason": "All changed files serve the single decision question of reviewer independence auditability. gate:scope_boundary passed proving the diff matches the declared scope; warning-only enforcement means no split is warranted.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/review-independence-e2e/run-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+          "expected_root": null,
+          "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+          "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+        "current_branch": "claude/story-vibepro-agent-review-independence-provenance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T09:01:26.881Z"
+      },
+      "recorded_at": "2026-07-10T09:01:26.891Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+        "expected_root": null,
+        "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+        "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783674086890-05b85b30",
+      "story_id": "story-vibepro-agent-review-independence-provenance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope reviewability confirmed: one decision (make reviewer identity auditable in provenance); review_owner_map: src/agent-review.js (provenance write) and src/pr-manager.js (gate/gate_status surfacing) plus src/cli.js flag passthrough are owned by this story's single reviewer; blast radius bounded by the 8 declared allowed_paths",
+      "reason": "All changed files serve the single decision question of reviewer independence auditability. gate:scope_boundary passed proving the diff matches the declared scope; warning-only enforcement means no split is warranted.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/review-independence-e2e/run-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/story-review-independence",
+          "expected_root": null,
+          "expected_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+          "current_head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2b3c65fa51978aa41f5b6022af190b467bb58e3b",
+        "current_branch": "claude/story-vibepro-agent-review-independence-provenance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-10T09:01:26.881Z"
+      },
+      "recorded_at": "2026-07-10T09:01:26.891Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-agent-review-independence-provenance/decision-records.json"
+}

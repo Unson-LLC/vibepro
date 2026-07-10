@@ -1,0 +1,9 @@
+{
+ "status": "pass",
+ "exit_code": 0,
+ "observed": {
+  "tests_pass": 5,
+  "tests_fail": 0,
+  "suite": "node --test test/agent-review-independence.test.js"
+ }
+}
