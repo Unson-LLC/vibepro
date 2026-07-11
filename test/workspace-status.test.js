@@ -1,12 +1,13 @@
 import { execFile } from 'node:child_process';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 
-import { collectWorkspaceStatus, parseWorktreePorcelain } from '../src/workspace-status.js';
+import { runCli } from '../src/cli.js';
+import { collectWorkspaceStatus, parseWorktreePorcelain, renderWorkspaceStatus } from '../src/workspace-status.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -31,6 +32,8 @@ test('parseWorktreePorcelain preserves branch and detached state', () => {
 test('workspace status derives readiness per worktree without trusting canonical health', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'vibepro-workspace-status-'));
   const linked = path.join(root, 'linked');
+  const emptyLinked = path.join(root, 'empty-linked');
+  const prunable = path.join(root, 'prunable-linked');
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'test@example.com']);
   await git(root, ['config', 'user.name', 'Test']);
@@ -43,6 +46,9 @@ test('workspace status derives readiness per worktree without trusting canonical
   await git(linked, ['add', 'feature.txt']);
   await git(linked, ['commit', '-m', 'feature']);
   const linkedHead = (await git(linked, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(root, ['worktree', 'add', '-b', 'feature/empty', emptyLinked]);
+  await git(root, ['worktree', 'add', '-b', 'feature/prunable', prunable]);
+  await rm(prunable, { recursive: true, force: true });
 
   await writeArtifact(linked, 'story-ready', {
     story: { story_id: 'story-ready', title: 'Ready' },
@@ -53,6 +59,10 @@ test('workspace status derives readiness per worktree without trusting canonical
     story: { story_id: 'story-stale' },
     gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
     artifact_freshness: { artifact_head_sha: oldHead }
+  });
+  await writeArtifact(linked, 'story-missing-head', {
+    story: { story_id: 'story-missing-head' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true }
   });
   await writeArtifact(linked, 'story-blocked', {
     story: { story_id: 'story-blocked' },
@@ -77,12 +87,32 @@ test('workspace status derives readiness per worktree without trusting canonical
   assert.deepEqual(canonical.stories, []);
   assert.equal(feature.stories.find((story) => story.story_id === 'story-ready').status, 'active_ready');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-stale').status, 'stale_artifact');
+  assert.equal(feature.stories.find((story) => story.story_id === 'story-missing-head').status, 'stale_artifact');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-blocked').status, 'active_blocked');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-malformed').status, 'unknown');
+  const empty = result.worktrees.find((worktree) => worktree.branch === 'feature/empty');
+  const missing = result.worktrees.find((worktree) => worktree.branch === 'feature/prunable');
+  assert.equal(empty.stories[0].reason, 'no_pr_prepare_artifact');
+  assert.equal(missing.available, false);
+  assert.equal(missing.stories[0].reason, 'prunable_worktree');
   assert.deepEqual(result.summary.story_status_counts, {
     active_ready: 1,
     active_blocked: 1,
-    stale_artifact: 1,
-    unknown: 1
+    stale_artifact: 2,
+    unknown: 3
   });
+
+  const human = renderWorkspaceStatus(result);
+  assert.match(human, /active_ready: story-ready/);
+  assert.match(human, /unknown: \(no story\) \(prunable_worktree\)/);
+
+  let stdout = '';
+  await runCli(['workspace', 'status', linked, '--json'], {
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: () => {} }
+  });
+  const cliResult = JSON.parse(stdout);
+  assert.equal(cliResult.schema_version, '0.1.0');
+  assert.equal(cliResult.summary.worktree_count, 4);
+  assert.equal(cliResult.worktrees.find((worktree) => worktree.branch === 'feature/prunable').stories[0].status, 'unknown');
 });

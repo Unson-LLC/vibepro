@@ -104,6 +104,19 @@ async function readStoryStatuses(worktree) {
 
 async function inspectWorktree(worktree, canonicalPath) {
   const isCanonical = path.resolve(worktree.path) === path.resolve(canonicalPath);
+  if (worktree.available === false) {
+    return {
+      ...worktree,
+      is_canonical: isCanonical,
+      dirty: null,
+      upstream: null,
+      stories: [{
+        story_id: null,
+        status: 'unknown',
+        reason: worktree.prunable ? 'prunable_worktree' : 'missing_worktree_path'
+      }]
+    };
+  }
   let dirty = null;
   let upstream = null;
   try {
@@ -133,10 +146,14 @@ export async function collectWorkspaceStatus(repoRoot = process.cwd()) {
   const root = await realpath(path.resolve(repoRoot));
   const parsed = parseWorktreePorcelain(await git(root, ['worktree', 'list', '--porcelain']));
   if (parsed.length === 0) throw new Error(`No Git worktrees found for ${root}`);
-  const normalized = await Promise.all(parsed.map(async (worktree) => ({
-    ...worktree,
-    path: await realpath(worktree.path)
-  })));
+  const normalized = await Promise.all(parsed.map(async (worktree) => {
+    try {
+      return { ...worktree, path: await realpath(worktree.path), available: true };
+    } catch (error) {
+      if (error.code === 'ENOENT') return { ...worktree, available: false };
+      throw error;
+    }
+  }));
   const canonicalPath = normalized[0].path;
   const worktrees = await Promise.all(normalized.map((worktree) => inspectWorktree(worktree, canonicalPath)));
   const counts = { active_ready: 0, active_blocked: 0, stale_artifact: 0, unknown: 0 };
