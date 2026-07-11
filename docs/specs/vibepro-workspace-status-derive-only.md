@@ -36,6 +36,10 @@ diagrams:
   cannot alter another worktree's story classification.
 - `INV-WS-4`: Unparseable legacy evidence remains visible as `unknown`; absence
   of evidence is not converted into a passing or blocked claim.
+- `INV-WS-5`: The read-only workspace-status exemption is path- and
+  content-scoped. An unresolved responsibility, a missing primary authority
+  reference, or an unsupported authority kind remains a fail-closed authority
+  error and is never hidden by the exemption.
 
 ## Scenarios
 
@@ -53,3 +57,4 @@ diagrams:
 - Code: `src/workspace-status.js` (`collectWorkspaceStatus`)
 - CLI: `src/cli.js` (`workspace status` dispatch)
 - Tests: `test/workspace-status.test.js`
+- Authority boundary tests: `test/responsibility-authority.test.js`

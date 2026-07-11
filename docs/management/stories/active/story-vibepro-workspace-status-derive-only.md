@@ -38,3 +38,6 @@ worktree and its HEAD.
   artifact. Running it leaves repository status unchanged.
 - Legacy or malformed artifacts do not crash the scan; they are retained as
   `unknown` with a concrete reason.
+- The responsibility-authority resolver remains fail-closed: an unregistered
+  responsibility, a missing primary authority reference, or an unsupported
+  authority kind cannot be treated as authorized by this read-only command.
