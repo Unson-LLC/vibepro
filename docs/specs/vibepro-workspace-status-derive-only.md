@@ -51,6 +51,14 @@ diagrams:
   `unknown` with distinct reasons.
 - `S-005`: Dirty canonical state does not change a ready linked worktree result,
   and command execution creates no filesystem or Git-status delta.
+- `S-006`: When `!authority` is true, the resolver reports
+  `no_registered_authority`; workspace-status read-only classification does not
+  authorize an unregistered responsibility.
+- `S-007`: When `!entry.primary_authority?.ref` is true, the registry entry is
+  invalid and cannot satisfy the responsibility-authority gate.
+- `S-008`: When
+  `!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind)` is true, the
+  unsupported authority kind is invalid and cannot satisfy the gate.
 
 ## References
 
