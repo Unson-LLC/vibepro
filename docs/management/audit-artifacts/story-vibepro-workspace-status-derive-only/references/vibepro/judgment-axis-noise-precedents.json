@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "decision_id": "decision-1783782652430-fe009c61",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Story, architecture, spec, implementation, and regression tests all define one workspace-status projection. The independent final gate review passed this exact HEAD; splitting would create incomplete non-value changes.",
+      "artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-11T15:11:50.807Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

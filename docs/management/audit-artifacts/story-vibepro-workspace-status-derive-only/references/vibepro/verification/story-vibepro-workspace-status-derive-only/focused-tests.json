@@ -1,0 +1,30 @@
+{
+  "story_id": "story-vibepro-workspace-status-derive-only",
+  "head_sha": "f1547d8a5efdccbeea9caae7f118195f29f3d5d2",
+  "status": "pass",
+  "focused": {
+    "command": "node --test test/responsibility-authority.test.js test/workspace-status.test.js test/cli-smoke.test.js",
+    "tests": 20,
+    "pass": 20,
+    "fail": 0
+  },
+  "full_regression": {
+    "command": "node --test --test-concurrency=2",
+    "tests": 954,
+    "sandbox_pass": 952,
+    "sandbox_fail": 2,
+    "sandbox_failure_reasons": [
+      "listen EPERM on 0.0.0.0",
+      "npm cache log directory write denied"
+    ],
+    "isolated_outside_sandbox": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0
+    }
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "status": "pass"
+  }
+}

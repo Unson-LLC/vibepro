@@ -1,0 +1,470 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-workspace-status-derive-only",
+  "updated_at": "2026-07-11T15:14:45.354Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+      "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783782885352-440edcf3",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "noise",
+      "status": "accepted",
+      "source": "no_registered_authority",
+      "source_status": "needs_review",
+      "summary": "Workspace status projection is not polling, retry, or an authority-owned state transition",
+      "reason": "src/workspace-status.js executes one local Git topology read and bounded local artifact reads. It starts no worker or polling loop, performs no retry, fetch, write, merge, permission change, billing action, or durable state transition. The polling_retry surface is a lexical false positive from readiness/status terminology; exact-HEAD focused replay and independent gate review confirm the derive-only boundary.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T15:14:45.345Z"
+      },
+      "recorded_at": "2026-07-11T15:14:45.354Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783782654014-ce47c338",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_review",
+      "summary": "Read-only workspace status does not mutate an authority-owned responsibility",
+      "reason": "The command reads Git worktree topology and local head-bound pr-prepare artifacts only. It performs no fetch, write, merge, state transition, or durable registry update; status/workflow keywords caused the high-risk lexical signal.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-workspace-status-derive-only.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T15:10:54.006Z"
+      },
+      "recorded_at": "2026-07-11T15:10:54.016Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783782652430-fe009c61",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Final PR is one reviewable derive-only CLI contract",
+      "reason": "Story, architecture, spec, implementation, and regression tests all define one workspace-status projection. The independent final gate review passed this exact HEAD; splitting would create incomplete non-value changes.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-result-gate_evidence.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T15:10:52.421Z"
+      },
+      "recorded_at": "2026-07-11T15:10:52.431Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783780945875-ee270eca",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_review",
+      "summary": "Read-only workspace status is not a mutable responsibility surface",
+      "reason": "The command only reads git worktree and local pr-prepare artifacts, performs no fetch/write/state transition, and is owned by the registered vibepro-workspace-status-derive-only Design root. The high-risk signal comes from status/workflow wording rather than mutation.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-workspace-status-derive-only.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "current_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T14:42:25.867Z"
+      },
+      "recorded_at": "2026-07-11T14:42:25.876Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783780944721-25b9e6fb",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Resolve split recommendation as a single cohesive Story PR",
+      "reason": "All eight changed files belong to one CLI contract and one VibePro design root; no unrelated cleanup or independently shippable lane is bundled.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-workspace-status-derive-only/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "current_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T14:42:24.714Z"
+      },
+      "recorded_at": "2026-07-11T14:42:24.722Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783780943564-ad050ac7",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep Story, architecture, spec, implementation, and tests in one coherent PR",
+      "reason": "The documents define the exact contract reviewed by the implementation and tests; splitting them creates two non-valuable partial changes. Independent pr_split_scope review passed this ownership boundary.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-result-pr_split_scope.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "current_head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f33e48a2b506b55502da0ca7e1e61256324b8c1d",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T14:42:23.557Z"
+      },
+      "recorded_at": "2026-07-11T14:42:23.565Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "noise": 3,
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+        "expected_root": null,
+        "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783782885352-440edcf3",
+      "story_id": "story-vibepro-workspace-status-derive-only",
+      "type": "noise",
+      "status": "accepted",
+      "source": "no_registered_authority",
+      "source_status": "needs_review",
+      "summary": "Workspace status projection is not polling, retry, or an authority-owned state transition",
+      "reason": "src/workspace-status.js executes one local Git topology read and bounded local artifact reads. It starts no worker or polling loop, performs no retry, fetch, write, merge, permission change, billing action, or durable state transition. The polling_retry surface is a lexical false positive from readiness/status terminology; exact-HEAD focused replay and independent gate review confirm the derive-only boundary.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-workspace-status-derive-only/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+        "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-11T15:14:45.345Z"
+      },
+      "recorded_at": "2026-07-11T15:14:45.354Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-workspace-status-derive-only/decision-records.json"
+}

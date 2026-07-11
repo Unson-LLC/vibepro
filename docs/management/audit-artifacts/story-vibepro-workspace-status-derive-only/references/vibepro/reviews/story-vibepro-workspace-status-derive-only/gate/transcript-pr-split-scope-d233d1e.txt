@@ -1,0 +1,3 @@
+status: pass
+summary: The change remains one focused Story and does not require PR splitting.
+evidence: focused tests cover collection, human rendering, CLI JSON, and derive-only behavior.

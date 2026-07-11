@@ -1,0 +1,7 @@
+agent_id: 019f520d-d5f7-7bb3-98cc-6bad19659620
+head_sha: f1547d8a5efdccbeea9caae7f118195f29f3d5d2
+status: needs_changes
+summary: The change is one coherent PR and should not be split, but pr-prepare.json must be regenerated after current-head gate evidence.
+inspection: Reviewed Story, Architecture, Spec, implementation, authority resolver, tests, split plan, verification, gate evidence, and pr-prepare; independently reran 20 focused tests (20 pass, 0 fail).
+finding: stale-pr-prepare-after-current-gate-review (medium) - current gate evidence passes at f1547d8, while the prior pr-prepare snapshot still reports stale gate evidence at 399fb44.
+judgment: Keep workspace discovery, CLI wiring, traceability docs, design registration, and exact-digest exemption in one atomic fail-closed PR.

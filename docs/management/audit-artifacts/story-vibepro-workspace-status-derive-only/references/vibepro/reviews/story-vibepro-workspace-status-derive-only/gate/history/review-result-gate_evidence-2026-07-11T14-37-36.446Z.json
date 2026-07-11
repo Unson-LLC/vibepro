@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workspace-status-derive-only",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Prunable worktree regression is fixed and current-head evidence is sufficient.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed HEAD d233d1e implementation, regression fixture, CLI output surfaces, and current evidence.",
+    "evidence": "node --test test/workspace-status.test.js",
+    "inputs": [
+      "src/workspace-status.js",
+      "test/workspace-status.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior ENOENT whole-scan failure -> unavailable worktree is retained as explicit unknown and regression fixture fails on parent implementation"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+    "current_head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+      "current_head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-11T14:37:36.446Z",
+  "git_context": {
+    "head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+    "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-11T14:37:36.439Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "d233d1e7926da65b652f4a4edba8ae2335578bdb",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4f068490cf29ed399083b398c91c2e49d8fa8f7e2c6d19ac580f57e5a7771555",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f519a-aba7-7220-9412-ab8efdcdc5a2",
+    "agent_role": null,
+    "model": "gpt-5.5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-d233d1e.txt",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-d233d1e.txt",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

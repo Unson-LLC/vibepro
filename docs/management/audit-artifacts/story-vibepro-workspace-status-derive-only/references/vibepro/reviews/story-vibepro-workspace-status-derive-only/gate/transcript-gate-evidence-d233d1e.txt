@@ -1,0 +1,3 @@
+status: pass
+summary: Prunable/missing worktrees no longer abort scanning; unavailable worktrees remain visible as unknown.
+evidence: focused test passes on HEAD and fails on HEAD^ with ENOENT.

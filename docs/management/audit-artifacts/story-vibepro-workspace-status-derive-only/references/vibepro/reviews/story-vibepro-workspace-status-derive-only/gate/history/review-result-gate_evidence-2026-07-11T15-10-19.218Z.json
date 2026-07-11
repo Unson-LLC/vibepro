@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workspace-status-derive-only",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Final HEAD resolves prior findings and has current strict-head verification; no release-blocking finding remains.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed origin/main...HEAD, Story/Architecture/Spec, Design SSOT, CLI implementation, human/JSON output, tests, and current verification; focused tests and whitespace checks pass.",
+    "evidence": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-request-gate_evidence.md",
+      "src/workspace-status.js",
+      "test/workspace-status.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "quoted porcelain path risk -> --porcelain -z, NUL parsing, and non-ASCII worktree fixture close it",
+    "contradictory gate and whitespace findings -> explicit reason and clean diff close them",
+    "AC-1..AC-6 -> current strict-head unit/integration evidence and path-surface tests cover them"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+    "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+      "current_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-11T15:10:19.218Z",
+  "git_context": {
+    "head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+    "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-11T15:10:19.210Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ff9fdcf74605e456c0d69efa5cfa808dcf934449",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "15302388655b44be358c27c6b28f3953e0543d497c0c30fa782170b534d7ed4c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f51b8-5e95-7e12-9f42-70dc5af0a032",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-ff9fdcf.txt",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-ff9fdcf.txt",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

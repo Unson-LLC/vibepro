@@ -1,0 +1,4 @@
+status: needs_changes
+head: 7304cad1e0d4f7b716e67aaee7d0d0fccad8c510
+finding: authority-workspace-status-filewide-suppression
+The file-wide exemption could suppress future mutation or side-effect behavior in workspace-status.js. Add content-sensitive fail-closed checks and negative fixtures.

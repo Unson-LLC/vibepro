@@ -1,0 +1,7 @@
+agent_id: 019f520d-c19b-71c3-b37d-fd8d2f7e8c7c
+head_sha: f1547d8a5efdccbeea9caae7f118195f29f3d5d2
+status: block
+summary: Implementation risk is acceptable, but release cannot merge while the current pr-prepare snapshot reports ready_for_pr_create=false.
+inspection: Reviewed compatibility, side effects, digest maintenance, rollback, tests, verification, review state, split plan, and pr-prepare; independently reran 20 focused tests (20 pass, 0 fail).
+finding: release-gates-not-current (critical) - regenerate pr-prepare after current-head gate evidence and require ready_for_pr_create=true before merge.
+judgment: Additive CLI behavior, read-only Git operations, fail-closed digest mutation behavior, and bounded rollback are acceptable; control-plane readiness remains mandatory.

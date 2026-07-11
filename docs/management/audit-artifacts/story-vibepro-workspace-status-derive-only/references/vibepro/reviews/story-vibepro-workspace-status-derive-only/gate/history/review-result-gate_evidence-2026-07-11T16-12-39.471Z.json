@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workspace-status-derive-only",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Read-only exemption can miss side-effect forms, and focused evidence overclaims unexecuted regression responsibilities.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "authority-exemption-side-effect-bypass",
+      "detail": "Blacklist matching can miss git helper fetch, execFile, or aliased filesystem writes and incorrectly exempt a high-risk file."
+    },
+    {
+      "severity": "high",
+      "id": "verification-observation-overclaim",
+      "detail": "Focused 19-test evidence binds responsibility tokens that were not actually executed."
+    },
+    {
+      "severity": "medium",
+      "id": "regression-guard-current-head-scope",
+      "detail": "Current HEAD needs an appropriate authority and CLI regression suite or explicit scoped reuse evidence."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed origin/main...399fb446, Story/Architecture/Spec, implementation, tests, current verification and pr-prepare; reran focused 19 tests and typecheck.",
+    "evidence": ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json",
+    "inputs": [
+      "src/responsibility-authority.js",
+      "test/responsibility-authority.test.js",
+      ".vibepro/pr/story-vibepro-workspace-status-derive-only/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Path and content scoped exemption appeared fail-closed -> blacklist misses alternate side-effect call forms.",
+    "Current-head evidence appeared sufficient -> observation tokens exceed the focused command's measured scope."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+    "current_head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/db14/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+      "current_head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-11T16:12:39.471Z",
+  "git_context": {
+    "head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+    "current_branch": "codex/story-vibepro-workspace-status-derive-only",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-11T16:12:39.465Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "399fb446f8c9eed3cef1fc566c25350b4d82da06",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "6c30f1034945cbf5c1a0149d8926f320904ca7c36a62aa6dd4eb26eed4c62f92",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f51f0-e4d7-76d3-81e0-6267d537bc1b",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-399fb44.txt",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-workspace-status-derive-only/gate/transcript-gate-evidence-399fb44.txt",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

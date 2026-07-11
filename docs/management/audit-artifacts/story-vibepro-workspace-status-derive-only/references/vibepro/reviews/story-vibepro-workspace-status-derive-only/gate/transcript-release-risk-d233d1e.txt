@@ -1,0 +1,3 @@
+status: pass
+summary: The fix introduces no release, migration, deployment, or operational blocker.
+evidence: missing worktrees become explicit unknown entries while all other results remain available.

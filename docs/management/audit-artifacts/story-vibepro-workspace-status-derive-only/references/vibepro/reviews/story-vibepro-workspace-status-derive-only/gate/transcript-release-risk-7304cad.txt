@@ -1,0 +1,4 @@
+status: needs_changes
+head: 7304cad1e0d4f7b716e67aaee7d0d0fccad8c510
+finding: release-risk-workspace-status-path-exemption
+The path-only exemption was too broad for future release safety. Require a read-only source shape and preserve worker/state candidates in mixed changes.

@@ -1,0 +1,4 @@
+status: needs_changes
+head: 7304cad1e0d4f7b716e67aaee7d0d0fccad8c510
+finding: path-surface-workspace-exemption-not-applied
+The all-source allowlist did not model the real PR surface, so the authority gate remained unresolved. Apply the exemption per candidate path and retain mixed high-risk candidates.
