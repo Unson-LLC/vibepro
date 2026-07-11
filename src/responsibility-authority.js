@@ -58,7 +58,8 @@ const VALID_AUTHORITY_KINDS = new Set(['domain_contract', 'architecture', 'spec'
 const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
   'src/evidence-reuse.js',
   'src/senior-gap-judgment.js',
-  'src/usage-report.js'
+  'src/usage-report.js',
+  'src/workspace-status.js'
 ]);
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
@@ -96,7 +97,8 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
     riskSurfaces,
     matchText,
     responsibilities,
-    contractClauses
+    contractClauses,
+    readOnlyAuditReportingChange
   });
   const status = resolveAuthorityStatus(matchedResponsibilities, unregisteredCandidates);
   const invalidRegistryEntries = matchedResponsibilities.filter((item) => item.validation_errors.length > 0);
@@ -598,7 +600,15 @@ function isGenericEvidenceRequirement(tokens) {
   return tokens.length > 0 && tokens.every((token) => genericTokens.has(token));
 }
 
-function collectUnregisteredCandidates({ changedPaths, riskSurfaces, matchText, responsibilities, contractClauses }) {
+function collectUnregisteredCandidates({
+  changedPaths,
+  riskSurfaces,
+  matchText,
+  responsibilities,
+  contractClauses,
+  readOnlyAuditReportingChange = false
+}) {
+  if (readOnlyAuditReportingChange) return [];
   const riskySurfaces = riskSurfaces.filter((surface) => HIGH_RISK_SURFACES.has(surface));
   const riskyPaths = changedPaths
     .filter((changedPath) => isProductionSourcePath(changedPath))

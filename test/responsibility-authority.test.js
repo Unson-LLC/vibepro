@@ -203,6 +203,23 @@ test('resolver emits no_registered_authority for unregistered high-risk state su
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'needs_review');
 });
 
+test('resolver does not classify derive-only workspace status as an unregistered state responsibility', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/workspace-status.js'] },
+    fileGroups: { source: { files: ['src/workspace-status.js'] } },
+    changeClassification: { risk_surfaces: ['polling_retry'] },
+    storySource: { content: 'derive readiness without writes or polling', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.status, 'not_applicable');
+  assert.equal(result.summary.unregistered_candidate_count, 0);
+  assert.equal(buildResponsibilityAuthorityGate(result).status, 'not_applicable');
+});
+
 test('resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths', async () => {
   const repo = await makeFixtureRepo();
   await writeResponsibilityFixture(repo);
