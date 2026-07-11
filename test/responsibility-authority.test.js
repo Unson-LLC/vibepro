@@ -220,6 +220,63 @@ test('resolver does not classify derive-only workspace status as an unregistered
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'not_applicable');
 });
 
+test('resolver fails closed when workspace status contains a state mutation', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'workspace-status.js'), `
+export function updateStatus(task) {
+  task.status = 'active_ready';
+}
+`);
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/workspace-status.js'] },
+    fileGroups: { source: { files: ['src/workspace-status.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    storySource: { content: 'workspace status updates task state', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.summary.unregistered_candidate_count, 1);
+  assert.equal(result.unregistered_candidates[0].id, 'no_registered_authority');
+  assert.deepEqual(result.unregistered_candidates[0].paths, ['src/workspace-status.js']);
+});
+
+test('resolver applies workspace status exemption without hiding unregistered CLI wiring', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+  await writeFile(path.join(repo, 'src', 'cli.js'), 'export { status } from "./workspace-status.js";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/workspace-status.js', 'src/cli.js'] },
+    fileGroups: { source: { files: ['src/workspace-status.js', 'src/cli.js'] } },
+    changeClassification: { risk_surfaces: ['polling_retry'] },
+    storySource: { content: 'derive readiness without writes or polling', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.summary.unregistered_candidate_count, 1);
+  assert.deepEqual(result.unregistered_candidates[0].paths, ['src/cli.js']);
+});
+
+test('resolver retains a mixed worker candidate beside read-only workspace status', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+  await writeFile(path.join(repo, 'src', 'recovery-worker.js'), 'export function recover(task) { task.status = "CANCELED"; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/workspace-status.js', 'src/recovery-worker.js'] },
+    fileGroups: { source: { files: ['src/workspace-status.js', 'src/recovery-worker.js'] } },
+    changeClassification: { risk_surfaces: ['queue_worker'] },
+    storySource: { content: 'derive status while a recovery worker updates state', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.status, 'needs_review');
+  assert.deepEqual(result.unregistered_candidates[0].paths, ['src/recovery-worker.js']);
+});
+
 test('resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths', async () => {
   const repo = await makeFixtureRepo();
   await writeResponsibilityFixture(repo);

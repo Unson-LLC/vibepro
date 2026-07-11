@@ -61,6 +61,11 @@ const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
   'src/usage-report.js',
   'src/workspace-status.js'
 ]);
+const WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS = [
+  /\b(?:writeFile|appendFile|mkdir|mkdtemp|rm|unlink|rename|chmod|chown)\s*\(/,
+  /\b(?:fetch|request|setInterval|setTimeout|Worker)\s*\(/,
+  /\.(?:status|state|metadata|permission|role)\s*=/
+];
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -69,8 +74,12 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const responsibilities = registryFiles.flatMap((file) => normalizeResponsibilities(file));
   const contractClauses = contractFiles.flatMap((file) => normalizeContractClauses(file));
   const changedPaths = collectChangedPaths(options);
-  const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths);
   const changedSourceText = await readChangedSourceText(root, changedPaths);
+  const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths, changedSourceText);
+  const workspaceStatusSourceText = changedPaths.includes('src/workspace-status.js')
+    ? await readChangedSourceText(root, ['src/workspace-status.js'])
+    : '';
+  const unregisteredExemptPaths = collectReadOnlyReportingPaths(changedPaths, workspaceStatusSourceText);
   const riskSurfaces = collectRiskSurfaces(options.changeClassification);
   const matchText = [
     extractStoryText(options.storySource),
@@ -98,7 +107,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
     matchText,
     responsibilities,
     contractClauses,
-    readOnlyAuditReportingChange
+    unregisteredExemptPaths
   });
   const status = resolveAuthorityStatus(matchedResponsibilities, unregisteredCandidates);
   const invalidRegistryEntries = matchedResponsibilities.filter((item) => item.validation_errors.length > 0);
@@ -606,17 +615,19 @@ function collectUnregisteredCandidates({
   matchText,
   responsibilities,
   contractClauses,
-  readOnlyAuditReportingChange = false
+  unregisteredExemptPaths = []
 }) {
-  if (readOnlyAuditReportingChange) return [];
   const riskySurfaces = riskSurfaces.filter((surface) => HIGH_RISK_SURFACES.has(surface));
   const riskyPaths = changedPaths
     .filter((changedPath) => isProductionSourcePath(changedPath))
+    .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
     .filter((changedPath) => HIGH_RISK_PATTERNS.some((pattern) => pattern.test(changedPath)));
   const candidatePaths = riskyPaths.length > 0
     ? riskyPaths
     : riskySurfaces.length > 0
-      ? changedPaths.filter((changedPath) => isProductionSourcePath(changedPath))
+      ? changedPaths
+        .filter((changedPath) => isProductionSourcePath(changedPath))
+        .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
       : [];
   const uncoveredPaths = candidatePaths.filter((changedPath) => !pathHasValidRegisteredAuthority(changedPath, responsibilities, contractClauses));
   const textRisk = HIGH_RISK_PATTERNS.some((pattern) => pattern.test(matchText));
@@ -748,12 +759,27 @@ function pathPatternMatches(pattern, changedPath) {
   return globToRegExp(normalizedPattern).test(normalizedPath);
 }
 
-function isReadOnlyAuditReportingChange(changedPaths = []) {
+function isReadOnlyAuditReportingChange(changedPaths = [], changedSourceText = '') {
   const sourcePaths = changedPaths
     .map((changedPath) => toPosix(changedPath))
     .filter((changedPath) => changedPath.startsWith('src/'));
-  return sourcePaths.length > 0
-    && sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath));
+  if (sourcePaths.length === 0
+    || !sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath))) return false;
+  if (sourcePaths.includes('src/workspace-status.js')) {
+    return !WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS.some((pattern) => pattern.test(changedSourceText));
+  }
+  return true;
+}
+
+function collectReadOnlyReportingPaths(changedPaths = [], workspaceStatusSourceText = '') {
+  const sourcePaths = changedPaths
+    .map((changedPath) => toPosix(changedPath))
+    .filter((changedPath) => changedPath.startsWith('src/'));
+  return sourcePaths.filter((changedPath) => {
+    if (!READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath)) return false;
+    if (changedPath !== 'src/workspace-status.js') return true;
+    return !WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS.some((pattern) => pattern.test(workspaceStatusSourceText));
+  });
 }
 
 function globToRegExp(pattern) {
