@@ -27,11 +27,16 @@ test('parseWorktreePorcelain preserves branch and detached state', () => {
     { path: '/repo', head_sha: 'abc', branch: 'main' },
     { path: '/repo/wt', head_sha: 'def', detached: true }
   ]);
+
+  const nulParsed = parseWorktreePorcelain('worktree /repo/日本語\0HEAD abc\0branch refs/heads/main\0\0');
+  assert.deepEqual(nulParsed, [
+    { path: '/repo/日本語', head_sha: 'abc', branch: 'main' }
+  ]);
 });
 
 test('workspace status derives readiness per worktree without trusting canonical health', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'vibepro-workspace-status-'));
-  const linked = path.join(root, 'linked');
+  const linked = path.join(root, 'linked-日本語');
   const emptyLinked = path.join(root, 'empty-linked');
   const prunable = path.join(root, 'prunable-linked');
   await git(root, ['init', '-b', 'main']);
@@ -69,6 +74,11 @@ test('workspace status derives readiness per worktree without trusting canonical
     gate_status: { overall_status: 'needs_verification', ready_for_pr_create: false },
     artifact_freshness: { artifact_head_sha: linkedHead }
   });
+  await writeArtifact(linked, 'story-inconsistent', {
+    story: { story_id: 'story-inconsistent' },
+    gate_status: { overall_status: 'needs_verification', ready_for_pr_create: true },
+    artifact_freshness: { artifact_head_sha: linkedHead }
+  });
   const malformedDir = path.join(linked, '.vibepro', 'pr', 'story-malformed');
   await mkdir(malformedDir, { recursive: true });
   await writeFile(path.join(malformedDir, 'pr-prepare.json'), '{not json');
@@ -89,6 +99,8 @@ test('workspace status derives readiness per worktree without trusting canonical
   assert.equal(feature.stories.find((story) => story.story_id === 'story-stale').status, 'stale_artifact');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-missing-head').status, 'stale_artifact');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-blocked').status, 'active_blocked');
+  assert.equal(feature.stories.find((story) => story.story_id === 'story-inconsistent').status, 'active_blocked');
+  assert.equal(feature.stories.find((story) => story.story_id === 'story-inconsistent').reason, 'overall_status_not_ready');
   assert.equal(feature.stories.find((story) => story.story_id === 'story-malformed').status, 'unknown');
   const empty = result.worktrees.find((worktree) => worktree.branch === 'feature/empty');
   const missing = result.worktrees.find((worktree) => worktree.branch === 'feature/prunable');
@@ -97,7 +109,7 @@ test('workspace status derives readiness per worktree without trusting canonical
   assert.equal(missing.stories[0].reason, 'prunable_worktree');
   assert.deepEqual(result.summary.story_status_counts, {
     active_ready: 1,
-    active_blocked: 1,
+    active_blocked: 2,
     stale_artifact: 2,
     unknown: 3
   });

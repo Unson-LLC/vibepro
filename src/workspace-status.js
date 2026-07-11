@@ -5,19 +5,22 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-async function git(repoRoot, args) {
+async function git(repoRoot, args, { trim = true } = {}) {
   const { stdout } = await execFileAsync('git', args, {
     cwd: repoRoot,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024
   });
-  return stdout.trim();
+  return trim ? stdout.trim() : stdout;
 }
 
 export function parseWorktreePorcelain(output) {
   const records = [];
   let current = null;
-  for (const line of output.split(/\r?\n/)) {
+  // `-z` prevents Git from C-style quoting paths that contain non-ASCII or
+  // control characters. Keep newline parsing for direct callers and fixtures.
+  const fields = output.includes('\0') ? output.split('\0') : output.split(/\r?\n/);
+  for (const line of fields) {
     if (line.startsWith('worktree ')) {
       if (current) records.push(current);
       current = { path: line.slice('worktree '.length) };
@@ -81,9 +84,11 @@ async function readStoryStatuses(worktree) {
           ? 'artifact_head_missing'
           : recordedHead !== worktree.head_sha
             ? 'artifact_head_mismatch'
-            : artifact?.gate_status?.ready_for_pr_create === true
-              ? null
-              : 'gate_not_ready',
+            : artifact?.gate_status?.ready_for_pr_create !== true
+              ? 'gate_not_ready'
+              : artifact?.gate_status?.overall_status !== 'ready_for_review'
+                ? 'overall_status_not_ready'
+                : null,
         artifact_head_sha: recordedHead,
         artifact_path: artifactPath
       });
@@ -144,7 +149,7 @@ async function inspectWorktree(worktree, canonicalPath) {
 
 export async function collectWorkspaceStatus(repoRoot = process.cwd()) {
   const root = await realpath(path.resolve(repoRoot));
-  const parsed = parseWorktreePorcelain(await git(root, ['worktree', 'list', '--porcelain']));
+  const parsed = parseWorktreePorcelain(await git(root, ['worktree', 'list', '--porcelain', '-z'], { trim: false }));
   if (parsed.length === 0) throw new Error(`No Git worktrees found for ${root}`);
   const normalized = await Promise.all(parsed.map(async (worktree) => {
     try {

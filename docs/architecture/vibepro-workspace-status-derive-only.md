@@ -37,4 +37,3 @@ that must be reconciled before every use.
 - A deleted artifact between discovery and read is handled as a missing artifact.
 - Git command failure aborts with the command error because worktree discovery
   itself cannot then be trusted.
-
