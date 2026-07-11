@@ -80,7 +80,8 @@ const SMOKE = {
   explore: { setup: 'story', args: (r) => ['explore', r] },
   performance: { setup: 'story', args: (r) => ['performance', r] },
   nocodb: { setup: 'none', args: () => ['nocodb'] },
-  'repo-status': { setup: 'story', args: (r) => ['repo-status', r] }
+  'repo-status': { setup: 'story', args: (r) => ['repo-status', r] },
+  workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] }
 };
 
 async function repoFor(setup) {

@@ -1,4 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 export const DEFAULT_RESPONSIBILITY_REGISTRY_FILES = [
@@ -58,8 +59,12 @@ const VALID_AUTHORITY_KINDS = new Set(['domain_contract', 'architecture', 'spec'
 const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
   'src/evidence-reuse.js',
   'src/senior-gap-judgment.js',
-  'src/usage-report.js'
+  'src/usage-report.js',
+  'src/workspace-status.js'
 ]);
+// The exemption is deliberately content-bound. Any source change, including an
+// indirect side effect through an alias or helper, fails closed until reviewed.
+const WORKSPACE_STATUS_READ_ONLY_SHA256 = '80876345051ef0ed3f51993361c6810305d6ab442f3d0119c7bf75e0d3e74add';
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -68,8 +73,12 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const responsibilities = registryFiles.flatMap((file) => normalizeResponsibilities(file));
   const contractClauses = contractFiles.flatMap((file) => normalizeContractClauses(file));
   const changedPaths = collectChangedPaths(options);
-  const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths);
   const changedSourceText = await readChangedSourceText(root, changedPaths);
+  const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths, changedSourceText);
+  const workspaceStatusSourceText = changedPaths.includes('src/workspace-status.js')
+    ? await readChangedSourceText(root, ['src/workspace-status.js'])
+    : '';
+  const unregisteredExemptPaths = collectReadOnlyReportingPaths(changedPaths, workspaceStatusSourceText);
   const riskSurfaces = collectRiskSurfaces(options.changeClassification);
   const matchText = [
     extractStoryText(options.storySource),
@@ -96,7 +105,8 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
     riskSurfaces,
     matchText,
     responsibilities,
-    contractClauses
+    contractClauses,
+    unregisteredExemptPaths
   });
   const status = resolveAuthorityStatus(matchedResponsibilities, unregisteredCandidates);
   const invalidRegistryEntries = matchedResponsibilities.filter((item) => item.validation_errors.length > 0);
@@ -598,15 +608,25 @@ function isGenericEvidenceRequirement(tokens) {
   return tokens.length > 0 && tokens.every((token) => genericTokens.has(token));
 }
 
-function collectUnregisteredCandidates({ changedPaths, riskSurfaces, matchText, responsibilities, contractClauses }) {
+function collectUnregisteredCandidates({
+  changedPaths,
+  riskSurfaces,
+  matchText,
+  responsibilities,
+  contractClauses,
+  unregisteredExemptPaths = []
+}) {
   const riskySurfaces = riskSurfaces.filter((surface) => HIGH_RISK_SURFACES.has(surface));
   const riskyPaths = changedPaths
     .filter((changedPath) => isProductionSourcePath(changedPath))
+    .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
     .filter((changedPath) => HIGH_RISK_PATTERNS.some((pattern) => pattern.test(changedPath)));
   const candidatePaths = riskyPaths.length > 0
     ? riskyPaths
     : riskySurfaces.length > 0
-      ? changedPaths.filter((changedPath) => isProductionSourcePath(changedPath))
+      ? changedPaths
+        .filter((changedPath) => isProductionSourcePath(changedPath))
+        .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
       : [];
   const uncoveredPaths = candidatePaths.filter((changedPath) => !pathHasValidRegisteredAuthority(changedPath, responsibilities, contractClauses));
   const textRisk = HIGH_RISK_PATTERNS.some((pattern) => pattern.test(matchText));
@@ -738,12 +758,32 @@ function pathPatternMatches(pattern, changedPath) {
   return globToRegExp(normalizedPattern).test(normalizedPath);
 }
 
-function isReadOnlyAuditReportingChange(changedPaths = []) {
+function isReadOnlyAuditReportingChange(changedPaths = [], changedSourceText = '') {
   const sourcePaths = changedPaths
     .map((changedPath) => toPosix(changedPath))
     .filter((changedPath) => changedPath.startsWith('src/'));
-  return sourcePaths.length > 0
-    && sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath));
+  if (sourcePaths.length === 0
+    || !sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath))) return false;
+  if (sourcePaths.includes('src/workspace-status.js')) {
+    return isReviewedWorkspaceStatusSource(changedSourceText);
+  }
+  return true;
+}
+
+function collectReadOnlyReportingPaths(changedPaths = [], workspaceStatusSourceText = '') {
+  const sourcePaths = changedPaths
+    .map((changedPath) => toPosix(changedPath))
+    .filter((changedPath) => changedPath.startsWith('src/'));
+  return sourcePaths.filter((changedPath) => {
+    if (!READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath)) return false;
+    if (changedPath !== 'src/workspace-status.js') return true;
+    return isReviewedWorkspaceStatusSource(workspaceStatusSourceText);
+  });
+}
+
+function isReviewedWorkspaceStatusSource(sourceText) {
+  if (!sourceText) return false;
+  return createHash('sha256').update(sourceText).digest('hex') === WORKSPACE_STATUS_READ_ONLY_SHA256;
 }
 
 function globToRegExp(pattern) {

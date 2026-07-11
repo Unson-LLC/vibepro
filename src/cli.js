@@ -83,6 +83,7 @@ import {
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
+import { collectWorkspaceStatus, renderWorkspaceStatus } from './workspace-status.js';
 import {
   comparePerformanceMeasurements,
   renderPerformanceSummary,
@@ -354,6 +355,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
+  vibepro workspace status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
@@ -681,7 +683,7 @@ export const TOP_LEVEL_COMMANDS = [
   'playbook', 'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
-  'nocodb', 'repo-status'
+  'nocodb', 'repo-status', 'workspace'
 ];
 
 export async function runCli(argv, io = {}) {
@@ -897,6 +899,20 @@ export async function runCli(argv, io = {}) {
         ? `${JSON.stringify(status, null, 2)}\n`
         : renderRepoStatus(status));
       return { exitCode: 0, command, status };
+    }
+
+    if (command === 'workspace') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'status') {
+        const result = await collectWorkspaceStatus(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderWorkspaceStatus(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown workspace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
     }
 
     if (command === 'usage') {
