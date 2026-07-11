@@ -1,4 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 export const DEFAULT_RESPONSIBILITY_REGISTRY_FILES = [
@@ -61,11 +62,9 @@ const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
   'src/usage-report.js',
   'src/workspace-status.js'
 ]);
-const WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS = [
-  /\b(?:writeFile|appendFile|mkdir|mkdtemp|rm|unlink|rename|chmod|chown)\s*\(/,
-  /\b(?:fetch|request|setInterval|setTimeout|Worker)\s*\(/,
-  /\.(?:status|state|metadata|permission|role)\s*=/
-];
+// The exemption is deliberately content-bound. Any source change, including an
+// indirect side effect through an alias or helper, fails closed until reviewed.
+const WORKSPACE_STATUS_READ_ONLY_SHA256 = '80876345051ef0ed3f51993361c6810305d6ab442f3d0119c7bf75e0d3e74add';
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -766,7 +765,7 @@ function isReadOnlyAuditReportingChange(changedPaths = [], changedSourceText = '
   if (sourcePaths.length === 0
     || !sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath))) return false;
   if (sourcePaths.includes('src/workspace-status.js')) {
-    return !WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS.some((pattern) => pattern.test(changedSourceText));
+    return isReviewedWorkspaceStatusSource(changedSourceText);
   }
   return true;
 }
@@ -778,8 +777,13 @@ function collectReadOnlyReportingPaths(changedPaths = [], workspaceStatusSourceT
   return sourcePaths.filter((changedPath) => {
     if (!READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath)) return false;
     if (changedPath !== 'src/workspace-status.js') return true;
-    return !WORKSPACE_STATUS_SIDE_EFFECT_PATTERNS.some((pattern) => pattern.test(workspaceStatusSourceText));
+    return isReviewedWorkspaceStatusSource(workspaceStatusSourceText);
   });
+}
+
+function isReviewedWorkspaceStatusSource(sourceText) {
+  if (!sourceText) return false;
+  return createHash('sha256').update(sourceText).digest('hex') === WORKSPACE_STATUS_READ_ONLY_SHA256;
 }
 
 function globToRegExp(pattern) {

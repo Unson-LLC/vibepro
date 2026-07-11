@@ -37,9 +37,11 @@ diagrams:
 - `INV-WS-4`: Unparseable legacy evidence remains visible as `unknown`; absence
   of evidence is not converted into a passing or blocked claim.
 - `INV-WS-5`: The read-only workspace-status exemption is path- and
-  content-scoped. An unresolved responsibility, a missing primary authority
-  reference, or an unsupported authority kind remains a fail-closed authority
-  error and is never hidden by the exemption.
+  exact-content-digest scoped. Any source edit invalidates the reviewed digest
+  and fails closed until the digest is deliberately updated after review. An
+  unresolved responsibility, a missing primary authority reference, or an
+  unsupported authority kind remains a fail-closed authority error and is
+  never hidden by the exemption.
 
 ## Scenarios
 
@@ -59,6 +61,8 @@ diagrams:
 - `S-008`: When
   `!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind)` is true, the
   unsupported authority kind is invalid and cannot satisfy the gate.
+- `S-009`: Adding an indirect side effect such as `git(repo, ['fetch'])` changes
+  the reviewed workspace-status digest and restores `no_registered_authority`.
 
 ## References
 

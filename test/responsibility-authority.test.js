@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -206,7 +206,7 @@ test('resolver emits no_registered_authority for unregistered high-risk state su
 test('resolver does not classify derive-only workspace status as an unregistered state responsibility', async () => {
   const repo = await makeFixtureRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+  await writeReviewedWorkspaceStatus(repo);
 
   const result = await resolveResponsibilityAuthority(repo, {
     git: { changed_files: ['src/workspace-status.js'] },
@@ -245,7 +245,7 @@ export function updateStatus(task) {
 test('resolver applies workspace status exemption without hiding unregistered CLI wiring', async () => {
   const repo = await makeFixtureRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+  await writeReviewedWorkspaceStatus(repo);
   await writeFile(path.join(repo, 'src', 'cli.js'), 'export { status } from "./workspace-status.js";\n');
 
   const result = await resolveResponsibilityAuthority(repo, {
@@ -263,7 +263,7 @@ test('resolver applies workspace status exemption without hiding unregistered CL
 test('resolver retains a mixed worker candidate beside read-only workspace status', async () => {
   const repo = await makeFixtureRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'workspace-status.js'), 'export function status() { return "active_ready"; }\n');
+  await writeReviewedWorkspaceStatus(repo);
   await writeFile(path.join(repo, 'src', 'recovery-worker.js'), 'export function recover(task) { task.status = "CANCELED"; }\n');
 
   const result = await resolveResponsibilityAuthority(repo, {
@@ -275,6 +275,26 @@ test('resolver retains a mixed worker candidate beside read-only workspace statu
 
   assert.equal(result.status, 'needs_review');
   assert.deepEqual(result.unregistered_candidates[0].paths, ['src/recovery-worker.js']);
+});
+
+test('resolver fails closed when reviewed workspace status gains an indirect git side effect', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  const reviewedSource = await readFile(path.join(REPO_ROOT, 'src', 'workspace-status.js'), 'utf8');
+  await writeFile(
+    path.join(repo, 'src', 'workspace-status.js'),
+    `${reviewedSource}\nexport async function refresh(repo) { return git(repo, ['fetch']); }\n`
+  );
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/workspace-status.js'] },
+    fileGroups: { source: { files: ['src/workspace-status.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    storySource: { content: 'derive readiness after refreshing remote state', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.status, 'needs_review');
+  assert.deepEqual(result.unregistered_candidates[0].paths, ['src/workspace-status.js']);
 });
 
 test('resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths', async () => {
@@ -478,6 +498,11 @@ export function cleanup(task) {
   assert.equal(preparation.gate_status.ready_for_pr_create, false);
   assert.ok(preparation.pr_context.requirement_consistency.summary.responsibility_authority_ref_count >= 1);
 });
+
+async function writeReviewedWorkspaceStatus(repo) {
+  const source = await readFile(path.join(REPO_ROOT, 'src', 'workspace-status.js'), 'utf8');
+  await writeFile(path.join(repo, 'src', 'workspace-status.js'), source);
+}
 
 async function makeFixtureRepo() {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rar-'));
