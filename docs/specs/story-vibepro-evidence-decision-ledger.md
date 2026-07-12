@@ -19,6 +19,14 @@ Given no observed decision delta, when the ledger is summarized, then the delta 
 
 Given legacy consumers, when fields are added, then existing `consumer`, `decision_supported`, and `decision_bound_count` remain unchanged.
 
+```yaml
+inherited_behavior:
+  condition: "legacy consumers read consumer and decision_supported"
+  classification: unchanged
+  files:
+    - src/evidence-reuse.js
+```
+
 ## Diagrams
 
 ### threat_model
