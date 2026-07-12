@@ -11,3 +11,13 @@ Given no observed decision delta, when the ledger is summarized, then the delta 
 ## EDL-003
 
 Given legacy consumers, when fields are added, then existing `consumer`, `decision_supported`, and `decision_bound_count` remain unchanged.
+
+## Threat boundary
+
+```mermaid
+flowchart LR
+  A[Canonical artifact inventory] --> B[Ledger builder]
+  B --> C[Bounded evidence ledger]
+  C --> D[PR and merge gates]
+  X[Unobserved decision delta] -->|must remain null| C
+```

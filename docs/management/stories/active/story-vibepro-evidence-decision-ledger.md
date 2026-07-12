@@ -17,3 +17,8 @@ spec_docs:
 - [ ] `decision_changed`は確認できない場合に`null`を保持する。
 - [ ] summaryが判断変更、未確認、未使用artifactを別々に集計する。
 - [ ] 既存consumerとdecision-bound集計の互換性を維持する。
+
+## シナリオ
+
+- 既存4 artifactを生成すると、全entryに判断利用フィールドがあり既存集計は4のままになる。
+- 判断変化を観測していない場合、4件を未確認として数え、未使用0件と区別する。
