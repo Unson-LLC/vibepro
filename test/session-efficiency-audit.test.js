@@ -411,6 +411,21 @@ test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and dedup
       timestamp: '2026-06-27T13:00:30.000Z',
       type: 'compacted',
       payload: { replacement_history: [{ role: 'developer', content: [{ type: 'input_text', text: `.vibepro/pr/${storyId}/gate-dag.json` }] }] }
+    },
+    {
+      timestamp: '2026-06-27T13:00:40.000Z',
+      type: 'response_item',
+      payload: { type: 'function_call_output', output: 'Read src/fresh-session.js' }
+    },
+    {
+      timestamp: '2026-06-27T13:00:50.000Z',
+      type: 'response_item',
+      payload: { type: 'assistant_message', role: 'assistant', content: [{ type: 'output_text', text: 'Generated implementation summary for src/generated-session.js' }] }
+    },
+    {
+      timestamp: '2026-06-27T13:01:00.000Z',
+      type: 'response_item',
+      payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `Preserve docs/specs/${storyId}.md as the session constraint` }] }
     }
   ];
   await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
@@ -430,6 +445,13 @@ test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and dedup
   assert.equal(mixed.unique_estimated_tokens > 0, true);
   assert.equal(mixed.duplicate_estimated_tokens, mixed.unique_estimated_tokens);
   assert.equal(accounting.provenance_buckets.replayed_context.event_count, 1);
+  assert.equal(accounting.provenance_buckets.fresh_read.event_count, 1);
+  assert.equal(accounting.provenance_buckets.generated_output.event_count, 1);
+  assert.equal(accounting.provenance_buckets.world_state.event_count, 1);
+  assert.deepEqual(
+    Object.keys(accounting.provenance_buckets).sort(),
+    ['fresh_read', 'generated_output', 'mixed_tool_output', 'replayed_context', 'world_state']
+  );
   assert.equal(accounting.unique_estimated_tokens + accounting.duplicate_estimated_tokens, accounting.classified_estimated_tokens);
   assert.equal(accounting.top_exposures[0].content_digest.length, 64);
 });
