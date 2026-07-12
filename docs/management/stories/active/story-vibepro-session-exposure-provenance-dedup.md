@@ -2,6 +2,7 @@
 story_id: story-vibepro-session-exposure-provenance-dedup
 title: Session exposureをprovenance分類しdigest重複排除する
 status: active
+parent_design: vibepro-runtime-cost-gap-closure
 view: dev
 period: 2026-07
 reason: 既存の意味bucketを互換維持し、直交するprovenanceとdigest集計を追加する。rollbackは追加フィールドの削除で可能。

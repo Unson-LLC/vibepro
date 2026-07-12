@@ -1,5 +1,6 @@
 ---
 story_id: story-vibepro-session-exposure-provenance-dedup
+parent_design: vibepro-runtime-cost-gap-closure
 ---
 
 # Spec
