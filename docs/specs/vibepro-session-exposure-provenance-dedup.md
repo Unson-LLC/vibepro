@@ -20,13 +20,29 @@ Given one tool output containing signals for multiple semantic buckets, when cla
 
 Given an existing consumer that reads semantic `buckets`, when provenance accounting is added, then the existing bucket totals remain unchanged and malformed or unmatched transcript entries remain unattributed instead of being promoted to fresh evidence.
 
+```yaml
+inherited_behavior:
+  - condition: "entry.type === 'session_meta'"
+    classification: unchanged
+    files:
+      - src/session-efficiency-audit.js
+  - condition: "!sessionSelection.session_id && !inferSession && sessionId !== 'auto'"
+    classification: unchanged
+    files:
+      - src/session-efficiency-audit.js
+  - condition: "!inferSession && requestedSessionId !== 'auto'"
+    classification: unchanged
+    files:
+      - src/session-efficiency-audit.js
+```
+
 ## Diagrams
 
-### threat_model
+### accounting_data_flow
 
 ```mermaid
 flowchart LR
-  J["Untrusted session JSONL"] --> X["Text extraction"]
+  J["Session JSONL"] --> X["Text extraction"]
   X --> S["Existing semantic classifier"]
   X --> D["Normalized SHA-256 digest"]
   S --> P["Provenance classifier"]
@@ -37,7 +53,7 @@ flowchart LR
   U -. "does not alter" .-> C["Legacy semantic bucket totals"]
 ```
 
-Trust boundary: session text is observational input only. The digest is used for window-local accounting, not identity, authorization, persistence lookup, or cross-session equivalence. Duplicate content remains visible in raw totals and is only excluded from the new unique estimate.
+Accounting boundary: session text is observational input only. The digest is used for window-local accounting and does not change persistence lookup or cross-session equivalence. Duplicate content remains visible in raw totals and is only excluded from the new unique estimate.
 
 ## References
 
