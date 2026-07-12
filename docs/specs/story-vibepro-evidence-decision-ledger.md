@@ -19,9 +19,13 @@ Given no observed decision delta, when the ledger is summarized, then the delta 
 
 Given legacy consumers, when fields are added, then existing `consumer`, `decision_supported`, and `decision_bound_count` remain unchanged.
 
+## EDL-004
+
+Given optional session evidence, when the ledger is built, then the `sessions.length > 0` branch preserves the existing replay summary without changing canonical artifact decision-use totals, and an empty session set remains valid.
+
 ```yaml
 inherited_behavior:
-  condition: "legacy consumers read consumer and decision_supported"
+  condition: "sessions.length > 0"
   classification: unchanged
   files:
     - src/evidence-reuse.js
