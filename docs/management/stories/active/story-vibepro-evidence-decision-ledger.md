@@ -2,11 +2,13 @@
 story_id: story-vibepro-evidence-decision-ledger
 title: evidence ledgerに判断利用を記録する
 status: active
+parent_design:
+  - vibepro-artifact-value-ledger
 reason: consumer文字列だけではartifactが判断を変えたか監査できないため、互換追加で明示し、未確認をfalseに丸めずrollback可能にする。
 architecture_docs:
   - docs/architecture/vibepro-evidence-decision-ledger.md
 spec_docs:
-  - docs/specs/vibepro-evidence-decision-ledger.md
+  - docs/specs/story-vibepro-evidence-decision-ledger.md
 ---
 
 # evidence ledgerに判断利用を記録する
@@ -20,5 +22,5 @@ spec_docs:
 
 ## シナリオ
 
-- 既存4 artifactを生成すると、全entryに判断利用フィールドがあり既存集計は4のままになる。
-- 判断変化を観測していない場合、4件を未確認として数え、未使用0件と区別する。
+- EDL-S1 / AC-1, AC-4: 既存4 artifactを生成すると、全entryに判断利用フィールドがあり既存集計は4のままになる。
+- EDL-S2 / AC-2, AC-3: 判断変化を観測していない場合、4件を未確認として数え、未使用0件と区別する。

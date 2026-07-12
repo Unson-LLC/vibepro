@@ -1,3 +1,10 @@
+---
+title: Evidence decision ledger spec
+status: active
+parent_design:
+  - vibepro-artifact-value-ledger
+---
+
 # Evidence decision ledger spec
 
 ## EDL-001
@@ -12,7 +19,9 @@ Given no observed decision delta, when the ledger is summarized, then the delta 
 
 Given legacy consumers, when fields are added, then existing `consumer`, `decision_supported`, and `decision_bound_count` remain unchanged.
 
-## Threat boundary
+## Diagrams
+
+### threat_model
 
 ```mermaid
 flowchart LR

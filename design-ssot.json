@@ -1853,12 +1853,35 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-evidence-decision-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "architecture": [
           {
             "kind": "architecture",
             "path": "docs/architecture/vibepro-artifact-value-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-evidence-decision-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-evidence-decision-ledger.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -1874,8 +1897,29 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-evidence-decision-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "architecture",
           "path": "docs/architecture/vibepro-artifact-value-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-evidence-decision-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-evidence-decision-ledger.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -4224,5 +4268,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-12T14:34:50.635Z"
+  "updated_at": "2026-07-12T15:04:46.720Z"
 }
