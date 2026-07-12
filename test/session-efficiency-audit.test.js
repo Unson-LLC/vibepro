@@ -383,7 +383,7 @@ test('SCCB-SCENARIO-001 compaction replacement_history text is bucketed as repla
   assert.deepEqual(accounting.buckets.replayed_context.matched_signals, ['compaction_replacement_history']);
 });
 
-test('SEXP-S-1/2/3 classifies provenance and deduplicates repeated mixed tool output by digest', async () => {
+test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and deduplicates repeated mixed tool output by digest', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   const mixedOutput = `Read .vibepro/pr/${storyId}/pr-prepare.json and src/session.js with test/session.test.js`;
   const lines = [

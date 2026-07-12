@@ -24,3 +24,10 @@ session-costはartifactらしい文字列を意味bucketへ分類できるが、
 - [ ] 既存の意味bucketとtotal token accountingは後方互換を維持する。
 - [ ] mixed tool outputを単一の意味bucketだけに帰属した新規読込として扱わない。
 - [ ] synthetic sessionで分類と重複排除を回帰検証する。
+
+## 検証シナリオ
+
+- `SEXP-S-1`: 5種類のprovenance closed setをsession-cost出力で確認する。
+- `SEXP-S-2`: 同一正規化本文2件がraw 2件、unique digest 1件になることを確認する。
+- `SEXP-S-3`: audit/src/testを同時に含むtool出力が `mixed_tool_output` になることを確認する。
+- `SEXP-S-4`: 既存semantic bucket totalsを維持し、未知入力をfresh evidenceへ昇格しない。
