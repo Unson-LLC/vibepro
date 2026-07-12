@@ -52,6 +52,9 @@ test('SGJ-S-001 senior gap judgment preserves missing cost telemetry as residual
         head_binding: { status: 'current_head_bound' },
         summary: {
           decision_bound_count: 5,
+          decision_changed_count: 2,
+          decision_change_unconfirmed_count: 2,
+          unused_artifact_count: 1,
           linked_consumer_count: 5,
           total_token_estimate: 120
         }
@@ -75,6 +78,9 @@ test('SGJ-S-001 senior gap judgment preserves missing cost telemetry as residual
   assert.equal(judgment.cost_context.evidence_reuse.full_evidence_generation_count, 2);
   assert.equal(judgment.cost_context.evidence_reuse.full_evidence_cumulative_generation_count, 5);
   assert.equal(judgment.cost_context.artifact_value_ledger.decision_bound_count, 5);
+  assert.equal(judgment.cost_context.artifact_value_ledger.decision_changed_count, 2);
+  assert.equal(judgment.cost_context.artifact_value_ledger.decision_change_unconfirmed_count, 2);
+  assert.equal(judgment.cost_context.artifact_value_ledger.unused_artifact_count, 1);
   assert.equal(judgment.cost_context.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(judgment.current_state.artifact_value_ledger_status, 'present');
   assert.equal(judgment.current_state.session_attribution_status, 'not_collected_in_pr_prepare');

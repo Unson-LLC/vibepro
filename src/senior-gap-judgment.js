@@ -606,6 +606,9 @@ function buildCostContext({ prContext, evidencePlan, evidenceReuse }) {
         ?? evidenceReuse.artifact_value_ledger.head_binding_status
         ?? null,
       decision_bound_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'decision_bound_count'),
+      decision_changed_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'decision_changed_count'),
+      decision_change_unconfirmed_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'decision_change_unconfirmed_count'),
+      unused_artifact_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'unused_artifact_count'),
       linked_consumer_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'linked_consumer_count'),
       total_token_estimate: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'total_token_estimate')
     } : null,

@@ -17,7 +17,7 @@ spec_docs:
 
 - [ ] 各entryが安定した`decision_id`と`consumer_gate`を持つ。
 - [ ] `decision_changed`は確認できない場合に`null`を保持する。
-- [ ] summaryが判断変更、未確認、未使用artifactを別々に集計する。
+- [ ] summaryと主要consumer surfaceが判断変更、未確認、未使用artifactを別々に集計し、`false`を確認済み未使用、`null`を未確認として扱う。
 - [ ] 既存consumerとdecision-bound集計の互換性を維持する。
 
 ## シナリオ
@@ -32,7 +32,7 @@ spec_docs:
 
 - Given: 判断変化が観測されていない。
 - When: evidence ledgerを集計する。
-- Then: 4件を未確認として数え、未使用0件と区別する。
+- Then: 4件を未確認として数え、`decision_changed=false`の確認済み未使用件数と区別する。
 
 ### EDL-S3 / AC-3, AC-4
 

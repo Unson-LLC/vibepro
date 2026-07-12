@@ -388,6 +388,9 @@ function ensureStoryUsage(storyMap, storyId) {
         latest_evidence_key: null,
         artifact_value_ledger_status: null,
         artifact_value_decision_bound_count: 0,
+        artifact_value_decision_changed_count: 0,
+        artifact_value_decision_change_unconfirmed_count: 0,
+        artifact_value_unused_artifact_count: 0,
         artifact_value_linked_consumer_count: 0,
         artifact_value_token_estimate: 0,
         session_attribution_status: null,
@@ -1163,6 +1166,18 @@ function recordEvidenceReuse(story, evidenceReuse) {
       story.evidence_reuse.artifact_value_decision_bound_count,
       firstFiniteNumber(artifactValueLedger.summary?.decision_bound_count, artifactValueLedger.decision_bound_count, 0)
     );
+    story.evidence_reuse.artifact_value_decision_changed_count = Math.max(
+      story.evidence_reuse.artifact_value_decision_changed_count,
+      firstFiniteNumber(artifactValueLedger.summary?.decision_changed_count, artifactValueLedger.decision_changed_count, 0)
+    );
+    story.evidence_reuse.artifact_value_decision_change_unconfirmed_count = Math.max(
+      story.evidence_reuse.artifact_value_decision_change_unconfirmed_count,
+      firstFiniteNumber(artifactValueLedger.summary?.decision_change_unconfirmed_count, artifactValueLedger.decision_change_unconfirmed_count, 0)
+    );
+    story.evidence_reuse.artifact_value_unused_artifact_count = Math.max(
+      story.evidence_reuse.artifact_value_unused_artifact_count,
+      firstFiniteNumber(artifactValueLedger.summary?.unused_artifact_count, artifactValueLedger.unused_artifact_count, 0)
+    );
     story.evidence_reuse.artifact_value_linked_consumer_count = Math.max(
       story.evidence_reuse.artifact_value_linked_consumer_count,
       firstFiniteNumber(artifactValueLedger.summary?.linked_consumer_count, artifactValueLedger.linked_consumer_count, 0)
@@ -1254,6 +1269,9 @@ function buildEvidenceReuseMetrics(stories) {
         evidence_key: story.evidence_reuse.latest_evidence_key,
         artifact_value_ledger_status: story.evidence_reuse.artifact_value_ledger_status,
         artifact_value_decision_bound_count: story.evidence_reuse.artifact_value_decision_bound_count,
+        artifact_value_decision_changed_count: story.evidence_reuse.artifact_value_decision_changed_count,
+        artifact_value_decision_change_unconfirmed_count: story.evidence_reuse.artifact_value_decision_change_unconfirmed_count,
+        artifact_value_unused_artifact_count: story.evidence_reuse.artifact_value_unused_artifact_count,
         artifact_value_linked_consumer_count: story.evidence_reuse.artifact_value_linked_consumer_count,
         artifact_value_token_estimate: story.evidence_reuse.artifact_value_token_estimate,
         session_attribution_status: story.evidence_reuse.session_attribution_status,
@@ -1377,7 +1395,7 @@ function renderEvidenceReuseRows(report) {
   ];
   const storyRows = reuse.by_story?.length
     ? reuse.by_story.map((story) => (
-        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} artifact_value=${story.artifact_value_ledger_status ?? '-'} decision_bound=${story.artifact_value_decision_bound_count ?? 0} consumers=${story.artifact_value_linked_consumer_count ?? 0} artifact_value_tokens=${story.artifact_value_token_estimate ?? 0} session_attribution=${story.session_attribution_status ?? '-'} session_confidence=${story.session_attribution_confidence ?? '-'} sessions=${story.session_attribution_session_count ?? 0} unattributed=${story.session_attribution_unattributed_count ?? 0} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0} generation_count_scope=${story.full_evidence_generation_count_scope ?? '-'} same_key_full_generation_count=${story.same_key_full_evidence_generation_count ?? 0} cumulative_full_generation_count=${story.cumulative_full_evidence_generation_count ?? 0}`
+        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} artifact_value=${story.artifact_value_ledger_status ?? '-'} decision_bound=${story.artifact_value_decision_bound_count ?? 0} decision_changed=${story.artifact_value_decision_changed_count ?? 0} decision_unconfirmed=${story.artifact_value_decision_change_unconfirmed_count ?? 0} unused_artifacts=${story.artifact_value_unused_artifact_count ?? 0} consumers=${story.artifact_value_linked_consumer_count ?? 0} artifact_value_tokens=${story.artifact_value_token_estimate ?? 0} session_attribution=${story.session_attribution_status ?? '-'} session_confidence=${story.session_attribution_confidence ?? '-'} sessions=${story.session_attribution_session_count ?? 0} unattributed=${story.session_attribution_unattributed_count ?? 0} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0} generation_count_scope=${story.full_evidence_generation_count_scope ?? '-'} same_key_full_generation_count=${story.same_key_full_evidence_generation_count ?? 0} cumulative_full_generation_count=${story.cumulative_full_evidence_generation_count ?? 0}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');

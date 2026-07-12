@@ -13,7 +13,7 @@ Given canonical evidence entries, when the ledger is built, then every entry exp
 
 ## EDL-002
 
-Given no observed decision delta, when the ledger is summarized, then the delta is counted as unconfirmed rather than unchanged or unused.
+Given no observed decision delta, when the ledger is summarized, then `null` is counted as unconfirmed while an explicit `false` is counted as confirmed unused, and both metrics propagate to bounded summary, usage report, and senior-gap synthesis surfaces.
 
 ## EDL-003
 
