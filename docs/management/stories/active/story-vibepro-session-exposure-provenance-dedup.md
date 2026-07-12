@@ -20,10 +20,10 @@ session-costはartifactらしい文字列を意味bucketへ分類できるが、
 
 ## 受け入れ基準
 
-- [ ] exposureを `fresh_read` / `generated_output` / `replayed_context` / `world_state` / `mixed_tool_output` に分類する。
-- [ ] 同一正規化内容はSHA-256 digestで識別し、unique tokenとduplicate tokenを別集計する。
-- [ ] 既存の意味bucketとtotal token accountingは後方互換を維持する。
-- [ ] mixed tool outputを単一の意味bucketだけに帰属した新規読込として扱わない。
+- [ ] SEXP-S-1: 分類済みexposureを `fresh_read` / `generated_output` / `replayed_context` / `world_state` / `mixed_tool_output` に分類する。
+- [ ] SEXP-S-2: 同一正規化内容はSHA-256 digestで識別し、unique tokenとduplicate tokenを別集計する。
+- [ ] SEXP-S-3: 既存の意味bucketとtotal token accountingは後方互換を維持する。
+- [ ] SEXP-S-4: mixed tool outputを単一の意味bucketだけに帰属した新規読込として扱わず、未分類entryをfresh evidenceへ昇格しない。
 - [ ] synthetic sessionで分類と重複排除を回帰検証する。
 
 ## 検証シナリオ

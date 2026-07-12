@@ -1276,7 +1276,7 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
   const classification = isReplayedContext
     ? { bucket_id: 'replayed_context', matched_signals: ['compaction_replacement_history'] }
     : classifySessionExposureText(text, { storyId });
-  const provenanceBucket = classifyExposureProvenance(entry, classification);
+  const provenanceBucket = classification ? classifyExposureProvenance(entry, classification) : null;
   return {
     matched: Boolean(classification),
     bucket_id: classification?.bucket_id ?? 'unattributed',
