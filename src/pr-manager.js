@@ -397,6 +397,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     decisionIndex,
     verificationEvidence,
     previousReuse: previousEvidenceReuse,
+    decisionUsage: options.evidenceDecisionUsage ?? null,
     artifacts: {
       evidenceReusePath,
       evidencePlanPath,

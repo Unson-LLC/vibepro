@@ -145,6 +145,25 @@ test('EDL-S2 confirmed no-change evidence is counted as unused rather than uncon
   assert.equal(ledger.entries[0].consumer_gate, 'gate:review_prepare');
 });
 
+test('EDL-S2 pr prepare persists confirmed unused evidence and usage report exposes it', async () => {
+  const repo = await setupReuseRepo();
+  const usage = JSON.stringify({ evidence_reuse: { decision_changed: false } });
+  const result = await runCli([
+    'pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main',
+    '--evidence-decision-usage', usage, '--json'
+  ]);
+  assert.equal(result.exitCode, 0);
+
+  const reuse = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(reuse.artifact_value_ledger.summary.unused_artifact_count, 1);
+  assert.equal(reuse.artifact_value_ledger.summary.decision_change_unconfirmed_count, 3);
+  assert.equal(reuse.artifact_value_ledger.entries[0].decision_changed, false);
+
+  const report = await createUsageReport(repo, { language: 'ja' });
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_unused_artifact_count, 1);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_change_unconfirmed_count, 3);
+});
+
 test('ERM-CONTRACT-001 ERM-CONTRACT-002 head changes mark previous summary/index stale without changing same-key count semantics', async () => {
   const repo = await setupReuseRepo();
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);

@@ -36,6 +36,7 @@ export function buildEvidenceReuse({
   verificationEvidence = null,
   previousReuse = null,
   artifacts = {},
+  decisionUsage = null,
   usedAsFresh = false,
   createdAt = new Date().toISOString()
 } = {}) {
@@ -76,6 +77,7 @@ export function buildEvidenceReuse({
     summaryArtifacts,
     fullEvidence,
     sessionAttribution,
+    decisionUsage,
     createdAt
   });
   const freshness = buildFreshnessStatus(comparison, { usedAsFresh });

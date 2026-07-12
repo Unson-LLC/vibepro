@@ -11,6 +11,8 @@ parent_design:
 
 Given canonical evidence entries, when the ledger is built, then every entry exposes `decision_id`, `consumer_gate`, and `decision_changed`.
 
+`pr prepare --evidence-decision-usage '<json>'` accepts an artifact-keyed map. A supplied `false` is persisted as confirmed unused; omitted keys remain `null` and are counted as unconfirmed. Bounded senior-gap summaries preserve all three decision-use counts.
+
 ## EDL-002
 
 Given no observed decision delta, when the ledger is summarized, then `null` is counted as unconfirmed while an explicit `false` is counted as confirmed unused, and both metrics propagate to bounded summary, usage report, and senior-gap synthesis surfaces.

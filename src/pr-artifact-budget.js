@@ -111,6 +111,17 @@ const KNOWN_EXTRACTORS = {
         active_axis_count: judgment.active_axis_count ?? 0
       }
     };
+  },
+  'senior-gap-judgment.json'(parsed) {
+    const ledger = parsed?.cost_context?.artifact_value_ledger ?? {};
+    return {
+      status_fields: pick(parsed, ['status', 'route_type', 'confidence']) ?? {},
+      top_level_counts: {
+        decision_changed_count: ledger.decision_changed_count ?? 0,
+        decision_change_unconfirmed_count: ledger.decision_change_unconfirmed_count ?? 0,
+        unused_artifact_count: ledger.unused_artifact_count ?? 0
+      }
+    };
   }
 };
 
