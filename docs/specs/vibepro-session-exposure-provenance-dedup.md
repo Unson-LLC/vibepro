@@ -38,7 +38,7 @@ inherited_behavior:
 
 ## Diagrams
 
-### accounting_data_flow
+### threat_model
 
 ```mermaid
 flowchart LR
