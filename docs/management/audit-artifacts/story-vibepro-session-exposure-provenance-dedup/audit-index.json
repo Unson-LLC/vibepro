@@ -1,0 +1,461 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-exposure-provenance-dedup",
+  "source": "execute_merge",
+  "generated_at": "2026-07-12T14:58:50.122Z",
+  "evidence_depth": "standard",
+  "budget_status": "exceeded",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "gate:gate:design_input_judgment:needs_review",
+      "gate:gate:managed_worktree:needs_review"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...fb521e3ee9c24da5a567a8892b23561365e643c3",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "base_sha": "9ab79560e5db3dbb9ffcf3eafdefcc5099579f10",
+      "head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "merge_commit_sha": "4869f02f86935d36c19608e34b6042543ddf16ac"
+    },
+    "diff_stats_collected_at": "2026-07-12T14:58:46.597Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 1349,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 288,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 1,
+          "changed_lines": 65,
+          "unknown_files": 0,
+          "paths": [
+            "src/session-efficiency-audit.js"
+          ]
+        },
+        "test": {
+          "files": 1,
+          "changed_lines": 73,
+          "unknown_files": 0,
+          "paths": [
+            "test/session-efficiency-audit.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 106,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-session-exposure-provenance-dedup.md",
+            "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md",
+            "docs/specs/vibepro-session-exposure-provenance-dedup.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 1,
+          "changed_lines": 44,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+        "base_sha": "9ab79560e5db3dbb9ffcf3eafdefcc5099579f10",
+        "head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+        "merge_commit_sha": "4869f02f86935d36c19608e34b6042543ddf16ac"
+      },
+      "collected_at": "2026-07-12T14:58:46.597Z",
+      "reason": null
+    },
+    "product_changed_lines": 288,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 4.684,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "effective_canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "available",
+      "total_tokens": 28132480,
+      "input_tokens": 28045795,
+      "output_tokens": 86685,
+      "cached_input_tokens": 26814080,
+      "source": "codex-session-jsonl",
+      "window": {
+        "session_id": "019f53a1-1dc1-7812-8d51-9a54ee6f2fc8",
+        "source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T10-10-22-019f53e0-1511-7cd3-9b11-942d64f7d58a.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T22-53-39-019f569a-e3c9-7bc3-a857-dd513c8b4474.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-14-11-019f56ad-af9e-7e82-baa6-ca3b35bd73bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-18-24-019f56b1-8dd6-72a0-9fe4-56c39120d61b.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-17-019f56bd-5950-7633-9770-ace101cf85cb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-22-019f56bd-6d66-7cc0-987b-5391d2a9e009.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-39-04-019f56c4-7a26-7161-a1ef-f5940ad7511c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-00-019f56ca-d3bb-7993-a0d3-18470ddba60f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-06-019f56ca-e864-7d22-877f-8077e8afc51c.jsonl"
+        ],
+        "first_token_line": 20,
+        "last_token_line": 1814,
+        "last_token_source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "scope": "full_session"
+      },
+      "reason": null
+    },
+    "elapsed_time_accounting": {
+      "status": "partial",
+      "elapsed_ms": 53817881,
+      "started_at": "2026-07-12T00:01:43.214Z",
+      "finished_at": "2026-07-12T14:58:41.095Z",
+      "source": "codex-session-jsonl",
+      "window": {
+        "session_id": "019f53a1-1dc1-7812-8d51-9a54ee6f2fc8",
+        "source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T10-10-22-019f53e0-1511-7cd3-9b11-942d64f7d58a.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T22-53-39-019f569a-e3c9-7bc3-a857-dd513c8b4474.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-14-11-019f56ad-af9e-7e82-baa6-ca3b35bd73bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-18-24-019f56b1-8dd6-72a0-9fe4-56c39120d61b.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-17-019f56bd-5950-7633-9770-ace101cf85cb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-22-019f56bd-6d66-7cc0-987b-5391d2a9e009.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-39-04-019f56c4-7a26-7161-a1ef-f5940ad7511c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-00-019f56ca-d3bb-7993-a0d3-18470ddba60f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-06-019f56ca-e864-7d22-877f-8077e8afc51c.jsonl"
+        ]
+      },
+      "reason": "no final_answer event in selected window; used last observed event timestamp"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 3082,
+      "expanded_bytes": 12733,
+      "expanded_line_count": 342,
+      "persisted_line_count": 1
+    },
+    "raw_source_artifact_lines": 9494,
+    "raw_source_artifact_code_ratio": 32.965,
+    "artifact_lines_source": "persisted_canonical_compact"
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-07-12T14:54:58.330Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-07-12T14:54:58.330Z",
+    "status": "stale",
+    "evidence_key": "evk_782faffb4bfee900c9bf6ae72a58ceb4",
+    "verification_summary_fingerprint": "sha256:9cb69310ef6158fabafdd9752fa73b13559564aca4f49aa9b389724342cbb8f1",
+    "verification_evidence_updated_at": "2026-07-12T14:54:42.769Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-12T14:54:42.769Z",
+        "git_recorded_at": "2026-07-12T14:54:42.762Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-12T14:45:50.642Z",
+        "git_recorded_at": "2026-07-12T14:45:50.635Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-12T14:45:49.399Z",
+        "git_recorded_at": "2026-07-12T14:45:49.393Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-12T14:45:46.846Z",
+        "git_recorded_at": "2026-07-12T14:45:46.839Z"
+      }
+    ],
+    "stale_reason_count": 1,
+    "full_evidence_status": "generated",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 25
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-07-12T14:54:58.371Z",
+    "status": "failed",
+    "pr_url": null,
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/319",
+      "merge_commit_sha": "4869f02f86935d36c19608e34b6042543ddf16ac",
+      "merged_at": "2026-07-12T14:58:48Z",
+      "current_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...fb521e3ee9c24da5a567a8892b23561365e643c3"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 52,
+    "blocking_count": 2
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": null,
+    "gap_count": 3,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 5,
+      "acceptance_criteria_count": 5,
+      "scenario_clause_count": 0,
+      "mapped_count": 5,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 4,
+    "pass_count": 4,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay_unresolved_reference_count": 6,
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "automation_value_audit": {
+    "schema_version": "0.1.0",
+    "artifact_kind": "vibepro_automation_value_audit",
+    "story_id": "story-vibepro-session-exposure-provenance-dedup",
+    "generated_at": "2026-07-12T14:58:50.122Z",
+    "status": "partial",
+    "purpose": "daily_automation_input",
+    "sources": {
+      "canonical_audit": true,
+      "cost_summary": true,
+      "pr_lifecycle": true,
+      "verification": true,
+      "review": true,
+      "senior_gap_judgment": true
+    },
+    "merge_context": {
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/319",
+      "merge_status": "merged",
+      "merge_commit_sha": "4869f02f86935d36c19608e34b6042543ddf16ac",
+      "merged_at": "2026-07-12T14:58:48Z"
+    },
+    "allocation": {
+      "changed_lines_status": "available",
+      "total_changed_lines": 288,
+      "implementation_changed_lines": 65,
+      "verification_and_docs_changed_lines": 179,
+      "audit_evidence_changed_lines": 179,
+      "buckets": {
+        "src": 65,
+        "test": 73,
+        "story_spec_architecture_docs": 106,
+        "audit_artifacts": 0,
+        "other": 44
+      }
+    },
+    "ratios": {
+      "test_to_src": 1.123,
+      "story_spec_architecture_to_src": 1.631,
+      "audit_artifacts_to_src": 0,
+      "automation_evidence_to_src": 2.754,
+      "artifact_lines_to_product_changed_lines": 4.684
+    },
+    "session_cost": {
+      "token_status": "available",
+      "total_tokens": 28132480,
+      "token_source": "codex-session-jsonl",
+      "token_window": {
+        "session_id": "019f53a1-1dc1-7812-8d51-9a54ee6f2fc8",
+        "source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T10-10-22-019f53e0-1511-7cd3-9b11-942d64f7d58a.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T22-53-39-019f569a-e3c9-7bc3-a857-dd513c8b4474.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-14-11-019f56ad-af9e-7e82-baa6-ca3b35bd73bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-18-24-019f56b1-8dd6-72a0-9fe4-56c39120d61b.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-17-019f56bd-5950-7633-9770-ace101cf85cb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-22-019f56bd-6d66-7cc0-987b-5391d2a9e009.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-39-04-019f56c4-7a26-7161-a1ef-f5940ad7511c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-00-019f56ca-d3bb-7993-a0d3-18470ddba60f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-06-019f56ca-e864-7d22-877f-8077e8afc51c.jsonl"
+        ],
+        "first_token_line": 20,
+        "last_token_line": 1814,
+        "last_token_source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "scope": "full_session"
+      },
+      "elapsed_status": "partial",
+      "elapsed_ms": 53817881,
+      "elapsed_source": "codex-session-jsonl",
+      "elapsed_window": {
+        "session_id": "019f53a1-1dc1-7812-8d51-9a54ee6f2fc8",
+        "source_path": "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T09-01-35-019f53a1-1dc1-7812-8d51-9a54ee6f2fc8.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T10-10-22-019f53e0-1511-7cd3-9b11-942d64f7d58a.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T22-53-39-019f569a-e3c9-7bc3-a857-dd513c8b4474.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-14-11-019f56ad-af9e-7e82-baa6-ca3b35bd73bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-18-24-019f56b1-8dd6-72a0-9fe4-56c39120d61b.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-17-019f56bd-5950-7633-9770-ace101cf85cb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-31-22-019f56bd-6d66-7cc0-987b-5391d2a9e009.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-39-04-019f56c4-7a26-7161-a1ef-f5940ad7511c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-00-019f56ca-d3bb-7993-a0d3-18470ddba60f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/07/12/rollout-2026-07-12T23-46-06-019f56ca-e864-7d22-877f-8077e8afc51c.jsonl"
+        ]
+      }
+    },
+    "value_signal_inputs": {
+      "budget_status": "exceeded",
+      "budget_exceeded_reasons": [
+        "artifact_code_ratio_exceeded"
+      ],
+      "evidence_depth": "standard",
+      "verification_pass_count": 4,
+      "verification_fail_count": 0,
+      "review_result_count": 1,
+      "review_pass_count": 1,
+      "review_block_count": 0,
+      "senior_gap_status": null,
+      "senior_gap_residual_risk_count": 0,
+      "evidence_reuse_status": "stale",
+      "evidence_reuse_stale_reason_count": 1,
+      "traceability_lifecycle": "merged",
+      "handoff_replay_status": "blocked",
+      "handoff_replay_unresolved_reference_count": 6,
+      "missing_artifact_count": 0
+    },
+    "cost_controls": {
+      "status": "action_required",
+      "budget_status": "exceeded",
+      "artifact_code_ratio": 4.684,
+      "automation_evidence_to_src": 2.754,
+      "budget_exceeded_reasons": [
+        "artifact_code_ratio_exceeded"
+      ],
+      "canonical_artifact_lines": 1349,
+      "product_changed_lines": 288,
+      "evidence_depth": "standard",
+      "recommended_evidence_depth": "summary",
+      "recommendations": [
+        {
+          "id": "prefer_summary_canonical_artifacts",
+          "action": "persist summary/index/replay references instead of full raw audit copies for routine value audits",
+          "reason": "canonical audit evidence exceeded the configured line or artifact/code ratio budget"
+        },
+        {
+          "id": "collect_runtime_cost_before_merge",
+          "action": "run execute merge with --session-id <id>|auto and --automation-memory <path>, or set VIBEPRO_SESSION_ID/CODEX_SESSION_ID and VIBEPRO_AUTOMATION_MEMORY",
+          "reason": "daily automation cannot judge time/token efficiency without measured session cost"
+        }
+      ]
+    },
+    "findings": [
+      {
+        "id": "session_cost_unavailable",
+        "severity": "needs_context",
+        "reason": "token or elapsed-time accounting is not available in canonical audit summary",
+        "token_status": "available",
+        "elapsed_status": "partial"
+      },
+      {
+        "id": "artifact_budget_exceeded",
+        "severity": "cost_risk",
+        "reason": "canonical audit evidence exceeded the configured artifact budget",
+        "budget_exceeded_reasons": [
+          "artifact_code_ratio_exceeded"
+        ],
+        "artifact_code_ratio": 4.684
+      },
+      {
+        "id": "canonical_handoff_replay_blocked",
+        "severity": "review_needed",
+        "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
+        "unresolved_reference_count": 6
+      }
+    ]
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-session-exposure-provenance-dedup/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:1a86526941b94c8948cdb4cb7e886c47768aa2cc22555c2f7966770d05a5b1b8",
+    "compressed_hash": "sha256:0df7568ce1b9967531cc3d576f04996d078f3d581aaa5199b6cb9724cf09cbd4",
+    "expanded_bytes": 12733,
+    "compressed_bytes": 3082,
+    "expanded_line_count": 342,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-exposure-provenance-dedup",
+    "cost": {
+      "compressed_bytes": 3082,
+      "expanded_bytes": 12733,
+      "expanded_line_count": 342,
+      "persisted_line_count": 1
+    }
+  }
+}

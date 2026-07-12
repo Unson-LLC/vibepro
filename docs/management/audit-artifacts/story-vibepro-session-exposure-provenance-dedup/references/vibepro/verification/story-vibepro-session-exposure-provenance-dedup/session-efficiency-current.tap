@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: session efficiency audit uses process-manager worktree and Codex token_count window
+ok 1 - session efficiency audit uses process-manager worktree and Codex token_count window
+  ---
+  duration_ms: 744.459125
+  type: 'test'
+  ...
+# Subtest: session efficiency audit estimates audit artifact token exposure from Codex transcript entries
+ok 2 - session efficiency audit estimates audit artifact token exposure from Codex transcript entries
+  ---
+  duration_ms: 625.285125
+  type: 'test'
+  ...
+# Subtest: SCCB-SCENARIO-001 compaction replacement_history text is bucketed as replayed_context, not audit_evidence/test
+ok 3 - SCCB-SCENARIO-001 compaction replacement_history text is bucketed as replayed_context, not audit_evidence/test
+  ---
+  duration_ms: 599.080583
+  type: 'test'
+  ...
+# Subtest: SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and deduplicates repeated mixed tool output by digest
+ok 4 - SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and deduplicates repeated mixed tool output by digest
+  ---
+  duration_ms: 598.09375
+  type: 'test'
+  ...
+# Subtest: session efficiency audit infers the matching Codex session from repo cwd and window
+ok 5 - session efficiency audit infers the matching Codex session from repo cwd and window
+  ---
+  duration_ms: 642.009917
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id
+ok 6 - SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id
+  ---
+  duration_ms: 597.155292
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery
+ok 7 - SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery
+  ---
+  duration_ms: 638.044833
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories
+ok 8 - SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories
+  ---
+  duration_ms: 631.881167
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo
+ok 9 - SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo
+  ---
+  duration_ms: 799.023875
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-005 worktree cwd match alone is decisive even without other signals
+ok 10 - SCATTR-SCENARIO-005 worktree cwd match alone is decisive even without other signals
+  ---
+  duration_ms: 799.323375
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-006 cwd under a different repo worktree directory does not match
+ok 11 - SCATTR-SCENARIO-006 cwd under a different repo worktree directory does not match
+  ---
+  duration_ms: 816.657709
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch
+ok 12 - SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch
+  ---
+  duration_ms: 813.244792
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable
+ok 13 - SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable
+  ---
+  duration_ms: 634.444209
+  type: 'test'
+  ...
+# Subtest: SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection
+ok 14 - SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection
+  ---
+  duration_ms: 595.18625
+  type: 'test'
+  ...
+# Subtest: SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable
+ok 15 - SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable
+  ---
+  duration_ms: 599.884208
+  type: 'test'
+  ...
+# Subtest: audit session-cost CLI exposes JSON contract for active session cost audits
+ok 16 - audit session-cost CLI exposes JSON contract for active session cost audits
+  ---
+  duration_ms: 2005.899334
+  type: 'test'
+  ...
+# Subtest: AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent
+ok 17 - AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent
+  ---
+  duration_ms: 1024.932416
+  type: 'test'
+  ...
+# Subtest: AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL
+ok 18 - AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL
+  ---
+  duration_ms: 606.764042
+  type: 'test'
+  ...
+# Subtest: AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone
+ok 19 - AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone
+  ---
+  duration_ms: 592.583708
+  type: 'test'
+  ...
+# Subtest: audit memory preflight blocks missing memory unless fallback is explicit and commit readback verifies the window
+ok 20 - audit memory preflight blocks missing memory unless fallback is explicit and commit readback verifies the window
+  ---
+  duration_ms: 459.4925
+  type: 'test'
+  ...
+# Subtest: audit memory preflight reports corrupt memory and CLI exits non-zero without fallback
+ok 21 - audit memory preflight reports corrupt memory and CLI exits non-zero without fallback
+  ---
+  duration_ms: 1098.32825
+  type: 'test'
+  ...
+# Subtest: session efficiency audit adds advisory attribution without changing token accounting
+ok 22 - session efficiency audit adds advisory attribution without changing token accounting
+  ---
+  duration_ms: 596.372792
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16986.657125

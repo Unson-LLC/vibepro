@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test --test-reporter=tap --test-name-pattern='SEXP-S-1|SEXP-S-2|SEXP-S-3|SEXP-S-4|audit session-cost CLI exposes JSON contract' test/session-efficiency-audit.test.js",
+  "target": "test/session-efficiency-audit.test.js",
+  "scenarios": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e"
+  ],
+  "tap_artifact": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/workflow-replay-current.tap",
+  "head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3"
+}

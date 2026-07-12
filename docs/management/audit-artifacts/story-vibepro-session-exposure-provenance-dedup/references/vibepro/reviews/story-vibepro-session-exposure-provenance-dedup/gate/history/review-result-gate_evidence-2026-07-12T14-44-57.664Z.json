@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-exposure-provenance-dedup",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "未分類entryのprovenance既定値とAC traceabilityに修正が必要",
+  "findings": [
+    {
+      "severity": "minor",
+      "id": "UNMATCHED_EXPOSURE_DEFAULTS_TO_FRESH_READ",
+      "detail": "classification=nullでもfresh_readとなりSEXP-S-4に反する"
+    },
+    {
+      "severity": "minor",
+      "id": "AC2_TRACEABILITY_WEAK",
+      "detail": "digest重複排除ACとSEXP-S-2の対応が弱い"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56c4-7a26-7161-a1ef-f5940ad7511c.md"
+  ],
+  "inspection": {
+    "summary": "実装、テスト、Story/Architecture/Spec、Design SSOT、検証artifactを確認",
+    "evidence": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+    "inputs": [
+      "src/session-efficiency-audit.js",
+      "test/session-efficiency-audit.test.js",
+      "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md"
+    ]
+  },
+  "judgment_delta": [
+    "概ねpassから未分類provenance契約不整合によりneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+    "current_head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+      "current_head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-12T14:44:57.664Z",
+  "git_context": {
+    "head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+    "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "491c3e19ba48768ffa409aad5b43ccfb256e469d7001bd7bef794daef851b89d",
+    "user_status_fingerprint_hash": "491c3e19ba48768ffa409aad5b43ccfb256e469d7001bd7bef794daef851b89d",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-12T14:44:57.638Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "95c71a5b1383e004ad060cc9b4e7191522a1da7c",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md",
+        "sha256": "3b14f65a670a850640bbc9166f2f5678e09f8b5ba3220774979eb6586df5a773",
+        "size": 2003
+      },
+      {
+        "path": "src/session-efficiency-audit.js",
+        "sha256": "4d5a8397afe70922f8f50e47be68dcef98111f17e71bff2701c7a0abb294521d",
+        "size": 75198
+      },
+      {
+        "path": "test/session-efficiency-audit.test.js",
+        "sha256": "6758fc261be42b64a73817f73b2438dde0e5d1301ff8974bd6773fb4245c4898",
+        "size": 43953
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "08cc25258e432a9ab211e69051460e141e55b09df995b0c86e707b8edbf69020"
+  },
+  "source_fingerprint": "7e2b1e19d1bc8813d370604409bf3d93b19254973989b061b668cde82f91ce62",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f56c4-7a26-7161-a1ef-f5940ad7511c",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": "019f56c4-7a26-7161-a1ef-f5940ad7511c",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56c4-7a26-7161-a1ef-f5940ad7511c.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f56c4-7a26-7161-a1ef-f5940ad7511c",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f56c4-7a26-7161-a1ef-f5940ad7511c",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

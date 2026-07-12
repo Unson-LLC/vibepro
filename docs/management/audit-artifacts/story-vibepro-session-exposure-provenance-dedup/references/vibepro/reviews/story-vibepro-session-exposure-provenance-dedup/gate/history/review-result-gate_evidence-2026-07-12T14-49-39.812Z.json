@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-exposure-provenance-dedup",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "前回2 findingを解消し、機能・互換性・5 provenance・digest dedup・認証N/Aを確認",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "AC2_TRACEABILITY_WEAK",
+      "disposition": "accepted",
+      "resolved_by": [
+        "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md"
+      ],
+      "reason": "resolved by fb521e3",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "UNMATCHED_EXPOSURE_DEFAULTS_TO_FRESH_READ",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/session-efficiency-audit.js"
+      ],
+      "reason": "resolved by fb521e3",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56ca-d3bb-7993-a0d3-18470ddba60f.md"
+  ],
+  "inspection": {
+    "summary": "origin/main...HEAD、実装、テスト、Story/Architecture/Spec、Design SSOT、現HEAD証跡を確認",
+    "evidence": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+    "inputs": [
+      "src/session-efficiency-audit.js",
+      "test/session-efficiency-audit.test.js",
+      "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md",
+      "docs/architecture/vibepro-session-exposure-provenance-dedup.md",
+      "docs/specs/vibepro-session-exposure-provenance-dedup.md"
+    ]
+  },
+  "judgment_delta": [
+    "前回2 findingはfb521e3で解消されpass"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+    "current_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "current_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-12T14:49:39.812Z",
+  "git_context": {
+    "head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+    "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-12T14:49:39.792Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4b84cf57c6fef5fb1cc051e9e3bd1251c0e40a42bccd5967430c7393ecb32d50",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f56ca-d3bb-7993-a0d3-18470ddba60f",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": "019f56ca-d3bb-7993-a0d3-18470ddba60f",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56ca-d3bb-7993-a0d3-18470ddba60f.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f56ca-d3bb-7993-a0d3-18470ddba60f",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f56ca-d3bb-7993-a0d3-18470ddba60f",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

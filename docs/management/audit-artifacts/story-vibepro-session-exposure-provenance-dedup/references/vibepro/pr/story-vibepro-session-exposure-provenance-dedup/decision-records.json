@@ -1,0 +1,571 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-session-exposure-provenance-dedup",
+  "updated_at": "2026-07-12T14:25:37.776Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+      "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866337775-82aa2929",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:requirement",
+      "source_status": "needs_review",
+      "summary": "session_meta branch is inherited session discovery behavior, not changed by this Story",
+      "reason": "The changed implementation consumes entries after session selection. entry.type === session_meta belongs to the pre-existing selection boundary and both legacy selection conditions are unchanged; focused and full regression evidence cover compatibility. No new requirement is introduced by this branch.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:25:37.768Z"
+      },
+      "recorded_at": "2026-07-12T14:25:37.776Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866155355-8665ac90",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Story-local Architecture and Spec are the applicable design lineage",
+      "reason": "This is a non-UI accounting contract with no product design-system lineage. Story, Architecture, and Spec are present and mutually traceable.",
+      "reviewer": "Codex",
+      "artifact": "docs/architecture/story-vibepro-session-exposure-provenance-dedup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries-current.tap",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:22:35.348Z"
+      },
+      "recorded_at": "2026-07-12T14:22:35.357Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866154305-e4ea8d0a",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_security_trust_security_regression",
+      "source_status": "needs_evidence",
+      "summary": "Security regression gate is not applicable to local read-only transcript accounting",
+      "reason": "The change reads existing local session text, emits aggregate metadata, adds no auth/network/secret persistence boundary, and retains encrypted_content exclusion. Focused negative-path tests and review found no security regression surface.",
+      "reviewer": "Codex",
+      "artifact": "src/session-efficiency-audit.js",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries-current.tap",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:22:34.298Z"
+      },
+      "recorded_at": "2026-07-12T14:22:34.307Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866153234-03abf9a7",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One gate_evidence reviewer owns the complete focused scope",
+      "reason": "The independent reviewer inspected all five files, tests, and evidence as one coherent contract and passed the current HEAD.",
+      "reviewer": "Codex",
+      "artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56b1-8dd6-72a0-9fe4-56c39120d61b.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries-current.tap",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:22:33.227Z"
+      },
+      "recorded_at": "2026-07-12T14:22:33.236Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866152154-14a59b6a",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundled scope is one reviewable accounting contract",
+      "reason": "Runtime aggregation, direct regression tests, and Story/Architecture/Spec are inseparable review surfaces for one output contract; splitting creates incomplete intermediate states.",
+      "reviewer": "Codex",
+      "artifact": "docs/architecture/story-vibepro-session-exposure-provenance-dedup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries-current.tap",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:22:32.147Z"
+      },
+      "recorded_at": "2026-07-12T14:22:32.155Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866151097-9e69a1c6",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:common_judgment_spine",
+      "source_status": "needs_evidence",
+      "summary": "Current reality and failure modes are evidenced",
+      "reason": "Current-head focused tests exercise all five provenance paths, duplicate digest allocation, malformed/legacy compatibility, and environment exceptions; independent gate review passed.",
+      "reviewer": "Codex",
+      "artifact": ".vibepro/reviews/story-vibepro-session-exposure-provenance-dedup/gate/agent-019f56b1-8dd6-72a0-9fe4-56c39120d61b.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency-current.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries-current.tap",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:22:31.090Z"
+      },
+      "recorded_at": "2026-07-12T14:22:31.098Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783865631599-e1c795f7",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Story-local architecture is the design authority for this non-UI accounting contract",
+      "reason": "No product design-system or UI lineage changes are involved. The Story-local Architecture and Spec define the complete contract and are linked in the diff; introducing a repository-wide design root would be unrelated scope.",
+      "reviewer": "Codex",
+      "artifact": "docs/architecture/story-vibepro-session-exposure-provenance-dedup.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+          "current_head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:13:51.592Z"
+      },
+      "recorded_at": "2026-07-12T14:13:51.601Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783865620518-3d489151",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep as one focused PR owned by one reviewer",
+      "reason": "The five changed files implement one accounting contract: provenance classification, digest deduplication, its tests, and the Story/Architecture/Spec needed to review that contract. Splitting docs or tests would create non-reviewable intermediate states; rollback is one commit pair.",
+      "reviewer": "Codex",
+      "artifact": "docs/architecture/story-vibepro-session-exposure-provenance-dedup.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/environment-retries.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-session-exposure-provenance-dedup/session-efficiency.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+          "current_head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "bf3910c0673d387a0d42b6d68855815237fbcc1f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:13:40.511Z"
+      },
+      "recorded_at": "2026-07-12T14:13:40.520Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "needs_review": 7,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+        "expected_root": null,
+        "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783866337775-82aa2929",
+      "story_id": "story-vibepro-session-exposure-provenance-dedup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:requirement",
+      "source_status": "needs_review",
+      "summary": "session_meta branch is inherited session discovery behavior, not changed by this Story",
+      "reason": "The changed implementation consumes entries after session selection. entry.type === session_meta belongs to the pre-existing selection boundary and both legacy selection conditions are unchanged; focused and full regression evidence cover compatibility. No new requirement is introduced by this branch.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/692a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "current_head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1b0eddaaa7d542877b082b9f6090269a232c579f",
+        "current_branch": "codex/story-vibepro-session-exposure-provenance-dedup",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-12T14:25:37.768Z"
+      },
+      "recorded_at": "2026-07-12T14:25:37.776Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-session-exposure-provenance-dedup/decision-records.json"
+}

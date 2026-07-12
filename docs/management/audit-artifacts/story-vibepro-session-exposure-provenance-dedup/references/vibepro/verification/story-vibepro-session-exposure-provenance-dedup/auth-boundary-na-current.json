@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
+  "classification": "not_applicable",
+  "basis": "git diff origin/main...HEAD changes transcript accounting only; no authentication or authorization path is added or modified",
+  "verified_paths": [
+    "src/session-efficiency-audit.js",
+    "docs/architecture/vibepro-session-exposure-provenance-dedup.md"
+  ]
+}
