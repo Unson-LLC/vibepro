@@ -198,9 +198,12 @@ export function buildArtifactValueLedger({
   const entries = artifacts.map((entry) => ({
     artifact: entry.path,
     artifact_key: entry.key,
+    decision_id: `${storyId ?? 'unknown-story'}:${entry.key}`,
     value_class: entry.value_class,
     consumer: entry.consumer,
+    consumer_gate: `gate:${entry.consumer}`,
     decision_supported: entry.decision_supported,
+    decision_changed: null,
     head_sha: git?.head_sha ?? null,
     base_sha: git?.base_sha ?? null,
     evidence_key: evidenceKey,
@@ -234,6 +237,9 @@ export function buildArtifactValueLedger({
     summary: {
       artifact_count: entries.length,
       decision_bound_count: entries.filter((entry) => entry.semantic_value_status === 'decision_bound').length,
+      decision_changed_count: entries.filter((entry) => entry.decision_changed === true).length,
+      decision_change_unconfirmed_count: entries.filter((entry) => entry.decision_changed == null).length,
+      unused_artifact_count: entries.filter((entry) => !entry.decision_id && !entry.consumer_gate).length,
       linked_consumer_count: new Set(entries.map((entry) => entry.consumer).filter(Boolean)).size,
       total_token_estimate: entries.reduce((sum, entry) => sum + (entry.token_estimate ?? 0), 0)
     }

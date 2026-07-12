@@ -73,6 +73,14 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(firstReuse.full_evidence.status, 'generated');
   assert.equal(firstReuse.artifact_value_ledger.status, 'present');
   assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 4);
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_changed_count, 0);
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_change_unconfirmed_count, 4);
+  assert.equal(firstReuse.artifact_value_ledger.summary.unused_artifact_count, 0);
+  for (const entry of firstReuse.artifact_value_ledger.entries) {
+    assert.match(entry.decision_id, /^story-evidence-reuse:/);
+    assert.match(entry.consumer_gate, /^gate:/);
+    assert.equal(entry.decision_changed, null);
+  }
   assert.equal(firstReuse.artifact_value_ledger.session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
