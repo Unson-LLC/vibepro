@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -42,6 +43,13 @@ const SESSION_EXPOSURE_BUCKETS = [
     id: 'unattributed',
     label: 'unattributed Codex development in daily window'
   }
+];
+const SESSION_EXPOSURE_PROVENANCE_BUCKETS = [
+  'fresh_read',
+  'generated_output',
+  'replayed_context',
+  'world_state',
+  'mixed_tool_output'
 ];
 // Codex session JSONL emits a top-level `type: "compacted"` entry when the
 // runtime compacts context; its payload.replacement_history re-quotes prior
@@ -1268,6 +1276,7 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
   const classification = isReplayedContext
     ? { bucket_id: 'replayed_context', matched_signals: ['compaction_replacement_history'] }
     : classifySessionExposureText(text, { storyId });
+  const provenanceBucket = classification ? classifyExposureProvenance(entry, classification) : null;
   return {
     matched: Boolean(classification),
     bucket_id: classification?.bucket_id ?? 'unattributed',
@@ -1275,6 +1284,8 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
     estimated_tokens: estimatedTokens,
     char_count: text.length,
     matched_signals: classification?.matched_signals ?? [],
+    provenance_bucket: provenanceBucket,
+    content_digest: digestExposureText(text),
     timestamp: timestampMs === null ? null : new Date(timestampMs).toISOString(),
     source_path: sourcePath,
     line,
@@ -1282,6 +1293,30 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
     payload_type: entry.payload?.type ?? null,
     sample: text.slice(0, 280)
   };
+}
+
+function classifyExposureProvenance(entry, classification) {
+  if (COMPACTION_REPLAY_ENTRY_TYPES.has(entry?.type)) return 'replayed_context';
+  const role = entry?.payload?.role ?? entry?.role ?? null;
+  const payloadType = entry?.payload?.type ?? null;
+  if (role === 'assistant' || payloadType === 'assistant_message') return 'generated_output';
+  if (['system', 'developer', 'user'].includes(role) || ['session_meta', 'turn_context'].includes(entry?.type)) {
+    return 'world_state';
+  }
+  const semanticBuckets = new Set(classification?.matched_bucket_ids ?? []);
+  if (isToolExposure(entry) && semanticBuckets.size > 1) return 'mixed_tool_output';
+  return 'fresh_read';
+}
+
+function isToolExposure(entry) {
+  const type = entry?.type ?? '';
+  const payloadType = entry?.payload?.type ?? '';
+  return /tool|function|command|exec/.test(`${type}:${payloadType}`);
+}
+
+function digestExposureText(text) {
+  const normalized = String(text).replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
+  return createHash('sha256').update(normalized).digest('hex');
 }
 
 function extractSessionTranscriptText(entry) {
@@ -1333,7 +1368,11 @@ function classifySessionExposureText(text, { storyId } = {}) {
     }
     if (signals.length > 0) matched.push({ bucket_id: bucketId, matched_signals: uniqueStrings(signals) });
   }
-  return matched[0] ?? null;
+  if (matched.length === 0) return null;
+  return {
+    ...matched[0],
+    matched_bucket_ids: matched.map((item) => item.bucket_id)
+  };
 }
 
 function estimateTextTokens(text) {
@@ -1351,6 +1390,15 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
   const classifiedEstimatedTokens = sumTokens(matchedEvents);
   const totalSessionTokens = tokenAccounting?.total_tokens ?? null;
   const buckets = emptyExposureBuckets(totalSessionTokens);
+  const provenanceBuckets = Object.fromEntries(SESSION_EXPOSURE_PROVENANCE_BUCKETS.map((id) => [id, {
+    id,
+    estimated_tokens: 0,
+    unique_estimated_tokens: 0,
+    duplicate_estimated_tokens: 0,
+    event_count: 0,
+    unique_digest_count: 0
+  }]));
+  const seenDigests = new Set();
   for (const bucket of Object.values(buckets)) {
     bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0 ? 0 : null;
   }
@@ -1359,6 +1407,16 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
     bucket.estimated_tokens += event.estimated_tokens;
     bucket.event_count += 1;
     bucket.matched_signals = uniqueStrings([...bucket.matched_signals, ...event.matched_signals]).slice(0, 12);
+    const provenance = provenanceBuckets[event.provenance_bucket] ?? provenanceBuckets.fresh_read;
+    const duplicate = seenDigests.has(event.content_digest);
+    provenance.estimated_tokens += event.estimated_tokens;
+    provenance.event_count += 1;
+    if (duplicate) provenance.duplicate_estimated_tokens += event.estimated_tokens;
+    else {
+      seenDigests.add(event.content_digest);
+      provenance.unique_estimated_tokens += event.estimated_tokens;
+      provenance.unique_digest_count += 1;
+    }
   }
   for (const bucket of Object.values(buckets)) {
     bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0
@@ -1378,6 +1436,9 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
     estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
     coverage: 'signal-matched transcript entries only',
     buckets,
+    provenance_buckets: provenanceBuckets,
+    unique_estimated_tokens: Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.unique_estimated_tokens, 0),
+    duplicate_estimated_tokens: Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.duplicate_estimated_tokens, 0),
     top_exposures: matchedEvents
       .sort((a, b) => b.estimated_tokens - a.estimated_tokens || a.source_path.localeCompare(b.source_path) || a.line - b.line)
       .slice(0, 10)
@@ -1386,6 +1447,8 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
         bucket_label: event.bucket_label,
         estimated_tokens: event.estimated_tokens,
         matched_signals: event.matched_signals.slice(0, 8),
+        provenance_bucket: event.provenance_bucket,
+        content_digest: event.content_digest,
         timestamp: event.timestamp,
         source_path: event.source_path,
         line: event.line,
