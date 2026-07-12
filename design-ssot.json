@@ -1106,6 +1106,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "architecture": [
@@ -1133,6 +1140,13 @@
           {
             "kind": "architecture",
             "path": "docs/architecture/vibepro-session-cost-attribution-hardening.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-session-exposure-provenance-dedup.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -1170,6 +1184,13 @@
           {
             "kind": "spec",
             "path": "docs/specs/vibepro-session-cost-attribution-hardening.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-session-exposure-provenance-dedup.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -1213,6 +1234,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-session-exposure-provenance-dedup.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "architecture",
           "path": "docs/architecture/vibepro-automation-cost-defaults.md",
           "required": true,
@@ -1236,6 +1264,13 @@
         {
           "kind": "architecture",
           "path": "docs/architecture/vibepro-session-cost-attribution-hardening.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-session-exposure-provenance-dedup.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -1271,6 +1306,13 @@
         {
           "kind": "spec",
           "path": "docs/specs/vibepro-session-cost-attribution-hardening.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-session-exposure-provenance-dedup.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -4182,5 +4224,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-11T14:40:33.013Z"
+  "updated_at": "2026-07-12T14:34:50.635Z"
 }
