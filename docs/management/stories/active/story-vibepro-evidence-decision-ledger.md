@@ -22,5 +22,14 @@ spec_docs:
 
 ## シナリオ
 
-- EDL-S1 / AC-1, AC-4: 既存4 artifactを生成すると、全entryに判断利用フィールドがあり既存集計は4のままになる。
-- EDL-S2 / AC-2, AC-3: 判断変化を観測していない場合、4件を未確認として数え、未使用0件と区別する。
+### EDL-S1 / AC-1, AC-4
+
+- Given: 既存4 artifactがcanonical inventoryに存在する。
+- When: evidence ledgerを生成する。
+- Then: 全entryに判断利用フィールドがあり、既存集計は4のままになる。
+
+### EDL-S2 / AC-2, AC-3
+
+- Given: 判断変化が観測されていない。
+- When: evidence ledgerを集計する。
+- Then: 4件を未確認として数え、未使用0件と区別する。
