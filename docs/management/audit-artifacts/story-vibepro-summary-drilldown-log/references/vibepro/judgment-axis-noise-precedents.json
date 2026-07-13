@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:20|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "decision_id": "decision-1783921471248-4887464a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Review map: gate_evidence reviewer checks CLI input validation, planner target policy, writer target enforcement, ledger persistence/discovery, Design SSOT, and current-head tests. The architecture and spec provide the reading order and rollback boundary.",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:20",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T05:45:35.113Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1545|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "decision_id": "decision-1783921471248-4887464a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Review map: gate_evidence reviewer checks CLI input validation, planner target policy, writer target enforcement, ledger persistence/discovery, Design SSOT, and current-head tests. The architecture and spec provide the reading order and rollback boundary.",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1545",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T06:03:21.926Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:22|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "decision_id": "decision-1783921471248-4887464a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Review map: gate_evidence reviewer checks CLI input validation, planner target policy, writer target enforcement, ledger persistence/discovery, Design SSOT, and current-head tests. The architecture and spec provide the reading order and rollback boundary.",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:22",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T06:51:28.634Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

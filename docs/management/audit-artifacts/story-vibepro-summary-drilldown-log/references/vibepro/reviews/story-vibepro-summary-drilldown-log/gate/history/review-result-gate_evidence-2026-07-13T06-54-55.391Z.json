@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-summary-drilldown-log",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "主要な未知targetはfail-closed化されたが、writer未実装の既知targetがsilent no-opになる",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "drilldown-target-writer-catalog-mismatch",
+      "detail": "raw-transcript-log、raw-provider-log、full-review-lifecycle-dumpは既知targetとして受理されるが対応writerがなく、要求成功後もartifactが生成されない"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "drilldown-target-resolution-fail-open",
+      "disposition": "accepted",
+      "resolved_by": [
+        "a4b0672"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "現HEADのplanner、PR manager writer、全catalog item、Story/Spec/Architecture/DESIGN、関連25テストを照合",
+    "evidence": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-a4b0672-agent-result.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/parallel-dispatch.md"
+    ]
+  },
+  "judgment_delta": [
+    "未知target拒否は成立したがwriter catalog不一致を検出したためneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+    "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+    "expected_root": null,
+    "expected_head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+    "current_head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "expected_root": null,
+      "expected_head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+      "current_head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-13T06:54:55.391Z",
+  "git_context": {
+    "head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+    "current_branch": "codex/story-vibepro-summary-drilldown-log",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T06:54:55.390Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "a4b067254ea07ad7539971799258340ad5c2ff70",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "f1271a6ad54d550d1d02c11830ebf99fdfbe8238f62fa55e736510ca43790a29",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f5a3e-5aea-7be2-b190-a39a70626510",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-a4b0672-agent-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-a4b0672-agent-result.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

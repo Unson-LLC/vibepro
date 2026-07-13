@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-summary-drilldown-log",
+  "head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+  "status": "pass",
+  "focused": {
+    "passed": 57,
+    "failed": 0
+  },
+  "review_finding_resolution": {
+    "finding_id": "artifact-target-path-alias",
+    "status": "resolved",
+    "evidence": "bare canonical filenames and the current story canonical artifact path are accepted; aliases and another story's same-basename path fail closed"
+  },
+  "additional_review_finding_resolutions": [
+    {
+      "finding_id": "ac5-cli-help-contract-gap",
+      "status": "resolved",
+      "evidence": "the English CLI help states that standard/full requires reason, consumer, and at least one target together, and Story4 E2E captures and verifies actual help output"
+    },
+    {
+      "finding_id": "current-review-evidence-reuse-stale",
+      "status": "pending_review_refresh",
+      "evidence": "review prepare and pr prepare will be regenerated after current-head verification is recorded"
+    }
+  ],
+  "common_judgment_spine": {
+    "current_reality": "57 focused tests and 54 evidence lifecycle tests passed on the recorded HEAD",
+    "failure_modes": "unknown, writerless, unresolved, aliased, and cross-story drill-down targets are rejected; negative_path and boundary_condition are covered",
+    "done_evidence": "summary-first, canonical target-only drill-down, append-only ledger, README, and actual CLI help contracts replayed"
+  },
+  "release_ops": {
+    "release_note": "pr prepare now defaults to summary depth; standard/full requires reason, consumer, and a writer-backed target",
+    "rollout_plan": "no migration or operator action is required; behavior takes effect with the CLI release",
+    "rollback_instruction": "revert commit ff99834f61772e5ed6878ddc114ad53ce45ef29d to restore the prior target resolution and CLI help behavior",
+    "observability_evidence": ".vibepro/pr/story-vibepro-summary-drilldown-log/evidence-drilldown-log.json and the pr prepare evidence-plan/decision-index show selected depth, consumer, reason, and generated target"
+  },
+  "ci_failure_reproduction": {
+    "passed": 3,
+    "failed": 0,
+    "tests": [
+      "story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact replay",
+      "text-only workflow language does not activate execution topology axis",
+      "pr prepare writes PR artifacts for the selected story"
+    ]
+  },
+  "cli_regression": {
+    "passed": 393,
+    "failed": 0,
+    "environment_limited": 2,
+    "environment_limits": [
+      "listen EPERM: operation not permitted 0.0.0.0",
+      "npm cache log directory is outside the writable sandbox"
+    ]
+  }
+}

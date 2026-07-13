@@ -1,0 +1,325 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-summary-drilldown-log",
+  "updated_at": "2026-07-13T05:44:31.248Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "expected_root": null,
+      "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+      "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783921471248-4887464a",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "Single reviewer can evaluate Story4 as one coherent contract",
+      "reason": "Review map: gate_evidence reviewer checks CLI input validation, planner target policy, writer target enforcement, ledger persistence/discovery, Design SSOT, and current-head tests. The architecture and spec provide the reading order and rollback boundary.",
+      "reviewer": "Codex coordinator",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "expected_root": null,
+          "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "current_branch": "codex/story-vibepro-summary-drilldown-log",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:44:31.247Z"
+      },
+      "recorded_at": "2026-07-13T05:44:31.248Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783921470594-d59ebfd4",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep Story4 bundled instead of splitting by file type",
+      "reason": "Alternatives considered: split docs/tests from runtime or split planner from writer. Both weaken review because compatibility fixture updates and negative-path tests prove the same runtime invariant. The branch is clean and contains only Story4 intent.",
+      "reviewer": "Codex coordinator",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "expected_root": null,
+          "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "current_branch": "codex/story-vibepro-summary-drilldown-log",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:44:30.593Z"
+      },
+      "recorded_at": "2026-07-13T05:44:30.595Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783921469955-6e0f6081",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_review",
+      "summary": "19 changed files are one atomic public-contract change",
+      "reason": "CLI parsing, evidence-depth planning, artifact emission, compatibility fixtures, Story/Architecture/Spec, and E2E jointly implement one summary-first contract. Splitting would create an intermediate state where accepted CLI targets and generated artifacts disagree. One gate-evidence reviewer owns the complete contract; rollback is the focused commit series.",
+      "reviewer": "Codex coordinator",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "expected_root": null,
+          "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "current_branch": "codex/story-vibepro-summary-drilldown-log",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:44:29.951Z"
+      },
+      "recorded_at": "2026-07-13T05:44:29.955Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+        "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+        "expected_root": null,
+        "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783921471248-4887464a",
+      "story_id": "story-vibepro-summary-drilldown-log",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "Single reviewer can evaluate Story4 as one coherent contract",
+      "reason": "Review map: gate_evidence reviewer checks CLI input validation, planner target policy, writer target enforcement, ledger persistence/discovery, Design SSOT, and current-head tests. The architecture and spec provide the reading order and rollback boundary.",
+      "reviewer": "Codex coordinator",
+      "artifact": "docs/architecture/vibepro-summary-drilldown-log.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-summary-drilldown-log/current-head-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+          "expected_root": null,
+          "expected_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "current_head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0dac120df6f6135877ccf46ade813fa6ae7d9c39",
+        "current_branch": "codex/story-vibepro-summary-drilldown-log",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:44:31.247Z"
+      },
+      "recorded_at": "2026-07-13T05:44:31.248Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-summary-drilldown-log/decision-records.json"
+}

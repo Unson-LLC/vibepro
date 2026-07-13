@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "summary": "Evidence reuseはcurrent HEADとverification fingerprintに一致するhitで、既解消findingの再発はありません。",
+  "inspection_summary": "HEAD ff99834、review request、evidence-reuse、decision-index、pr-prepare、verification evidence、対象差分、writer経路、focused testsを確認しました。",
+  "judgment_delta": "evidence reuse stale懸念から、status=hit、fresh_use_allowed=true、gate_status=passed、fingerprint・timestamps一致、および17件のfocused tests通過を確認してpassへ更新しました。",
+  "findings": [],
+  "resolved_findings": [
+    "current-review-evidence-reuse-stale",
+    "artifact-target-path-alias",
+    "ac5-cli-help-contract-gap",
+    "drilldown-target-resolution-fail-open",
+    "drilldown-target-writer-catalog-mismatch"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/decision-index.json",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/verification-evidence.json",
+    "src/evidence-depth-planner.js",
+    "src/pr-manager.js",
+    "src/cli.js",
+    "test/evidence-depth-planner.test.js",
+    "test/evidence-depth-pr-prepare.test.js",
+    "test/e2e/story-vibepro-summary-drilldown-log-main.spec.ts",
+    "git diff origin/main...HEAD"
+  ],
+  "tests_checked": [
+    "node --test test/evidence-depth-planner.test.js test/evidence-depth-pr-prepare.test.js test/e2e/story-vibepro-summary-drilldown-log-main.spec.ts: 17 passed, 0 failed"
+  ],
+  "agent": {
+    "system": "codex",
+    "agent_id": "019f5a69-e553-7e30-8266-cfc1d601d313",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high"
+  },
+  "head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d"
+}

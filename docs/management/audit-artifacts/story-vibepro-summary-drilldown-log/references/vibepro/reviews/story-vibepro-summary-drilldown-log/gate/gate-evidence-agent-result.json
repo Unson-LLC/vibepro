@@ -1,0 +1,22 @@
+{
+  "status": "needs_changes",
+  "summary": "summary-firstとfail-closed validationは機能するが、targetが実際の生成面を制限せず、ledgerの発見可能性とSpec gate bindingにも不整合がある。",
+  "inspection_summary": "target HEAD/base diff、Story/Architecture/Spec、planner/manager/CLI、tests、current-head verification evidence、pr-prepare gate outputを確認し、focused test suitesを再実行した。",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "drilldown-target-not-enforced",
+      "detail": "明示targetがartifact生成方針に反映されず、gate-dag.jsonだけを指定してもHTML/cockpit等の未選択surfaceが生成される。selected and bounded drill-down契約を満たしていない。"
+    },
+    {
+      "severity": "medium",
+      "id": "drilldown-ledger-manifest-discovery-loss",
+      "detail": "drill-down後にsummary prepareを実行するとledgerファイル自体は残るが、manifest.latest_evidence_drilldown_logと返却artifactがnullになり、handoff時の発見経路が失われる。"
+    },
+    {
+      "severity": "high",
+      "id": "spec-gate-binding-not-current",
+      "detail": "tracked Specにthreat modelはあるが、現在HEAD向けの.vibepro/spec/.../spec.jsonが未登録で、pr-prepareのdesign diagram gateがcritical missingのまま。"
+    }
+  ]
+}

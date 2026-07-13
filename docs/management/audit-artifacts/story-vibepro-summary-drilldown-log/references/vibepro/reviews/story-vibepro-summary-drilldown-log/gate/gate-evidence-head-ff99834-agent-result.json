@@ -1,0 +1,23 @@
+{
+  "story_id": "story-vibepro-summary-drilldown-log",
+  "head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+  "agent_id": "019f5a65-a737-7492-ac85-b0511e538a59",
+  "status": "needs_changes",
+  "summary": "Known implementation findings are resolved, but current review evidence reuse still requires a second refresh.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "current-review-evidence-reuse-stale",
+      "detail": "Current pr-prepare and review request report stale evidence reuse; rerun pr prepare without changing verification evidence to establish a fresh hit."
+    }
+  ],
+  "inspection_summary": "Inspected origin/main..ff99834, Story, Architecture, Spec, bounded summaries, verification evidence, planner, writers, ledger flow, CLI help, and focused tests. Alias rejection, compatibility, summary-first behavior, required attribution, writer coverage, append preservation, and AC-5 help verification pass.",
+  "inspection_evidence": [
+    ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/evidence-plan.json",
+    ".vibepro/pr/story-vibepro-summary-drilldown-log/verification-evidence.json",
+    "node --test test/evidence-depth-planner.test.js test/evidence-depth-pr-prepare.test.js test/vibepro-cli.test.js test/e2e/story-vibepro-summary-drilldown-log-main.spec.ts"
+  ],
+  "judgment_delta": "Implementation and documentation findings are closed, but explicit stale summary state prevents pass until the evidence reuse refresh completes."
+}

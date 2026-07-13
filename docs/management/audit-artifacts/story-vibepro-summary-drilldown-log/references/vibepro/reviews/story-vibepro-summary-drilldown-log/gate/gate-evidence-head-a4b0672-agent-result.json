@@ -1,0 +1,31 @@
+{
+  "status": "needs_changes",
+  "summary": "前回findingは主要な未知target経路では解消されていますが、artifact catalogと実writerの不一致によりfail-open経路が残っています。",
+  "findings": [
+    {
+      "id": "drilldown-target-writer-catalog-mismatch",
+      "severity": "high",
+      "detail": "raw-transcript-log、raw-provider-log、full-review-lifecycle-dumpは既知targetとして受理され、generated_artifactsにも入ります。しかしraw logはwrite_raw_logs=false固定で、lifecycle dumpを実際に出力するwriterも存在しません。要求成功後に対象artifactが生成されないため、前回finding drilldown-target-resolution-fail-openは完全には解消されていません。受理可能targetを実在writerに限定するか、対応writerを実装し、全catalog itemについて生成確認するnegative/positive testが必要です。"
+    }
+  ],
+  "inspection_summary": "HEAD a4b067254ea07ad7539971799258340ad5c2ff70について、review request、readiness summary、evidence plan、decision index、verification evidence、Story/Spec/Architecture/DESIGN binding、plannerとpr-managerのwriter経路、関連25テストを確認しました。",
+  "inspection_inputs": [
+    "src/evidence-depth-planner.js",
+    "src/pr-manager.js",
+    "test/evidence-depth-planner.test.js",
+    "test/evidence-depth-pr-prepare.test.js",
+    "test/e2e/story-vibepro-summary-drilldown-log-main.spec.ts",
+    "docs/specs/vibepro-summary-drilldown-log.md",
+    "docs/architecture/vibepro-summary-drilldown-log.md",
+    "design-ssot.json",
+    "node --testによる関連25テスト: 25 pass",
+    "artifact catalog各targetに対するbuildEvidencePlan出力とpr-manager writerの照合"
+  ],
+  "judgment_delta": [
+    "未知artifact名とcurrent Gate DAGに存在しないgate idはfail-closed化され、negative testも現在の実装を正しく捕捉している。",
+    "gate-dag.json、review-cockpit.htmlなどの正常targetはtarget-only flagと実writerが対応し、既存テストも通過している。",
+    "summary default、risk surface保持、HEAD-bound ledger、Story/Spec/Architecture/DESIGN bindingは確認できた。",
+    "ref-topology.jsonはpr-managerが常時生成し、manifestにも公開しているためcatalogへの追加は実態に即している。",
+    "ただし全catalog itemのwriter整合確認でsilent no-opが残っていることが判明したため、初期のpass候補からneeds_changesへ変更した。"
+  ]
+}

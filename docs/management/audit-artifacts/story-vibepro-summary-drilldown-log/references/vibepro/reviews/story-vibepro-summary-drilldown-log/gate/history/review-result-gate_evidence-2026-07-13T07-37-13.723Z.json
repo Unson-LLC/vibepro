@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-summary-drilldown-log",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "実装findingは解消済みだがcurrent evidence reuseの二段階refreshが必要",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "current-review-evidence-reuse-stale",
+      "detail": "current pr prepareとreview requestがstaleを明示しているためverificationを変えず再生成する"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "ac5-cli-help-contract-gap",
+      "disposition": "accepted",
+      "resolved_by": [
+        "ff99834"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "artifact-target-path-alias",
+      "disposition": "accepted",
+      "resolved_by": [
+        "ff99834"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "実装、docs、actual CLI help、verificationとfocused testsを確認し実装finding解消を確認",
+    "evidence": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-ff99834-agent-result.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "実装とdocumentationはpassだが明示的stale summaryのためneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+    "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+    "expected_root": null,
+    "expected_head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+    "current_head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "actual_root": "/private/tmp/vibepro-summary-drilldown-log",
+      "expected_root": null,
+      "expected_head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+      "current_head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-13T07:37:13.723Z",
+  "git_context": {
+    "head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+    "current_branch": "codex/story-vibepro-summary-drilldown-log",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T07:37:13.717Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "2963652436c8238fd9d343a4ef0af3eebb5eefcb644dcaaf5aadcba7885b5862",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f5a65-a737-7492-ac85-b0511e538a59",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-ff99834-agent-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-summary-drilldown-log/gate/gate-evidence-head-ff99834-agent-result.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
