@@ -1,0 +1,1 @@
+{"status":"pass","role":"gate_evidence","head":"5912f32","summary":"newline回避閉鎖（CRLF含むプローブ確認+pre-fix-failing負例）、subshell境界文書化、story fallbackのnormalizeActiveStories一致を全て検証。17/17 pass。残findingsは受容済みdispositionのlow 2件のみ","findings":["low: quoted-mention false positive（保守的設計として受容）","low: subshell exemption（文書化済み境界として受容）"]}

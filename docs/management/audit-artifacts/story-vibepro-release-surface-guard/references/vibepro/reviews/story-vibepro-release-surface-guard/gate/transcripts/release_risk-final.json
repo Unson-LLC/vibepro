@@ -1,0 +1,1 @@
+{"status":"pass","role":"release_risk","head":"4bcae14","summary":"指摘4件全て修正検証済み。無音回避経路閉鎖（segment分類+pre-fix-failing負例）、uninstall対称化、決定的no-story判定+エラーfail closed、境界doc明記。opt-in・不干渉・CLI不在fail open・エラーfail closed+監査付きbypassのrelease姿勢は許容","findings":[]}

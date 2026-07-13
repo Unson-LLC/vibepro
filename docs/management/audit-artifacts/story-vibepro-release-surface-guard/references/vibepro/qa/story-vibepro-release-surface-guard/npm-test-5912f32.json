@@ -1,0 +1,10 @@
+{
+ "status": "pass",
+ "command": "npm test",
+ "exit_code": 0,
+ "observed": {
+  "tests": "1010",
+  "pass": "1010",
+  "fail": "0"
+ }
+}

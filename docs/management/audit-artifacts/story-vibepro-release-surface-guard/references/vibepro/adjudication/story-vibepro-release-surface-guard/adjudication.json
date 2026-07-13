@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-release-surface-guard",
+  "updated_at": "2026-07-13T15:28:01.530Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-12",
+      "verdict": "demonstrated",
+      "reason": "テスト実読で8カテゴリ全対応を確認（GUARD-S-001〜011+E2E駆動）、5912f32で裁定者自ら再実行し17/17 passを観測",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:28:01.524Z"
+    },
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "E2E-006がstatus出力の3項目（hook状態・設定・bypass件数）をfixture実状態と一致する値でassert。installed状態・bypass>0の表示値は未検証と限定事項付記",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:28:00.830Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "GUARD-S-010+E2E-004（opt-out後の実push通過）+E2E-006（custom pattern block/protected上書きallow）で全上書き経路を検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:28:00.111Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "E2E-005が実CLIプロセスのstdinへtool入力JSONを書きexit 2+stderr理由を直接assert、抽出3ケースはGUARD-S-009",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:59.377Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "E2E-005+GUARD-S-008がpermissions/PostToolUse保持・Bash matcher追加・冪等・uninstall対称除去をファイル実体で検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:58.561Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "E2E-004が実bare origin相手の実git pushをhook経由で非0 block、feature pushの実通過まで検証（シミュレーションでなく実push）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:57.842Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "GUARD-S-006がmarker実在・reinstall冪等・foreign hook明示reject（throwがwrite前にある構造もコード確認）をassert",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:57.113Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "E2E-003が実環境変数で空白reason拒否(exit2)・非空reason通過(exit0)・bypass-log.jsonl実ファイルのreason/command/head_shaを検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:56.397Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "workspace無し=E2E-002実CLI、Story未選択=GUARD-S-011（全archived実状態+throw evaluatorで評価自体が走らないことまで証明）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:55.671Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "GUARD-S-004がready=trueでallowを直接assert、allow→exit 0はcli.js単一分岐で複数E2E検証済み。readiness値はDIで直接付与され飛躍なし",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:54.944Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "呼ばれたらthrowするevaluator注入で「評価されない」ことを構造的に証明（GUARD-S-002）、実CLIでexit 0と非該当出力を確認（E2E-001）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:54.198Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "GUARD-E2E-001が実CLIでexit 2+blocked+復旧コマンド出力を直接assert、blocking gate名の伝播はGUARD-S-003+cli.js単一経路で確認。裁定者が5912f32で再実行",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-2",
+        "session_ref": "agent-task-aced5ae7344799a44"
+      },
+      "head_commit": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "recorded_at": "2026-07-13T15:27:53.477Z"
+    }
+  ]
+}

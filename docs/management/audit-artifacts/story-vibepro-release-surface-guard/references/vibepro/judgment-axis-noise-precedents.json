@@ -1,0 +1,52 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-surface-guard",
+      "decision_id": "decision-1783956485215-768950f3",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "diff構成（src2+test3+docs多数）が単一契約の入出力面であることをpr_split_scopeレビューが検証。decision_record: 本記録",
+      "artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/review-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T15:28:26.117Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-release-surface-guard",
+      "decision_id": "decision-1783956573843-e6cf4ee3",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "release_riskレビュー（pass, findings空）がrollout姿勢を検証済み。opt-inでunmanaged repoへ不干渉、CLI不在時fail openでgitを文鎮化させない",
+      "artifact": "README.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T15:29:56.628Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-release-surface-guard",
+      "decision_id": "decision-1783956571122-7ef7b8e7",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "hookは設置物が明確（marker付き1ファイル+settings 1エントリ）で、uninstall/disableの両rollback経路が実テストで検証済み。戻せなくなる面は存在しない",
+      "artifact": "test/guard.test.js",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T15:29:56.628Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

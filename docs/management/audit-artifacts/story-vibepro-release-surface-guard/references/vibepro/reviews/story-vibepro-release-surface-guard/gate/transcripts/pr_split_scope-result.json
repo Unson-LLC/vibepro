@@ -1,0 +1,1 @@
+{"status":"pass","role":"pr_split_scope","head":"083e1bb","summary":"単一storyの一貫PR（13file +1218行、全てguard story所属、cli.js変更は加算のみ、smoke全passで回帰なし）。分割すると不完全なguardが出荷される","findings":["low: dispatch文の4コミット表記は実際3コミット（監査正確性のみ）"]}

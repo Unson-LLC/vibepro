@@ -1,0 +1,149 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-surface-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "全指摘解消をHEAD 5912f32で検証: newline/CRLF回避はsegment分割regex修正で閉鎖（自らプローブ再実行で確認、pre-fix-failing負例2件追加）、subshell非検出は両architecture docへ文書化、story fallbackはnormalizeActiveStoriesでresolveStoryと完全一致（全archivedは決定的allow）。17/17 pass。残るのは受容済みdispositionのlow 2件のみ",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "guard-classifier-quoted-mention-false-positive",
+      "detail": "引用内言及のfalse positiveは保守的設計として受容（blocked中のみ・非破壊・復旧導線付き）"
+    },
+    {
+      "severity": "low",
+      "id": "guard-vibepro-segment-subshell-exemption",
+      "detail": "command substitution非検出は文書化済み境界として受容（pre-push ref判定+監査付きbypassが補完層）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "4bcae14..5912f32のdiff精読（split regex・fallback・docs・tests）、node --test 17/17自己実行、classifyReleaseSurfaceへnewline/CRLF/subshell/通常複数行コマンドのプローブ再実行で回避閉鎖と誤検知なしを実証。fail-open/closed境界・hook quoting・bypass監査・CLI routingは前ラウンド検証から不変",
+    "evidence": "node --test at 5912f32 -> 17/17 pass; probe: 'vibepro help\\ngh pr create' -> raw_pr_create, 'npm test\\nnpm run build' -> null",
+    "inputs": [
+      "src/guard.js",
+      "src/cli.js",
+      "test/guard.test.js",
+      "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+      "docs/architecture/vibepro-release-surface-guard.md"
+    ]
+  },
+  "judgment_delta": [
+    "初回pass(low4) -> 再ラウンドでnewline回避のmediumを発見しneeds_changes -> 修正をdiff精読+プローブ再実行で検証しpass（新規regressionなしも確認）"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+    "current_head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "actual_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "current_head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T15:06:08.887Z",
+  "git_context": {
+    "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+    "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T15:06:08.848Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-release-surface-guard.md",
+        "sha256": "ea3244161f5b0a620384e74be6084dacf71635875ca621ec7ccdda13764caf65",
+        "size": 4603
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "cfe0042f586afcc09cb6e821604447afe29b4ccfe9fbe374a7ec92e6ffaebcee",
+        "size": 176184
+      },
+      {
+        "path": "src/guard.js",
+        "sha256": "7f0d8fbf7b91cc6b3572e4bf0014471c35451f98df3081890317d82b49cdf3f7",
+        "size": 15782
+      },
+      {
+        "path": "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+        "sha256": "a9c5c95d4d79457e090ffda1440056e0a488f4bf93ec20f09d90dea0cd682eb5",
+        "size": 12413
+      },
+      {
+        "path": "test/guard.test.js",
+        "sha256": "55e8df1d7b86891d42cfdc1078174f4265ef9701ac9a29b4a2a556ecfc59156b",
+        "size": 13123
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5966368237f52e827361bb2058685c407549cd39c821487876483e155d7fac96"
+  },
+  "source_fingerprint": "858a53064627d95470af44f470d6bf4bfb79e217b147f4136ede52ffbf01838c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-gate_evidence-grd1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/transcripts/gate_evidence-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

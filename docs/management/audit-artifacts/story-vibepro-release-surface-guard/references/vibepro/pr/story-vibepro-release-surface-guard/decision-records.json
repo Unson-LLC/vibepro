@@ -1,0 +1,387 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-release-surface-guard",
+  "updated_at": "2026-07-13T15:29:38.509Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956578508-92aea42b",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:bug_physics_deployment_version_stamp",
+      "source_status": null,
+      "summary": "version stamp gateの要求（running sessionがexpected artifact versionを読む証拠）は本Storyに適用外: デプロイされるrunning sessionが存在しない（ローカルCLI+git hookのみ）。expected artifactに相当するのはhook scriptで、marker検証がGUARD-S-006で実施済み",
+      "reason": "deployment bug heuristicの誤発火（triage decisionと同根）。hook設置物の同一性はmarker+冪等テストで担保",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "test/guard.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:29:38.500Z"
+      },
+      "recorded_at": "2026-07-13T15:29:38.509Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956576161-4dfa7e05",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": null,
+      "summary": "bug physics triageのdeployment分類はfalse positive: 本Storyはデプロイの実行ではなく、デプロイコマンドを含むrelease操作の起動をブロックする機能。fly deploy等の文字列はブロック対象パターン定義として登場するのみで、デプロイ対象のartifactやrunning sessionは存在しない",
+      "reason": "story本文のdeployキーワードがdeployment bug heuristicを誤発火させた。変更はローカルCLIコード+hookのみで、デプロイ面もversion stamp面も持たない",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "docs/architecture/vibepro-release-surface-guard.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:29:36.153Z"
+      },
+      "recorded_at": "2026-07-13T15:29:36.163Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956573843-e6cf4ee3",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_note: README en/jaのguard節がoperator導線（install/status/uninstall・bypass手順・opt-out）を記載。observability_evidence: guard statusがhook設置状態とbypass件数を表示、bypass-log.jsonlが監査trail。support/rollback導線はuninstall/disableの2経路。opt-in機能のためデフォルト挙動の変更なし",
+      "reason": "release_riskレビュー（pass, findings空）がrollout姿勢を検証済み。opt-inでunmanaged repoへ不干渉、CLI不在時fail openでgitを文鎮化させない",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "README.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:29:33.835Z"
+      },
+      "recorded_at": "2026-07-13T15:29:33.844Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956571122-7ef7b8e7",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": null,
+      "summary": "rollback_plan: guardは完全に可逆——vibepro guard uninstall（pre-push hookとClaude hookを対称除去、GUARD-S-006/008で検証）と.vibepro/config.json guard.enabled=false（実push通過をGUARD-E2E-004で検証）の2経路。stored objectはbypass-log.jsonl追記のみで削除safe、version skewなし（ローカルCLIのみ）",
+      "reason": "hookは設置物が明確（marker付き1ファイル+settings 1エントリ）で、uninstall/disableの両rollback経路が実テストで検証済み。戻せなくなる面は存在しない",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "test/guard.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:29:31.114Z"
+      },
+      "recorded_at": "2026-07-13T15:29:31.124Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956485215-768950f3",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 15file/+1400行は単一意図（guard導入）で1passレビュー可能。review_owner_map: gate_evidence/pr_split_scope/release_riskの3role subagentレビューを実施し全pass",
+      "reason": "diff構成（src2+test3+docs多数）が単一契約の入出力面であることをpr_split_scopeレビューが検証。decision_record: 本記録",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/review-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:28:05.207Z"
+      },
+      "recorded_at": "2026-07-13T15:28:05.216Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956482863-21ee15bf",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Story/Architecture/Spec/実装/テスト/README/Design SSOTは単一Story（release surface guard）の一貫変更。分割するとguardの入出力面（CLI/pre-push/PreToolUse/docs）が不完全な状態で出荷される",
+      "reason": "pr_split_scopeレビュー（pass）が単一意図・分割不可を検証済み。CLI dispatch変更は加算のみでsmoke全passの回帰証拠あり",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/transcripts/pr_split_scope-result.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:28:02.855Z"
+      },
+      "recorded_at": "2026-07-13T15:28:02.865Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "noise": 2,
+      "needs_review": 3,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783956578508-92aea42b",
+      "story_id": "story-vibepro-release-surface-guard",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:bug_physics_deployment_version_stamp",
+      "source_status": null,
+      "summary": "version stamp gateの要求（running sessionがexpected artifact versionを読む証拠）は本Storyに適用外: デプロイされるrunning sessionが存在しない（ローカルCLI+git hookのみ）。expected artifactに相当するのはhook scriptで、marker検証がGUARD-S-006で実施済み",
+      "reason": "deployment bug heuristicの誤発火（triage decisionと同根）。hook設置物の同一性はmarker+冪等テストで担保",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "test/guard.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/npm-test-5912f32.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-release-surface-guard/typecheck-5912f32.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5912f32d401092fbf449979d407eceb9b8d0933e",
+        "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T15:29:38.500Z"
+      },
+      "recorded_at": "2026-07-13T15:29:38.509Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-release-surface-guard/decision-records.json"
+}

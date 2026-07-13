@@ -1,0 +1,122 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-surface-guard",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "単一Storyの一貫PR。13file/+1218行は全てguard storyに属し、共有ファイル（cli.js）の変更は加算のみ。CLI/pre-push/PreToolUse/README/SSOTは1つの契約の入出力面であり分割は不完全なguardを出荷する",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "commit-count-mismatch-in-request",
+      "detail": "dispatch指示の4コミット表記は実3コミット。診断結果に影響なし（監査正確性の注記）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "origin/main...HEADの全diffをファイル別・コミット別に精読、cli.js変更が加算のみでmainにguard衝突が無いことをgit grepで確認、guard unit+e2e（10 pass）とcli-smoke（2 pass、全TOP_LEVEL_COMMANDSの回帰）を自己実行",
+    "evidence": "git diff origin/main...HEAD + node --test自己実行（guard 10 pass / smoke 2 pass）",
+    "inputs": [
+      "git diff --stat origin/main...HEAD (13 files, +1218)",
+      "src/cli.js diff（加算のみ）",
+      "node --test test/cli-smoke.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念: 1200行+design-ssot編集に無関係スコープ混入の可能性 -> コミット別検分で全ファイルが単一story所属、design-ssotはappendのみと確認しpass"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_head_sha": "083e1bbe5ec1f7ffb59a97939780f55c5c75e390",
+    "current_head_sha": "083e1bbe5ec1f7ffb59a97939780f55c5c75e390",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "actual_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "current_head_sha": "083e1bbe5ec1f7ffb59a97939780f55c5c75e390",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T14:47:49.105Z",
+  "git_context": {
+    "head_sha": "083e1bbe5ec1f7ffb59a97939780f55c5c75e390",
+    "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T14:47:49.093Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "083e1bbe5ec1f7ffb59a97939780f55c5c75e390",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "cfe0042f586afcc09cb6e821604447afe29b4ccfe9fbe374a7ec92e6ffaebcee",
+        "size": 176184
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "644cc32608d54b0f3266d551be66e11744833ebcf03bc3519916c02e29990b05"
+  },
+  "source_fingerprint": "e7bfa8c67ef23d09f4b75c38b834e5595a3f75ef0b81722c3773fec5aee8f5d8",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-pr_split_scope-grd1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/transcripts/pr_split_scope-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

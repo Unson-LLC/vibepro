@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-surface-guard",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "指摘4件全て4bcae14で修正検証済み。無音回避経路は閉鎖（segment単位分類、vibepro免除は該当segmentのみ、複合コマンド負例を実プローブで確認）。uninstallはClaude hookを対称除去し他エントリ保持。no-story判定はstory-manager実セマンティクスの決定的判定になり、readinessエラーはfail closed。境界docはCLI不在fail open+エラーfail closedを明記。17/17 pass",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "083e1bb..4bcae14のdeltaをread-onlyで検証: git show 6869ee6/4bcae14の全diff精読、story-manager.jsのcurrent_story_id解決と突合、node --test 17/17自己実行、classifyReleaseSurfaceへ9つの敵対的コマンドを再プローブし回避閉鎖と誤検知なしを実証確認",
+    "evidence": "node --test at 4bcae14 -> 17/17 pass; probe: 'vibepro --version && gh pr create' -> raw_pr_create, 'VIBEPRO_X=1 vibepro pr create .' -> null",
+    "inputs": [
+      "src/guard.js",
+      "src/story-manager.js",
+      "test/guard.test.js",
+      "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+      "docs/architecture/vibepro-release-surface-guard.md"
+    ]
+  },
+  "judgment_delta": [
+    "初回needs_changes（複合コマンドの無音回避）-> segment分類の実装とpre-fix-failing負例をdiff精読+実プローブで確認しpass。中間コミットの誤ったconfigキーがCLI E2Eで検出・修正された経緯も監査済み"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "expected_head_sha": "4bcae140156037d65e0f5817cca9b28b71394f56",
+    "current_head_sha": "4bcae140156037d65e0f5817cca9b28b71394f56",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-prepush-guard/.worktrees/vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "actual_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+      "current_head_sha": "4bcae140156037d65e0f5817cca9b28b71394f56",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T14:58:34.556Z",
+  "git_context": {
+    "head_sha": "4bcae140156037d65e0f5817cca9b28b71394f56",
+    "current_branch": "vibepro/story-vibepro-release-surface-guard-1gi86s",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T14:58:34.527Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "4bcae140156037d65e0f5817cca9b28b71394f56",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-release-surface-guard.md",
+        "sha256": "b67d48c78fabd3496eea6da1d592a7f0537de022520a1a977d0f9741ceed5c18",
+        "size": 4328
+      },
+      {
+        "path": "src/guard.js",
+        "sha256": "5cf4ccf1ec13a8eeb32bdbb74541ab6d0204532c2866dd3fa3be5a82c411a8c6",
+        "size": 15419
+      },
+      {
+        "path": "src/story-manager.js",
+        "sha256": "bced0ab258f7bbd5519ae02129857749bfe76577fbda6668edb298e4e4836d83",
+        "size": 96042
+      },
+      {
+        "path": "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+        "sha256": "a9c5c95d4d79457e090ffda1440056e0a488f4bf93ec20f09d90dea0cd682eb5",
+        "size": 12413
+      },
+      {
+        "path": "test/guard.test.js",
+        "sha256": "89eb3e43db9c03de958be88ffde5c9cccc4a9c81386cf628a3e1553822f2f489",
+        "size": 12742
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fde3d44a82f3eb1571abddf40004280ff7e6a3ec5e317b5e5f6e228d7a303b60"
+  },
+  "source_fingerprint": "7d0f447704980a890b9cf0d67a4ae6239c9be5d608951d106843a583fe58546b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-release_risk-grd1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/transcripts/release_risk-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-surface-guard/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
