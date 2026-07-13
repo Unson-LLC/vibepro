@@ -226,6 +226,18 @@ title: Docs Only Update Spec
   ]);
   assert.equal(decision.exitCode, 0);
 
+  const adjudication = await runCli([
+    'adjudicate', 'record', repo,
+    '--id', 'story-gate-check',
+    '--clause', 'AC-1',
+    '--verdict', 'demonstrated',
+    '--reason', 'docs-only fixture: the changed files are documentation only, which directly demonstrates the clause',
+    '--agent-system', 'claude_code',
+    '--agent-id', 'fixture-adjudicator',
+    '--json'
+  ]);
+  assert.equal(adjudication.exitCode, 0);
+
   const result = await runCli(['gate', 'check', repo, '--story-id', 'story-gate-check', '--base', 'main', '--ci', '--json']);
 
   assert.equal(result.exitCode, 0, JSON.stringify(result.result, null, 2));
