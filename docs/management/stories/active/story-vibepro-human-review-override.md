@@ -28,3 +28,9 @@ spec_docs:
 - HRO-S2: Given current HEADの推奨が`split_pr`でreviewerが欠ける、when PR作成を評価する、then override不足として停止する。
 - HRO-S3: Given current HEADの推奨が`block`で古いHEADのdecisionしかない、when mergeを評価する、then stale decisionを拒否して停止する。
 - HRO-S4: Given 理由、reviewer、current HEADを持つaccepted decisionがある、when PR作成またはmergeを評価する、then 両入口で同じoverrideとして認識する。
+
+## Engineering judgment spine
+
+- current_reality: `pr create` と `execute merge` は別入口であり、従来は作成済みPRや古いreview artifactを承認として誤用できた。変更は共通policy moduleと両入口のfocused runtime pathに限定する。
+- failure_modes: malformed JSON、missing reviewer/reason、別Story、stale HEAD、`split_pr|block` の黙示通過をすべて fail closed にする。正当な `proceed` を誤停止する回帰は独立に検証する。
+- done_evidence: unitでdecision validation、E2Eで実CLIのPR作成拒否、merge拒否、current waiver許可、lifecycle artifactを再生し、current HEADへstrict bindingする。

@@ -99,7 +99,7 @@ async function runCliCaptured(args: string[]) {
   return { ...result, stdout, stderr };
 }
 
-test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 ac:5 PR readiness exposes a current-HEAD override block', () => {
+test('story-vibepro-human-review-override HRO-S2 AC-1 AC-3 AC-5 PR readiness exposes a current-HEAD override block', () => {
   // Given split_pr lacks an accepted current-HEAD reviewer, when PR readiness runs, then creation is blocked.
   const gate = buildHumanReviewOverrideGate({
     required: true,
@@ -112,7 +112,7 @@ test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 ac:5 PR readiness exp
   assert.match(gate.reason, /before PR creation or merge/);
 });
 
-test('story-vibepro-human-review-override HRO-S3 ac:2 merge re-evaluates stale lifecycle and blocks visibly', async () => {
+test('story-vibepro-human-review-override HRO-S3 AC-2 merge re-evaluates stale lifecycle and blocks visibly', async () => {
   // Given lifecycle evidence is stale, when merge runs, then it derives block and rejects the missing override.
   const recommendation = resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-2',
@@ -128,7 +128,7 @@ test('story-vibepro-human-review-override HRO-S3 ac:2 merge re-evaluates stale l
   );
 });
 
-test('story-vibepro-human-review-override HRO-S1 ac:4 proceed preserves the existing route for a current lifecycle', () => {
+test('story-vibepro-human-review-override HRO-S1 AC-4 proceed preserves the existing route for a current lifecycle', () => {
   // Given lifecycle evidence is current and clean, when merge evaluates it, then the existing proceed route remains.
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
