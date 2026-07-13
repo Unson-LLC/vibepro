@@ -56,6 +56,7 @@ import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import { assertHumanReviewOverride } from './human-review-override.js';
 import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
@@ -1199,6 +1200,12 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Commit, stash, or discard these files before \`vibepro pr create\`: ${nonWorkspaceDirtyFiles.map((file) => file.path).join(', ')}`
     );
   }
+  const humanReviewOverride = await assertHumanReviewOverride(
+    root,
+    preparation.story.story_id,
+    preparation.git.head_sha ?? null,
+    'PR creation'
+  );
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectPrReadinessBlockingItems(gateDag);
     throw new Error(
@@ -1299,6 +1306,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     gate_dag: gateDag ?? null,
     execution_gate: executionGate,
     gate_override: gateOverride,
+    human_review_override: humanReviewOverride,
     toolchain: preparation.toolchain ?? null,
     current_head_sha: preparation.git.head_sha ?? null,
     artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', preparation.git.head_sha ?? null, createdAt),

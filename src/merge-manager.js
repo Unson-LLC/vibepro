@@ -12,6 +12,7 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { assertHumanReviewOverride } from './human-review-override.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -36,6 +37,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const humanReviewOverride = await assertHumanReviewOverride(root, storyId, currentHeadSha, 'merge');
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
   const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
@@ -100,6 +102,7 @@ export async function executeMerge(repoRoot, options = {}) {
       checks: []
     },
     gate_dag: gateDag,
+    human_review_override: humanReviewOverride,
     preconditions: {
       pr_selector_resolved: Boolean(prSelector),
       gate_ready: gateDag?.overall_status === 'ready_for_review',
