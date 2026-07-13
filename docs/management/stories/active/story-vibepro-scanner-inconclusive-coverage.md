@@ -47,7 +47,7 @@ critical finding（FLOW-NO-UI-CODE）経路を維持する。
 - 共有ヘルパー `resolveScanConclusiveness`（新規 `src/scan-status.js`）: `{scanned_count, findings, applicable}` から `pass | inconclusive | not_applicable` と scan_coverage（走査root・発見ファイル数）を決定する
 - `flow-design-scanner`: UI走査0件のとき、UI storyなら従来のcritical finding（FLOW-NO-UI-CODE）を維持しつつ status を `inconclusive` にする。非UI storyの0件は明示 `not_applicable`（理由付き）。走査したroot一覧と件数を `scan_coverage` として結果に含める
 - `network-contract-scanner`: ルート・クライアント呼び出しの候補ファイルが1件も走査できなかったとき `inconclusive`（既存のblock判定は維持）
-- `regression-risk-scanner`: テストファイルを1件も発見できずカバレッジ判定が空のとき `inconclusive`
+- `regression-risk-scanner`: call graphで評価可能なmodule（scored modules）が0件のとき `inconclusive`（coverage不在時の既存degrade/skippedは不変）
 - 診断summary（story diagnose）とcheck packsの表示で `inconclusive` を `pass` と区別して表示する（「検査対象を発見できなかった＝合格ではない」を明記）
 - inconclusiveは本Storyでは非ブロッキング（unresolved扱いにしない）。ブロッキング化は採用実績を見て別Storyで判断する
 
@@ -65,7 +65,7 @@ critical finding（FLOW-NO-UI-CODE）経路を維持する。
 - [ ] flow-design-scannerの結果に走査root一覧と発見ファイル数を含む `scan_coverage` が入る
 - [ ] UIファイルを1件以上走査しfindingsが無い場合は従来どおり `pass` になる（既存挙動の回帰なし）
 - [ ] network-contract-scannerは候補ファイル走査0件のとき `inconclusive` になり、client呼び出し欠落の既存 `block` 判定は変わらない
-- [ ] regression-risk-scannerはテストファイル発見0件のとき `inconclusive` になる
+- [ ] regression-risk-scannerはcall graphで評価可能なmodule（scored modules）が0件のとき `inconclusive` になる
 - [ ] story diagnoseのsummary表示はinconclusiveをpassと区別し「検査対象を発見できなかった」ことを明示する
 - [ ] inconclusiveはgate_dagのunresolved集計に入らず、既存のready判定を変えない（非ブロッキング）
 - [ ] 既存テストが全てpassし、Next.js規約リポジトリの走査結果（pass/fail/block）は変化しない
