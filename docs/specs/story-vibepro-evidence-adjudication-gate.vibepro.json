@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-ADJ-1",
+      "type": "invariant",
+      "statement": "adjudicate prepare generates an adjudication request that contains every acceptance criteria clause full text, the recorded verification evidence (command, summary, observation), the three-verdict vocabulary, and independent fresh-context adversarial instructions.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "prepareAdjudication" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-001" }]
+      }
+    },
+    {
+      "id": "INV-ADJ-2",
+      "type": "invariant",
+      "statement": "adjudicate prepare on a story without acceptance criteria fails with an explicit error instead of producing a pass-like artifact, so absence of clauses is never treated as adjudicated.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "has no acceptance criteria" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-002" }]
+      }
+    },
+    {
+      "id": "CON-ADJ-3",
+      "type": "contract",
+      "statement": "adjudicate record rejects verdicts outside demonstrated/not_demonstrated/not_verifiable_by_automation, empty reasons, and missing agent-system or agent-id provenance, and binds every accepted verdict to the current HEAD commit.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "recordAdjudication" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-003" }]
+      }
+    },
+    {
+      "id": "SC-ADJ-4",
+      "type": "scenario",
+      "statement": "When the evidence adjudication gate state transitions are evaluated in pr prepare workflow, a clause without a fresh current-head verdict moves the gate status to needs_evidence and the reason lists each missing clause id.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "buildEvidenceAdjudicationGate" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-004" }]
+      }
+    },
+    {
+      "id": "SC-ADJ-5",
+      "type": "scenario",
+      "statement": "When any clause verdict is not_demonstrated, the gate status transitions to failed and the adjudicator reason is included in the gate reason.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "not_demonstrated_clauses" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-005" }]
+      }
+    },
+    {
+      "id": "SC-ADJ-6",
+      "type": "scenario",
+      "statement": "When a clause verdict is not_verifiable_by_automation, the gate demands human verification and only an accepted decision record with source gate:evidence_adjudication:<clause-id>, a reason, and an artifact resolves that clause.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "human_verification_clauses" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-006" }]
+      }
+    },
+    {
+      "id": "SC-ADJ-7",
+      "type": "scenario",
+      "statement": "When every clause has a fresh demonstrated verdict the gate passes, and a story with zero clauses yields an explicit not_applicable status rather than a silent pass.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "not_applicable" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-007" }]
+      }
+    },
+    {
+      "id": "INV-ADJ-8",
+      "type": "invariant",
+      "statement": "The evidence_adjudication gate is required and critical: while unresolved it keeps overall_status at needs_verification, keeps ready_for_pr_create false, and appears in execution gate blocking_gates so a reason-only waiver cannot pass it.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "evidence_adjudication_gate" },
+          { "file": "src/pr-manager.js", "anchor": "gate:evidence_adjudication" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-008" }]
+      }
+    },
+    {
+      "id": "CON-ADJ-9",
+      "type": "contract",
+      "statement": "Setting evidence_adjudication.enabled to false in .vibepro/config.json omits the gate, and pr prepare does not crash for repositories without adjudication artifacts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "isAdjudicationEnabled" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/adjudication.test.js", "must_contain": "ADJ-S-009" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-ADJ-FLOW",
+      "kind": "flow",
+      "title": "Adjudication delegation workflow process",
+      "mermaid": "flowchart LR\n  Prepare[\"vibepro adjudicate prepare\"] --> Request[\"adjudication-request.md\"]\n  Request --> Judge[\"independent fresh-context subagent\"]\n  Judge --> Record[\"vibepro adjudicate record per clause\"]\n  Record --> Gate[\"gate:evidence_adjudication in pr prepare\"]\n  Gate -->|all demonstrated| Passed[\"passed\"]\n  Gate -->|not_demonstrated| Failed[\"failed\"]\n  Gate -->|not_verifiable_by_automation| Human[\"human decision record\"]\n  Human --> Gate"
+    },
+    {
+      "id": "DG-ADJ-STATE",
+      "kind": "state",
+      "title": "Gate status state transitions",
+      "entities": [
+        { "id": "needs_evidence", "label": "needs_evidence" },
+        { "id": "failed", "label": "failed" },
+        { "id": "passed", "label": "passed" },
+        { "id": "not_applicable", "label": "not_applicable" }
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> needs_evidence: clauses without fresh verdicts\n  needs_evidence --> failed: any not_demonstrated verdict\n  needs_evidence --> needs_evidence: not_verifiable_by_automation without accepted human decision\n  needs_evidence --> passed: all clauses demonstrated or human-closed\n  failed --> needs_evidence: new evidence and re-adjudication\n  [*] --> not_applicable: story has no clauses"
+    },
+    {
+      "id": "DG-ADJ-THREAT",
+      "kind": "threat_model",
+      "title": "Fake-binding threat and control",
+      "mermaid": "flowchart LR\n  Implementer[\"implementing agent\"] -->|records evidence| Evidence[\"verification evidence\"]\n  Threat[\"fake binding: paste clause text into scenario\"] --> Evidence\n  Evidence --> Adjudicator[\"independent adjudicator judges semantic fit\"]\n  Adjudicator --> Control[\"gate blocks not_demonstrated / missing verdicts\"]\n  Control --> PR[\"pr create\"]"
+    }
+  ]
+}
