@@ -131,6 +131,30 @@ test('operator override records manual full request with reason and consumer', (
   assert.equal(plan.manual_override.reason, 'audit replay requested full evidence');
   assert.equal(plan.manual_override.consumer, 'value-audit');
   assert.deepEqual(plan.manual_override.targets, ['gate:network_contract', '.vibepro/pr/story-full/gate-dag.json']);
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, true);
+  assert.equal(plan.artifact_policy.write_html_reports, false);
+  assert.ok(plan.generated_artifacts.includes('gate-dag.json'));
+  assert.ok(!plan.generated_artifacts.includes('review-cockpit.html'));
+});
+
+test('explicit HTML target enables only the selected report writer', () => {
+  const plan = buildEvidencePlan({
+    story: { story_id: 'story-report' },
+    git: { head_sha: 'abc' },
+    prContext: context(),
+    gateStatus: { unresolved_gates: [] },
+    requestedDepth: 'standard',
+    requestedDepthReason: 'inspect the reviewer surface',
+    requestedDepthConsumer: 'agent-review',
+    requestedDepthTargets: ['review-cockpit.html']
+  });
+
+  assert.equal(plan.artifact_policy.write_html_reports, true);
+  assert.equal(plan.artifact_policy.write_review_cockpit_html, true);
+  assert.equal(plan.artifact_policy.write_pr_prepare_html, false);
+  assert.equal(plan.artifact_policy.write_gate_dag_html, false);
+  assert.equal(plan.artifact_policy.write_split_plan_html, false);
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
 });
 
 test('standard/full drill-down fails closed without reason, consumer, and targets', () => {

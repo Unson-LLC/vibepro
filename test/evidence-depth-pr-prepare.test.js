@@ -149,8 +149,8 @@ test('pr prepare summary depth removes stale full-surface artifacts from previou
   assert.equal(fullResult.exitCode, 0);
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-low-risk');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
-  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), true);
-  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 
   const summaryResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-low-risk', '--base', 'main', '--json']);
   assert.equal(summaryResult.exitCode, 0);
@@ -162,6 +162,12 @@ test('pr prepare summary depth removes stale full-surface artifacts from previou
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
   assert.equal(await exists(path.join(prDir, 'pr-prepare.html')), false);
   assert.equal(await exists(path.join(prDir, 'split-plan.html')), false);
+  assert.equal(await exists(path.join(prDir, 'evidence-drilldown-log.json')), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.pr_preparations['story-low-risk'].latest_evidence_drilldown_log,
+    '.vibepro/pr/story-low-risk/evidence-drilldown-log.json'
+  );
 });
 
 test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async () => {
@@ -195,7 +201,7 @@ test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async (
   assert.equal(plan.manual_override.reason, 'audit replay requested full evidence');
   assert.equal(plan.manual_override.consumer, 'value-audit');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
-  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 });
 
 test('pr prepare keeps high-risk default summary while recording targeted risk surfaces', async () => {

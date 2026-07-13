@@ -107,7 +107,7 @@ export function buildEvidencePlan({
         consumer: null,
         targets: []
       };
-  const artifactPolicy = buildArtifactPolicy(evidenceDepth);
+  const artifactPolicy = buildArtifactPolicy(evidenceDepth, drilldownTargets);
 
   return {
     schema_version: '0.1.0',
@@ -138,9 +138,7 @@ export function buildEvidencePlan({
     artifact_policy: artifactPolicy,
     generated_artifacts: artifactPolicy.generated_artifacts,
     skipped_artifacts: artifactPolicy.skipped_artifacts,
-    consumers: evidenceDepth === 'summary'
-      ? ['evidence-reuse.json', 'decision-index.json', 'senior-gap-judgment.json', 'evidence-plan.json', 'pr-body.md']
-      : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json', 'senior-gap-judgment.json']
+    consumers: artifactPolicy.generated_artifacts
   };
 }
 
@@ -240,8 +238,11 @@ export function buildEvidenceDecisionIndex({
   };
 }
 
-function buildArtifactPolicy(evidenceDepth) {
+function buildArtifactPolicy(evidenceDepth, drilldownTargets = []) {
   const summary = evidenceDepth === 'summary';
+  const requestedArtifacts = summary
+    ? new Set()
+    : resolveRequestedArtifacts(drilldownTargets);
   const generatedArtifacts = [
     'evidence-reuse.json',
     'evidence-plan.json',
@@ -255,19 +256,24 @@ function buildArtifactPolicy(evidenceDepth) {
     'architecture-review.json',
     'decision-records.json'
   ];
-  if (!summary) {
-    generatedArtifacts.push(
-      'pr-prepare.html',
-      'review-cockpit.html',
-      'gate-dag.html',
-      'gate-dag.json',
-      'split-plan.html'
-    );
-  }
+  generatedArtifacts.push(...requestedArtifacts);
+  const writesPrPrepareHtml = requestedArtifacts.has('pr-prepare.html');
+  const writesReviewCockpitHtml = requestedArtifacts.has('review-cockpit.html');
+  const writesGateDagHtml = requestedArtifacts.has('gate-dag.html');
+  const writesSplitPlanHtml = requestedArtifacts.has('split-plan.html');
+  const writesAnyHtml = writesPrPrepareHtml
+    || writesReviewCockpitHtml
+    || writesGateDagHtml
+    || writesSplitPlanHtml;
   return {
-    write_html_reports: !summary,
-    write_full_gate_dag_dump: !summary,
-    write_full_review_lifecycle_dump: evidenceDepth === 'full',
+    write_html_reports: writesAnyHtml,
+    write_pr_prepare_html: writesPrPrepareHtml,
+    write_review_cockpit_html: writesReviewCockpitHtml,
+    write_gate_dag_html: writesGateDagHtml,
+    write_split_plan_html: writesSplitPlanHtml,
+    write_full_gate_dag_dump: requestedArtifacts.has('gate-dag.json'),
+    write_full_review_lifecycle_dump: evidenceDepth === 'full'
+      && requestedArtifacts.has('full-review-lifecycle-dump'),
     write_raw_logs: false,
     pr_body_token_policy: {
       status: 'bounded_by_artifact_links',
@@ -275,8 +281,22 @@ function buildArtifactPolicy(evidenceDepth) {
       reason: 'PR body stays concise and links canonical VibePro artifacts instead of embedding full diagnostics'
     },
     generated_artifacts: generatedArtifacts,
-    skipped_artifacts: summary ? SUMMARY_SKIPPED_ARTIFACTS : []
+    skipped_artifacts: SUMMARY_SKIPPED_ARTIFACTS.filter((artifact) => !requestedArtifacts.has(artifact))
   };
+}
+
+function resolveRequestedArtifacts(targets) {
+  const requested = new Set();
+  for (const target of targets) {
+    const normalized = String(target ?? '').trim().replaceAll('\\', '/');
+    const filename = normalized.split('/').at(-1);
+    if (SUMMARY_SKIPPED_ARTIFACTS.includes(filename)) {
+      requested.add(filename);
+    } else if (normalized.startsWith('gate:')) {
+      requested.add('gate-dag.json');
+    }
+  }
+  return requested;
 }
 
 function collectRiskSignals({ changeClassification, prRoute, engineeringJudgment }) {
