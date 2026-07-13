@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
 import { prepareAdjudication, recordAdjudication } from './adjudication.js';
+import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
 import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
@@ -413,6 +414,10 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
+  vibepro guard install [repo] [--claude] [--json]
+  vibepro guard status [repo] [--json]
+  vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
@@ -639,6 +644,10 @@ Usage:
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
+  vibepro guard install [repo] [--claude] [--json]
+  vibepro guard status [repo] [--json]
+  vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
@@ -690,7 +699,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
-  'decision', 'verify', 'review', 'adjudicate', 'checkpoint', 'gate', 'spec', 'report',
+  'decision', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
   'nocodb', 'repo-status', 'workspace'
 ];
@@ -1759,6 +1768,85 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'guard') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'check') {
+        const bypassReason = process.env.VIBEPRO_GUARD_BYPASS ?? '';
+        if (hasFlag(rest, '--pretooluse')) {
+          const rawStdin = await readStdin(io.stdin ?? process.stdin);
+          const toolCommand = parsePreToolUseInput(rawStdin);
+          const result = await checkGuard(repoRoot, { command: toolCommand, bypassReason });
+          if (result.decision === 'block') {
+            write(stderr, `${result.reason}\n${(result.next_commands ?? []).map((cmd) => `- ${cmd}`).join('\n')}\n`);
+            return { exitCode: 2, command, subcommand, result };
+          }
+          return { exitCode: 0, command, subcommand, result };
+        }
+        if (hasFlag(rest, '--pre-push')) {
+          const prePushRemote = getOption(rest, '--pre-push');
+          const config = await readGuardConfig(repoRoot);
+          const rawStdin = await readStdin(io.stdin ?? process.stdin);
+          const parsed = parsePrePushRefs(rawStdin, config.protected_branches);
+          if (parsed.protected_refs.length === 0) {
+            return { exitCode: 0, command, subcommand, result: { decision: 'allow', reason: 'no protected-branch refs in this push', ...parsed } };
+          }
+          const branch = parsed.protected_refs[0].remote_ref.replace('refs/heads/', '');
+          const result = await checkGuard(repoRoot, { command: `git push ${prePushRemote || 'origin'} ${branch}`, bypassReason });
+          if (result.decision === 'block') {
+            write(stderr, `${result.reason}\n${(result.next_commands ?? []).map((cmd) => `- ${cmd}`).join('\n')}\n`);
+            return { exitCode: 2, command, subcommand, result };
+          }
+          write(stdout, hasFlag(rest, '--json') ? `${JSON.stringify(result, null, 2)}\n` : `guard: ${result.decision} (${result.reason})\n`);
+          return { exitCode: 0, command, subcommand, result };
+        }
+        const result = await checkGuard(repoRoot, {
+          command: getOption(rest, '--command') ?? '',
+          storyId: getOption(rest, '--story-id'),
+          bypassReason
+        });
+        write(hasFlag(rest, '--json') ? stdout : (result.decision === 'block' ? stderr : stdout), hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `guard: ${result.decision} (${result.reason})\n${result.decision === 'block' ? (result.next_commands ?? []).map((cmd) => `- ${cmd}`).join('\n') + '\n' : ''}`);
+        return { exitCode: result.decision === 'block' ? 2 : 0, command, subcommand, result };
+      }
+      if (subcommand === 'install') {
+        const result = await installGuard(repoRoot, { claude: hasFlag(rest, '--claude') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : [
+            result.hook ? `pre-push hook: ${result.hook.status} (${result.hook.path})` : null,
+            result.claude ? `claude PreToolUse hook: ${result.claude.status} (${result.claude.path})` : null
+          ].filter(Boolean).join('\n') + '\n');
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'uninstall') {
+        const result = await uninstallGuard(repoRoot);
+        write(stdout, `pre-push hook: ${result.status}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await guardStatus(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : [
+            `enabled: ${result.enabled}`,
+            `pre-push hook: ${result.pre_push_hook}`,
+            `claude PreToolUse hook: ${result.claude_pretooluse_hook}`,
+            `protected branches: ${result.protected_branches.join(', ')}`,
+            `release patterns: ${result.release_pattern_count}`,
+            `bypass records: ${result.bypass_count}`
+          ].join('\n') + '\n');
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown guard command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
