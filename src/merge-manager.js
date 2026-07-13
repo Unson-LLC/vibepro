@@ -497,7 +497,7 @@ export async function executeMerge(repoRoot, options = {}) {
   return { merge, artifacts };
 }
 
-function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCreate, prPrepare, gateDag, humanReview }) {
+export function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCreate, prPrepare, gateDag, humanReview }) {
   if (!prCreate || !isCurrentPrLifecycleArtifact(prCreate, currentHeadSha)) return 'block';
   if (['split_pr', 'block'].includes(humanReview?.recommended_decision)) {
     return humanReview.recommended_decision;

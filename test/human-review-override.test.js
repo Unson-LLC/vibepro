@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import { assertHumanReviewOverride, evaluateHumanReviewOverride } from '../src/human-review-override.js';
 import { buildHumanReviewOverrideGate, buildPrPrepareGateStatus } from '../src/pr-manager.js';
+import { resolveCurrentHumanReviewRecommendation } from '../src/merge-manager.js';
 
 async function makeReview(recommendation, decisions = []) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-'));
@@ -122,4 +123,57 @@ test('HRO-S9 unresolved override gate blocks PR readiness', () => {
   const status = buildPrPrepareGateStatus({ overall_status: 'ready_for_review', nodes: [gate] });
   assert.equal(status.ready_for_pr_create, false);
   assert.equal(status.unresolved_gates.some((item) => item.id === gate.id), true);
+});
+
+test('HRO-S10 merge fails closed when the PR lifecycle artifact is missing or stale', () => {
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate: null,
+    prPrepare: { split_plan: { status: 'clean' } },
+    gateDag: { overall_status: 'ready_for_review' },
+    humanReview: { recommended_decision: 'proceed' }
+  }), 'block');
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'old-head' } },
+    prPrepare: { split_plan: { status: 'clean' } },
+    gateDag: { overall_status: 'ready_for_review' },
+    humanReview: { recommended_decision: 'proceed' }
+  }), 'block');
+});
+
+test('HRO-S11 merge preserves human review block and split recommendations', () => {
+  const prCreate = { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } };
+  for (const recommendation of ['split_pr', 'block']) {
+    assert.equal(resolveCurrentHumanReviewRecommendation({
+      currentHeadSha: 'head-1', prCreate, prPrepare: {}, gateDag: {}, humanReview: {
+        recommended_decision: recommendation
+      }
+    }), recommendation);
+  }
+});
+
+test('HRO-S12 merge derives split and gate readiness only for a current PR lifecycle', () => {
+  const prCreate = { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } };
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate,
+    prPrepare: { split_plan: { status: 'split_recommended' } },
+    gateDag: { overall_status: 'ready_for_review' },
+    humanReview: null
+  }), 'split_pr');
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate,
+    prPrepare: { split_plan: { status: 'clean' } },
+    gateDag: { overall_status: 'ready_for_review' },
+    humanReview: null
+  }), 'proceed');
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate,
+    prPrepare: { split_plan: { status: 'clean' } },
+    gateDag: { overall_status: 'needs_verification' },
+    humanReview: null
+  }), 'block');
 });
