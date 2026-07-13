@@ -27,9 +27,11 @@ export async function readGuardConfig(repoRoot) {
   try {
     raw = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   } catch {
-    return { workspace_initialized: false, enabled: false, protected_branches: DEFAULT_PROTECTED_BRANCHES, release_patterns: DEFAULT_RELEASE_PATTERNS };
+    return { workspace_initialized: false, enabled: false, selected_story_id: null, protected_branches: DEFAULT_PROTECTED_BRANCHES, release_patterns: DEFAULT_RELEASE_PATTERNS };
   }
   const guard = raw.guard ?? {};
+  const selectedStoryId = raw.brainbase?.selected_story_id
+    ?? (Array.isArray(raw.brainbase?.stories) && raw.brainbase.stories.length === 1 ? raw.brainbase.stories[0]?.story_id ?? null : null);
   const extraPatterns = Array.isArray(guard.release_patterns)
     ? guard.release_patterns
       .filter((item) => item && typeof item.pattern === 'string')
@@ -37,6 +39,7 @@ export async function readGuardConfig(repoRoot) {
     : [];
   return {
     workspace_initialized: true,
+    selected_story_id: selectedStoryId,
     enabled: guard.enabled !== false,
     protected_branches: Array.isArray(guard.protected_branches) && guard.protected_branches.length > 0
       ? guard.protected_branches.map(String)
@@ -48,21 +51,32 @@ export async function readGuardConfig(repoRoot) {
 export function classifyReleaseSurface(command, config) {
   const normalized = String(command ?? '');
   if (!normalized.trim()) return null;
-  // vibepro's own commands go through the CLI's internal throw-based
-  // enforcement; the guard only covers paths that bypass vibepro.
-  if (/(^|[\s;&|])(node\s+\S*vibepro(\.js)?|vibepro|npx\s+vibepro)\s/.test(normalized)) return null;
-  for (const entry of config.release_patterns) {
-    let regex;
-    try {
-      regex = new RegExp(entry.pattern, 'i');
-    } catch {
-      continue;
+  // Classify per command segment so a vibepro invocation cannot exempt an
+  // entire compound command ("vibepro --version && gh pr create" must still
+  // match). vibepro's own commands go through the CLI's internal throw-based
+  // enforcement; only the vibepro segment itself is exempt.
+  const segments = normalized.split(/&&|\|\||[;|]/);
+  for (const segment of segments) {
+    const trimmed = segment.trim();
+    if (!trimmed) continue;
+    if (isVibeproInvocation(trimmed)) continue;
+    for (const entry of config.release_patterns) {
+      let regex;
+      try {
+        regex = new RegExp(entry.pattern, 'i');
+      } catch {
+        continue;
+      }
+      if (regex.test(trimmed)) return { id: entry.id, pattern: entry.pattern };
     }
-    if (regex.test(normalized)) return { id: entry.id, pattern: entry.pattern };
+    const pushMatch = matchProtectedPush(trimmed, config.protected_branches);
+    if (pushMatch) return pushMatch;
   }
-  const pushMatch = matchProtectedPush(normalized, config.protected_branches);
-  if (pushMatch) return pushMatch;
   return null;
+}
+
+function isVibeproInvocation(segment) {
+  return /^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*(node\s+\S*vibepro(\.js)?|vibepro|npx\s+vibepro)(\s|$)/.test(segment);
 }
 
 function matchProtectedPush(command, protectedBranches) {
@@ -95,6 +109,11 @@ export async function checkGuard(repoRoot, options = {}) {
   if (!surface) {
     return { ...base, decision: 'allow', reason: 'command does not match any release surface pattern' };
   }
+  // Deterministic no-story check up front (never message-sniffing): a
+  // workspace without a selected story has nothing to guard.
+  if (!options.storyId && !config.selected_story_id) {
+    return { ...base, decision: 'allow', surface, reason: 'no story is selected in this workspace; guard has nothing to evaluate' };
+  }
   const readinessEvaluator = options.readinessEvaluator ?? evaluateGateReadiness;
   let readiness;
   try {
@@ -102,8 +121,11 @@ export async function checkGuard(repoRoot, options = {}) {
   } catch (error) {
     readiness = { status: 'error', ready_for_pr_create: false, error: error instanceof Error ? error.message : String(error) };
   }
-  if (readiness.status === 'error' && /story|select/i.test(readiness.error ?? '')) {
-    return { ...base, decision: 'allow', surface, reason: `no selected story to guard (${readiness.error})` };
+  if (readiness.status === 'error') {
+    // A selected story whose readiness cannot be evaluated fails closed:
+    // release surfaces stay blocked (bypass with a recorded reason remains
+    // available for genuine emergencies).
+    readiness = { ...readiness, ready_for_pr_create: false, gates: readiness.gates ?? [] };
   }
   if (readiness.ready_for_pr_create === true) {
     return { ...base, decision: 'allow', surface, story_id: readiness.story_id, reason: 'gate readiness is ready_for_pr_create=true' };
@@ -213,7 +235,10 @@ exec \${VIBEPRO_GUARD_BIN:-vibepro} guard check "$(git rev-parse --show-toplevel
 `;
 }
 
-const CLAUDE_GUARD_HOOK_COMMAND = 'vibepro guard check . --pretooluse';
+// Resolve the repo root instead of trusting the hook process cwd, so Bash
+// commands issued from subdirectories are still checked against the right
+// workspace (falls back to cwd outside a git repository).
+const CLAUDE_GUARD_HOOK_COMMAND = 'vibepro guard check "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" --pretooluse';
 
 async function installClaudeHook(root) {
   const settingsPath = path.join(root, '.claude', 'settings.json');
@@ -255,12 +280,35 @@ export async function uninstallGuard(repoRoot) {
   const hooksDir = path.isAbsolute(gitDir) ? gitDir : path.join(root, gitDir);
   const hookPath = path.join(hooksDir, 'pre-push');
   const existing = await readFile(hookPath, 'utf8').catch(() => null);
-  if (existing === null) return { status: 'not_installed' };
-  if (!existing.includes(GUARD_HOOK_MARKER)) {
-    throw new Error('guard uninstall: pre-push hook is not managed by vibepro; refusing to remove it');
+  let hookStatus = 'not_installed';
+  if (existing !== null) {
+    if (!existing.includes(GUARD_HOOK_MARKER)) {
+      throw new Error('guard uninstall: pre-push hook is not managed by vibepro; refusing to remove it');
+    }
+    await rm(hookPath);
+    hookStatus = 'uninstalled';
   }
-  await rm(hookPath);
-  return { status: 'uninstalled', path: hookPath };
+  const claudeStatus = await removeClaudeHook(root);
+  return { status: hookStatus, path: hookPath, claude: claudeStatus };
+}
+
+async function removeClaudeHook(root) {
+  const settingsPath = path.join(root, '.claude', 'settings.json');
+  const existing = await readFile(settingsPath, 'utf8').catch(() => null);
+  if (existing === null) return 'not_installed';
+  let settings;
+  try {
+    settings = JSON.parse(existing);
+  } catch {
+    return 'not_installed';
+  }
+  const preToolUse = settings?.hooks?.PreToolUse;
+  if (!Array.isArray(preToolUse)) return 'not_installed';
+  const filtered = preToolUse.filter((entry) => !(entry?.hooks ?? []).some((hook) => String(hook?.command ?? '').includes('vibepro guard check')));
+  if (filtered.length === preToolUse.length) return 'not_installed';
+  settings.hooks.PreToolUse = filtered;
+  await writeFile(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
+  return 'uninstalled';
 }
 
 export async function guardStatus(repoRoot) {

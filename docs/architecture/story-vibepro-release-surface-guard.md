@@ -37,3 +37,5 @@ VibeProのenforcementは `vibepro pr create` 内部のthrowに閉じており、
 - `vibepro` 自身のコマンド（`vibepro pr create` 等）はパターン対象外（内部throwによる既存enforcementが担当）
 - WIP branchの通常pushは妨げない（pre-push hookはprotected branch宛refのみ委譲）
 - gate readiness評価はrelease-surface該当時のみ実行し、通常コマンドのオーバーヘッドをゼロに保つ
+- pre-push hookはvibepro CLIがPATHに無いときpushを許可する（fail open。gitを文鎮化させないための明示的境界。`command -v` probeで判定し、hook script内に注記する）
+- 選択Storyのreadiness評価がエラーになった場合はfail closedでblockする（bypass経路は残る）。Story未選択は決定的にallowする

@@ -80,6 +80,11 @@ test('GUARD-S-001 release surface classification matches release commands and ig
   assert.equal(classifyReleaseSurface('echo "gh pr create is documented here" > docs.md && npm run build', config), null, 'quoted mention still matches conservatively is acceptable; but plain build commands must not match');
   assert.equal(classifyReleaseSurface('vibepro pr create . --base origin/main', config), null);
   assert.equal(classifyReleaseSurface('node bin/vibepro.js pr create .', config), null);
+
+  // 自己免除はsegment単位: vibepro呼び出しを混ぜても複合コマンドの他segmentは免除されない
+  assert.equal(classifyReleaseSurface('vibepro --version && gh pr create --title x', config).id, 'raw_pr_create');
+  assert.equal(classifyReleaseSurface('vibepro help; git push origin main', config).id, 'protected_branch_push');
+  assert.equal(classifyReleaseSurface('vibepro pr prepare . | tee log && fly deploy', config).id, 'fly_deploy');
 });
 
 test('GUARD-S-002 non-release commands allow immediately and unmanaged repos are never blocked', async () => {
@@ -94,6 +99,28 @@ test('GUARD-S-002 non-release commands allow immediately and unmanaged repos are
   const unmanaged = await checkGuard(bare, { command: 'gh pr create' });
   assert.equal(unmanaged.decision, 'allow');
   assert.match(unmanaged.reason, /no VibePro workspace/);
+});
+
+test('GUARD-S-011 readiness evaluation errors fail closed while a missing story selection allows deterministically', async () => {
+  const repo = await makeRepo();
+  const failing = await checkGuard(repo, {
+    command: 'gh pr create',
+    readinessEvaluator: async () => { throw new Error('workspace JSON corrupted'); }
+  });
+  assert.equal(failing.decision, 'block');
+
+  const noStory = await makeRepo();
+  const configPath = path.join(noStory, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  delete config.brainbase.selected_story_id;
+  config.brainbase.stories = [];
+  await writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
+  const allowed = await checkGuard(noStory, {
+    command: 'gh pr create',
+    readinessEvaluator: async () => { throw new Error('must not be called without a selected story'); }
+  });
+  assert.equal(allowed.decision, 'allow');
+  assert.match(allowed.reason, /no story is selected/);
 });
 
 test('GUARD-S-003 blocked story blocks release surfaces with blocking gates and next commands', async () => {
@@ -155,6 +182,7 @@ test('GUARD-S-006 guard install writes a marked idempotent pre-push hook and ref
 
   const removed = await uninstallGuard(repo);
   assert.equal(removed.status, 'uninstalled');
+  assert.equal(removed.claude, 'not_installed');
 
   await mkdir(path.dirname(first.hook.path), { recursive: true });
   await writeFile(first.hook.path, '#!/bin/sh\necho existing user hook\n', 'utf8');
@@ -199,6 +227,14 @@ test('GUARD-S-008 guard install --claude merges the PreToolUse hook preserving e
   assert.equal(second.claude.status, 'already_installed');
   const again = JSON.parse(await readFile(settingsPath, 'utf8'));
   assert.equal(again.hooks.PreToolUse.length, 1);
+
+  // uninstallはClaude hookも対称に除去し、他エントリは保持する
+  const removed = await uninstallGuard(repo);
+  assert.equal(removed.claude, 'uninstalled');
+  const after = JSON.parse(await readFile(settingsPath, 'utf8'));
+  assert.equal(after.hooks.PreToolUse.length, 0);
+  assert.equal(after.hooks.PostToolUse.length, 1);
+  assert.deepEqual(after.permissions, { allow: ['Bash(npm test)'] });
 });
 
 test('GUARD-S-009 pretooluse input parsing extracts the tool command and tolerates invalid JSON', () => {
