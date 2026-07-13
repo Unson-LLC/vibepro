@@ -62,6 +62,26 @@ const SUMMARY_SKIPPED_ARTIFACTS = [
   'raw-provider-log'
 ];
 
+const SUMMARY_GENERATED_ARTIFACTS = [
+  'evidence-reuse.json',
+  'evidence-plan.json',
+  'decision-index.json',
+  'senior-gap-judgment.json',
+  'pr-prepare.json',
+  'pr-body.md',
+  'split-plan.json',
+  'traceability.json',
+  'human-review.json',
+  'architecture-review.json',
+  'decision-records.json',
+  'ref-topology.json'
+];
+
+const KNOWN_EVIDENCE_ARTIFACTS = new Set([
+  ...SUMMARY_GENERATED_ARTIFACTS,
+  ...SUMMARY_SKIPPED_ARTIFACTS
+]);
+
 export function buildEvidencePlan({
   story = null,
   git = null,
@@ -90,7 +110,14 @@ export function buildEvidencePlan({
   const evidenceDepth = overrideDepth ?? defaultDepth;
   const drilldownTargets = normalizeDrilldownTargets(requestedDepthTargets);
   if (overrideDepth && overrideDepth !== 'summary') {
-    assertDrilldownRequest({ depth: overrideDepth, reason: requestedDepthReason, consumer: requestedDepthConsumer, targets: drilldownTargets });
+    assertDrilldownRequest({
+      depth: overrideDepth,
+      reason: requestedDepthReason,
+      consumer: requestedDepthConsumer,
+      targets: drilldownTargets,
+      prContext,
+      gateStatus
+    });
   }
   const manualOverride = overrideDepth
     ? {
@@ -243,19 +270,7 @@ function buildArtifactPolicy(evidenceDepth, drilldownTargets = []) {
   const requestedArtifacts = summary
     ? new Set()
     : resolveRequestedArtifacts(drilldownTargets);
-  const generatedArtifacts = [
-    'evidence-reuse.json',
-    'evidence-plan.json',
-    'decision-index.json',
-    'senior-gap-judgment.json',
-    'pr-prepare.json',
-    'pr-body.md',
-    'split-plan.json',
-    'traceability.json',
-    'human-review.json',
-    'architecture-review.json',
-    'decision-records.json'
-  ];
+  const generatedArtifacts = [...SUMMARY_GENERATED_ARTIFACTS];
   generatedArtifacts.push(...requestedArtifacts);
   const writesPrPrepareHtml = requestedArtifacts.has('pr-prepare.html');
   const writesReviewCockpitHtml = requestedArtifacts.has('review-cockpit.html');
@@ -420,12 +435,27 @@ function normalizeDrilldownTargets(values) {
     .filter(Boolean))];
 }
 
-function assertDrilldownRequest({ depth, reason, consumer, targets }) {
+function assertDrilldownRequest({ depth, reason, consumer, targets, prContext, gateStatus }) {
   const missing = [];
   if (!nonEmptyString(reason)) missing.push('--evidence-depth-reason');
   if (!nonEmptyString(consumer)) missing.push('--evidence-depth-consumer');
   if (targets.length === 0) missing.push('--evidence-depth-target');
   if (missing.length > 0) {
     throw new Error(`--evidence-depth ${depth} requires ${missing.join(', ')} so every drill-down is attributable and bounded`);
+  }
+
+  const resolvedGateIds = new Set([
+    ...(prContext?.gate_dag?.nodes ?? []).map((gate) => gate?.id),
+    ...(gateStatus?.unresolved_gates ?? []).map((gate) => gate?.id),
+    ...(gateStatus?.critical_unresolved_gates ?? []).map((gate) => gate?.id)
+  ].filter(Boolean));
+  const unresolvedTargets = targets.filter((target) => {
+    const normalized = String(target).replaceAll('\\', '/');
+    const filename = normalized.split('/').at(-1);
+    if (normalized.startsWith('gate:')) return !resolvedGateIds.has(normalized);
+    return !KNOWN_EVIDENCE_ARTIFACTS.has(filename);
+  });
+  if (unresolvedTargets.length > 0) {
+    throw new Error(`--evidence-depth ${depth} has unresolved --evidence-depth-target value(s): ${unresolvedTargets.join(', ')}`);
   }
 }

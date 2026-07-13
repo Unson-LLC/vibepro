@@ -40,6 +40,9 @@ test('summary-first and explicit drill-down contracts replay end to end', async 
 
   const full = buildEvidencePlan({
     story: { story_id: STORY_ID },
+    prContext: {
+      gate_dag: { nodes: [{ id: 'gate:agent_review' }] }
+    },
     requestedDepth: 'full',
     requestedDepthReason: 'inspect the blocking gate',
     requestedDepthConsumer: 'gate-reviewer',

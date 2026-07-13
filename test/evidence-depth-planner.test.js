@@ -119,7 +119,9 @@ test('operator override records manual full request with reason and consumer', (
   const plan = buildEvidencePlan({
     story: { story_id: 'story-full' },
     fileGroups: fileGroups(),
-    prContext: context(),
+    prContext: context({
+      gate_dag: { nodes: [{ id: 'gate:network_contract' }] }
+    }),
     requestedDepth: 'full',
     requestedDepthReason: 'audit replay requested full evidence',
     requestedDepthConsumer: 'value-audit',
@@ -166,15 +168,37 @@ test('standard/full drill-down fails closed without reason, consumer, and target
   }), /requires --evidence-depth-reason, --evidence-depth-consumer, --evidence-depth-target/);
 });
 
+test('standard/full drill-down rejects unknown artifact and unresolved gate targets', () => {
+  const request = {
+    story: { story_id: 'story-unresolved-target' },
+    fileGroups: fileGroups(),
+    prContext: context(),
+    requestedDepth: 'standard',
+    requestedDepthReason: 'inspect a bounded surface',
+    requestedDepthConsumer: 'agent-review'
+  };
+
+  assert.throws(
+    () => buildEvidencePlan({ ...request, requestedDepthTargets: ['typo-report.json'] }),
+    /unresolved --evidence-depth-target value\(s\): typo-report\.json/
+  );
+  assert.throws(
+    () => buildEvidencePlan({ ...request, requestedDepthTargets: ['gate:not_in_current_dag'] }),
+    /unresolved --evidence-depth-target value\(s\): gate:not_in_current_dag/
+  );
+});
+
 test('drill-down ledger preserves prior entries and records bounded targets at HEAD', () => {
   const plan = buildEvidencePlan({
     story: { story_id: 'story-ledger' },
     fileGroups: fileGroups(),
-    prContext: context(),
+    prContext: context({
+      gate_dag: { nodes: [{ id: 'gate:traceability_clause_coverage' }] }
+    }),
     requestedDepth: 'standard',
     requestedDepthReason: 'inspect unresolved traceability',
     requestedDepthConsumer: 'agent-review',
-    requestedDepthTargets: ['gate:traceability', 'traceability.json']
+    requestedDepthTargets: ['gate:traceability_clause_coverage', 'traceability.json']
   });
   const entry = buildEvidenceDrilldownEntry({
     evidencePlan: plan,
@@ -185,7 +209,7 @@ test('drill-down ledger preserves prior entries and records bounded targets at H
 
   assert.equal(log.entries.length, 2);
   assert.equal(log.entries[1].head_sha, 'abc123');
-  assert.deepEqual(log.entries[1].targets, ['gate:traceability', 'traceability.json']);
+  assert.deepEqual(log.entries[1].targets, ['gate:traceability_clause_coverage', 'traceability.json']);
 });
 
 test('decision index keeps Engineering Judgment signals in summary depth', () => {
