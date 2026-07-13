@@ -2,6 +2,7 @@
 story_id: story-vibepro-summary-drilldown-log
 title: "summary-first と深掘り理由の記録"
 status: active
+parent_design: vibepro-summary-drilldown-log
 view: dev
 period: 2026-07
 source:

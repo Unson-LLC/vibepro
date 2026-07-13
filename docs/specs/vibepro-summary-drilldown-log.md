@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-summary-drilldown-log
 title: Summary-first Drill-down Ledger Spec
+parent_design: vibepro-summary-drilldown-log
 diagrams:
   - kind: threat_model
     mermaid: |
