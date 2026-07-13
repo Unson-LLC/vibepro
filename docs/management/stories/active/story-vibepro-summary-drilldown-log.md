@@ -28,11 +28,11 @@ VibePro は限定 view を提供しているが、通常のコード変更では
 
 ## Acceptance Criteria
 
-- [ ] source/high-risk を含む `pr prepare` も既定 depth は `summary` で、risk surface は compact plan/index に残る。
-- [ ] `standard` / `full` の明示要求は reason、consumer、1件以上の target が揃わなければ失敗する。
-- [ ] 明示深掘りは `.vibepro/pr/<story-id>/evidence-drilldown-log.json` に depth、target、reason、consumer、HEAD、risk surface を追記する。
-- [ ] 同一 Story の再実行で既存 ledger entry を消さず、深掘りをしていない summary 実行は entry を捏造しない。
-- [ ] README と CLI help が summary-first と `--evidence-depth-target` の契約を説明する。
+- [x] source/high-risk を含む `pr prepare` も既定 depth は `summary` で、risk surface は compact plan/index に残る。
+- [x] `standard` / `full` の明示要求は reason、consumer、1件以上の target が揃わなければ失敗する。
+- [x] 明示深掘りは `.vibepro/pr/<story-id>/evidence-drilldown-log.json` に depth、target、reason、consumer、HEAD、risk surface を追記する。
+- [x] 同一 Story の再実行で既存 ledger entry を消さず、深掘りをしていない summary 実行は entry を捏造しない。
+- [x] README と CLI help が summary-first と `--evidence-depth-target` の契約を説明する。
 
 ## Non Goals
 
