@@ -2,6 +2,7 @@
 story_id: story-vibepro-human-review-override
 title: human reviewのblock推奨を明示overrideなしで通さない
 status: active
+parent_design: story-vibepro-human-review-override
 reason: PR作成時の黙示的なproceedや作成済みPRをmerge承認とみなす案では責任者と理由が残らないため、既存decision ledgerを共通正本にして互換追加し、policy moduleの除去でrollback可能にする。
 architecture_docs:
   - docs/architecture/vibepro-human-review-override.md

@@ -5,13 +5,21 @@ import { getWorkspaceDir } from './workspace.js';
 
 const OVERRIDE_RECOMMENDATIONS = new Set(['split_pr', 'block']);
 
-export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHeadSha) {
+export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHeadSha, expectedRecommendation = null) {
   const prDir = path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId);
   const [humanReview, decisionRecords] = await Promise.all([
     readJsonIfExists(path.join(prDir, 'human-review.json')),
     readJsonIfExists(path.join(prDir, 'decision-records.json'))
   ]);
-  const recommendation = humanReview?.recommended_decision ?? null;
+  const recommendation = expectedRecommendation ?? humanReview?.recommended_decision ?? null;
+  if (!humanReview && expectedRecommendation === null) {
+    return {
+      required: true,
+      recommendation: 'missing_human_review',
+      expected_source: 'human-review:<recommendation>',
+      decision: null
+    };
+  }
   if (!OVERRIDE_RECOMMENDATIONS.has(recommendation)) {
     return { required: false, recommendation, decision: null };
   }
@@ -28,6 +36,8 @@ export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHead
   const expectedSource = `human-review:${recommendation}`;
   const decision = (decisionRecords?.decisions ?? []).find((item) => (
     item?.status === 'accepted'
+    && item?.type === 'waiver'
+    && item?.story_id === storyId
     && item?.source === expectedSource
     && item?.reason?.trim()
     && item?.reviewer?.trim()
@@ -41,8 +51,8 @@ export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHead
   };
 }
 
-export async function assertHumanReviewOverride(repoRoot, storyId, currentHeadSha, operation) {
-  const result = await evaluateHumanReviewOverride(repoRoot, storyId, currentHeadSha);
+export async function assertHumanReviewOverride(repoRoot, storyId, currentHeadSha, operation, expectedRecommendation = null) {
+  const result = await evaluateHumanReviewOverride(repoRoot, storyId, currentHeadSha, expectedRecommendation);
   if (result.required && !result.decision) {
     throw new Error(
       `Human review ${result.recommendation} override required before ${operation}: ` +

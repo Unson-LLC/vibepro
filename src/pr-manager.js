@@ -56,7 +56,7 @@ import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
-import { assertHumanReviewOverride } from './human-review-override.js';
+import { assertHumanReviewOverride, evaluateHumanReviewOverride } from './human-review-override.js';
 import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
@@ -324,6 +324,28 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   const traceabilityPath = path.join(prDir, 'traceability.json');
+  const expectedHumanDecision = recommendHumanDecision({
+    split_plan: splitPlan,
+    pr_context: prContext,
+    scope
+  });
+  const humanReviewOverride = await progress.stage('evaluate_human_review_override', () => (
+    evaluateHumanReviewOverride(root, story.story_id, reviewGit.head_sha, expectedHumanDecision)
+  ));
+  if (humanReviewOverride.required) {
+    const humanReviewOverrideGate = buildHumanReviewOverrideGate(humanReviewOverride, story.story_id);
+    prContext.human_review_override = humanReviewOverrideGate;
+    prContext.gate_dag.nodes.push(humanReviewOverrideGate);
+    prContext.gate_dag.summary.human_review_override = {
+      status: humanReviewOverrideGate.status,
+      recommendation: humanReviewOverrideGate.recommendation
+    };
+    prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
+      ? 'needs_verification'
+      : 'ready_for_review';
+    prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
+    gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  }
   const previousPrPrepare = workspace.initialized
     ? await progress.stage('read_previous_pr_prepare', () => readJsonIfExists(jsonPath))
     : null;
@@ -1000,6 +1022,23 @@ function recommendHumanDecision(preparation) {
   return 'block';
 }
 
+export function buildHumanReviewOverrideGate(evaluation, storyId) {
+  const satisfied = Boolean(evaluation.decision);
+  return {
+    id: 'gate:human_review_override',
+    type: 'human_review_override_gate',
+    label: 'Human Review Override Gate',
+    status: satisfied ? 'satisfied' : 'needs_review',
+    required: true,
+    recommendation: evaluation.recommendation,
+    expected_source: evaluation.expected_source,
+    artifact: `.vibepro/pr/${storyId}/decision-records.json`,
+    reason: satisfied
+      ? `Current-HEAD ${evaluation.recommendation} override was accepted by ${evaluation.decision.reviewer}.`
+      : `Human review recommends ${evaluation.recommendation}; record an accepted current-HEAD waiver with reason and reviewer before PR creation or merge.`
+  };
+}
+
 function buildHumanReviewReason(preparation) {
   const reasons = [];
   const gateDag = preparation.pr_context?.gate_dag;
@@ -1205,7 +1244,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     root,
     preparation.story.story_id,
     currentHeadSha,
-    'PR creation'
+    'PR creation',
+    recommendHumanDecision(preparation)
   );
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectPrReadinessBlockingItems(gateDag);

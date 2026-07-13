@@ -1,6 +1,7 @@
 ---
 title: Human review override spec
 status: active
+parent_design: story-vibepro-human-review-override
 ---
 
 # Human review override spec

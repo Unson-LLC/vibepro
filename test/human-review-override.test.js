@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { assertHumanReviewOverride, evaluateHumanReviewOverride } from '../src/human-review-override.js';
+import { buildHumanReviewOverrideGate } from '../src/pr-manager.js';
 
 async function makeReview(recommendation, decisions = []) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-'));
@@ -54,6 +55,8 @@ test('HRO-S3 block override requires a current-HEAD accepted decision', async ()
 test('HRO-S4 the same explicit override authorizes PR creation and merge checks', async () => {
   const decision = {
     decision_id: 'decision-hro-1',
+    story_id: 'story-human-review-override',
+    type: 'waiver',
     status: 'accepted',
     source: 'human-review:split_pr',
     reason: 'The changed files form one atomic compatibility boundary.',
@@ -63,4 +66,48 @@ test('HRO-S4 the same explicit override authorizes PR creation and merge checks'
   const { root, storyId } = await makeReview('split_pr', [decision]);
   assert.deepEqual((await assertHumanReviewOverride(root, storyId, 'head-1', 'PR creation')).decision, decision);
   assert.deepEqual((await assertHumanReviewOverride(root, storyId, 'head-1', 'merge')).decision, decision);
+});
+
+test('HRO-S5 missing human review artifact fails closed', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-'));
+  await assert.rejects(
+    assertHumanReviewOverride(root, 'story-human-review-override', 'head-1', 'merge'),
+    /missing_human_review override required/
+  );
+});
+
+test('HRO-S6 only a waiver for the selected story can override review', async () => {
+  const base = {
+    status: 'accepted', source: 'human-review:block', reason: 'reason', reviewer: 'reviewer',
+    git_context: { head_sha: 'head-1' }
+  };
+  const { root, storyId } = await makeReview('block', [
+    { ...base, type: 'noise', story_id: 'story-human-review-override' },
+    { ...base, type: 'waiver', story_id: 'another-story' }
+  ]);
+  await assert.rejects(assertHumanReviewOverride(root, storyId, 'head-1', 'merge'), /block override required/);
+});
+
+test('HRO-S7 prepare gate exposes an unresolved split recommendation', async () => {
+  const gate = buildHumanReviewOverrideGate({
+    required: true,
+    recommendation: 'split_pr',
+    expected_source: 'human-review:split_pr',
+    decision: null
+  }, 'story-human-review-override');
+  assert.equal(gate.id, 'gate:human_review_override');
+  assert.equal(gate.status, 'needs_review');
+  assert.equal(gate.required, true);
+  assert.match(gate.reason, /before PR creation or merge/);
+});
+
+test('HRO-S8 prepare gate is satisfied only by the evaluated current-HEAD waiver', async () => {
+  const gate = buildHumanReviewOverrideGate({
+    required: true,
+    recommendation: 'block',
+    expected_source: 'human-review:block',
+    decision: { reviewer: 'Senior Reviewer' }
+  }, 'story-human-review-override');
+  assert.equal(gate.status, 'satisfied');
+  assert.match(gate.reason, /Senior Reviewer/);
 });
