@@ -39,7 +39,7 @@ async function makeRepo({ workspace = true, guardConfig = null } = {}) {
       workspace: '.vibepro',
       brainbase: {
         stories: [{ story_id: STORY_ID, title: 'Guard fixture', ssot: 'local', status: 'active' }],
-        selected_story_id: STORY_ID
+        current_story_id: STORY_ID
       }
     };
     if (guardConfig) config.guard = guardConfig;
@@ -112,7 +112,7 @@ test('GUARD-S-011 readiness evaluation errors fail closed while a missing story 
   const noStory = await makeRepo();
   const configPath = path.join(noStory, '.vibepro', 'config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
-  delete config.brainbase.selected_story_id;
+  delete config.brainbase.current_story_id;
   config.brainbase.stories = [];
   await writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
   const allowed = await checkGuard(noStory, {

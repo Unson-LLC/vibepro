@@ -30,8 +30,10 @@ export async function readGuardConfig(repoRoot) {
     return { workspace_initialized: false, enabled: false, selected_story_id: null, protected_branches: DEFAULT_PROTECTED_BRANCHES, release_patterns: DEFAULT_RELEASE_PATTERNS };
   }
   const guard = raw.guard ?? {};
-  const selectedStoryId = raw.brainbase?.selected_story_id
-    ?? (Array.isArray(raw.brainbase?.stories) && raw.brainbase.stories.length === 1 ? raw.brainbase.stories[0]?.story_id ?? null : null);
+  // Mirrors story-manager resolveStory: explicit current_story_id, else the
+  // first configured story.
+  const stories = Array.isArray(raw.brainbase?.stories) ? raw.brainbase.stories : [];
+  const selectedStoryId = raw.brainbase?.current_story_id ?? stories[0]?.story_id ?? null;
   const extraPatterns = Array.isArray(guard.release_patterns)
     ? guard.release_patterns
       .filter((item) => item && typeof item.pattern === 'string')
