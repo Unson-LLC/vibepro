@@ -8112,6 +8112,26 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
     'codex',
     '--json'
   ]);
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'human-review:split_pr',
+    '--summary',
+    'Proceed with the intentionally broad PR fixture despite the split recommendation.',
+    '--reason',
+    'The fixture must keep source, tests, and PR artifacts together to exercise the complete PR creation contract.',
+    '--reviewer',
+    'codex-integration-reviewer',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   let createStderr = '';
@@ -8153,6 +8173,10 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.equal(prCreate.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(prCreate.toolchain.package.name, 'vibepro');
   assert.equal(prCreate.current_head_sha, createResult.result.preparation.git.head_sha);
+  assert.equal(prCreate.human_review_override.required, true);
+  assert.equal(prCreate.human_review_override.recommendation, 'split_pr');
+  assert.equal(prCreate.human_review_override.decision.source, 'human-review:split_pr');
+  assert.equal(prCreate.human_review_override.decision.reviewer, 'codex-integration-reviewer');
   assert.equal(prCreate.artifact_freshness.status, 'current');
   assert.equal(prCreate.artifact_freshness.artifact_head_sha, createResult.result.preparation.git.head_sha);
   const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
@@ -8320,6 +8344,17 @@ PR本文がファイル数だけではレビュー判断に足りない。
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  assert.equal((await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'waiver',
+    '--source', 'human-review:split_pr',
+    '--summary', 'Proceed with the forced fallback fixture after its intentional HEAD change.',
+    '--reason', 'The second commit is required to exercise current-HEAD PR body fallback behavior in the same integration fixture.',
+    '--reviewer', 'codex-integration-reviewer',
+    '--status', 'accepted',
+    '--json'
+  ])).exitCode, 0);
   let forcedFallbackStderr = '';
   const forcedFallbackCreateResult = await runCli([
     'pr',
@@ -13202,6 +13237,21 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     nodes: [],
     summary: { needs_evidence_count: 0 }
   });
+  await writeJson(path.join(prDir, 'human-review.json'), {
+    recommended_decision: 'block'
+  });
+  await writeJson(path.join(prDir, 'decision-records.json'), {
+    decisions: [{
+      decision_id: 'decision-merge-human-review-override',
+      story_id: 'story-pr-prepare',
+      type: 'waiver',
+      status: 'accepted',
+      source: 'human-review:block',
+      reason: 'The merge fixture uses a fake GitHub boundary and verifies all merge preconditions.',
+      reviewer: 'codex-merge-reviewer',
+      git_context: { head_sha: headSha }
+    }]
+  });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
     created_at: '2026-06-07T00:00:00.000Z',
@@ -13299,6 +13349,10 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
   assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
   assert.equal(prMergeArtifact.cost_accounting_collection.status, 'available');
+  assert.equal(prMergeArtifact.human_review_override.required, true);
+  assert.equal(prMergeArtifact.human_review_override.recommendation, 'block');
+  assert.equal(prMergeArtifact.human_review_override.decision.source, 'human-review:block');
+  assert.equal(prMergeArtifact.human_review_override.decision.reviewer, 'codex-merge-reviewer');
 
   const auditDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare');
   const auditBundle = await readJson(path.join(auditDir, 'audit-bundle.json'));
@@ -13397,6 +13451,7 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     nodes: [],
     summary: { needs_evidence_count: 0 }
   });
+  await writeJson(path.join(prDir, 'human-review.json'), { recommended_decision: 'proceed' });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
     created_at: '2026-06-07T00:00:00.000Z',
@@ -13512,6 +13567,7 @@ test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and ski
     nodes: [],
     summary: { needs_evidence_count: 0 }
   });
+  await writeJson(path.join(prDir, 'human-review.json'), { recommended_decision: 'proceed' });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
     created_at: '2026-06-07T00:00:00.000Z',

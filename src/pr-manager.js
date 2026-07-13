@@ -56,6 +56,7 @@ import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import { assertHumanReviewOverride, evaluateHumanReviewOverride } from './human-review-override.js';
 import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
@@ -323,6 +324,28 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   const traceabilityPath = path.join(prDir, 'traceability.json');
+  const expectedHumanDecision = recommendHumanDecision({
+    split_plan: splitPlan,
+    pr_context: prContext,
+    scope
+  });
+  const humanReviewOverride = await progress.stage('evaluate_human_review_override', () => (
+    evaluateHumanReviewOverride(root, story.story_id, reviewGit.head_sha, expectedHumanDecision)
+  ));
+  if (humanReviewOverride.required) {
+    const humanReviewOverrideGate = buildHumanReviewOverrideGate(humanReviewOverride, story.story_id);
+    prContext.human_review_override = humanReviewOverrideGate;
+    prContext.gate_dag.nodes.push(humanReviewOverrideGate);
+    prContext.gate_dag.summary.human_review_override = {
+      status: humanReviewOverrideGate.status,
+      recommendation: humanReviewOverrideGate.recommendation
+    };
+    prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
+      ? 'needs_verification'
+      : 'ready_for_review';
+    prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
+    gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  }
   const previousPrPrepare = workspace.initialized
     ? await progress.stage('read_previous_pr_prepare', () => readJsonIfExists(jsonPath))
     : null;
@@ -933,7 +956,9 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
     schema_version: '0.1.0',
     story_id: preparation.story.story_id,
     created_at: preparation.created_at,
-    recommended_decision: recommendHumanDecision(preparation),
+    recommended_decision: ['split_pr', 'block'].includes(existingReview?.recommended_decision)
+      ? existingReview.recommended_decision
+      : recommendHumanDecision(preparation),
     recommendation_reason: buildHumanReviewReason(preparation),
     source_artifacts: {
       review_cockpit: reviewCockpitPath,
@@ -997,6 +1022,23 @@ function recommendHumanDecision(preparation) {
   if (gateStatus === 'needs_verification') return 'add_evidence';
   if (gateStatus === 'ready_for_review') return 'proceed';
   return 'block';
+}
+
+export function buildHumanReviewOverrideGate(evaluation, storyId) {
+  const satisfied = Boolean(evaluation.decision);
+  return {
+    id: 'gate:human_review_override',
+    type: 'human_review_override_gate',
+    label: 'Human Review Override Gate',
+    status: satisfied ? 'satisfied' : 'needs_review',
+    required: true,
+    recommendation: evaluation.recommendation,
+    expected_source: evaluation.expected_source,
+    artifact: `.vibepro/pr/${storyId}/decision-records.json`,
+    reason: satisfied
+      ? `Current-HEAD ${evaluation.recommendation} override was accepted by ${evaluation.decision.reviewer}.`
+      : `Human review recommends ${evaluation.recommendation}; record an accepted current-HEAD waiver with reason and reviewer before PR creation or merge.`
+  };
 }
 
 function buildHumanReviewReason(preparation) {
@@ -1199,6 +1241,25 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Commit, stash, or discard these files before \`vibepro pr create\`: ${nonWorkspaceDirtyFiles.map((file) => file.path).join(', ')}`
     );
   }
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const currentHumanReview = await readJsonIfExists(path.join(
+    getWorkspaceDir(root), 'pr', preparation.story.story_id, 'human-review.json'
+  ));
+  const preparedRecommendation = recommendHumanDecision(preparation);
+  const currentRecommendation = currentHumanReview?.recommended_decision;
+  const expectedHumanRecommendation = currentRecommendation
+    && !['proceed', 'split_pr', 'add_evidence', 'waive_with_reason', 'block'].includes(currentRecommendation)
+    ? 'block'
+    : ['split_pr', 'block'].includes(currentRecommendation)
+      ? currentRecommendation
+      : preparedRecommendation;
+  const humanReviewOverride = await assertHumanReviewOverride(
+    root,
+    preparation.story.story_id,
+    currentHeadSha,
+    'PR creation',
+    expectedHumanRecommendation
+  );
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectPrReadinessBlockingItems(gateDag);
     throw new Error(
@@ -1299,9 +1360,10 @@ export async function createPullRequest(repoRoot, options = {}) {
     gate_dag: gateDag ?? null,
     execution_gate: executionGate,
     gate_override: gateOverride,
+    human_review_override: humanReviewOverride,
     toolchain: preparation.toolchain ?? null,
-    current_head_sha: preparation.git.head_sha ?? null,
-    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', preparation.git.head_sha ?? null, createdAt),
+    current_head_sha: currentHeadSha,
+    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', currentHeadSha, createdAt),
     base: baseBranch,
     head: headBranch,
     title,
@@ -13929,6 +13991,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'responsibility_authority_gate',
       'design_ssot_reconciliation_gate',
+      'human_review_override_gate',
       'senior_gap_judgment_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',

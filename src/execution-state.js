@@ -591,6 +591,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'verification_gate',
       'requirement_gate',
       'responsibility_authority_gate',
+      'human_review_override_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
       'review_inspection_required_gate',

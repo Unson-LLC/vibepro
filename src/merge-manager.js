@@ -12,6 +12,7 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { assertHumanReviewOverride } from './human-review-override.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -26,17 +27,32 @@ export async function executeMerge(repoRoot, options = {}) {
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
 
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
-  const [prPrepare, prCreate, executionState, gateDagArtifact] = await Promise.all([
+  const [prPrepare, prCreate, executionState, gateDagArtifact, humanReview] = await Promise.all([
     readJsonIfExists(path.join(prDir, 'pr-prepare.json')),
     readJsonIfExists(path.join(prDir, 'pr-create.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
-    readJsonIfExists(path.join(prDir, 'gate-dag.json'))
+    readJsonIfExists(path.join(prDir, 'gate-dag.json')),
+    readJsonIfExists(path.join(prDir, 'human-review.json'))
   ]);
   const strategy = normalizeMergeStrategy(options.strategy);
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
+  const expectedHumanDecision = resolveCurrentHumanReviewRecommendation({
+    currentHeadSha,
+    prCreate: currentPrCreate,
+    prPrepare,
+    gateDag: gateDagArtifact,
+    humanReview
+  });
+  const humanReviewOverride = await assertHumanReviewOverride(
+    root,
+    storyId,
+    currentHeadSha,
+    'merge',
+    expectedHumanDecision
+  );
   const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
@@ -100,6 +116,7 @@ export async function executeMerge(repoRoot, options = {}) {
       checks: []
     },
     gate_dag: gateDag,
+    human_review_override: humanReviewOverride,
     preconditions: {
       pr_selector_resolved: Boolean(prSelector),
       gate_ready: gateDag?.overall_status === 'ready_for_review',
@@ -478,6 +495,22 @@ export async function executeMerge(repoRoot, options = {}) {
   artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
   artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
   return { merge, artifacts };
+}
+
+export function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCreate, prPrepare, gateDag, humanReview }) {
+  if (!prCreate || !isCurrentPrLifecycleArtifact(prCreate, currentHeadSha)) return 'block';
+  if (!humanReview) return 'block';
+  if (!['proceed', 'split_pr', 'add_evidence', 'waive_with_reason', 'block'].includes(humanReview.recommended_decision)) return 'block';
+  if (['split_pr', 'block'].includes(humanReview?.recommended_decision)) {
+    return humanReview.recommended_decision;
+  }
+  const splitPlan = prPrepare?.split_plan;
+  if (splitPlan?.status === 'split_recommended') return 'split_pr';
+  const currentGateDag = prCreate.gate_dag
+    ?? (isCurrentPrLifecycleArtifact(gateDag, currentHeadSha) ? gateDag : null)
+    ?? (isCurrentPrLifecycleArtifact(prPrepare, currentHeadSha) ? prPrepare?.pr_context?.gate_dag : null);
+  if (currentGateDag?.overall_status === 'ready_for_review') return 'proceed';
+  return 'block';
 }
 
 async function collectExecuteMergeCostAccounting(root, { storyId, options = {}, baseBranch, currentHeadSha, collectedAt } = {}) {
@@ -911,6 +944,7 @@ function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
   if (!artifact || !currentHeadSha) return false;
   const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
     ?? artifact.current_head_sha
+    ?? artifact.git?.head_sha
     ?? artifact.toolchain?.source_git?.commit
     ?? artifact.git_context?.head_sha
     ?? null;
