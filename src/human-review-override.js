@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getWorkspaceDir } from './workspace.js';
 
 const OVERRIDE_RECOMMENDATIONS = new Set(['split_pr', 'block']);
+const VALID_RECOMMENDATIONS = new Set(['proceed', 'split_pr', 'add_evidence', 'waive_with_reason', 'block']);
 
 export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHeadSha, expectedRecommendation = null) {
   const prDir = path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId);
@@ -12,11 +13,11 @@ export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHead
     readJsonIfExists(path.join(prDir, 'decision-records.json'))
   ]);
   const recommendation = expectedRecommendation ?? humanReview?.recommended_decision ?? null;
-  if (!humanReview && expectedRecommendation === null) {
+  if ((!humanReview && expectedRecommendation === null) || !VALID_RECOMMENDATIONS.has(recommendation)) {
     return {
       required: true,
-      recommendation: 'missing_human_review',
-      expected_source: 'human-review:<recommendation>',
+      recommendation: 'block',
+      expected_source: 'human-review:block',
       decision: null
     };
   }

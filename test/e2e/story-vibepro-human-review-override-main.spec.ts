@@ -122,7 +122,10 @@ test('story-vibepro-human-review-override HRO-S3 AC-2 merge re-evaluates stale l
   // Given lifecycle evidence is stale, when merge runs, then it derives block and rejects the missing override.
   const recommendation = resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-2',
-    prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
+    prCreate: {
+      artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' },
+      gate_dag: { overall_status: 'ready_for_review' }
+    },
     prPrepare: { split_plan: { status: 'clean' } },
     gateDag: { overall_status: 'ready_for_review' },
     humanReview: { recommended_decision: 'proceed' }
@@ -138,7 +141,10 @@ test('story-vibepro-human-review-override HRO-S1 AC-4 proceed preserves the exis
   // Given lifecycle evidence is current and clean, when merge evaluates it, then the existing proceed route remains.
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
-    prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
+    prCreate: {
+      artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' },
+      gate_dag: { overall_status: 'ready_for_review' }
+    },
     prPrepare: { split_plan: { status: 'clean' } },
     gateDag: { overall_status: 'ready_for_review' },
     humanReview: { recommended_decision: 'proceed' }
@@ -148,8 +154,9 @@ test('story-vibepro-human-review-override HRO-S1 AC-4 proceed preserves the exis
 test('story-vibepro-human-review-override HRO-001 HRO-002 ac:1 ac:2 ac:3 missing human review fails closed at the CLI/runtime boundary', async () => {
   // Workflow state transition: current lifecycle -> block when the review artifact is missing.
   const { repo, prDir } = await makeRuntimeRepo();
+  const headSha = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo })).stdout.trim();
   await writeJson(path.join(prDir, 'pr-create.json'), {
-    artifact_freshness: { status: 'current', artifact_head_sha: '0000000000000000000000000000000000000000' },
+    artifact_freshness: { status: 'current', artifact_head_sha: headSha },
     pr_url: 'https://github.example.test/unson/vibepro/pull/300'
   });
   await rm(path.join(prDir, 'human-review.json'));

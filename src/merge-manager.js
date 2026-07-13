@@ -499,12 +499,16 @@ export async function executeMerge(repoRoot, options = {}) {
 
 export function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCreate, prPrepare, gateDag, humanReview }) {
   if (!prCreate || !isCurrentPrLifecycleArtifact(prCreate, currentHeadSha)) return 'block';
+  if (!humanReview) return 'block';
+  if (!['proceed', 'split_pr', 'add_evidence', 'waive_with_reason', 'block'].includes(humanReview.recommended_decision)) return 'block';
   if (['split_pr', 'block'].includes(humanReview?.recommended_decision)) {
     return humanReview.recommended_decision;
   }
   const splitPlan = prPrepare?.split_plan;
   if (splitPlan?.status === 'split_recommended') return 'split_pr';
-  const currentGateDag = gateDag ?? prCreate.gate_dag ?? prPrepare?.pr_context?.gate_dag;
+  const currentGateDag = prCreate.gate_dag
+    ?? (isCurrentPrLifecycleArtifact(gateDag, currentHeadSha) ? gateDag : null)
+    ?? prPrepare?.pr_context?.gate_dag;
   if (currentGateDag?.overall_status === 'ready_for_review') return 'proceed';
   return 'block';
 }

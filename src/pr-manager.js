@@ -956,7 +956,9 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
     schema_version: '0.1.0',
     story_id: preparation.story.story_id,
     created_at: preparation.created_at,
-    recommended_decision: recommendHumanDecision(preparation),
+    recommended_decision: ['split_pr', 'block'].includes(existingReview?.recommended_decision)
+      ? existingReview.recommended_decision
+      : recommendHumanDecision(preparation),
     recommendation_reason: buildHumanReviewReason(preparation),
     source_artifacts: {
       review_cockpit: reviewCockpitPath,
@@ -1240,12 +1242,19 @@ export async function createPullRequest(repoRoot, options = {}) {
     );
   }
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const currentHumanReview = await readJsonIfExists(path.join(
+    getWorkspaceDir(root), 'pr', preparation.story.story_id, 'human-review.json'
+  ));
+  const preparedRecommendation = recommendHumanDecision(preparation);
+  const expectedHumanRecommendation = ['split_pr', 'block'].includes(currentHumanReview?.recommended_decision)
+    ? currentHumanReview.recommended_decision
+    : preparedRecommendation;
   const humanReviewOverride = await assertHumanReviewOverride(
     root,
     preparation.story.story_id,
     currentHeadSha,
     'PR creation',
-    recommendHumanDecision(preparation)
+    expectedHumanRecommendation
   );
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectPrReadinessBlockingItems(gateDag);

@@ -73,7 +73,7 @@ test('HRO-S5 missing human review artifact fails closed', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-'));
   await assert.rejects(
     assertHumanReviewOverride(root, 'story-human-review-override', 'head-1', 'merge'),
-    /missing_human_review override required/
+    /block override required/
   );
 });
 
@@ -153,7 +153,7 @@ test('HRO-S11 merge preserves human review block and split recommendations', () 
   }
 });
 
-test('HRO-S12 merge derives split and gate readiness only for a current PR lifecycle', () => {
+test('HRO-S12 merge requires a human review artifact before deriving split or gate readiness', () => {
   const prCreate = { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } };
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
@@ -161,20 +161,46 @@ test('HRO-S12 merge derives split and gate readiness only for a current PR lifec
     prPrepare: { split_plan: { status: 'split_recommended' } },
     gateDag: { overall_status: 'ready_for_review' },
     humanReview: null
-  }), 'split_pr');
+  }), 'block');
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
     prCreate,
     prPrepare: { split_plan: { status: 'clean' } },
     gateDag: { overall_status: 'ready_for_review' },
     humanReview: null
-  }), 'proceed');
+  }), 'block');
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
     prCreate,
     prPrepare: { split_plan: { status: 'clean' } },
     gateDag: { overall_status: 'needs_verification' },
     humanReview: null
+  }), 'block');
+});
+
+test('HRO-S13 merge fails closed for an unknown human review recommendation', () => {
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate: {
+      artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' },
+      gate_dag: { overall_status: 'ready_for_review' }
+    },
+    prPrepare: {},
+    gateDag: null,
+    humanReview: { recommended_decision: 'not-a-decision' }
+  }), 'block');
+});
+
+test('HRO-S14 merge ignores a stale standalone gate DAG', () => {
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
+    prPrepare: {},
+    gateDag: {
+      overall_status: 'ready_for_review',
+      git_context: { head_sha: 'old-head' }
+    },
+    humanReview: { recommended_decision: 'proceed' }
   }), 'block');
 });
 
