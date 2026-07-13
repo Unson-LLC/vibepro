@@ -3,21 +3,15 @@ title: Human review override spec
 status: active
 parent_design: story-vibepro-human-review-override
 diagrams:
-  - kind: flow
-    mermaid: |
-      flowchart LR
-        R["split_pr or block"] --> D{"Current HEAD accepted decision has reason and reviewer?"}
-        D -->|no| B["Block PR creation and merge"]
-        D -->|yes| A["Allow requested lifecycle operation"]
-        P["proceed"] --> A
-    rationale: PR creation and merge must evaluate the same current-HEAD override transition and fail closed for missing or stale decisions.
   - kind: threat_model
     mermaid: |
       flowchart LR
-        U["Untrusted stale or incomplete review evidence"] --> V{"Validate recommendation, source, reviewer, reason, and HEAD"}
-        V -->|invalid| B["Fail closed before PR creation or merge"]
-        V -->|current accepted waiver| L["Record matched decision in lifecycle artifact"]
-    rationale: A stale, malformed, cross-story, or reviewer-less decision must not cross either lifecycle trust boundary.
+        U["Untrusted stale or incomplete review evidence"] --> D{"Current HEAD accepted decision has reason and reviewer?"}
+        R["split_pr or block"] --> D
+        D -->|no| B["Block PR creation and merge"]
+        D -->|current accepted waiver| A["Record decision and allow lifecycle operation"]
+        P["proceed"] --> A
+    rationale: PR creation and merge share one trust boundary; stale, malformed, cross-story, or reviewer-less decisions fail closed.
 ---
 
 # Human review override spec
