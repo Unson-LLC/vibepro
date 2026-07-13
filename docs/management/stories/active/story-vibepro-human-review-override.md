@@ -21,7 +21,7 @@ spec_docs:
 
 ## シナリオ
 
-- HRO-S1: `proceed`推奨ではoverrideなしで既存フローを継続する。
-- HRO-S2: `split_pr`推奨でreviewerが欠けるとPR作成を停止する。
-- HRO-S3: `block`推奨で古いHEADのdecisionしかないとmergeを停止する。
-- HRO-S4: 理由、reviewer、current HEADを持つaccepted decisionは両入口で認識される。
+- HRO-S1: Given current lifecycleが`proceed`を推奨する、when PR作成またはmergeを評価する、then overrideなしで既存フローを継続する。
+- HRO-S2: Given current HEADの推奨が`split_pr`でreviewerが欠ける、when PR作成を評価する、then override不足として停止する。
+- HRO-S3: Given current HEADの推奨が`block`で古いHEADのdecisionしかない、when mergeを評価する、then stale decisionを拒否して停止する。
+- HRO-S4: Given 理由、reviewer、current HEADを持つaccepted decisionがある、when PR作成またはmergeを評価する、then 両入口で同じoverrideとして認識する。
