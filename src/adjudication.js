@@ -155,6 +155,9 @@ export async function recordAdjudication(repoRoot, options = {}) {
   const agentId = requireValue(options.agentId, 'adjudicate record requires --agent-id <id> so adjudicator provenance is auditable');
   const root = path.resolve(repoRoot);
   const headCommit = await resolveHeadCommit(root);
+  if (!headCommit) {
+    throw new Error('adjudicate record could not resolve the current HEAD commit (git rev-parse HEAD failed); verdicts must be head-bound, so run this command inside the target git repository');
+  }
   const existing = await readAdjudicationIfExists(root, storyId);
   const entry = {
     clause_id: clauseId,
@@ -219,7 +222,9 @@ export function buildEvidenceAdjudicationGate({
   const freshVerdictByClause = new Map();
   for (const entry of verdicts) {
     if (!entry?.clause_id) continue;
-    if (headSha && entry.head_commit && entry.head_commit !== headSha) continue;
+    // A verdict without a recorded head_commit is treated as stale (fail closed),
+    // never as permanently fresh.
+    if (headSha && entry.head_commit !== headSha) continue;
     freshVerdictByClause.set(entry.clause_id, entry);
   }
   const acceptedHumanClosures = new Set(
@@ -284,7 +289,7 @@ export function buildEvidenceAdjudicationGate({
 
 export function summarizeAdjudicationForPr({ acceptanceCriteria = [], adjudication = null, headSha = null } = {}) {
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const fresh = verdicts.filter((entry) => !headSha || !entry.head_commit || entry.head_commit === headSha);
+  const fresh = verdicts.filter((entry) => !headSha || entry.head_commit === headSha);
   return {
     clause_count: acceptanceCriteria.length,
     fresh_verdict_count: fresh.length,

@@ -211,6 +211,31 @@ test('ADJ-S-007 gate passes when every clause has a fresh demonstrated verdict, 
   assert.match(empty.reason, /not a pass/);
 });
 
+test('ADJ-S-010 verdicts without a head_commit are stale (fail closed), and record refuses to run outside a git repository', async () => {
+  const gate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'AC-1', text: 'a' }],
+    adjudication: { verdicts: [{ clause_id: 'AC-1', verdict: 'demonstrated', reason: 'ok', head_commit: null }] },
+    headSha: 'head-1'
+  });
+  assert.equal(gate.status, 'needs_evidence');
+  assert.deepEqual(gate.missing_clauses, ['AC-1']);
+
+  const nonGitDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-adjudication-nogit-'));
+  await mkdir(path.join(nonGitDir, '.vibepro'), { recursive: true });
+  await assert.rejects(
+    () => recordAdjudication(nonGitDir, {
+      storyId: STORY_ID,
+      clauseId: 'AC-1',
+      verdict: 'demonstrated',
+      reason: 'x',
+      agentSystem: 'claude_code',
+      agentId: 'judge-1'
+    }),
+    /could not resolve the current HEAD commit/
+  );
+});
+
 test('ADJ-S-008 pr prepare emits a required critical evidence_adjudication gate that blocks readiness until adjudicated', async () => {
   const repo = await makeRepo();
   await git(repo, ['add', '.']);
