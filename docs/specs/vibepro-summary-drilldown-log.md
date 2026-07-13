@@ -1,6 +1,15 @@
 ---
 story_id: story-vibepro-summary-drilldown-log
 title: Summary-first Drill-down Ledger Spec
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Caller["CLI caller"] --> Validate{"reason + consumer + target?"}
+        Validate -->|missing| Reject["reject before artifact exposure"]
+        Validate -->|complete| Planner["bounded evidence plan"]
+        Planner --> Ledger["HEAD-bound requested-exposure ledger"]
+        Planner --> Artifact["targeted standard/full artifact"]
 ---
 
 # Spec
