@@ -7,6 +7,7 @@ source:
   type: incident-analysis
   id: VP-INCIDENT-2026-07-13-SALESTAILOR-BLUEPRINT-FAKE-BINDING
   title: "traceabilityの正規表現照合が、AC全文を--scenarioへ貼った npm test 記録を正規のclause bindingとして受理した"
+parent_design: vibepro-evidence-adjudication-gate
 related_stories:
   - story-vibepro-verification-observation-artifacts
   - story-vibepro-fake-value-hardening

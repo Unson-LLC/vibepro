@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-evidence-adjudication-gate
 title: Evidence Adjudication Gate Architecture
+parent_design: vibepro-evidence-adjudication-gate
 ---
 
 # アーキテクチャ
