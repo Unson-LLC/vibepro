@@ -11,7 +11,7 @@ title: Summary-first Drill-down Ledger Architecture
 
 ## Boundary
 
-- `evidence-depth-planner`: summary-first policy と drill-down request validation。target は canonical evidence artifact または current Gate DAG/status 上の gate id に解決できなければ拒否する。
+- `evidence-depth-planner`: summary-first policy と drill-down request validation。artifact target は実在writerを持つcanonical evidence artifact、gate targetはcurrent Gate DAG/status上のgate idに解決できなければ拒否する。catalog labelだけを受理してsilent no-opにしない。
 - CLI: repeatable `--evidence-depth-target <path-or-gate>` を planner に渡す。
 - `pr-manager`: current HEAD に結び付いた append-preserving ledger を workspace artifact として保存する。
 - ledger は requested exposure を示す。実読込 telemetry や used-for-decision を推測しない。

@@ -56,10 +56,7 @@ const SUMMARY_SKIPPED_ARTIFACTS = [
   'review-cockpit.html',
   'gate-dag.html',
   'gate-dag.json',
-  'split-plan.html',
-  'full-review-lifecycle-dump',
-  'raw-transcript-log',
-  'raw-provider-log'
+  'split-plan.html'
 ];
 
 const SUMMARY_GENERATED_ARTIFACTS = [
@@ -287,8 +284,7 @@ function buildArtifactPolicy(evidenceDepth, drilldownTargets = []) {
     write_gate_dag_html: writesGateDagHtml,
     write_split_plan_html: writesSplitPlanHtml,
     write_full_gate_dag_dump: requestedArtifacts.has('gate-dag.json'),
-    write_full_review_lifecycle_dump: evidenceDepth === 'full'
-      && requestedArtifacts.has('full-review-lifecycle-dump'),
+    write_full_review_lifecycle_dump: false,
     write_raw_logs: false,
     pr_body_token_policy: {
       status: 'bounded_by_artifact_links',

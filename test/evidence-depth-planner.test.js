@@ -159,6 +159,34 @@ test('explicit HTML target enables only the selected report writer', () => {
   assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
 });
 
+test('every accepted drill-down artifact target has an enabled writer', () => {
+  const targets = [
+    'pr-prepare.html',
+    'review-cockpit.html',
+    'gate-dag.html',
+    'gate-dag.json',
+    'split-plan.html'
+  ];
+  const plan = buildEvidencePlan({
+    story: { story_id: 'story-writer-catalog' },
+    prContext: context(),
+    requestedDepth: 'full',
+    requestedDepthReason: 'verify the writer-backed artifact catalog',
+    requestedDepthConsumer: 'gate-review',
+    requestedDepthTargets: targets
+  });
+
+  assert.deepEqual(
+    targets.filter((target) => !plan.generated_artifacts.includes(target)),
+    []
+  );
+  assert.equal(plan.artifact_policy.write_pr_prepare_html, true);
+  assert.equal(plan.artifact_policy.write_review_cockpit_html, true);
+  assert.equal(plan.artifact_policy.write_gate_dag_html, true);
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, true);
+  assert.equal(plan.artifact_policy.write_split_plan_html, true);
+});
+
 test('standard/full drill-down fails closed without reason, consumer, and targets', () => {
   assert.throws(() => buildEvidencePlan({
     story: { story_id: 'story-unbounded' },
@@ -186,6 +214,12 @@ test('standard/full drill-down rejects unknown artifact and unresolved gate targ
     () => buildEvidencePlan({ ...request, requestedDepthTargets: ['gate:not_in_current_dag'] }),
     /unresolved --evidence-depth-target value\(s\): gate:not_in_current_dag/
   );
+  for (const target of ['raw-transcript-log', 'raw-provider-log', 'full-review-lifecycle-dump']) {
+    assert.throws(
+      () => buildEvidencePlan({ ...request, requestedDepthTargets: [target] }),
+      new RegExp(`unresolved --evidence-depth-target value\\(s\\): ${target}`)
+    );
+  }
 });
 
 test('drill-down ledger preserves prior entries and records bounded targets at HEAD', () => {

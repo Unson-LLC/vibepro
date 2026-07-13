@@ -11,6 +11,16 @@ diagrams:
         Validate -->|complete| Planner["bounded evidence plan"]
         Planner --> Ledger["HEAD-bound requested-exposure ledger"]
         Planner --> Artifact["targeted standard/full artifact"]
+  - kind: state
+    mermaid: |
+      stateDiagram-v2
+        [*] --> Summary
+        Summary --> Validate: explicit standard/full request
+        Validate --> Rejected: unresolved target
+        Validate --> WriterSelected: writer-backed target
+        WriterSelected --> Persisted: artifact and ledger written
+        Rejected --> [*]
+        Persisted --> [*]
 ---
 
 # Spec
@@ -24,6 +34,7 @@ diagrams:
 - `SDL-CONTRACT-005`: a summary run MUST NOT append a drill-down entry or erase prior entries.
 - `SDL-CONTRACT-006`: the ledger MUST describe requested exposure only and MUST NOT claim actual reads or decision use.
 - `SDL-CONTRACT-007`: every target MUST resolve to a canonical evidence artifact or a gate id present in the current Gate DAG/status; any unresolved target MUST fail before artifact generation.
+- `SDL-CONTRACT-008`: every accepted drill-down artifact target MUST map to an enabled writer; labels without a persisted writer MUST be rejected as unresolved.
 
 ## Code And Test References
 
@@ -40,6 +51,7 @@ diagrams:
 - `SDL-VERIFY-003`: two explicit drill-down runs produce two ordered entries with target, reason, consumer, and HEAD.
 - `SDL-VERIFY-004`: existing evidence-depth and traceability suites remain green after callers provide bounded targets.
 - `SDL-VERIFY-005`: typo artifact names and gate ids absent from the current Gate DAG/status fail closed with the unresolved target in the error.
+- `SDL-VERIFY-006`: every accepted artifact target enables its corresponding writer, while raw/provider/lifecycle labels without writers fail closed.
 
 ## Diagrams
 
@@ -56,3 +68,18 @@ flowchart LR
 ```
 
 The trust boundary is the explicit override request. Missing attribution fails closed, and the ledger records requested exposure without promoting it to read telemetry or decision evidence.
+
+### State
+
+```mermaid
+stateDiagram-v2
+  [*] --> Summary
+  Summary --> Validate: explicit standard/full request
+  Validate --> Rejected: unresolved target
+  Validate --> WriterSelected: writer-backed target
+  WriterSelected --> Persisted: artifact and ledger written
+  Rejected --> [*]
+  Persisted --> [*]
+```
+
+Only writer-backed targets leave validation. This prevents a successful request from claiming an artifact that no persistence path can produce.
