@@ -222,9 +222,10 @@ export function buildEvidenceAdjudicationGate({
   const freshVerdictByClause = new Map();
   for (const entry of verdicts) {
     if (!entry?.clause_id) continue;
-    // A verdict without a recorded head_commit is treated as stale (fail closed),
-    // never as permanently fresh.
-    if (headSha && entry.head_commit !== headSha) continue;
+    // Fail closed on both sides of the freshness comparison: a verdict without a
+    // recorded head_commit is stale, and an unknown current HEAD means freshness
+    // is unverifiable, so no verdict counts as fresh.
+    if (!headSha || entry.head_commit !== headSha) continue;
     freshVerdictByClause.set(entry.clause_id, entry);
   }
   const acceptedHumanClosures = new Set(
@@ -289,7 +290,7 @@ export function buildEvidenceAdjudicationGate({
 
 export function summarizeAdjudicationForPr({ acceptanceCriteria = [], adjudication = null, headSha = null } = {}) {
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const fresh = verdicts.filter((entry) => !headSha || entry.head_commit === headSha);
+  const fresh = verdicts.filter((entry) => Boolean(headSha) && entry.head_commit === headSha);
   return {
     clause_count: acceptanceCriteria.length,
     fresh_verdict_count: fresh.length,

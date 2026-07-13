@@ -221,6 +221,14 @@ test('ADJ-S-010 verdicts without a head_commit are stale (fail closed), and reco
   assert.equal(gate.status, 'needs_evidence');
   assert.deepEqual(gate.missing_clauses, ['AC-1']);
 
+  const unknownHeadGate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'AC-1', text: 'a' }],
+    adjudication: { verdicts: [{ clause_id: 'AC-1', verdict: 'demonstrated', reason: 'ok', head_commit: 'head-1' }] },
+    headSha: null
+  });
+  assert.equal(unknownHeadGate.status, 'needs_evidence');
+
   const nonGitDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-adjudication-nogit-'));
   await mkdir(path.join(nonGitDir, '.vibepro'), { recursive: true });
   await assert.rejects(
