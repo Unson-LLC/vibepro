@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-decision-ledger",
+  "created_at": "2026-07-13T00:18:43.243Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-evidence-decision-ledger.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-evidence-decision-ledger.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-evidence-decision-ledger.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-evidence-decision-ledger.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-13T00:18:41.356Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-evidence-decision-ledger"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-evidence-decision-ledger/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-evidence-decision-ledger/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "9828d893292d2e5de1308211b2884ef510afe88d",
+      "branch": "codex/story-vibepro-evidence-decision-ledger",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "3901eff7839840df153385a5bec1ef0700ce0d51",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

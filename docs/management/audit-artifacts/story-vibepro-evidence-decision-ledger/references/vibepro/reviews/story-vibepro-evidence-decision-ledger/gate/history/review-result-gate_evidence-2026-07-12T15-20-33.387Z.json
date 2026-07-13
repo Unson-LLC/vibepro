@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-decision-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Decision-use metrics are not propagated to bounded consumer surfaces and unused artifact detection is unreachable",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-path-surface-unpropagated",
+      "detail": "bounded summary, usage report, and senior-gap synthesis omit decision-use metrics"
+    },
+    {
+      "severity": "high",
+      "id": "unused-artifact-count-unreachable",
+      "detail": "all ledger entries receive a consumer gate so unused count cannot become non-zero"
+    },
+    {
+      "severity": "medium",
+      "id": "spec-gate-provenance-stale",
+      "detail": "spec readiness is stale and architecture readiness is missing"
+    },
+    {
+      "severity": "low",
+      "id": "verification-evidence-observation-weak",
+      "detail": "machine-readable test artifact is absent"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed current-head code, tests, Story/Architecture/Spec and bounded artifacts across raw, summary, report and gate surfaces",
+    "evidence": ".vibepro/reviews/story-vibepro-evidence-decision-ledger/gate/agent-019f56e2-0735-7c83-9cf3-11e841db076c.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-evidence-decision-ledger/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "pass candidate from raw fields and passing tests -> needs_changes because consumer surfaces omit metrics and unused detection is unreachable"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-evidence-decision-ledger",
+    "actual_root": "/private/tmp/vibepro-evidence-decision-ledger",
+    "expected_root": null,
+    "expected_head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+    "current_head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-evidence-decision-ledger",
+      "actual_root": "/private/tmp/vibepro-evidence-decision-ledger",
+      "expected_root": null,
+      "expected_head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+      "current_head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-12T15:20:33.387Z",
+  "git_context": {
+    "head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+    "current_branch": "codex/story-vibepro-evidence-decision-ledger",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-12T15:20:33.386Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "f04296f11372814127a9954af2fb16be43d77860",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "61762d5d5e4879d01ff0f936cad34ff3c6e0cffe12ad19cb64340b5934ea8769",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f56e2-0735-7c83-9cf3-11e841db076c",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-evidence-decision-ledger/gate/agent-019f56e2-0735-7c83-9cf3-11e841db076c.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-evidence-decision-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-evidence-decision-ledger",
+      "decision_id": "decision-1783901895492-6544db96",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "変更は同一データ契約のend-to-end propagationで、Agent Review、28 targeted tests、Node 20/22 CI、CodeQLが通過。分割による中間不整合リスクの方が高い。",
+      "artifact": null,
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T00:18:23.813Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

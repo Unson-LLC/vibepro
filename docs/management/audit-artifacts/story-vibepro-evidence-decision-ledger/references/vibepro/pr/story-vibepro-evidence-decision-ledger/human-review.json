@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-decision-ledger",
+  "created_at": "2026-07-13T00:18:43.243Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-evidence-decision-ledger/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-evidence-decision-ledger/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-evidence-decision-ledger/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-evidence-decision-ledger/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-evidence-decision-ledger.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-evidence-decision-ledger.md)"
+    },
+    "decision_records": {
+      "total": 10,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5,
+        "waiver": 3,
+        "noise": 2
+      },
+      "by_status": {
+        "accepted": 10
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-evidence-decision-ledger",
+          "actual_root": "/private/tmp/vibepro-evidence-decision-ledger",
+          "expected_root": null,
+          "expected_head_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
+          "current_head_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783901917553-516e5687",
+        "story_id": "story-vibepro-evidence-decision-ledger",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "単一責務PRとして現ブランチを維持する",
+        "reason": "evidence ledgerの生成、互換集計、bounded summary表示は同一契約境界であり、分割すると中間状態の互換性を別々に判断することになる。Agent Review、28 targeted tests、Node 20/22 CI、CodeQLで一体として確認済み。",
+        "reviewer": "Codex gpt-5.6-luna gate reviewer",
+        "artifact": ".vibepro/pr/story-vibepro-evidence-decision-ledger/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": "../../../tmp/evidence-decision-ledger-result.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-evidence-decision-ledger/ci-evidence/test_22_.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": "../../../tmp/evidence-decision-ledger-result.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-evidence-decision-ledger/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-evidence-decision-ledger",
+            "actual_root": "/private/tmp/vibepro-evidence-decision-ledger",
+            "expected_root": null,
+            "expected_head_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
+            "current_head_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
+          "current_branch": "codex/story-vibepro-evidence-decision-ledger",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-13T00:18:37.546Z"
+        },
+        "recorded_at": "2026-07-13T00:18:37.553Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-13T00:18:41.356Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-evidence-decision-ledger"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-evidence-decision-ledger/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-evidence-decision-ledger/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "9828d893292d2e5de1308211b2884ef510afe88d",
+      "branch": "codex/story-vibepro-evidence-decision-ledger",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "3901eff7839840df153385a5bec1ef0700ce0d51",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

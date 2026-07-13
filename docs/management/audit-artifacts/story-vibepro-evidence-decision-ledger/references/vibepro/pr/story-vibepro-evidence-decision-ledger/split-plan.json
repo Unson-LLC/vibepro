@@ -1,0 +1,379 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-evidence-decision-ledger",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "baseからのcommitが 8 件あり、Story外の変更混入を確認する必要がある",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 9 changed files が一致し、113 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 4105,
+    "edge_count": 9089,
+    "matched_file_count": 9,
+    "related_file_count": 113,
+    "investigation_files": [
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/codex-manager.js",
+      "src/content-binding.js",
+      "src/decision-records.js",
+      "src/design-modernize.js",
+      "src/design-ssot.js",
+      "src/design-system.js",
+      "src/diagnostic-engine.js",
+      "src/diagram-requirement-resolver.js",
+      "src/doctor.js",
+      "src/environment-graph.js",
+      "src/evidence-cost-budget.js",
+      "src/evidence-depth-planner.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/explore-evidence.js",
+      "src/flow-verifier.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_resolvediagnosisphaseoption",
+          "src_cli_getoption",
+          "src_cli_defaultsessionid",
+          "src_cli_renderauditmemoryresult",
+          "src_cli_renderhelp",
+          "src_cli_rendercheckpointlist"
+        ],
+        "related_files": [
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/architecture-store.js",
+          "src/brainbase-importer.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/codex-manager.js",
+          "src/decision-records.js"
+        ]
+      },
+      {
+        "file": "src/evidence-reuse.js",
+        "matched_nodes": [
+          "src_evidence_reuse_js",
+          "src_evidence_reuse_readevidencereuseifexists",
+          "src_evidence_reuse_getevidencereusepath",
+          "src_evidence_reuse_buildevidencereuse",
+          "src_evidence_reuse_summarizeevidencereuse",
+          "src_evidence_reuse_buildartifactvalueledger",
+          "src_evidence_reuse_buildsessionattributionledger",
+          "src_evidence_reuse_buildevidencereusegate"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/pr-artifact-budget.js",
+        "matched_nodes": [
+          "src_pr_artifact_budget_js",
+          "src_pr_artifact_budget_resolveprartifactbudgetbytes",
+          "src_pr_artifact_budget_summaryfilenamefor",
+          "src_pr_artifact_budget_sha256",
+          "src_pr_artifact_budget_extractgenericconclusion",
+          "src_pr_artifact_budget_pick",
+          "src_pr_artifact_budget_buildconclusion",
+          "src_pr_artifact_budget_buildsummaryobject"
+        ],
+        "related_files": [
+          "src/canonical-audit.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_evaluategatereadiness",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/authorization-scoring.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js",
+          "src/content-binding.js",
+          "src/decision-records.js"
+        ]
+      },
+      {
+        "file": "src/senior-gap-judgment.js",
+        "matched_nodes": [
+          "src_senior_gap_judgment_js",
+          "src_senior_gap_judgment_buildseniorgapjudgment",
+          "src_senior_gap_judgment_buildseniorgapjudgmentgate",
+          "src_senior_gap_judgment_renderseniorgapjudgmentsummary",
+          "src_senior_gap_judgment_buildidealstate",
+          "src_senior_gap_judgment_buildcurrentstate",
+          "src_senior_gap_judgment_buildgaps",
+          "src_senior_gap_judgment_gapsfromgatestatus"
+        ],
+        "related_files": [
+          "src/evidence-cost-budget.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "src/usage-report.js",
+        "matched_nodes": [
+          "src_usage_report_js",
+          "src_usage_report_createusagereport",
+          "src_usage_report_renderusagereport",
+          "src_usage_report_ensurestoryusage",
+          "src_usage_report_collectprartifacts",
+          "src_usage_report_collectmanifestprartifacts",
+          "src_usage_report_filtermanifestfallbackartifacts",
+          "src_usage_report_collectstorydocs"
+        ],
+        "related_files": [
+          "src/canonical-audit.js",
+          "src/cli.js",
+          "src/gate-outcome-ledger.js",
+          "src/language.js",
+          "src/review-repair.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "test/evidence-summary-reuse.test.js",
+        "matched_nodes": [
+          "test_evidence_summary_reuse_test_js",
+          "test_evidence_summary_reuse_test_git",
+          "test_evidence_summary_reuse_test_readjson",
+          "test_evidence_summary_reuse_test_setupreuserepo",
+          "test_evidence_summary_reuse_test_writespec"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/pr-artifact-size-budget.test.js",
+        "matched_nodes": [
+          "test_pr_artifact_size_budget_test_js",
+          "test_pr_artifact_size_budget_test_git",
+          "test_pr_artifact_size_budget_test_readjson",
+          "test_pr_artifact_size_budget_test_exists",
+          "test_pr_artifact_size_budget_test_makerepo",
+          "test_pr_artifact_size_budget_test_setbudget",
+          "test_pr_artifact_size_budget_test_gateverdicts"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/senior-gap-judgment.test.js",
+        "matched_nodes": [
+          "test_senior_gap_judgment_test_js",
+          "test_senior_gap_judgment_test_makerepo",
+          "test_senior_gap_judgment_test_writeseniorgapfixture",
+          "test_senior_gap_judgment_test_git"
+        ],
+        "related_files": []
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-evidence-decision-ledger.md",
+        "docs/specs/story-vibepro-evidence-decision-ledger.md",
+        "docs/architecture/vibepro-evidence-decision-ledger.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-evidence-decision-ledger-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/cli.js",
+        "src/evidence-reuse.js",
+        "src/pr-artifact-budget.js",
+        "src/pr-manager.js",
+        "src/senior-gap-judgment.js",
+        "src/usage-report.js",
+        "test/evidence-summary-reuse.test.js",
+        "test/pr-artifact-size-budget.test.js",
+        "test/senior-gap-judgment.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 9,
+      "graph_investigation_files": [
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/architecture-store.js",
+        "src/authorization-scoring.js",
+        "src/brainbase-importer.js",
+        "src/canonical-audit.js",
+        "src/change-risk-classifier.js",
+        "src/check-packs.js",
+        "src/checkpoint-manager.js",
+        "src/ci-evidence.js"
+      ],
+      "suggested_branch": "feat/vibepro-evidence-decision-ledger-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-evidence-decision-ledger-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/evidence-summary-reuse.test.js test/senior-gap-judgment.test.js test/pr-artifact-size-budget.test.js # pr_lifecycle_regression agent_review_lifecycle_regression evidence_lifecycle_regression integration_runtime_path story_source_integrity_regression engineering_judgment_regression managed_worktree_regression unit_regression negative_path",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29214900242/job/86708782034"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/evidence-summary-reuse.test.js test/senior-gap-judgment.test.js test/pr-artifact-size-budget.test.js # pr_lifecycle_regression agent_review_lifecycle_regression evidence_lifecycle_regression integration_runtime_path story_source_integrity_regression engineering_judgment_regression managed_worktree_regression unit_regression negative_path",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29214900242/job/86708782034"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-evidence-decision-ledger-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-evidence-decision-ledger-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-evidence-decision-ledger.md docs/specs/story-vibepro-evidence-decision-ledger.md docs/architecture/vibepro-evidence-decision-ledger.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-evidence-decision-ledger-runtime-behavior with 9 files",
+      "command": "git switch -c feat/vibepro-evidence-decision-ledger-runtime-behavior <base> && git add src/cli.js src/evidence-reuse.js src/pr-artifact-budget.js src/pr-manager.js src/senior-gap-judgment.js src/usage-report.js test/evidence-summary-reuse.test.js test/pr-artifact-size-budget.test.js test/senior-gap-judgment.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-evidence-decision-ledger-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-evidence-decision-ledger-misc-follow-up <base> && git add design-ssot.json"
+    }
+  ]
+}
