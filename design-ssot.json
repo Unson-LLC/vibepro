@@ -4485,6 +4485,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-release-surface-guard.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       }
     }
