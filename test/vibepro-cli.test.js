@@ -7798,6 +7798,7 @@ Weighted semantic/layout residual: **34%**
     '--evidence-depth-consumer', 'vibepro-cli-test',
     '--evidence-depth-target', 'gate-dag.json',
     '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'pr-prepare.html',
     '--evidence-depth-target', 'review-cockpit.html'
   ], {
     stdout: { write: (text) => { prepareSummaryOutput += text; } }
