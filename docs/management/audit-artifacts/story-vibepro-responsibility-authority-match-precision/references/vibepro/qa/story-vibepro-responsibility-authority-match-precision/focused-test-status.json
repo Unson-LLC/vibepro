@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+  "command": "node --test test/responsibility-authority.test.js",
+  "tests": 27,
+  "passed": 27,
+  "failed": 0,
+  "summary": "Responsibility resolver and downstream pr prepare shared-risk fan-out regression passed."
+}

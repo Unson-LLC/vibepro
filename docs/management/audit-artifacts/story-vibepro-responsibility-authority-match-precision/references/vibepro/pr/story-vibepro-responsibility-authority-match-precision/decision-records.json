@@ -1,0 +1,285 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-responsibility-authority-match-precision",
+  "updated_at": "2026-07-13T05:19:01.004Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+      "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+      "expected_root": null,
+      "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+      "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783919941004-5bad4b1c",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep one coherent resolver-contract PR; no split.",
+      "reason": "Source, focused tests, Architecture, Specs, Story, and Design SSOT are one reviewable behavior contract. There is no unrelated runtime or cleanup change to isolate.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/focused-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "expected_root": null,
+          "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "current_branch": "codex/responsibility-authority-direct-match",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:19:01.003Z"
+      },
+      "recorded_at": "2026-07-13T05:19:01.004Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783919940448-544c84bb",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:scope_boundary",
+      "source_status": "needs_scope_correction",
+      "summary": "Bundle design-ssot.json with the resolver contract change.",
+      "reason": "The registry entry is required to make the new Architecture, Story, and Specs machine-reconcilable at this same HEAD; splitting it would leave the implementation PR without its required design lineage.",
+      "reviewer": "codex",
+      "artifact": "design-ssot.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/focused-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "expected_root": null,
+          "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "current_branch": "codex/responsibility-authority-direct-match",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:19:00.446Z"
+      },
+      "recorded_at": "2026-07-13T05:19:00.448Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783919838824-2175da31",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One resolver-contract change is owned and reviewed as a single gate-evidence surface.",
+      "reason": "The implementation is isolated to the authority resolver and focused tests; story, architecture, registry, and Design SSOT describe that same decision. Classifier and schema changes are explicitly out of scope.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-responsibility-authority-match-precision.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/focused-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "expected_root": null,
+          "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "current_branch": "codex/responsibility-authority-direct-match",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:17:18.823Z"
+      },
+      "recorded_at": "2026-07-13T05:17:18.824Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+        "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+        "expected_root": null,
+        "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783919941004-5bad4b1c",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep one coherent resolver-contract PR; no split.",
+      "reason": "Source, focused tests, Architecture, Specs, Story, and Design SSOT are one reviewable behavior contract. There is no unrelated runtime or cleanup change to isolate.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/focused-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "expected_root": null,
+          "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+        "current_branch": "codex/responsibility-authority-direct-match",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T05:19:01.003Z"
+      },
+      "recorded_at": "2026-07-13T05:19:01.004Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/decision-records.json"
+}

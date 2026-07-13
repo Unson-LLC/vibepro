@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "decision_id": "decision-1783919838824-2175da31",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The implementation is isolated to the authority resolver and focused tests; story, architecture, registry, and Design SSOT describe that same decision. Classifier and schema changes are explicitly out of scope.",
+      "artifact": "docs/architecture/vibepro-responsibility-authority-match-precision.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T05:17:24.929Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1538|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-responsibility-authority-match-precision",
+      "decision_id": "decision-1783919838824-2175da31",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The implementation is isolated to the authority resolver and focused tests; story, architecture, registry, and Design SSOT describe that same decision. Classifier and schema changes are explicitly out of scope.",
+      "artifact": "docs/architecture/vibepro-responsibility-authority-match-precision.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1538",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-13T06:07:10.197Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

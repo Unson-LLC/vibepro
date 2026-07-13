@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-responsibility-authority-match-precision",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD fixes shared-risk fan-out through resolver and every downstream authority projection; prior findings are resolved.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-artifact-reconciliation",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/verification-evidence.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-path-surface-propagation",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/responsibility-authority.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-scope-ownership-contradiction",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/pr-prepare.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/gate-evidence-review-b8b133a.json"
+  ],
+  "inspection": {
+    "summary": "Inspected origin/main diff, resolver, downstream shared-risk integration test, Story/Architecture/Spec/registry/Design SSOT, current verification, PR prepare, and prior review; reran 27 focused tests and typecheck.",
+    "evidence": ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/gate-evidence-review-b8b133a.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Prior needs_changes became pass after a pre-fix-sensitive downstream fixture, corrected task scope, and current-head evidence reconciliation."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+    "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+    "expected_root": null,
+    "expected_head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+    "current_head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+      "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+      "expected_root": null,
+      "expected_head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+      "current_head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-13T05:37:21.018Z",
+  "git_context": {
+    "head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+    "current_branch": "codex/responsibility-authority-direct-match",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T05:37:21.012Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "b5db1613340739e61409063d26fdb45038854bca1604ca578643398817e6b1fc",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_recheck",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/gate-evidence-review-b8b133a.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/gate-evidence-review-b8b133a.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

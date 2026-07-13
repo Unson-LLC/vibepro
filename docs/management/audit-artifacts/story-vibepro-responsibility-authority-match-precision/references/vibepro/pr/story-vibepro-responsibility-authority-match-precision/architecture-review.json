@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-responsibility-authority-match-precision",
+  "created_at": "2026-07-13T06:14:01.244Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-responsibility-authority-match-precision.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-responsibility-authority-match-precision.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-responsibility-authority-match-precision.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-responsibility-authority-match-precision.md, docs/specs/vibepro-responsibility-authority-registry.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-13T06:13:59.616Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-responsibility-authority-direct-match"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-responsibility-authority-direct-match/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-responsibility-authority-direct-match/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+      "branch": "codex/responsibility-authority-direct-match",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "9570218c667ae5047881db0f75734a9235a6c9b6",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

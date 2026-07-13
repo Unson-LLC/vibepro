@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-responsibility-authority-match-precision",
+  "created_at": "2026-07-13T06:14:01.244Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-responsibility-authority-match-precision.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-responsibility-authority-match-precision.md, docs/specs/vibepro-responsibility-authority-registry.md)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+          "expected_root": null,
+          "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783919941004-5bad4b1c",
+        "story_id": "story-vibepro-responsibility-authority-match-precision",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "Keep one coherent resolver-contract PR; no split.",
+        "reason": "Source, focused tests, Architecture, Specs, Story, and Design SSOT are one reviewable behavior contract. There is no unrelated runtime or cleanup change to isolate.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 2,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/typecheck-status.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-responsibility-authority-match-precision/focused-test-status.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+            "actual_root": "/private/tmp/vibepro-responsibility-authority-direct-match",
+            "expected_root": null,
+            "expected_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+            "current_head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "fe3b024e0680a3b7b4ed85059bc679243a0bfc90",
+          "current_branch": "codex/responsibility-authority-direct-match",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-13T05:19:01.003Z"
+        },
+        "recorded_at": "2026-07-13T05:19:01.004Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-13T06:13:59.616Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-responsibility-authority-direct-match"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-responsibility-authority-direct-match/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-responsibility-authority-direct-match/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+      "branch": "codex/responsibility-authority-direct-match",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "9570218c667ae5047881db0f75734a9235a6c9b6",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

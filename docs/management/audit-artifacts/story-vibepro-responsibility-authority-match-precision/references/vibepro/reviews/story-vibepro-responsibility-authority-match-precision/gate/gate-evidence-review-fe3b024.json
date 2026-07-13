@@ -1,0 +1,30 @@
+{
+  "status": "needs_changes",
+  "summary": "Focused resolver regression is credible, but downstream Gate DAG and PR output propagation was not pre-fix-sensitive; scope artifacts also needed reconciliation.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-path-surface-propagation",
+      "detail": "Add a multi-responsibility shared-risk fixture that observes the narrowed authority through downstream gate and output surfaces."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-scope-ownership-contradiction",
+      "detail": "Regenerate machine artifacts after recording the bundled Design SSOT scope decision."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-artifact-reconciliation",
+      "detail": "Regenerate PR prepare after the latest clause-specific verification evidence."
+    }
+  ],
+  "inspection_summary": "Inspected current HEAD fe3b024, resolver, focused tests, registry E2E, verification evidence, split plan, traceability, and bounded gate summaries. Focused tests, registry E2E, typecheck, and diff check passed; downstream projections lacked a pre-fix-sensitive fixture.",
+  "inspection_evidence": [
+    "src/responsibility-authority.js",
+    "test/responsibility-authority.test.js",
+    "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+    ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/verification-evidence.json"
+  ],
+  "judgment_delta": "Initial stale-evidence concern was reduced by exact-head focused tests, but verdict remained needs_changes because downstream output propagation and refreshed scope artifacts were missing."
+}

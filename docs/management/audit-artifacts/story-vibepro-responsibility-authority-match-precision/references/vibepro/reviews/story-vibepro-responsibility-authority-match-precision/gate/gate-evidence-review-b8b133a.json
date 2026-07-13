@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "summary": "共有risk surfaceの誤fan-out修正は、現HEADでresolverからGate DAG・PR context・Requirement synthesisまで一貫して固定され、旧指摘3件は解消している。",
+  "head_sha": "b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+  "inspection_summary": "origin/mainとの差分、resolver実装、27件のfocused regression、Story/Architecture/Spec/registry/Design SSOT、現HEAD verification、PR prepare、旧review結果を確認し、focused test 27/27とtypecheckの成功を確認した。",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/pr-prepare.json",
+  "inspection_inputs": [
+    "git diff origin/main...b8b133a1bca71fb176746dbed0393a8cec6e32f3",
+    "src/responsibility-authority.js",
+    "test/responsibility-authority.test.js",
+    "docs/management/stories/active/story-vibepro-responsibility-authority-match-precision.md",
+    "docs/architecture/vibepro-responsibility-authority-match-precision.md",
+    "docs/specs/vibepro-responsibility-authority-match-precision.md",
+    "docs/specs/vibepro-responsibility-authority-registry.md",
+    "design-ssot.json",
+    ".vibepro/design-ssot/vibepro-responsibility-authority-match-precision/reconciliation.json",
+    ".vibepro/stories/story-vibepro-responsibility-authority-match-precision/tasks/tasks.json",
+    ".vibepro/pr/story-vibepro-responsibility-authority-match-precision/verification-evidence.json",
+    ".vibepro/reviews/story-vibepro-responsibility-authority-match-precision/gate/gate-evidence-review-fe3b024.json",
+    "node --test test/responsibility-authority.test.js: 27/27 pass",
+    "npm run typecheck: pass"
+  ],
+  "judgment_delta": [
+    "gate-evidence-path-surface-propagation: shared-risk fixture is pre-fix-sensitive and now asserts one exact responsibility through resolver, Gate DAG, PR context, Requirement synthesis, and ref count.",
+    "gate-evidence-scope-ownership-contradiction: task scope includes design-ssot.json; scope_boundary and Design SSOT reconciliation pass with no out-of-scope files.",
+    "gate-evidence-artifact-reconciliation: current-head unit, integration, and typecheck evidence pass; replacing the stale prior review and rerunning pr prepare completes reconciliation.",
+    "Path and symbol are identity anchors; risk enriches anchored matches. Explicit risk-only entries, direct contract clause anchors, changed-production-line symbol matching, and fail-closed behavior remain covered."
+  ],
+  "findings": []
+}
