@@ -55,7 +55,12 @@ import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
-import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import {
+  appendEvidenceDrilldownEntry,
+  buildEvidenceDecisionIndex,
+  buildEvidenceDrilldownEntry,
+  buildEvidencePlan
+} from './evidence-depth-planner.js';
 import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
@@ -307,6 +312,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await mkdir(prDir, { recursive: true });
   const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
   const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
+  const evidenceDrilldownLogPath = path.join(prDir, 'evidence-drilldown-log.json');
   const decisionIndexPath = path.join(prDir, 'decision-index.json');
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
@@ -369,8 +375,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     requestedDepth: options.evidenceDepth,
     requestedDepthReason: options.evidenceDepthReason,
     requestedDepthConsumer: options.evidenceDepthConsumer,
+    requestedDepthTargets: options.evidenceDepthTargets,
     createdAt
   });
+  const drilldownEntry = buildEvidenceDrilldownEntry({ evidencePlan, git: reviewGit, createdAt });
   const decisionIndex = buildEvidenceDecisionIndex({
     story,
     git: reviewGit,
@@ -684,6 +692,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       [story.story_id]: {
         latest_evidence_reuse: toWorkspaceRelative(root, evidenceReusePath),
         latest_evidence_plan: toWorkspaceRelative(root, evidencePlanPath),
+        latest_evidence_drilldown_log: drilldownEntry ? toWorkspaceRelative(root, evidenceDrilldownLogPath) : null,
         latest_decision_index: toWorkspaceRelative(root, decisionIndexPath),
         latest_prepare: toWorkspaceRelative(root, jsonPath),
         latest_report: writeHtmlReports ? toWorkspaceRelative(root, reportPath) : null,
@@ -732,6 +741,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     timeoutMs: progress.timeoutMs,
     stage: 'write_pr_prepare_json'
   });
+  if (drilldownEntry) {
+    const previousDrilldownLog = await readJsonIfExists(evidenceDrilldownLogPath);
+    await writeFile(evidenceDrilldownLogPath, `${JSON.stringify(
+      appendEvidenceDrilldownEntry(previousDrilldownLog, drilldownEntry, story.story_id),
+      null,
+      2
+    )}\n`);
+  }
 
   return {
     story,
@@ -739,6 +756,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     artifacts: {
       evidence_reuse: evidenceReusePath,
       evidence_plan: evidencePlanPath,
+      evidence_drilldown_log: drilldownEntry ? evidenceDrilldownLogPath : null,
       decision_index: decisionIndexPath,
       json: jsonPath,
       report: writeHtmlReports ? reportPath : null,

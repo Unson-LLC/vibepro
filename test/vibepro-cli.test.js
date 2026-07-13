@@ -4087,7 +4087,14 @@ test('pr prepare annotates stale PR lifecycle artifacts with current HEAD mismat
   await git(repo, ['commit', '-m', 'feat: advance lifecycle artifact head']);
   const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
 
-  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect lifecycle freshness rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'review-cockpit.html',
+    '--json'
+  ]);
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.lifecycle_artifacts.status, 'stale');
@@ -7784,7 +7791,15 @@ Weighted semantic/layout residual: **34%**
   await git(repo, ['remote', 'add', 'origin', 'https://github.com/Unson-LLC/vibepro.git']);
 
   let prepareSummaryOutput = '';
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'], {
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect generated PR artifact contracts',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ], {
     stdout: { write: (text) => { prepareSummaryOutput += text; } }
   });
 
@@ -8170,7 +8185,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_report, '.vibepro/pr/story-pr-prepare/pr-create.html');
-  assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
+  assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_review_cockpit, null);
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_human_review, '.vibepro/pr/story-pr-prepare/human-review.json');
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_architecture_review, '.vibepro/pr/story-pr-prepare/architecture-review.json');
 
@@ -8715,7 +8730,14 @@ Graphifyは任意の外部CLIとして扱い、VibeProの配布物には同梱�
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'docs: add oss readiness story']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId]);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', storyId,
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect story title artifact projection',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'split-plan.json'
+  ]);
 
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
@@ -8738,7 +8760,15 @@ test('pr prepare carries configured output language into human artifacts', async
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: add language target']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect localized artifact rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'split-plan.html'
+  ]);
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.output.language, 'en');
@@ -13831,7 +13861,14 @@ test('managed worktree gate keeps generated gate DAG acyclic around PR body cont
   const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
   assert.equal(started.exitCode, 0);
 
-  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect managed worktree DAG edges',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--json'
+  ]);
   assert.equal(result.exitCode, 0);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_body_contract' && edge.to === 'gate:managed_worktree'), true);
@@ -14317,7 +14354,14 @@ architecture_docs:
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
 
-  const missingResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const missingResult = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect review gate DAG rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--json'
+  ]);
   assert.equal(missingResult.exitCode, 0);
   const missingGate = missingResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   assert.equal(missingGate.required, true);
@@ -16911,7 +16955,14 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: broad session work']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--max-files', '3',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect broad-diff split plan rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'split-plan.json',
+    '--evidence-depth-target', 'split-plan.html'
+  ]);
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.scope.status, 'needs_clean_branch');
@@ -17770,7 +17821,15 @@ spec_docs:
   ]);
   assert.equal(decision.exitCode, 0);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect accepted followup rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(result.exitCode, 0);
   const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
   assert.equal(axis.status, 'active_accepted_followup');

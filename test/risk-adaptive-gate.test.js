@@ -732,7 +732,15 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
 
-  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect workflow-heavy recovery and Gate DAG surfaces',
+    '--evidence-depth-consumer', 'risk-adaptive-gate-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--json'
+  ]);
   assert.equal(result.exitCode, 0);
   const prepare = result.result;
   const gateDag = prepare.preparation.pr_context.gate_dag;
@@ -796,7 +804,15 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--summary', 'Generic CLI test was mislabeled as E2E'
   ])).exitCode, 0);
 
-  const mislabeledResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  const mislabeledResult = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect final workflow-heavy recovery surfaces',
+    '--evidence-depth-consumer', 'risk-adaptive-gate-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--json'
+  ]);
   assert.equal(mislabeledResult.exitCode, 0);
   const mislabeledGateDag = mislabeledResult.result.preparation.pr_context.gate_dag;
   assert.equal(mislabeledGateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'needs_evidence');
@@ -890,7 +906,14 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   ]);
   assert.equal(prepare.preparation.gate_status.agent_review_minimal_recovery_plan.first_command, agentReviewGate.minimal_recovery_plan.first_command);
   let prepareSummary = '';
-  const summaryResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main'], {
+  const summaryResult = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect text recovery summary with full surfaces',
+    '--evidence-depth-consumer', 'risk-adaptive-gate-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'pr-prepare.html'
+  ], {
     stdout: { write: (text) => { prepareSummary += text; } }
   });
   assert.equal(summaryResult.exitCode, 0);

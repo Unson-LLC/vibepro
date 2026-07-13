@@ -234,7 +234,13 @@ test('observation text contributes to judgment evidence classification', async (
     '--scenario', 'scenario_clause_e2e',
     '--observed', 'scenario_clause_e2e=true'
   ]);
-  await runCli(['pr', 'prepare', root, '--story-id', 'story-test-obs', '--base', 'main', '--json']);
+  await runCli([
+    'pr', 'prepare', root, '--story-id', 'story-test-obs', '--base', 'main', '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect observation classification in Gate DAG',
+    '--evidence-depth-consumer', 'verification-observation-test',
+    '--evidence-depth-target', 'gate-dag.json'
+  ]);
   const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-obs', 'gate-dag.json'));
   const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.ok(spine, 'spine gate must exist');

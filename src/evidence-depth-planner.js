@@ -1,6 +1,7 @@
 import { normalizeEvidenceDepth } from './evidence-cost-budget.js';
 
 export const EVIDENCE_DEPTH_PLANNER_VERSION = '0.1.0';
+export const EVIDENCE_DRILLDOWN_LOG_VERSION = '0.1.0';
 
 const HIGH_RISK_PROFILES = new Set([
   'workflow_heavy',
@@ -71,6 +72,7 @@ export function buildEvidencePlan({
   requestedDepth = null,
   requestedDepthReason = null,
   requestedDepthConsumer = null,
+  requestedDepthTargets = [],
   createdAt = new Date().toISOString()
 } = {}) {
   const changeClassification = prContext?.change_classification ?? {};
@@ -83,28 +85,27 @@ export function buildEvidencePlan({
     changeClassification,
     engineeringJudgment
   });
-  const lowRiskSummary = isLowRiskSummaryCandidate({
-    fileGroups,
-    changeClassification,
-    prRoute,
-    riskSignals,
-    targetedFullSurfaces
-  });
-  const defaultDepth = lowRiskSummary ? 'summary' : 'standard';
+  const defaultDepth = 'summary';
   const overrideDepth = normalizeEvidenceDepth(requestedDepth);
   const evidenceDepth = overrideDepth ?? defaultDepth;
+  const drilldownTargets = normalizeDrilldownTargets(requestedDepthTargets);
+  if (overrideDepth && overrideDepth !== 'summary') {
+    assertDrilldownRequest({ depth: overrideDepth, reason: requestedDepthReason, consumer: requestedDepthConsumer, targets: drilldownTargets });
+  }
   const manualOverride = overrideDepth
     ? {
         status: 'requested',
         depth: overrideDepth,
-        reason: nonEmptyString(requestedDepthReason) ?? 'manual request via --evidence-depth',
-        consumer: nonEmptyString(requestedDepthConsumer) ?? 'operator_manual_request'
+        reason: nonEmptyString(requestedDepthReason) ?? 'summary view requested',
+        consumer: nonEmptyString(requestedDepthConsumer) ?? 'summary_first_default',
+        targets: drilldownTargets
       }
     : {
         status: 'none',
         depth: null,
         reason: null,
-        consumer: null
+        consumer: null,
+        targets: []
       };
   const artifactPolicy = buildArtifactPolicy(evidenceDepth);
 
@@ -140,6 +141,31 @@ export function buildEvidencePlan({
     consumers: evidenceDepth === 'summary'
       ? ['evidence-reuse.json', 'decision-index.json', 'senior-gap-judgment.json', 'evidence-plan.json', 'pr-body.md']
       : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json', 'senior-gap-judgment.json']
+  };
+}
+
+export function buildEvidenceDrilldownEntry({ evidencePlan, git, createdAt = new Date().toISOString() } = {}) {
+  if (evidencePlan?.manual_override?.status !== 'requested' || evidencePlan.evidence_depth === 'summary') return null;
+  return {
+    schema_version: EVIDENCE_DRILLDOWN_LOG_VERSION,
+    recorded_at: createdAt,
+    head_sha: git?.head_sha ?? null,
+    base_ref: git?.base_ref ?? null,
+    head_ref: git?.head_ref ?? null,
+    depth: evidencePlan.evidence_depth,
+    consumer: evidencePlan.manual_override.consumer,
+    reason: evidencePlan.manual_override.reason,
+    targets: evidencePlan.manual_override.targets,
+    risk_surfaces: evidencePlan.targeted_full_surfaces.map((surface) => surface.surface)
+  };
+}
+
+export function appendEvidenceDrilldownEntry(previousLog, entry, storyId) {
+  const entries = Array.isArray(previousLog?.entries) ? previousLog.entries : [];
+  return {
+    schema_version: EVIDENCE_DRILLDOWN_LOG_VERSION,
+    story_id: storyId ?? previousLog?.story_id ?? null,
+    entries: entry ? [...entries, entry] : entries
   };
 }
 
@@ -251,18 +277,6 @@ function buildArtifactPolicy(evidenceDepth) {
     generated_artifacts: generatedArtifacts,
     skipped_artifacts: summary ? SUMMARY_SKIPPED_ARTIFACTS : []
   };
-}
-
-function isLowRiskSummaryCandidate({ fileGroups, changeClassification, prRoute, riskSignals, targetedFullSurfaces }) {
-  const sourceCount = fileGroups?.source?.count ?? 0;
-  const repoControlCount = fileGroups?.repo_control?.count ?? 0;
-  const riskSurfaces = changeClassification?.risk_surfaces ?? [];
-  const profile = changeClassification?.profile ?? null;
-  const routeType = prRoute?.route_type ?? null;
-  if (sourceCount > 0 || repoControlCount > 0) return false;
-  if (riskSurfaces.length > 0 || riskSignals.length > 0 || targetedFullSurfaces.length > 0) return false;
-  if (['light', 'docs', 'documentation_only', 'test_only'].includes(profile)) return true;
-  return ['docs_only', 'test_only', 'knowledge_docs', 'general_change'].includes(routeType);
 }
 
 function collectRiskSignals({ changeClassification, prRoute, engineeringJudgment }) {
@@ -377,4 +391,21 @@ function dedupeObjects(items, keyFn) {
 function nonEmptyString(value) {
   const normalized = String(value ?? '').trim();
   return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeDrilldownTargets(values) {
+  const targets = Array.isArray(values) ? values : [values];
+  return [...new Set(targets.flatMap((value) => String(value ?? '').split(','))
+    .map((value) => value.trim())
+    .filter(Boolean))];
+}
+
+function assertDrilldownRequest({ depth, reason, consumer, targets }) {
+  const missing = [];
+  if (!nonEmptyString(reason)) missing.push('--evidence-depth-reason');
+  if (!nonEmptyString(consumer)) missing.push('--evidence-depth-consumer');
+  if (targets.length === 0) missing.push('--evidence-depth-target');
+  if (missing.length > 0) {
+    throw new Error(`--evidence-depth ${depth} requires ${missing.join(', ')} so every drill-down is attributable and bounded`);
+  }
 }

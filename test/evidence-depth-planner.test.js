@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildEvidenceDecisionIndex, buildEvidencePlan } from '../src/evidence-depth-planner.js';
+import {
+  appendEvidenceDrilldownEntry,
+  buildEvidenceDecisionIndex,
+  buildEvidenceDrilldownEntry,
+  buildEvidencePlan
+} from '../src/evidence-depth-planner.js';
 
 function fileGroups(overrides = {}) {
   return {
@@ -54,7 +59,7 @@ test('low-risk changes default to summary and skip HTML/full dump artifacts', ()
   assert.ok(plan.skipped_artifacts.includes('review-cockpit.html'));
 });
 
-test('source/product changes default to standard', () => {
+test('source/product changes default to summary while retaining risk analysis', () => {
   const plan = buildEvidencePlan({
     story: { story_id: 'story-source' },
     git: { changed_files: [{ path: 'src/app.js' }] },
@@ -66,9 +71,9 @@ test('source/product changes default to standard', () => {
     gateStatus: { unresolved_gates: [] }
   });
 
-  assert.equal(plan.evidence_depth, 'standard');
-  assert.equal(plan.artifact_policy.write_html_reports, true);
-  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, true);
+  assert.equal(plan.evidence_depth, 'summary');
+  assert.equal(plan.artifact_policy.write_html_reports, false);
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
 });
 
 test('high-risk surfaces and risk-bearing missing gates create targeted full surfaces', () => {
@@ -102,7 +107,7 @@ test('high-risk surfaces and risk-bearing missing gates create targeted full sur
     }
   });
 
-  assert.equal(plan.evidence_depth, 'standard');
+  assert.equal(plan.evidence_depth, 'summary');
   assert.deepEqual(
     plan.targeted_full_surfaces.map((surface) => surface.surface).sort(),
     ['auth_boundary', 'gate:network_contract', 'security', 'security_trust']
@@ -117,13 +122,46 @@ test('operator override records manual full request with reason and consumer', (
     prContext: context(),
     requestedDepth: 'full',
     requestedDepthReason: 'audit replay requested full evidence',
-    requestedDepthConsumer: 'value-audit'
+    requestedDepthConsumer: 'value-audit',
+    requestedDepthTargets: ['gate:network_contract', '.vibepro/pr/story-full/gate-dag.json']
   });
 
   assert.equal(plan.evidence_depth, 'full');
   assert.equal(plan.manual_override.status, 'requested');
   assert.equal(plan.manual_override.reason, 'audit replay requested full evidence');
   assert.equal(plan.manual_override.consumer, 'value-audit');
+  assert.deepEqual(plan.manual_override.targets, ['gate:network_contract', '.vibepro/pr/story-full/gate-dag.json']);
+});
+
+test('standard/full drill-down fails closed without reason, consumer, and targets', () => {
+  assert.throws(() => buildEvidencePlan({
+    story: { story_id: 'story-unbounded' },
+    fileGroups: fileGroups(),
+    prContext: context(),
+    requestedDepth: 'full'
+  }), /requires --evidence-depth-reason, --evidence-depth-consumer, --evidence-depth-target/);
+});
+
+test('drill-down ledger preserves prior entries and records bounded targets at HEAD', () => {
+  const plan = buildEvidencePlan({
+    story: { story_id: 'story-ledger' },
+    fileGroups: fileGroups(),
+    prContext: context(),
+    requestedDepth: 'standard',
+    requestedDepthReason: 'inspect unresolved traceability',
+    requestedDepthConsumer: 'agent-review',
+    requestedDepthTargets: ['gate:traceability', 'traceability.json']
+  });
+  const entry = buildEvidenceDrilldownEntry({
+    evidencePlan: plan,
+    git: { head_sha: 'abc123', base_ref: 'main', head_ref: 'HEAD' },
+    createdAt: '2026-07-13T00:00:00.000Z'
+  });
+  const log = appendEvidenceDrilldownEntry({ entries: [{ depth: 'full' }] }, entry, 'story-ledger');
+
+  assert.equal(log.entries.length, 2);
+  assert.equal(log.entries[1].head_sha, 'abc123');
+  assert.deepEqual(log.entries[1].targets, ['gate:traceability', 'traceability.json']);
 });
 
 test('decision index keeps Engineering Judgment signals in summary depth', () => {

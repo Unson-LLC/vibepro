@@ -138,7 +138,13 @@ test('story-vibepro-responsibility-authority-registry replays responsibility aut
     'artifact_replay=covered'
   ]);
 
-  const prepared = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  const prepared = await runCli([
+    'pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'replay responsibility authority Gate DAG ordering',
+    '--evidence-depth-consumer', 'responsibility-authority-e2e',
+    '--evidence-depth-target', 'gate-dag.json'
+  ]);
   assert.equal(prepared.exitCode, 0, prepared.stderr);
   const preparation = prepared.result.preparation;
   const gateDag = preparation.pr_context.gate_dag;
