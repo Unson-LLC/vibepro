@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "updated_at": "2026-07-13T13:51:47.969Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "10テストID実在+子プロセス実実行（pass10/fail0）をassertする新E2Eブロックにより、カテゴリ網羅の主張が実行可能証拠化。裁定者がe733184で自ら再実行し確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:47.963Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-009に加え、e733184の新E2Eブロックがgate check実経路でopt-out時のgate不生成と他gate正常生成を検証。補強され維持",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:46.992Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-008がoverall_status/ready_for_pr_create/blocking_gates連動をassert。isCriticalUnresolvedGate明示登録をコードで確認。e733184で維持",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:45.800Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-007に加え、S-004実CLIブロックがpassed遷移とzero-clause not_applicable（not a pass明示）を検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:44.644Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-006の正負両例に加え、S-003実CLIブロックがbefore/after遷移（不完全decisionでは閉じず、accepted+reason+artifactでのみpassed）を検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:43.872Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-005のbuilder単体に加え、e733184の新E2Eブロックが実CLI gate check経路でfailed+裁定者理由の伝播を検証。旧裁定の合成的ギャップが直接証拠で埋まった",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:43.117Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-004/008/010に加え、S-001実CLIブロックが欠落clause id列挙（AC-1,AC-2）をgate check実経路で検証。補強され維持",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:42.357Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-003/010が入力検証4系統とHEADバインド（git rev-parse実値照合）・git外record拒否をassert。実CLIの不正verdict拒否もE2Eで検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:41.586Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-002のunit rejectに加え、e733184の新E2Eブロックが実CLI経由の『has no acceptance criteria』明示エラーを検証。補強され維持",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:40.795Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "独立fresh context・反証の立場・verdict3値定義の含有をテストがassertし、実生成requestでも直接観測。e733184で維持確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:39.696Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "ADJ-S-001+ADJ-E2E-001が依頼書実テキストへのclause全文・証拠含有をassert。裁定者がe733184で18/18再実行し維持を確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-1",
+        "session_ref": "agent-task-adde58200ce41ee2f"
+      },
+      "head_commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "recorded_at": "2026-07-13T13:51:38.939Z"
+    }
+  ]
+}

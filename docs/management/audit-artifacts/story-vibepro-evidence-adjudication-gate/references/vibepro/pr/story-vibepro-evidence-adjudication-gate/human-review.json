@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "created_at": "2026-07-13T14:13:15.332Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-evidence-adjudication-gate.md, docs/architecture/vibepro-evidence-adjudication-gate.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-evidence-adjudication-gate.md, docs/specs/story-vibepro-evidence-adjudication-gate.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1,
+        "waiver": 1
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783947495935-4adb3b51",
+        "story_id": "story-vibepro-evidence-adjudication-gate",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "scope_reviewed: 変更8ファイル+docs5+test3は単一reviewerが1passで読める規模（+1200行、うち約半分はdocs/test）。review_owner_map: gate_evidence/pr_split_scope/release_riskの3role subagentレビューをdispatch済み",
+        "reason": "PR全体が1つのgate導入という単一意図で、reviewer1人が一貫判断できる粒度であることをdiff構成（src4+test3+docs6）で確認した。decision_record: 本記録",
+        "reviewer": "sato_keigo_agent",
+        "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-plan.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+          "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-13T12:58:15.925Z"
+        },
+        "recorded_at": "2026-07-13T12:58:15.938Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-13T14:13:12.292Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "57172ba0bfd27710664d2bbf0e8eefbf12285eae",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

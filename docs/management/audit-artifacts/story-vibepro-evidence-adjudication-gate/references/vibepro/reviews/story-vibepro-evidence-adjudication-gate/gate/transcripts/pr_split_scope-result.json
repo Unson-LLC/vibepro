@@ -1,0 +1,1 @@
+{"status":"pass","agent":"claude_code parallel subagent","role":"pr_split_scope","summary":"single coherent story PR; fixture edits forced by default-on gate; size reviewable in one pass","finding":"low: default-on gate is a behavior-changing release; call out in PR body"}

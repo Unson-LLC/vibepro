@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "全懸念解消: unit/integration/typecheck/e2eの4kindが358bc3aへstrict_headバインド（機械可読artifact 986/986 exit0）、story自身のcritical gateは11/11裁定（独立adjudicator provenance・head-bound）で満たされ、fail-open 2経路（null head_commit / null headSha）はfail-closed化+ADJ-S-010カバー",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "gate-evidence-pr-prepare-artifact-stale",
+      "detail": "派生artifactのpr-prepare.jsonがbde2ddc時点のsnapshot。pr prepare再実行で決定的に再生成される（コード・契約の問題ではない）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "git show 358bc3aで対称fail-closed修正を実読、node --test 10/10を自己実行、adjudication.json（11裁定・全358bc3aバインド・clause毎の具体的理由）とverification-evidence.json（4kind strict_head）とnpm-test-358bc3a.json（pass/exit0/986）を検分し、buildEvidenceAdjudicationGate+summarizeAdjudicationForPrを記録済みartifactに対して独立にreplayしてpassed/fresh_verdict_count=11を確認",
+    "evidence": "node replay of buildEvidenceAdjudicationGate at headSha=358bc3a -> passed, fresh=11; node --test test/adjudication.test.js -> 10/10",
+    "inputs": [
+      "git show 358bc3a -- src/adjudication.js test/adjudication.test.js",
+      ".vibepro/adjudication/story-vibepro-evidence-adjudication-gate/adjudication.json",
+      ".vibepro/qa/story-vibepro-evidence-adjudication-gate/npm-test-358bc3a.json"
+    ]
+  },
+  "judgment_delta": [
+    "初回needs_changes（stale evidence・裁定未了・fail-open経路）-> 全解消を自己replayと再実行で検証しpass。残るのは派生pr-prepare.jsonの機械的再生成のみ"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_head_sha": "358bc3a78679adbaaf03234c72b5b66e96a1a2f8",
+    "current_head_sha": "358bc3a78679adbaaf03234c72b5b66e96a1a2f8",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "actual_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "current_head_sha": "358bc3a78679adbaaf03234c72b5b66e96a1a2f8",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T13:38:36.545Z",
+  "git_context": {
+    "head_sha": "358bc3a78679adbaaf03234c72b5b66e96a1a2f8",
+    "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T13:38:36.536Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "358bc3a78679adbaaf03234c72b5b66e96a1a2f8",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "cbcd85e54a2c929afa704d49a2ff7a9560d7d987531ddf475f9987369958180f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-gate_evidence-adj1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/transcripts/gate_evidence-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

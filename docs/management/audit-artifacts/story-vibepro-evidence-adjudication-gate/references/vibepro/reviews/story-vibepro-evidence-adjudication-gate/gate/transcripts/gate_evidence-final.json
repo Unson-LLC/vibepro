@@ -1,0 +1,1 @@
+{"status":"pass","role":"gate_evidence","head":"e733184","summary":"delta（test-only 7ブロック）は実CLI駆動の実行可能アサーションでmarker-only fake bindingではない。4kind証拠strict_head@e733184（993/993 artifact）、11/11裁定head-bound再記録、gate関数replayでpassed/11 fresh。レビュワー自身のE2E実行8/8 pass","findings":[]}

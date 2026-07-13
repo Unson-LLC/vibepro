@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "updated_at": "2026-07-13T12:58:15.938Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783947495935-4adb3b51",
+      "story_id": "story-vibepro-evidence-adjudication-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 変更8ファイル+docs5+test3は単一reviewerが1passで読める規模（+1200行、うち約半分はdocs/test）。review_owner_map: gate_evidence/pr_split_scope/release_riskの3role subagentレビューをdispatch済み",
+      "reason": "PR全体が1つのgate導入という単一意図で、reviewer1人が一貫判断できる粒度であることをdiff構成（src4+test3+docs6）で確認した。decision_record: 本記録",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+        "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T12:58:15.925Z"
+      },
+      "recorded_at": "2026-07-13T12:58:15.938Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783947488205-5f0544c9",
+      "story_id": "story-vibepro-evidence-adjudication-gate",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Story/Architecture/Spec/実装/テスト/README/Design SSOT登録は同一Story（evidence adjudication gate）の一貫した変更であり、分割するとゲート追加とそれを満たすfixture修正の回帰面が分断される",
+      "reason": "1つの必須gate導入はdocs+src+testを同時に変えないとCIが通らない（required gate追加は既存fixtureの更新を強制する）。bundled scopeが最小の一貫単位",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "docs/management/stories/active/story-vibepro-evidence-adjudication-gate.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+        "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T12:58:08.197Z"
+      },
+      "recorded_at": "2026-07-13T12:58:08.208Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783947495935-4adb3b51",
+      "story_id": "story-vibepro-evidence-adjudication-gate",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 変更8ファイル+docs5+test3は単一reviewerが1passで読める規模（+1200行、うち約半分はdocs/test）。review_owner_map: gate_evidence/pr_split_scope/release_riskの3role subagentレビューをdispatch済み",
+      "reason": "PR全体が1つのgate導入という単一意図で、reviewer1人が一貫判断できる粒度であることをdiff構成（src4+test3+docs6）で確認した。decision_record: 本記録",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+        "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-13T12:58:15.925Z"
+      },
+      "recorded_at": "2026-07-13T12:58:15.938Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/decision-records.json"
+}

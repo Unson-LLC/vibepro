@@ -1,0 +1,288 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "stage": "gate",
+  "roles": [
+    "gate_evidence",
+    "pr_split_scope",
+    "release_risk"
+  ],
+  "created_at": "2026-07-13T12:53:59.736Z",
+  "output": {
+    "language": "ja"
+  },
+  "git_context": {
+    "head_sha": "ce5973465a5ee9f5228067a71b7e208ce784e977",
+    "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T12:53:59.715Z"
+  },
+  "evidence_reuse": {
+    "status": "stale",
+    "fresh": false,
+    "first_input": false,
+    "evidence_key": "evk_e5fae62dfdaf57da2fb7468d5032e11f",
+    "verification_summary_fingerprint": "sha256:7f534637804298b3420aed7d1876ace3434505c5c157ffc687f012a2149a4dc9",
+    "current_verification_summary_fingerprint": "sha256:7f534637804298b3420aed7d1876ace3434505c5c157ffc687f012a2149a4dc9",
+    "verification_evidence_updated_at": "2026-07-13T12:48:50.059Z",
+    "current_verification_evidence_updated_at": "2026-07-13T12:48:50.059Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-13T12:48:50.059Z",
+        "git_recorded_at": "2026-07-13T12:48:50.051Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-13T12:48:47.201Z",
+        "git_recorded_at": "2026-07-13T12:48:47.194Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-13T12:29:20.759Z",
+        "git_recorded_at": "2026-07-13T12:29:20.749Z"
+      }
+    ],
+    "current_verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-13T12:48:50.059Z",
+        "git_recorded_at": "2026-07-13T12:48:50.051Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-13T12:48:47.201Z",
+        "git_recorded_at": "2026-07-13T12:48:47.194Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-13T12:29:20.759Z",
+        "git_recorded_at": "2026-07-13T12:29:20.749Z"
+      }
+    ],
+    "artifact_status": "stale",
+    "artifact": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/evidence-reuse.json",
+    "preferred_order": [],
+    "stale_reasons": [
+      {
+        "field": "head_sha",
+        "previous": "fb41c4710d95d1ebc525f4b7243d07d2f58556ec",
+        "current": "bde2ddc6431d2c410375dc273d7e57e56cee995c",
+        "reason": "head_sha changed"
+      },
+      {
+        "field": "spec_fingerprint",
+        "previous": "sha256:0ce350255e82eff78c2e412cb1c2ad5b05d7f4cfc36f694dec91551a17b534b8",
+        "current": "sha256:4f19f4b2a5392d414708bf5c423496f7bccc67761b00dc85d8bb6f0b46ca8857",
+        "reason": "spec_fingerprint changed"
+      },
+      {
+        "field": "verification_summary_fingerprint",
+        "previous": "sha256:09160cdf7e7db7730105ce2485ddc563048b27c19e49ef6acafa59de98f6c2ef",
+        "current": "sha256:7f534637804298b3420aed7d1876ace3434505c5c157ffc687f012a2149a4dc9",
+        "reason": "verification_summary_fingerprint changed"
+      },
+      {
+        "field": "verification_evidence_updated_at",
+        "previous": null,
+        "current": "2026-07-13T12:48:50.059Z",
+        "reason": "verification_evidence_updated_at changed"
+      },
+      {
+        "field": "verification_command_timestamps",
+        "previous": [],
+        "current": [
+          {
+            "kind": "integration",
+            "executed_at": "2026-07-13T12:48:50.059Z",
+            "git_recorded_at": "2026-07-13T12:48:50.051Z"
+          },
+          {
+            "kind": "unit",
+            "executed_at": "2026-07-13T12:48:47.201Z",
+            "git_recorded_at": "2026-07-13T12:48:47.194Z"
+          },
+          {
+            "kind": "typecheck",
+            "executed_at": "2026-07-13T12:29:20.759Z",
+            "git_recorded_at": "2026-07-13T12:29:20.749Z"
+          }
+        ],
+        "reason": "verification_command_timestamps changed"
+      },
+      {
+        "field": "risk_surface_fingerprint",
+        "previous": "sha256:22b1ff11f277fc0b9d8059eb9be464cff3203acde8361a6d31f5ea142a2917b2",
+        "current": "sha256:bafb7e52f6c30fbcbb22ed6139a9c1ac332b06cfea24e34895d6132d0080cccf",
+        "reason": "risk_surface_fingerprint changed"
+      },
+      {
+        "field": "head_sha",
+        "previous": "bde2ddc6431d2c410375dc273d7e57e56cee995c",
+        "current": "ce5973465a5ee9f5228067a71b7e208ce784e977",
+        "reason": "review prepare current HEAD does not match evidence key HEAD"
+      }
+    ],
+    "reason": "Evidence reuse artifact is not fresh for the current review context."
+  },
+  "bounded_artifact_handoff": {
+    "budget_bytes": 16384,
+    "over_budget_count": 4,
+    "items": [
+      {
+        "artifact": "decision-index.json",
+        "bytes": 19580,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/decision-index.summary.json",
+        "full_artifact_path": "decision-index.json",
+        "bounded": true
+      },
+      {
+        "artifact": "design-ssot-reconciliation.json",
+        "bytes": 393833,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/design-ssot-reconciliation.summary.json",
+        "full_artifact_path": "design-ssot-reconciliation.json",
+        "bounded": true
+      },
+      {
+        "artifact": "senior-gap-judgment.json",
+        "bytes": 41661,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/senior-gap-judgment.summary.json",
+        "full_artifact_path": "senior-gap-judgment.json",
+        "bounded": true
+      },
+      {
+        "artifact": "ref-topology.json",
+        "bytes": 52290,
+        "summary_status": "generated",
+        "read_path": ".vibepro/pr/story-vibepro-evidence-adjudication-gate/ref-topology.summary.json",
+        "full_artifact_path": "ref-topology.json",
+        "bounded": true
+      }
+    ]
+  },
+  "review_policy": {
+    "stage": "gate",
+    "roles": [
+      "gate_evidence",
+      "pr_split_scope",
+      "release_risk"
+    ],
+    "defaults": {
+      "timeout_ms": 600000,
+      "model_policy": null
+    },
+    "role_policies": {
+      "gate_evidence": {
+        "mode": "required"
+      },
+      "pr_split_scope": {
+        "mode": "required"
+      },
+      "release_risk": {
+        "mode": "required"
+      }
+    }
+  },
+  "source_fingerprint": "8e965d9688bd5c9e882ab31ab8e11a4c34b556bc3371972a5d3b312a70dc13c2",
+  "instructions": [
+    "coordinator runtimeがsubagent capabilityを提供する場合、listed role reviewを別々のCodex/Claude Code subagentでdispatchする。",
+    "VibeProはreview resultを記録するが、subagent自体は実行しない。",
+    "Agent Review Gateがこのstageを要求する場合、このprepare outputはlisted reviewを取得するためのcoordinator指示である。runtimeがsubagentをspawnできない場合は、silent skipせずblockするかhuman waiver decisionを記録する。",
+    "すべてのrole reviewはmandatory review lensをすべて含める。roleのpassは、role concern、regression_guard、path_surface_coverageが十分に満たされたことだけを意味する。",
+    "coordinatorにsubagent capabilityがある場合は、listed reviewerを直接dispatchし、parallel_subagent provenanceを記録する。",
+    "parallel実行はstage内だけに限定する。このstageの必須roleがすべてcloseされrecordされるまで、別stageのreviewをdispatchしない。",
+    "subagent resultを受け取ったら、review記録前にそのsubagent thread/sessionをcloseまたはshutdownし、--agent-closedでlifecycle closureを記録する。",
+    "各reviewerはstatus pass, needs_changes, blockのいずれかと具体的なfindingを返す。"
+  ],
+  "mandatory_review_lenses": [
+    {
+      "id": "regression_guard",
+      "title": "Regression / デグレ確認",
+      "prompt": "この変更で、今回のStory対象外を含む既存のユーザー導線・API契約・データ状態・運用手順・性能・アクセシビリティ・セキュリティ境界が壊れていないか確認する。",
+      "pass_condition": "既存挙動への影響範囲が説明され、必要な自動テスト・E2E・手動確認・証跡、または非該当理由がある。",
+      "block_condition": "既存挙動の破壊、互換性のないAPI/DB/UI変更、主要導線の未検証、または「通った」根拠がStory対象の新規導線だけに偏っている。"
+    },
+    {
+      "id": "path_surface_coverage",
+      "title": "Path & Surface Coverage / 経路と出力面の網羅",
+      "prompt": "変更対象の全入力経路、派生経路、出力面を列挙し、主要経路だけでなくlegacy/fallback/document/config/API/UI/report/gate artifactなどの別経路に同じ契約が効いているか確認する。抑止・除外・候補化する挙動はsilentにせず、ユーザーが判断できるwarning/candidate/finding/evidenceとして残るか確認する。",
+      "pass_condition": "影響する入力経路と出力面が説明され、各経路に対する実装・証跡・非該当理由がある。テストはpre-fix実装なら失敗する具体的なfixture/assertionを含み、source artifactだけでなくsummary/report/gate/internal synthesisなど利用者が読む面も検証している。",
+      "block_condition": "主要経路だけを直して別経路が未確認、suppressionがsilent、出力artifact間で矛盾、または追加テストがpre-fixを落とせない形になっている。"
+    }
+  ],
+  "agent_skill_discipline": {
+    "contract": "vibepro_agent_skill_contract",
+    "required": true,
+    "common_rationalizations": [
+      "tests_pass_so_review_done",
+      "small_change_no_spec_or_evidence",
+      "manual_review_replaces_required_subagent",
+      "server_logs_prove_user_perceived_behavior",
+      "missing_path_probably_unaffected"
+    ],
+    "red_flags": [
+      "missing_inspection_inputs",
+      "missing_judgment_delta",
+      "happy_path_only",
+      "not_current_head_bound",
+      "evidence_instruction_injection"
+    ]
+  },
+  "parallel_dispatch": {
+    "required": true,
+    "mode": "policy_aware_parallel_reviews",
+    "subagent_count": 3,
+    "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/parallel-dispatch.md",
+    "stage_parallelism": {
+      "scope": "single_stage",
+      "stage": "gate",
+      "rule": "Dispatch only this stage in parallel; wait for all roles to close and record before starting any later stage."
+    },
+    "coordinator_behavior": {
+      "expected": "dispatch_parallel_subagents",
+      "user_confirmation_required_by_vibepro": false,
+      "runner_policy_may_require_user_delegation": false,
+      "subagent_lifecycle": "close_before_record",
+      "closure_required_for_pass": true,
+      "serial_stage_barrier": "complete_stage_before_next_stage",
+      "fallback": "If the runtime cannot spawn subagents, block or record a human waiver decision; manual_review does not satisfy Agent Review Gate."
+    },
+    "record_commands": {
+      "gate_evidence": "vibepro review record . --id story-vibepro-evidence-adjudication-gate --stage gate --role gate_evidence --status <pass|needs_changes|block> --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id \"<subagent-id>\" --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript <artifact> --agent-closed",
+      "pr_split_scope": "vibepro review record . --id story-vibepro-evidence-adjudication-gate --stage gate --role pr_split_scope --status <pass|needs_changes|block> --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id \"<subagent-id>\" --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript <artifact> --agent-closed",
+      "release_risk": "vibepro review record . --id story-vibepro-evidence-adjudication-gate --stage gate --role release_risk --status <pass|needs_changes|block> --summary \"<summary>\" --inspection-summary \"<inspection-summary>\" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta \"<initial judgment -> final judgment because evidence>\" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id \"<subagent-id>\" --agent-model \"<model>\" --agent-reasoning-effort \"<reasoning-effort>\" --agent-cost-tier \"<cost-tier>\" --agent-transcript <artifact> --agent-closed"
+    }
+  },
+  "requests": [
+    {
+      "role": "gate_evidence",
+      "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-gate_evidence.md",
+      "prompt_summary": "証跡のfreshness、command reliability、gate bindingを確認する。",
+      "model_policy": null
+    },
+    {
+      "role": "pr_split_scope",
+      "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-pr_split_scope.md",
+      "prompt_summary": "PR size、split plan、無関係file riskを確認する。",
+      "model_policy": null
+    },
+    {
+      "role": "release_risk",
+      "artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-release_risk.md",
+      "prompt_summary": "rollout、deployment、migration、operation riskを確認する。",
+      "model_policy": null
+    }
+  ]
+}

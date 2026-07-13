@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "単一Storyの一貫PR。fixture更新は必須gate化が機械的に強制するもので分割不可。+1182行/16fileは1passでレビュー可能",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "split-scope-default-on-release-note",
+      "detail": "default-onのgate追加は下流全storyの挙動を変えるためPR本文で明示すべき（分割問題ではない）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "origin/main...HEADの全diffを精査し、全変更ファイルをstoryスコープへマッピング。fixture 3件の更新が新gateの必須化に強制されたものであることを各diffで確認。node --test adjudication.test.js(9 pass)とvibepro-gate-check.test.js(8 pass)をHEADで実行",
+    "evidence": "git diff origin/main...HEAD + node --test実行結果",
+    "inputs": [
+      "git diff origin/main...HEAD --stat (16 files +1182/-2)",
+      "test/vibepro-cli.test.js fixture diff",
+      "node --test test/adjudication.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念: docs+src+testの16file混在は複数意図の可能性 -> 最終: 必須gate導入は中間コミットでCIが壊れるため分割不能な単一意図と確認"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+    "current_head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "actual_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "current_head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T12:58:48.610Z",
+  "git_context": {
+    "head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+    "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T12:58:48.592Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "ea150112c3c8a37f648a8895bb094f59e1cd93b7",
+    "surface_files": [
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "704be40f8c943b0addfe7a5d211f5a1323fa9b37e83a79070d16243f506e37da",
+        "size": 1071625
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "02f118e838848f1799ce80a9b860b8ef39b88eefc915ffe8b9497997a5e59533"
+  },
+  "source_fingerprint": "8c358a861dbfb214ad782957a3606c1f3057317005e3a06dda437aa0a5a190b4",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-pr_split_scope-adj1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/transcripts/pr_split_scope-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-adjudication-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "e733184 deltaはtest-onlyで、追加7ブロックは実CLI駆動の実行可能アサーション（marker-only fake bindingでないことを全文読解+自己実行8/8で確認）。4kind証拠はstrict_headでe733184バインド（993/993 exit0 artifact）、11/11裁定は独立provenanceでe733184再記録、gate関数の独立replayはpassed/11 fresh demonstrated",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "git rev-parse/git show --statでdeltaがtest-onlyであることを確認、追加7ブロックを全文読解し実CLIバイナリ駆動+unit suite子プロセス実実行を確認、E2Eを自己実行（8/8 pass）、verification-evidence.json/npm-test-e733184.json/adjudication.jsonを検分、buildEvidenceAdjudicationGate+summarizeAdjudicationForPrをe733184で独立replayしpassed/fresh=11を確認",
+    "evidence": "node --test e2e at e733184 -> 8/8 pass; gate function replay at headSha=e733184 -> passed, fresh_verdict_count=11",
+    "inputs": [
+      "src/adjudication.js",
+      "src/pr-manager.js",
+      "test/adjudication.test.js",
+      "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
+      ".vibepro/adjudication/story-vibepro-evidence-adjudication-gate/adjudication.json",
+      ".vibepro/qa/story-vibepro-evidence-adjudication-gate/npm-test-e733184.json"
+    ]
+  },
+  "judgment_delta": [
+    "初回needs_changes（stale evidence・裁定未了・fail-open経路）-> 修正検証と証拠・裁定の最終HEAD再バインドを自己replayで確認し、新規E2Eブロックがfakeでないことをdiffと自己実行で検証してpass（findings空）"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "expected_head_sha": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+    "current_head_sha": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-evidence-adjudication/.worktrees/vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "actual_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+      "current_head_sha": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T14:12:23.705Z",
+  "git_context": {
+    "head_sha": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+    "current_branch": "vibepro/story-vibepro-evidence-adjudication-gate-2ywxkd",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T14:12:23.672Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "e733184d956fbdf15ee3a59e8ef6a81c580cf2ce",
+    "surface_files": [
+      {
+        "path": "src/adjudication.js",
+        "sha256": "eacddfd59c793630db3746b21c270ebeee6f519969a4a4f28914bcb30e96fd0d",
+        "size": 14238
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "131eb69c46887b08683e834bb206af87a5fdf766e1b6c225372e71d46776c203",
+        "size": 642002
+      },
+      {
+        "path": "test/adjudication.test.js",
+        "sha256": "daea8ffa6a82df6084740f615fcf013deee4670cd5608bf7ed3c7b42014c1b0c",
+        "size": 12588
+      },
+      {
+        "path": "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
+        "sha256": "a35747ca2a9b1a52dae5348c722879bd999c6e088770ff70c0423cd942bc6e37",
+        "size": 15942
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e7deb6884d0402a8d76ba4b89b0f746c5fec7a0023f1d92e8236d13ee9bdc9be"
+  },
+  "source_fingerprint": "2d151ad76c3355f8d7e75fbcec45b0b0b213ea6ac49144f9ac6a81c8454f9c94",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-gate_evidence-adj2",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/transcripts/gate_evidence-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-evidence-adjudication-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
