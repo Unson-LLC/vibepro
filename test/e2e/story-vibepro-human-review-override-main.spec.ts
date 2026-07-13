@@ -197,6 +197,20 @@ test('story-vibepro-human-review-override HRO-002 ac:2 split recommendation bloc
   assert.match(result.stderr, /Human review split_pr override required before PR creation/);
 });
 
+test('story-vibepro-human-review-override HRO-001 ac:1 unknown recommendation blocks PR creation', async () => {
+  const { repo, prDir } = await makeRuntimeRepo({ broadDiff: true });
+  await writeJson(path.join(prDir, 'human-review.json'), { recommended_decision: 'not-a-decision' });
+  await writeJson(path.join(prDir, 'decision-records.json'), { decisions: [] });
+
+  const result = await runCliCaptured([
+    'pr', 'create', repo, '--story-id', storyId, '--base', 'main', '--max-files', '3',
+    '--dry-run', '--json', '--allow-extra-files'
+  ]);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /Human review block override required before PR creation/);
+});
+
 test('story-vibepro-human-review-override HRO-003 ac:3 ac:4 stale lifecycle blocks, current lifecycle transitions to dry-run merge and records artifacts', async () => {
   const stale = await makeRuntimeRepo();
   await writeJson(path.join(stale.prDir, 'pr-create.json'), {

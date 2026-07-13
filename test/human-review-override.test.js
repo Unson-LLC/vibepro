@@ -204,6 +204,19 @@ test('HRO-S14 merge ignores a stale standalone gate DAG', () => {
   }), 'block');
 });
 
+test('HRO-S15 merge ignores a stale pr-prepare gate DAG', () => {
+  assert.equal(resolveCurrentHumanReviewRecommendation({
+    currentHeadSha: 'head-1',
+    prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
+    prPrepare: {
+      git: { head_sha: 'old-head' },
+      pr_context: { gate_dag: { overall_status: 'ready_for_review' } }
+    },
+    gateDag: null,
+    humanReview: { recommended_decision: 'proceed' }
+  }), 'block');
+});
+
 test('HRO-001 ac:1 parse failure in human-review.json fails closed with a readable JSON error', async () => {
   const { root, storyId } = await makeReview('split_pr');
   await writeFile(

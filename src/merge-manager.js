@@ -508,7 +508,7 @@ export function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCrea
   if (splitPlan?.status === 'split_recommended') return 'split_pr';
   const currentGateDag = prCreate.gate_dag
     ?? (isCurrentPrLifecycleArtifact(gateDag, currentHeadSha) ? gateDag : null)
-    ?? prPrepare?.pr_context?.gate_dag;
+    ?? (isCurrentPrLifecycleArtifact(prPrepare, currentHeadSha) ? prPrepare?.pr_context?.gate_dag : null);
   if (currentGateDag?.overall_status === 'ready_for_review') return 'proceed';
   return 'block';
 }
@@ -944,6 +944,7 @@ function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
   if (!artifact || !currentHeadSha) return false;
   const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
     ?? artifact.current_head_sha
+    ?? artifact.git?.head_sha
     ?? artifact.toolchain?.source_git?.commit
     ?? artifact.git_context?.head_sha
     ?? null;

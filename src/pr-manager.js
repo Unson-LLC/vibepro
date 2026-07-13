@@ -1246,9 +1246,13 @@ export async function createPullRequest(repoRoot, options = {}) {
     getWorkspaceDir(root), 'pr', preparation.story.story_id, 'human-review.json'
   ));
   const preparedRecommendation = recommendHumanDecision(preparation);
-  const expectedHumanRecommendation = ['split_pr', 'block'].includes(currentHumanReview?.recommended_decision)
-    ? currentHumanReview.recommended_decision
-    : preparedRecommendation;
+  const currentRecommendation = currentHumanReview?.recommended_decision;
+  const expectedHumanRecommendation = currentRecommendation
+    && !['proceed', 'split_pr', 'add_evidence', 'waive_with_reason', 'block'].includes(currentRecommendation)
+    ? 'block'
+    : ['split_pr', 'block'].includes(currentRecommendation)
+      ? currentRecommendation
+      : preparedRecommendation;
   const humanReviewOverride = await assertHumanReviewOverride(
     root,
     preparation.story.story_id,
