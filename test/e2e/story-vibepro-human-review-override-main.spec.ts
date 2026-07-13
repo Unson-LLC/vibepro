@@ -8,6 +8,7 @@ import { resolveCurrentHumanReviewRecommendation } from '../../src/merge-manager
 const storyId = 'story-vibepro-human-review-override';
 
 test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 PR readiness exposes a current-HEAD override block', () => {
+  // Given split_pr lacks an accepted current-HEAD reviewer, when PR readiness runs, then creation is blocked.
   const gate = buildHumanReviewOverrideGate({
     required: true,
     recommendation: 'split_pr',
@@ -20,6 +21,7 @@ test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 PR readiness exposes 
 });
 
 test('story-vibepro-human-review-override HRO-S3 ac:2 merge re-evaluates stale lifecycle and blocks visibly', async () => {
+  // Given lifecycle evidence is stale, when merge runs, then it derives block and rejects the missing override.
   const recommendation = resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-2',
     prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
@@ -35,6 +37,7 @@ test('story-vibepro-human-review-override HRO-S3 ac:2 merge re-evaluates stale l
 });
 
 test('story-vibepro-human-review-override HRO-S1 ac:4 proceed preserves the existing route for a current lifecycle', () => {
+  // Given lifecycle evidence is current and clean, when merge evaluates it, then the existing proceed route remains.
   assert.equal(resolveCurrentHumanReviewRecommendation({
     currentHeadSha: 'head-1',
     prCreate: { artifact_freshness: { status: 'current', artifact_head_sha: 'head-1' } },
