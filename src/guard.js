@@ -32,9 +32,16 @@ export async function readGuardConfig(repoRoot) {
   }
   const guard = raw.guard ?? {};
   // Mirrors story-manager resolveStory: explicit current_story_id, else the
-  // first active configured story.
-  const stories = normalizeActiveStories(raw.brainbase?.stories);
-  const selectedStoryId = raw.brainbase?.current_story_id ?? stories[0]?.story_id ?? null;
+  // first active configured story (normalizeActiveStories also supplies the
+  // built-in defaults). When no active story exists at all (e.g. everything
+  // archived), the guard has nothing to evaluate and stays out of the way.
+  let selectedStoryId = null;
+  try {
+    const stories = normalizeActiveStories(raw.brainbase?.stories);
+    selectedStoryId = raw.brainbase?.current_story_id ?? stories[0]?.story_id ?? null;
+  } catch {
+    selectedStoryId = raw.brainbase?.current_story_id ?? null;
+  }
   const extraPatterns = Array.isArray(guard.release_patterns)
     ? guard.release_patterns
       .filter((item) => item && typeof item.pattern === 'string')

@@ -115,7 +115,8 @@ test('GUARD-S-011 readiness evaluation errors fail closed while a missing story 
   const configPath = path.join(noStory, '.vibepro', 'config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
   delete config.brainbase.current_story_id;
-  config.brainbase.stories = [];
+  // 全storyがarchivedの状態 = active storyが存在しない実状態
+  config.brainbase.stories = [{ story_id: STORY_ID, title: 'Guard fixture', ssot: 'local', status: 'archived' }];
   await writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
   const allowed = await checkGuard(noStory, {
     command: 'gh pr create',
