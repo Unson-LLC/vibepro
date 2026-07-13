@@ -8112,6 +8112,26 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
     'codex',
     '--json'
   ]);
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'human-review:split_pr',
+    '--summary',
+    'Proceed with the intentionally broad PR fixture despite the split recommendation.',
+    '--reason',
+    'The fixture must keep source, tests, and PR artifacts together to exercise the complete PR creation contract.',
+    '--reviewer',
+    'codex-integration-reviewer',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   let createStderr = '';
