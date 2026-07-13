@@ -7,7 +7,7 @@ import { resolveCurrentHumanReviewRecommendation } from '../../src/merge-manager
 
 const storyId = 'story-vibepro-human-review-override';
 
-test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 PR readiness exposes a current-HEAD override block', () => {
+test('story-vibepro-human-review-override HRO-S2 ac:1 ac:3 ac:5 PR readiness exposes a current-HEAD override block', () => {
   // Given split_pr lacks an accepted current-HEAD reviewer, when PR readiness runs, then creation is blocked.
   const gate = buildHumanReviewOverrideGate({
     required: true,

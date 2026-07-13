@@ -2,6 +2,15 @@
 title: Human review override spec
 status: active
 parent_design: story-vibepro-human-review-override
+diagrams:
+  - kind: flow
+    mermaid: |
+      flowchart LR
+        R["split_pr or block"] --> D{"Current HEAD accepted decision has reason and reviewer?"}
+        D -->|no| B["Block PR creation and merge"]
+        D -->|yes| A["Allow requested lifecycle operation"]
+        P["proceed"] --> A
+    rationale: PR creation and merge must evaluate the same current-HEAD override transition and fail closed for missing or stale decisions.
 ---
 
 # Human review override spec
