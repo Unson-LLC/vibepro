@@ -220,7 +220,7 @@ function isClauseBindingTarget(value) {
   return true;
 }
 
-function extractAcceptanceCriteria(storyText) {
+export function extractAcceptanceCriteria(storyText) {
   const lines = String(storyText ?? '').split(/\r?\n/);
   const criteria = [];
   let inSection = false;

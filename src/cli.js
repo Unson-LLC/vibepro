@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import { prepareAdjudication, recordAdjudication } from './adjudication.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
 import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
@@ -410,6 +411,8 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro adjudicate prepare [repo] --id <story-id> [--json]
+  vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
@@ -634,6 +637,8 @@ Usage:
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro adjudicate prepare [repo] --id <story-id> [--json]
+  vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
@@ -685,7 +690,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
-  'decision', 'verify', 'review', 'checkpoint', 'gate', 'spec', 'report',
+  'decision', 'verify', 'review', 'adjudicate', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
   'nocodb', 'repo-status', 'workspace'
 ];
@@ -1754,6 +1759,47 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'adjudicate') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'prepare') {
+        const result = await prepareAdjudication(repoRoot, {
+          storyId: getOption(rest, '--id')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : [
+            `Adjudication request generated: ${result.artifact}`,
+            `- story: ${result.story_path}`,
+            `- clauses: ${result.clause_count}`,
+            `- recorded evidence entries: ${result.evidence_count}`,
+            'Dispatch this request to an independent fresh-context subagent (not the implementing agent), then record each clause verdict with `vibepro adjudicate record`.'
+          ].join('\n') + '\n');
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'record') {
+        const result = await recordAdjudication(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          clauseId: getOption(rest, '--clause'),
+          verdict: getOption(rest, '--verdict'),
+          reason: getOption(rest, '--reason'),
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
+          sessionRef: getOption(rest, '--session-ref')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown adjudicate command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

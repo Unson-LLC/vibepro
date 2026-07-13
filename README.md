@@ -198,6 +198,22 @@ npx vibepro verify record /path/to/repo \
   --command "npm test"
 ```
 
+Have an independent fresh-context subagent adjudicate whether the recorded evidence actually demonstrates each acceptance criteria clause (the Evidence Adjudication Gate blocks PR readiness until every clause has a current-head verdict):
+
+```bash
+npx vibepro adjudicate prepare /path/to/repo --id story-internal-beta
+# dispatch .vibepro/adjudication/<story-id>/adjudication-request.md to a fresh subagent, then record each verdict:
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta \
+  --clause AC-1 \
+  --verdict demonstrated \
+  --reason "observed values reach the outcome without inference gaps" \
+  --agent-system claude_code \
+  --agent-id adjudicator-1
+```
+
+Verdicts are `demonstrated`, `not_demonstrated`, or `not_verifiable_by_automation`; the last one is closed by an accepted human decision record (`--source gate:evidence_adjudication:<clause-id>`), not by more automation. Opt out with `evidence_adjudication.enabled: false` in `.vibepro/config.json`.
+
 Run a checkpoint before treating implementation as ready:
 
 ```bash

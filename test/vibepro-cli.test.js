@@ -8129,6 +8129,22 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
     '--json'
   ]);
 
+  for (const [clause, reason] of [
+    ['AC-1', 'PR本文artifactの生成テストが背景セクションの出力を直接観測している'],
+    ['AC-2', 'PR本文artifactの生成テストがADR判断セクションの出力を直接観測している'],
+    ['AC-3', 'PR本文artifactの生成テストが検証候補セクションの出力を直接観測している']
+  ]) {
+    assert.equal((await runCli([
+      'adjudicate', 'record', repo,
+      '--id', 'story-pr-prepare',
+      '--clause', clause,
+      '--verdict', 'demonstrated',
+      '--reason', reason,
+      '--agent-system', 'claude_code',
+      '--agent-id', 'fixture-adjudicator'
+    ])).exitCode, 0);
+  }
+
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   let createStderr = '';
   const createResult = await runCli([
@@ -8336,6 +8352,17 @@ PR本文がファイル数だけではレビュー判断に足りない。
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  for (const clause of ['AC-1', 'AC-2', 'AC-3']) {
+    assert.equal((await runCli([
+      'adjudicate', 'record', repo,
+      '--id', 'story-pr-prepare',
+      '--clause', clause,
+      '--verdict', 'demonstrated',
+      '--reason', 'PR本文artifactの生成テストが該当セクションの出力を現HEADで直接観測している',
+      '--agent-system', 'claude_code',
+      '--agent-id', 'fixture-adjudicator'
+    ])).exitCode, 0);
+  }
   let forcedFallbackStderr = '';
   const forcedFallbackCreateResult = await runCli([
     'pr',
