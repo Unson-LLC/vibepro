@@ -3,6 +3,14 @@ title: Human review override spec
 status: active
 parent_design: story-vibepro-human-review-override
 diagrams:
+  - kind: flow
+    mermaid: |
+      flowchart LR
+        R["split_pr or block"] --> D{"Current HEAD accepted override?"}
+        D -->|missing or stale| B["Block lifecycle operation"]
+        D -->|reason and reviewer present| A["Allow and record override"]
+        P["proceed"] --> A
+    rationale: The PR-create and merge entry points use the same explicit override state transition.
   - kind: threat_model
     mermaid: |
       flowchart LR

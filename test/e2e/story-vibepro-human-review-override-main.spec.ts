@@ -14,6 +14,12 @@ import { resolveCurrentHumanReviewRecommendation } from '../../src/merge-manager
 const storyId = 'story-vibepro-human-review-override';
 const execFileAsync = promisify(execFile);
 
+// story-vibepro-human-review-override ac:1
+// story-vibepro-human-review-override ac:2
+// story-vibepro-human-review-override ac:3
+// story-vibepro-human-review-override ac:4
+// story-vibepro-human-review-override ac:5
+
 async function git(repo: string, args: string[]) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
