@@ -5,6 +5,8 @@ created_at: 2026-06-25
 updated_at: 2026-06-25
 related_stories:
   - story-vibepro-responsibility-authority-registry
+parent_design:
+  - vibepro-responsibility-authority-match-precision
 diagrams:
   - kind: threat_model
     mermaid: |

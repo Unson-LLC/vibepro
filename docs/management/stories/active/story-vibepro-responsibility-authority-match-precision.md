@@ -7,6 +7,8 @@ architecture_docs:
   - docs/architecture/vibepro-responsibility-authority-match-precision.md
 spec_docs:
   - docs/specs/vibepro-responsibility-authority-match-precision.md
+parent_design:
+  - vibepro-responsibility-authority-match-precision
 status: active
 created_at: 2026-07-13
 updated_at: 2026-07-13

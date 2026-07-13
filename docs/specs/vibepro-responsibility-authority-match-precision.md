@@ -5,6 +5,8 @@ created_at: 2026-07-13
 updated_at: 2026-07-13
 related_stories:
   - story-vibepro-responsibility-authority-match-precision
+parent_design:
+  - vibepro-responsibility-authority-match-precision
 ---
 
 # VibePro Responsibility Authority Match Precision Spec

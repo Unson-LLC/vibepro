@@ -4266,7 +4266,79 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-responsibility-authority-match-precision",
+      "title": "VibePro Responsibility Authority Match Precision",
+      "root_doc": "docs/architecture/vibepro-responsibility-authority-match-precision.md",
+      "owner": "VibePro maintainers",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-responsibility-authority-match-precision.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-responsibility-authority-match-precision.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-responsibility-authority-registry.md",
+            "required": true,
+            "relationship": "constrains",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-responsibility-authority-match-precision.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-responsibility-authority-match-precision.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-responsibility-authority-registry.md",
+          "required": true,
+          "relationship": "constrains",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-12T15:04:46.720Z"
+  "updated_at": "2026-07-13T05:13:55.585Z"
 }

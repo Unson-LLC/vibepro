@@ -44,6 +44,24 @@ Registry validatorが許可しているrisk-only entryは維持する。path/sym
 
 Symbol anchorはファイル全体やStory textではなく、merge baseからの変更行だけで評価する。merge baseがない場合はsymbol一致をfail closedとし、現在ファイル内容へfallbackしない。
 
+## Alternatives Considered
+
+- 共有risk surfaceごとのdenylistは、classifierの語彙追加のたびに更新が必要になり、別責務へのfan-outを構造的に防げないため採用しない。
+- risk surface一致を全面的に廃止する案は、path/symbolを持たない既存risk-only registry entryを破壊するため採用しない。
+- responsibility IDを参照する全Contract clauseを常時展開する案は、参照関係と変更surfaceの直接証拠を混同するため採用しない。
+
+## Boundary and Review Ownership
+
+変更境界は `src/responsibility-authority.js` のsurface resolverと、その振る舞いを固定する `test/responsibility-authority.test.js` に限定する。Story、Architecture、Spec、Registry documentationは同じ判断を説明する補助正本であり、実装責任者とgate-evidence reviewerがこの1 PRを一貫してレビューできる粒度とする。classifier、PR manager、既存registry schemaの変更は別判断となるため、このPRには含めない。
+
+## Rollback Plan
+
+回帰が確認された場合は、resolver変更だけをrevertして従来のrisk surface判定へ戻せる。永続schema、外部API、保存済みartifactのmigrationはないため、データ復旧は不要である。revert後はSalesTailor STR-146の誤fan-outが再発するため、その間は該当PRを手動waiveせずblockedとして扱う。
+
+## Accepted Follow-ups
+
+なし。classifier語彙やregistry schemaの見直しは本修正の完了条件ではなく、必要になった時点で別Storyとして扱う。
+
 ## Failure Modes
 
 - direct anchorがない高risk変更は `no_registered_authority` としてfail closedする。
