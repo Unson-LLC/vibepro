@@ -22,6 +22,7 @@ import { scanNetworkContracts } from './network-contract-scanner.js';
 import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { buildTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
+import { buildEvidenceAdjudicationGate, isAdjudicationEnabled, readAdjudicationIfExists, summarizeAdjudicationForPr } from './adjudication.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { runRecipePreflight } from './recipe-preflight.js';
@@ -362,6 +363,30 @@ export async function preparePullRequest(repoRoot, options = {}) {
   prContext.traceability_clause_coverage = summarizeTraceabilityClauseMap(traceabilityMap);
   prContext.gate_dag.nodes.push(buildTraceabilityClauseCoverageGate(prContext.traceability_clause_coverage));
   prContext.gate_dag.summary.traceability_clause_coverage = prContext.traceability_clause_coverage;
+  if (isAdjudicationEnabled(workspace.config)) {
+    const adjudicationAcceptanceCriteria = (traceabilityMap.acceptance_criteria ?? [])
+      .map((clause) => ({ id: clause.id, text: clause.source_text }));
+    const adjudicationRecords = workspace.initialized
+      ? await progress.stage('read_evidence_adjudication', () => readAdjudicationIfExists(root, story.story_id))
+      : null;
+    const adjudicationGate = buildEvidenceAdjudicationGate({
+      storyId: story.story_id,
+      acceptanceCriteria: adjudicationAcceptanceCriteria,
+      adjudication: adjudicationRecords,
+      headSha: reviewGit.head_sha,
+      decisions: prContext.decision_records?.decisions ?? []
+    });
+    prContext.evidence_adjudication = summarizeAdjudicationForPr({
+      acceptanceCriteria: adjudicationAcceptanceCriteria,
+      adjudication: adjudicationRecords,
+      headSha: reviewGit.head_sha
+    });
+    prContext.gate_dag.nodes.push(adjudicationGate);
+    prContext.gate_dag.summary.evidence_adjudication = {
+      status: adjudicationGate.status,
+      ...prContext.evidence_adjudication
+    };
+  }
   prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
     ? 'needs_verification'
     : 'ready_for_review';
@@ -13943,6 +13968,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
+      'evidence_adjudication_gate',
       'verification_gate',
       'requirement_gate',
       'responsibility_authority_gate',
@@ -14056,6 +14082,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:senior_gap_judgment') return 'Senior Gap Judgment Gate requires ideal/current/gap/decision/residual-risk evidence to be explicit; review `.vibepro/pr/<story-id>/senior-gap-judgment.json`.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture; for intended existing behavior, add structured `inherited_behavior: { condition, classification, files }` to the owning Spec clause instead of relying on free-text inherited/existing keywords.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
+      if (gate.id === 'gate:evidence_adjudication') return 'Evidence Adjudication Gate requires an independent fresh-context subagent to judge, per acceptance criteria clause, whether the recorded evidence actually demonstrates the outcome. Run `vibepro adjudicate prepare`, dispatch the request to a fresh subagent, and record every clause verdict with `vibepro adjudicate record`; clauses judged not verifiable by automation need an accepted human decision record.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
       if (gate.id === 'gate:journey_context') return 'Journey Context Gate requires UI changes to be checked against the latest Journey step, affected conflicts, and blocking open questions.';
       if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
@@ -14119,6 +14146,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
+  if (gate.id === 'gate:evidence_adjudication' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:journey_context' && !['passed', 'accepted_followup'].includes(gate.status)) return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
