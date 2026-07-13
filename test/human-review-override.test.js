@@ -177,3 +177,33 @@ test('HRO-S12 merge derives split and gate readiness only for a current PR lifec
     humanReview: null
   }), 'block');
 });
+
+test('HRO-001 ac:1 parse failure in human-review.json fails closed with a readable JSON error', async () => {
+  const { root, storyId } = await makeReview('split_pr');
+  await writeFile(
+    path.join(root, '.vibepro', 'pr', storyId, 'human-review.json'),
+    '{ "recommended_decision": "split_pr"'
+  );
+
+  await assert.rejects(
+    evaluateHumanReviewOverride(root, storyId, 'head-1'),
+    (error) => error instanceof SyntaxError && /JSON|Unexpected end/i.test(error.message)
+  );
+  await assert.rejects(
+    assertHumanReviewOverride(root, storyId, 'head-1', 'PR creation'),
+    (error) => error instanceof SyntaxError && /JSON|Unexpected end/i.test(error.message)
+  );
+});
+
+test('HRO-002 ac:2 parse failure in decision-records.json fails closed before an override can authorize a split', async () => {
+  const { root, storyId } = await makeReview('split_pr');
+  await writeFile(
+    path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json'),
+    '{ "decisions": ['
+  );
+
+  await assert.rejects(
+    assertHumanReviewOverride(root, storyId, 'head-1', 'merge'),
+    (error) => error instanceof SyntaxError && /JSON|Unexpected end/i.test(error.message)
+  );
+});
