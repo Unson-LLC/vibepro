@@ -40,7 +40,7 @@ export function cleanup(task) {
   assert.equal(result.status, 'needs_evidence');
   assert.equal(result.summary.matched_responsibility_count, 1);
   assert.equal(result.matched_responsibilities[0].id, 'generation.cleanup.cancellation_policy');
-  assert.deepEqual(result.matched_responsibilities[0].matched_by.sort(), ['domain_contract', 'path', 'risk_surface', 'symbol'].sort());
+  assert.deepEqual(result.matched_responsibilities[0].matched_by.sort(), ['domain_contract', 'path', 'risk_surface'].sort());
   assert.equal(result.matched_responsibilities[0].contract_clauses[0].ref, 'docs/contracts/generation-state.json#GEN-STATE-001');
   assert.deepEqual(result.matched_responsibilities[0].missing_evidence.sort(), ['cleanup_recovery_replay', 'current_head_verification', 'unit_regression'].sort());
 
@@ -464,6 +464,264 @@ test('root registry resolves VibePro core responsibility authorities with contra
   }
 });
 
+test('resolver does not fan out a shared risk surface across path-anchored responsibilities', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [
+      responsibilityEntry('generation.retry', ['src/retry-worker.js'], ['queue_worker']),
+      responsibilityEntry('billing.worker', ['src/billing-worker.js'], ['queue_worker'])
+    ]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry-worker.js'), 'export function retry() { return true; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry-worker.js'] },
+    fileGroups: { source: { files: ['src/retry-worker.js'] } },
+    changeClassification: { risk_surfaces: ['queue_worker'] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['generation.retry']);
+  assert.deepEqual(result.matched_responsibilities[0].matched_by.sort(), ['path', 'risk_surface']);
+});
+
+test('resolver preserves standalone risk matching for an explicitly risk-only responsibility', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [responsibilityEntry('operations.queue', [], ['queue_worker'])]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry-worker.js'), 'export const value = true;\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry-worker.js'] },
+    fileGroups: { source: { files: ['src/retry-worker.js'] } },
+    changeClassification: { risk_surfaces: ['queue_worker'] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['operations.queue']);
+  assert.deepEqual(result.matched_responsibilities[0].matched_by, ['risk_surface']);
+  assert.equal(result.summary.unregistered_candidate_count, 0);
+  assert.equal(result.status, 'needs_evidence');
+});
+
+test('resolver lets a contract clause path supplement a non-matching registry path', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'docs', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [responsibilityEntry('generation.retry', ['src/legacy-retry.js'], ['queue_worker'], 'docs/contracts/retry.json#RETRY-001')]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'docs', 'contracts', 'retry.json'), `${JSON.stringify({
+    domain: 'generation',
+    clauses: [{
+      id: 'RETRY-001',
+      statement: 'retry scheduling remains bounded',
+      applies_to: { responsibility: 'generation.retry', paths: ['src/retry-scheduler.js'], risk_surfaces: ['queue_worker'] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry-scheduler.js'), 'export function scheduleRetry() { return true; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry-scheduler.js'] },
+    fileGroups: { source: { files: ['src/retry-scheduler.js'] } },
+    changeClassification: { risk_surfaces: ['queue_worker'] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['generation.retry']);
+  assert.deepEqual(result.matched_responsibilities[0].matched_by, ['domain_contract']);
+  assert.equal(result.matched_responsibilities[0].contract_clauses[0].id, 'RETRY-001');
+});
+
+test('resolver matches symbols only in changed production lines', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export function scheduleRetry() { return 1; }\nexport const unchanged = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'Add retry fixture']);
+  const { stdout: baseSha } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export function scheduleRetry() { return 1; }\nexport const unchanged = false;\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry.js'], merge_base_sha: baseSha.trim() },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.equal(result.summary.matched_responsibility_count, 0);
+});
+
+test('resolver matches a symbol added on a changed production line', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export const unchanged = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'Add retry fixture']);
+  const { stdout: baseSha } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export const unchanged = true;\nexport function scheduleRetry() { return 1; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry.js'], merge_base_sha: baseSha.trim() },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['generation.retry']);
+  assert.deepEqual(result.matched_responsibilities[0].matched_by, ['symbol']);
+});
+
+test('resolver fails closed for symbol matching when the production diff cannot be read', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export function scheduleRetry() { return 1; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry.js'], merge_base_sha: 'not-a-valid-revision' },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.equal(result.summary.matched_responsibility_count, 0);
+});
+
+test('resolver fails closed for symbol matching when no diff base is provided', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export function scheduleRetry() { return 1; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/retry.js'] },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.equal(result.summary.matched_responsibility_count, 0);
+});
+
+test('resolver compares an explicit head even when another branch is checked out', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export const unchanged = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'Add base fixture']);
+  const { stdout: baseSha } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  await git(repo, ['switch', '-c', 'target-head']);
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export const unchanged = true;\nexport function scheduleRetry() { return 1; }\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'Add retry symbol']);
+  const { stdout: headSha } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  await git(repo, ['switch', 'main']);
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: {
+      changed_files: ['src/retry.js'],
+      merge_base_sha: baseSha.trim(),
+      head_sha: headSha.trim(),
+      includes_dirty_in_changed_files: false
+    },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['generation.retry']);
+});
+
+test('resolver matches a symbol in an untracked production file', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'Add registry fixture']);
+  const { stdout: baseSha } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  await writeFile(path.join(repo, 'src', 'retry.js'), 'export function scheduleRetry() { return 1; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: {
+      changed_files: ['src/retry.js'],
+      merge_base_sha: baseSha.trim(),
+      includes_dirty_in_changed_files: true
+    },
+    fileGroups: { source: { files: ['src/retry.js'] } },
+    changeClassification: { risk_surfaces: [] }
+  });
+
+  assert.deepEqual(result.matched_responsibilities.map((item) => item.id), ['generation.retry']);
+});
+
+test('resolver ignores registered symbols that appear only in test files or story text', async () => {
+  const repo = await makeFixtureRepo();
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [{
+      ...responsibilityEntry('generation.retry', [], []),
+      owned_surfaces: { paths: [], symbols: ['scheduleRetry'], risk_surfaces: [] }
+    }]
+  }, null, 2)}\n`);
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'retry.test.js'), 'assert.equal(scheduleRetry(), true);\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['test/retry.test.js'] },
+    fileGroups: { tests: { files: ['test/retry.test.js'] } },
+    changeClassification: { risk_surfaces: [] },
+    storySource: { content: 'scheduleRetry must remain covered', acceptance_criteria: [] }
+  });
+
+  assert.equal(result.summary.matched_responsibility_count, 0);
+});
+
+test('resolver does not match a contract from responsibility reference alone', async () => {
+  const repo = await makeFixtureRepo();
+  await mkdir(path.join(repo, 'docs', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    responsibilities: [responsibilityEntry('generation.retry', ['src/retry-worker.js'], ['queue_worker'], 'docs/contracts/retry.json#RETRY-001')]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'docs', 'contracts', 'retry.json'), `${JSON.stringify({
+    domain: 'generation',
+    clauses: [{
+      id: 'RETRY-001',
+      statement: 'retry scheduling remains bounded',
+      applies_to: { responsibility: 'generation.retry', paths: ['src/retry-worker.js'], risk_surfaces: ['queue_worker'] }
+    }]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'src', 'other-worker.js'), 'export function work() { return true; }\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/other-worker.js'] },
+    fileGroups: { source: { files: ['src/other-worker.js'] } },
+    changeClassification: { risk_surfaces: ['queue_worker'] }
+  });
+
+  assert.equal(result.summary.matched_responsibility_count, 0);
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.unregistered_candidates[0].id, 'no_registered_authority');
+});
+
 test('pr prepare projects responsibility authority into Gate DAG before Requirement Gate', async () => {
   const repo = await makeFixtureRepo();
   await writeStoryDocs(repo);
@@ -502,6 +760,20 @@ export function cleanup(task) {
 async function writeReviewedWorkspaceStatus(repo) {
   const source = await readFile(path.join(REPO_ROOT, 'src', 'workspace-status.js'), 'utf8');
   await writeFile(path.join(repo, 'src', 'workspace-status.js'), source);
+}
+
+function responsibilityEntry(id, paths, riskSurfaces, authorityRef = 'docs/specs/responsibility.md') {
+  return {
+    id,
+    primary_authority: authorityRef,
+    owned_surfaces: {
+      paths,
+      symbols: [],
+      risk_surfaces: riskSurfaces
+    },
+    required_evidence: ['unit_regression'],
+    unknown_policy: 'block_or_review'
+  };
 }
 
 async function makeFixtureRepo() {

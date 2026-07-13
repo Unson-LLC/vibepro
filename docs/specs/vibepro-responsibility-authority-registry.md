@@ -30,7 +30,7 @@ diagrams:
 - `RAR-INV-003`: Domain Contract clauses MUST be machine-readable and stable enough to be referenced by Gate DAG nodes, PR body, traceability, and tests.
 - `RAR-INV-004`: Current-head evidence is required for matched blocking contracts. Evidence from old branches, stale artifacts, or generic test passes MUST NOT satisfy a contract clause.
 - `RAR-INV-005`: Story-local Spec may add or refine behavior, but it MUST NOT override an existing Domain Contract without an explicit Architecture/decision update.
-- `RAR-INV-006`: Missing Graphify context MUST NOT block by itself; path/symbol/risk-surface matching still produces best-effort authority resolution.
+- `RAR-INV-006`: Missing Graphify context MUST NOT block by itself; path/symbol matching and explicitly risk-only registrations still produce best-effort authority resolution. A responsibility that declares path or symbol anchors MUST NOT match from a shared risk surface alone.
 
 ## Contracts
 

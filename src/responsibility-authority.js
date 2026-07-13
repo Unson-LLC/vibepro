@@ -1,6 +1,10 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { execFile } from 'node:child_process';
 import path from 'node:path';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 export const DEFAULT_RESPONSIBILITY_REGISTRY_FILES = [
   'responsibility-authority.json',
@@ -74,6 +78,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const contractClauses = contractFiles.flatMap((file) => normalizeContractClauses(file));
   const changedPaths = collectChangedPaths(options);
   const changedSourceText = await readChangedSourceText(root, changedPaths);
+  const changedProductionSource = await readChangedProductionSource(root, changedPaths, options.git);
   const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths, changedSourceText);
   const workspaceStatusSourceText = changedPaths.includes('src/workspace-status.js')
     ? await readChangedSourceText(root, ['src/workspace-status.js'])
@@ -94,6 +99,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
       changedPaths,
       riskSurfaces,
       matchText,
+      changedProductionSourceText: changedProductionSource.all,
       contractClauses,
       readOnlyAuditReportingChange,
       verificationEvidence: options.verificationEvidence
@@ -106,6 +112,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
     matchText,
     responsibilities,
     contractClauses,
+    changedProductionSourceTextByPath: changedProductionSource.byPath,
     unregisteredExemptPaths
   });
   const status = resolveAuthorityStatus(matchedResponsibilities, unregisteredCandidates);
@@ -393,30 +400,28 @@ function normalizeOwnedSurfaces(value) {
 }
 
 function matchResponsibility(responsibility, context) {
-  const matchedBy = [];
   const surfacePaths = responsibility.owned_surfaces.paths ?? [];
   const surfaceSymbols = responsibility.owned_surfaces.symbols ?? [];
   const surfaceRiskSurfaces = [
     ...(responsibility.owned_surfaces.risk_surfaces ?? []),
     ...(responsibility.risk_surfaces ?? [])
   ];
-  if (surfacePaths.some((pattern) => context.changedPaths.some((changedPath) => pathPatternMatches(pattern, changedPath)))) {
-    matchedBy.push('path');
-  }
-  if (surfaceSymbols.some((symbol) => context.matchText.includes(String(symbol).toLowerCase()))) {
-    matchedBy.push('symbol');
-  }
-  if (surfaceRiskSurfaces.some((surface) => context.riskSurfaces.includes(surface))) {
-    matchedBy.push('risk_surface');
-  }
+  const responsibilitySurfaceMatch = matchOwnedSurface({
+    paths: surfacePaths,
+    symbols: surfaceSymbols,
+    riskSurfaces: surfaceRiskSurfaces
+  }, context);
+  const matchedBy = [...responsibilitySurfaceMatch.matchedBy];
   const contractClauses = collectContractClausesForResponsibility(responsibility, context)
     .filter((clause) => {
-      const directSurfaceMatch = clause.paths.some((pattern) => context.changedPaths.some((changedPath) => pathPatternMatches(pattern, changedPath)))
-        || clause.symbols.some((symbol) => context.matchText.includes(String(symbol).toLowerCase()))
-        || clause.risk_surfaces.some((surface) => context.riskSurfaces.includes(surface));
-      if (context.readOnlyAuditReportingChange) return directSurfaceMatch;
-      if (clause.responsibilities.includes(responsibility.id)) return true;
-      return directSurfaceMatch;
+      const clauseSurfaceMatch = matchOwnedSurface({
+        paths: clause.paths,
+        symbols: clause.symbols,
+        riskSurfaces: clause.risk_surfaces
+      }, context);
+      if (clauseSurfaceMatch.matched) return true;
+      if (context.readOnlyAuditReportingChange) return false;
+      return responsibilitySurfaceMatch.matched && clause.responsibilities.includes(responsibility.id);
     });
   if (contractClauses.length > 0) matchedBy.push('domain_contract');
   if (matchedBy.length === 0) return null;
@@ -483,6 +488,26 @@ function matchResponsibility(responsibility, context) {
     stale_evidence: evidenceResolution.stale,
     matched_evidence: evidenceResolution.matched,
     validation_errors: []
+  };
+}
+
+function matchOwnedSurface({ paths, symbols, riskSurfaces }, context) {
+  const pathMatched = paths.some((pattern) => (
+    context.changedPaths.some((changedPath) => pathPatternMatches(pattern, changedPath))
+  ));
+  const symbolMatched = symbols.some((symbol) => (
+    context.changedProductionSourceText.includes(String(symbol).toLowerCase())
+  ));
+  const hasIdentityAnchor = paths.length > 0 || symbols.length > 0;
+  const riskMatched = riskSurfaces.some((surface) => context.riskSurfaces.includes(surface))
+    && (!hasIdentityAnchor || pathMatched || symbolMatched);
+  return {
+    matched: pathMatched || symbolMatched || riskMatched,
+    matchedBy: [
+      pathMatched ? 'path' : null,
+      symbolMatched ? 'symbol' : null,
+      riskMatched ? 'risk_surface' : null
+    ].filter(Boolean)
   };
 }
 
@@ -614,30 +639,56 @@ function collectUnregisteredCandidates({
   matchText,
   responsibilities,
   contractClauses,
+  changedProductionSourceTextByPath = new Map(),
   unregisteredExemptPaths = []
 }) {
   const riskySurfaces = riskSurfaces.filter((surface) => HIGH_RISK_SURFACES.has(surface));
+  const uncoveredRiskSurfaces = riskySurfaces.filter((surface) => (
+    !hasValidRiskOnlyAuthority(surface, responsibilities)
+  ));
   const riskyPaths = changedPaths
     .filter((changedPath) => isProductionSourcePath(changedPath))
     .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
     .filter((changedPath) => HIGH_RISK_PATTERNS.some((pattern) => pattern.test(changedPath)));
-  const candidatePaths = riskyPaths.length > 0
-    ? riskyPaths
-    : riskySurfaces.length > 0
+  const uncoveredRiskyPaths = riskySurfaces.length > 0 && uncoveredRiskSurfaces.length === 0
+    ? []
+    : riskyPaths;
+  const candidatePaths = uncoveredRiskyPaths.length > 0
+    ? uncoveredRiskyPaths
+    : uncoveredRiskSurfaces.length > 0
       ? changedPaths
         .filter((changedPath) => isProductionSourcePath(changedPath))
         .filter((changedPath) => !unregisteredExemptPaths.includes(changedPath))
       : [];
-  const uncoveredPaths = candidatePaths.filter((changedPath) => !pathHasValidRegisteredAuthority(changedPath, responsibilities, contractClauses));
+  const uncoveredPaths = candidatePaths.filter((changedPath) => !pathHasValidRegisteredAuthority(
+    changedPath,
+    changedProductionSourceTextByPath.get(changedPath) ?? '',
+    responsibilities,
+    contractClauses
+  ));
   const textRisk = HIGH_RISK_PATTERNS.some((pattern) => pattern.test(matchText));
-  if (uncoveredPaths.length === 0 && (riskySurfaces.length === 0 || changedPaths.length > 0) && !(textRisk && changedPaths.length === 0)) return [];
+  if (uncoveredPaths.length === 0 && (uncoveredRiskSurfaces.length === 0 || changedPaths.length > 0) && !(textRisk && changedPaths.length === 0)) return [];
   return [{
     id: 'no_registered_authority',
     status: 'needs_review',
     reason: 'Changed surface looks like a cross-story state, worker, permission, billing, or side-effect responsibility but no registry entry matched it.',
     paths: uncoveredPaths,
-    risk_surfaces: riskySurfaces
+    risk_surfaces: uncoveredRiskSurfaces
   }];
+}
+
+function hasValidRiskOnlyAuthority(riskSurface, responsibilities) {
+  return responsibilities
+    .filter((responsibility) => (responsibility.validation_errors ?? []).length === 0)
+    .some((responsibility) => {
+      const paths = responsibility.owned_surfaces?.paths ?? [];
+      const symbols = responsibility.owned_surfaces?.symbols ?? [];
+      const riskSurfaces = [
+        ...(responsibility.owned_surfaces?.risk_surfaces ?? []),
+        ...(responsibility.risk_surfaces ?? [])
+      ];
+      return paths.length === 0 && symbols.length === 0 && riskSurfaces.includes(riskSurface);
+    });
 }
 
 function resolveAuthorityStatus(matchedResponsibilities, unregisteredCandidates) {
@@ -673,16 +724,20 @@ function buildResponsibilityAuthorityGateReason(authority) {
   return `Responsibility Authority status: ${authority.status}`;
 }
 
-function pathHasValidRegisteredAuthority(changedPath, responsibilities, contractClauses) {
+function pathHasValidRegisteredAuthority(changedPath, changedSourceText, responsibilities, contractClauses) {
   return responsibilities
     .filter((responsibility) => (responsibility.validation_errors ?? []).length === 0)
-    .some((responsibility) => responsibilityOwnsPath(responsibility, changedPath, contractClauses));
+    .some((responsibility) => responsibilityOwnsPath(responsibility, changedPath, changedSourceText, contractClauses));
 }
 
-function responsibilityOwnsPath(responsibility, changedPath, contractClauses) {
+function responsibilityOwnsPath(responsibility, changedPath, changedSourceText, contractClauses) {
   if ((responsibility.owned_surfaces?.paths ?? []).some((pattern) => pathPatternMatches(pattern, changedPath))) return true;
+  if ((responsibility.owned_surfaces?.symbols ?? []).some((symbol) => changedSourceText.includes(String(symbol).toLowerCase()))) return true;
   return collectContractClausesForResponsibility(responsibility, { contractClauses })
-    .some((clause) => clause.paths.some((pattern) => pathPatternMatches(pattern, changedPath)));
+    .some((clause) => (
+      clause.paths.some((pattern) => pathPatternMatches(pattern, changedPath))
+      || clause.symbols.some((symbol) => changedSourceText.includes(String(symbol).toLowerCase()))
+    ));
 }
 
 function isProductionSourcePath(changedPath) {
@@ -716,6 +771,64 @@ async function readChangedSourceText(root, changedPaths) {
     }
   }
   return chunks.join('\n');
+}
+
+async function readChangedProductionSource(root, changedPaths, gitContext = {}) {
+  const productionPaths = changedPaths.filter(isProductionSourcePath).slice(0, 20);
+  const byPath = new Map();
+  if (productionPaths.length === 0) return { all: '', byPath };
+  const baseSha = gitContext?.merge_base_sha ?? gitContext?.base_sha ?? null;
+  if (!baseSha) return { all: '', byPath };
+  const includeDirty = gitContext?.includes_dirty_in_changed_files !== false;
+  const headSha = includeDirty ? null : gitContext?.head_sha ?? null;
+  for (const relativePath of productionPaths) {
+    try {
+      const diffArgs = ['diff', '--unified=0', '--no-ext-diff', String(baseSha)];
+      if (headSha) diffArgs.push(String(headSha));
+      diffArgs.push('--', relativePath);
+      const { stdout } = await execFileAsync('git', diffArgs, {
+        cwd: root,
+        maxBuffer: 2 * 1024 * 1024
+      });
+      let changedText = extractChangedLineText(stdout);
+      if (!changedText && includeDirty && await isUntrackedPath(root, relativePath)) {
+        changedText = await readSourceFile(root, relativePath);
+      }
+      if (changedText) byPath.set(relativePath, changedText.toLowerCase());
+    } catch {
+      // Symbol authority fails closed when the requested diff cannot be read.
+    }
+  }
+  return {
+    all: [...byPath.values()].join('\n'),
+    byPath
+  };
+}
+
+function extractChangedLineText(diffText) {
+  return diffText
+      .split('\n')
+      .filter((line) => (/^[+-]/.test(line) && !/^(---|\+\+\+)/.test(line)))
+      .map((line) => line.slice(1))
+      .join('\n');
+}
+
+async function isUntrackedPath(root, relativePath) {
+  try {
+    await execFileAsync('git', ['ls-files', '--error-unmatch', '--', relativePath], { cwd: root });
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+async function readSourceFile(root, relativePath) {
+  try {
+    return await readFile(path.join(root, relativePath), 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return '';
+    throw error;
+  }
 }
 
 function collectRiskSurfaces(changeClassification) {
