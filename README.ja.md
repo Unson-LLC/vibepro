@@ -191,6 +191,22 @@ npx vibepro verify record /path/to/repo \
   --command "npm test"
 ```
 
+記録した証拠が各受け入れ基準の成果を本当に実証しているかを、実装エージェントとは独立した fresh context の subagent に裁定させます（Evidence Adjudication Gate は全 clause が current-head の裁定を持つまで PR readiness をブロックします）。
+
+```bash
+npx vibepro adjudicate prepare /path/to/repo --id story-internal-beta
+# .vibepro/adjudication/<story-id>/adjudication-request.md を fresh subagent へ渡し、clauseごとに裁定を記録します:
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta \
+  --clause AC-1 \
+  --verdict demonstrated \
+  --reason "観測値から成果まで推論の飛躍なく到達できる" \
+  --agent-system claude_code \
+  --agent-id adjudicator-1
+```
+
+verdict は `demonstrated` / `not_demonstrated` / `not_verifiable_by_automation` の3値です。最後の1つは自動化の追加ではなく、accepted な decision record（`--source gate:evidence_adjudication:<clause-id>`）で閉じます。`.vibepro/config.json` の `evidence_adjudication.enabled: false` でオプトアウトできます。
+
 実装完了扱いにする前に checkpoint を通します。
 
 ```bash
