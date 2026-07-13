@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { buildEvidenceReuse, buildEvidenceReuseGate } from '../src/evidence-reuse.js';
 import { runCli } from '../src/cli.js';
 import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
+import { buildArtifactValueLedger } from '../src/evidence-reuse.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-evidence-reuse';
@@ -73,6 +74,14 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(firstReuse.full_evidence.status, 'generated');
   assert.equal(firstReuse.artifact_value_ledger.status, 'present');
   assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 4);
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_changed_count, 0);
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_change_unconfirmed_count, 4);
+  assert.equal(firstReuse.artifact_value_ledger.summary.unused_artifact_count, 0);
+  for (const entry of firstReuse.artifact_value_ledger.entries) {
+    assert.match(entry.decision_id, /^story-evidence-reuse:/);
+    assert.match(entry.consumer_gate, /^gate:/);
+    assert.equal(entry.decision_changed, null);
+  }
   assert.equal(firstReuse.artifact_value_ledger.session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
@@ -108,6 +117,9 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_ledger_status, 'present');
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 4);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_changed_count, 0);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_change_unconfirmed_count, 4);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_unused_artifact_count, 0);
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_linked_consumer_count, 4);
   assert.equal(report.evidence_reuse.by_story[0].session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(report.evidence_reuse.by_story[0].full_evidence_generation_count_scope, 'same_evidence_key');
@@ -115,9 +127,41 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(report.evidence_reuse.by_story[0].cumulative_full_evidence_generation_count, 1);
   assert.match(renderUsageReport(report), /Evidence Reuse/);
   assert.match(renderUsageReport(report), /artifact_value=present/);
+  assert.match(renderUsageReport(report), /decision_unconfirmed=4/);
   assert.match(renderUsageReport(report), /session_attribution=not_collected_in_pr_prepare/);
   assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
   assert.match(renderUsageReport(report), /cumulative_full_generation_count=1/);
+});
+
+test('EDL-S2 confirmed no-change evidence is counted as unused rather than unconfirmed', () => {
+  const ledger = buildArtifactValueLedger({
+    storyId: STORY_ID,
+    summaryArtifacts: { evidence_reuse: '.vibepro/pr/story/evidence-reuse.json' },
+    decisionUsage: { evidence_reuse: { decision_changed: false } }
+  });
+
+  assert.equal(ledger.summary.decision_change_unconfirmed_count, 0);
+  assert.equal(ledger.summary.unused_artifact_count, 1);
+  assert.equal(ledger.entries[0].consumer_gate, 'gate:review_prepare');
+});
+
+test('EDL-S2 pr prepare persists confirmed unused evidence and usage report exposes it', async () => {
+  const repo = await setupReuseRepo();
+  const usage = JSON.stringify({ evidence_reuse: { decision_changed: false } });
+  const result = await runCli([
+    'pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main',
+    '--evidence-decision-usage', usage, '--json'
+  ]);
+  assert.equal(result.exitCode, 0);
+
+  const reuse = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(reuse.artifact_value_ledger.summary.unused_artifact_count, 1);
+  assert.equal(reuse.artifact_value_ledger.summary.decision_change_unconfirmed_count, 3);
+  assert.equal(reuse.artifact_value_ledger.entries[0].decision_changed, false);
+
+  const report = await createUsageReport(repo, { language: 'ja' });
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_unused_artifact_count, 1);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_change_unconfirmed_count, 3);
 });
 
 test('ERM-CONTRACT-001 ERM-CONTRACT-002 head changes mark previous summary/index stale without changing same-key count semantics', async () => {

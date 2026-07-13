@@ -36,6 +36,7 @@ export function buildEvidenceReuse({
   verificationEvidence = null,
   previousReuse = null,
   artifacts = {},
+  decisionUsage = null,
   usedAsFresh = false,
   createdAt = new Date().toISOString()
 } = {}) {
@@ -76,6 +77,7 @@ export function buildEvidenceReuse({
     summaryArtifacts,
     fullEvidence,
     sessionAttribution,
+    decisionUsage,
     createdAt
   });
   const freshness = buildFreshnessStatus(comparison, { usedAsFresh });
@@ -155,6 +157,7 @@ export function buildArtifactValueLedger({
   summaryArtifacts = null,
   fullEvidence = null,
   sessionAttribution = null,
+  decisionUsage = null,
   createdAt = new Date().toISOString()
 } = {}) {
   const artifacts = [
@@ -198,9 +201,12 @@ export function buildArtifactValueLedger({
   const entries = artifacts.map((entry) => ({
     artifact: entry.path,
     artifact_key: entry.key,
+    decision_id: `${storyId ?? 'unknown-story'}:${entry.key}`,
     value_class: entry.value_class,
     consumer: entry.consumer,
+    consumer_gate: `gate:${entry.consumer}`,
     decision_supported: entry.decision_supported,
+    decision_changed: decisionUsage?.[entry.key]?.decision_changed ?? null,
     head_sha: git?.head_sha ?? null,
     base_sha: git?.base_sha ?? null,
     evidence_key: evidenceKey,
@@ -234,6 +240,9 @@ export function buildArtifactValueLedger({
     summary: {
       artifact_count: entries.length,
       decision_bound_count: entries.filter((entry) => entry.semantic_value_status === 'decision_bound').length,
+      decision_changed_count: entries.filter((entry) => entry.decision_changed === true).length,
+      decision_change_unconfirmed_count: entries.filter((entry) => entry.decision_changed == null).length,
+      unused_artifact_count: entries.filter((entry) => entry.decision_changed === false).length,
       linked_consumer_count: new Set(entries.map((entry) => entry.consumer).filter(Boolean)).size,
       total_token_estimate: entries.reduce((sum, entry) => sum + (entry.token_estimate ?? 0), 0)
     }
@@ -550,6 +559,9 @@ function summarizeArtifactValueLedger(ledger) {
     head_binding_status: ledger.head_binding?.status ?? null,
     artifact_count: ledger.summary?.artifact_count ?? ledger.entries?.length ?? 0,
     decision_bound_count: ledger.summary?.decision_bound_count ?? null,
+    decision_changed_count: ledger.summary?.decision_changed_count ?? null,
+    decision_change_unconfirmed_count: ledger.summary?.decision_change_unconfirmed_count ?? null,
+    unused_artifact_count: ledger.summary?.unused_artifact_count ?? null,
     linked_consumer_count: ledger.summary?.linked_consumer_count ?? null,
     session_attribution_status: ledger.session_attribution_status ?? null,
     session_attribution_confidence: ledger.session_attribution_confidence ?? null,

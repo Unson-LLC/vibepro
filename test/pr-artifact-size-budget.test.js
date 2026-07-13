@@ -126,6 +126,32 @@ test('PAB-S-2 within-budget artifact produces no summary', () => {
   assert.equal(handoff.path, '.vibepro/pr/story/decision-index.json');
 });
 
+test('EDL-S3 bounded senior-gap summary preserves decision-use counts', () => {
+  const parsed = {
+    status: 'needs_review',
+    cost_context: {
+      artifact_value_ledger: {
+        decision_changed_count: 2,
+        decision_change_unconfirmed_count: 3,
+        unused_artifact_count: 1
+      }
+    },
+    padding: 'x'.repeat(12000)
+  };
+  const content = `${JSON.stringify(parsed, null, 2)}\n`;
+  const summary = JSON.parse(buildArtifactSummaryContent({
+    filename: 'senior-gap-judgment.json',
+    content,
+    bytes: Buffer.byteLength(content, 'utf8'),
+    budgetBytes: 512
+  }));
+  assert.deepEqual(summary.conclusion.top_level_counts, {
+    decision_changed_count: 2,
+    decision_change_unconfirmed_count: 3,
+    unused_artifact_count: 1
+  });
+});
+
 test('PAB-CONTRACT-005 unparseable over-budget artifact degrades to failed with no summary', () => {
   const content = `not json ${'x'.repeat(2000)}`;
   const plan = planArtifactBudget({

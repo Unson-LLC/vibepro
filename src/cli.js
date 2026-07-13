@@ -448,7 +448,7 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
@@ -2420,6 +2420,10 @@ export async function runCli(argv, io = {}) {
           ?? (implicitSummaryEvidenceDepth ? 'limited pr prepare view requested' : null);
         const evidenceDepthConsumer = getOption(rest, '--evidence-depth-consumer')
           ?? (implicitSummaryEvidenceDepth ? 'limited_pr_prepare_view' : null);
+        const evidenceDecisionUsageRaw = getOption(rest, '--evidence-decision-usage');
+        const evidenceDecisionUsage = evidenceDecisionUsageRaw == null
+          ? null
+          : JSON.parse(evidenceDecisionUsageRaw);
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
@@ -2436,6 +2440,7 @@ export async function runCli(argv, io = {}) {
           evidenceDepth,
           evidenceDepthReason,
           evidenceDepthConsumer,
+          evidenceDecisionUsage,
           stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
           progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           strict: hasFlag(rest, '--strict'),
