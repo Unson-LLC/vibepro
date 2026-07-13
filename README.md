@@ -214,6 +214,15 @@ npx vibepro adjudicate record /path/to/repo \
 
 Verdicts are `demonstrated`, `not_demonstrated`, or `not_verifiable_by_automation`; the last one is closed by an accepted human decision record (`--source gate:evidence_adjudication:<clause-id>`), not by more automation. Opt out with `evidence_adjudication.enabled: false` in `.vibepro/config.json`.
 
+Install the Release Surface Guard so blocked stories are stopped by exit codes, not reminders (pre-push hook for protected branches, and a Claude Code PreToolUse hook that checks Bash commands like raw `gh pr create` / deploys before they run):
+
+```bash
+npx vibepro guard install /path/to/repo --claude
+npx vibepro guard status /path/to/repo
+```
+
+While the selected story is not `ready_for_pr_create`, matched release-surface commands exit non-zero with the blocking gates and recovery commands. Emergencies can bypass with `VIBEPRO_GUARD_BYPASS="<reason>"`, but every bypass is appended to `.vibepro/guard/bypass-log.jsonl` for audit — there is no silent way through. Repositories without a `.vibepro` workspace are never touched; configure via the `guard` key (`enabled` / `protected_branches` / `release_patterns`) in `.vibepro/config.json`.
+
 Run a checkpoint before treating implementation as ready:
 
 ```bash

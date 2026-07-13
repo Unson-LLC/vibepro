@@ -1,0 +1,113 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-surface-guard",
+  "generated_by": { "caller": "claude_code", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "INV-GRD-1",
+      "type": "invariant",
+      "statement": "Release-surface classification is deterministic code: raw gh pr create/merge, protected-branch git push, and deploy commands match; routine commands and vibepro's own commands never match.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "classifyReleaseSurface" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-001" }] }
+    },
+    {
+      "id": "SC-GRD-2",
+      "type": "scenario",
+      "statement": "When a release-surface command is checked while the selected story is not ready_for_pr_create, the guard exits non-zero and reports blocking gates and recovery commands.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "next_commands" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-003" }] }
+    },
+    {
+      "id": "SC-GRD-3",
+      "type": "scenario",
+      "statement": "When the bypass environment variable carries a non-empty reason, the guard allows the command and appends an audit record.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "bypass-log.jsonl" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-005" }] }
+    },
+    {
+      "id": "SC-GRD-4",
+      "type": "scenario",
+      "statement": "When the selected story is ready_for_pr_create the guard allows release-surface commands.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "ready_for_pr_create === true" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-004" }] }
+    },
+    {
+      "id": "SC-GRD-5",
+      "type": "scenario",
+      "statement": "When the repository has no VibePro workspace or the guard is disabled, every command is allowed untouched.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "guard does not apply" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-002" }] }
+    },
+    {
+      "id": "CON-GRD-6",
+      "type": "contract",
+      "statement": "guard install writes a marker-managed idempotent pre-push hook, refuses to overwrite foreign hooks, and the hook delegates only protected-branch refs; guard uninstall removes only vibepro-managed hooks.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "GUARD_HOOK_MARKER" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-006" }, { "file_glob": "test/e2e/story-vibepro-release-surface-guard-main.test.js", "must_contain": "GUARD-E2E-004" }] }
+    },
+    {
+      "id": "CON-GRD-7",
+      "type": "contract",
+      "statement": "guard install --claude merges a Bash-matcher PreToolUse hook into .claude/settings.json preserving existing keys, is idempotent, and the pretooluse mode extracts the tool command from stdin JSON and blocks with exit 2 plus stderr reason.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "installClaudeHook" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-008" }, { "file_glob": "test/e2e/story-vibepro-release-surface-guard-main.test.js", "must_contain": "GUARD-E2E-005" }] }
+    },
+    {
+      "id": "CON-GRD-8",
+      "type": "contract",
+      "statement": "The guard key in .vibepro/config.json controls enablement, protected branches, and extra release patterns, and guard status reports hook state, configuration, and bypass record count.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/guard.js", "anchor": "readGuardConfig" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/guard.test.js", "must_contain": "GUARD-S-010" }] }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-GRD-FLOW",
+      "kind": "flow",
+      "title": "Guard check decision workflow process",
+      "mermaid": "flowchart LR\n  Cmd[\"command (pre-push / PreToolUse / --command)\"] --> Classify[\"release-surface pattern classify\"]\n  Classify -->|no match| Allow[\"allow (exit 0)\"]\n  Classify -->|match| Readiness[\"evaluate gate readiness\"]\n  Readiness -->|ready_for_pr_create| Allow\n  Readiness -->|blocked| Bypass{\"VIBEPRO_GUARD_BYPASS?\"}\n  Bypass -->|non-empty reason| Log[\"append bypass-log.jsonl\"] --> Allow\n  Bypass -->|none| Block[\"block (exit 2 + blocking gates)\"]"
+    },
+    {
+      "id": "DG-GRD-STATE",
+      "kind": "state",
+      "title": "Guard decision state transitions",
+      "entities": [
+        { "id": "checked", "label": "checked" },
+        { "id": "allow", "label": "allow" },
+        { "id": "block", "label": "block" },
+        { "id": "bypass", "label": "bypass" }
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> checked\n  checked --> allow: no release surface match / workspace absent / disabled / ready\n  checked --> block: matched and story not ready, no bypass reason\n  checked --> bypass: matched, not ready, non-empty recorded reason\n  block --> bypass: operator sets recorded reason\n  bypass --> [*]\n  allow --> [*]"
+    },
+    {
+      "id": "DG-GRD-THREAT",
+      "kind": "threat_model",
+      "title": "Advisory bypass threat and control",
+      "mermaid": "flowchart LR\n  Agent[\"coding agent\"] -->|raw gh pr create / git push main / deploy| Surface[\"release surface\"]\n  Threat[\"blocked state ignored (2026-07-13 incident)\"] --> Surface\n  Surface --> Hook[\"pre-push hook / PreToolUse hook\"]\n  Hook --> Check[\"vibepro guard check (deterministic)\"]\n  Check -->|blocked| Stop[\"exit code stops the command\"]\n  Check -->|bypass with reason| Audit[\"bypass-log.jsonl audit trail\"]"
+    }
+  ]
+}

@@ -207,6 +207,15 @@ npx vibepro adjudicate record /path/to/repo \
 
 verdict は `demonstrated` / `not_demonstrated` / `not_verifiable_by_automation` の3値です。最後の1つは自動化の追加ではなく、accepted な decision record（`--source gate:evidence_adjudication:<clause-id>`）で閉じます。`.vibepro/config.json` の `evidence_adjudication.enabled: false` でオプトアウトできます。
 
+Release Surface Guard を設置すると、blocked な Story のrelease操作を「注意書き」ではなく終了コードで止められます（protected branch への pre-push hook と、raw `gh pr create` やデプロイ等の Bash コマンドを実行前に検査する Claude Code PreToolUse hook）。
+
+```bash
+npx vibepro guard install /path/to/repo --claude
+npx vibepro guard status /path/to/repo
+```
+
+選択中の Story が `ready_for_pr_create` でない間、該当コマンドは blocking gate と復旧コマンドを出力して非0で終了します。緊急時は `VIBEPRO_GUARD_BYPASS="<reason>"` で通過できますが、すべての bypass は `.vibepro/guard/bypass-log.jsonl` へ記録され、無音の迂回はできません。`.vibepro` workspace が無いリポジトリには一切干渉しません。設定は `.vibepro/config.json` の `guard` キー（`enabled` / `protected_branches` / `release_patterns`）で上書きできます。
+
 実装完了扱いにする前に checkpoint を通します。
 
 ```bash
