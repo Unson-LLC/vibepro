@@ -1,6 +1,8 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
+import { buildScanCoverage, describeScanStatus, resolveScanConclusiveness } from './scan-status.js';
+
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const DEFAULT_UI_ROOTS = [
   'app',
@@ -110,7 +112,13 @@ export async function scanFlowDesign(repoRoot, options = {}) {
     runtime_probe_plan: buildRuntimeProbePlan({ profile, story, flowConfig })
   };
 
-  if (uiFiles.length === 0 && isUiStory(story, flowConfig)) {
+  result.scan_coverage = buildScanCoverage({
+    scannedCount: uiFiles.length,
+    roots: resolveUiRoots(flowConfig)
+  });
+
+  const uiStory = isUiStory(story, flowConfig);
+  if (uiFiles.length === 0 && uiStory) {
     result.value_alignment_hits.push({
       id: 'FLOW-NO-UI-CODE',
       kind: 'ui_story_without_code_scan',
@@ -143,7 +151,14 @@ export async function scanFlowDesign(repoRoot, options = {}) {
   result.summary.dead_ui_state_count = result.dead_ui_state_hits.length;
   result.summary.interactive_contract_count = result.interactive_contract_hits.length;
   result.summary.value_alignment_count = result.value_alignment_hits.length;
-  result.status = resolveStatus(result);
+
+  if (uiFiles.length === 0) {
+    const conclusiveness = resolveScanConclusiveness({ scannedCount: uiFiles.length, applicable: uiStory });
+    result.status = conclusiveness.status;
+    result.reason = conclusiveness.reason;
+  } else {
+    result.status = resolveStatus(result);
+  }
   return result;
 }
 
@@ -162,7 +177,7 @@ export function renderFlowDesignReport({ runId, flowDesign }) {
 | 項目 | 内容 |
 |------|------|
 | Run ID | ${runId} |
-| Status | ${flowDesign.status} |
+| Status | ${describeScanStatus(flowDesign.status)} |
 | Profile | ${flowDesign.profile ?? '-'} |
 | UI走査ファイル | ${flowDesign.summary?.scanned_ui_files ?? 0}件 |
 | Interaction | ${flowDesign.summary?.interaction_count ?? 0}件 |
@@ -208,8 +223,12 @@ function formatHits(hits = []) {
   return hits.map((hit) => `- ${hit.file ?? '-'}:${hit.line ?? '-'} ${hit.kind} severity=${hit.severity ?? '-'} gate_effect=${hit.gate_effect ?? '-'} ${hit.detail ?? hit.excerpt ?? ''}`.trim()).join('\n');
 }
 
+function resolveUiRoots(flowConfig) {
+  return flowConfig.code_roots?.length > 0 ? flowConfig.code_roots : DEFAULT_UI_ROOTS;
+}
+
 async function collectUiFiles(root, flowConfig) {
-  const roots = flowConfig.code_roots?.length > 0 ? flowConfig.code_roots : DEFAULT_UI_ROOTS;
+  const roots = resolveUiRoots(flowConfig);
   const files = [];
   for (const candidate of roots) {
     const absoluteRoot = path.isAbsolute(candidate) ? candidate : path.join(root, candidate);

@@ -10,6 +10,7 @@ import { renderFlowDesignReport, scanFlowDesign } from './flow-design-scanner.js
 import { renderGestureInteractionReport, scanGestureInteraction } from './gesture-interaction-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
+import { describeScanStatus } from './scan-status.js';
 import { renderTerminalLinkReport, scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import {
   buildRefactoringActionCandidates,
@@ -1461,7 +1462,7 @@ function renderSummary({ runId, evidence, findings }) {
   ...(evidence.terminal_link_contracts?.dot_directory_tree_hits ?? []),
   ...(evidence.terminal_link_contracts?.image_preview_extension_hits ?? [])
 ])} |
-| Flow Design Gate | ${evidence.flow_design?.status ?? 'not_generated'} |
+| Flow Design Gate | ${describeScanStatus(evidence.flow_design?.status) ?? 'not_generated'} |
 | Flow Design UI走査 | ${evidence.flow_design?.summary?.scanned_ui_files ?? 0}件 |
 | Flow Design検出候補 | ${flowDesignHitCount(evidence.flow_design)}件 |
 | 重いdev script候補 | ${formatRiskCount(evidence.local_dev?.heavy_dev_scripts ?? [], evidence.local_dev?.risk_summary?.heavy_dev_scripts)} |
@@ -1473,7 +1474,7 @@ function renderSummary({ runId, evidence, findings }) {
 | リファクタリング機会 | ${evidence.refactoring_opportunities?.length ?? 0}件 |
 | リファクタリングcampaign | ${evidence.refactoring_campaigns?.length ?? 0}件 |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
-| Network Contract | ${evidence.network_contracts?.status ?? 'not_generated'} |
+| Network Contract | ${describeScanStatus(evidence.network_contracts?.status) ?? 'not_generated'} |
 | API client call | ${evidence.network_contracts?.api_client_call_count ?? 0}件 |
 | API route欠落 | ${evidence.network_contracts?.missing_routes?.length ?? 0}件 |
 | Requirement Gate | ${evidence.requirement_consistency?.status ?? 'not_generated'} |
@@ -1565,7 +1566,7 @@ function renderRequirementConsistencySummary(requirement) {
 function renderFlowDesignSummary(flowDesign) {
   if (!flowDesign) return '- 未生成';
   return [
-    `- Status: ${flowDesign.status}`,
+    `- Status: ${describeScanStatus(flowDesign.status)}`,
     `- UI Files: ${flowDesign.summary?.scanned_ui_files ?? 0}`,
     `- Silent Noops: ${flowDesign.summary?.silent_noop_count ?? 0}`,
     `- Selection Side Effects: ${flowDesign.summary?.selection_side_effect_count ?? 0}`,
@@ -1625,7 +1626,7 @@ function renderNetworkContractSummary(networkContracts) {
     ...replacements.slice(0, 5).map((item) => ['server_function_replaced', item.introduced_api_calls?.map((call) => call.api_path?.value).join(', ') || '-', item.file, '-'])
   ];
   return [
-    `- Status: ${networkContracts.status}`,
+    `- Status: ${describeScanStatus(networkContracts.status)}`,
     `- Routes: ${networkContracts.route_count ?? 0}`,
     `- API client calls: ${networkContracts.api_client_call_count ?? 0}`,
     `- Missing routes: ${missing.length}`,

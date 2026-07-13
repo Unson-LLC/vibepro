@@ -20,6 +20,7 @@ import { collectRuntimeInfo } from './runtime-info.js';
 import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { scanRegressionRisk } from './regression-risk-scanner.js';
+import { describeScanStatus } from './scan-status.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { buildTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { buildEvidenceAdjudicationGate, isAdjudicationEnabled, readAdjudicationIfExists, summarizeAdjudicationForPr } from './adjudication.js';
@@ -4630,7 +4631,7 @@ function renderNetworkContractPrSection(networkContracts) {
     ...replacements.slice(0, 5).map((item) => `- replacement: ${item.file} removed ${item.removed_calls.join(', ')} -> ${item.introduced_api_calls.map((call) => call.api_path.value).join(', ')}`)
   ];
   return [
-    `- status: ${networkContracts.status}`,
+    `- status: ${describeScanStatus(networkContracts.status)}`,
     `- API client calls: ${networkContracts.api_client_call_count ?? 0}`,
     `- introduced API client calls: ${networkContracts.introduced_api_client_call_count ?? 0}`,
     `- missing routes: ${missing.length}`,

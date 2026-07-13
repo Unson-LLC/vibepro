@@ -21,6 +21,7 @@ import { scanStaticSite } from './static-site-scanner.js';
 import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
+import { describeScanStatus } from './scan-status.js';
 
 export const CHECK_PACKS = {
   ui: {
@@ -340,7 +341,9 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       status: normalizeCheckStatus(regression.status),
       summary: regression.status === 'skipped'
         ? regression.reason
-        : `${regression.summary?.scored_modules ?? 0} modules; critical=${regression.summary?.critical ?? 0}, high=${regression.summary?.high ?? 0}, moderate=${regression.summary?.moderate ?? 0}${regression.summary?.coverage_source ? ` (coverage: ${regression.summary.coverage_source})` : ' (no coverage)'}${top ? `; top=${top.file} (fan-in ${top.fan_in}${top.coverage_pct !== null && top.coverage_pct !== undefined ? `, cov ${top.coverage_pct}%` : ''})` : ''}`
+        : regression.status === 'inconclusive'
+          ? `${describeScanStatus(regression.status)}${regression.reason ? `: ${regression.reason}` : ''}`
+          : `${regression.summary?.scored_modules ?? 0} modules; critical=${regression.summary?.critical ?? 0}, high=${regression.summary?.high ?? 0}, moderate=${regression.summary?.moderate ?? 0}${regression.summary?.coverage_source ? ` (coverage: ${regression.summary.coverage_source})` : ' (no coverage)'}${top ? `; top=${top.file} (fan-in ${top.fan_in}${top.coverage_pct !== null && top.coverage_pct !== undefined ? `, cov ${top.coverage_pct}%` : ''})` : ''}`
     });
   }
   if (evidence.pr_prepare) {
@@ -386,6 +389,14 @@ function summarizeApiBoundary(apiBoundary) {
 }
 
 function summarizeNetworkContracts(networkContracts) {
+  if (networkContracts.status === 'inconclusive') {
+    return {
+      id: 'network_contracts',
+      label: 'Network Contracts',
+      status: 'inconclusive',
+      summary: `${describeScanStatus(networkContracts.status)}${networkContracts.reason ? `: ${networkContracts.reason}` : ''}`
+    };
+  }
   const missing = networkContracts.missing_routes?.length ?? 0;
   const dynamic = networkContracts.dynamic_calls?.length ?? 0;
   const replacements = networkContracts.high_risk_replacements?.length ?? 0;
@@ -417,11 +428,14 @@ function summarizeFlowDesign(flowDesign) {
     flowDesign.interactive_contract_hits,
     flowDesign.value_alignment_hits
   ].reduce((total, items) => total + (Array.isArray(items) ? items.length : 0), 0);
+  const isVacuous = flowDesign.status === 'inconclusive' || flowDesign.status === 'not_applicable';
   return {
     id: 'flow_design',
     label: 'Flow Design',
     status: normalizeCheckStatus(flowDesign.status),
-    summary: `${flowDesign.summary?.scanned_ui_files ?? 0} UI files; ${count} flow findings`
+    summary: isVacuous
+      ? `${describeScanStatus(flowDesign.status)}${flowDesign.reason ? `: ${flowDesign.reason}` : ''}`
+      : `${flowDesign.summary?.scanned_ui_files ?? 0} UI files; ${count} flow findings`
   };
 }
 
@@ -457,7 +471,10 @@ function aggregateStatus(checks) {
   if (statuses.includes('fail')) return 'fail';
   if (statuses.includes('needs_setup')) return 'needs_setup';
   if (statuses.includes('needs_review') || statuses.includes('needs_verification')) return 'needs_review';
-  if (statuses.every((status) => ['pass', 'skipped', 'not_required'].includes(status))) return 'pass';
+  // inconclusive/not_applicable are non-blocking by design (AC-8): a scanner
+  // that found nothing to scan must not read as a failure, only as "not a
+  // pass either". They are excluded from the aggregate pass/fail decision.
+  if (statuses.every((status) => ['pass', 'skipped', 'not_required', 'inconclusive', 'not_applicable'].includes(status))) return 'pass';
   return 'unknown';
 }
 
