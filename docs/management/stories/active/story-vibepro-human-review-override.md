@@ -18,8 +18,11 @@ spec_docs:
 - [ ] mergeでも同じpolicyを再評価し、PR作成済みを承認の代用にしない。
 - [ ] overrideはcurrent HEADにboundされたaccepted decisionとして監査できる。
 - [ ] `proceed`など他の推奨は既存動作を維持する。
+- [ ] workflow state transition scenarioとして、`split_pr|block`からcurrent-HEAD accepted overrideを経てPR作成・merge許可へ進む遷移と、missing/stale decisionで停止する遷移をE2Eで再生する。
 
 ## シナリオ
+
+### Workflow state transition scenario
 
 - HRO-S1: Given current lifecycleが`proceed`を推奨する、when PR作成またはmergeを評価する、then overrideなしで既存フローを継続する。
 - HRO-S2: Given current HEADの推奨が`split_pr`でreviewerが欠ける、when PR作成を評価する、then override不足として停止する。

@@ -18,7 +18,11 @@ Given another recommendation, when the policy is evaluated, then existing PR and
 
 Given an accepted override, when either operation records its lifecycle artifact, then the matched decision is included as `human_review_override`.
 
+## Workflow state transition scenario
+
+Given the recommendation is `split_pr` or `block`, when a current-HEAD accepted override with reason and reviewer is recorded, then PR creation and merge transition from blocked to allowed. Given the decision is missing or stale, when either entry point evaluates the transition, then it remains blocked.
+
 ## References
 
 - code_refs: `src/human-review-override.js`, `src/pr-manager.js`, `src/merge-manager.js`
-- test_refs: `test/human-review-override.test.js`
+- test_refs: `test/human-review-override.test.js`, `test/e2e/story-vibepro-human-review-override-main.spec.ts`
