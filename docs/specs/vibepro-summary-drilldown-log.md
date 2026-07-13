@@ -28,3 +28,19 @@ title: Summary-first Drill-down Ledger Spec
 - `SDL-VERIFY-002`: incomplete standard/full requests fail with all missing field names.
 - `SDL-VERIFY-003`: two explicit drill-down runs produce two ordered entries with target, reason, consumer, and HEAD.
 - `SDL-VERIFY-004`: existing evidence-depth and traceability suites remain green after callers provide bounded targets.
+
+## Diagrams
+
+### Threat Model
+
+```mermaid
+flowchart LR
+  Caller["CLI caller"] --> Validate{"reason + consumer + target?"}
+  Validate -->|missing| Reject["reject before artifact exposure"]
+  Validate -->|complete| Planner["bounded evidence plan"]
+  Planner --> Ledger["HEAD-bound requested-exposure ledger"]
+  Planner --> Artifact["targeted standard/full artifact"]
+  Artifact -. "must not imply actual read or decision use" .-> Ledger
+```
+
+The trust boundary is the explicit override request. Missing attribution fails closed, and the ledger records requested exposure without promoting it to read telemetry or decision evidence.
