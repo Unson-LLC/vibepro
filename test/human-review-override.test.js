@@ -48,6 +48,7 @@ test('HRO-S3 block override requires a current-HEAD accepted decision', async ()
     git_context: { head_sha: 'old-head' }
   }]);
   await assert.rejects(assertHumanReviewOverride(root, storyId, 'head-1', 'merge'), /block override required before merge/);
+  await assert.rejects(assertHumanReviewOverride(root, storyId, '', 'merge'), /block override required before merge/);
 });
 
 test('HRO-S4 the same explicit override authorizes PR creation and merge checks', async () => {

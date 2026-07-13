@@ -1200,10 +1200,11 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Commit, stash, or discard these files before \`vibepro pr create\`: ${nonWorkspaceDirtyFiles.map((file) => file.path).join(', ')}`
     );
   }
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const humanReviewOverride = await assertHumanReviewOverride(
     root,
     preparation.story.story_id,
-    preparation.git.head_sha ?? null,
+    currentHeadSha,
     'PR creation'
   );
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
@@ -1308,8 +1309,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     gate_override: gateOverride,
     human_review_override: humanReviewOverride,
     toolchain: preparation.toolchain ?? null,
-    current_head_sha: preparation.git.head_sha ?? null,
-    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', preparation.git.head_sha ?? null, createdAt),
+    current_head_sha: currentHeadSha,
+    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', currentHeadSha, createdAt),
     base: baseBranch,
     head: headBranch,
     title,

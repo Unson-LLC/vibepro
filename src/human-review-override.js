@@ -16,13 +16,22 @@ export async function evaluateHumanReviewOverride(repoRoot, storyId, currentHead
     return { required: false, recommendation, decision: null };
   }
 
+  if (!currentHeadSha) {
+    return {
+      required: true,
+      recommendation,
+      expected_source: `human-review:${recommendation}`,
+      decision: null
+    };
+  }
+
   const expectedSource = `human-review:${recommendation}`;
   const decision = (decisionRecords?.decisions ?? []).find((item) => (
     item?.status === 'accepted'
     && item?.source === expectedSource
     && item?.reason?.trim()
     && item?.reviewer?.trim()
-    && (!currentHeadSha || item?.git_context?.head_sha === currentHeadSha)
+    && item?.git_context?.head_sha === currentHeadSha
   )) ?? null;
   return {
     required: true,

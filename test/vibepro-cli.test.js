@@ -8173,6 +8173,10 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.equal(prCreate.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(prCreate.toolchain.package.name, 'vibepro');
   assert.equal(prCreate.current_head_sha, createResult.result.preparation.git.head_sha);
+  assert.equal(prCreate.human_review_override.required, true);
+  assert.equal(prCreate.human_review_override.recommendation, 'split_pr');
+  assert.equal(prCreate.human_review_override.decision.source, 'human-review:split_pr');
+  assert.equal(prCreate.human_review_override.decision.reviewer, 'codex-integration-reviewer');
   assert.equal(prCreate.artifact_freshness.status, 'current');
   assert.equal(prCreate.artifact_freshness.artifact_head_sha, createResult.result.preparation.git.head_sha);
   const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
