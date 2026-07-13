@@ -142,13 +142,15 @@ test('pr prepare summary depth removes stale full-surface artifacts from previou
     '--evidence-depth-reason',
     'initial full reviewer surface',
     '--evidence-depth-consumer',
-    'test'
+    'test',
+    '--evidence-depth-target',
+    'gate-dag.json'
   ]);
   assert.equal(fullResult.exitCode, 0);
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-low-risk');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
-  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), true);
-  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 
   const summaryResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-low-risk', '--base', 'main', '--json']);
   assert.equal(summaryResult.exitCode, 0);
@@ -160,6 +162,12 @@ test('pr prepare summary depth removes stale full-surface artifacts from previou
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
   assert.equal(await exists(path.join(prDir, 'pr-prepare.html')), false);
   assert.equal(await exists(path.join(prDir, 'split-plan.html')), false);
+  assert.equal(await exists(path.join(prDir, 'evidence-drilldown-log.json')), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.pr_preparations['story-low-risk'].latest_evidence_drilldown_log,
+    '.vibepro/pr/story-low-risk/evidence-drilldown-log.json'
+  );
 });
 
 test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async () => {
@@ -179,6 +187,8 @@ test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async (
     'audit replay requested full evidence',
     '--evidence-depth-consumer',
     'value-audit',
+    '--evidence-depth-target',
+    'gate:network_contract',
     '--view',
     'readiness'
   ]);
@@ -191,10 +201,10 @@ test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async (
   assert.equal(plan.manual_override.reason, 'audit replay requested full evidence');
   assert.equal(plan.manual_override.consumer, 'value-audit');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
-  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 });
 
-test('pr prepare records targeted full surfaces for high-risk default workflow', async () => {
+test('pr prepare keeps high-risk default summary while recording targeted risk surfaces', async () => {
   const repo = await setupHighRiskAuthRepo();
 
   const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-auth-risk', '--base', 'main', '--json']);
@@ -203,10 +213,10 @@ test('pr prepare records targeted full surfaces for high-risk default workflow',
   const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
   const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
 
-  assert.equal(plan.default_depth, 'standard');
-  assert.equal(plan.evidence_depth, 'standard');
-  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, true);
-  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
+  assert.equal(plan.default_depth, 'summary');
+  assert.equal(plan.evidence_depth, 'summary');
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
   assert.ok(plan.risk_signals.some((signal) => signal.kind === 'risk_surface' && signal.value === 'auth_boundary'));
   assert.ok(plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
   assert.ok(prepare.evidence_plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
@@ -221,7 +231,7 @@ test('pr prepare focused view uses summary depth even for high-risk workflow', a
   const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
   const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
 
-  assert.equal(plan.default_depth, 'standard');
+  assert.equal(plan.default_depth, 'summary');
   assert.equal(plan.evidence_depth, 'summary');
   assert.equal(plan.manual_override.status, 'requested');
   assert.equal(plan.manual_override.reason, 'limited pr prepare view requested');
@@ -231,4 +241,21 @@ test('pr prepare focused view uses summary depth even for high-risk workflow', a
   assert.equal(prepare.evidence_plan.evidence_depth, 'summary');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
+});
+
+test('pr prepare logs each explicit drill-down target and reason', async () => {
+  const repo = await setupLowRiskRepo();
+  const args = [
+    'pr', 'prepare', repo, '--story-id', 'story-low-risk', '--base', 'main',
+    '--evidence-depth', 'standard', '--evidence-depth-reason', 'inspect traceability details',
+    '--evidence-depth-consumer', 'agent-review', '--evidence-depth-target', 'traceability.json'
+  ];
+  assert.equal((await runCli(args)).exitCode, 0);
+  assert.equal((await runCli(args)).exitCode, 0);
+
+  const log = await readJson(path.join(repo, '.vibepro', 'pr', 'story-low-risk', 'evidence-drilldown-log.json'));
+  assert.equal(log.entries.length, 2);
+  assert.equal(log.entries[1].reason, 'inspect traceability details');
+  assert.deepEqual(log.entries[1].targets, ['traceability.json']);
+  assert.ok(log.entries[1].head_sha);
 });

@@ -142,7 +142,15 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   ]);
   assert.equal(followupDecision.exitCode, 0);
 
-  const followupResult = await runCli(['pr', 'prepare', followupRepo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const followupResult = await runCli([
+    'pr', 'prepare', followupRepo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'verify accepted follow-up reviewer surfaces',
+    '--evidence-depth-consumer', 'fake-value-hardening-e2e',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(followupResult.exitCode, 0);
   const followupPrepare = followupResult.result.preparation;
   const acceptedAxis = followupPrepare.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
@@ -205,7 +213,15 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
     '--json'
   ]);
   assert.equal(artifactlessDecision.exitCode, 0);
-  const missingResult = await runCli(['pr', 'prepare', missingRepo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const missingResult = await runCli([
+    'pr', 'prepare', missingRepo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'verify missing-evidence reviewer surfaces',
+    '--evidence-depth-consumer', 'fake-value-hardening-e2e',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(missingResult.exitCode, 0);
   const missingPrepare = missingResult.result.preparation;
   const missingAxis = missingPrepare.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
@@ -359,7 +375,14 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   const repo = await makeStoryRepo();
   await mkdir(path.join(repo, 'artifacts'), { recursive: true });
   await writeFile(path.join(repo, 'artifacts', 'failure-mode-coverage.json'), JSON.stringify({ status: 'pass', coverage: 'current' }, null, 2));
-  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const unresolved = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'replay failure-mode gate artifacts',
+    '--evidence-depth-consumer', 'fake-value-hardening-e2e',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(unresolved.exitCode, 0);
   const unresolvedFailureGate = nodeById(unresolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(unresolvedFailureGate.high_risk, true);
@@ -393,7 +416,14 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(partialVerification.exitCode, 0);
   assert.equal(partialVerification.result.evidence.commands.at(-1).observation_check.status, 'partial');
 
-  const stillUnresolved = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const stillUnresolved = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'replay partial failure-mode gate artifacts',
+    '--evidence-depth-consumer', 'fake-value-hardening-e2e',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(stillUnresolved.exitCode, 0);
   const partialFailureGate = nodeById(stillUnresolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(partialFailureGate.status, 'missing_coverage');
@@ -452,7 +482,14 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   ]);
   assert.equal(verification.exitCode, 0);
 
-  const resolved = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const resolved = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'replay resolved failure-mode gate artifacts',
+    '--evidence-depth-consumer', 'fake-value-hardening-e2e',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(resolved.exitCode, 0);
   const resolvedFailureGate = nodeById(resolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(resolvedFailureGate.candidate_count >= 1, true);

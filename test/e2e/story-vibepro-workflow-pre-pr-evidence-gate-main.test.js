@@ -92,7 +92,17 @@ test('workflow pre-PR replay exercises the state transition', async () => {
 test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact replay', async () => {
   const repo = await makeWorkflowRepo();
 
-  const firstPrepare = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  const evidenceDepthArgs = [
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'exercise persisted pre-PR evidence replay artifacts',
+    '--evidence-depth-consumer', 'workflow-pre-pr-e2e',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ];
+  const firstPrepare = await runCli([
+    'pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json', ...evidenceDepthArgs
+  ]);
   assert.equal(firstPrepare.exitCode, 0, firstPrepare.stderr);
   const agentReviews = firstPrepare.result.preparation.pr_context.agent_reviews;
   assert.deepEqual(
@@ -190,7 +200,9 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     'artifact_replay=covered'
   ]);
 
-  const replayPrepare = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  const replayPrepare = await runCli([
+    'pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json', ...evidenceDepthArgs
+  ]);
   assert.equal(replayPrepare.exitCode, 0, replayPrepare.stderr);
   const gateDag = replayPrepare.result.preparation.pr_context.gate_dag;
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');

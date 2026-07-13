@@ -261,7 +261,15 @@ title: Design input judgment blocker waiver
   assert.equal(decision.exitCode, 0);
   assert.equal(Boolean(decision.result.decision.decision_id), true, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
 
-  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  const prepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'verify accepted follow-up across reviewer HTML surfaces',
+    '--evidence-depth-consumer', 'design-input-judgment-e2e',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
   assert.equal(prepare.exitCode, 0);
   const axis = prepare.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
   assert.equal(axis.status, 'active_blocked', `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);

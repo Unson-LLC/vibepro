@@ -55,7 +55,12 @@ import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
-import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import {
+  appendEvidenceDrilldownEntry,
+  buildEvidenceDecisionIndex,
+  buildEvidenceDrilldownEntry,
+  buildEvidencePlan
+} from './evidence-depth-planner.js';
 import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
@@ -307,6 +312,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await mkdir(prDir, { recursive: true });
   const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
   const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
+  const evidenceDrilldownLogPath = path.join(prDir, 'evidence-drilldown-log.json');
   const decisionIndexPath = path.join(prDir, 'decision-index.json');
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
@@ -328,6 +334,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : null;
   const previousGateDag = workspace.initialized
     ? await progress.stage('read_previous_gate_dag', () => readJsonIfExists(gateDagJsonPath))
+    : null;
+  const previousDrilldownLog = workspace.initialized
+    ? await progress.stage('read_evidence_drilldown_log', () => readJsonIfExists(evidenceDrilldownLogPath))
     : null;
   const traceabilityEvidenceForCoverage = buildTraceabilityEvidence({
     root,
@@ -369,8 +378,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     requestedDepth: options.evidenceDepth,
     requestedDepthReason: options.evidenceDepthReason,
     requestedDepthConsumer: options.evidenceDepthConsumer,
+    requestedDepthTargets: options.evidenceDepthTargets,
     createdAt
   });
+  const drilldownEntry = buildEvidenceDrilldownEntry({ evidencePlan, git: reviewGit, createdAt });
   const decisionIndex = buildEvidenceDecisionIndex({
     story,
     git: reviewGit,
@@ -383,8 +394,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     createdAt
   });
   const artifactPolicy = evidencePlan.artifact_policy ?? {};
-  const writeHtmlReports = artifactPolicy.write_html_reports !== false;
+  const writePrPrepareHtml = artifactPolicy.write_pr_prepare_html === true;
+  const writeReviewCockpitHtml = artifactPolicy.write_review_cockpit_html === true;
+  const writeGateDagHtml = artifactPolicy.write_gate_dag_html === true;
+  const writeSplitPlanHtml = artifactPolicy.write_split_plan_html === true;
   const writeGateDagDump = artifactPolicy.write_full_gate_dag_dump !== false;
+  const drilldownLogAvailable = Boolean(
+    drilldownEntry || (Array.isArray(previousDrilldownLog?.entries) && previousDrilldownLog.entries.length > 0)
+  );
   const previousEvidenceReuse = workspace.initialized
     ? await progress.stage('read_evidence_reuse', () => readEvidenceReuseIfExists(root, story.story_id))
     : null;
@@ -602,34 +619,33 @@ export async function preparePullRequest(repoRoot, options = {}) {
     } else {
       await rm(gateDagJsonPath, { force: true });
     }
-    if (writeHtmlReports) {
+    if (writeGateDagHtml) {
       await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
         generatedAt: preparation.created_at,
         language: outputLanguage
       }), { signal });
-    } else {
-      await Promise.all([
-        rm(reportPath, { force: true }),
-        rm(reviewCockpitPath, { force: true }),
-        rm(gateDagReportPath, { force: true }),
-        rm(splitPlanReportPath, { force: true })
-      ]);
-    }
+    } else await rm(gateDagReportPath, { force: true });
     await writeFile(splitPlanJsonPath, splitPlanJson, { signal });
-    if (writeHtmlReports) {
+    if (writeSplitPlanHtml) {
       await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
         generatedAt: preparation.created_at,
         language: outputLanguage
       }), { signal });
+    } else await rm(splitPlanReportPath, { force: true });
+    if (writePrPrepareHtml || writeReviewCockpitHtml) {
       const reviewCockpitHtml = renderPrPrepareHtml({
         preparation,
         bodyPath: toWorkspaceRelative(root, bodyPath),
-        gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-        splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+        gateDagPath: writeGateDagHtml ? toWorkspaceRelative(root, gateDagReportPath) : null,
+        splitPlanPath: writeSplitPlanHtml ? toWorkspaceRelative(root, splitPlanReportPath) : null,
         language: outputLanguage
       });
-      await writeFile(reportPath, reviewCockpitHtml, { signal });
-      await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+      if (writePrPrepareHtml) await writeFile(reportPath, reviewCockpitHtml, { signal });
+      else await rm(reportPath, { force: true });
+      if (writeReviewCockpitHtml) await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+      else await rm(reviewCockpitPath, { force: true });
+    } else {
+      await Promise.all([rm(reportPath, { force: true }), rm(reviewCockpitPath, { force: true })]);
     }
     const existingTraceability = await readJsonIfExists(traceabilityPath);
     await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
@@ -645,14 +661,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     const existingHumanReview = await readJsonIfExists(humanReviewPath);
     await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
       preparation,
-      reviewCockpitPath: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
+      reviewCockpitPath: writeReviewCockpitHtml ? toWorkspaceRelative(root, reviewCockpitPath) : null,
       gateDagPath: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
       existingReview: existingArchitectureReview
     }), null, 2)}\n`, { signal });
     await writeFile(decisionRecordsPath, decisionRecordsJson, { signal });
     await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
       preparation,
-      reviewCockpitPath: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
+      reviewCockpitPath: writeReviewCockpitHtml ? toWorkspaceRelative(root, reviewCockpitPath) : null,
       architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
       bodyPath: toWorkspaceRelative(root, bodyPath),
       gateDagPath: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
@@ -684,10 +700,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
       [story.story_id]: {
         latest_evidence_reuse: toWorkspaceRelative(root, evidenceReusePath),
         latest_evidence_plan: toWorkspaceRelative(root, evidencePlanPath),
+        latest_evidence_drilldown_log: drilldownLogAvailable ? toWorkspaceRelative(root, evidenceDrilldownLogPath) : null,
         latest_decision_index: toWorkspaceRelative(root, decisionIndexPath),
         latest_prepare: toWorkspaceRelative(root, jsonPath),
-        latest_report: writeHtmlReports ? toWorkspaceRelative(root, reportPath) : null,
-        latest_review_cockpit: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
+        latest_report: writePrPrepareHtml ? toWorkspaceRelative(root, reportPath) : null,
+        latest_review_cockpit: writeReviewCockpitHtml ? toWorkspaceRelative(root, reviewCockpitPath) : null,
         latest_human_review: toWorkspaceRelative(root, humanReviewPath),
         latest_architecture_review: toWorkspaceRelative(root, architectureReviewPath),
         latest_decision_records: toWorkspaceRelative(root, decisionRecordsPath),
@@ -695,9 +712,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_gate_dag: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
         latest_senior_gap_judgment: toWorkspaceRelative(root, seniorGapJudgmentPath),
         latest_ref_topology: toWorkspaceRelative(root, refTopologyPath),
-        latest_gate_dag_report: writeHtmlReports ? toWorkspaceRelative(root, gateDagReportPath) : null,
+        latest_gate_dag_report: writeGateDagHtml ? toWorkspaceRelative(root, gateDagReportPath) : null,
         latest_split_plan: toWorkspaceRelative(root, splitPlanJsonPath),
-        latest_split_plan_report: writeHtmlReports ? toWorkspaceRelative(root, splitPlanReportPath) : null,
+        latest_split_plan_report: writeSplitPlanHtml ? toWorkspaceRelative(root, splitPlanReportPath) : null,
         latest_prepare_generated_at: preparation.created_at
       }
     };
@@ -714,24 +731,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
     } else {
       await rm(gateDagJsonPath, { force: true });
     }
-    if (writeHtmlReports) {
+    if (writeGateDagHtml) {
       await writeFile(gateDagReportPath, renderGateDagHtml(preparation.pr_context.gate_dag, {
         generatedAt: preparation.created_at,
         language: outputLanguage
       }), { signal });
-    } else {
-      await Promise.all([
-        rm(reportPath, { force: true }),
-        rm(reviewCockpitPath, { force: true }),
-        rm(gateDagReportPath, { force: true }),
-        rm(splitPlanReportPath, { force: true })
-      ]);
-    }
+    } else await rm(gateDagReportPath, { force: true });
   });
   await writeFileWithTimeout(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, {
     timeoutMs: progress.timeoutMs,
     stage: 'write_pr_prepare_json'
   });
+  if (drilldownEntry) {
+    await writeFile(evidenceDrilldownLogPath, `${JSON.stringify(
+      appendEvidenceDrilldownEntry(previousDrilldownLog, drilldownEntry, story.story_id),
+      null,
+      2
+    )}\n`);
+  }
 
   return {
     story,
@@ -739,10 +756,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     artifacts: {
       evidence_reuse: evidenceReusePath,
       evidence_plan: evidencePlanPath,
+      evidence_drilldown_log: drilldownLogAvailable ? evidenceDrilldownLogPath : null,
       decision_index: decisionIndexPath,
       json: jsonPath,
-      report: writeHtmlReports ? reportPath : null,
-      review_cockpit: writeHtmlReports ? reviewCockpitPath : null,
+      report: writePrPrepareHtml ? reportPath : null,
+      review_cockpit: writeReviewCockpitHtml ? reviewCockpitPath : null,
       human_review: humanReviewPath,
       architecture_review: architectureReviewPath,
       decision_records: decisionRecordsPath,
@@ -751,9 +769,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       senior_gap_judgment: seniorGapJudgmentPath,
       ref_topology: refTopologyPath,
       gate_dag: writeGateDagDump ? gateDagJsonPath : null,
-      gate_dag_report: writeHtmlReports ? gateDagReportPath : null,
+      gate_dag_report: writeGateDagHtml ? gateDagReportPath : null,
       split_plan: splitPlanJsonPath,
-      split_plan_report: writeHtmlReports ? splitPlanReportPath : null
+      split_plan_report: writeSplitPlanHtml ? splitPlanReportPath : null
     }
   };
 }

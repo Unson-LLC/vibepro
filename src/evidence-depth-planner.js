@@ -1,6 +1,7 @@
 import { normalizeEvidenceDepth } from './evidence-cost-budget.js';
 
 export const EVIDENCE_DEPTH_PLANNER_VERSION = '0.1.0';
+export const EVIDENCE_DRILLDOWN_LOG_VERSION = '0.1.0';
 
 const HIGH_RISK_PROFILES = new Set([
   'workflow_heavy',
@@ -55,11 +56,28 @@ const SUMMARY_SKIPPED_ARTIFACTS = [
   'review-cockpit.html',
   'gate-dag.html',
   'gate-dag.json',
-  'split-plan.html',
-  'full-review-lifecycle-dump',
-  'raw-transcript-log',
-  'raw-provider-log'
+  'split-plan.html'
 ];
+
+const SUMMARY_GENERATED_ARTIFACTS = [
+  'evidence-reuse.json',
+  'evidence-plan.json',
+  'decision-index.json',
+  'senior-gap-judgment.json',
+  'pr-prepare.json',
+  'pr-body.md',
+  'split-plan.json',
+  'traceability.json',
+  'human-review.json',
+  'architecture-review.json',
+  'decision-records.json',
+  'ref-topology.json'
+];
+
+const KNOWN_EVIDENCE_ARTIFACTS = new Set([
+  ...SUMMARY_GENERATED_ARTIFACTS,
+  ...SUMMARY_SKIPPED_ARTIFACTS
+]);
 
 export function buildEvidencePlan({
   story = null,
@@ -71,6 +89,7 @@ export function buildEvidencePlan({
   requestedDepth = null,
   requestedDepthReason = null,
   requestedDepthConsumer = null,
+  requestedDepthTargets = [],
   createdAt = new Date().toISOString()
 } = {}) {
   const changeClassification = prContext?.change_classification ?? {};
@@ -83,30 +102,37 @@ export function buildEvidencePlan({
     changeClassification,
     engineeringJudgment
   });
-  const lowRiskSummary = isLowRiskSummaryCandidate({
-    fileGroups,
-    changeClassification,
-    prRoute,
-    riskSignals,
-    targetedFullSurfaces
-  });
-  const defaultDepth = lowRiskSummary ? 'summary' : 'standard';
+  const defaultDepth = 'summary';
   const overrideDepth = normalizeEvidenceDepth(requestedDepth);
   const evidenceDepth = overrideDepth ?? defaultDepth;
+  const drilldownTargets = normalizeDrilldownTargets(requestedDepthTargets);
+  if (overrideDepth && overrideDepth !== 'summary') {
+    assertDrilldownRequest({
+      depth: overrideDepth,
+      reason: requestedDepthReason,
+      consumer: requestedDepthConsumer,
+      targets: drilldownTargets,
+      storyId: story?.story_id,
+      prContext,
+      gateStatus
+    });
+  }
   const manualOverride = overrideDepth
     ? {
         status: 'requested',
         depth: overrideDepth,
-        reason: nonEmptyString(requestedDepthReason) ?? 'manual request via --evidence-depth',
-        consumer: nonEmptyString(requestedDepthConsumer) ?? 'operator_manual_request'
+        reason: nonEmptyString(requestedDepthReason) ?? 'summary view requested',
+        consumer: nonEmptyString(requestedDepthConsumer) ?? 'summary_first_default',
+        targets: drilldownTargets
       }
     : {
         status: 'none',
         depth: null,
         reason: null,
-        consumer: null
+        consumer: null,
+        targets: []
       };
-  const artifactPolicy = buildArtifactPolicy(evidenceDepth);
+  const artifactPolicy = buildArtifactPolicy(evidenceDepth, drilldownTargets);
 
   return {
     schema_version: '0.1.0',
@@ -137,9 +163,32 @@ export function buildEvidencePlan({
     artifact_policy: artifactPolicy,
     generated_artifacts: artifactPolicy.generated_artifacts,
     skipped_artifacts: artifactPolicy.skipped_artifacts,
-    consumers: evidenceDepth === 'summary'
-      ? ['evidence-reuse.json', 'decision-index.json', 'senior-gap-judgment.json', 'evidence-plan.json', 'pr-body.md']
-      : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json', 'senior-gap-judgment.json']
+    consumers: artifactPolicy.generated_artifacts
+  };
+}
+
+export function buildEvidenceDrilldownEntry({ evidencePlan, git, createdAt = new Date().toISOString() } = {}) {
+  if (evidencePlan?.manual_override?.status !== 'requested' || evidencePlan.evidence_depth === 'summary') return null;
+  return {
+    schema_version: EVIDENCE_DRILLDOWN_LOG_VERSION,
+    recorded_at: createdAt,
+    head_sha: git?.head_sha ?? null,
+    base_ref: git?.base_ref ?? null,
+    head_ref: git?.head_ref ?? null,
+    depth: evidencePlan.evidence_depth,
+    consumer: evidencePlan.manual_override.consumer,
+    reason: evidencePlan.manual_override.reason,
+    targets: evidencePlan.manual_override.targets,
+    risk_surfaces: evidencePlan.targeted_full_surfaces.map((surface) => surface.surface)
+  };
+}
+
+export function appendEvidenceDrilldownEntry(previousLog, entry, storyId) {
+  const entries = Array.isArray(previousLog?.entries) ? previousLog.entries : [];
+  return {
+    schema_version: EVIDENCE_DRILLDOWN_LOG_VERSION,
+    story_id: storyId ?? previousLog?.story_id ?? null,
+    entries: entry ? [...entries, entry] : entries
   };
 }
 
@@ -214,34 +263,29 @@ export function buildEvidenceDecisionIndex({
   };
 }
 
-function buildArtifactPolicy(evidenceDepth) {
+function buildArtifactPolicy(evidenceDepth, drilldownTargets = []) {
   const summary = evidenceDepth === 'summary';
-  const generatedArtifacts = [
-    'evidence-reuse.json',
-    'evidence-plan.json',
-    'decision-index.json',
-    'senior-gap-judgment.json',
-    'pr-prepare.json',
-    'pr-body.md',
-    'split-plan.json',
-    'traceability.json',
-    'human-review.json',
-    'architecture-review.json',
-    'decision-records.json'
-  ];
-  if (!summary) {
-    generatedArtifacts.push(
-      'pr-prepare.html',
-      'review-cockpit.html',
-      'gate-dag.html',
-      'gate-dag.json',
-      'split-plan.html'
-    );
-  }
+  const requestedArtifacts = summary
+    ? new Set()
+    : resolveRequestedArtifacts(drilldownTargets);
+  const generatedArtifacts = [...SUMMARY_GENERATED_ARTIFACTS];
+  generatedArtifacts.push(...requestedArtifacts);
+  const writesPrPrepareHtml = requestedArtifacts.has('pr-prepare.html');
+  const writesReviewCockpitHtml = requestedArtifacts.has('review-cockpit.html');
+  const writesGateDagHtml = requestedArtifacts.has('gate-dag.html');
+  const writesSplitPlanHtml = requestedArtifacts.has('split-plan.html');
+  const writesAnyHtml = writesPrPrepareHtml
+    || writesReviewCockpitHtml
+    || writesGateDagHtml
+    || writesSplitPlanHtml;
   return {
-    write_html_reports: !summary,
-    write_full_gate_dag_dump: !summary,
-    write_full_review_lifecycle_dump: evidenceDepth === 'full',
+    write_html_reports: writesAnyHtml,
+    write_pr_prepare_html: writesPrPrepareHtml,
+    write_review_cockpit_html: writesReviewCockpitHtml,
+    write_gate_dag_html: writesGateDagHtml,
+    write_split_plan_html: writesSplitPlanHtml,
+    write_full_gate_dag_dump: requestedArtifacts.has('gate-dag.json'),
+    write_full_review_lifecycle_dump: false,
     write_raw_logs: false,
     pr_body_token_policy: {
       status: 'bounded_by_artifact_links',
@@ -249,20 +293,22 @@ function buildArtifactPolicy(evidenceDepth) {
       reason: 'PR body stays concise and links canonical VibePro artifacts instead of embedding full diagnostics'
     },
     generated_artifacts: generatedArtifacts,
-    skipped_artifacts: summary ? SUMMARY_SKIPPED_ARTIFACTS : []
+    skipped_artifacts: SUMMARY_SKIPPED_ARTIFACTS.filter((artifact) => !requestedArtifacts.has(artifact))
   };
 }
 
-function isLowRiskSummaryCandidate({ fileGroups, changeClassification, prRoute, riskSignals, targetedFullSurfaces }) {
-  const sourceCount = fileGroups?.source?.count ?? 0;
-  const repoControlCount = fileGroups?.repo_control?.count ?? 0;
-  const riskSurfaces = changeClassification?.risk_surfaces ?? [];
-  const profile = changeClassification?.profile ?? null;
-  const routeType = prRoute?.route_type ?? null;
-  if (sourceCount > 0 || repoControlCount > 0) return false;
-  if (riskSurfaces.length > 0 || riskSignals.length > 0 || targetedFullSurfaces.length > 0) return false;
-  if (['light', 'docs', 'documentation_only', 'test_only'].includes(profile)) return true;
-  return ['docs_only', 'test_only', 'knowledge_docs', 'general_change'].includes(routeType);
+function resolveRequestedArtifacts(targets) {
+  const requested = new Set();
+  for (const target of targets) {
+    const normalized = String(target ?? '').trim().replaceAll('\\', '/');
+    const filename = normalized.split('/').at(-1);
+    if (SUMMARY_SKIPPED_ARTIFACTS.includes(filename)) {
+      requested.add(filename);
+    } else if (normalized.startsWith('gate:')) {
+      requested.add('gate-dag.json');
+    }
+  }
+  return requested;
 }
 
 function collectRiskSignals({ changeClassification, prRoute, engineeringJudgment }) {
@@ -377,4 +423,38 @@ function dedupeObjects(items, keyFn) {
 function nonEmptyString(value) {
   const normalized = String(value ?? '').trim();
   return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeDrilldownTargets(values) {
+  const targets = Array.isArray(values) ? values : [values];
+  return [...new Set(targets.flatMap((value) => String(value ?? '').split(','))
+    .map((value) => value.trim())
+    .filter(Boolean))];
+}
+
+function assertDrilldownRequest({ depth, reason, consumer, targets, storyId, prContext, gateStatus }) {
+  const missing = [];
+  if (!nonEmptyString(reason)) missing.push('--evidence-depth-reason');
+  if (!nonEmptyString(consumer)) missing.push('--evidence-depth-consumer');
+  if (targets.length === 0) missing.push('--evidence-depth-target');
+  if (missing.length > 0) {
+    throw new Error(`--evidence-depth ${depth} requires ${missing.join(', ')} so every drill-down is attributable and bounded`);
+  }
+
+  const resolvedGateIds = new Set([
+    ...(prContext?.gate_dag?.nodes ?? []).map((gate) => gate?.id),
+    ...(gateStatus?.unresolved_gates ?? []).map((gate) => gate?.id),
+    ...(gateStatus?.critical_unresolved_gates ?? []).map((gate) => gate?.id)
+  ].filter(Boolean));
+  const unresolvedTargets = targets.filter((target) => {
+    const normalized = String(target).replaceAll('\\', '/');
+    const filename = normalized.split('/').at(-1);
+    if (normalized.startsWith('gate:')) return !resolvedGateIds.has(normalized);
+    if (!KNOWN_EVIDENCE_ARTIFACTS.has(filename)) return true;
+    if (normalized === filename) return false;
+    return normalized !== `.vibepro/pr/${storyId}/${filename}`;
+  });
+  if (unresolvedTargets.length > 0) {
+    throw new Error(`--evidence-depth ${depth} has unresolved --evidence-depth-target value(s): ${unresolvedTargets.join(', ')}`);
+  }
 }

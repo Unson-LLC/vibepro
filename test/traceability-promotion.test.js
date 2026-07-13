@@ -67,6 +67,8 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
     'traceability promotion test asserts standalone gate dag artifact',
     '--evidence-depth-consumer',
     'traceability-promotion-test',
+    '--evidence-depth-target',
+    'gate-dag.json',
     '--json'
   ]);
   const traceability = await readJson(traceabilityPath(root, 'story-test-promo'));

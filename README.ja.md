@@ -251,6 +251,8 @@ PR 前に見る主な成果物:
 
 人間は短いPR本文と、生成されている場合はcockpitから読み始めます。AI エージェントには full JSON artifact ではなく、まず `vibepro pr prepare . --story-id <story-id> --summary-json` または `--view readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap` の限定viewを渡します。full JSON artifact は永続正本として保存し、必要な gate id / artifact path だけを対象に drill-down します。HTML artifact はレビュー面であり、正本ではありません。
 
+`pr prepare` は change profile にかかわらず summary-first です。`--evidence-depth standard|full` で明示的に深掘りする場合は、`--evidence-depth-reason`、`--evidence-depth-consumer`、1件以上の `--evidence-depth-target <path-or-gate>` が必須です。VibePro はこの限定要求を `.vibepro/pr/<story-id>/evidence-drilldown-log.json` に記録します。この ledger は要求された exposure の記録であり、agent が実際に読んだ、または判断に使ったことの証明ではありません。
+
 ## よく使うワークフロー
 
 ### リポジトリを診断する

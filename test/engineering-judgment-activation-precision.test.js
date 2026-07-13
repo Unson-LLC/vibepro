@@ -51,7 +51,16 @@ This note mentions workflow, review, artifact, and gate wording for human docume
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'docs/architecture/workflow-notes.md']);
   await git(repo, ['commit', '-m', 'docs: add workflow wording only']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect suppressed engineering judgment artifact projections',
+    '--evidence-depth-consumer', 'engineering-judgment-precision-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'review-cockpit.html',
+    '--evidence-depth-target', 'ref-topology.json'
+  ]);
   assert.equal(result.exitCode, 0);
   const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'execution_topology');
   assert.equal(axis.status, 'inactive');

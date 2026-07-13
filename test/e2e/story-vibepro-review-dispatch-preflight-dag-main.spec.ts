@@ -97,6 +97,16 @@ async function preparePrArtifacts(repo: string) {
     STORY_ID,
     '--base',
     'main',
+    '--evidence-depth',
+    'standard',
+    '--evidence-depth-reason',
+    'replay dispatch preflight Gate DAG surfaces',
+    '--evidence-depth-consumer',
+    'review-dispatch-preflight-e2e',
+    '--evidence-depth-target',
+    'gate-dag.json',
+    '--evidence-depth-target',
+    'gate-dag.html',
     '--json'
   ]);
   assert.equal(prepareResult.exitCode, 0);

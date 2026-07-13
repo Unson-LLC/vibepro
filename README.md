@@ -258,6 +258,8 @@ The most important PR artifacts are:
 
 Humans usually start from the concise PR body and cockpit when present. AI agents should receive a bounded view first with `vibepro pr prepare . --story-id <story-id> --summary-json` or `--view readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap`, not the full JSON artifacts by default. Keep full JSON artifacts as durable evidence and drill down only by referenced gate id or artifact path. HTML artifacts are review surfaces, not the source of truth.
 
+`pr prepare` is summary-first for every change profile. An explicit `--evidence-depth standard|full` drill-down must also provide `--evidence-depth-reason`, `--evidence-depth-consumer`, and one or more `--evidence-depth-target <path-or-gate>` values. VibePro records those bounded requests in `.vibepro/pr/<story-id>/evidence-drilldown-log.json`; the ledger records requested exposure, not proof that an agent read or used the artifact.
+
 ## Common Workflows
 
 ### Diagnose A Repository
