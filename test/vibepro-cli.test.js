@@ -13243,6 +13243,8 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   await writeJson(path.join(prDir, 'decision-records.json'), {
     decisions: [{
       decision_id: 'decision-merge-human-review-override',
+      story_id: 'story-pr-prepare',
+      type: 'waiver',
       status: 'accepted',
       source: 'human-review:block',
       reason: 'The merge fixture uses a fake GitHub boundary and verifies all merge preconditions.',
@@ -13449,6 +13451,7 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     nodes: [],
     summary: { needs_evidence_count: 0 }
   });
+  await writeJson(path.join(prDir, 'human-review.json'), { recommended_decision: 'proceed' });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
     created_at: '2026-06-07T00:00:00.000Z',
@@ -13564,6 +13567,7 @@ test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and ski
     nodes: [],
     summary: { needs_evidence_count: 0 }
   });
+  await writeJson(path.join(prDir, 'human-review.json'), { recommended_decision: 'proceed' });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
     created_at: '2026-06-07T00:00:00.000Z',

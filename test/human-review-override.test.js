@@ -5,7 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { assertHumanReviewOverride, evaluateHumanReviewOverride } from '../src/human-review-override.js';
-import { buildHumanReviewOverrideGate } from '../src/pr-manager.js';
+import { buildHumanReviewOverrideGate, buildPrPrepareGateStatus } from '../src/pr-manager.js';
 
 async function makeReview(recommendation, decisions = []) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-'));
@@ -110,4 +110,16 @@ test('HRO-S8 prepare gate is satisfied only by the evaluated current-HEAD waiver
   }, 'story-human-review-override');
   assert.equal(gate.status, 'satisfied');
   assert.match(gate.reason, /Senior Reviewer/);
+});
+
+test('HRO-S9 unresolved override gate blocks PR readiness', () => {
+  const gate = buildHumanReviewOverrideGate({
+    required: true,
+    recommendation: 'split_pr',
+    expected_source: 'human-review:split_pr',
+    decision: null
+  }, 'story-human-review-override');
+  const status = buildPrPrepareGateStatus({ overall_status: 'ready_for_review', nodes: [gate] });
+  assert.equal(status.ready_for_pr_create, false);
+  assert.equal(status.unresolved_gates.some((item) => item.id === gate.id), true);
 });

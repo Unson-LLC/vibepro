@@ -27,18 +27,32 @@ export async function executeMerge(repoRoot, options = {}) {
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
 
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
-  const [prPrepare, prCreate, executionState, gateDagArtifact] = await Promise.all([
+  const [prPrepare, prCreate, executionState, gateDagArtifact, humanReview] = await Promise.all([
     readJsonIfExists(path.join(prDir, 'pr-prepare.json')),
     readJsonIfExists(path.join(prDir, 'pr-create.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
-    readJsonIfExists(path.join(prDir, 'gate-dag.json'))
+    readJsonIfExists(path.join(prDir, 'gate-dag.json')),
+    readJsonIfExists(path.join(prDir, 'human-review.json'))
   ]);
   const strategy = normalizeMergeStrategy(options.strategy);
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
-  const humanReviewOverride = await assertHumanReviewOverride(root, storyId, currentHeadSha, 'merge');
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
+  const expectedHumanDecision = resolveCurrentHumanReviewRecommendation({
+    currentHeadSha,
+    prCreate: currentPrCreate,
+    prPrepare,
+    gateDag: gateDagArtifact,
+    humanReview
+  });
+  const humanReviewOverride = await assertHumanReviewOverride(
+    root,
+    storyId,
+    currentHeadSha,
+    'merge',
+    expectedHumanDecision
+  );
   const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
@@ -481,6 +495,18 @@ export async function executeMerge(repoRoot, options = {}) {
   artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
   artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
   return { merge, artifacts };
+}
+
+function resolveCurrentHumanReviewRecommendation({ currentHeadSha, prCreate, prPrepare, gateDag, humanReview }) {
+  if (!prCreate || !isCurrentPrLifecycleArtifact(prCreate, currentHeadSha)) return 'block';
+  if (['split_pr', 'block'].includes(humanReview?.recommended_decision)) {
+    return humanReview.recommended_decision;
+  }
+  const splitPlan = prPrepare?.split_plan;
+  if (splitPlan?.status === 'split_recommended') return 'split_pr';
+  const currentGateDag = gateDag ?? prCreate.gate_dag ?? prPrepare?.pr_context?.gate_dag;
+  if (currentGateDag?.overall_status === 'ready_for_review') return 'proceed';
+  return 'block';
 }
 
 async function collectExecuteMergeCostAccounting(root, { storyId, options = {}, baseBranch, currentHeadSha, collectedAt } = {}) {

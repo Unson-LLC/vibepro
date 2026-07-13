@@ -13978,6 +13978,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'responsibility_authority_gate',
       'design_ssot_reconciliation_gate',
+      'human_review_override_gate',
       'senior_gap_judgment_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
