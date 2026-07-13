@@ -4266,7 +4266,65 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-human-review-override",
+      "title": "Human review override policy",
+      "root_doc": "docs/architecture/vibepro-human-review-override.md",
+      "owner": "VibePro maintainers",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-human-review-override.md",
+            "required": true,
+            "relationship": "defines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-human-review-override.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-human-review-override.md",
+          "required": true,
+          "relationship": "defines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-human-review-override.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-12T15:04:46.720Z"
+  "updated_at": "2026-07-13T01:27:27.065Z"
 }
