@@ -26,7 +26,7 @@ async function readJson(filePath: string) {
   return JSON.parse(await readFile(filePath, 'utf8')) as Record<string, any>;
 }
 
-async function makeRuntimeRepo() {
+async function makeRuntimeRepo(options: { broadDiff?: boolean } = {}) {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-review-override-e2e-'));
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'fixture.js'), 'export const fixture = true;\n');
@@ -37,6 +37,13 @@ async function makeRuntimeRepo() {
   await git(repo, ['commit', '-m', 'init runtime fixture']);
   await git(repo, ['switch', '-c', 'feature/human-review-override']);
   await writeFile(path.join(repo, 'src', 'fixture.js'), 'export const fixture = true;\nexport const changed = true;\n');
+  if (options.broadDiff) {
+    for (let index = 0; index < 13; index += 1) {
+      const featureDir = path.join(repo, 'src', `feature-${index}`);
+      await mkdir(featureDir, { recursive: true });
+      await writeFile(path.join(featureDir, 'index.js'), `export const feature${index} = true;\n`);
+    }
+  }
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'exercise human review override']);
 
@@ -162,6 +169,19 @@ test('story-vibepro-human-review-override HRO-002 ac:2 split and block require c
     assert.match(result.stderr, new RegExp(`Human review ${recommendation} override required before merge`));
     assert.equal(headSha.length, 40);
   }
+});
+
+test('story-vibepro-human-review-override HRO-002 ac:2 split recommendation blocks the actual PR-create CLI boundary', async () => {
+  const { repo, prDir } = await makeRuntimeRepo({ broadDiff: true });
+  await writeJson(path.join(prDir, 'decision-records.json'), { decisions: [] });
+
+  const result = await runCliCaptured([
+    'pr', 'create', repo, '--story-id', storyId, '--base', 'main', '--max-files', '3',
+    '--dry-run', '--json', '--allow-extra-files'
+  ]);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /Human review split_pr override required before PR creation/);
 });
 
 test('story-vibepro-human-review-override HRO-003 ac:3 ac:4 stale lifecycle blocks, current lifecycle transitions to dry-run merge and records artifacts', async () => {
