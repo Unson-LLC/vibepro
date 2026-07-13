@@ -68,6 +68,7 @@ const SMOKE = {
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },
   review: { setup: 'story', args: (r) => ['review', 'status', r, '--id', 'story-x'] },
+  adjudicate: { setup: 'story', args: (r) => ['adjudicate', 'prepare', r, '--id', 'story-x'] },
   checkpoint: { setup: 'story', args: (r) => ['checkpoint', r] },
   gate: { setup: 'story', args: (r) => ['gate', 'check', r, '--story-id', 'story-x'] },
   spec: { setup: 'story', args: (r) => ['spec', r] },
