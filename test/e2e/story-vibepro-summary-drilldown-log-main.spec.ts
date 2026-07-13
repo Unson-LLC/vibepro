@@ -6,6 +6,7 @@ import {
   buildEvidencePlan,
   buildEvidenceDrilldownEntry
 } from '../../src/evidence-depth-planner.js';
+import { runCli } from '../../src/cli.js';
 
 const STORY_ID = 'story-vibepro-summary-drilldown-log';
 
@@ -64,4 +65,14 @@ test('summary-first and explicit drill-down contracts replay end to end', async 
   ]);
   assert.match(readme, /--evidence-depth-target/, `${STORY_ID} ac:5`);
   assert.match(readmeJa, /--evidence-depth-target/, `${STORY_ID} ac:5`);
+
+  let help = '';
+  await runCli(['help', '--language', 'en'], {
+    stdout: { write: (chunk) => { help += chunk; } }
+  });
+  assert.match(
+    help,
+    /--evidence-depth standard\|full[\s\S]*--evidence-depth-reason[\s\S]*--evidence-depth-consumer[\s\S]*--evidence-depth-target/,
+    `${STORY_ID} ac:5`
+  );
 });

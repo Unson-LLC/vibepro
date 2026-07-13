@@ -214,6 +214,19 @@ test('standard/full drill-down rejects unknown artifact and unresolved gate targ
     () => buildEvidencePlan({ ...request, requestedDepthTargets: ['gate:not_in_current_dag'] }),
     /unresolved --evidence-depth-target value\(s\): gate:not_in_current_dag/
   );
+  for (const target of [
+    'not-canonical/traceability.json',
+    '.vibepro/pr/another-story/traceability.json'
+  ]) {
+    assert.throws(
+      () => buildEvidencePlan({ ...request, requestedDepthTargets: [target] }),
+      new RegExp(`unresolved --evidence-depth-target value\\(s\\): ${target.replaceAll('.', '\\.')}`)
+    );
+  }
+  assert.doesNotThrow(() => buildEvidencePlan({
+    ...request,
+    requestedDepthTargets: ['.vibepro/pr/story-unresolved-target/traceability.json']
+  }));
   for (const target of ['raw-transcript-log', 'raw-provider-log', 'full-review-lifecycle-dump']) {
     assert.throws(
       () => buildEvidencePlan({ ...request, requestedDepthTargets: [target] }),

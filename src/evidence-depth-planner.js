@@ -112,6 +112,7 @@ export function buildEvidencePlan({
       reason: requestedDepthReason,
       consumer: requestedDepthConsumer,
       targets: drilldownTargets,
+      storyId: story?.story_id,
       prContext,
       gateStatus
     });
@@ -431,7 +432,7 @@ function normalizeDrilldownTargets(values) {
     .filter(Boolean))];
 }
 
-function assertDrilldownRequest({ depth, reason, consumer, targets, prContext, gateStatus }) {
+function assertDrilldownRequest({ depth, reason, consumer, targets, storyId, prContext, gateStatus }) {
   const missing = [];
   if (!nonEmptyString(reason)) missing.push('--evidence-depth-reason');
   if (!nonEmptyString(consumer)) missing.push('--evidence-depth-consumer');
@@ -449,7 +450,9 @@ function assertDrilldownRequest({ depth, reason, consumer, targets, prContext, g
     const normalized = String(target).replaceAll('\\', '/');
     const filename = normalized.split('/').at(-1);
     if (normalized.startsWith('gate:')) return !resolvedGateIds.has(normalized);
-    return !KNOWN_EVIDENCE_ARTIFACTS.has(filename);
+    if (!KNOWN_EVIDENCE_ARTIFACTS.has(filename)) return true;
+    if (normalized === filename) return false;
+    return normalized !== `.vibepro/pr/${storyId}/${filename}`;
   });
   if (unresolvedTargets.length > 0) {
     throw new Error(`--evidence-depth ${depth} has unresolved --evidence-depth-target value(s): ${unresolvedTargets.join(', ')}`);

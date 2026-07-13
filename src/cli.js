@@ -293,6 +293,9 @@ For agent handoff, pass a bounded projection first with \`pr prepare --summary-j
 or \`pr prepare --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>\`.
 Keep full JSON artifacts as durable evidence and drill down by referenced gate id
 or artifact path only when needed.
+An explicit \`--evidence-depth standard|full\` request requires
+\`--evidence-depth-reason\`, \`--evidence-depth-consumer\`, and at least one
+\`--evidence-depth-target <path-or-gate>\` together.
 Use \`pr prepare --outcome <source_fix|evidence_added|rewording_only|waiver|unclassified>\`
 only to override ambiguous gate outcome ledger classification.
 If required gates are unresolved, next_commands points back to review or
@@ -511,6 +514,7 @@ risk-adaptive Gate DAG:
   診断・Story・Gate・レビュー証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。
   AIエージェントには full JSON artifact ではなく、まず pr prepare --summary-json または --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap> の限定viewを渡します。
   full artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downします。
+  --evidence-depth standard|full を明示する場合は、--evidence-depth-reason、--evidence-depth-consumer、1つ以上の --evidence-depth-target <path-or-gate> を全て指定します。
 
 PR作成経路:
   通常のPR作成では vibepro pr create を使ってください。GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らないため、標準経路にしません。
