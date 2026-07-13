@@ -722,13 +722,25 @@ test('resolver does not match a contract from responsibility reference alone', a
   assert.equal(result.unregistered_candidates[0].id, 'no_registered_authority');
 });
 
-test('pr prepare projects responsibility authority into Gate DAG before Requirement Gate', async () => {
+test('pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis', async () => {
   const repo = await makeFixtureRepo();
   await writeStoryDocs(repo);
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'Add story docs']);
   await git(repo, ['switch', '-c', 'feature/responsibility-authority-fixture']);
   await writeResponsibilityFixture(repo);
+  const registryPath = path.join(repo, 'responsibility-authority.json');
+  const registry = JSON.parse(await readFile(registryPath, 'utf8'));
+  registry.responsibilities.push({
+    ...responsibilityEntry(
+      'billing.cleanup.cancellation_policy',
+      ['src/billing-worker.js'],
+      ['core_workflow_state'],
+      'docs/specs/billing-cleanup.md'
+    ),
+    required_evidence: ['unit_regression', 'current_head_verification']
+  });
+  await writeFile(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
   await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), `
 export function cleanup(task) {
   if (task.projectStatus !== 'processable') return 'CANCELED';
@@ -746,15 +758,27 @@ export function cleanup(task) {
   const gateDag = preparation.pr_context.gate_dag;
   const gate = gateDag.nodes.find((node) => node.id === 'gate:responsibility_authority');
   const edge = gateDag.edges.find((item) => item.from === 'gate:responsibility_authority' && item.to === 'gate:requirement');
+  const authority = preparation.pr_context.responsibility_authority;
+  const requirementAuthority = preparation.pr_context.requirement_consistency.responsibility_authority;
 
   assert.ok(gate);
   assert.equal(gate.type, 'responsibility_authority_gate');
   assert.equal(gate.status, 'needs_evidence');
   assert.equal(gate.required, true);
+  assert.equal(authority.summary.matched_responsibility_count, 1);
+  assert.deepEqual(authority.matched_responsibilities.map((item) => item.id), [
+    'generation.cleanup.cancellation_policy'
+  ]);
+  assert.deepEqual(gate.matched_responsibilities.map((item) => item.id), [
+    'generation.cleanup.cancellation_policy'
+  ]);
+  assert.deepEqual(requirementAuthority.matched_responsibilities.map((item) => item.id), [
+    'generation.cleanup.cancellation_policy'
+  ]);
   assert.ok(edge);
   assert.equal(gateDag.summary.responsibility_authority_status, 'needs_evidence');
   assert.equal(preparation.gate_status.ready_for_pr_create, false);
-  assert.ok(preparation.pr_context.requirement_consistency.summary.responsibility_authority_ref_count >= 1);
+  assert.equal(preparation.pr_context.requirement_consistency.summary.responsibility_authority_ref_count, 1);
 });
 
 async function writeReviewedWorkspaceStatus(repo) {
