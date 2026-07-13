@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { evaluateGateReadiness } from './pr-manager.js';
+import { normalizeActiveStories } from './story-manager.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -31,8 +32,8 @@ export async function readGuardConfig(repoRoot) {
   }
   const guard = raw.guard ?? {};
   // Mirrors story-manager resolveStory: explicit current_story_id, else the
-  // first configured story.
-  const stories = Array.isArray(raw.brainbase?.stories) ? raw.brainbase.stories : [];
+  // first active configured story.
+  const stories = normalizeActiveStories(raw.brainbase?.stories);
   const selectedStoryId = raw.brainbase?.current_story_id ?? stories[0]?.story_id ?? null;
   const extraPatterns = Array.isArray(guard.release_patterns)
     ? guard.release_patterns
@@ -57,7 +58,7 @@ export function classifyReleaseSurface(command, config) {
   // entire compound command ("vibepro --version && gh pr create" must still
   // match). vibepro's own commands go through the CLI's internal throw-based
   // enforcement; only the vibepro segment itself is exempt.
-  const segments = normalized.split(/&&|\|\||[;|]/);
+  const segments = normalized.split(/&&|\|\||[;|]|\r?\n/);
   for (const segment of segments) {
     const trimmed = segment.trim();
     if (!trimmed) continue;

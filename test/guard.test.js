@@ -85,6 +85,8 @@ test('GUARD-S-001 release surface classification matches release commands and ig
   assert.equal(classifyReleaseSurface('vibepro --version && gh pr create --title x', config).id, 'raw_pr_create');
   assert.equal(classifyReleaseSurface('vibepro help; git push origin main', config).id, 'protected_branch_push');
   assert.equal(classifyReleaseSurface('vibepro pr prepare . | tee log && fly deploy', config).id, 'fly_deploy');
+  assert.equal(classifyReleaseSurface('vibepro help\ngh pr create --fill', config).id, 'raw_pr_create');
+  assert.equal(classifyReleaseSurface('vibepro --version\ngit push origin main', config).id, 'protected_branch_push');
 });
 
 test('GUARD-S-002 non-release commands allow immediately and unmanaged repos are never blocked', async () => {
