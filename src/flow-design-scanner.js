@@ -152,12 +152,17 @@ export async function scanFlowDesign(repoRoot, options = {}) {
   result.summary.interactive_contract_count = result.interactive_contract_hits.length;
   result.summary.value_alignment_count = result.value_alignment_hits.length;
 
-  if (uiFiles.length === 0) {
+  // Findings always win: a zero-file scan that produced blocking findings
+  // (e.g. FLOW-NO-UI-CODE for a UI story) keeps its pre-existing blocking
+  // status. The conclusiveness vocabulary only replaces what would otherwise
+  // be a vacuum pass.
+  const findingsStatus = resolveStatus(result);
+  if (uiFiles.length === 0 && findingsStatus === 'pass') {
     const conclusiveness = resolveScanConclusiveness({ scannedCount: uiFiles.length, applicable: uiStory });
     result.status = conclusiveness.status;
     result.reason = conclusiveness.reason;
   } else {
-    result.status = resolveStatus(result);
+    result.status = findingsStatus;
   }
   return result;
 }

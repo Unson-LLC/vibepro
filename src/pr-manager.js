@@ -12376,6 +12376,7 @@ function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext 
   if (missing > 0) status = 'failed';
   else if ((replacements > 0 || dynamic > 0) && !networkEvidence) status = 'needs_review';
   else if (introduced > 0 && !networkEvidence) status = 'needs_evidence';
+  const inconclusiveScan = networkContracts.status === 'inconclusive' && status === 'passed';
   return {
     id: 'gate:network_contract',
     type: 'verification_gate',
@@ -12392,7 +12393,9 @@ function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext 
             ? networkEvidence
               ? 'New API client calls have network-aware E2E or flow evidence'
               : 'New API client calls require network-aware E2E or route contract evidence'
-            : 'No broken API client route contracts detected',
+            : inconclusiveScan
+              ? 'Network contract scan found no candidate files to examine (inconclusive scan); no client calls were present to verify'
+              : 'No broken API client route contracts detected',
     summary: {
       api_client_call_count: networkContracts.api_client_call_count ?? 0,
       introduced_api_client_call_count: introduced,

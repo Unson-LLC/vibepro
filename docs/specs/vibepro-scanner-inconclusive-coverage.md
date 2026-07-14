@@ -12,7 +12,7 @@ parent_design: vibepro-scanner-inconclusive-coverage
 
 ### SIC-CONTRACT-001: 3状態の分離
 
-走査0件かつ適用対象は `inconclusive`、走査0件かつ適用外は理由付き `not_applicable`、走査1件以上は既存のfindingsベース判定（pass/fail/block/needs_review）とし、走査0件で `pass` を返すことは許されない。
+findingsベース判定（block / fail / needs_review）は走査件数に関わらず常に優先される。findingsが無い走査0件は、適用対象なら `inconclusive`、適用外なら理由付き `not_applicable` とし、走査0件で `pass` を返すことは許されない。走査1件以上でfindingsが無い場合は従来どおり `pass`。
 
 ### SIC-CONTRACT-002: 走査実績の添付
 
@@ -20,11 +20,11 @@ parent_design: vibepro-scanner-inconclusive-coverage
 
 ### SIC-CONTRACT-003: 既存判定の不変
 
-UI storyの走査0件で出る既存critical finding（FLOW-NO-UI-CODE）、network-contractのmissing route block、regression-riskのneeds_review等、findingsベースの既存判定は変更しない。走査1件以上の挙動は完全に従来どおり。
+UI storyの走査0件で出る既存critical finding（FLOW-NO-UI-CODE）による `block`、network-contractのmissing route block、regression-riskのneeds_review等、findingsベースの既存判定（blocking exit code含む）は変更しない。走査1件以上の挙動は完全に従来どおり。
 
 ### SIC-CONTRACT-004: 非ブロッキング
 
-`inconclusive` / `not_applicable` はgate DAGのunresolved集計へ入れず、ready判定を変えない。表示（diagnose summary / check packs）では「検査対象を発見できなかった＝合格ではない」を明示してpassと区別する。
+`inconclusive` / `not_applicable` はgate DAGのunresolved集計へ入れず、ready判定を変えない。check-packの集計statusは非failing扱いだが `inconclusive_count` を添付し、機械消費者が未検査込みのpassを区別できるようにする。表示（diagnose summary / check packs）では「検査対象を発見できなかった＝合格ではない」を明示してpassと区別する。
 
 ## Non Goals
 

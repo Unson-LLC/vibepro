@@ -35,7 +35,7 @@
     {
       "id": "SC-SIC-2",
       "type": "scenario",
-      "statement": "When the flow design scanner walks its UI roots and discovers zero files for a UI story, the result status transitions to inconclusive while the FLOW-NO-UI-CODE critical finding is preserved, and it never reports pass.",
+      "statement": "When the flow design scanner walks its UI roots and discovers zero files for a UI story, the pre-existing blocking verdict driven by the FLOW-NO-UI-CODE critical finding is preserved (block, never pass); the inconclusive vocabulary applies only when no findings force a stronger status.",
       "origin": {
         "story_refs": [
           {

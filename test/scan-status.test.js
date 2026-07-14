@@ -30,15 +30,17 @@ test('SCAN-S-001: resolveScanConclusiveness separates pass/inconclusive/not_appl
   assert.equal(scanned.reason, null);
 });
 
-// SCAN-S-002: UI story with zero scanned UI files must not read as a pass,
-// and the existing FLOW-NO-UI-CODE critical finding must still fire.
-test('SCAN-S-002: flow-design UI story with 0 UI files is inconclusive and keeps FLOW-NO-UI-CODE', async () => {
+// SCAN-S-002: UI story with zero scanned UI files must not read as a pass.
+// The pre-existing FLOW-NO-UI-CODE critical finding still fires and its
+// blocking status wins over the conclusiveness vocabulary (findings first).
+test('SCAN-S-002: flow-design UI story with 0 UI files keeps the blocking FLOW-NO-UI-CODE verdict', async () => {
   const repo = await makeRepo();
   const result = await scanFlowDesign(repo, {
     story: { story_id: 'U-100', title: 'ユーザー登録フォームの導線を改善する', view: 'user' }
   });
 
-  assert.equal(result.status, 'inconclusive');
+  assert.equal(result.status, 'block');
+  assert.notEqual(result.status, 'pass');
   assert.equal(result.summary.scanned_ui_files, 0);
   assert.equal(
     result.value_alignment_hits.some((hit) => hit.id === 'FLOW-NO-UI-CODE' && hit.severity === 'Critical'),

@@ -37,15 +37,15 @@ updated_at: 2026-07-14
 `findings.length > 0 ? fail : pass` パターンの帰結であり、ゲートへの信頼を破壊する
 （合格表示が「検査した上で問題なし」なのか「何も見ていない」なのか区別できない）。
 
-対策は状態語彙の分離: 検査対象を発見して問題がなければ `pass`、発見して問題があれば
-従来どおり、**発見できなければ `inconclusive`**。inconclusiveは今回の導入では
-非ブロッキング（表示・機械可読状態の正直化が目的）とし、UI storyでの0件は既存の
-critical finding（FLOW-NO-UI-CODE）経路を維持する。
+対策は状態語彙の分離: findingsベースの判定（block / fail / needs_review / pass）が常に優先され、
+走査0件でfindingsが無く従来 `pass` になっていた場合のみ **`inconclusive` / `not_applicable`** へ
+置換する。UI storyでの0件は既存critical finding（FLOW-NO-UI-CODE）による `block` を弱めない。
+inconclusiveは今回の導入では非ブロッキング（表示・機械可読状態の正直化が目的）。
 
 ## Scope
 
 - 共有ヘルパー `resolveScanConclusiveness`（新規 `src/scan-status.js`）: `{scanned_count, findings, applicable}` から `pass | inconclusive | not_applicable` と scan_coverage（走査root・発見ファイル数）を決定する
-- `flow-design-scanner`: UI走査0件のとき、UI storyなら従来のcritical finding（FLOW-NO-UI-CODE）を維持しつつ status を `inconclusive` にする。非UI storyの0件は明示 `not_applicable`（理由付き）。走査したroot一覧と件数を `scan_coverage` として結果に含める
+- `flow-design-scanner`: findingsベースの判定が常に優先される。UI storyの走査0件は既存critical finding（FLOW-NO-UI-CODE）による `block` を従来どおり維持し、findingsが無く `pass` になる場合のみ語彙を置換する（非UI storyの0件は明示 `not_applicable`、適用対象でfindingsなしの0件は `inconclusive`）。走査root一覧と件数を `scan_coverage` として結果に含める
 - `network-contract-scanner`: ルート・クライアント呼び出しの候補ファイルが1件も走査できなかったとき `inconclusive`（既存のblock判定は維持）
 - `regression-risk-scanner`: call graphで評価可能なmodule（scored modules）が0件のとき `inconclusive`（coverage不在時の既存degrade/skippedは不変）
 - 診断summary（story diagnose）とcheck packsの表示で `inconclusive` を `pass` と区別して表示する（「検査対象を発見できなかった＝合格ではない」を明記）
@@ -61,7 +61,7 @@ critical finding（FLOW-NO-UI-CODE）経路を維持する。
 ## 受け入れ基準
 
 - [ ] `resolveScanConclusiveness` は、走査0件かつ適用対象なら `inconclusive`、走査0件かつ適用外なら `not_applicable`、走査1件以上かつfindingsなしなら `pass` を返す
-- [ ] flow-design-scannerはUI走査0件のとき `pass` を返さない: UI storyなら `inconclusive` + 既存critical finding、非UI storyなら理由付き `not_applicable` になる
+- [ ] flow-design-scannerはUI走査0件のとき `pass` を返さない: UI storyなら既存critical finding（FLOW-NO-UI-CODE）による `block` を維持し、非UI storyなら理由付き `not_applicable` になる
 - [ ] flow-design-scannerの結果に走査root一覧と発見ファイル数を含む `scan_coverage` が入る
 - [ ] UIファイルを1件以上走査しfindingsが無い場合は従来どおり `pass` になる（既存挙動の回帰なし）
 - [ ] network-contract-scannerは候補ファイル走査0件のとき `inconclusive` になり、client呼び出し欠落の既存 `block` 判定は変わらない

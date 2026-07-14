@@ -38,11 +38,12 @@ test('SIC-E2E-001 story-vibepro-scanner-inconclusive-coverage ac:1 conclusivenes
 // story-vibepro-scanner-inconclusive-coverage S-001
 // story-vibepro-scanner-inconclusive-coverage S-002
 test('SIC-E2E-002 story-vibepro-scanner-inconclusive-coverage ac:2 zero-file flow design scans never report pass', async () => {
-  // flow-design-scannerはUI走査0件のとき `pass` を返さない: UI storyなら `inconclusive` + 既存critical finding、非UI storyなら理由付き `not_applicable` になる
-  // When the flow design scanner walks its UI roots and discovers zero files for a UI story, the result status transitions to inconclusive while the FLOW-NO-UI-CODE critical finding is preserved, and it never reports pass.
+  // flow-design-scannerはUI走査0件のとき `pass` を返さない: UI storyなら既存critical finding（FLOW-NO-UI-CODE）による `block` を維持し、非UI storyなら理由付き `not_applicable` になる
+  // When the flow design scanner walks its UI roots and discovers zero files for a UI story, the pre-existing blocking verdict driven by the FLOW-NO-UI-CODE critical finding is preserved (block, never pass); the inconclusive vocabulary applies only when no findings force a stronger status.
   const empty = await makeRepo({ 'README.md': '# fixture\n' });
   const uiResult = await scanFlowDesign(empty, { story: UI_STORY });
-  assert.equal(uiResult.status, 'inconclusive');
+  // UI storyの0件は既存critical finding（FLOW-NO-UI-CODE）のblock判定が優先され、passには決してならない
+  assert.equal(uiResult.status, 'block');
   assert.notEqual(uiResult.status, 'pass');
   assert.ok(uiResult.value_alignment_hits.some((hit) => hit.id === 'FLOW-NO-UI-CODE'));
 
@@ -118,9 +119,10 @@ test('SIC-E2E-007 story-vibepro-scanner-inconclusive-coverage ac:7 summary rende
   assert.match(describeScanStatus('inconclusive'), /合格ではない/);
   assert.equal(describeScanStatus('pass'), 'pass');
   const empty = await makeRepo({ 'README.md': '# fixture\n' });
-  const flow = await scanFlowDesign(empty, { story: UI_STORY });
+  const flow = await scanFlowDesign(empty, { story: BACKEND_STORY });
   const report = renderFlowDesignReport({ runId: 'sic-e2e', flowDesign: flow });
-  assert.match(report, /検査対象を発見できなかった/);
+  assert.match(report, /not_applicable（このスキャナの対象外）/);
+  assert.match(describeScanStatus('not_applicable'), /対象外/);
 });
 
 // story-vibepro-scanner-inconclusive-coverage ac:8

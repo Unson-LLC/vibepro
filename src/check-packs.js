@@ -126,6 +126,10 @@ export async function runCheckPack(repoRoot, options = {}) {
 
   const checks = summarizeChecks({ packId, evidence, architectureProfile });
   const status = aggregateStatus(checks);
+  // Machine consumers of the aggregate must be able to distinguish "pass
+  // after examining targets" from "pass with unexamined scanners": the
+  // aggregate stays non-blocking, but the inconclusive count travels with it.
+  const inconclusiveCount = checks.filter((check) => check.status === 'inconclusive').length;
   const jsonPath = path.join(runDir, 'check.json');
   const markdownPath = path.join(runDir, 'check.md');
   const result = {
@@ -135,6 +139,7 @@ export async function runCheckPack(repoRoot, options = {}) {
     pack_id: packId,
     title: pack.title,
     status,
+    inconclusive_count: inconclusiveCount,
     output: { language },
     repo: { root: '.' },
     checks,
