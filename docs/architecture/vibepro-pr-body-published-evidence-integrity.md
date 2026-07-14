@@ -42,6 +42,7 @@ projectionから上流のevidenceやGate判定を変更してはならない。
 - evidenceなし、stale/pass、current/failはchecked表示の根拠にしない。
 - direct detail、verification checklist、final E2E、自由文linkifierの各経路で `.vibepro` をinline表示する。
 - 自由文に既存Markdown形式の `.vibepro` linkが入力された場合もinline codeへ正規化し、既存のtracked Markdown linkは維持する。
+- 閉じ括弧欠落、空href、href内空白など壊れたMarkdownが自由文に含まれても例外を発生させず、入力文字列を欠落させない。壊れた構文内の `.vibepro/` pathを検出できる場合はinline codeへ落とし、GitHub上でローカルartifactへの有効なMarkdown linkを生成しない。
 - `pr create --allow-needs-verification` のwaiver reasonをrender後に追記する経路でも、実際にGitHubへ渡すbody-file上で同じ正規化とtracked link維持を確認する。
 - `## 監査ログ` を含む65,536文字超fixtureでaudit log省略後のlimit noticeを直接通し、別fixtureでminimal/forced fallbackも同じ境界を確認する。
 - trackedな `docs/`、`src/`、`test/` と動的route pathはリンクを維持する。

@@ -44,6 +44,7 @@ flowchart LR
 - `PEI-CONTRACT-006`: Gate DAG、verification binding、PR create/mergeの判定を変更してはならない。
 - `PEI-CONTRACT-007`: 通常本文、render後のGate waiver追記、GitHub本文上限超過時のlimit notice、minimal fallback、forced fallbackは同じ公開可能性ルールを適用しなければならない。
 - `PEI-CONTRACT-008`: staleなpassing evidenceまたはcurrentなfailing evidenceを完了済み項目の根拠にしてはならない。
+- `PEI-CONTRACT-009`: 自由文のMarkdown link構文が壊れていても本文生成は例外終了や文字列欠落を起こしてはならず、検出可能な`.vibepro/` pathを有効なMarkdown linkとして公開してはならない。
 
 ## Scenarios
 
@@ -52,6 +53,7 @@ flowchart LR
 - `PEI-SCENARIO-003`: Given direct detail、verification checklist、最終E2E、自由文にplainな`.vibepro/` pathがある, when PR本文を生成する, then pathはinline codeで表示されMarkdown linkにはならない。
 - `PEI-SCENARIO-003B`: Given 自由文に既存Markdown形式の`.vibepro/` linkとtracked repo path linkがある, when PR本文を生成する, then `.vibepro/` linkだけinline codeへ正規化され、tracked linkは維持される。
 - `PEI-SCENARIO-003C`: Given `pr create --allow-needs-verification` のwaiver reasonにplain/既存Markdown形式の`.vibepro/`参照とtracked repo path linkがある, when render後にGate waiverを追記して投稿用body-fileを選ぶ, then `.vibepro/`参照はinline codeへ正規化され、tracked linkは維持される。
+- `PEI-SCENARIO-003D`: Given waiver reasonに閉じ括弧欠落、空href、href内空白を含む壊れたMarkdownがある, when render後にGate waiverを追記する, then 本文生成は成功し、入力のlabelと残余文字列を保持し、検出可能な`.vibepro/` pathはinline codeとなり、有効な`.vibepro/` Markdown linkは生成されない。
 - `PEI-SCENARIO-004`: Given `docs/`または`src/`配下のpathがある, when PR本文を生成する, then pathは従来どおりMarkdown linkになる。
 - `PEI-SCENARIO-005`: Given stale/passまたはcurrent/fail evidenceしかない, when PR本文を生成する, then そのevidenceを完了済み項目として表示せず未完了fallbackを表示する。
 - `PEI-SCENARIO-006A`: Given `## 監査ログ` を含む生成本文がGitHub本文上限を超え、監査ログ省略後は上限内になる, when 投稿用 `pr-body.github.md` を生成する, then strategyは`omit_audit_log_section`となりlimit notice内の`.vibepro/` pathはinline code、Markdown link不在、tracked link維持となる。
@@ -65,8 +67,8 @@ flowchart LR
 
 ## Test References
 
-- `test/vibepro-cli.test.js`: current/pass、証跡なし、stale/pass、current/fail、direct detail、verification、最終E2E、自由文linkifier、Gate waiver追記後の投稿body-file、tracked path、Gate/binding不変の回帰テスト
-- `test/pr-artifact-size-budget.test.js`: GitHub本文上限超過時のaudit log省略limit notice、minimal fallback、forced fallback公開境界テスト
+- `test/vibepro-cli.test.js`: current/pass、証跡なし、stale/pass、current/fail、direct detail、verification、最終E2E、自由文linkifier、壊れたMarkdownの安全なfallback、Gate waiver追記後の投稿body-file、tracked path、GitHub本文上限超過時のaudit log省略limit notice、minimal fallback、forced fallback、Gate/binding不変の回帰テスト
+- `test/pr-artifact-size-budget.test.js`: GitHub本文artifactのsize budgetとmetadata契約テスト
 - `test/e2e/story-vibepro-pr-body-path-links-main.spec.ts`: 旧path-links契約を公開可能性境界へ更新する静的E2E
 - `test/e2e/story-vibepro-pr-body-published-evidence-integrity-main.test.js`: Acceptance Criteria対応のE2E契約テスト
 - `test/evidence-depth-pr-prepare.test.js`: evidence depthを保持した本文表示回帰

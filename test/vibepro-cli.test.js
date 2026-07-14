@@ -8147,7 +8147,15 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   let createStderr = '';
-  const gateWaiverReason = 'UI影響のないPR本文生成テストのためE2Eは対象外。plain=.vibepro/verification/story-pr-prepare/unit-status.json existing=[local evidence](.vibepro/pr/story-pr-prepare/pr-prepare.json) tracked=[Story](docs/management/stories/active/story-pr-prepare.md)';
+  const gateWaiverReason = [
+    'UI影響のないPR本文生成テストのためE2Eは対象外。',
+    'plain=.vibepro/verification/story-pr-prepare/unit-status.json',
+    'existing=[local evidence](.vibepro/pr/story-pr-prepare/pr-prepare.json)',
+    'tracked=[Story](docs/management/stories/active/story-pr-prepare.md)',
+    'missing-close=[broken](.vibepro/pr/story-pr-prepare/missing-close.json',
+    'empty-href=[empty]()',
+    'space-href=[space](.vibepro/pr/story-pr-prepare/space path.json)'
+  ].join(' ');
   const createResult = await runCli([
     'pr',
     'create',
@@ -8204,6 +8212,9 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.match(waivedPrBody, /`\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json`/);
   assert.doesNotMatch(waivedPrBody, /\[[^\]]+\]\(\.vibepro\//);
   assert.match(waivedPrBody, /\[Story\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\)/);
+  assert.match(waivedPrBody, /missing-close=\[broken\]\(`\.vibepro\/pr\/story-pr-prepare\/missing-close\.json`/);
+  assert.match(waivedPrBody, /empty-href=\[empty\]\(\)/);
+  assert.match(waivedPrBody, /space-href=\[space\]\(`\.vibepro\/pr\/story-pr-prepare\/space` path\.json\)/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_report, '.vibepro/pr/story-pr-prepare/pr-create.html');
