@@ -11,11 +11,25 @@
       "type": "invariant",
       "statement": "safeReaddir returns the sorted entries of a directory, returns an empty array for both ENOENT (missing path) and ENOTDIR (a file where a directory was expected), and re-throws any other error.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria" }],
-        "code_refs": [{ "file": "src/execution-state.js", "anchor": "safeReaddir" }]
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/execution-state.js",
+            "anchor": "safeReaddir"
+          }
+        ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/gate-evidence-edge-robustness.test.js", "must_contain": "GER-S-001" }]
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-001"
+          }
+        ]
       }
     },
     {
@@ -23,11 +37,25 @@
       "type": "scenario",
       "statement": "safeReaddir propagates errors whose code is neither ENOENT nor ENOTDIR instead of swallowing them.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria" }],
-        "code_refs": [{ "file": "src/execution-state.js", "anchor": "safeReaddir" }]
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/execution-state.js",
+            "anchor": "safeReaddir"
+          }
+        ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/gate-evidence-edge-robustness.test.js", "must_contain": "GER-S-002" }]
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-002"
+          }
+        ]
       }
     },
     {
@@ -35,11 +63,25 @@
       "type": "invariant",
       "statement": "buildEvidenceItem makes the explicit kind and ref arguments win over any colliding key in the extra bag, so a stray extra.kind or extra.ref cannot override the caller's intended identity.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria" }],
-        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "buildEvidenceItem" }]
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildEvidenceItem"
+          }
+        ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/gate-evidence-edge-robustness.test.js", "must_contain": "GER-S-003" }]
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-003"
+          }
+        ]
       }
     },
     {
@@ -47,11 +89,25 @@
       "type": "invariant",
       "statement": "buildEvidenceItem applies the defaults declared/strength-not-classified/n-a/unknown when extra omits strength, strength_reason, binding_status, or artifact_quality, and preserves those fields when extra provides them.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria" }],
-        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "buildEvidenceItem" }]
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildEvidenceItem"
+          }
+        ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/gate-evidence-edge-robustness.test.js", "must_contain": "GER-S-004" }]
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-004"
+          }
+        ]
       }
     },
     {
@@ -59,14 +115,55 @@
       "type": "scenario",
       "statement": "buildEvidenceItem carries through descriptive extra fields (for example matched_file_count, related_file_count, investigation_files, optional) while keeping the correct kind and defaults, and buildDocumentationEvidence's add helper no longer needs to duplicate kind inside extra.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
         "code_refs": [
-          { "file": "src/pr-manager.js", "anchor": "buildEvidenceItem" },
-          { "file": "src/pr-manager.js", "anchor": "buildDocumentationEvidence" }
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildEvidenceItem"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildDocumentationEvidence"
+          }
         ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/gate-evidence-edge-robustness.test.js", "must_contain": "GER-S-005" }]
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-005"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-GER-6",
+      "type": "scenario",
+      "statement": "The execution-state scanning workflow, when reading a pr or audit directory via safeReaddir, transitions to the 'continue with no entries' state for both the ENOENT (missing) and ENOTDIR (malformed: file where a directory was expected) outcomes instead of transitioning to an abort/throw state, so the pr-prepare and reconcile workflow stays resilient. Any other error transitions to the re-throw state.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/execution-state.js",
+            "anchor": "safeReaddir"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/gate-evidence-edge-robustness.test.js",
+            "must_contain": "GER-S-001"
+          }
+        ]
       }
     }
   ],
@@ -82,6 +179,12 @@
       "kind": "flow",
       "title": "buildEvidenceItem field precedence",
       "mermaid": "flowchart LR\n  Extra[\"...extra (descriptive fields)\"] --> Merge[\"merged object\"]\n  Explicit[\"kind / ref / defaulted fields\"] --> Merge\n  Merge --> Win[\"explicit + defaults win over colliding extra keys\"]\n  Win --> Item[\"evidence item with intact identity + carried-through extras\"]"
+    },
+    {
+      "id": "DG-GER-THREAT",
+      "kind": "threat_model",
+      "title": "Malformed workspace and evidence-identity threats",
+      "mermaid": "flowchart LR\n  Malformed[\"malformed workspace: file where a directory is expected\"] --> Scan[\"execution-state scanning (safeReaddir)\"]\n  Scan --> Control1[\"ENOTDIR treated as no-entries: workflow continues, not aborts\"]\n  Collision[\"extra bag carrying a stray kind/ref\"] --> Assemble[\"buildEvidenceItem\"]\n  Assemble --> Control2[\"explicit kind/ref win: evidence identity cannot be hijacked\"]\n  Control1 --> Safe[\"pr-prepare/reconcile stays correct on edge inputs\"]\n  Control2 --> Safe"
     }
   ]
 }

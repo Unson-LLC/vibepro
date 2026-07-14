@@ -46,6 +46,7 @@ ENOTDIR → []          （追加: ディレクトリのはずがファイル＝
 - GER-S-003 = INV-GER-3: 明示kind/refがextraに勝つ
 - GER-S-004 = INV-GER-4: 既定値の適用と値の保持
 - GER-S-005 = SC-GER-5: 記述的extraフィールドの保持＋回避策不要の実証
+- GER-S-001 = SC-GER-6: execution-state scanning workflowのreaddir-outcome状態遷移（entries/継続空/再throw）。ENOTDIRもENOENTと同じ「継続空」状態へ遷移させ、pr-prepare/reconcile workflowをresilientに保つ
 
 ## 非目標
 

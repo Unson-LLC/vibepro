@@ -7,6 +7,10 @@ source:
   type: salvage-triage
   id: VP-SALVAGE-2026-07-14-GATE-EVIDENCE-ROBUSTNESS
   title: "canonical checkout上の未コミット実験編集のうち、健全なrobustness/correctness改善のみを正式化する"
+architecture_docs:
+  - ../../../architecture/vibepro-gate-evidence-edge-robustness.md
+spec_docs:
+  - ../../../specs/vibepro-gate-evidence-edge-robustness.md
 status: active
 created_at: 2026-07-14
 updated_at: 2026-07-14
