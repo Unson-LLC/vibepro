@@ -1,0 +1,1 @@
+{"status":"pass","role":"test_plan:e2e_ux","head":"998e6b8","summary":"3指摘解消。実runCheckPack駆動でUX面カバー、AC:8行動化、E2E-011厳格化。11/11自己実行","findings":["low: inconclusive_countの期待値pin無し（optional hardening）"]}

@@ -1,0 +1,137 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "created_at": "2026-07-14T02:39:54.063Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-scanner-inconclusive-coverage/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-scanner-inconclusive-coverage/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-scanner-inconclusive-coverage/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-scanner-inconclusive-coverage/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-scanner-inconclusive-coverage.md, docs/architecture/vibepro-scanner-inconclusive-coverage.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-scanner-inconclusive-coverage.md, docs/specs/story-vibepro-scanner-inconclusive-coverage.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2,
+        "waiver": 1
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783996561874-83a6964b",
+        "story_id": "story-vibepro-scanner-inconclusive-coverage",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_execution_topology",
+        "source_status": null,
+        "summary": "execution_topology: 本Storyはprocess/thread/worker/retryのlifecycleに非接触（純粋関数の語彙分離+表示）。gate/artifact lifecycleへの影響は非ブロッキング設計（unresolved集計非接触をSIC-E2E-008が実関数検証）で、deadlock/証跡欠落の新規経路なし。agent_review: 5 stage 9ロールのsubagentレビュー完遂",
+        "reason": "変更は同期的な純関数（resolveScanConclusiveness）とその消費で、実行トポロジーの変更なし。証跡はscan_coverage追加で増える方向",
+        "reviewer": "sato_keigo_agent",
+        "artifact": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/typecheck-e3dbfc7.log",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+          "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-14T02:36:01.865Z"
+        },
+        "recorded_at": "2026-07-14T02:36:01.876Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T02:39:49.691Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "7195abbbdab0b4f78d20e6dbe39c419a868208db",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,1 @@
+{"status":"pass","role":"architecture_spec:regression_risk","head":"edf8d76","summary":"high（block弱体化）はfindings-first解決で修正、旧新side-by-sideでblock同等性を実証確認。medium/lowも解消。findings空","findings":[]}

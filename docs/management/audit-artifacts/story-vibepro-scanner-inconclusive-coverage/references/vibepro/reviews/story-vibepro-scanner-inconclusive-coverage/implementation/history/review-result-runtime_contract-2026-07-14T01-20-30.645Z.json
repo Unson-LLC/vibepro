@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "runtime契約は保持: 新status（inconclusive/not_applicable）と新field（reason/scan_coverage/inconclusive_count）は純追加。scanner statusの全consumerを列挙し、明示対応（normalizeCheckStatus/aggregateStatus）か安全な素通しかを確認。gateレベルのstatus語彙は不変でDAG/ledger consumerへ影響なし。既存caller破壊なし",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "network-gate-inconclusive-machine-signal",
+      "detail": "gate成果物単体ではinconclusiveをmachine-readableに区別できない（detail文字列のみ）。check.json側で可視のため契約破壊ではないがfollow-up候補"
+    },
+    {
+      "severity": "low",
+      "id": "describe-scan-status-language-plumbing",
+      "detail": "check-packs/PR body面のlanguage未配線（表示のみ、ux_completion指摘と同根）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "story範囲の全src diff精読、flowDesign/networkContracts/regression statusとinconclusive_count・新exportの全consumer grep、findings-first優先・ENOENT skipped不変・counts-based gate導出を確認、5スイート38テスト自己実行",
+    "evidence": "node --test（scan-status+E2E 19、regression+change-risk+ledger 19）全pass at 998e6b8",
+    "inputs": [
+      "src/check-packs.js normalizeCheckStatus/aggregateStatus",
+      "src/pr-manager.js buildNetworkContractGate",
+      "src/change-risk-classifier.js",
+      "src/gate-outcome-ledger.js UNRESOLVED_STATUSES"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念（旧語彙switchのunknown落ち・gate status変化・undefined fallback・artifact reader破壊）-> 全consumer列挙とfallback動作確認で解消しpass"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_head_sha": "998e6b883e952862db57f13a5bff52593067a678",
+    "current_head_sha": "998e6b883e952862db57f13a5bff52593067a678",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "actual_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "current_head_sha": "998e6b883e952862db57f13a5bff52593067a678",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-14T01:20:30.645Z",
+  "git_context": {
+    "head_sha": "998e6b883e952862db57f13a5bff52593067a678",
+    "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T01:20:30.575Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "998e6b883e952862db57f13a5bff52593067a678",
+    "surface_files": [
+      {
+        "path": "src/change-risk-classifier.js",
+        "sha256": "e481045e1b7bad0969a440b0384c0be6e134dba9034856156e8974756930bd1e",
+        "size": 15885
+      },
+      {
+        "path": "src/check-packs.js",
+        "sha256": "7b2e3d558b289ad8527f9f70b5cf87a0ff181e07d2c1a59b10582affe915f511",
+        "size": 28039
+      },
+      {
+        "path": "src/gate-outcome-ledger.js",
+        "sha256": "ae01a4a719fc9237a385b64f7c058d147e45436d145039da5e550fe5ff4d499b",
+        "size": 19496
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "a69540887306ce54ba02e5a1887a9d3b2eb67e9c9c3bf0e559dbeaa575f6e645",
+        "size": 642354
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "95aaf8757f8317532ef96d09c5655b8ca5a58dd06a68d96e4ffd6e037dd332e4"
+  },
+  "source_fingerprint": "dd5a04a613f42061d7149928722e587e0355f553f66eb8ff591b0c23e6b38116",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-implementation-runtime_contract-sic1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/implementation/transcripts/runtime_contract.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

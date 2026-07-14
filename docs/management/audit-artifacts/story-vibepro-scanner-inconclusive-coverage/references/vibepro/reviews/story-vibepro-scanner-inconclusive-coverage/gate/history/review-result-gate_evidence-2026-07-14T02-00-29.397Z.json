@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "51d4c30で再検証: findings-first（edf8d76）が唯一の実質的弱体化を解消しUI story 0件はblock維持、非ブロッキング主張は両unresolvedリスト・gate builder・check-pack集計でend-to-end確認、証拠はfreshかつ行動的（自己実行19/19+24/24、head-boundフルスイートログで1029/1029を直接観測）。直後のe3dbfc7はAC-10文言1行のdocs-only整合（adjudicator指摘対応）でコード無変更",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "cli-stdout-summary-omits-inconclusive-count",
+      "detail": "CLI stdoutの先頭status行にinconclusive_count注記なし（check.md/check.jsonでは可視、cosmetic follow-up候補）"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "45e93cd..51d4c30の全src diff精読、新E2E suiteと更新されたSCAN-S-002精読、story/spec docsのfindings-first整合確認、focused suites自己実行、フルスイートtallyのhead-boundログ直接観測",
+    "evidence": "npm-test-51d4c30.log: tests 1029 / pass 1029 / fail 0（直接観測）; 自己実行19/19+24/24",
+    "inputs": [
+      "src/flow-design-scanner.js",
+      "src/scan-status.js",
+      "src/check-packs.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+      ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-51d4c30.log"
+    ]
+  },
+  "judgment_delta": [
+    "45e93cd時点のlow2件（block弱体化・AC文言ドリフト）はedf8d76/a9dbecaで解消を検証。export群はkeyword-only追加と確認。フルスイート未確定だった懸念はhead-boundログの直接観測で解消しpass"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "current_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "actual_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "current_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-14T02:00:29.397Z",
+  "git_context": {
+    "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T02:00:29.219Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "surface_files": [
+      {
+        "path": "src/check-packs.js",
+        "sha256": "18a059eb9f01cd3de781b96f86117a0702545a431c184d853b665c972dbba321",
+        "size": 28431
+      },
+      {
+        "path": "src/flow-design-scanner.js",
+        "sha256": "e02be951092de3a28cefa6622cfc7cd3e26a1c82519c5530509f4b1308f7282c",
+        "size": 34320
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "a69540887306ce54ba02e5a1887a9d3b2eb67e9c9c3bf0e559dbeaa575f6e645",
+        "size": 642354
+      },
+      {
+        "path": "src/scan-status.js",
+        "sha256": "5a64673515f74f5865cd5b1d66f91466ad75c12fbd7a5c05c42b020dead811e0",
+        "size": 2038
+      },
+      {
+        "path": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+        "sha256": "0260a5b97df37f0113c444351afb95bf5ecba0fdea7d8ea561dcf0bcf395adf3",
+        "size": 14089
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "f17fe89715927e44a77f8282710442e976016c3fa57e643673595cfff1e9b441"
+  },
+  "source_fingerprint": "2a4b471f39eb28000f79efafe6c3ea7d58413701ade0d966c7b0cf4e1fd28e87",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-gate_evidence-sic1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/transcripts/gate_evidence-final2.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

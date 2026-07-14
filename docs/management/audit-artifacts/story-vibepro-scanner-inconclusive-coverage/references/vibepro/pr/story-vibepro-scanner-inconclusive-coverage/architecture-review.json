@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "created_at": "2026-07-14T02:39:54.063Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-scanner-inconclusive-coverage.md, docs/architecture/vibepro-scanner-inconclusive-coverage.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-scanner-inconclusive-coverage.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-scanner-inconclusive-coverage.md, docs/architecture/vibepro-scanner-inconclusive-coverage.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-scanner-inconclusive-coverage.md, docs/specs/story-vibepro-scanner-inconclusive-coverage.vibepro.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T02:39:49.691Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "7195abbbdab0b4f78d20e6dbe39c419a868208db",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

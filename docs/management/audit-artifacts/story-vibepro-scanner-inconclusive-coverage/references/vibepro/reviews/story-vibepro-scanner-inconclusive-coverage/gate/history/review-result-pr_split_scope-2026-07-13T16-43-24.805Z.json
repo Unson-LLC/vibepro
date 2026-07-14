@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "docs+featの2コミット14fileは全てstory Scopeへ直接traceする単一契約（共有語彙module+3スキャナ+4表示面+SSOT）。約600行追加、無関係変更なし。分割は1契約をPR間に分断する",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "regression-risk-ac-wording-vs-impl",
+      "detail": "story ACの『テストファイル発見0件』と実装トリガー（scored modules 0件）の表現差。spec clauseは正しい表現のためstory文言を揃える"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "両コミットの全diff精読、変更ファイルをstory Scope/非目標と照合、buildNetworkContractGateとaggregateStatusの消費側を検証、scan-status 8/8とフルスイート1018/1018を自己実行",
+    "evidence": "npm test at 45e93cd -> 1018/1018 pass（自己実行）",
+    "inputs": [
+      "git show 45e93cd / 9571993",
+      "src/scan-status.js",
+      "src/check-packs.js aggregateStatus"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念: 9 src/testファイル+4表示面は複数意図の可能性 -> 全ファイルが新語彙module/採用スキャナ/表示面のいずれかで単一契約と確認。SCAN-S-002/006/007はpre-fix実装で失敗する負例であることも確認"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_head_sha": "45e93cd72fe51ddac09de86dcd298f12e1342162",
+    "current_head_sha": "45e93cd72fe51ddac09de86dcd298f12e1342162",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "actual_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "current_head_sha": "45e93cd72fe51ddac09de86dcd298f12e1342162",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T16:43:24.805Z",
+  "git_context": {
+    "head_sha": "45e93cd72fe51ddac09de86dcd298f12e1342162",
+    "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T16:43:24.779Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "45e93cd72fe51ddac09de86dcd298f12e1342162",
+    "surface_files": [
+      {
+        "path": "src/check-packs.js",
+        "sha256": "9f2a1f203d09f20efaef85bde7851c5e0adaa529d7dfe9860de23b0ab58176c6",
+        "size": 27677
+      },
+      {
+        "path": "src/scan-status.js",
+        "sha256": "194c4ba0b55b12125b54386d6002f2c7ec654ade4d9b05b6e002ff804b07a7b9",
+        "size": 1885
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4dd3b05d8263545593c129173772366172b7ddf73c7ef3a90d1849d923d1ac96"
+  },
+  "source_fingerprint": "857a41e780f61374898fa00b94b7d75db44e88e7b281aee17d466336952956ab",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-pr_split_scope-sic1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/transcripts/pr_split_scope-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

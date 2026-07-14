@@ -1,0 +1,1 @@
+{"status":"pass","role":"implementation:ux_completion","head":"998e6b8","summary":"全human可読面でラベル付き表示を実レンダリングで確認。bare残置なし。low3件","findings":["low: en check-packのjaラベル","low: mdヘッダcount非表示","low: spec-drift既存別語彙"]}

@@ -1,0 +1,230 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "updated_at": "2026-07-14T02:36:01.876Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783996561874-83a6964b",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_execution_topology",
+      "source_status": null,
+      "summary": "execution_topology: 本Storyはprocess/thread/worker/retryのlifecycleに非接触（純粋関数の語彙分離+表示）。gate/artifact lifecycleへの影響は非ブロッキング設計（unresolved集計非接触をSIC-E2E-008が実関数検証）で、deadlock/証跡欠落の新規経路なし。agent_review: 5 stage 9ロールのsubagentレビュー完遂",
+      "reason": "変更は同期的な純関数（resolveScanConclusiveness）とその消費で、実行トポロジーの変更なし。証跡はscan_coverage追加で増える方向",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/typecheck-e3dbfc7.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+        "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T02:36:01.865Z"
+      },
+      "recorded_at": "2026-07-14T02:36:01.876Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783996448480-069f08ae",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 単一意図（inconclusive語彙導入）のPRで1passレビュー可能。review_owner_map: 5 stage 9ロールのsubagentレビューを完遂し全pass",
+      "reason": "checkpoint 4 stage+gate stageの全ロールがpass。diff構成の一貫性はpr_split_scopeが2回検証。decision_record: 本記録",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/review-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/typecheck-e3dbfc7.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+        "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T02:34:08.471Z"
+      },
+      "recorded_at": "2026-07-14T02:34:08.481Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783996445623-852b6d3f",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Story/Architecture/Spec/実装/テスト/SSOT登録は単一Story（scanner inconclusive coverage）の一貫変更。pr_split_scopeレビュー（2回pass）が全コミットのstory帰属と分割不要を検証済み",
+      "reason": "共有語彙module導入は3スキャナ+表示面を同時に変えないと不完全な状態で出荷される。レビュー対応6コミットも全て同一storyスコープ",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/transcripts/pr_split_scope-final.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/typecheck-e3dbfc7.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+        "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T02:34:05.614Z"
+      },
+      "recorded_at": "2026-07-14T02:34:05.625Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783996561874-83a6964b",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_execution_topology",
+      "source_status": null,
+      "summary": "execution_topology: 本Storyはprocess/thread/worker/retryのlifecycleに非接触（純粋関数の語彙分離+表示）。gate/artifact lifecycleへの影響は非ブロッキング設計（unresolved集計非接触をSIC-E2E-008が実関数検証）で、deadlock/証跡欠落の新規経路なし。agent_review: 5 stage 9ロールのsubagentレビュー完遂",
+      "reason": "変更は同期的な純関数（resolveScanConclusiveness）とその消費で、実行トポロジーの変更なし。証跡はscan_coverage追加で増える方向",
+      "reviewer": "sato_keigo_agent",
+      "artifact": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/npm-test-e3dbfc7.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-scanner-inconclusive-coverage/typecheck-e3dbfc7.log",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+        "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T02:36:01.865Z"
+      },
+      "recorded_at": "2026-07-14T02:36:01.876Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-scanner-inconclusive-coverage/decision-records.json"
+}

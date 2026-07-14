@@ -1,0 +1,1 @@
+{"status":"pass","role":"gate_evidence","head":"51d4c30(+e3dbfc7 docs-only)","summary":"findings-first修正で唯一の弱体化を解消、非ブロッキング主張をend-to-endで再検証、フルスイート1029/1029をhead-boundログで直接観測。low1件（CLI stdout summaryのcount非表示、cosmetic）","findings":["low: cli-stdout-summary-omits-inconclusive-count"]}

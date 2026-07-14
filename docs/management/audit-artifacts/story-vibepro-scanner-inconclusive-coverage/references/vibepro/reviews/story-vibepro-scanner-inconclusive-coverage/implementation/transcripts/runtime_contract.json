@@ -1,0 +1,1 @@
+{"status":"pass","role":"implementation:runtime_contract","head":"998e6b8","summary":"新status/fieldは純追加、全consumer列挙で契約破壊なし、gate語彙不変。38テスト自己実行","findings":["low: gate成果物にmachine-readableなscan status無し","low: describeScanStatusのlanguage未配線（表示のみ）"]}

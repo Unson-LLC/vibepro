@@ -1,0 +1,1 @@
+{"status":"pass","role":"test_plan:gate_coverage","head":"998e6b8","summary":"3指摘全て解消をrevert-detectable検証で確認。exportはbehavior無変更（diffで確認）。19/19 pass","findings":[]}

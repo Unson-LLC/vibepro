@@ -1,0 +1,1 @@
+{"status":"pass","role":"preview:network_runtime","head":"51d4c30","summary":"delta含む全runtime面を5 fixtureで再実行検証。conclusive経路不変・empty/malformed無クラッシュ・en配線動作。26テスト自己実行","findings":["low: share template headingのcosmetic残余（ヘッダcount表示で緩和）"]}

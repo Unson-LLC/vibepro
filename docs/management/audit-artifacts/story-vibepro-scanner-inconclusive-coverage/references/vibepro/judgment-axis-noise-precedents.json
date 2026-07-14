@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "decision_id": "decision-1783996448480-069f08ae",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "checkpoint 4 stage+gate stageの全ロールがpass。diff構成の一貫性はpr_split_scopeが2回検証。decision_record: 本記録",
+      "artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/review-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-14T02:34:29.041Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "execution_topology|changed_path:execution_topology|surface:workflow_or_agent|text:execution_topology",
+      "axis": "execution_topology",
+      "story_id": "story-vibepro-scanner-inconclusive-coverage",
+      "decision_id": "decision-1783996561874-83a6964b",
+      "source": "gate:judgment_axis_execution_topology",
+      "reason": "変更は同期的な純関数（resolveScanConclusiveness）とその消費で、実行トポロジーの変更なし。証跡はscan_coverage追加で増える方向",
+      "artifact": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+      "activation_candidates": [
+        "surface:workflow_or_agent",
+        "changed_path:execution_topology",
+        "text:execution_topology"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-14T02:39:30.655Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "inconclusive/not_applicableは真に非ブロッキング: isUnresolvedGateStatus両所（pr-manager/gate-outcome-ledger）に不在、gate builderはstatus文字列を消費せず、aggregateStatusは非failing扱い。テストは実tmp-dir fixtureが実スキャナを駆動しpre-fix-failing負例と回帰ガードを含む。自前フルスイート1018/1018 pass at 45e93cd",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "qa-log-missing-tally",
+      "detail": "記録済みQAログにtally行が欠落（並行実行中の記録）。独立再実行でgreen確認済み。以後の証拠ログは完全なtallyを取る"
+    },
+    {
+      "severity": "low",
+      "id": "story-ac-wording-drift-regression-scanner",
+      "detail": "AC文言と実装トリガーの表現差（spec正本は一致）。対応コミットで文言修正済み"
+    },
+    {
+      "severity": "low",
+      "id": "check-pack-aggregate-shift-ui-story-zero-files",
+      "detail": "UI story 0件でcheck-pack集計がunknown→passへ軟化。critical finding経路は保存。inconclusiveブロッキング化のfollow-up storyで扱う"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "scan-status.jsと3スキャナ+4消費面の全diff精読、flow_design.status/networkContracts.statusの全消費側をgrep追跡、story/spec/clauses照合、focused 4スイート+フルスイートを自己実行（1018/1018）",
+    "evidence": "自前フルスイート再実行: 1018 tests / 1018 pass / 0 fail at HEAD 45e93cd",
+    "inputs": [
+      "src/scan-status.js",
+      "src/pr-manager.js isUnresolvedGateStatus / buildNetworkContractGate",
+      "src/gate-outcome-ledger.js UNRESOLVED_STATUSES",
+      "src/check-packs.js normalizeCheckStatus/aggregateStatus",
+      "test/scan-status.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念: ===passの等値比較がゲート判定を変える可能性 -> 全消費側追跡でゲートDAGはstatus文字列を読まないと確認。UI story 0件のblock→inconclusive遷移はstory AC/spec正本が明示的に指定する意図的変更で、critical finding経路は保存されると検証"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_head_sha": "a9dbeca8fdef09a105e8c699d48068ec2bd3a607",
+    "current_head_sha": "a9dbeca8fdef09a105e8c699d48068ec2bd3a607",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "actual_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "current_head_sha": "a9dbeca8fdef09a105e8c699d48068ec2bd3a607",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-13T23:50:16.792Z",
+  "git_context": {
+    "head_sha": "a9dbeca8fdef09a105e8c699d48068ec2bd3a607",
+    "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-13T23:50:16.760Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "a9dbeca8fdef09a105e8c699d48068ec2bd3a607",
+    "surface_files": [
+      {
+        "path": "src/check-packs.js",
+        "sha256": "9f2a1f203d09f20efaef85bde7851c5e0adaa529d7dfe9860de23b0ab58176c6",
+        "size": 27677
+      },
+      {
+        "path": "src/gate-outcome-ledger.js",
+        "sha256": "8817f040b8f646c7cd5bb51a8c7ca82d5f5f24ef06be388a8002d8da1886e15d",
+        "size": 19489
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "aafaf7a8cae3818004797641a773fef9106d01cc9c8828ceaa893bf25cfa56f0",
+        "size": 642077
+      },
+      {
+        "path": "src/scan-status.js",
+        "sha256": "194c4ba0b55b12125b54386d6002f2c7ec654ade4d9b05b6e002ff804b07a7b9",
+        "size": 1885
+      },
+      {
+        "path": "test/scan-status.test.js",
+        "sha256": "87ddc87c2c4c97009475bf7bb462f59fed06712d7979f45d37a6b269a648a728",
+        "size": 7949
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "23d48bfc768b9e2c4dd9d0d610c7c3ce53ba1f38c959b091578b4ced2a8afbf9"
+  },
+  "source_fingerprint": "964a2de5fd148a813fae14ca781597d7f1095c8855513fa957996c169a47397f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-gate_evidence-sic1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/transcripts/gate_evidence-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

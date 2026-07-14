@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "e3dbfc7で再バインドpass: 998e6b8..e3dbfc7の全diffを精読し表示/文言のみと自ら確認（display-only主張を鵜呑みにせず検証）。findings-first guard・runCheckPackのinconclusive_count・buildNetworkContractGate・両unresolvedリストは非接触。E2E deltaはコメント1行でassertはbyte-identical。19/19再実行green",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "git diff 998e6b8..e3dbfc7の対象4 srcファイル+E2E全diff精読、pr-manager/gate-outcome-ledgerがdelta不在であることの確認、19/19自己再実行",
+    "evidence": "node --test at e3dbfc7 -> 19/19 pass",
+    "inputs": [
+      "git diff 998e6b8..e3dbfc7",
+      "src/check-packs.js",
+      "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "再バインド懸念（中心ファイル2つがdeltaに含まれる）-> 全diff精読でstatus/gate/集計ロジック非接触・診断表示はむしろ抑制可視性を強化と確認しpass維持"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "expected_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "current_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-scan-inconclusive/.worktrees/vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "actual_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+      "current_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-14T02:38:06.696Z",
+  "git_context": {
+    "head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "current_branch": "vibepro/story-vibepro-scanner-inconclusive-coverage-68xjdb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T02:38:06.669Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+    "surface_files": [
+      {
+        "path": "src/check-packs.js",
+        "sha256": "18a059eb9f01cd3de781b96f86117a0702545a431c184d853b665c972dbba321",
+        "size": 28431
+      },
+      {
+        "path": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+        "sha256": "0260a5b97df37f0113c444351afb95bf5ecba0fdea7d8ea561dcf0bcf395adf3",
+        "size": 14089
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c31ae1d7a254c5cfaf69a107b3d4edff89c33d7d35cf50a7629210f096074984"
+  },
+  "source_fingerprint": "870869876ae933096b58508e684d1711ad9ef6d24b8eef2a8f79029b30235b46",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-tp-gate_coverage-sic1",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/test_plan/transcripts/gate_coverage-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scanner-inconclusive-coverage/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

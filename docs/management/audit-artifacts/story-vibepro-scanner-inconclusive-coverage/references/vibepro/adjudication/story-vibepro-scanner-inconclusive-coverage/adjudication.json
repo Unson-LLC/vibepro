@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "updated_at": "2026-07-14T02:02:55.867Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "自己矛盾解消（AC-10文言がblock+critical維持へ）でnot_demonstrated→demonstrated。新文言6カテゴリ全てのテスト実体を再確認し、e3dbfc7で再実行green",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:55.860Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "51d4c30で1029/1029をmonitor直接観測、e3dbfc7 deltaは2行docs（git show --stat確認・assert非接触）でstory suite再実行fail 0。テスト増分は新規E2Eで説明、既存改変なしをdiffで確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:51.848Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "SIC-E2E-008が実関数駆動: isUnresolvedGateStatus/UNRESOLVED_STATUSES=false、gate成果物passed維持+正直なreason。1029テストgreenでready回帰も担保",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:48.410Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "SIC-E2E-007が行動検証: renderFlowDesignReport実出力ラベル+実runCheckPackのinconclusive_count数値+検査対象文言のdirect match",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:45.004Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "SCAN-S-007/SIC-E2E-006がscored 0件inconclusiveとcalls edgeあり回帰ガードを検証、SIC-E2E-011のmalformed degradeも担保",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:41.157Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "SCAN-S-006/SIC-E2E-005が候補0件inconclusiveとroute欠落block維持の両分岐を実スキャナで検証",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:38.110Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "SCAN-S-004/SIC-E2E-004が1件走査・findingsなし→passを実repoで検証。findings-first化後も不変",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:33.044Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "SCAN-S-005/SIC-E2E-003がscan_coverage（scanned_count・roots）を0件/1件両ケースで検証。report走査root行も露出",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:30.241Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "block維持の新文言に対し再判定: SCAN-S-002がblock+Critical hit、SIC-E2E-002が両分岐（UI→block/非UI→not_applicable+reason）を実スキャナ駆動でassert。e3dbfc7再実行green",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:26.058Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "SCAN-S-001/SIC-E2E-001の3状態直接assert。裁定者がe3dbfc7で再実行green。deltaはdocs+コメントのみでassert非接触",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-fresh-3",
+        "session_ref": "agent-task-ae54990b99fee2313"
+      },
+      "head_commit": "e3dbfc7f15fc7a6096a728ae8faea1155b2e4824",
+      "recorded_at": "2026-07-14T02:02:22.851Z"
+    }
+  ]
+}

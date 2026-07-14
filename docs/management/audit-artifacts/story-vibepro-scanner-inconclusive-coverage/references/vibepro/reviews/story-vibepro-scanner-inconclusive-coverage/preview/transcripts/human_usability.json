@@ -1,0 +1,1 @@
+{"status":"pass","role":"preview:human_usability","head":"51d4c30","summary":"medium3件の修正を実CLI再実行の生成artifactで検証（問題なし矛盾解消・走査root+設定導線・en語彙）。読者は『何も検査されていない=passでない』と次の一手を理解できる。残低はcosmetic","findings":["low: network reasonにroots無し（設定面が無いため許容）","low: share templateのstatusにcount無し","low: heading受容済み残余"]}
