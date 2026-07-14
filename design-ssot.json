@@ -4535,6 +4535,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-scanner-inconclusive-coverage.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       }
     }
