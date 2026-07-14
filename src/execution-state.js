@@ -854,11 +854,13 @@ function isMergedArtifact(artifact) {
     || artifact?.merge?.status === 'merged';
 }
 
-async function safeReaddir(dir) {
+export async function safeReaddir(dir) {
   try {
     return (await readdir(dir)).sort();
   } catch (error) {
-    if (error.code === 'ENOENT') return [];
+    // ENOENT: dir does not exist. ENOTDIR: a file exists where a directory was
+    // expected (corrupt/partial workspace). Both mean "no entries to scan".
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
     throw error;
   }
 }
