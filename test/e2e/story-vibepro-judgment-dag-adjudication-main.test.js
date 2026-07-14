@@ -120,7 +120,7 @@ test('JDA-E2E-001 story-vibepro-judgment-dag-adjudication ac:1 prepare --judgmen
   // `adjudicate prepare --judgment` は最新pr-prepare.jsonからspine subcheck・judgment axis・failure modeのアクティブ項目を収集し、各項目の問い原文・現在の機械的消化状態・一致した証拠・変更ファイル一覧を含む依頼書を生成する
   const repo = await makeRepo({ prPrepare: judgmentPrPrepare() });
   const result = await prepareJudgmentAdjudication(repo, { storyId: STORY_ID });
-  assert.equal(result.item_count, 3);
+  assert.equal(result.item_count, 3, 'S-001 the request checklist must contain every active judgment item');
   const request = await readFile(path.join(repo, result.artifact), 'utf8');
   for (const itemId of ITEM_IDS) assert.match(request, new RegExp(itemId.replace(/[:]/g, ':')));
   assert.match(request, /この変更は外部利用者、CLI\/API、設定、出力形式、またはPR本文契約を壊さないか。/);
