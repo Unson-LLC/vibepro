@@ -1,0 +1,118 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "implementation",
+  "role": "ux_completion",
+  "status": "pass",
+  "summary": "Backend-only robustness fix (no user-facing UI); completion judged on operator-facing behavior of vibepro pr prepare / gate-evidence path. Fully completes intent: a malformed workspace (file where a directory is expected) no longer aborts pr prepare scanning, and evidence-item identity cannot be silently hijacked by a stray extra.kind/extra.ref. ENOTDIR handling is narrowly scoped (two error codes only, everything else re-thrown) reusing the pre-existing silent-skip semantics of ENOENT, hiding no new signal. All 7 ACs addressed, each exercised by pre-fix-falsifiable tests (5 unit + 6 e2e, all pass). No other call site relied on the removed override behavior.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read story doc, ux_completion request, both lenses; read full diff for both files; enumerated all safeReaddir and buildEvidenceItem call sites; scanned every buildEvidenceItem caller's extra for colliding kind/ref (none); ran unit suite (5/5) and e2e (6/6).",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md",
+      "git diff origin/main -- src/execution-state.js src/pr-manager.js",
+      "command: node --test gate-evidence unit (5/5) + e2e (6/6)"
+    ]
+  },
+  "judgment_delta": [
+    "Initial lean pass-pending: a broadened catch could swallow an operator-relevant signal or field-reordering could drift defaults/break a caller. After confirming only two error codes caught (others re-thrown), defaulted fields already read from extra so values don't change, no other caller passes kind/ref in extra, and tests fail on pre-fix code — final pass, no regressions. No user-facing UI so completion is operator-facing."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T08:53:21.333Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T08:53:21.322Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md",
+        "sha256": "e6a69b475bf891b2b996a7bdcca99cb19347d919cee60c89bf416bfc3b1d3919",
+        "size": 5762
+      }
+    ],
+    "missing_files": [
+      "command:"
+    ],
+    "surface_hash": "ecd87b7f75134677b211b0ab81073f12504ee64a21659a6aab81757ee6288d07"
+  },
+  "source_fingerprint": "ea99fb875d23017c38f1e9c8aeb69d333c81b7bfc5258ca5cf52319aebb94662",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "impl-uxc-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/implementation/transcripts/ux_completion-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/implementation/review-request-ux_completion.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-gate-evidence-edge-robustness",
+      "decision_id": "decision-1784017292119-2572d652",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "変更は2純ヘルパー(safeReaddir/buildEvidenceItem)+回避策除去+専用テストのみ。salvage triageで健全2件に絞った単一意図。バンドルされた無関係な意思決定なし",
+      "artifact": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-14T08:21:38.290Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-gate-evidence-edge-robustness",
+      "decision_id": "decision-1784017556645-b982755a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "変更は2純ヘルパー(safeReaddir/buildEvidenceItem)+回避策除去+テストのみ。salvage triageで健全2件に絞った単一意図",
+      "artifact": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-14T08:31:03.240Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

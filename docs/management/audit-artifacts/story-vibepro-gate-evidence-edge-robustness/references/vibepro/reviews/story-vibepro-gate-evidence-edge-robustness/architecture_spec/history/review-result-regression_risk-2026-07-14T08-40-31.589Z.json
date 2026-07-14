@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Both changes are localized robustness fixes with no regression to existing callers. safeReaddir adding ENOTDIR to its swallowed-error set is safe: all three call sites are best-effort directory enumerations where 'no entries' is correct, and permission/other errors still throw so no actionable failure is masked. The buildEvidenceItem spread-order flip is behavior-preserving because no caller passes a colliding kind/ref in extra, and the four defaulted fields resolve identically via extra.X ?? default; descriptive extra fields are still carried through. Dropping the {...extra, kind} workaround in classifySeniorAxisEvidence is consistent with the new explicit-arg-wins guarantee. All 29 tests across the four named files pass.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected architecture doc, spec md, spec vibepro.json, the diff vs origin/main for src/execution-state.js and src/pr-manager.js, all buildEvidenceItem call sites and their extra bags, and all three safeReaddir call sites (pr dir/audit root/story-doc dirs). Ran node --test over gate-evidence-edge-robustness + e2e + vibepro-gate-check + adjudication (29 tests, all pass).",
+    "evidence": null,
+    "inputs": [
+      "git diff origin/main -- src/execution-state.js src/pr-manager.js",
+      "src/pr-manager.js buildEvidenceItem call sites (14 callers, none pass kind/ref in extra)",
+      "src/execution-state.js safeReaddir call sites :782,:787,:806",
+      "command: node --test test/gate-evidence-edge-robustness.test.js test/e2e/story-vibepro-gate-evidence-edge-robustness-main.test.js test/vibepro-gate-check.test.js test/adjudication.test.js -> 29 pass"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concerns: (a) could ENOTDIR-swallowing hide a real error; (b) could the spread-order flip alter existing evidence item fields. Reading safeReaddir call sites confirmed pure enumerations where empty is correct and non-ENOENT/ENOTDIR errors still throw → (a) low risk. Grepping every buildEvidenceItem caller confirmed none rely on extra overriding kind/ref and the ?? default pattern preserves prior resolution → (b) no behavioral change. Passing suite corroborates. Concern → pass."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T08:40:31.589Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T08:40:31.555Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [
+      {
+        "path": "src/execution-state.js",
+        "sha256": "52f3c7594fe433a90c7572fc6649f097394ecda908183b55c597a5387b4c3b4c",
+        "size": 40515
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "ad6e363930d13cb0e1872b0f78f32b8fc4b8a675cb98f5217873d91881acc116",
+        "size": 644585
+      }
+    ],
+    "missing_files": [
+      "command:"
+    ],
+    "surface_hash": "a0a0fd52bfe880970ec62a21bce8abfa3225831e2f9810ab92d9393e5099f991"
+  },
+  "source_fingerprint": "e53fa0d521f2a2c2fb0339b872a1676abad8420c1e447709f2de832c041c2cce",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "arch-regression-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/architecture_spec/transcripts/regression_risk-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent completed and closed by coordinator after result returned",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

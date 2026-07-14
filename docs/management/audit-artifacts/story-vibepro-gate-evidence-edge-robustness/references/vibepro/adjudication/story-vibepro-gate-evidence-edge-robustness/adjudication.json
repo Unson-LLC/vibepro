@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "updated_at": "2026-07-14T08:39:46.693Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Ran regression suites myself: adjudication+judgment-adjudication+workspace-status+vibepro-gate-check+execute-merge e2e = 35/35 pass; and GER-E2E-005 real preparePullRequest completes producing a coherent gate DAG. No failures observed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:46.686Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "test/gate-evidence-edge-robustness.test.js actually contains and passes GER-S-001 (ENOENT/ENOTDIR), GER-S-002 (other-error re-throw), GER-S-003 (explicit kind/ref win), GER-S-004 (defaults+preserve), GER-S-005 (carry-through); confirmed by running node --test (11/11). GER-E2E-006 also verifies these branches are present.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:45.713Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "diff of pr-manager.js shows add helper changed from buildEvidenceItem(kind,ref,{...extra,kind}) to buildEvidenceItem(kind,ref,extra); correctness now relies on AC-2 fix. GER-E2E-005 drives real preparePullRequest on a tmp git repo and asserts every matched_evidence item in gate:common_judgment_spine has a non-empty string kind (never sentinel), including the verificationMatches path where item.kind lives in extra. Ran e2e 6/6 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:44.703Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "GER-S-005 asserts matched_file_count/related_file_count/investigation_files/optional carried through while kind/strength stay correct; supported by ...extra spread-first in diff. Tests pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:32.232Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "GER-S-004 asserts bare call yields declared/n-a/unknown defaults and a filled call keeps strong/current/verified; matches diff's ?? default logic. Tests pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:31.495Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "diff shows buildEvidenceItem spreads ...extra FIRST then sets kind/ref explicitly; GER-S-003/GER-E2E-002 pass extra.kind='HIJACKED_KIND'/ref='HIJACKED_REF' and assert result.kind/ref equal the explicit args. Verified by running tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:30.770Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "diff of src/execution-state.js shows safeReaddir returns [] for both ENOENT and ENOTDIR and throws otherwise; GER-S-001 exercises real ENOENT+ENOTDIR (file/sub) on tmpfs returning [], GER-S-002 asserts non-ENOENT/ENOTDIR (Symbol path) re-throws. Ran: 11/11 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:39:29.983Z"
+    }
+  ]
+}

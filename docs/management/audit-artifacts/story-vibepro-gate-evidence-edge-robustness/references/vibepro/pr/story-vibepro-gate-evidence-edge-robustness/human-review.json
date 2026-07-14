@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "created_at": "2026-07-14T09:23:23.982Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-gate-evidence-edge-robustness.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-gate-evidence-edge-robustness.md, docs/specs/story-vibepro-gate-evidence-edge-robustness.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 15,
+      "open": 0,
+      "by_type": {
+        "needs_review": 15
+      },
+      "by_status": {
+        "accepted": 15
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+          "expected_root": null,
+          "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+          "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784018815948-e2f00011",
+        "story_id": "story-vibepro-gate-evidence-edge-robustness",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_dag_adjudication:failure_mode:workflow_state_regression",
+        "source_status": null,
+        "summary": "workflow_state_regression: 独立judgment裁定がneeds_human_judgment、人間判断で非該当と決定",
+        "reason": "独立裁定者(judgment-judge-ger)が本failure modeをneeds_human_judgmentと裁定。この変更にworkflow state machineは無く(safeReaddirはstatelessな3値エラー分類、buildEvidenceItemはfield優先順位のみ)、gate/workflow stateがstale/pending/over-greenになる遷移が存在しない。workflow_heavy profileの自動付与で、spine必須e2eトークンのkeyword一致でのみ'covered'に見えているだけ。vacuousなtokenは統合verify recordから除去済み。state-machineテストの捏造ではなく、failure mode非該当という人間判断で閉じる。genuineなrobustness懸念はparse_failureとevidence_lifecycle_regressionで実証済み",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-gate-evidence-edge-robustness/bundle-fd9745a.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-gate-evidence-edge-robustness/bundle-fd9745a.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-gate-evidence-edge-robustness/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-gate-evidence-edge-robustness/bundle-fd9745a.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+            "expected_root": null,
+            "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+            "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+          "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-14T08:46:55.940Z"
+        },
+        "recorded_at": "2026-07-14T08:46:55.950Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T09:23:21.913Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "845c4ec02bf91d3e33d731e4533e62a7af0c4a45",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

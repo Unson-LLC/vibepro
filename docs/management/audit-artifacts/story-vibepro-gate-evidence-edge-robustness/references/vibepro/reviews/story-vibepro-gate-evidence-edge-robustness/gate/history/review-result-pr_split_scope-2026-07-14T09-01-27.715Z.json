@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "The PR is a single coherent intent: hardening the gate-evidence mechanism against two edge cases — safeReaddir ENOTDIR handling in execution-state.js and buildEvidenceItem field-precedence in pr-manager.js — plus removal of the now-redundant {...extra, kind} workaround that the buildEvidenceItem fix makes unnecessary. All 9 files (2 source, 2 tests, story/architecture/spec docs, design-ssot registration) trace to one theme, no unrelated refactors or drive-by edits. The story explicitly excludes the other 4 salvage edits with stated security/contract and redundancy reasons, keeping different-risk changes out. Scope is appropriately sized — neither over-bundled nor in need of splitting.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected git diff origin/main --stat (9 files, 6 commits, one theme); the two source diffs; the story Scope/非目標 sections; design-ssot.json (one added root, no unrelated edits); the new test files.",
+    "evidence": null,
+    "inputs": [
+      "git diff origin/main --stat; git log origin/main..HEAD --oneline",
+      "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md Scope/非目標",
+      "design-ssot.json added design-root entry"
+    ]
+  },
+  "judgment_delta": [
+    "Initial read (single robustness theme, small diff) leaned pass; after inspecting the actual diff, the Scope/非目標 sections, and confirming design-ssot and test additions touch nothing outside this story, pass held — the redundant-workaround removal is a legitimate consequence of the same fix (not scope creep), and the explicit exclusion of the 4 higher-risk salvage edits confirms deliberate single-intent boundaries."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T09:01:27.715Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T09:01:27.687Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "b9b83435fd0eaf50a3d9cdaa91074bc17fdabfb4dc282ebcaeb29adb37a2ae39",
+        "size": 149258
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md",
+        "sha256": "e6a69b475bf891b2b996a7bdcca99cb19347d919cee60c89bf416bfc3b1d3919",
+        "size": 5762
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "87d1c6ff61b1cb4517825ee5c741f835491f4036317ffa95eabd1be3610d7abf"
+  },
+  "source_fingerprint": "a83c2ff0eeb198b8ff00778eda3b163314d31385f83efe378ab15b265ceb4b76",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-ss-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/gate/transcripts/pr_split_scope-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

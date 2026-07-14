@@ -1,0 +1,111 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "preview",
+  "role": "network_runtime",
+  "status": "pass",
+  "summary": "No network surface to preview. Both edits are local-only backend robustness fixes with zero network involvement. safeReaddir's only I/O is the pre-existing local readdir (fs/promises); the change merely broadens the swallowed error code from ENOENT to ENOENT||ENOTDIR. buildEvidenceItem is pure in-memory object-literal construction. Grep over added lines for require/import/fetch/http/net/dns/child_process returned no matches. No new I/O, no runtime/environment assumptions, nothing deployable or previewable in a network sense.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the complete diff of both files vs origin/main and grep-checked all added lines for any network/socket/DNS/HTTP-client/child-process introduction. Confirmed the runtime surface is unchanged Node.js (fs/promises readdir + object literals); no ports, no endpoints.",
+    "evidence": null,
+    "inputs": [
+      "git diff origin/main -- src/execution-state.js src/pr-manager.js",
+      "grep added lines for require(/import/fetch/http/net/dns/child_process -> no matches"
+    ]
+  },
+  "judgment_delta": [
+    "Initial expectation (backend, local-only, likely no network). Final pass: diff and import-grep confirm zero network calls, no I/O beyond existing local readdir, no runtime/environment assumptions — nothing network to preview."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T08:55:40.825Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T08:55:40.804Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [],
+    "missing_files": [
+      "grep"
+    ],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4a78bfa07d4a8e136694013919b26baf14507b148343a65e59c984fdddf89c62",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "pv-net-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/preview/transcripts/network_runtime-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/preview/review-request-network_runtime.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

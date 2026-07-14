@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "Gate-relevant behavior adequately covered. safeReaddir's entries/ENOENT/ENOTDIR/re-throw and buildEvidenceItem's collision/defaults/values/carry-through are each asserted, with the two behaviorally-meaningful branches (ENOTDIR→[] and explicit-kind-wins) backed by pre-fix-failing assertions. The classifySeniorAxisEvidence workaround removal is exercised end-to-end via real preparePullRequest but is a behavioral no-op given the buildEvidenceItem fix, so needs no isolated assertion. All 19 tests pass. No untested meaningful branch.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "gate-coverage-e2e-assertion-node-mismatch",
+      "detail": "GER-E2E-005's comment references classifySeniorAxisEvidence but its assertion inspects gate:common_judgment_spine (fed by classifyJudgmentEvidence); the senior-axis path runs end-to-end but its emitted items are not directly asserted. Not a real gap — the removal is a behavioral no-op once buildEvidenceItem is fixed; no test can isolate it."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-coverage-e2e-assertion-node-mismatch",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "comment nuance acknowledged; the meaningful behavior lives in buildEvidenceItem which is asserted in isolation (GER-S-003) and end-to-end; no isolable behavior to assert for the no-op hunk",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the diff for src/execution-state.js and src/pr-manager.js, both test files, the review request; traced call sites of safeReaddir, buildEvidenceItem, and classifySeniorAxisEvidence, confirming the spine node is fed by classifyJudgmentEvidence not classifySeniorAxisEvidence; ran node --test on all three files (19/19 pass).",
+    "evidence": null,
+    "inputs": [
+      "git diff origin/main -- src/execution-state.js src/pr-manager.js",
+      "src/pr-manager.js:8355 classifySeniorAxisEvidence add, :9275 buildEvidenceItem, :8077 axis path",
+      "command: node --test gate-evidence + e2e + vibepro-gate-check -> 19/19 pass"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: e2e test claims to validate classifySeniorAxisEvidence removal but asserts on a node fed by classifyJudgmentEvidence. Final: pass — the removal is provably a no-op once buildEvidenceItem's explicit-kind-wins fix is in place (no test can isolate it), meaningful behavior lives in buildEvidenceItem asserted both in unit and e2e, pre-fix-failing assertions exist for both new branches; the node mismatch is low-severity comment nuance, not a regression gap."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T08:50:26.968Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T08:50:26.955Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "ad6e363930d13cb0e1872b0f78f32b8fc4b8a675cb98f5217873d91881acc116",
+        "size": 644585
+      }
+    ],
+    "missing_files": [
+      "command:"
+    ],
+    "surface_hash": "8ede4ba89b21307ae2cc80d1ede05d0be9a414ffdd7a328e3fea8bd09024a4c4"
+  },
+  "source_fingerprint": "62c95fc8b13db2e2eb0619c46dee124ec4020c5cea0c1cb5f976a286077bd419",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "tp-gatecov-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/test_plan/transcripts/gate_coverage-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

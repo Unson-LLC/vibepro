@@ -1,0 +1,10 @@
+{
+ "status": "pass",
+ "command": "node --test test/gate-evidence-edge-robustness.test.js test/adjudication.test.js test/judgment-adjudication.test.js test/vibepro-gate-check.test.js test/workspace-status.test.js test/e2e/story-vibepro-execute-merge-command-main.test.js",
+ "exit_code": 0,
+ "observed": {
+  "tests": "40",
+  "pass": "40",
+  "fail": "0"
+ }
+}

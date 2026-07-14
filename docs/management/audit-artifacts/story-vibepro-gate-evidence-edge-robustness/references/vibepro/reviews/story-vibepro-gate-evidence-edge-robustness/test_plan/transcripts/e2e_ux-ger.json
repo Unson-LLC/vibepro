@@ -1,0 +1,1 @@
+{"role":"e2e_ux","status":"pass","agent_id":"tp-e2eux-ger","head":"fd9745a","summary":"all 7 ACs + S-001..S-003 covered by real executable assertions; GER-E2E-005 drives preparePullRequest e2e on real tmp git repo; 11/11 pass"}

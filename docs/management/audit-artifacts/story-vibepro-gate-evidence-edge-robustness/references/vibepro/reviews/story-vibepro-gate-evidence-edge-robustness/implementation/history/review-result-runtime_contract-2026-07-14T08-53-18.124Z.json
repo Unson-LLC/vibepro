@@ -1,0 +1,113 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "safeReaddir's runtime contract is intact: sorted array on success, [] for ENOENT and the new ENOTDIR, re-throws all else; all three call sites iterate via for...of so empty array is a safe no-op. buildEvidenceItem's returned object shape is unchanged for every current caller (kind/ref/strength/strength_reason/binding_status/artifact_quality always present); reordering ...extra to spread first makes explicit args and defaults deterministically win while carrying descriptive extras through. No caller passes colliding kind/ref. Adding export to both is purely additive. 12 runtime tests green.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the diff for both files; verified the three safeReaddir call sites (execution-state.js:782/787/806) iterate via for...of; inspected all buildEvidenceItem callers (pr-manager.js 8357, 9043-9372) plus the add helper and classifyVerificationEvidenceItem wrapper — none passes a colliding kind/ref; ran node --check on both files (OK) and node --test adjudication+workspace-status (12 pass).",
+    "evidence": null,
+    "inputs": [
+      "git diff origin/main -- src/execution-state.js src/pr-manager.js",
+      "src/execution-state.js:782/787/806/857 safeReaddir call sites",
+      "command: node --check both files + node --test adjudication+workspace-status -> 12 pass"
+    ]
+  },
+  "judgment_delta": [
+    "Initial neutral (reordered spread + widened catch can silently alter shape or swallow errors). Final pass: ENOTDIR branch only maps a second 'nothing to scan' condition to [] while other errors still throw; every caller confirmed to pass real-valued extras with no colliding keys; 12 runtime tests green."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+    "expected_root": null,
+    "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness",
+      "expected_root": null,
+      "expected_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "current_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-14T08:53:18.124Z",
+  "git_context": {
+    "head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "current_branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T08:53:18.113Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "fd9745a3777a9e055a33ee4585684533f03280d6",
+    "surface_files": [],
+    "missing_files": [
+      "command:",
+      "src/execution-state.js:782/787/806/857"
+    ],
+    "surface_hash": null
+  },
+  "source_fingerprint": "ea9e5b5e669e82ad044d29b7779b2f1e23cefb281c7ab0b83ca0ab56a53cfefc",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "impl-runtime-ger",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/implementation/transcripts/runtime_contract-ger.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-evidence-edge-robustness/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

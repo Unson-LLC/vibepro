@@ -1,0 +1,10 @@
+{
+ "status": "pass",
+ "command": "node --test <ger bundle incl e2e>",
+ "exit_code": 0,
+ "observed": {
+  "tests": "46",
+  "pass": "46",
+  "fail": "0"
+ }
+}

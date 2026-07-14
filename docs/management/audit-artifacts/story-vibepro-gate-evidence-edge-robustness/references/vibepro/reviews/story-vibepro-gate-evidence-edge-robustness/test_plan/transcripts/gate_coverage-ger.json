@@ -1,0 +1,1 @@
+{"role":"gate_coverage","status":"pass","agent_id":"tp-gatecov-ger","head":"fd9745a","summary":"safeReaddir 4 outcomes + buildEvidenceItem 4 contracts each asserted with pre-fix-failing assertions; classifySeniorAxisEvidence removal is a behavioral no-op given buildEvidenceItem fix; 19/19 pass","findings":[{"severity":"low","id":"gate-coverage-e2e-assertion-node-mismatch"}]}

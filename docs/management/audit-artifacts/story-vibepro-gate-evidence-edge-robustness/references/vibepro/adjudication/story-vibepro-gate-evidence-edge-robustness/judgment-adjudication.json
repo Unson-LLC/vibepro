@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "updated_at": "2026-07-14T08:46:17.538Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "needs_human_judgment",
+      "reason": "Re-judged after the human not_applicable decision. On merits this change carries NO real workflow-state regression risk: I re-read the diff — safeReaddir is a stateless 3-way error classifier (entries / [] on ENOENT+ENOTDIR / re-throw) and buildEvidenceItem only reorders field precedence; neither touches any gate/workflow state machine, so there is no state transition that could leave stale/pending/over-green state. Therefore this is not a code/coverage defect (not judged_unsound) — it is a taxonomy/applicability call: the failure mode was auto-attached by the workflow_heavy route profile and does not apply to this diff. The accepted decision gate:failure_mode_coverage:workflow_state_regression (decision-1784018663033-06cdf1bc) is the correct closure, and the coordinator removed the workflow_state_regression scenario token from the integration verify record (confirmed absent from bundle-fd9745a); the gate now only shows 'covered' because the legitimately-required spine flow_replay/scenario_clause_e2e/artifact_replay e2e tokens incidentally keyword-match this mode. Applicability of a failure-mode taxonomy entry to a change is a human judgment; the recorded not_applicable decision is the appropriate resolution rather than fabricating a state-machine test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:46:17.532Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "This mode is substantively relevant (buildEvidenceItem literally constructs gate evidence artifacts) and substantively addressed. The extra-first spread cannot produce misleading-green artifacts: strength/binding_status/artifact_quality are computed identically to before (extra.X ?? default) and now sit AFTER the spread so they can't be silently downgraded/upgraded by a stray extra key; kind/ref identity is now protected. GER-E2E-005 drives real preparePullRequest and asserts every emitted evidence item retains a real, non-hijacked kind, confirming no lifecycle/handoff corruption.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:42:35.480Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "The diff touches no parser or JSON-extraction path, so classic parse_failure is not introduced. The one malformed-input surface it DOES touch — readdir failing because a file sits where a directory is expected — is exhaustively covered: safeReaddir's 3-way error classification (entries / [] on ENOENT+ENOTDIR / re-throw otherwise) is tested on a real filesystem (GER-S-001/002, GER-E2E-001). Substance, not just keyword overlap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:42:26.202Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "Diff is objectively single-reviewer-coherent: 6 changed lines in execution-state.js + 16 in pr-manager.js, both the same robustness theme (tolerate malformed input / prevent silent field override), plus matching story/spec/arch docs and focused tests. accepted_followup status is appropriate — no split needed. A reviewer can read the whole change in one pass with consistent judgment.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:42:12.936Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "Output/contract impact is genuinely checked. The evidence-item object shape is preserved: the only behavioral deltas are (a) explicit kind/ref now win over extra (a fix, verified by GER-E2E-005 asserting intact kinds through real pr prepare) and (b) ENOTDIR now returns [] instead of throwing (a widening of tolerant handling consistent with safeReaddir's contract). No CLI/API signature or output-format regression; the ?? -defaulted fields (strength/binding_status/artifact_quality) compute identically to before. compat/output/semantic-invariant tests plus real focused e2e back this.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:42:05.163Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Done evidence is real and passing: 5 unit tests (gate-evidence-edge-robustness.test.js) + 6 e2e tests map 1:1 to the 7 acceptance criteria (ac markers present), and I ran both suites — all 11 pass, including the e2e that drives preparePullRequest end-to-end. Completion is demonstrated by executable tests, not asserted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:41:50.654Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "The failure modes actually introduced by this diff are the exact ones tested: crash-on-ENOTDIR during scanning (covered by GER-E2E-001 real-filesystem replay) and silent kind/ref override in evidence assembly (covered by GER-E2E-005 driving real preparePullRequest and asserting every emitted evidence item has a non-empty, non-HIJACKED kind). flow_replay/scenario_clause_e2e evidence exercises real code paths, so this is substance not keyword.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:41:41.419Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Boundaries are substantively reasoned, not token-matched: the story explicitly EXCLUDES 4 other salvage edits (auth path-gate, command.kind matching) because they weaken security/contract binding, and includes only the 2 that don't cross those boundaries. The module-export boundary change (safeReaddir/buildEvidenceItem now exported for test) is contained. current_verification (e2e preparePullRequest) confirms the public boundary still behaves. decision_record present.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:41:34.079Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "The two invariants this change must preserve are directly tested: (1) safeReaddir re-throws any non-ENOENT/ENOTDIR error (GER-S-002 / GER-E2E-001 assert e.code != ENOENT/ENOTDIR propagates); (2) explicit kind/ref always win over colliding extra keys and defaults still apply (GER-S-003/004). Spec doc + architecture doc + test_contract in diff are real, not token-only.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:41:21.792Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current reality of the code is genuinely examined: the story background documents the exact pre-change behavior (safeReaddir throws on ENOTDIR; buildEvidenceItem's trailing ...extra silently clobbers explicit kind/ref, forcing the {...extra,kind} workaround). The matched flow_replay (e2e) actually re-runs preparePullRequest end-to-end over the real evidence-assembly path, so the current-state claim is backed by real execution, not a keyword match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:41:02.265Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Story has 7 explicit acceptance criteria and a clear User Story/背景/Scope articulating the exact intent (safeReaddir ENOTDIR tolerance + buildEvidenceItem extra-first spread). Intent is genuinely present in the diff (story doc added), not a token artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-ger",
+        "session_ref": null
+      },
+      "head_commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "recorded_at": "2026-07-14T08:40:49.408Z"
+    }
+  ]
+}

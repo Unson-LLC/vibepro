@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-evidence-edge-robustness",
+  "created_at": "2026-07-14T09:23:23.982Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-gate-evidence-edge-robustness.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-gate-evidence-edge-robustness.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-gate-evidence-edge-robustness.md, docs/specs/story-vibepro-gate-evidence-edge-robustness.vibepro.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T09:23:21.913Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-gate-evidence-robustness/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "fd9745a3777a9e055a33ee4585684533f03280d6",
+      "branch": "vibepro/story-vibepro-gate-evidence-edge-robustness",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "845c4ec02bf91d3e33d731e4533e62a7af0c4a45",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
