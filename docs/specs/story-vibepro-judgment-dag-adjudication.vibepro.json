@@ -1,0 +1,244 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-JDA-1",
+      "type": "invariant",
+      "statement": "collectJudgmentItems gathers spine subchecks, judgment axis nodes (with the original decision_question), and failure mode candidates from a gate DAG only when the route is agent_workflow or the change profile is workflow_heavy; on other routes it returns an empty list.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "collectJudgmentItems"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-2",
+      "type": "scenario",
+      "statement": "adjudicate prepare --judgment reads the latest pr-prepare.json, collects the active judgment items, and writes judgment-adjudication-request.md containing each item's original question, mechanical discharge status, matched evidence, the changed file list, the three-verdict vocabulary, and the instruction that token or wording matches alone must never justify judged_sound.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "prepareJudgmentAdjudication"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-002"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-3",
+      "type": "scenario",
+      "statement": "adjudicate prepare --judgment fails with an explicit error, without producing any artifact, when no pr prepare artifact exists or when the route yields zero active judgment items.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "prepareJudgmentAdjudication"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-003"
+          }
+        ]
+      }
+    },
+    {
+      "id": "INV-JDA-4",
+      "type": "invariant",
+      "statement": "recordJudgmentAdjudication rejects verdicts outside judged_sound/judged_unsound/needs_human_judgment, blank reasons, and missing provenance, binds each accepted verdict to the current HEAD commit, and refuses to record when HEAD cannot be resolved.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "recordJudgmentAdjudication"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-004"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-5",
+      "type": "scenario",
+      "statement": "The gate:judgment_dag_adjudication node reports needs_evidence and lists the missing item ids when adjudication records are absent, bound to a stale HEAD, or missing for some active items; verdicts without a head_commit or evaluated without a resolvable HEAD are treated as missing (fail closed).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "buildJudgmentDagAdjudicationGate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-005"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-6",
+      "type": "scenario",
+      "statement": "When any item's current-head verdict is judged_unsound the gate fails and its reason carries the judge's reasoning; needs_human_judgment items resolve only through an accepted decision record with source gate:judgment_dag_adjudication:<item-id>, a reason, and an artifact.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "buildJudgmentDagAdjudicationGate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-006"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-7",
+      "type": "scenario",
+      "statement": "When every active item is resolved by a current-head judged_sound verdict or an accepted human decision the gate passes, and when zero items are active the gate reports an explicit not_applicable instead of a silent pass.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "buildJudgmentDagAdjudicationGate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-007"
+          }
+        ]
+      }
+    },
+    {
+      "id": "INV-JDA-8",
+      "type": "invariant",
+      "statement": "gate:judgment_dag_adjudication participates in pr prepare as a required gate registered in the unresolved-required whitelist and the critical-gate set, so ready_for_pr_create stays false and a reason-only waiver cannot pass it while the gate is unresolved.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "judgment_dag_adjudication_gate"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-009"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-JDA-9",
+      "type": "scenario",
+      "statement": "Setting judgment_adjudication.enabled to false in .vibepro/config.json suppresses the gate entirely, and pr prepare completes without crashing in repositories that have no adjudication artifacts.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "isJudgmentAdjudicationEnabled"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_contain": "JADJ-S-010"
+          }
+        ]
+      }
+    }
+  ]
+}
