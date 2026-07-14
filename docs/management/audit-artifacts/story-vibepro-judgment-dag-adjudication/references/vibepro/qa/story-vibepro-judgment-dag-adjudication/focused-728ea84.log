@@ -1,0 +1,47 @@
+✔ ADJ-S-001 adjudicate prepare generates request with clause texts, evidence, verdict vocabulary, and independence instructions (5794.643709ms)
+✔ ADJ-S-002 adjudicate prepare fails explicitly when the story has no acceptance criteria (976.770875ms)
+✔ ADJ-S-003 adjudicate record validates verdict, reason, and provenance, and binds the current HEAD commit (8707.4805ms)
+✔ ADJ-S-004 gate is needs_evidence when clauses lack fresh verdicts and lists missing clause ids (6.329834ms)
+✔ ADJ-S-005 gate fails when any clause is judged not_demonstrated and carries the adjudicator reason (1.930708ms)
+✔ ADJ-S-006 not_verifiable_by_automation demands human verification and is closed only by an accepted decision with reason and artifact (0.602458ms)
+✔ ADJ-S-007 gate passes when every clause has a fresh demonstrated verdict, and is explicit not_applicable without clauses (0.154083ms)
+✔ ADJ-S-010 verdicts without a head_commit are stale (fail closed), and record refuses to run outside a git repository (517.779167ms)
+✔ ADJ-S-008 pr prepare emits a required critical evidence_adjudication gate that blocks readiness until adjudicated (10267.239209ms)
+✔ ADJ-S-009 pr prepare omits the gate when evidence_adjudication.enabled is false and does not crash without artifacts (8318.257458ms)
+✔ JDA-E2E-001 story-vibepro-judgment-dag-adjudication ac:1 prepare --judgment collects the three item families with questions, discharge state, evidence, and changed files (6762.180542ms)
+✔ JDA-E2E-002 story-vibepro-judgment-dag-adjudication ac:2 prepare --judgment without a pr prepare artifact fails explicitly and writes nothing (3961.322833ms)
+✔ JDA-E2E-003 story-vibepro-judgment-dag-adjudication ac:3 the request instructs a fresh-context judge, defines the three verdicts, and forbids token-match-only soundness (6579.376458ms)
+✔ JDA-E2E-004 story-vibepro-judgment-dag-adjudication ac:4 record --judgment validates verdict, reason, provenance, and binds to the current HEAD via the real CLI (7337.089542ms)
+✔ JDA-E2E-005 story-vibepro-judgment-dag-adjudication ac:5 the gate reports needs_evidence with missing item ids for absent or stale adjudications (1.850583ms)
+✔ JDA-E2E-006 story-vibepro-judgment-dag-adjudication ac:6 any judged_unsound item fails the gate with the judge reasoning in the reason (0.714333ms)
+✔ JDA-E2E-007 story-vibepro-judgment-dag-adjudication ac:7 needs_human_judgment items resolve only through an accepted decision record with reason and artifact (2.413333ms)
+✔ JDA-E2E-008 story-vibepro-judgment-dag-adjudication ac:8 all items resolved passes the gate and zero active items is an explicit not_applicable (0.581833ms)
+✔ JDA-E2E-009 story-vibepro-judgment-dag-adjudication ac:9 pr prepare treats the unresolved gate as required and critical so ready_for_pr_create stays false (8876.113709ms)
+✔ JDA-E2E-010 story-vibepro-judgment-dag-adjudication ac:10 config opt-out suppresses the gate and artifact-free repos do not crash (10679.808292ms)
+✔ JDA-E2E-011 story-vibepro-judgment-dag-adjudication ac:11 route scope: non-judgment routes collect zero items and workflow_heavy activates regardless of route (3.375208ms)
+✔ JADJ-S-001 collectJudgmentItems gathers spine, axis, and failure mode items only on judgment routes (10.773083ms)
+✔ JADJ-S-002 prepare --judgment fails explicitly without a pr prepare artifact and generates a checklist with one (11188.044583ms)
+✔ JADJ-S-003 prepare --judgment on a non-judgment route fails explicitly instead of producing a pass-like artifact (6191.358917ms)
+✔ JADJ-S-004 record --judgment validates verdict, reason, provenance, binds HEAD, and refuses outside git (1853.56675ms)
+✔ JADJ-S-005 gate lists missing items and treats stale or unbound verdicts as missing (1.18025ms)
+✔ JADJ-S-006 judged_unsound fails the gate with the judge reason (0.604875ms)
+✔ JADJ-S-007 needs_human_judgment resolves only via an accepted decision record with reason and artifact (1.580625ms)
+✔ JADJ-S-008 gate passes with all sound fresh verdicts and is explicit not_applicable without items (0.538917ms)
+✔ JADJ-S-009 pr prepare emits a required critical judgment gate on judgment routes that blocks readiness (11114.047875ms)
+✔ JADJ-S-010 pr prepare omits the gate when judgment_adjudication.enabled is false and does not crash without artifacts (10395.09225ms)
+✔ gate check reports blocked with exit code 1 when required gates are unresolved (23027.097583ms)
+✔ gate check --json shape exposes normalized report fields (9273.822083ms)
+✔ gate check is read-only: does not create pr-prepare.json when absent (10424.954ms)
+✔ gate check is read-only: leaves existing .vibepro/pr/<story-id> artifacts byte-identical (19599.946875ms)
+✔ gate check reports a clean error for a nonexistent story id (2916.340708ms)
+✔ gate check without --story-id evaluates repo-level readiness like checkpoint (7159.481792ms)
+✔ gate check narrows unresolved gates as story evidence is added, converging toward pass (23902.982583ms)
+✔ gate check reports exit code 0 when all required gates are satisfied for a story (14228.1995ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115878.596333

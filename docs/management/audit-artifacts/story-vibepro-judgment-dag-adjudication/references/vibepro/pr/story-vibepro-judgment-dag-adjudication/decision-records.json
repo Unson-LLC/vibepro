@@ -1,0 +1,177 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "updated_at": "2026-07-14T05:48:28.577Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784008108574-65bb8fdc",
+      "story_id": "story-vibepro-judgment-dag-adjudication",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 単一意図のdiffでblast radius明確",
+      "reason": "scope_reviewed: 変更は3 srcファイル+2テスト+文書のみで単一意図。blast radiusはgraphify 3 changed/114 related、レビューownerはgate stage gate_evidenceロールが担当。バンドルされた無関係な意思決定なし",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "728ea8488207dca948969fcd676469de4bdc2f19",
+        "current_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T05:48:28.558Z"
+      },
+      "recorded_at": "2026-07-14T05:48:28.577Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784008105293-ff15521e",
+      "story_id": "story-vibepro-judgment-dag-adjudication",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "単一Storyスコープのため分割不要（scope bundled justification）",
+      "reason": "diff 13ファイルは全て単一Story（judgment DAG adjudication）の実装+文書+テスト。ゲート本体（adjudication.js/pr-manager.js/cli.js）と依頼書・記録・E2Eは分割すると不完全な状態（ゲートだけ存在し記録手段なし等）で出荷されるため同梱が正当",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "728ea8488207dca948969fcd676469de4bdc2f19",
+        "current_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T05:48:25.279Z"
+      },
+      "recorded_at": "2026-07-14T05:48:25.296Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784008108574-65bb8fdc",
+      "story_id": "story-vibepro-judgment-dag-adjudication",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 単一意図のdiffでblast radius明確",
+      "reason": "scope_reviewed: 変更は3 srcファイル+2テスト+文書のみで単一意図。blast radiusはgraphify 3 changed/114 related、レビューownerはgate stage gate_evidenceロールが担当。バンドルされた無関係な意思決定なし",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "728ea8488207dca948969fcd676469de4bdc2f19",
+        "current_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-14T05:48:28.558Z"
+      },
+      "recorded_at": "2026-07-14T05:48:28.577Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json"
+}

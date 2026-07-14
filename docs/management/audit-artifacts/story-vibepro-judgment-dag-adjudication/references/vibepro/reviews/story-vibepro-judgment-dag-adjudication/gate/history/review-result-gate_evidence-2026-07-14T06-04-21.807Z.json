@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is bound to current HEAD a5203f92 with clean worktree; the reviewer independently re-ran the story unit+e2e suite (21/21 pass) and the typecheck commands (all pass), and the QA bundle artifact focused-a5203f9.json/.log shows 39/39 pass consistent with all three test records. The new judgment_dag_adjudication gate is genuinely wired into the gate DAG — registered in the required-gate whitelist and currently blocking pr-prepare.json (needs_evidence, ready_for_pr_create=false) — and the implementation is fail-closed: stale or head-unbound verdicts count as missing, opt-out requires explicit config, and zero-item routes yield explicit not_applicable. Two low findings: the typecheck record has no machine-readable artifact (honestly disclosed, independently re-verified), and unit/integration/e2e records share one bundle artifact with a minor internal count inconsistency. No fail-open path, stale binding, or misleading green was found.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read parallel-dispatch.md, review-request-gate_evidence.md, verification-evidence.json, pr-prepare.json (gate_status/blocking_gates), qa artifacts focused-a5203f9.json/.log; diffed origin/main (src/adjudication.js, src/pr-manager.js, src/cli.js + tests); re-ran node --check on all 3 changed src files and node --test on the 21-test story suite at HEAD a5203f92 (21/21 pass); grep-verified fail-closed head_commit binding and required-gate whitelist registration in collectUnresolvedRequiredGates.",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-prepare.json",
+      ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-a5203f9.json",
+      "command: node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js -> 21/21 pass",
+      "command: node --check src/adjudication.js src/pr-manager.js src/cli.js -> all pass",
+      "git diff origin/main --stat; git rev-parse HEAD (a5203f92, clean)"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that one shared bundle artifact (focused-a5203f9.json, 39 tests) backs three records whose commands are subsets was resolved to a low finding after independently re-running the 21-test subset at the same HEAD (passed). Initial concern about typecheck artifact=null was downgraded to low because the record discloses it honestly and the exact node --check commands were re-executed successfully. Initial concern about fail-open paths in the new gate (stale/unbound verdicts, opt-out, empty items) was refuted by code read: unbound/stale verdicts count as missing, opt-out requires explicit enabled:false, zero items produce explicit not_applicable, and pr-prepare.json shows the gate live and blocking."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+    "expected_head_sha": "a5203f92c24e3859e0d6011ced7a416d70471849",
+    "current_head_sha": "a5203f92c24e3859e0d6011ced7a416d70471849",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+      "branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+      "actual_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+      "current_head_sha": "a5203f92c24e3859e0d6011ced7a416d70471849",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-14T06:04:21.807Z",
+  "git_context": {
+    "head_sha": "a5203f92c24e3859e0d6011ced7a416d70471849",
+    "current_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-14T06:04:21.759Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "a5203f92c24e3859e0d6011ced7a416d70471849",
+    "surface_files": [],
+    "missing_files": [
+      "command:"
+    ],
+    "surface_hash": null
+  },
+  "source_fingerprint": "4c490e772569c68892179f8eab85ef661639f337833a2e8ae2a4f637d56ac955",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-evidence-reviewer-storyd",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

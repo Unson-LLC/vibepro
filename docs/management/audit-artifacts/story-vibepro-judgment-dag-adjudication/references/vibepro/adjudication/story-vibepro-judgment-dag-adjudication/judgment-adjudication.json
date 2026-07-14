@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "updated_at": "2026-07-14T06:26:50.123Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. No stale/over-green gate state path found: gate participates in collectUnresolvedRequiredGates so needs_evidence/failed block readiness (JDA-E2E-009/JADJ-S-009), isCriticalUnresolvedGate fails closed for any status except passed/not_applicable, zero-item routes get explicit not_applicable (JDA-E2E-008/-011), disabled config creates no gate node so nothing stale remains (JADJ-S-010). HEAD movement (as demonstrated by this very re-adjudication after e1fde0b) correctly reverted all verdicts to stale/needs_evidence - the intended checkpoint-level re-adjudication cost, observed working in practice.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:26:50.118Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. The lifecycle stays fail-closed under every refutation angle tried: verdicts without head_commit or against unknown HEAD never fresh (JADJ-S-005), needs_human_judgment closes only via accepted decision with reason AND artifact on the exact item source (JADJ-S-007), verdicts for item ids outside the active checklist are ignored, unsound verdicts hard-fail with the judge reason preserved. The delta improves this mode: a corrupt judgment-adjudication.json can no longer silently degrade to needs_evidence, eliminating a misleading-artifact path I had noted. Residual caveat unchanged: the request markdown is not head-stamped (same property as the shipped #324 gate), mitigated by instructions to examine the actual diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:26:49.238Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b; my prior judged_unsound is resolved on the merits, not because a test merely exists. The fix separates read failure from parse failure at both sites: prepareJudgmentAdjudication now reads raw first and reports a corrupt pr-prepare.json as 'exists but is not valid JSON ... rerun vibepro pr prepare' instead of 'no pr prepare artifact was found', and readJudgmentAdjudicationIfExists throws on corrupt judgment-adjudication.json instead of silent null (which had disguised corruption as needs_evidence). JADJ-S-011 asserts the distinguishing behavior directly - including assert.doesNotMatch on the misleading missing-artifact message - and I re-ran it passing at this HEAD. Both paths remain fail-closed with no over-green route.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:26:28.882Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. The diff remains single-intent: add the judgment-DAG adjudication layer. Every file maps to that intent, mirroring the reviewed evidence-adjudication (#324) pattern, so one reviewer can read it as one consistent judgment. The delta commit is a small focused fix (24 src lines + one regression test) responding to this gate's own finding and stays inside the same intent; accepted_followup remains a reasonable mechanical discharge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:26:11.630Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. CLI/API surface additive behind --judgment; legacy adjudicate paths and output formats untouched; PR context gains new fields without altering existing ones. The intended behavior change (new required+critical gate on agent_workflow/workflow_heavy routes, default-on) is documented in README en/ja, opt-out-able, and backward compat is tested (JADJ-S-010). Delta note: readJudgmentAdjudicationIfExists now throws on corrupt judgment-adjudication.json, so pr prepare aborts loudly on a corrupt artifact where it previously reported needs_evidence - a deliberate, documented-in-commit fail-loud tightening affecting only repos with corrupt artifacts, not a contract break.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:26:10.717Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. Done evidence is grounded: the e2e suite drives the real CLI (adjudicate prepare/record --judgment, pr prepare), JDA-E2E-001..011 map to ac:1..11, and I independently re-executed node --test on both suites at this HEAD with 22/22 passing (11 unit incl. new JADJ-S-011, 11 e2e). The dogfood loop itself (unsound verdict -> fix commit -> regression test -> re-adjudication) demonstrates the gate operating end-to-end.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:55.053Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. Workflow failure modes are concretely tested: missing pr-prepare artifact explicit error (JDA-E2E-002/JADJ-S-002), stale/HEAD-unbound verdicts count as missing (JADJ-S-005), judged_unsound fails the gate with judge reasoning (JDA-E2E-006), HEAD-unresolvable record refused (JADJ-S-004), non-judgment routes fail prepare explicitly (JADJ-S-003), opt-out/artifact-free repos do not crash (JADJ-S-010). The previously flagged malformed-input gap is now closed: JADJ-S-011 covers corrupt pr-prepare.json and corrupt judgment-adjudication.json with fail-loud assertions. All 22 tests re-run and pass at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:53.726Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. Boundaries respected: judgment adjudication uses separate artifact files and a separate gate id from clause adjudication, CLI additions are additive behind --judgment, pr-manager.js changes are wiring-only without touching token-match logic (story non-goal honored). The corrupt-artifact fix stayed inside src/adjudication.js and deliberately did NOT change the clause-side readAdjudicationIfExists (which still silent-nulls on corrupt input) - consistent with the non-goal of not modifying clause adjudication, though that asymmetry is a reasonable follow-up. node --check evidence alone would be too weak; the diff structure and arch doc carry this item.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:39.261Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. Key invariants hold in code, not just doc tokens: verdict freshness fail-closed on both sides (null headSha or head_commit mismatch never fresh), judgment_dag_adjudication_gate registered in collectUnresolvedRequiredGates, isCriticalUnresolvedGate fails closed for any status except passed/not_applicable, opt-out explicit (enabled !== false), gate pushed before overall_status recompute. The delta adds a new invariant that corrupt artifacts fail loud instead of masquerading as missing/needs_evidence, verified by JADJ-S-011.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:37.850Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. The claimed current reality (spine/axes/failure modes discharged by pure token matching) is verifiable in the unmodified code: requiredEvidenceForJudgmentSubcheck at src/pr-manager.js:8837-8840 and counter-evidence token lists (release_note/rollback_instruction) at lines 8331/8744 exist exactly as the story background describes. Replay evidence is real: I re-ran node --test on test/judgment-adjudication.test.js and the e2e suite at this HEAD, 22/22 pass including the new JADJ-S-011.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:15.132Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Re-adjudicated at e1fde0b. Story intent (demote token matching from discharge condition by layering an independent LLM judge over the judgment DAG) is genuinely delivered: prepareJudgmentAdjudication builds the checklist from pr-prepare.json, recordJudgmentAdjudication enforces 3-verdict vocabulary/reason/provenance/HEAD binding, buildJudgmentDagAdjudicationGate is required+critical, token matching in pr-manager.js is left untouched as routing per the stated non-goal. The delta commit (corrupt-artifact error paths) strengthens rather than alters the intent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judgment-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:13.836Z"
+    }
+  ]
+}

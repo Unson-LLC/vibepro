@@ -1,0 +1,21 @@
+{
+  "role": "gate_evidence",
+  "stage": "gate",
+  "head": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+  "agent_id": "gate-evidence-reviewer-storyd",
+  "agent_system": "claude_code",
+  "status": "pass",
+  "summary": "Re-reviewed at HEAD e1fde0b after the judgment adjudicator's failure_mode:parse_failure unsound verdict. The fix genuinely closes the fail-open: corrupt judgment-adjudication.json now fails loud instead of silently returning null, and corrupt pr-prepare.json raises an explicit parse-failure error instead of being misreported as missing; new regression test JADJ-S-011 is pre-fix-failing by construction. Independently re-ran the story suite (22/22 pass) and typecheck (pass) at e1fde0b; all four verification records are strict-head-bound to e1fde0b with clean worktree and matching 40/40-pass artifact.",
+  "findings": [
+    {"severity": "low", "id": "gate-evidence-typecheck-artifact-missing", "detail": "typecheck record has artifact=null; honestly disclosed and independently re-verified via node --check"},
+    {"severity": "low", "id": "gate-evidence-shared-bundle-artifact", "detail": "unit/integration/e2e records share bundle artifact focused-e1fde0b.json while commands are subsets; subset re-run passed at same HEAD"}
+  ],
+  "inspection_inputs": [
+    ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-prepare.json",
+    ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-e1fde0b.json",
+    "command: git show e1fde0b",
+    "command: node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js -> 22/22 pass",
+    "command: node --check src/adjudication.js src/pr-manager.js src/cli.js -> all pass"
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "updated_at": "2026-07-14T06:25:55.502Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b. All required families exist and pass under my own execution at this HEAD (node --test: unit 11/11 incl. new JADJ-S-011 malformed-artifact regression, e2e 11/11): 3-family collection + pr prepare prerequisite error, record validation + HEAD binding, all five gate states, required+critical linkage, opt-out + backward compat. Assertions target behavior (statuses, reasons, file absence, HEAD sha, error-message discrimination), not token presence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:55.482Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b. JADJ-S-010 and JDA-E2E-010 run real preparePullRequest with judgment_adjudication.enabled:false on an artifact-free repo: gate node absent, no crash. Delta note: readJudgmentAdjudicationIfExists still returns null for a missing artifact (no crash); only a corrupt existing artifact now fails loud, which is intentional fail-loud behavior, not a crash on artifact-free repos. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:54.133Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (criticality/required wiring unchanged: src/pr-manager.js isCriticalUnresolvedGate and required-gate whitelist). JADJ-S-009 and JDA-E2E-009 run real preparePullRequest on an agent_workflow repo and assert gate.required===true, ready_for_pr_create===false, gate present in execution_gate.blocking_gates — the set the pre-create check refuses to waive by reason alone. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:52.709Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (unchanged by delta). JADJ-S-008 and JDA-E2E-008 assert all-judged_sound-at-current-head => passed, and zero items => not_applicable with explicit /not a pass/ reason. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:31.782Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (decision-closure logic unchanged). JADJ-S-007 and JDA-E2E-007 assert needs_human_judgment resolves only via accepted decision with reason+artifact at source gate:judgment_dag_adjudication:<item-id>; open/reason-less/artifact-less negatives all stay unresolved. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:30.803Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (buildJudgmentDagAdjudicationGate unchanged). JADJ-S-006 and JDA-E2E-006 assert judged_unsound yields status failed with the verbatim judge reason in gate.reason. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:29.930Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (gate evaluation unchanged; delta additionally makes corrupt judgment-adjudication.json fail loud instead of silent-null needs_evidence masquerade, per JADJ-S-011). JADJ-S-005 and JDA-E2E-005 assert needs_evidence for absent/stale/null-head verdicts fail-closed, with every missing item id in gate.reason. Verified at this HEAD: unit 11/11, e2e 11/11.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:28.847Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (recordJudgmentAdjudication unchanged by delta). JADJ-S-004 and JDA-E2E-004 (real CLI) reject non-3-value verdict, blank reason, missing provenance; stored head_commit equals git rev-parse HEAD; non-git repo refused with explicit HEAD-resolution error. Verified passing at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:09.496Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (delta does not touch request-body text). JDA-E2E-003 asserts fresh-context independence, refutation stance, all three verdict tokens, and the token-match prohibition line; definitions rendered from JUDGMENT_VERDICT_DEFINITIONS in the same block (src/adjudication.js). Reran suites at this HEAD: all pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:08.482Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b. Missing pr-prepare.json still rejects with /no pr prepare artifact/ and JDA-E2E-002 asserts no request file is written (ENOENT). The delta strengthens this path: corrupt (present-but-malformed) pr-prepare.json is now a distinct explicit parse-failure error, not misreported as missing (JADJ-S-011 asserts doesNotMatch /no pr prepare artifact was found/). Verified 11/11 unit + 11/11 e2e at this HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:07.411Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Re-adjudicated at HEAD e1fde0b (delta touches only artifact parse-failure paths, item collection/request generation unchanged). JADJ-S-001/S-002 and JDA-E2E-001 assert the request contains all three item families, verbatim decision_question, mechanical status, matched evidence, and changed files from a real pr-prepare.json. Reran both suites at this HEAD: unit 11/11, e2e 11/11 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "clause-judge-storyd",
+        "session_ref": null
+      },
+      "head_commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "recorded_at": "2026-07-14T06:25:06.538Z"
+    }
+  ]
+}

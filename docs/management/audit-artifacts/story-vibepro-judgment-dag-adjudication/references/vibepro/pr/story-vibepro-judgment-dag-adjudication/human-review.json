@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "created_at": "2026-07-14T06:50:33.865Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-judgment-dag-adjudication.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-judgment-dag-adjudication.md, docs/specs/story-vibepro-judgment-dag-adjudication.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784008108574-65bb8fdc",
+        "story_id": "story-vibepro-judgment-dag-adjudication",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "scope_reviewed: 単一意図のdiffでblast radius明確",
+        "reason": "scope_reviewed: 変更は3 srcファイル+2テスト+文書のみで単一意図。blast radiusはgraphify 3 changed/114 related、レビューownerはgate stage gate_evidenceロールが担当。バンドルされた無関係な意思決定なし",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "728ea8488207dca948969fcd676469de4bdc2f19",
+          "current_branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-14T05:48:28.558Z"
+        },
+        "recorded_at": "2026-07-14T05:48:28.577Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T06:50:28.128Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b6a807417ea9e98480a9b43c7a10a1c3046cf80d",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

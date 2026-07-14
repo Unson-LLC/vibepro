@@ -1,0 +1,746 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-14T06:54:02.542Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:50180158954a03309c7c80d1a567113f87c2009edb12dc1d90cbb1d59c7523f2",
+    "compressed_hash": "sha256:a3e57af609b478215f3208824fefd120fcfa38bf44453b45bb4bd7caaa35a12c",
+    "expanded_bytes": 12910,
+    "compressed_bytes": 3313,
+    "expanded_line_count": 327,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-judgment-dag-adjudication",
+    "cost": {
+      "compressed_bytes": 3313,
+      "expanded_bytes": 12910,
+      "expanded_line_count": 327,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/328",
+    "merge_commit_sha": "b97ef818f490c9a24ebb0ae82f6dc84997afb447",
+    "merged_at": "2026-07-14T06:54:01Z",
+    "current_head_sha": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...e1fde0badb87a80fee414d1bca50e4eaeb8e1f32"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 47,
+    "copied_reference_count": 39,
+    "unresolved_reference_count": 9,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-judgment-dag-adjudication"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:50180158954a03309c7c80d1a567113f87c2009edb12dc1d90cbb1d59c7523f2"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:ae8d5fb6411dd9a3b348eb5be30ad8163bbce5f58de9350fc87b679792747d73",
+      "audit_digest": "sha256:ae8d5fb6411dd9a3b348eb5be30ad8163bbce5f58de9350fc87b679792747d73",
+      "line_count": 209,
+      "raw_line_count": 209,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:3a86b0e5b556ca3d598bd826bb421920848d4e6beedbeb14d45a7db656f208d1",
+      "audit_digest": "sha256:f32fd02c70f94c2b8171537e4a7778595b2c4921ef86060642bf66815b80a1e9",
+      "line_count": 3569,
+      "raw_line_count": 28608,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:62a094697320711807fed40e68386e3c496c249f6e950b6479de757a6945faf9",
+      "audit_digest": "sha256:4735463b58d2b333fb78287b0b4f5f717ff28b4e315c9ff8f8684a67dab0f6d3",
+      "line_count": 1721,
+      "raw_line_count": 3843,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:65c89803341a1bd6b02b2916fc7b3a0ae944b1093c5a5d24ee22f59fe126f347",
+      "audit_digest": "sha256:13024074b402505535657184ce0e5676ce5d00d976564181788c335db7872541",
+      "line_count": 63,
+      "raw_line_count": 731,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:dad689a41519453f8b05f13488334c745931cc8de58dc081df115261ac89603c",
+      "audit_digest": "sha256:0eb3b0e3561cc9a4790826bff524da7a941bc548d10debf4fba84117fd243bbb",
+      "line_count": 1785,
+      "raw_line_count": 3953,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:33030675c8600d9c232c9edfbfdec6bee6c9f360299282804e78413690a87781",
+      "audit_digest": "sha256:33030675c8600d9c232c9edfbfdec6bee6c9f360299282804e78413690a87781",
+      "line_count": 473,
+      "raw_line_count": 473,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:492861f6b9e3e8f8bf9df22192a430e8fa21a59e58698562759803572af28eba",
+      "audit_digest": "sha256:e66cecce245d4b404d61a2061c098b8ff6bf8ba05abc802adfe4e62595ffbc8a",
+      "line_count": 44,
+      "raw_line_count": 383,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:8b0ab496e644ead86b284ae86451c41ed9f482c75bc6f88db15fafbf047c4847",
+      "audit_digest": "sha256:8b0ab496e644ead86b284ae86451c41ed9f482c75bc6f88db15fafbf047c4847",
+      "line_count": 86,
+      "raw_line_count": 86,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:9370cfe8b01bb95ed1026ca18cdc3fa902e839866674fa61d4b337deb99eeae4",
+      "audit_digest": "sha256:9370cfe8b01bb95ed1026ca18cdc3fa902e839866674fa61d4b337deb99eeae4",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:7f347f416bac677f75093e6fbdf37abccbbc185919227087b40cc299f03279d4",
+      "audit_digest": "sha256:7f347f416bac677f75093e6fbdf37abccbbc185919227087b40cc299f03279d4",
+      "line_count": 127,
+      "raw_line_count": 127,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/audit-replay-bundle.json.gz",
+      "digest": "sha256:9ff0d09fac0c42ec0c2946132f49ae52b4d856df5b1d0e4d8568b019726f2385",
+      "audit_digest": "sha256:9ff0d09fac0c42ec0c2946132f49ae52b4d856df5b1d0e4d8568b019726f2385",
+      "line_count": 264,
+      "raw_line_count": 264,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/gate-dag.json"
+    }
+  ],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-judgment-dag-adjudication/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/adjudication/story-vibepro-judgment-dag-adjudication/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-judgment-dag-adjudication/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/adjudication/story-vibepro-judgment-dag-adjudication/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-e1fde0b.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-e1fde0b.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-04-21.807Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-04-21.807Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-27-37.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-27-37.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-28-36.402Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-28-36.402Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-30-26.429Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-30-26.429Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/transcripts/gate_evidence-e1fde0b.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/transcripts/gate_evidence-e1fde0b.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-judgment-dag-adjudication/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/adjudication/story-vibepro-judgment-dag-adjudication/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-judgment-dag-adjudication/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/adjudication/story-vibepro-judgment-dag-adjudication/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/diagnostics/2026-07-14T045619Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/pr/story-vibepro-judgment-dag-adjudication/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-728ea84.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-e1fde0b.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/qa/story-vibepro-judgment-dag-adjudication/focused-e1fde0b.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-04-21.807Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-04-21.807Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-27-37.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-27-37.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-28-36.402Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-28-36.402Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-30-26.429Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/history/review-result-gate_evidence-2026-07-14T06-30-26.429Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/transcripts/gate_evidence-e1fde0b.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/reviews/story-vibepro-judgment-dag-adjudication/gate/transcripts/gate_evidence-e1fde0b.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-judgment-dag-adjudication/references/vibepro/stories/story-vibepro-judgment-dag-adjudication/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/adjudication/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5486585
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-14T045619Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 967964
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5168736
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-judgment-dag-adjudication/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-judgment-dag-adjudication/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

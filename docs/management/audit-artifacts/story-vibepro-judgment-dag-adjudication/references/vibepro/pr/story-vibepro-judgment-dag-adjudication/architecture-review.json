@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-judgment-dag-adjudication",
+  "created_at": "2026-07-14T06:50:33.865Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-judgment-dag-adjudication.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-judgment-dag-adjudication.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-judgment-dag-adjudication.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-judgment-dag-adjudication.md, docs/specs/story-vibepro-judgment-dag-adjudication.vibepro.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-14T06:50:28.128Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-judgment-adjudication/.worktrees/vibepro/story-vibepro-judgment-dag-adjudication-qek89i/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e1fde0badb87a80fee414d1bca50e4eaeb8e1f32",
+      "branch": "vibepro/story-vibepro-judgment-dag-adjudication-qek89i",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b6a807417ea9e98480a9b43c7a10a1c3046cf80d",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
