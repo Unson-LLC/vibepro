@@ -124,7 +124,7 @@ export async function runCheckPack(repoRoot, options = {}) {
     })).measurement;
   }
 
-  const checks = summarizeChecks({ packId, evidence, architectureProfile });
+  const checks = summarizeChecks({ packId, evidence, architectureProfile, language });
   const status = aggregateStatus(checks);
   // Machine consumers of the aggregate must be able to distinguish "pass
   // after examining targets" from "pass with unexamined scanners": the
@@ -224,7 +224,7 @@ async function runNamedCheck(check, context) {
   return { status: 'skipped', reason: `unknown check ${check}` };
 }
 
-function summarizeChecks({ packId, evidence, architectureProfile }) {
+function summarizeChecks({ packId, evidence, architectureProfile, language = 'ja' }) {
   const checks = [];
   if (evidence.architecture_profile) {
     checks.push({
@@ -284,7 +284,7 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
     checks.push(summarizeApiBoundary(evidence.api_boundary));
   }
   if (evidence.network_contracts) {
-    checks.push(summarizeNetworkContracts(evidence.network_contracts));
+    checks.push(summarizeNetworkContracts(evidence.network_contracts, language));
   }
   if (evidence.component_style) {
     checks.push(...summarizeRiskGroups('component_style', 'UI Style', evidence.component_style, [
@@ -293,7 +293,7 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
     ]));
   }
   if (evidence.flow_design) {
-    checks.push(summarizeFlowDesign(evidence.flow_design));
+    checks.push(summarizeFlowDesign(evidence.flow_design, language));
   }
   if (evidence.gesture_interaction) {
     checks.push(...summarizeRiskGroups('gesture_interaction', 'Gesture Interaction', evidence.gesture_interaction, [
@@ -393,13 +393,13 @@ function summarizeApiBoundary(apiBoundary) {
   };
 }
 
-function summarizeNetworkContracts(networkContracts) {
+function summarizeNetworkContracts(networkContracts, language = 'ja') {
   if (networkContracts.status === 'inconclusive') {
     return {
       id: 'network_contracts',
       label: 'Network Contracts',
       status: 'inconclusive',
-      summary: `${describeScanStatus(networkContracts.status)}${networkContracts.reason ? `: ${networkContracts.reason}` : ''}`
+      summary: `${describeScanStatus(networkContracts.status, language)}${networkContracts.reason ? `: ${networkContracts.reason}` : ''}`
     };
   }
   const missing = networkContracts.missing_routes?.length ?? 0;
@@ -423,7 +423,7 @@ function summarizeAgentHarness(agentHarness) {
   };
 }
 
-function summarizeFlowDesign(flowDesign) {
+function summarizeFlowDesign(flowDesign, language = 'ja') {
   const count = [
     flowDesign.silent_noop_hits,
     flowDesign.ambiguous_primary_action_hits,
@@ -439,7 +439,7 @@ function summarizeFlowDesign(flowDesign) {
     label: 'Flow Design',
     status: normalizeCheckStatus(flowDesign.status),
     summary: isVacuous
-      ? `${describeScanStatus(flowDesign.status)}${flowDesign.reason ? `: ${flowDesign.reason}` : ''}`
+      ? `${describeScanStatus(flowDesign.status, language)}${flowDesign.reason ? `: ${flowDesign.reason}` : ''}`
       : `${flowDesign.summary?.scanned_ui_files ?? 0} UI files; ${count} flow findings`
   };
 }
@@ -491,7 +491,7 @@ export function renderCheckPack(result) {
     '',
     `${localizedText(language, { ja: 'Run ID', en: 'Run ID' })}: ${result.run_id}`,
     `${localizedText(language, { ja: 'Pack', en: 'Pack' })}: ${result.pack_id} - ${result.title}`,
-    `${localizedText(language, { ja: '状態', en: 'Status' })}: ${result.status}`,
+    `${localizedText(language, { ja: '状態', en: 'Status' })}: ${result.status}${(result.inconclusive_count ?? 0) > 0 ? localizedText(language, { ja: `（inconclusive: ${result.inconclusive_count}件 — 検査対象を発見できなかったチェックあり）`, en: ` (inconclusive: ${result.inconclusive_count} — some checks discovered no scan targets)` }) : ''}`,
     '',
     localizedText(language, { ja: '## チェック', en: '## Checks' }),
     '',

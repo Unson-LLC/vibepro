@@ -1634,7 +1634,9 @@ function renderNetworkContractSummary(networkContracts) {
     `- Server function replacements: ${replacements.length}`,
     rows.length > 0
       ? renderSimpleMarkdownTable(['Kind', 'API', 'File', 'Line'], rows)
-      : '- 問題なし'
+      : ['inconclusive', 'not_applicable'].includes(networkContracts.status)
+        ? `- ${networkContracts.reason ?? describeScanStatus(networkContracts.status)}`
+        : '- 問題なし'
   ].join('\n');
 }
 

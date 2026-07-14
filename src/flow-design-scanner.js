@@ -160,7 +160,10 @@ export async function scanFlowDesign(repoRoot, options = {}) {
   if (uiFiles.length === 0 && findingsStatus === 'pass') {
     const conclusiveness = resolveScanConclusiveness({ scannedCount: uiFiles.length, applicable: uiStory });
     result.status = conclusiveness.status;
-    result.reason = conclusiveness.reason;
+    // Actionable next step: name the roots that were walked and how to point
+    // the scanner at a non-default layout (the reader must be able to make
+    // the scan conclusive, not just learn that it was not).
+    result.reason = `${conclusiveness.reason} 走査root: ${result.scan_coverage.roots.join(', ')}。Next.js規約外のUI配置は .vibepro/config.json の flow_design.code_roots で走査rootを指定できる / scanned roots listed above; set flow_design.code_roots in .vibepro/config.json to point the scan at non-default layouts.`;
   } else {
     result.status = findingsStatus;
   }
@@ -185,6 +188,7 @@ export function renderFlowDesignReport({ runId, flowDesign }) {
 | Status | ${describeScanStatus(flowDesign.status)} |
 | Profile | ${flowDesign.profile ?? '-'} |
 | UI走査ファイル | ${flowDesign.summary?.scanned_ui_files ?? 0}件 |
+| 走査root | ${(flowDesign.scan_coverage?.roots ?? []).join(', ') || '-'} |
 | Interaction | ${flowDesign.summary?.interaction_count ?? 0}件 |
 | Silent noop | ${flowDesign.summary?.silent_noop_count ?? 0}件 |
 | Selection side effect | ${flowDesign.summary?.selection_side_effect_count ?? 0}件 |

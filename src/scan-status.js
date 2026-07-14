@@ -12,12 +12,12 @@ export function resolveScanConclusiveness({ scannedCount, applicable }) {
   if (applicable) {
     return {
       status: 'inconclusive',
-      reason: '検査対象を1件も発見できなかった。検査対象の不在はpassの証拠にならないため、判定不能（inconclusive）として扱う。'
+      reason: '検査対象を1件も発見できなかった。検査対象の不在はpassの証拠にならないため、判定不能（inconclusive）として扱う / no scan targets were discovered; absence of coverage is not evidence of a pass.'
     };
   }
   return {
     status: 'not_applicable',
-    reason: 'このスキャナの走査対象に該当しないため、検査対象0件は対象外（not_applicable）として扱う。'
+    reason: 'このスキャナの走査対象に該当しないため、検査対象0件は対象外（not_applicable）として扱う / this scanner does not apply to the story, so zero targets is out of scope.'
   };
 }
 
