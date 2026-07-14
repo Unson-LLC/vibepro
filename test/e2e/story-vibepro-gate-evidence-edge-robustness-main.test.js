@@ -50,7 +50,11 @@ async function makeRepo() {
 }
 
 // story-vibepro-gate-evidence-edge-robustness ac:1
-test('GER-E2E-001 story-vibepro-gate-evidence-edge-robustness ac:1 safeReaddir returns [] for ENOTDIR and ENOENT and re-throws otherwise, exercised on a real filesystem', async () => {
+// story-vibepro-gate-evidence-edge-robustness S-001
+// story-vibepro-gate-evidence-edge-robustness S-003
+test('GER-E2E-001 story-vibepro-gate-evidence-edge-robustness ac:1 S-001 S-003 safeReaddir returns [] for ENOTDIR and ENOENT and re-throws otherwise, exercised on a real filesystem', async () => {
+  // S-001 (SC-GER-2): non-ENOENT/ENOTDIR errors propagate. S-003 (SC-GER-6): the execution-state
+  // scanning workflow transitions to "continue with no entries" for ENOENT and ENOTDIR, else re-throw.
   // `safeReaddir` は対象がファイル（`ENOTDIR`）のとき例外を投げず `[]` を返し、`ENOENT` のときも従来どおり `[]` を返す。それ以外のエラーは再throwする。
   const base = await mkdtemp(path.join(os.tmpdir(), 'vibepro-ger-e2e-fs-'));
   const realDir = path.join(base, 'd');
@@ -101,7 +105,10 @@ test('GER-E2E-004 story-vibepro-gate-evidence-edge-robustness ac:4 buildEvidence
 
 // story-vibepro-gate-evidence-edge-robustness ac:5
 // story-vibepro-gate-evidence-edge-robustness ac:7
-test('GER-E2E-005 story-vibepro-gate-evidence-edge-robustness ac:5 ac:7 preparePullRequest end-to-end produces well-formed evidence items with correct kinds and no regression', async () => {
+// story-vibepro-gate-evidence-edge-robustness S-002
+test('GER-E2E-005 story-vibepro-gate-evidence-edge-robustness ac:5 ac:7 S-002 preparePullRequest end-to-end produces well-formed evidence items with correct kinds and no regression', async () => {
+  // S-002 (SC-GER-5): classifySeniorAxisEvidence's add no longer duplicates kind in extra, yet the
+  // real pr-prepare path still emits evidence items with intact kinds and carried-through fields.
   // `classifySeniorAxisEvidence` 内 `add` は `kind` を `extra` に重複指定しなくても、正しい `kind` の evidence item を生成する。
   // 既存の gate check・evidence機構・pr prepare スイートに退行がない（実pr prepareがend-to-endで成功し、証拠itemのidentityが保たれる）。
   const repo = await makeRepo();

@@ -11,6 +11,7 @@ architecture_docs:
   - ../../../architecture/vibepro-gate-evidence-edge-robustness.md
 spec_docs:
   - ../../../specs/vibepro-gate-evidence-edge-robustness.md
+parent_design: vibepro-gate-evidence-edge-robustness
 status: active
 created_at: 2026-07-14
 updated_at: 2026-07-14
