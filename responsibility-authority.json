@@ -349,6 +349,37 @@
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.diagnostics.scan_conclusiveness",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/vibepro-scanner-inconclusive-coverage.md"
+      },
+      "supporting_authority": [
+        "docs/specs/vibepro-scanner-inconclusive-coverage.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/scan-status.js",
+          "src/flow-design-scanner.js",
+          "src/network-contract-scanner.js",
+          "src/regression-risk-scanner.js",
+          "test/scan-status.test.js"
+        ],
+        "symbols": [
+          "resolveScanConclusiveness",
+          "scan_coverage",
+          "inconclusive"
+        ],
+        "risk_surfaces": []
+      },
+      "required_evidence": [
+        "unit_regression",
+        "typecheck",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
     }
   ]
 }
