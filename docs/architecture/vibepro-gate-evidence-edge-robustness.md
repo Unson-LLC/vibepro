@@ -19,7 +19,7 @@ gate evidence機構には2つの局所的な脆さが残っている。どちら
 
 **2. `buildEvidenceItem` の spread順序が明示引数を上書きし得る（pr-manager.js）**。現状 `...extra` を
 最後に展開しているため、`extra` に `kind` / `ref` が含まれると明示引数を黙って上書きできる。実際、
-`buildDocumentationEvidence` 内の `add` は `{ ...extra, kind }` という回避策で同じkindを二重指定して
+`classifySeniorAxisEvidence` 内の `add` は `{ ...extra, kind }` という回避策で同じkindを二重指定して
 これを避けている（＝footgunが既に存在する証拠）。`...extra` を先頭に展開し、明示引数と既定値付き
 フィールド（`kind` / `ref` / `strength` / `strength_reason` / `binding_status` / `artifact_quality`）が
 常に勝つようにすれば、evidence itemのidentityが呼び出し側の追加フィールドに侵食されなくなり、

@@ -37,7 +37,7 @@ ENOTDIR → []          （追加: ディレクトリのはずがファイル＝
   artifact_quality: extra.artifact_quality ?? 'unknown' }
 ```
 
-あわせて `buildDocumentationEvidence` 内 `add` の `{ ...extra, kind }` 回避策から冗長な `kind` を除去。
+あわせて `classifySeniorAxisEvidence` 内 `add` の `{ ...extra, kind }` 回避策から冗長な `kind` を除去。
 
 ## テスト対応（test/gate-evidence-edge-robustness.test.js）
 

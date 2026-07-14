@@ -102,12 +102,12 @@ test('GER-E2E-004 story-vibepro-gate-evidence-edge-robustness ac:4 buildEvidence
 // story-vibepro-gate-evidence-edge-robustness ac:5
 // story-vibepro-gate-evidence-edge-robustness ac:7
 test('GER-E2E-005 story-vibepro-gate-evidence-edge-robustness ac:5 ac:7 preparePullRequest end-to-end produces well-formed evidence items with correct kinds and no regression', async () => {
-  // `buildDocumentationEvidence` 内 `add` は `kind` を `extra` に重複指定しなくても、正しい `kind` の evidence item を生成する。
+  // `classifySeniorAxisEvidence` 内 `add` は `kind` を `extra` に重複指定しなくても、正しい `kind` の evidence item を生成する。
   // 既存の gate check・evidence機構・pr prepare スイートに退行がない（実pr prepareがend-to-endで成功し、証拠itemのidentityが保たれる）。
   const repo = await makeRepo();
   const result = await preparePullRequest(repo, { storyId: STORY_ID, baseRef: 'main' });
   const nodes = result.preparation.pr_context.gate_dag.nodes;
-  // The documentation evidence path (buildDocumentationEvidence.add → buildEvidenceItem)
+  // The documentation evidence path (classifySeniorAxisEvidence.add → buildEvidenceItem)
   // ran during real pr prepare. Every emitted evidence item must have a non-empty kind
   // that is never the sentinel 'HIJACKED' and matches no extra-collision corruption.
   const spine = nodes.find((n) => n.id === 'gate:common_judgment_spine');
