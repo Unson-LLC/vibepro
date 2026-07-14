@@ -8211,6 +8211,38 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_human_review, '.vibepro/pr/story-pr-prepare/human-review.json');
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_architecture_review, '.vibepro/pr/story-pr-prepare/architecture-review.json');
 
+  const auditOnlyWaiverReason = [
+    'PBL-SCENARIO-006A audit-log-only overflow fixture.',
+    '',
+    '## 監査ログ',
+    'audit-log-entry '.repeat(4200)
+  ].join('\n');
+  const auditOnlyCreateResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    auditOnlyWaiverReason
+  ]);
+  assert.equal(auditOnlyCreateResult.exitCode, 0);
+  assert.equal(auditOnlyCreateResult.result.execution.pr_body_limit.status, 'truncated');
+  assert.equal(auditOnlyCreateResult.result.execution.pr_body_limit.strategy, 'omit_audit_log_section');
+  assert.deepEqual(auditOnlyCreateResult.result.execution.pr_body_limit.omitted_sections, ['## 監査ログ']);
+  assert.equal(auditOnlyCreateResult.result.execution.body_file, '.vibepro/pr/story-pr-prepare/pr-body.github.md');
+  const auditOnlyPostedBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.github.md'), 'utf8');
+  assert.match(auditOnlyPostedBody, /GitHub本文の65,536文字制限/);
+  assert.match(auditOnlyPostedBody, /`\.vibepro\/pr\/story-pr-prepare\/pr-body\.md`/);
+  assert.doesNotMatch(auditOnlyPostedBody, /\[[^\]]+\]\(\.vibepro\//);
+  assert.match(auditOnlyPostedBody, /\[docs\/management\/stories\/active\/STR-001-pr-prepare\.md\]\(docs\/management\/stories\/active\/STR-001-pr-prepare\.md\)/);
+  assert.doesNotMatch(auditOnlyPostedBody, /audit-log-entry/);
+  assert.equal(Array.from(auditOnlyPostedBody).length <= 65536, true);
+
   const longWaiverReason = `PBL-SCENARIO-001 ${'body-limit-waiver '.repeat(4200)}`;
   const longBodyCreateResult = await runCli([
     'pr',
