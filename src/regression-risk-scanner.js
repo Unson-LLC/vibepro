@@ -8,6 +8,7 @@ import {
   normalizeGraphPath
 } from './graph-context.js';
 import { loadCoverage } from './coverage-report.js';
+import { buildScanCoverage, resolveScanConclusiveness } from './scan-status.js';
 import { getWorkspaceDir } from './workspace.js';
 
 // Regression-risk scanner: blast-radius core, optionally sharpened by coverage.
@@ -127,8 +128,15 @@ export function analyzeRegressionRisk(graph, options = {}) {
   // behavior is unchanged: any high-blast-radius module triggers review.
   const status = hasCoverage ? (critical > 0 ? 'needs_review' : 'pass') : (high > 0 ? 'needs_review' : 'pass');
 
+  // hotspots.length is the number of modules the call graph produced a
+  // fan-in score for. Zero means no in-scope module was ever called by
+  // another in-scope module — there was nothing to score, so `pass` would be
+  // a vacuum pass rather than a verdict about regression risk.
+  const conclusiveness = resolveScanConclusiveness({ scannedCount: hotspots.length, applicable: true });
+
   return {
-    status,
+    status: conclusiveness.status ?? status,
+    reason: conclusiveness.reason,
     hotspots: hotspots.slice(0, top),
     summary: {
       scored_modules: hotspots.length,
@@ -137,7 +145,8 @@ export function analyzeRegressionRisk(graph, options = {}) {
       critical,
       coverage_source: options.coverageSource ?? (hasCoverage ? 'provided' : null),
       thresholds: { high_fan_in: highFanIn, moderate_fan_in: moderateFanIn, low_coverage_pct: lowCoverage * 100 }
-    }
+    },
+    scan_coverage: buildScanCoverage({ scannedCount: hotspots.length, roots: includePrefixes })
   };
 }
 

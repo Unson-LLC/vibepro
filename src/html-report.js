@@ -1,4 +1,5 @@
 import { localizedText } from './language.js';
+import { describeScanStatus } from './scan-status.js';
 
 export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
   const gateDag = preparation.pr_context.gate_dag;
@@ -955,7 +956,7 @@ function renderNetworkContractPanel(networkContracts, language = 'ja') {
     <section>
       <h2>${escapeHtml(localizedText(language, { ja: 'Network Contract検出', en: 'Network Contract Findings' }))}</h2>
       <div class="metrics">
-        ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), networkContracts.status, 'route contract')}
+        ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), describeScanStatus(networkContracts.status, language === 'en' ? 'en' : 'ja'), 'route contract')}
         ${metricCard(localizedText(language, { ja: 'API呼び出し', en: 'API Calls' }), networkContracts.api_client_call_count ?? 0, 'detected')}
         ${metricCard(localizedText(language, { ja: 'Route不足', en: 'Missing Routes' }), missing.length, 'block')}
         ${metricCard(localizedText(language, { ja: '新規呼び出し', en: 'Introduced Calls' }), networkContracts.introduced_api_client_call_count ?? 0, 'diff')}

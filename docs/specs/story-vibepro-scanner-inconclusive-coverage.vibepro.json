@@ -1,0 +1,271 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scanner-inconclusive-coverage",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-SIC-1",
+      "type": "invariant",
+      "statement": "resolveScanConclusiveness returns inconclusive for zero scanned applicable targets, not_applicable with a reason for zero scanned inapplicable targets, and defers to the caller (null status) when at least one target was scanned.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/scan-status.js",
+            "anchor": "resolveScanConclusiveness"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-001"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-SIC-2",
+      "type": "scenario",
+      "statement": "When the flow design scanner walks its UI roots and discovers zero files for a UI story, the pre-existing blocking verdict driven by the FLOW-NO-UI-CODE critical finding is preserved (block, never pass); the inconclusive vocabulary applies only when no findings force a stronger status.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/flow-design-scanner.js",
+            "anchor": "resolveScanConclusiveness"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-002"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-SIC-3",
+      "type": "scenario",
+      "statement": "When the flow design scanner discovers zero files for a non-UI story, the result status transitions to not_applicable with an explicit reason instead of a silent pass.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/flow-design-scanner.js",
+            "anchor": "scan_coverage"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-003"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-SIC-4",
+      "type": "scenario",
+      "statement": "When at least one UI file is scanned and no findings accumulate, the flow design scanner status remains pass exactly as before, so conclusive repositories see no behavior change.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/flow-design-scanner.js",
+            "anchor": "resolveStatus"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-004"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CON-SIC-5",
+      "type": "contract",
+      "statement": "Every targeted scanner attaches scan_coverage with the scanned count and the roots that were walked, so a pass is auditable against what was actually examined.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/scan-status.js",
+            "anchor": "buildScanCoverage"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-005"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-SIC-6",
+      "type": "scenario",
+      "statement": "When the network contract scanner examines zero candidate files the status transitions to inconclusive, while the existing block verdict for missing routes with candidates present is unchanged.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/network-contract-scanner.js",
+            "anchor": "candidateScannedCount"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-006"
+          }
+        ]
+      }
+    },
+    {
+      "id": "SC-SIC-7",
+      "type": "scenario",
+      "statement": "When the regression risk scanner has zero scored modules to evaluate, the status transitions to inconclusive instead of pass.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/regression-risk-scanner.js",
+            "anchor": "resolveScanConclusiveness"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "SCAN-S-007"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CON-SIC-8",
+      "type": "contract",
+      "statement": "inconclusive and not_applicable are rendered distinctly from pass in diagnose summaries and check packs, stating that no scan targets were discovered, and neither status enters the gate DAG unresolved aggregation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/scan-status.js",
+            "anchor": "describeScanStatus"
+          },
+          {
+            "file": "src/check-packs.js",
+            "anchor": "describeScanStatus"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/scan-status.test.js",
+            "must_contain": "describeScanStatus"
+          }
+        ]
+      },
+      "inherited_behavior": {
+        "condition": "authorizationOrderRisks.length > 0",
+        "classification": "existing",
+        "files": [
+          "src/diagnostic-engine.js"
+        ]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-SIC-STATE",
+      "kind": "state",
+      "title": "Scanner status state transitions",
+      "entities": [
+        {
+          "id": "scanned",
+          "label": "scan attempted"
+        },
+        {
+          "id": "pass",
+          "label": "pass"
+        },
+        {
+          "id": "inconclusive",
+          "label": "inconclusive"
+        },
+        {
+          "id": "not_applicable",
+          "label": "not_applicable"
+        },
+        {
+          "id": "findings",
+          "label": "fail/block/needs_review"
+        }
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> scanned\n  scanned --> pass: targets found, no findings\n  scanned --> findings: targets found, findings accumulated\n  scanned --> inconclusive: zero targets, scanner applicable\n  scanned --> not_applicable: zero targets, scanner not applicable"
+    },
+    {
+      "id": "DG-SIC-FLOW",
+      "kind": "flow",
+      "title": "Conclusiveness resolution workflow process",
+      "mermaid": "flowchart LR\n  Scan[\"walk roots / collect targets\"] --> Count{\"scanned_count\"}\n  Count -->|> 0| Existing[\"existing findings-based status\"]\n  Count -->|0 and applicable| Inc[\"inconclusive + scan_coverage\"]\n  Count -->|0 and not applicable| NA[\"not_applicable + reason\"]\n  Inc --> Render[\"summary renders: not a pass\"]\n  NA --> Render"
+    },
+    {
+      "id": "DG-SIC-THREAT",
+      "kind": "threat_model",
+      "title": "Vacuum pass threat and control",
+      "mermaid": "flowchart LR\n  Repo[\"non-Next.js repository\"] --> Scanner[\"framework-convention scanner\"]\n  Threat[\"vacuum pass: zero targets rendered as pass (2026-07-13 incident)\"] --> Scanner\n  Scanner --> Control[\"inconclusive vocabulary + scan_coverage audit\"]\n  Control --> Reader[\"gate reader sees: nothing was examined\"]"
+    }
+  ]
+}

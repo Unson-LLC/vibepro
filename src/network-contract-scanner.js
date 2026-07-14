@@ -3,6 +3,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { buildScanCoverage, resolveScanConclusiveness } from './scan-status.js';
+
 const execFileAsync = promisify(execFile);
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
@@ -10,6 +12,7 @@ const APP_ROUTE_PATTERN = /^(?:src\/)?app\/api\/(.+)\/route\.(js|jsx|ts|tsx)$/;
 const PAGES_ROUTE_PATTERN = /^(?:src\/)?pages\/api\/(.+)\.(js|jsx|ts|tsx)$/;
 const API_STRING_PATTERN = /(['"`])([^'"`]*\/api\/[^'"`]*)\1/g;
 const DIRECT_CALL_PATTERN = /\b([A-Za-z_$][\w$]*)\s*\(/g;
+const SOURCE_FILE_ROOTS = ['src/', 'app/', 'pages/', 'components/', 'features/', 'lib/', 'server/'];
 const KEYWORDS = new Set([
   'if',
   'for',
@@ -36,8 +39,9 @@ export async function scanNetworkContracts(repoRoot, options = {}) {
     : files.filter(isSourceFile);
   const apiClientCalls = [];
   const serverActionReplacements = [];
+  const uniqueScanFiles = unique(scanFiles);
 
-  for (const file of unique(scanFiles)) {
+  for (const file of uniqueScanFiles) {
     const currentContent = await readContentForRef(root, file, options.headRef) ?? await readTextIfExists(path.join(root, file));
     if (!currentContent) continue;
     const oldContent = options.baseRef ? await readContentForRef(root, file, options.baseRef) : null;
@@ -87,9 +91,18 @@ export async function scanNetworkContracts(repoRoot, options = {}) {
       return analyzedCalls.some((analyzed) => callKey(analyzed) === key && analyzed.route_status !== 'present');
     }));
 
+  // Candidate files examined for either side of the contract: route files
+  // (app/api, pages/api) plus source files scanned for client call sites. If
+  // both are zero, the scanner had nothing to compare — a `pass` here would
+  // be a vacuum pass, not a verdict.
+  const candidateScannedCount = routes.length + uniqueScanFiles.length;
+  const conclusiveness = resolveScanConclusiveness({ scannedCount: candidateScannedCount, applicable: true });
+
   return {
     schema_version: '0.1.0',
-    status: missingRoutes.length > 0 ? 'block' : highRiskReplacements.length > 0 || dynamicCalls.length > 0 ? 'needs_review' : 'pass',
+    status: conclusiveness.status
+      ?? (missingRoutes.length > 0 ? 'block' : highRiskReplacements.length > 0 || dynamicCalls.length > 0 ? 'needs_review' : 'pass'),
+    reason: conclusiveness.reason,
     route_count: routes.length,
     api_client_call_count: analyzedCalls.length,
     introduced_api_client_call_count: analyzedCalls.filter((call) => call.introduced_in_diff).length,
@@ -103,7 +116,8 @@ export async function scanNetworkContracts(repoRoot, options = {}) {
       missing_routes: summarizeGateEffects(missingRoutes),
       dynamic_calls: summarizeGateEffects(dynamicCalls),
       server_action_replacements: summarizeGateEffects(highRiskReplacements)
-    }
+    },
+    scan_coverage: buildScanCoverage({ scannedCount: candidateScannedCount, roots: SOURCE_FILE_ROOTS })
   };
 }
 
