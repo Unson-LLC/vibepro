@@ -216,6 +216,23 @@ npx vibepro guard status /path/to/repo
 
 選択中の Story が `ready_for_pr_create` でない間、該当コマンドは blocking gate と復旧コマンドを出力して非0で終了します。緊急時は `VIBEPRO_GUARD_BYPASS="<reason>"` で通過できますが、すべての bypass は `.vibepro/guard/bypass-log.jsonl` へ記録され、無音の迂回はできません。`.vibepro` workspace が無いリポジトリには一切干渉しません。設定は `.vibepro/config.json` の `guard` キー（`enabled` / `protected_branches` / `release_patterns`）で上書きできます。
 
+判断が重いroute（agent workflow / workflow-heavyな変更）では、シニア判断チェックリスト——spine subcheck・judgment axes・failure modes——を、実装エージェントとは独立した fresh context の subagent に実際の変更へ照らして歩かせます。証拠テキストのトークン一致は項目のルーティングに使われるだけで、消化条件ではなくなります。
+
+```bash
+npx vibepro adjudicate prepare /path/to/repo --id story-internal-beta --judgment
+# 依頼書を fresh subagent へ渡し、項目ごとに裁定を記録します:
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta \
+  --judgment \
+  --item axis:public_contract \
+  --verdict judged_sound \
+  --reason "互換性証拠がこのdiffに対して decision question に実際に答えている" \
+  --agent-system claude_code \
+  --agent-id judge-1
+```
+
+裁定は `judged_sound` / `judged_unsound`（トークンは揃うが判断不成立）/ `needs_human_judgment`（accepted な decision record `--source gate:judgment_dag_adjudication:<item-id>` で閉じる）の3値です。先に `vibepro pr prepare` の実行が必要です（判断DAGが構成されてはじめて裁定対象が存在するため）。`.vibepro/config.json` の `judgment_adjudication.enabled: false` でオプトアウトできます。
+
 実装完了扱いにする前に checkpoint を通します。
 
 ```bash

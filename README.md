@@ -223,6 +223,23 @@ npx vibepro guard status /path/to/repo
 
 While the selected story is not `ready_for_pr_create`, matched release-surface commands exit non-zero with the blocking gates and recovery commands. Emergencies can bypass with `VIBEPRO_GUARD_BYPASS="<reason>"`, but every bypass is appended to `.vibepro/guard/bypass-log.jsonl` for audit — there is no silent way through. Repositories without a `.vibepro` workspace are never touched; configure via the `guard` key (`enabled` / `protected_branches` / `release_patterns`) in `.vibepro/config.json`.
 
+On judgment-heavy routes (agent workflow / workflow-heavy changes), have an independent fresh-context subagent walk the senior-judgment checklist — spine subchecks, judgment axes, failure modes — against the actual change. Token matches in evidence text route the items; they no longer discharge them:
+
+```bash
+npx vibepro adjudicate prepare /path/to/repo --id story-internal-beta --judgment
+# dispatch .vibepro/adjudication/<story-id>/judgment-adjudication-request.md to a fresh subagent, then record each item verdict:
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta \
+  --judgment \
+  --item axis:public_contract \
+  --verdict judged_sound \
+  --reason "compat evidence actually answers the decision question for this diff" \
+  --agent-system claude_code \
+  --agent-id judge-1
+```
+
+Verdicts are `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold), or `needs_human_judgment` (closed by an accepted decision record with `--source gate:judgment_dag_adjudication:<item-id>`). Requires a prior `vibepro pr prepare` run (the judgment DAG must exist first). Opt out with `judgment_adjudication.enabled: false` in `.vibepro/config.json`.
+
 Run a checkpoint before treating implementation as ready:
 
 ```bash
