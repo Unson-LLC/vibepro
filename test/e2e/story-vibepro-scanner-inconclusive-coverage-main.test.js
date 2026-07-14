@@ -175,7 +175,7 @@ test('SIC-E2E-009 story-vibepro-scanner-inconclusive-coverage ac:9 pre-existing 
 
 // story-vibepro-scanner-inconclusive-coverage ac:10
 test('SIC-E2E-010 story-vibepro-scanner-inconclusive-coverage ac:10 the unit suite covers every required category and executes green', async () => {
-  // テストは「3状態の分離」「UI story 0件のinconclusive+critical維持」「非UI story 0件のnot_applicable」「走査ありpassの回帰」「network/regressionの0件inconclusive」「表示の区別」を含む
+  // テストは「3状態の分離」「UI story 0件のblock+critical維持」「非UI story 0件のnot_applicable」「走査ありpassの回帰」「network/regressionの0件inconclusive」「表示の区別」を含む
   const unitSuite = await readFile(path.resolve('test/scan-status.test.js'), 'utf8');
   for (const testId of ['SCAN-S-001', 'SCAN-S-002', 'SCAN-S-003', 'SCAN-S-004', 'SCAN-S-005', 'SCAN-S-006', 'SCAN-S-007']) {
     assert.ok(unitSuite.includes(testId), `${testId} must exist`);
