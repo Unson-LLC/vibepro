@@ -311,7 +311,7 @@ test('JDA-E2E-010 story-vibepro-judgment-dag-adjudication ac:10 config opt-out s
   await git(repo, ['commit', '-m', 'feat: workflow gate fixture']);
   const result = await preparePullRequest(repo, { storyId: STORY_ID, baseBranch: 'main' });
   const gate = result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_dag_adjudication');
-  assert.equal(gate, undefined, 'opt-out must suppress the gate entirely');
+  assert.equal(gate, undefined, 'ac:10 judgment_adjudication.enabled=false must suppress the gate entirely and pr prepare must not crash');
 });
 
 // story-vibepro-judgment-dag-adjudication ac:11
