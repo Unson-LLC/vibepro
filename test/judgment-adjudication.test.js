@@ -316,3 +316,28 @@ test('JADJ-S-010 pr prepare omits the gate when judgment_adjudication.enabled is
   const gateDag = result.preparation.pr_context.gate_dag;
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_dag_adjudication'), undefined);
 });
+
+test('JADJ-S-011 corrupt artifacts are reported as parse failures, not silently treated as missing', async () => {
+  // 破損したpr-prepare.jsonは「成果物なし」と誤報告せず、parse失敗として明示エラーになる
+  const repo = await makeRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-prepare.json'), '{ "pr_context": { malformed', 'utf8');
+  await assert.rejects(
+    () => prepareJudgmentAdjudication(repo, { storyId: STORY_ID }),
+    (error) => {
+      assert.match(error.message, /exists but is not valid JSON/);
+      assert.doesNotMatch(error.message, /no pr prepare artifact was found/);
+      return true;
+    }
+  );
+
+  // 破損したjudgment-adjudication.jsonはsilent null（=needs_evidence偽装）にせずfail loud
+  const adjDir = path.join(repo, '.vibepro', 'adjudication', STORY_ID);
+  await mkdir(adjDir, { recursive: true });
+  await writeFile(path.join(adjDir, 'judgment-adjudication.json'), '{"verdicts": [malformed', 'utf8');
+  await assert.rejects(
+    () => readJudgmentAdjudicationIfExists(repo, STORY_ID),
+    /exists but is not valid JSON/
+  );
+});

@@ -46,10 +46,19 @@ export function judgmentAdjudicationRequestPath(repoRoot, storyId) {
 }
 
 export async function readJudgmentAdjudicationIfExists(repoRoot, storyId) {
+  let raw = null;
   try {
-    return JSON.parse(await readFile(judgmentAdjudicationArtifactPath(repoRoot, storyId), 'utf8'));
+    raw = await readFile(judgmentAdjudicationArtifactPath(repoRoot, storyId), 'utf8');
   } catch {
     return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(
+      `judgment-adjudication.json for ${storyId} exists but is not valid JSON (${error.message}). `
+      + 'A corrupt adjudication artifact must not be silently ignored; fix or remove the file and re-record the verdicts.'
+    );
   }
 }
 
@@ -407,14 +416,23 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
   if (!storyId) throw new Error('adjudicate prepare --judgment requires --id <story-id>');
   const root = path.resolve(repoRoot);
   const prPreparePath = path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json');
-  let prPrepare = null;
+  let prPrepareRaw = null;
   try {
-    prPrepare = JSON.parse(await readFile(prPreparePath, 'utf8'));
+    prPrepareRaw = await readFile(prPreparePath, 'utf8');
   } catch {
     throw new Error(
       `adjudicate prepare --judgment: no pr prepare artifact was found for ${storyId}. `
       + 'The judgment DAG does not exist until `vibepro pr prepare` has built it; run pr prepare first. '
       + 'This is an explicit error, not a pass.'
+    );
+  }
+  let prPrepare = null;
+  try {
+    prPrepare = JSON.parse(prPrepareRaw);
+  } catch (error) {
+    throw new Error(
+      `adjudicate prepare --judgment: the pr prepare artifact for ${storyId} exists but is not valid JSON `
+      + `(${error.message}). Rerun \`vibepro pr prepare\` to regenerate it; a corrupt artifact is not treated as missing or as a pass.`
     );
   }
   const gateDag = prPrepare?.pr_context?.gate_dag ?? null;
