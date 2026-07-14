@@ -240,5 +240,43 @@
         ]
       }
     }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-JDA-STATE",
+      "kind": "state",
+      "title": "Judgment DAG adjudication gate state transitions",
+      "entities": [
+        {
+          "id": "needs_evidence",
+          "label": "needs_evidence"
+        },
+        {
+          "id": "failed",
+          "label": "failed"
+        },
+        {
+          "id": "passed",
+          "label": "passed"
+        },
+        {
+          "id": "not_applicable",
+          "label": "not_applicable"
+        }
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> not_applicable: zero active items (non-judgment route)\n  [*] --> needs_evidence: active items without current-head verdicts\n  needs_evidence --> failed: any item judged_unsound\n  needs_evidence --> needs_evidence: needs_human_judgment without accepted decision\n  needs_evidence --> passed: all items judged_sound or human-decided\n  passed --> needs_evidence: HEAD moves (stale verdicts, fail closed)"
+    },
+    {
+      "id": "DG-JDA-FLOW",
+      "kind": "flow",
+      "title": "Judgment adjudication workflow process",
+      "mermaid": "flowchart LR\n  Prep[\"pr prepare builds gate_dag\"] --> Collect[\"adjudicate prepare --judgment collects spine/axis/failure_mode items\"]\n  Collect --> Request[\"judgment-adjudication-request.md checklist\"]\n  Request --> Judge[\"independent fresh-context subagent walks checklist\"]\n  Judge --> Record[\"adjudicate record --judgment binds verdicts to HEAD\"]\n  Record --> Gate[\"gate:judgment_dag_adjudication evaluates verdicts + decisions\"]\n  Gate --> Create[\"pr create unblocked only when passed / not_applicable\"]"
+    },
+    {
+      "id": "DG-JDA-THREAT",
+      "kind": "threat_model",
+      "title": "Token discharge threat and adjudication control",
+      "mermaid": "flowchart LR\n  Agent[\"implementation agent\"] --> Evidence[\"evidence text containing required tokens\"]\n  Threat[\"token discharge: honest and dishonest wording pass identically (2026-07-14 incident)\"] --> Evidence\n  Evidence --> Tokens[\"spine/axes/failure-mode token matching (routing only)\"]\n  Tokens --> Gate[\"gate:judgment_dag_adjudication (critical)\"]\n  Judge[\"independent judge verdicts bound to HEAD\"] --> Gate\n  Gate --> Control[\"tokens alone can no longer discharge judgment items\"]"
+    }
   ]
 }
