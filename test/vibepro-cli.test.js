@@ -6286,7 +6286,7 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
   assert.equal(e2eGate.flow_verification.artifact, '.vibepro/verification/flow-pass/flow-verification.json');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## 確認/);
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /^## Flow Verification Evidence$/m);
 });
 
@@ -6713,7 +6713,7 @@ test('pr prepare includes performance evidence summary for the story', async () 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /^## Performance Evidence$/m);
 });
 
@@ -7859,8 +7859,8 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /- Gate: needs_verification/);
   assert.match(prBody, /- 実行状態: blocked/);
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
-  assert.match(prBody, /- 判断索引: \[\.vibepro\/pr\/story-pr-prepare\/decision-index\.json\]\(\.vibepro\/pr\/story-pr-prepare\/decision-index\.json\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
+  assert.match(prBody, /- 判断索引: `\.vibepro\/pr\/story-pr-prepare\/decision-index\.json`/);
   assert.doesNotMatch(prBody, /- Gate DAG: \.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
   assert.doesNotMatch(prBody, /^## Gate DAG$/m);
   assert.doesNotMatch(prBody, /^## Gate Enforcement$/m);
@@ -8147,6 +8147,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   let createStderr = '';
+  const gateWaiverReason = 'UI影響のないPR本文生成テストのためE2Eは対象外。plain=.vibepro/verification/story-pr-prepare/unit-status.json existing=[local evidence](.vibepro/pr/story-pr-prepare/pr-prepare.json) tracked=[Story](docs/management/stories/active/story-pr-prepare.md)';
   const createResult = await runCli([
     'pr',
     'create',
@@ -8158,7 +8159,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
     '--dry-run',
     '--allow-needs-verification',
     '--verification-waiver',
-    'UI影響のないPR本文生成テストのためE2Eは対象外'
+    gateWaiverReason
   ], {
     stderr: { write: (text) => { createStderr += text; } }
   });
@@ -8167,7 +8168,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.equal(createResult.result.execution.gate_override.allowed, true);
   assert.equal(createResult.result.execution.gate_override.waiver_policy, 'cli_reason');
   assert.equal(createResult.result.execution.gate_override.severity, 'warning');
-  assert.equal(createResult.result.execution.gate_override.reason, 'UI影響のないPR本文生成テストのためE2Eは対象外');
+  assert.equal(createResult.result.execution.gate_override.reason, gateWaiverReason);
   assert.equal(createResult.result.execution.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(createResult.result.execution.gate_override.completion_quality.status, 'needs_quality_closure');
   assert.equal(createResult.result.execution.gate_override.required_evidence.length > 0, true);
@@ -8199,6 +8200,10 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   const waivedPrBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(waivedPrBody, /## VibePro Gate Waiver/);
   assert.match(waivedPrBody, /UI影響のないPR本文生成テストのためE2Eは対象外/);
+  assert.match(waivedPrBody, /`\.vibepro\/verification\/story-pr-prepare\/unit-status\.json`/);
+  assert.match(waivedPrBody, /`\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json`/);
+  assert.doesNotMatch(waivedPrBody, /\[[^\]]+\]\(\.vibepro\//);
+  assert.match(waivedPrBody, /\[Story\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\)/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_report, '.vibepro/pr/story-pr-prepare/pr-create.html');
@@ -8237,10 +8242,11 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   assert.equal(longBodyPrCreate.pr_body_limit.posted.body_file, '.vibepro/pr/story-pr-prepare/pr-body.github.md');
   const postedGithubBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.github.md'), 'utf8');
   assert.match(postedGithubBody, /GitHub本文の65,536文字制限/);
-  assert.match(postedGithubBody, /\.vibepro\/pr\/story-pr-prepare\/pr-body\.md/);
+  assert.match(postedGithubBody, /`\.vibepro\/pr\/story-pr-prepare\/pr-body\.md`/);
+  assert.doesNotMatch(postedGithubBody, /\[[^\]]+\]\(\.vibepro\//);
   assert.equal(Array.from(postedGithubBody).length <= 65536, true);
 
-  const hugeStoryTitle = `PR準備 ${'forced-fallback-title '.repeat(3600)}`;
+  const hugeStoryTitle = `PR準備 ${'forced-fallback-title '.repeat(2960)}`;
   const forcedFallbackConfigPath = path.join(repo, '.vibepro', 'config.json');
   const forcedFallbackConfig = await readJson(forcedFallbackConfigPath);
   forcedFallbackConfig.brainbase.stories = forcedFallbackConfig.brainbase.stories.map((story) => (
@@ -8391,6 +8397,8 @@ PR本文がファイル数だけではレビュー判断に足りない。
   assert.equal(forcedFallbackPrCreate.pr_body_limit.posted.characters <= 65536, true);
   const forcedFallbackGithubBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.github.md'), 'utf8');
   assert.equal(Array.from(forcedFallbackGithubBody).length <= 65536, true);
+  assert.match(forcedFallbackGithubBody, /`\.vibepro\/pr\/story-pr-prepare\/pr-body\.md`/);
+  assert.doesNotMatch(forcedFallbackGithubBody, /\[[^\]]+\]\(\.vibepro\//);
   assert.match(forcedFallbackGithubBody, /詳細は `\.vibepro\/pr\/` artifacts を確認してください。/);
 
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
@@ -10584,7 +10592,7 @@ test('explore prepare record status and pr prepare surface read-only exploration
   assert.equal(prResult.exitCode, 0);
   assert.equal(prResult.result.preparation.pr_context.explore_evidence.summary.recorded_role_count, 1);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /^## Explore Evidence$/m);
 });
 
@@ -11258,7 +11266,7 @@ test('review record keeps append-only history for replaced review findings', asy
   const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /### Review Artifacts/);
 });
 
@@ -14474,7 +14482,7 @@ architecture_docs:
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:join:gate').status, 'passed');
   assert.equal(passedResult.result.preparation.pr_context.agent_reviews.summary.unmet_required_review_count, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
 
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -14984,7 +14992,7 @@ title: PR準備
   assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /- \[ \] `npm test -- tests\/feature\.test\.js`/);
-  assert.match(prBody, /- \[x\] Unit Gate - unit passed/);
+  assert.match(prBody, /- \[x\] verification:unit - unit passed/);
   assert.match(prBody, /- \[x\] verification:typecheck\b/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run test:e2e`/);
   assert.doesNotMatch(prBody, /gate: failed/);
@@ -15023,6 +15031,63 @@ test('pr body verification checklist checks exact current evidence even when the
   assert.match(prBody, /- \[x\] verification:typecheck\b/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run typecheck`.*gate: passed via `node --test test\/risk-adaptive-gate\.test\.js`/);
   assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
+});
+
+test('pr body uses current passing evidence when no verification command is auto-detected', async () => {
+  const repo = await makeGitRepoWithStory();
+  const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
+  await mkdir(verificationDir, { recursive: true });
+  await writeJson(path.join(verificationDir, 'external-current-status.json'), { status: 'pass' });
+
+  let result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.verification_commands.length, 0);
+  let prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[ \] 手動確認または対象テストを追記する/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'external verification command not present in package scripts',
+    '--summary', 'Current HEAD external verification passed',
+    '--artifact', '.vibepro/verification/story-pr-prepare/external-current-status.json'
+  ])).exitCode, 0);
+
+  result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.verification_commands.length, 0);
+  prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[x\] verification:unit - Current HEAD external verification passed/);
+  assert.match(prBody, /`\.vibepro\/verification\/story-pr-prepare\/external-current-status\.json`/);
+  assert.doesNotMatch(prBody, /\[\.vibepro\/verification\/story-pr-prepare\/external-current-status\.json\]\(/);
+  assert.doesNotMatch(prBody, /手動確認または対象テストを追記する/);
+
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'stale-evidence-change.md'), '# invalidate evidence binding\n');
+  await git(repo, ['add', 'docs/stale-evidence-change.md']);
+  await git(repo, ['commit', '-m', 'docs: invalidate previous verification binding']);
+
+  result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[ \] 手動確認または対象テストを追記する/);
+  assert.doesNotMatch(prBody, /- \[x\] verification:unit - Current HEAD external verification passed/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'fail',
+    '--command', 'current failing external verification command',
+    '--summary', 'Current HEAD external verification failed'
+  ])).exitCode, 0);
+  result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[ \] 手動確認または対象テストを追記する/);
+  assert.doesNotMatch(prBody, /- \[x\].*Current HEAD external verification failed/);
 });
 
 test('pr body final E2E prefers exact e2e evidence over unit workflow summaries', async () => {
@@ -15230,7 +15295,7 @@ Reviewers jump from docs/management/stories/active/story-pr-prepare.md to implem
       {
         slot: 'review_focus',
         id: 'tp-2',
-        text: 'Keep inline code like `src/app/projects/[projectId]/_components/TargetStrategyTab.tsx` unchanged and preserve [existing story link](docs/management/stories/active/story-pr-prepare.md).'
+        text: 'Keep inline code like `src/app/projects/[projectId]/_components/TargetStrategyTab.tsx` unchanged, normalize .vibepro/verification/story-pr-prepare/unit-status.json and [local evidence](.vibepro/pr/story-pr-prepare/pr-prepare.json), and preserve [existing story link](docs/management/stories/active/story-pr-prepare.md).'
       }
     ]
   });
@@ -15264,12 +15329,13 @@ Reviewers jump from docs/management/stories/active/story-pr-prepare.md to implem
   );
   assert.match(
     prBody,
-    /\[\.vibepro\/verification\/story-pr-prepare\/unit-status\.json\]\(\.vibepro\/verification\/story-pr-prepare\/unit-status\.json\)/
+    /`\.vibepro\/verification\/story-pr-prepare\/unit-status\.json`/
   );
   assert.match(
     prBody,
-    /\[\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json\]\(\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json\)/
+    /`\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json`/
   );
+  assert.doesNotMatch(prBody, /\[[^\]]*\.vibepro[^\]]*\]\(\.vibepro\//);
   assert.match(
     prBody,
     /Narrative points reviewers at \[docs\/management\/stories\/active\/story-pr-prepare\.md\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\) and \[src\/app\/\(app\)\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\]\(src\/app\/%28app%29\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\)\./
@@ -15282,6 +15348,7 @@ Reviewers jump from docs/management/stories/active/story-pr-prepare.md to implem
     prBody,
     /preserve \[existing story link\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\)\./
   );
+  assert.match(prBody, /normalize `\.vibepro\/verification\/story-pr-prepare\/unit-status\.json` and `\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json`/);
   assert.doesNotMatch(
     prBody,
     /\[existing story link\]\(\[docs\/management\/stories\/active\/story-pr-prepare\.md\]/
@@ -17122,7 +17189,7 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
   assert.equal(spineGate.subchecks.find((check) => check.id === 'intent').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
@@ -17740,7 +17807,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(architectureGate.axis_quality.evaluations.some((item) => item.axis === 'public_contract'), true);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /#### Senior first scan axes/);
   assert.equal(axisGate.axis_status, 'active_needs_evidence');
   assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
@@ -17872,7 +17939,7 @@ spec_docs:
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /active_accepted_followup/);
   assert.match(gateDagHtml, /accepted_followup/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}accepted_followup/);
@@ -18075,7 +18142,7 @@ title: Public Contract Block
   assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /public_contract: active_blocked/);
   assert.equal(gate.matched_blockers.some((item) => item.id === 'public_contract_traceability_missing'), true);
 });
@@ -19942,7 +20009,7 @@ export async function execute(actionParams) {
   assert.equal(networkGate.status, 'failed');
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:network_contract'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-pr-prepare\/`/);
   assert.doesNotMatch(prBody, /\/api\/detail-search/);
 });
 

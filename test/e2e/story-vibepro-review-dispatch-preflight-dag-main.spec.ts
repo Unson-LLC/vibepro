@@ -251,7 +251,7 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
 
   // story-vibepro-review-dispatch-preflight-dag ac:5
   // Existing Agent Review Gate semantics remain unchanged: required reviews still need verified parallel subagent provenance and closed lifecycle evidence.
-  assert.match(prBody, /証跡: \[\.vibepro\/pr\/story-vibepro-review-dispatch-preflight-dag\/\]\(\.vibepro\/pr\/story-vibepro-review-dispatch-preflight-dag\/\)/);
+  assert.match(prBody, /証跡: `\.vibepro\/pr\/story-vibepro-review-dispatch-preflight-dag\/`/);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
 
   // story-vibepro-review-dispatch-preflight-dag S-001
