@@ -8354,10 +8354,7 @@ function classifySeniorAxisEvidence({
   ];
   const add = (kind, ref, extra = {}) => {
     if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
-      matched.push(buildEvidenceItem(kind, ref, {
-        ...extra,
-        kind
-      }));
+      matched.push(buildEvidenceItem(kind, ref, extra));
     }
   };
 
@@ -9275,15 +9272,20 @@ function evidenceStrengthRank(strength) {
   return 1;
 }
 
-function buildEvidenceItem(kind, ref, extra = {}) {
+export function buildEvidenceItem(kind, ref, extra = {}) {
+  // Spread `extra` first so its descriptive fields (matched_file_count,
+  // investigation_files, deprecation, ...) are carried through, but the
+  // explicit kind/ref args and the defaulted fields always win over any
+  // colliding key in `extra`. Otherwise a stray extra.kind/extra.ref would
+  // silently override the caller's explicit identity.
   return {
+    ...extra,
     kind,
     ref,
     strength: extra.strength ?? 'declared',
     strength_reason: extra.strength_reason ?? 'strength was not classified',
     binding_status: extra.binding_status ?? 'n/a',
-    artifact_quality: extra.artifact_quality ?? 'unknown',
-    ...extra
+    artifact_quality: extra.artifact_quality ?? 'unknown'
   };
 }
 
