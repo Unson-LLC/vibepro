@@ -7,6 +7,8 @@ architecture_docs:
   - docs/architecture/vibepro-pr-body-path-links.md
 spec_docs:
   - docs/specs/vibepro-pr-body-path-links.md
+related_stories:
+  - story-vibepro-pr-body-published-evidence-integrity
 ---
 
 # Story: GitHub PR本文のファイルパスをクリック可能にする

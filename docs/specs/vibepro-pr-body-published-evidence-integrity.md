@@ -2,9 +2,37 @@
 story_id: story-vibepro-pr-body-published-evidence-integrity
 title: GitHub PR body published evidence integrity spec
 parent_design: vibepro-pr-body-published-evidence-integrity
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Local["Local .vibepro workbench"] --> Project["PR body projection"]
+        Tracked["Tracked repository paths"] --> Project
+        Verify["Current-head verification evidence"] --> Project
+        Project --> Github["GitHub PR body"]
+        Local -. inline code only .-> Github
+        Tracked -. Markdown links allowed .-> Github
+        Verify -. passing and current only .-> Github
+        Stale["Stale or failing evidence"] -. excluded .-> Project
 ---
 
 # Spec
+
+## Diagrams
+
+### threat_model
+
+```mermaid
+flowchart LR
+  Local["Local .vibepro workbench"] --> Project["PR body projection"]
+  Tracked["Tracked repository paths"] --> Project
+  Verify["Current-head verification evidence"] --> Project
+  Project --> Github["GitHub PR body"]
+  Local -. inline code only .-> Github
+  Tracked -. Markdown links allowed .-> Github
+  Verify -. passing and current only .-> Github
+  Stale["Stale or failing evidence"] -. excluded .-> Project
+```
 
 ## Contracts
 
