@@ -13,7 +13,7 @@ export const GATE_OUTCOMES = new Set([
 
 const LEDGER_SCHEMA_VERSION = '0.1.0';
 const LEDGER_MODEL = 'vibepro-gate-outcome-ledger-v3';
-const UNRESOLVED_STATUSES = new Set([
+export const UNRESOLVED_STATUSES = new Set([
   'block',
   'blocked',
   'failed',

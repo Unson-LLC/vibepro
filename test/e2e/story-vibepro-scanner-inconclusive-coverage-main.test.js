@@ -10,6 +10,9 @@ import { buildScanCoverage, describeScanStatus, resolveScanConclusiveness } from
 import { renderFlowDesignReport, scanFlowDesign } from '../../src/flow-design-scanner.js';
 import { scanNetworkContracts } from '../../src/network-contract-scanner.js';
 import { analyzeRegressionRisk } from '../../src/regression-risk-scanner.js';
+import { buildNetworkContractGate, isUnresolvedGateStatus } from '../../src/pr-manager.js';
+import { UNRESOLVED_STATUSES } from '../../src/gate-outcome-ledger.js';
+import { runCheckPack } from '../../src/check-packs.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -123,19 +126,40 @@ test('SIC-E2E-007 story-vibepro-scanner-inconclusive-coverage ac:7 summary rende
   const report = renderFlowDesignReport({ runId: 'sic-e2e', flowDesign: flow });
   assert.match(report, /not_applicable（このスキャナの対象外）/);
   assert.match(describeScanStatus('not_applicable'), /対象外/);
+
+  // ユーザーが読む一次UX面（check packのsummary文字列とcheck.jsonのinconclusive_count）を実runCheckPackで検証する
+  const uiPackRepo = await makeRepo({ 'README.md': '# fixture\n', '.vibepro/config.json': JSON.stringify({ schema_version: '0.1.0', tool: 'vibepro', workspace: '.vibepro', brainbase: { stories: [{ story_id: 'story-sic-e2e', title: '登録画面のUI導線を改善する', ssot: 'local', status: 'active' }], current_story_id: 'story-sic-e2e' } }) });
+  const { spawnSync } = await import('node:child_process');
+  spawnSync('git', ['init', '-b', 'main'], { cwd: uiPackRepo });
+  spawnSync('git', ['-C', uiPackRepo, 'config', 'user.email', 't@e.com']);
+  spawnSync('git', ['-C', uiPackRepo, 'config', 'user.name', 'T']);
+  spawnSync('git', ['-C', uiPackRepo, 'add', '.']);
+  spawnSync('git', ['-C', uiPackRepo, 'commit', '-m', 'init']);
+  const packRun = await runCheckPack(uiPackRepo, { packId: 'ui' });
+  const packResult = packRun.check;
+  assert.equal(typeof packResult.inconclusive_count, 'number');
+  const packJson = JSON.parse(await readFile(path.join(uiPackRepo, packResult.artifacts.check_json), 'utf8'));
+  assert.equal(typeof packJson.inconclusive_count, 'number');
+  assert.equal(packJson.inconclusive_count, packResult.inconclusive_count);
 });
 
 // story-vibepro-scanner-inconclusive-coverage ac:8
 test('SIC-E2E-008 story-vibepro-scanner-inconclusive-coverage ac:8 inconclusive stays outside unresolved gate aggregation', async () => {
   // inconclusiveはgate_dagのunresolved集計に入らず、既存のready判定を変えない（非ブロッキング）
-  // unresolved集計の正本（isUnresolvedGateStatusの列挙）にinconclusive/not_applicableが含まれないことを実ソースで検証する
-  const prManagerSource = await readFile(path.resolve('src/pr-manager.js'), 'utf8');
-  const unresolvedBlock = prManagerSource.match(/function isUnresolvedGateStatus\(status\) \{[\s\S]*?\n\}/)[0];
-  assert.equal(unresolvedBlock.includes("'inconclusive'"), false);
-  assert.equal(unresolvedBlock.includes("'not_applicable'"), false);
-  const ledgerSource = await readFile(path.resolve('src/gate-outcome-ledger.js'), 'utf8');
-  const ledgerList = ledgerSource.match(/UNRESOLVED_STATUSES[\s\S]*?\]/)[0];
-  assert.equal(ledgerList.includes("'inconclusive'"), false);
+  // unresolved集計の実関数を直接呼び、両状態が未解決扱いされないことを行動として検証する
+  assert.equal(isUnresolvedGateStatus('inconclusive'), false);
+  assert.equal(isUnresolvedGateStatus('not_applicable'), false);
+  assert.equal(isUnresolvedGateStatus('needs_evidence'), true);
+  assert.equal(UNRESOLVED_STATUSES.has('inconclusive'), false);
+  assert.equal(UNRESOLVED_STATUSES.has('not_applicable'), false);
+
+  // gate:network_contract成果物レベルでも非ブロッキング: inconclusive scanでもgate statusはpassedを維持し、
+  // detailは「検証した」ではなく候補0件（inconclusive scan）を明示する
+  const inconclusiveScan = { status: 'inconclusive', missing_routes: [], dynamic_calls: [], high_risk_replacements: [], api_client_call_count: 0, introduced_api_client_call_count: 0 };
+  const gate = buildNetworkContractGate(inconclusiveScan, { source: { count: 0 } }, {});
+  assert.equal(gate.status, 'passed');
+  assert.match(gate.reason, /no candidate files to examine/);
+  assert.match(gate.reason, /inconclusive scan/);
 });
 
 // story-vibepro-scanner-inconclusive-coverage ac:9
@@ -171,9 +195,10 @@ test('SIC-E2E-011 malformed scan inputs degrade without crashing (parse failure 
     'src/client.ts': "const raw = '{ not json'; fetch('/api/x');\n"
   });
   const flow = await scanFlowDesign(repo, { story: UI_STORY });
-  assert.ok(['pass', 'block', 'needs_review'].includes(flow.status) || flow.summary.scanned_ui_files > 0);
+  assert.equal(flow.summary.scanned_ui_files > 0, true);
+  assert.ok(['pass', 'block', 'needs_review'].includes(flow.status));
   const network = await scanNetworkContracts(repo, { changedFiles: [{ path: 'src/client.ts' }] });
-  assert.ok(network.status.length > 0);
+  assert.equal(network.status, 'block');
   const malformedGraph = analyzeRegressionRisk({ nodes: 'not-an-array', edges: null }, {});
-  assert.ok(malformedGraph.status.length > 0);
+  assert.equal(malformedGraph.status, 'inconclusive');
 });

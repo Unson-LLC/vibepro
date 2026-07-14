@@ -12356,7 +12356,7 @@ function normalizeAgentReviewRecordStatus(status) {
   return 'needs_review';
 }
 
-function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext = {}) {
+export function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext = {}) {
   if (!networkContracts) {
     return {
       id: 'gate:network_contract',
@@ -14036,7 +14036,7 @@ function collectReleaseDecisionWarningGates(gateDag) {
     }));
 }
 
-function isUnresolvedGateStatus(status) {
+export function isUnresolvedGateStatus(status) {
   return [
     'candidate',
     'missing',
