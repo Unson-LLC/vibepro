@@ -220,7 +220,7 @@ async function resolveCreationLockRoot(deps, caller, legacy) {
   const authority = await resolveIdentity(deps, managed.path, 'worktree_unavailable');
   const source = await resolveIdentity(deps, managed.source_repo ?? caller.root_realpath, 'worktree_mismatch');
   assertAllowedCaller(caller, authority, source);
-  return source.root_realpath;
+  return resolveRepositorySharedLockRoot(source);
 }
 
 function resolveRepositorySharedLockRoot(identity) {
@@ -229,7 +229,7 @@ function resolveRepositorySharedLockRoot(identity) {
       root_realpath: identity.root_realpath
     });
   }
-  return path.dirname(identity.git_common_dir_realpath);
+  return identity.git_common_dir_realpath;
 }
 
 async function readRun(deps, repoRoot, options) {

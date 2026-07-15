@@ -273,7 +273,7 @@ test('GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures a
 
 test('GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
-  const lock = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  const lock = fixture.creationLock();
   await mkdir(lock, { recursive: true });
   let bootstrapCalls = 0;
   const session = fixture.session({
@@ -291,7 +291,7 @@ test('GRS-S-8 S-008 existing creation lock fails closed without bootstrapping an
 test('GRS-S-8 INV-004 source and managed callers use the same Story creation lock', async (t) => {
   const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created', preexistingLegacy: true });
   await writeLegacy(fixture.managed, fixture.legacy);
-  const sourceLock = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  const sourceLock = fixture.creationLock();
   await mkdir(sourceLock, { recursive: true });
 
   await assert.rejects(
@@ -346,7 +346,7 @@ test('GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the l
   await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('legacy_bootstrap_partial'));
   assert.equal(bootstrapCalls, 1);
   await assert.rejects(
-    stat(path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock')),
+    stat(fixture.creationLock()),
     { code: 'ENOENT' }
   );
   await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
@@ -1321,6 +1321,67 @@ test('GRS-S-8 INV-002 production Git identity resolves a real repository and lin
   assert.equal(sourceIdentity.head_sha, linkedIdentity.head_sha);
 });
 
+test('GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-separate-git-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const gitDirs = path.join(root, 'gitdirs');
+  const repo = path.join(root, 'repo-b');
+  const gitDir = path.join(gitDirs, 'repo-b.git');
+  await Promise.all([mkdir(gitDirs, { recursive: true }), mkdir(repo, { recursive: true })]);
+  await git(repo, ['init', '--separate-git-dir', gitDir, '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await writeConfig(repo, { managedWorktree: 'disabled' });
+  await writeFile(path.join(repo, 'README.md'), '# separate git fixture\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize separate git fixture']);
+
+  const collisionLock = path.join(gitDirs, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  const repositoryLock = path.join(gitDir, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  await mkdir(collisionLock, { recursive: true });
+  let bootstrapCalls = 0;
+  const session = createGuardedRunSession({
+    now: () => new Date(FIRST_TIME),
+    randomBytes: () => Buffer.from([1, 2, 3, 4]),
+    startExecution: async () => {
+      bootstrapCalls += 1;
+      assert.equal((await stat(repositoryLock)).isDirectory(), true);
+      const legacy = {
+        schema_version: '0.1.0',
+        story_id: STORY_ID,
+        target: 'pr_create',
+        managed_worktree: {
+          status: 'disabled',
+          required: false,
+          mode: 'disabled',
+          source_repo: repo,
+          source_relative_path: null,
+          path: null,
+          relative_path: null,
+          branch: 'codex/story-guarded-run-test',
+          actual_branch: 'codex/story-guarded-run-test',
+          branch_match: true,
+          base_ref: 'main',
+          created_from_sha: (await resolveGitIdentity(repo)).head_sha,
+          current_head_sha: (await resolveGitIdentity(repo)).head_sha,
+          dirty: null,
+          dirty_paths: [],
+          dirty_check_error: null,
+          failure_reason: null
+        }
+      };
+      await writeLegacy(repo, legacy);
+      return { state: legacy, found: true };
+    }
+  });
+
+  const created = await session.run(repo, { storyId: STORY_ID });
+  assert.equal(created.execution_context.root_realpath, await realpath(repo));
+  assert.equal(bootstrapCalls, 1);
+  assert.equal((await stat(collisionLock)).isDirectory(), true);
+  await assert.rejects(stat(repositoryLock), { code: 'ENOENT' });
+});
+
 test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-cli-'));
   t.after(() => rm(repo, { recursive: true, force: true }));
@@ -1479,6 +1540,15 @@ async function createFixture(t, options = {}) {
     },
     runFile(repo, runId) {
       return path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', runId, 'state.json');
+    },
+    creationLock(repo = source) {
+      return path.join(
+        fixture.identity(repo).git_common_dir_realpath,
+        '.vibepro',
+        'executions',
+        STORY_ID,
+        '.run-creation.lock'
+      );
     },
     dependencies(overrides = {}) {
       return {
