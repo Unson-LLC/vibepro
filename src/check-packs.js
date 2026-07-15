@@ -100,7 +100,7 @@ export async function runCheckPack(repoRoot, options = {}) {
   const optionalChecks = packId === 'all'
     ? [
         ...(options.includeHarness === true ? ['agent_harness'] : []),
-        ...(options.includePublicDiscovery === true ? ['public_discovery'] : [])
+        ...(options.includePublicDiscovery === true || options.baseUrl || options.publicDir ? ['public_discovery'] : [])
       ]
     : [];
   const checksToRun = [...pack.checks, ...optionalChecks];
@@ -188,7 +188,13 @@ async function runNamedCheck(check, context) {
   const { root, architectureProfile, options } = context;
   if (check === 'architecture_profile') return architectureProfile;
   if (check === 'agent_harness') return scanAgentHarness(root);
-  if (check === 'public_discovery') return scanPublicDiscovery(root);
+  if (check === 'public_discovery') {
+    return scanPublicDiscovery(root, {
+      baseUrl: options.baseUrl,
+      publicDir: options.publicDir,
+      fetchImpl: options.fetchImpl
+    });
+  }
   if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId, env: options.env });
   if (check === 'oss_readiness') return scanOssReadiness(root, { env: options.env });
   if (check === 'regression_risk') return scanRegressionRisk(root, { top: options.top, coverageFile: options.coverageFile });
@@ -238,6 +244,15 @@ function summarizeChecks({ packId, evidence, architectureProfile, language = 'ja
     checks.push(summarizeAgentHarness(evidence.agent_harness));
   }
   if (evidence.public_discovery) {
+    const coverage = evidence.public_discovery.scan_coverage;
+    if (coverage) {
+      checks.push({
+        id: 'public_discovery.coverage',
+        label: 'Public discovery: Coverage',
+        status: normalizeCheckStatus(coverage.status),
+        summary: `${coverage.mode}; scanned=${coverage.scanned_count ?? 0}/${coverage.discovered_count ?? 0}; failed=${coverage.failed_count ?? 0}${coverage.reason ? `; ${describeScanStatus(coverage.status, language)}: ${coverage.reason}` : ''}`
+      });
+    }
     checks.push(...summarizeRiskGroups('public_discovery', 'Public discovery', evidence.public_discovery, [
       ['structured_data_findings', 'Structured data'],
       ['metadata_findings', 'Metadata'],
