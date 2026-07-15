@@ -133,7 +133,7 @@ export function renderGuardedRunError(error, options = {}) {
       lines.push(`- rejected_candidate: ${candidate.run_id} (${candidate.code}) ${candidate.artifact}`);
     }
   }
-  if (error.code === 'linked_copy_sync_failed' && details.story_id && details.run_id) {
+  if (['linked_copy_sync_failed', 'linked_copy_out_of_sync'].includes(error.code) && details.story_id && details.run_id) {
     lines.push(`- next_action: vibepro execute watch ${shellQuoteCommandArg(repoRoot)} --story-id ${details.story_id} --run-id ${details.run_id} --repair-linked-copy`);
   }
   if (error.code === 'run_selection_blocked') {
@@ -375,6 +375,7 @@ async function loadSelectedRun(deps, repoRoot, options, requirements = {}) {
     if (mirrorRaw === null || mirrorRaw !== authorityRaw) {
       throw contractError('linked_copy_out_of_sync', 'Run authority and linked mirror are out of sync.', {
         run_id: authorityState.run_id,
+        story_id: authorityState.story_id,
         authority_artifact: selected.authorityFile,
         mirror_artifact: selected.mirrorFile
       });

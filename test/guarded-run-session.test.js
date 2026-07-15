@@ -115,6 +115,18 @@ test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and
     session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
     errorWithCode('linked_copy_out_of_sync')
   );
+  const driftError = capture();
+  const driftResult = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', RUN_ID
+  ], { stdout: capture(), stderr: driftError, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(driftResult.exitCode, 2);
+  assert.match(driftError.text(), new RegExp(`story_id: ${STORY_ID}`));
+  assert.match(
+    driftError.text(),
+    new RegExp(`vibepro execute watch ${fixture.source} --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`)
+  );
   const repaired = await session.watch(fixture.source, {
     storyId: STORY_ID,
     runId: RUN_ID,
@@ -1471,6 +1483,8 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
+  assert.match(stdout.text(), /このコマンドは状態を永続化するだけで、agentやactionを実行しません/);
+  assert.match(stdout.text(), /watchは現在値を1回返して終了するsnapshotです/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
   assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
   assert.doesNotMatch(usage, /--repair-linked-copy/);
@@ -1488,6 +1502,8 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(englishStdout.text(), /Without --run-id, execute status keeps the legacy status contract/);
   assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
+  assert.match(englishStdout.text(), /This command only persists state; it does not dispatch agents or execute actions/);
+  assert.match(englishStdout.text(), /watch returns one current snapshot and exits; it does not stream/);
   assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
   assert.match(englishStdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
   assert.doesNotMatch(englishUsage, /--repair-linked-copy/);
