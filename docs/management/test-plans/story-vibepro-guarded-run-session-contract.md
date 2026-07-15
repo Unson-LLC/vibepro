@@ -44,7 +44,7 @@ The Run Session module is covered primarily by deterministic unit/integration te
 
 ## CLI UX and restart matrix
 
-- The aggregate `vibepro execute --help` route is tested directly for the additive Run commands, `--run-id`, `target=pr_ready`, the explicit-Run versus implicit-legacy `status` distinction, and a separate watch-only usage line for `--repair-linked-copy` while preserving legacy entries. The broad execute-family usage must not advertise repair as a shared option. Subcommand help shares that renderer; it is not claimed as a separately enumerated route matrix in this Story.
+- The aggregate `vibepro execute --help` route is tested directly in both default Japanese and explicit English for the additive Run commands, `--run-id`, `target=pr_ready`, the explicit-Run versus implicit-legacy `status` distinction, and a separate watch-only usage line for `--repair-linked-copy` while preserving legacy entries. The broad execute-family usage must not advertise repair as a shared option. Subcommand help shares that renderer; it is not claimed as a separately enumerated route matrix in this Story.
 - The contract layer tests valid identifiers, malformed identifiers, a missing artifact, deterministic omitted selection, and a mixed valid/invalid candidate set. The mixed set must return nonmutating `run_selection_blocked` with rejected Run ids, reason codes, artifacts, and explicit-selection guidance instead of silently targeting an older Run. The CLI directly covers valid and invalid supplied `run_id` rejection on `execute run`, malformed and missing-value `run_id` on status, explicit and omitted watch, explicit repair, and the exact legacy `status` route; this is compositional coverage, not a Cartesian command/error matrix.
 - Authority coverage is likewise compositional: repository, managed, and source-fallback bindings; source and managed allowed roots; copied/unmanaged and stale identities; deleted authority; mirror divergence; and repair are each exercised at the contract boundary. The suite does not claim every command is repeated against every root/error combination.
 - A real-Git fixture proves production repository and linked-worktree identity resolution. A separate subprocess fixture proves a repository-authoritative Run survives fresh processes across explicit run/status/watch/resume/cancel in human and JSON modes. Managed authority, source-fallback recovery, implicit selection, and repair are verified in-process with injected process-stable identities and persisted artifacts; no managed fresh-process or exhaustive restart matrix is claimed.
@@ -59,8 +59,25 @@ The Run Session module is covered primarily by deterministic unit/integration te
 - `startExecution` and Gate-readiness spies plus before/after artifacts prove Run commands cannot mutate legacy execution state except for the single bootstrap invoked by `execute run`; status/watch/resume/cancel/repair never call bootstrap, and the static surface assertion closes waiver/merge authority.
 - Existing `execute start/status/next/reconcile/merge` behavior remains unchanged, including intentional mutations by start/reconcile/merge; status output remains byte-for-byte compatible and status is nonmutating.
 
+## Final Spec clause traceability
+
+| Clause | Concrete automated test anchor |
+|---|---|
+| `C-003`, `INV-001`, `S-004` | `GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable` |
+| `S-001`, `S-009` | `GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a fingerprinted source fallback, but pre-existing unavailable fails closed` |
+| `INV-005` | `GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set` |
+| `INV-002` | `GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree` |
+| `C-001` | `GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route` |
+| `S-005` | `GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating` |
+| `S-006`, `S-007` | `GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved` |
+| `C-005` | `GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected` |
+| `INV-004` | `GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams` |
+| `S-002`, `C-007` | `GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority` |
+| `S-008` | `GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock` |
+| `C-006` | `GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface` |
+
 ## Commands
 
-- Targeted: `node --test test/guarded-run-session.test.js test/vibepro-cli.test.js`
+- Targeted: `node --test test/guarded-run-session.test.js`
 - Full: `node --test --test-concurrency=2`
 - Instruction parity: `cmp -s CLAUDE.md AGENTS.md`

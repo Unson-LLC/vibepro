@@ -27,7 +27,7 @@ test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service rep
   assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
 });
 
-test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
+test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
   const created = await session.run(fixture.source, { storyId: STORY_ID });
@@ -1012,6 +1012,23 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
   assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
   assert.doesNotMatch(usage, /--repair-linked-copy/);
+
+  const englishStdout = capture();
+  const englishResult = await runCli(['execute', '--help', '--language', 'en'], {
+    stdout: englishStdout,
+    stderr: capture()
+  });
+  assert.equal(englishResult.exitCode, 0);
+  const englishUsage = englishStdout.text().split('\n').find((line) => line.includes('vibepro execute <'));
+  assert.ok(englishUsage);
+  for (const command of ['run', 'status', 'watch', 'resume', 'cancel', 'start', 'next', 'merge']) {
+    assert.match(englishUsage, new RegExp(`(?:<|\\|)${command}(?:\\||>)`));
+  }
+  assert.match(englishStdout.text(), /Without --run-id, execute status keeps the legacy status contract/);
+  assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
+  assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
+  assert.match(englishStdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
+  assert.doesNotMatch(englishUsage, /--repair-linked-copy/);
 });
 
 test('GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree', async (t) => {
