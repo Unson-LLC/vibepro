@@ -39,7 +39,7 @@ updated_at: 2026-07-15
 ## Acceptance Criteria
 
 - [ ] GRS-S-1: `execute run`は`run_id`、`story_id`、`target`、`autonomy_mode`を持つRunを作成し、managed-worktree disabled時はsource repositoryを正本とする`repository` Runになる。
-- [ ] GRS-S-2: stateには`status`、`stop_reason`、`attempt`、`iteration`、`budget`、`deadline`、`last_progress_at`、`current_head_sha`、`pending_decision`が保存される。
+- [ ] GRS-S-2: stateには`status`、`stop_reason`、`attempt`、`iteration`、`budget`、`deadline`、`last_progress_at`、`current_head_sha`、`pending_decision`が保存される。recoverable状態への遷移は新しい型付き`stop_reason`を必須とし、nullable fieldの不正shapeは永続化前とcanonical/predecessor読込時の両方で非変更の`invalid_state`になる。
 - [ ] GRS-S-3: プロセス終了後も`status`と`resume`から同じRunを復元でき、preferred bootstrapのsource fallback Runも、既存legacy stateに追加fieldを要求せず、固定fieldのcanonical fingerprintが一致する失敗bindingより自身の記録済みauthorityを優先して復元できる。
 - [ ] GRS-S-4: `watch`はstate transitionを表示し、`cancel`は新しい副作用を開始せず終了状態を記録し、canonical schema `0.1.0`へのmigration完了後の再cancelはartifactをbyte-for-byte変更せず、許可/禁止transitionの全組合せが閉じたstate machineとして定義される。
 - [ ] GRS-S-5: 不明な状態遷移、古いHEAD、別worktreeからの再開を拒否し、型付き停止理由を返す。

@@ -22,6 +22,10 @@ const RUN_ID = 'run-20260715T010203Z-01020304';
 const execFileAsync = promisify(execFile);
 const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
+function stopReason(label) {
+  return { code: label, message: `${label} message`, details: {} };
+}
+
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
   assert.throws(() => createGuardedRunSession({ service: {} }), /Unknown guarded Run dependency/);
   assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
@@ -141,7 +145,8 @@ test('GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonicall
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'blocked',
-    reason: 'fixture_blocked'
+    reason: 'fixture_blocked',
+    stopReason: stopReason('fixture_blocked')
   });
   assert.equal((await session.resume(fixture.sourceAlias, { storyId: STORY_ID, runId: RUN_ID })).status, 'running');
   assert.equal((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).status, 'cancelled');
@@ -358,7 +363,8 @@ test('GRS-S-10 S-002 existing mutation commits once across mirror failure and ex
       storyId: STORY_ID,
       runId: RUN_ID,
       to: 'blocked',
-      reason: 'fixture_blocked_once'
+      reason: 'fixture_blocked_once',
+      stopReason: stopReason('fixture_blocked_once')
     }),
     errorWithCode('linked_copy_sync_failed')
   );
@@ -583,7 +589,8 @@ test('GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD 
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'blocked',
-    reason: 'fixture_blocked'
+    reason: 'fixture_blocked',
+    stopReason: stopReason('fixture_blocked')
   });
   const before = await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8');
   fixture.setHead(fixture.source, 'b'.repeat(40));
@@ -600,7 +607,8 @@ test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resu
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'failed',
-    reason: 'fixture_failed'
+    reason: 'fixture_failed',
+    stopReason: stopReason('fixture_failed')
   });
   const before = await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8');
 
@@ -617,7 +625,8 @@ test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resu
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'blocked',
-    reason: 'fixture_blocked'
+    reason: 'fixture_blocked',
+    stopReason: stopReason('fixture_blocked')
   });
   await assert.rejects(session.transition(fixture.source, {
     storyId: STORY_ID,
@@ -663,23 +672,30 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
       const session = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: true }) });
       await session.run(fixture.source, { storyId: STORY_ID });
       if (from !== 'running') {
+        const setupStopReason = recoverable.has(from) ? stopReason(`fixture_to_${from}`) : undefined;
         await session.transition(fixture.source, {
           storyId: STORY_ID,
           runId: RUN_ID,
           to: from,
-          reason: `fixture_to_${from}`
+          reason: `fixture_to_${from}`,
+          ...(setupStopReason ? { stopReason: setupStopReason } : {})
         });
       }
       const artifact = fixture.runFile(fixture.source, RUN_ID);
       const before = await readFile(artifact, 'utf8');
       if (allows(from, to)) {
+        const expectedStopReason = recoverable.has(to) ? stopReason(`fixture_matrix_${to}`) : null;
         const result = await session.transition(fixture.source, {
           storyId: STORY_ID,
           runId: RUN_ID,
           to,
-          reason: 'fixture_matrix'
+          reason: 'fixture_matrix',
+          ...(recoverable.has(to) ? { stopReason: expectedStopReason } : {})
         });
         assert.equal(result.status, to, `${from} -> ${to}`);
+        if (recoverable.has(to) || to === 'running' || to === 'pr_ready') {
+          assert.deepEqual(result.stop_reason, expectedStopReason, `${from} -> ${to} stop_reason`);
+        }
       } else {
         await assert.rejects(
           session.transition(fixture.source, {
@@ -697,6 +713,176 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
   }
 });
 
+test('GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation', async (t) => {
+  for (const to of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']) {
+    const fixture = await createFixture(t, { mode: 'disabled' });
+    const session = fixture.session();
+    await session.run(fixture.source, { storyId: STORY_ID });
+    const artifact = fixture.runFile(fixture.source, RUN_ID);
+    const before = await readFile(artifact, 'utf8');
+    await assert.rejects(
+      session.transition(fixture.source, { storyId: STORY_ID, runId: RUN_ID, to, reason: `missing_${to}` }),
+      errorWithCode('invalid_state'),
+      to
+    );
+    assert.equal(await readFile(artifact, 'utf8'), before, to);
+  }
+
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_runtime',
+    reason: 'first_stop',
+    stopReason: stopReason('first_stop')
+  });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const before = await readFile(artifact, 'utf8');
+  await assert.rejects(
+    session.transition(fixture.source, {
+      storyId: STORY_ID,
+      runId: RUN_ID,
+      to: 'blocked',
+      reason: 'must_not_inherit'
+    }),
+    errorWithCode('invalid_state')
+  );
+  assert.equal(await readFile(artifact, 'utf8'), before);
+
+  const resumed = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'running',
+    reason: 'manual_resume',
+    stopReason: stopReason('must_be_cleared')
+  });
+  assert.equal(resumed.stop_reason, null);
+});
+
+test('GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence', async (t) => {
+  const invalidStopReasons = [
+    'not-an-object',
+    {},
+    { code: '', message: 'message' },
+    { code: 'code', message: '' },
+    { code: 'code', message: 'message', details: [] },
+    { code: 'code', message: 'message', details: new Date(FIRST_TIME) }
+  ];
+  for (const [index, value] of invalidStopReasons.entries()) {
+    const fixture = await createFixture(t, { mode: 'disabled' });
+    const session = fixture.session();
+    await session.run(fixture.source, { storyId: STORY_ID });
+    const artifact = fixture.runFile(fixture.source, RUN_ID);
+    const before = await readFile(artifact, 'utf8');
+    await assert.rejects(
+      session.transition(fixture.source, {
+        storyId: STORY_ID,
+        runId: RUN_ID,
+        to: 'blocked',
+        reason: `malformed_stop_${index}`,
+        stopReason: value
+      }),
+      errorWithCode('invalid_state')
+    );
+    assert.equal(await readFile(artifact, 'utf8'), before);
+  }
+
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: true }) });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const before = await readFile(artifact, 'utf8');
+  await assert.rejects(session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'non_plain_pending_decision',
+    stopReason: stopReason('non_plain_pending_decision'),
+    pendingDecision: new Date(FIRST_TIME)
+  }), errorWithCode('invalid_state'));
+  assert.equal(await readFile(artifact, 'utf8'), before);
+});
+
+test('GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation', async (t) => {
+  const invalidFields = [
+    ['stop_reason', 'malformed'],
+    ['stop_reason', { code: '', message: 'message' }],
+    ['stop_reason', { code: 'code', message: '', details: {} }],
+    ['stop_reason', { code: 'code', message: 'message', details: [] }],
+    ['deadline', {}],
+    ['deadline', '2026-08-01'],
+    ['pending_decision', 42],
+    ['pending_decision', []]
+  ];
+  for (const schemaVersion of ['0.1.0', '0.0.0']) {
+    for (const [field, value] of invalidFields) {
+      const fixture = await createFixture(t, { mode: 'disabled' });
+      const session = fixture.session();
+      const created = await session.run(fixture.source, { storyId: STORY_ID });
+      const artifact = fixture.runFile(fixture.source, RUN_ID);
+      const invalid = structuredClone(created);
+      invalid.schema_version = schemaVersion;
+      invalid[field] = value;
+      const raw = `${JSON.stringify(invalid, null, 2)}\n`;
+      await writeFile(artifact, raw);
+      await assert.rejects(
+        session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+        errorWithCode('invalid_state'),
+        `${schemaVersion} ${field}`
+      );
+      assert.equal(await readFile(artifact, 'utf8'), raw, `${schemaVersion} ${field}`);
+    }
+  }
+});
+
+test('GRS-S-2 GRS-S-7 historical stopped null remains readable while valid typed stop surfaces are observable', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const historical = structuredClone(created);
+  historical.status = 'blocked';
+  historical.updated_at = FIRST_TIME;
+  historical.last_progress_at = FIRST_TIME;
+  historical.transitions.push({
+    sequence: 2,
+    from: 'running',
+    to: 'blocked',
+    reason: 'historical_reasonless_stop',
+    timestamp: FIRST_TIME
+  });
+  const historicalRaw = `${JSON.stringify(historical, null, 2)}\n`;
+  await writeFile(artifact, historicalRaw);
+  assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).stop_reason, null);
+  assert.equal(await readFile(artifact, 'utf8'), historicalRaw);
+
+  await writeFile(artifact, `${JSON.stringify(created, null, 2)}\n`);
+  const expected = { code: 'operator_visible_stop', message: 'operator visible stop' };
+  const stopped = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'operator_visible_stop',
+    stopReason: expected
+  });
+  assert.deepEqual(stopped.stop_reason, expected);
+  assert.deepEqual((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).stop_reason, expected);
+  const jsonOut = capture();
+  const jsonResult = await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID, '--json'
+  ], { stdout: jsonOut, stderr: capture(), guardedRunDependencies: fixture.dependencies() });
+  assert.equal(jsonResult.exitCode, 0);
+  assert.deepEqual(JSON.parse(jsonOut.text()), stopped);
+  const humanOut = capture();
+  const humanResult = await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: humanOut, stderr: capture(), guardedRunDependencies: fixture.dependencies() });
+  assert.equal(humanResult.exitCode, 0);
+  assert.match(humanOut.text(), /stop_reason: operator_visible_stop: operator visible stop/);
+});
+
 test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
@@ -707,12 +893,26 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   predecessor.attempt = 7;
   predecessor.budget = { max_attempts: 2, max_iterations: 8 };
   predecessor.deadline = '2026-08-01T00:00:00.000Z';
+  predecessor.pending_decision = { prompt: 'Choose the next action', options: ['retry', 'stop'] };
+  predecessor.status = 'blocked';
+  predecessor.stop_reason = stopReason('predecessor_blocked');
+  predecessor.updated_at = '2026-07-15T02:00:00.000Z';
+  predecessor.last_progress_at = '2026-07-15T02:00:00.000Z';
+  predecessor.transitions.push({
+    sequence: 2,
+    from: 'running',
+    to: 'blocked',
+    reason: 'predecessor_blocked',
+    timestamp: '2026-07-15T02:00:00.000Z'
+  });
   await writeFile(artifact, `${JSON.stringify(predecessor, null, 2)}\n`);
   const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(migrated.schema_version, '0.1.0');
   assert.equal(migrated.attempt, 7);
   assert.deepEqual(migrated.budget, predecessor.budget);
   assert.equal(migrated.deadline, predecessor.deadline);
+  assert.deepEqual(migrated.pending_decision, predecessor.pending_decision);
+  assert.deepEqual(migrated.stop_reason, predecessor.stop_reason);
 
   const future = { ...migrated, schema_version: '9.0.0' };
   const futureRaw = `${JSON.stringify(future, null, 2)}\n`;

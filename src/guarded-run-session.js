@@ -321,7 +321,11 @@ async function transitionRun(deps, repoRoot, options) {
   }
   const timestamp = toIso(deps.now());
   const next = applyTransition(loaded.state, to, options.reason ?? 'run_transition', timestamp, {
-    stop_reason: options.stopReason ?? (to === 'running' || to === 'pr_ready' ? null : loaded.state.stop_reason),
+    stop_reason: RECOVERABLE_STATUSES.has(to)
+      ? options.stopReason
+      : (to === 'running' || to === 'pr_ready'
+          ? null
+          : (options.stopReason ?? loaded.state.stop_reason)),
     pending_decision: options.pendingDecision ?? loaded.state.pending_decision
   });
   if (next === loaded.state) return next;
@@ -823,6 +827,15 @@ function validateRunShape(state) {
       run_id: state.run_id
     });
   }
+  if (state.stop_reason !== null && !isTypedStopReason(state.stop_reason)) {
+    throw contractError('invalid_state', 'Guarded Run stop_reason is invalid.', { run_id: state.run_id });
+  }
+  if (state.deadline !== null && !isIsoTimestamp(state.deadline)) {
+    throw contractError('invalid_state', 'Guarded Run deadline is invalid.', { run_id: state.run_id });
+  }
+  if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
+    throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
+  }
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {
@@ -1059,6 +1072,21 @@ function isIsoTimestamp(value) {
   return typeof value === 'string'
     && !Number.isNaN(Date.parse(value))
     && new Date(value).toISOString() === value;
+}
+
+function isPlainRecord(value) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isTypedStopReason(value) {
+  if (!isPlainRecord(value)
+      || typeof value.code !== 'string' || value.code.length === 0
+      || typeof value.message !== 'string' || value.message.length === 0) {
+    return false;
+  }
+  return !Object.prototype.hasOwnProperty.call(value, 'details') || isPlainRecord(value.details);
 }
 
 function serializeState(state) {

@@ -28,6 +28,7 @@ The Run Session module is covered primarily by deterministic unit/integration te
 - Corrupt JSON is moved beside the authority to exactly `state.json.corrupt-<UTC timestamp>`, returns exit-2 `corrupt_state`, includes `quarantine_artifact` in JSON details and the artifact reference in human output, and writes no replacement valid state.
 - A future schema returns `unsupported_schema` and remains byte-for-byte unchanged.
 - Invalid state and unknown status return typed contract errors and preserve the last valid artifact. A table-driven test covers every status pair across `running`, `waiting_for_human`, `waiting_for_runtime`, `blocked`, `failed`, `cancelled`, and `pr_ready`: all Architecture-listed transitions pass, every other pair fails without mutation, `failed -> running` succeeds only through explicit resume, `pr_ready` is absorbing, and repeated canonical `0.1.0` `cancelled -> cancelled` is a byte-for-byte no-op.
+- Every new transition into a recoverable status requires a fresh typed stop reason instead of inheriting a prior stop. Missing reasons, empty code/message values, non-plain details, and non-plain pending decisions fail before persistence; transitions to `running` and `pr_ready` clear any supplied or prior stop reason. Canonical `0.1.0` and recognized `0.0.0`/unversioned artifacts reject invalid `stop_reason`, `deadline`, and `pending_decision` unions without mutation, while a historical stopped artifact with an explicitly persisted null reason remains readable. Human and JSON status both expose a valid typed stop reason.
 - Multiple Runs use `created_at` descending and `run_id` descending as a deterministic tie-break; zero Runs returns `run_not_found`.
 - Invalid Story and Run IDs, including raw traversal strings and encoded separators, fail before path composition. `execute run` additionally rejects both syntactically valid and invalid supplied `--run-id` values before Git identity resolution, bootstrap, Run creation, or mirror writes because only VibePro may generate a new Run id.
 - Every Run records canonical root and Git directory identity; a second unmanaged worktree at the same HEAD cannot resume it.
@@ -63,10 +64,11 @@ The Run Session module is covered primarily by deterministic unit/integration te
 
 | Clause | Concrete automated test anchor |
 |---|---|
-| `C-003`, `INV-001`, `S-004` | `GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable` |
+| `C-003`, `S-004` | `GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable` |
+| `INV-001` | `GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation` |
 | `S-001`, `S-009` | `GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a fingerprinted source fallback, but pre-existing unavailable fails closed` |
 | `INV-005` | `GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set` |
-| `INV-002` | `GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree` |
+| `INV-002` | `GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation` |
 | `C-001` | `GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route` |
 | `S-005` | `GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating` |
 | `S-006`, `S-007` | `GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved` |
