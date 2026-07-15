@@ -66,7 +66,7 @@ The Run Session module is covered primarily by deterministic unit/integration te
 |---|---|
 | `C-003`, `S-004` | `GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable` |
 | `INV-001` | `GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation` |
-| `S-001`, `S-009` | `GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a fingerprinted source fallback, but pre-existing unavailable fails closed` |
+| `S-001`, `S-009` | `GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed` |
 | `INV-005` | `GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set` |
 | `INV-002` | `GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation` |
 | `C-001` | `GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route` |
