@@ -7,9 +7,13 @@ architecture_docs:
   - docs/architecture/vibepro-pr-body-path-links.md
 spec_docs:
   - docs/specs/vibepro-pr-body-path-links.md
+related_stories:
+  - story-vibepro-pr-body-published-evidence-integrity
 ---
 
 # Story: GitHub PR本文のファイルパスをクリック可能にする
+
+> `.vibepro/` の公開リンク扱いは `story-vibepro-pr-body-published-evidence-integrity` により置換された。GitHub公開用repo path allowlistに一致する相対パスをリンク化し、ローカルworkbench artifactはinline codeで表示する。formatterはfilesystem/Gitの存在確認を行わず、構造化入力の存在・追跡状態はGit差分・Story分類側が保証する。
 
 ## Background
 
@@ -19,8 +23,8 @@ PR本文は判断ブリーフでありながら、詳細確認への入口でも
 
 ## Acceptance Criteria
 
-- PR本文のStory正本、設計/Story、実装、テスト、`.vibepro/pr/<story-id>/` artifact参照はMarkdownリンクで出力される。
-- `確認` セクションのverification evidence artifactと最終E2E artifactも、リポジトリ相対パスならMarkdownリンクで出力される。
+- PR本文のStory正本、設計/Story、実装、テストなどrepo path allowlistに一致する相対パスはMarkdownリンクで出力される。
+- `.vibepro/pr/<story-id>/`、verification evidence、最終E2Eなどローカルworkbench artifactはinline codeで出力され、GitHubリンクにはしない。
 - Next.js動的ルートのように `[` `]` を含むパスでも、Markdownリンクのラベルとhrefが壊れない。
 - 外部URL、絶対パス、`Story未検出` などリポジトリ相対パスではない値はリンク化しない。
 - PR本文の短い判断ブリーフ構造、Gate判定、PR作成/merge経路は変えない。

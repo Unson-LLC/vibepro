@@ -285,7 +285,7 @@ title: Design input judgment blocker waiver
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
-  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-vibepro-design-input-judgment\/\]\(\.vibepro\/pr\/story-vibepro-design-input-judgment\/\)/);
+  assert.match(prBody, /- 証跡: `\.vibepro\/pr\/story-vibepro-design-input-judgment\/`/);
   assert.doesNotMatch(prBody, /public_contract: active_blocked/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,700}accepted_followup/);
   assert.match(gateDagHtml, /explicitly waived/);

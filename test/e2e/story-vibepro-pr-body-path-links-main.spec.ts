@@ -8,13 +8,15 @@ const cliRegression = readFileSync(new URL('../vibepro-cli.test.js', import.meta
 
 test('story-vibepro-pr-body-path-links acceptance coverage', () => {
   // story-vibepro-pr-body-path-links ac:1
-  // PR本文のStory正本、設計/Story、実装、テスト、.vibepro/pr/<story-id>/ artifact参照はMarkdownリンクで出力される。
+  // PR本文のStory正本、設計/Story、実装、テストはMarkdownリンクで出力され、ローカルartifactはinline codeになる。
   assert.match(implementation, /function formatRepoPathList/);
+  assert.match(implementation, /function formatPrBodyPathReference/);
   assert.match(cliRegression, /docs\/management\/stories\/active\/story-pr-prepare\.md/);
   assert.match(cliRegression, /\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json/);
 
   // story-vibepro-pr-body-path-links ac:2
-  // 確認セクションのverification evidence artifactと最終E2E artifactも、リポジトリ相対パスならMarkdownリンクで出力される。
+  // 確認セクションのverification evidence artifactと最終E2E artifactは公開可否の境界で表示を分ける。
+  assert.match(implementation, /isLocalVibeProArtifactPath/);
   assert.match(cliRegression, /\.vibepro\/verification\/story-pr-prepare\/unit-status\.json/);
   assert.match(cliRegression, /tests\/src\/app\/api\/projects\/\[projectId\]\/available-recipients\/route\.test\.ts/);
 

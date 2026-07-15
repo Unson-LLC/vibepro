@@ -73,7 +73,7 @@ test('story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route class
   assert.doesNotMatch(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
   assert.doesNotMatch(prBody, /PR Route: docs_only \/ body=documentation_decision_review/);
   assert.match(prBody, /\.vibepro\/pr\/story-vibepro-pr-route-gate-dag\/pr-prepare\.json/);
-  assert.match(prBody, /証跡: \[\.vibepro\/pr\/story-vibepro-pr-route-gate-dag\/\]\(\.vibepro\/pr\/story-vibepro-pr-route-gate-dag\/\)/);
+  assert.match(prBody, /証跡: `\.vibepro\/pr\/story-vibepro-pr-route-gate-dag\/`/);
   assert.doesNotMatch(prBody, /### Engineering Judgment の判断過程/);
   assert.match('`vibepro pr prepare` はPR routeを `gate:pr_route_classification` としてGate DAGに出す。', /gate:pr_route_classification/);
   assert.match('`vibepro pr prepare` はroute別のPR本文契約を `gate:pr_body_contract` としてGate DAGに出す。', /gate:pr_body_contract/);

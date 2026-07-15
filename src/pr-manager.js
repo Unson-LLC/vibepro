@@ -1212,8 +1212,8 @@ function appendPrBodyLimitNotice(body, storyId) {
 
 ## 詳細
 - GitHub本文の65,536文字制限を超えたため、監査ログ詳細はartifact参照に集約しました。
-- 生成本文: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-body.md`)}
-- PR準備: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-prepare.json`)}
+- 生成本文: ${formatPrBodyPathReference(`.vibepro/pr/${storyId}/pr-body.md`)}
+- PR準備: ${formatPrBodyPathReference(`.vibepro/pr/${storyId}/pr-prepare.json`)}
 `;
 }
 
@@ -1236,10 +1236,10 @@ function buildMinimalGithubPrBody(preparation, generatedBody) {
 - 実行状態: ${executionStatus}
 
 ## 詳細
-- 生成本文: ${formatRepoPathLink(`${evidenceDir}/pr-body.md`)}
-- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}
-- 判断索引: ${formatRepoPathLink(`${evidenceDir}/decision-index.json`)}
-- Gate DAG: ${formatRepoPathLink(`${evidenceDir}/gate-dag.json`)}
+- 生成本文: ${formatPrBodyPathReference(`${evidenceDir}/pr-body.md`)}
+- PR準備: ${formatPrBodyPathReference(`${evidenceDir}/pr-prepare.json`)}
+- 判断索引: ${formatPrBodyPathReference(`${evidenceDir}/decision-index.json`)}
+- Gate DAG: ${formatPrBodyPathReference(`${evidenceDir}/gate-dag.json`)}
 - 生成本文サイズ: ${generatedStats.characters} characters / ${generatedStats.bytes} bytes
 `;
 }
@@ -2867,11 +2867,11 @@ async function appendGateOverrideToPrBody(bodyFile, gateOverride) {
     '',
     '## VibePro Gate Waiver',
     '',
-    `- waiver policy: ${gateOverride.waiver_policy}`,
-    `- severity: ${gateOverride.severity}`,
-    `- reason: ${gateOverride.reason}`,
-    `- unresolved gates: ${unresolved}`,
-    `- critical unresolved gates: ${critical}`,
+    `- waiver policy: ${linkifyRepoPathsInText(gateOverride.waiver_policy)}`,
+    `- severity: ${linkifyRepoPathsInText(gateOverride.severity)}`,
+    `- reason: ${linkifyRepoPathsInText(gateOverride.reason)}`,
+    `- unresolved gates: ${linkifyRepoPathsInText(unresolved)}`,
+    `- critical unresolved gates: ${linkifyRepoPathsInText(critical)}`,
     ''
   ].join('\n');
   await writeFile(bodyFile, `${existing.trimEnd()}\n${block}`);
@@ -3547,6 +3547,18 @@ function formatRepoPathLink(filePath) {
   return `[${escapeMarkdownLinkLabel(displayPath)}](${href})`;
 }
 
+function isLocalVibeProArtifactPath(value) {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().replace(/\/$/, '');
+  return normalized === '.vibepro' || normalized.startsWith('.vibepro/');
+}
+
+function formatPrBodyPathReference(filePath) {
+  if (typeof filePath !== 'string') return filePath;
+  const trimmed = filePath.trim();
+  return isLocalVibeProArtifactPath(trimmed) ? `\`${trimmed}\`` : formatRepoPathLink(filePath);
+}
+
 function formatRepoPathList(paths) {
   return paths.map((filePath) => formatRepoPathLink(filePath)).join(', ');
 }
@@ -3571,10 +3583,10 @@ function splitRepoPathTrailingPunctuation(value) {
 
 function linkifyRepoPathsInPlainText(value) {
   return `${value}`.replace(
-    /(^|[\s（(「『:：])((?:\.vibepro|docs|src|test|tests|e2e|bin|skills|agent-instructions)\/[^\s,，、）]+|README(?:\.ja)?\.md|package(?:-lock)?\.json|design-ssot\.json)(?=$|[\s,，、）])/g,
+    /(^|[\s（(「『:：=])((?:\.vibepro|docs|src|test|tests|e2e|bin|skills|agent-instructions)\/[^\s,，、）]+|README(?:\.ja)?\.md|package(?:-lock)?\.json|design-ssot\.json)(?=$|[\s,，、）])/g,
     (match, prefix, filePath) => {
       const { core, suffix } = splitRepoPathTrailingPunctuation(filePath);
-      return `${prefix}${formatRepoPathLink(core)}${suffix}`;
+      return `${prefix}${formatPrBodyPathReference(core)}${suffix}`;
     }
   );
 }
@@ -3585,7 +3597,12 @@ function linkifyRepoPathsInText(value) {
     .split(/(`[^`]*`|\[[^\]\n]+\]\([^) \n]+\))/g)
     .map((part) => {
       if (part.startsWith('`') && part.endsWith('`')) return part;
-      if (/^\[[^\]\n]+\]\([^) \n]+\)$/.test(part)) return part;
+      const markdownLink = part.match(/^\[[^\]\n]+\]\(([^) \n]+)\)$/);
+      if (markdownLink) {
+        return isLocalVibeProArtifactPath(markdownLink[1])
+          ? formatPrBodyPathReference(markdownLink[1])
+          : part;
+      }
       return linkifyRepoPathsInPlainText(part);
     })
     .join('');
@@ -3597,9 +3614,11 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const source = prContext.story_source;
   const storyLabel = formatPrStoryLabel(story, source);
   const requirementTitle = source.requirement_title ?? source.title ?? story.title ?? story.story_id;
-  const verification = prContext.verification_commands.length === 0
-    ? '- [ ] 手動確認または対象テストを追記する'
-    : renderConciseVerificationChecklist(prContext.verification_commands, prContext.gate_dag, prContext.verification_evidence);
+  const verification = renderConciseVerificationChecklist(
+    prContext.verification_commands,
+    prContext.gate_dag,
+    prContext.verification_evidence
+  );
   const reviewPoints = limitItems(prContext.review_points, 3).map((item) => `- ${linkifyRepoPathsInText(item)}`).join('\n');
   const risks = prContext.risks.length === 0
     ? null
@@ -3644,11 +3663,11 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
   const decisionIndexHandoff = resolveHandoffArtifact(artifactBudget, 'decision-index.json', evidenceDir);
   const decisionIndexLine = decisionIndexHandoff.is_summary
-    ? `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatRepoPathLink(decisionIndexHandoff.full_path)}）`
-    : `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.full_path)}`;
+    ? `- 判断索引: ${formatPrBodyPathReference(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatPrBodyPathReference(decisionIndexHandoff.full_path)}）`
+    : `- 判断索引: ${formatPrBodyPathReference(decisionIndexHandoff.full_path)}`;
   const details = [
-    `- 証跡: ${formatRepoPathLink(`${evidenceDir}/`)}`,
-    `- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}`,
+    `- 証跡: ${formatPrBodyPathReference(`${evidenceDir}/`)}`,
+    `- PR準備: ${formatPrBodyPathReference(`${evidenceDir}/pr-prepare.json`)}`,
     decisionIndexLine,
     `- Gate: ${gateStatus}`,
     `- 実行状態: ${executionStatus}`,
@@ -4463,6 +4482,14 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
     return linkifyRepoPathsInText(`- [${checked}] ${formatVerificationChecklistLabel(item, gate)} - ${item.reason}${status}${evidence}`);
   });
+  const currentPassingEvidenceItems = collectCurrentPassingVerificationEvidence(verificationEvidence)
+    .filter((item) => !item.command || !seenCommands.has(item.command))
+    .map((item) => {
+      if (item.command) seenCommands.add(item.command);
+      const evidence = item.artifact ? ` / evidence: ${item.artifact}` : '';
+      const reason = item.summary ?? item.command ?? item.kind ?? 'Current HEAD verification passed';
+      return linkifyRepoPathsInText(`- [x] ${formatVerificationChecklistLabel(item)} - ${reason}${evidence}`);
+    });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])
     .filter((gate) => gate.type === 'verification_gate')
     .filter((gate) => gate.command && gate.evidence && !seenCommands.has(gate.command))
@@ -4472,7 +4499,7 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
       const label = gate.label ?? gate.id;
       return linkifyRepoPathsInText(`- [${checked}] ${label} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`);
     });
-  return [...commandItems, ...evidenceOnlyItems].join('\n');
+  return [...commandItems, ...currentPassingEvidenceItems, ...evidenceOnlyItems].join('\n');
 }
 
 function formatVerificationChecklistLabel(item, gate = null) {
