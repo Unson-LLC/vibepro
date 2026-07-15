@@ -6,4 +6,4 @@ All notable changes to VibePro will be documented in this file.
 
 - Prepare the project for Apache-2.0 OSS publication.
 - Add phase checkpoints for Story, implementation start, test plan, implementation completion, verification, and PR readiness.
-- Add public-discovery targeting improvements and documented suppressions.
+- Add public-discovery live, built-output, and source target discovery with bounded scans, explicit omissions, and fail-closed coverage reporting.
