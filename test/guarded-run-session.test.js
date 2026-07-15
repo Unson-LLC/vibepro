@@ -376,16 +376,78 @@ test('GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the l
     }
   });
 
-  await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('legacy_bootstrap_partial'));
+  let failure;
+  try {
+    await session.run(fixture.source, { storyId: STORY_ID });
+  } catch (error) {
+    failure = error;
+  }
+  const legacyArtifact = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, 'state.json');
+  const legacyRaw = `${JSON.stringify(fixture.legacy, null, 2)}\n`;
+  assert.equal(failure?.code, 'legacy_bootstrap_partial');
+  assert.equal(failure?.details?.legacy_artifact, legacyArtifact);
+  assert.equal(failure?.details?.cause, 'fixture bootstrap interrupted after legacy commit');
   assert.equal(bootstrapCalls, 1);
+  assert.equal(await readFile(legacyArtifact, 'utf8'), legacyRaw);
   await assert.rejects(
     stat(fixture.creationLock()),
     { code: 'ENOENT' }
   );
   await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
+  await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
 
   await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('worktree_unavailable'));
   assert.equal(bootstrapCalls, 1);
+
+  for (const json of [true, false]) {
+    const cliFixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
+    let cliBootstrapCalls = 0;
+    const dependencies = cliFixture.dependencies({
+      startExecution: async () => {
+        cliBootstrapCalls += 1;
+        await writeLegacy(cliFixture.source, cliFixture.legacy);
+        throw new Error('fixture CLI bootstrap interrupted after legacy commit');
+      }
+    });
+    const stdout = capture();
+    const stderr = capture();
+    const args = ['execute', 'run', cliFixture.source, '--story-id', STORY_ID];
+    if (json) args.push('--json');
+    const result = await runCli(args, {
+      stdout,
+      stderr,
+      guardedRunDependencies: dependencies
+    });
+    const cliLegacyArtifact = path.join(cliFixture.source, '.vibepro', 'executions', STORY_ID, 'state.json');
+    assert.equal(result.exitCode, 2);
+    assert.equal(stdout.text(), '');
+    if (json) {
+      const envelope = JSON.parse(stderr.text());
+      assert.equal(envelope.stop_reason.code, 'legacy_bootstrap_partial');
+      assert.equal(envelope.stop_reason.details.legacy_artifact, cliLegacyArtifact);
+      assert.equal(envelope.stop_reason.details.cause, 'fixture CLI bootstrap interrupted after legacy commit');
+    } else {
+      assert.match(stderr.text(), /code: legacy_bootstrap_partial/);
+      assert.equal(stderr.text().includes(`legacy_artifact: ${cliLegacyArtifact}`), true);
+      assert.match(stderr.text(), /cause: fixture CLI bootstrap interrupted after legacy commit/);
+    }
+    assert.equal(await readFile(cliLegacyArtifact, 'utf8'), `${JSON.stringify(cliFixture.legacy, null, 2)}\n`);
+    await assert.rejects(stat(cliFixture.creationLock()), { code: 'ENOENT' });
+    await assert.rejects(stat(cliFixture.runFile(cliFixture.source, RUN_ID)), { code: 'ENOENT' });
+    await assert.rejects(stat(cliFixture.runFile(cliFixture.managed, RUN_ID)), { code: 'ENOENT' });
+
+    const retryStderr = capture();
+    const retryResult = await runCli([
+      'execute', 'run', cliFixture.source, '--story-id', STORY_ID, '--json'
+    ], {
+      stdout: capture(),
+      stderr: retryStderr,
+      guardedRunDependencies: dependencies
+    });
+    assert.equal(retryResult.exitCode, 2);
+    assert.equal(JSON.parse(retryStderr.text()).stop_reason.code, 'worktree_unavailable');
+    assert.equal(cliBootstrapCalls, 1);
+  }
 });
 
 test('GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path', async (t) => {
@@ -1146,15 +1208,22 @@ test('GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-
 });
 
 test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', async (t) => {
-  const fixture = await createFixture(t, { mode: 'disabled' });
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   const blocked = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: false }) });
-  await blocked.run(fixture.source, { storyId: STORY_ID });
+  const created = await blocked.run(fixture.source, { storyId: STORY_ID });
+  const authorityFile = fixture.runFile(fixture.managed, RUN_ID);
+  const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
+  const authorityBefore = await readFile(authorityFile, 'utf8');
+  const mirrorBefore = await readFile(mirrorFile, 'utf8');
   await assert.rejects(
     blocked.transition(fixture.source, { storyId: STORY_ID, runId: RUN_ID, to: 'pr_ready' }),
     errorWithCode('invalid_transition')
   );
+  assert.equal(await readFile(authorityFile, 'utf8'), authorityBefore);
+  assert.equal(await readFile(mirrorFile, 'utf8'), mirrorBefore);
   const persisted = await blocked.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(persisted.status, 'running');
+  assert.deepEqual(persisted.transitions, created.transitions);
 
   const ready = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: true }) });
   const completed = await ready.transition(fixture.source, {
@@ -1164,6 +1233,18 @@ test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', 
     reason: 'gate_dag_ready'
   });
   assert.equal(completed.status, 'pr_ready');
+  assert.equal(completed.transitions.length, created.transitions.length + 1);
+  assert.deepEqual(completed.transitions.at(-1), {
+    sequence: 2,
+    from: 'running',
+    to: 'pr_ready',
+    reason: 'gate_dag_ready',
+    timestamp: FIRST_TIME
+  });
+  const authorityAfter = await readFile(authorityFile, 'utf8');
+  const mirrorAfter = await readFile(mirrorFile, 'utf8');
+  assert.equal(authorityAfter, mirrorAfter);
+  assert.deepEqual(JSON.parse(authorityAfter), completed);
 });
 
 test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON', async (t) => {

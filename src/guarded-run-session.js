@@ -123,7 +123,8 @@ export function renderGuardedRunError(error, options = {}) {
     ['mirror_artifact', 'mirror_artifact'],
     ['quarantine_artifact', 'quarantine_artifact'],
     ['lock_artifact', 'lock_artifact'],
-    ['legacy_artifact', 'legacy_artifact']
+    ['legacy_artifact', 'legacy_artifact'],
+    ['cause', 'cause']
   ]) {
     if (details[key]) lines.push(`- ${label}: ${details[key]}`);
   }
@@ -186,7 +187,7 @@ async function createRun(deps, repoRoot, options) {
         const partial = await readLegacyState(deps, caller.root_realpath, storyId);
         if (!partial) throw error;
         throw contractError('legacy_bootstrap_partial', 'Legacy execution bootstrap committed partially and Run creation stopped.', {
-          artifact: getLegacyStatePath(caller.root_realpath, storyId),
+          legacy_artifact: getLegacyStatePath(caller.root_realpath, storyId),
           cause: error.message
         });
       }

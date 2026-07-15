@@ -73,11 +73,11 @@ The Run Session module is covered primarily by deterministic unit/integration te
 | `S-005` | `GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating` |
 | `S-006`, `S-007` | `GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved` |
 | `C-005` | `GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected` |
-| `INV-004` | `GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams`; `GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists`; `GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped` |
+| `INV-004` | `GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams`; `GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists`; `GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped`; `GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition` |
 | `S-002` | `GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority` |
 | `C-007` | `GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable`; `GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed`; `GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating` |
 | `S-009` | `GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed`; `GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating` |
-| `S-008` | `GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock`; `GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists`; `GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped` |
+| `S-008` | `GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock`; `GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists`; `GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped`; `GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed` |
 | `C-006` | `GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface` |
 
 ## Commands
