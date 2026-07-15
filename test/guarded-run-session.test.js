@@ -1,0 +1,879 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+
+import {
+  GuardedRunError,
+  buildBootstrapBindingFingerprint,
+  createGuardedRunSession
+} from '../src/guarded-run-session.js';
+import { runCli } from '../src/cli.js';
+
+const STORY_ID = 'story-guarded-run-test';
+const FIRST_TIME = '2026-07-15T01:02:03.000Z';
+const RUN_ID = 'run-20260715T010203Z-01020304';
+
+test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
+  assert.throws(() => createGuardedRunSession({ service: {} }), /Unknown guarded Run dependency/);
+  assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
+});
+
+test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+
+  assert.deepEqual(created, {
+    schema_version: '0.1.0',
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    created_at: FIRST_TIME,
+    updated_at: FIRST_TIME,
+    status: 'running',
+    stop_reason: null,
+    attempt: 1,
+    iteration: 0,
+    budget: { max_attempts: 1, max_iterations: 0 },
+    deadline: null,
+    last_progress_at: FIRST_TIME,
+    pending_decision: null,
+    current_head_sha: fixture.identity(fixture.source).head_sha,
+    execution_context: {
+      authority_kind: 'repository',
+      root_realpath: fixture.source,
+      git_dir_realpath: fixture.identity(fixture.source).git_dir_realpath
+    },
+    managed_worktree: fixture.disabledBinding,
+    transitions: [{
+      sequence: 1,
+      from: null,
+      to: 'running',
+      reason: 'run_created',
+      timestamp: FIRST_TIME
+    }]
+  });
+
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+  assert.deepEqual(await session.watch(fixture.source, { storyId: STORY_ID }), created);
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked',
+    stopReason: { code: 'fixture_blocked', message: 'blocked', details: {} }
+  });
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID });
+  assert.equal(resumed.attempt, 2);
+  assert.equal(resumed.budget.max_attempts, 1);
+  assert.equal(resumed.iteration, 0);
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const before = await readFile(artifact, 'utf8');
+  assert.deepEqual(await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), cancelled);
+  assert.equal(await readFile(artifact, 'utf8'), before);
+
+  await assert.rejects(
+    session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID, repairLinkedCopy: true }),
+    errorWithCode('linked_copy_not_configured')
+  );
+});
+
+test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  assert.equal(created.execution_context.authority_kind, 'managed');
+  assert.equal(created.execution_context.root_realpath, fixture.managed);
+  const authorityFile = fixture.runFile(fixture.managed, RUN_ID);
+  const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
+  assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
+
+  await writeFile(mirrorFile, `${JSON.stringify({ ...created, iteration: 99 }, null, 2)}\n`);
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('linked_copy_out_of_sync')
+  );
+  const repaired = await session.watch(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    repairLinkedCopy: true
+  });
+  assert.deepEqual(repaired, created);
+  assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
+
+  await rm(fixture.managed, { recursive: true, force: true });
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('worktree_unavailable')
+  );
+  assert.equal((await readFile(mirrorFile, 'utf8')).includes(RUN_ID), true);
+});
+
+test('GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const authorityFile = fixture.runFile(fixture.managed, RUN_ID);
+  const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
+  const invalid = structuredClone(created);
+  invalid.execution_context.authority_kind = 'repository';
+  const raw = `${JSON.stringify(invalid, null, 2)}\n`;
+  await Promise.all([writeFile(authorityFile, raw), writeFile(mirrorFile, raw)]);
+
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('invalid_state')
+  );
+  assert.equal(await readFile(authorityFile, 'utf8'), raw);
+  assert.equal(await readFile(mirrorFile, 'utf8'), raw);
+});
+
+test('GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a fingerprinted source fallback, but pre-existing unavailable fails closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  assert.equal(created.execution_context.authority_kind, 'source_fallback');
+  assert.equal(
+    created.managed_worktree.bootstrap_binding_fingerprint,
+    buildBootstrapBindingFingerprint(created.managed_worktree)
+  );
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+
+  const second = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable', preexistingLegacy: true });
+  let bootstrapCalls = 0;
+  const secondSession = second.session({
+    startExecution: async () => {
+      bootstrapCalls += 1;
+      throw new Error('must not bootstrap');
+    }
+  });
+  await assert.rejects(secondSession.run(second.source, { storyId: STORY_ID }), errorWithCode('worktree_unavailable'));
+  assert.equal(bootstrapCalls, 0);
+
+  const required = await createFixture(t, { mode: 'required', managedStatus: 'unavailable' });
+  await assert.rejects(
+    required.session().run(required.source, { storyId: STORY_ID }),
+    errorWithCode('worktree_unavailable')
+  );
+  await assert.rejects(stat(required.runFile(required.source, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-3 S-009 copied unavailable metadata cannot grant source fallback control to another root', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  await writeLegacy(fixture.managed, fixture.legacy);
+
+  await assert.rejects(
+    session.status(fixture.managed, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('worktree_mismatch')
+  );
+});
+
+test('GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+
+  for (const [mutate, code] of [
+    [(state) => { delete state.managed_worktree.bootstrap_binding_fingerprint; }, 'invalid_state'],
+    [(state) => { state.managed_worktree.bootstrap_binding_fingerprint = '0'.repeat(64); }, 'worktree_mismatch'],
+    [(state) => { state.execution_context.authority_kind = 'foreign'; }, 'invalid_state']
+  ]) {
+    const invalid = structuredClone(created);
+    mutate(invalid);
+    const raw = `${JSON.stringify(invalid, null, 2)}\n`;
+    await writeFile(artifact, raw);
+    await assert.rejects(
+      session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+      errorWithCode(code)
+    );
+    assert.equal(await readFile(artifact, 'utf8'), raw);
+  }
+});
+
+test('GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const lock = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  await mkdir(lock, { recursive: true });
+  let bootstrapCalls = 0;
+  const session = fixture.session({
+    startExecution: async () => {
+      bootstrapCalls += 1;
+      throw new Error('must not bootstrap while locked');
+    }
+  });
+
+  await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('run_creation_locked'));
+  assert.equal(bootstrapCalls, 0);
+  assert.equal((await stat(lock)).isDirectory(), true);
+});
+
+test('GRS-S-8 INV-004 source and managed callers use the same Story creation lock', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created', preexistingLegacy: true });
+  await writeLegacy(fixture.managed, fixture.legacy);
+  const sourceLock = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock');
+  await mkdir(sourceLock, { recursive: true });
+
+  await assert.rejects(
+    fixture.session().run(fixture.managed, { storyId: STORY_ID }),
+    errorWithCode('run_creation_locked')
+  );
+  await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
+  let bootstrapCalls = 0;
+  const session = fixture.session({
+    startExecution: async () => {
+      bootstrapCalls += 1;
+      await writeLegacy(fixture.source, fixture.legacy);
+      throw new Error('fixture bootstrap interrupted after legacy commit');
+    }
+  });
+
+  await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('legacy_bootstrap_partial'));
+  assert.equal(bootstrapCalls, 1);
+  await assert.rejects(
+    stat(path.join(fixture.source, '.vibepro', 'executions', STORY_ID, '.run-creation.lock')),
+    { code: 'ENOENT' }
+  );
+  await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
+
+  await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('worktree_unavailable'));
+  assert.equal(bootstrapCalls, 1);
+});
+
+test('GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const stdout = capture();
+  const stderr = capture();
+  const result = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--json'
+  ], {
+    stdout,
+    stderr,
+    guardedRunDependencies: fixture.dependencies({
+      startExecution: async () => {
+        throw new Error('fixture bootstrap exploded');
+      }
+    })
+  });
+  assert.equal(result.exitCode, 1);
+  assert.equal(stdout.text(), '');
+  assert.equal(stderr.text(), 'fixture bootstrap exploded\n');
+  await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-10 S-002 managed mirror failure reports the committed authority artifact and leaves no mirror Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const session = fixture.session({
+    artifactIo: {
+      rename: async (from, to) => {
+        if (to === fixture.runFile(fixture.source, RUN_ID)) {
+          const error = new Error('fixture mirror unavailable');
+          error.code = 'EACCES';
+          throw error;
+        }
+        return rename(from, to);
+      }
+    }
+  });
+
+  let failure;
+  try {
+    await session.run(fixture.source, { storyId: STORY_ID });
+  } catch (error) {
+    failure = error;
+  }
+  assert.equal(failure?.code, 'linked_copy_sync_failed');
+  assert.equal(failure?.details?.run_id, RUN_ID);
+  assert.equal(failure?.details?.authority_artifact, fixture.runFile(fixture.managed, RUN_ID));
+  assert.equal(JSON.parse(await readFile(fixture.runFile(fixture.managed, RUN_ID), 'utf8')).run_id, RUN_ID);
+  await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-10 S-002 existing mutation commits once across mirror failure and explicit repair', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const authorityFile = fixture.runFile(fixture.managed, RUN_ID);
+  const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
+  const failing = fixture.session({
+    artifactIo: {
+      rename: async (from, to) => {
+        if (to === mirrorFile) {
+          const error = new Error('fixture mutation mirror unavailable');
+          error.code = 'EACCES';
+          throw error;
+        }
+        return rename(from, to);
+      }
+    }
+  });
+
+  await assert.rejects(
+    failing.transition(fixture.source, {
+      storyId: STORY_ID,
+      runId: RUN_ID,
+      to: 'blocked',
+      reason: 'fixture_blocked_once'
+    }),
+    errorWithCode('linked_copy_sync_failed')
+  );
+  const committed = JSON.parse(await readFile(authorityFile, 'utf8'));
+  assert.equal(committed.status, 'blocked');
+  assert.equal(committed.transitions.filter((item) => item.reason === 'fixture_blocked_once').length, 1);
+  await assert.rejects(
+    fixture.session().status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('linked_copy_out_of_sync')
+  );
+  const repaired = await fixture.session().watch(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    repairLinkedCopy: true
+  });
+  assert.equal(repaired.transitions.filter((item) => item.reason === 'fixture_blocked_once').length, 1);
+  assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
+});
+
+test('GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run_id', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const first = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const sameTimeHigherId = await fixture.session({
+    randomBytes: () => Buffer.from([255, 255, 255, 255])
+  }).run(fixture.source, { storyId: STORY_ID });
+  const later = await fixture.session({
+    now: () => new Date('2026-07-15T02:00:00.000Z'),
+    randomBytes: () => Buffer.from([0, 0, 0, 1])
+  }).run(fixture.source, { storyId: STORY_ID });
+
+  assert.equal((await fixture.session().watch(fixture.source, { storyId: STORY_ID })).run_id, later.run_id);
+  await rm(path.dirname(fixture.runFile(fixture.source, later.run_id)), { recursive: true, force: true });
+  assert.equal((await fixture.session().watch(fixture.source, { storyId: STORY_ID })).run_id, sameTimeHigherId.run_id);
+  assert.equal(first.created_at, sameTimeHigherId.created_at);
+  assert.equal(sameTimeHigherId.run_id > first.run_id, true);
+});
+
+test('GRS-S-8 C-005 implicit Run selection skips newer artifacts that are not valid authority candidates', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const valid = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const invalidRunId = 'run-20260715T030000Z-ffffffff';
+  const invalid = {
+    ...valid,
+    run_id: invalidRunId,
+    created_at: '2026-07-15T03:00:00.000Z',
+    story_id: 'story-another-registered-looking-id'
+  };
+  const invalidFile = fixture.runFile(fixture.source, invalidRunId);
+  await mkdir(path.dirname(invalidFile), { recursive: true });
+  await writeFile(invalidFile, `${JSON.stringify(invalid, null, 2)}\n`);
+
+  assert.equal((await fixture.session().watch(fixture.source, { storyId: STORY_ID })).run_id, valid.run_id);
+  assert.equal(JSON.parse(await readFile(invalidFile, 'utf8')).story_id, invalid.story_id);
+});
+
+test('GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked'
+  });
+  const before = await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8');
+  fixture.setHead(fixture.source, 'b'.repeat(40));
+
+  await assert.rejects(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('stale_head'));
+  assert.equal(await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8'), before);
+});
+
+test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'failed',
+    reason: 'fixture_failed'
+  });
+  const before = await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8');
+
+  await assert.rejects(session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'running',
+    reason: 'operator_resume'
+  }), errorWithCode('invalid_transition'));
+  assert.equal(await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8'), before);
+  assert.equal((await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).status, 'running');
+
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked'
+  });
+  await assert.rejects(session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_duplicate'
+  }), errorWithCode('invalid_transition'));
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  await assert.rejects(session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'cancelled',
+    reason: 'fixture_duplicate'
+  }), errorWithCode('invalid_transition'));
+  assert.deepEqual(await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), cancelled);
+});
+
+test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set', async (t) => {
+  const statuses = [
+    'running',
+    'waiting_for_human',
+    'waiting_for_runtime',
+    'blocked',
+    'failed',
+    'cancelled',
+    'pr_ready'
+  ];
+  const recoverable = new Set(['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']);
+  const allows = (from, to) => {
+    if (from === 'pr_ready') return to === 'pr_ready';
+    if (from === 'cancelled') return false;
+    if (from === 'failed' && to === 'running') return false;
+    if (from === 'running') return recoverable.has(to) || to === 'cancelled' || to === 'pr_ready';
+    return to === 'running'
+      || (recoverable.has(to) && to !== from)
+      || to === 'cancelled'
+      || to === 'pr_ready';
+  };
+
+  for (const from of statuses) {
+    for (const to of statuses) {
+      const fixture = await createFixture(t, { mode: 'disabled' });
+      const session = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: true }) });
+      await session.run(fixture.source, { storyId: STORY_ID });
+      if (from !== 'running') {
+        await session.transition(fixture.source, {
+          storyId: STORY_ID,
+          runId: RUN_ID,
+          to: from,
+          reason: `fixture_to_${from}`
+        });
+      }
+      const artifact = fixture.runFile(fixture.source, RUN_ID);
+      const before = await readFile(artifact, 'utf8');
+      if (allows(from, to)) {
+        const result = await session.transition(fixture.source, {
+          storyId: STORY_ID,
+          runId: RUN_ID,
+          to,
+          reason: 'fixture_matrix'
+        });
+        assert.equal(result.status, to, `${from} -> ${to}`);
+      } else {
+        await assert.rejects(
+          session.transition(fixture.source, {
+            storyId: STORY_ID,
+            runId: RUN_ID,
+            to,
+            reason: 'fixture_matrix'
+          }),
+          errorWithCode('invalid_transition'),
+          `${from} -> ${to}`
+        );
+        assert.equal(await readFile(artifact, 'utf8'), before, `${from} -> ${to}`);
+      }
+    }
+  }
+});
+
+test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const predecessor = structuredClone(created);
+  delete predecessor.schema_version;
+  predecessor.attempt = 7;
+  predecessor.budget = { max_attempts: 2, max_iterations: 8 };
+  predecessor.deadline = '2026-08-01T00:00:00.000Z';
+  await writeFile(artifact, `${JSON.stringify(predecessor, null, 2)}\n`);
+  const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.attempt, 7);
+  assert.deepEqual(migrated.budget, predecessor.budget);
+  assert.equal(migrated.deadline, predecessor.deadline);
+
+  const future = { ...migrated, schema_version: '9.0.0' };
+  const futureRaw = `${JSON.stringify(future, null, 2)}\n`;
+  await writeFile(artifact, futureRaw);
+  await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('unsupported_schema'));
+  assert.equal(await readFile(artifact, 'utf8'), futureRaw);
+
+  await writeFile(artifact, '{broken');
+  await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('corrupt_state'));
+  const names = await readdir(path.dirname(artifact));
+  assert.equal(names.some((name) => name.startsWith('state.json.corrupt-20260715T010203Z')), true);
+});
+
+test('GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const canonicalCancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const predecessor = structuredClone(canonicalCancelled);
+  predecessor.schema_version = '0.0.0';
+  const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
+  await writeFile(artifact, predecessorRaw);
+
+  const migrated = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.updated_at, predecessor.updated_at);
+  assert.deepEqual(migrated.transitions, predecessor.transitions);
+  const canonicalRaw = await readFile(artifact, 'utf8');
+  await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(await readFile(artifact, 'utf8'), canonicalRaw);
+
+  const missing = structuredClone(predecessor);
+  delete missing.deadline;
+  const missingRaw = `${JSON.stringify(missing, null, 2)}\n`;
+  await writeFile(artifact, missingRaw);
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('invalid_state')
+  );
+  assert.equal(await readFile(artifact, 'utf8'), missingRaw);
+});
+
+test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority once and requires explicit mirror repair', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const authorityFile = fixture.runFile(fixture.managed, RUN_ID);
+  const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
+  const predecessor = structuredClone(created);
+  delete predecessor.schema_version;
+  const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
+  await Promise.all([writeFile(authorityFile, predecessorRaw), writeFile(mirrorFile, predecessorRaw)]);
+
+  const failing = fixture.session({
+    artifactIo: {
+      rename: async (from, to) => {
+        if (to === mirrorFile) {
+          const error = new Error('fixture migration mirror unavailable');
+          error.code = 'EACCES';
+          throw error;
+        }
+        return rename(from, to);
+      }
+    }
+  });
+  await assert.rejects(
+    failing.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('linked_copy_sync_failed')
+  );
+  assert.equal(JSON.parse(await readFile(authorityFile, 'utf8')).schema_version, '0.1.0');
+  assert.equal(await readFile(mirrorFile, 'utf8'), predecessorRaw);
+
+  const session = fixture.session();
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('linked_copy_out_of_sync')
+  );
+  const repaired = await session.watch(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    repairLinkedCopy: true
+  });
+  assert.equal(repaired.schema_version, '0.1.0');
+  assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
+  assert.deepEqual(repaired.transitions, created.transitions);
+});
+
+test('GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+
+  for (const mutate of [
+    (state) => { state.run_id = 'run-20260715T010203Z-ffffffff'; },
+    (state) => { state.story_id = 'story-other'; }
+  ]) {
+    const invalid = structuredClone(created);
+    mutate(invalid);
+    const raw = `${JSON.stringify(invalid, null, 2)}\n`;
+    await writeFile(artifact, raw);
+    await assert.rejects(
+      session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+      errorWithCode('invalid_state')
+    );
+    assert.equal(await readFile(artifact, 'utf8'), raw);
+  }
+});
+
+test('GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const invalid = structuredClone(created);
+  invalid.status = 'running';
+  invalid.transitions.push({
+    sequence: 2,
+    from: 'running',
+    to: 'running',
+    reason: 'forbidden_self_transition',
+    timestamp: FIRST_TIME
+  });
+  const raw = `${JSON.stringify(invalid, null, 2)}\n`;
+  await writeFile(artifact, raw);
+
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('invalid_state')
+  );
+  assert.equal(await readFile(artifact, 'utf8'), raw);
+});
+
+test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const blocked = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: false }) });
+  await blocked.run(fixture.source, { storyId: STORY_ID });
+  await assert.rejects(
+    blocked.transition(fixture.source, { storyId: STORY_ID, runId: RUN_ID, to: 'pr_ready' }),
+    errorWithCode('invalid_transition')
+  );
+  const persisted = await blocked.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.status, 'running');
+
+  const ready = fixture.session({ readGateReadiness: async () => ({ ready_for_pr_create: true }) });
+  const completed = await ready.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'pr_ready',
+    reason: 'gate_dag_ready'
+  });
+  assert.equal(completed.status, 'pr_ready');
+});
+
+test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await assert.rejects(session.run(fixture.source, { storyId: '../escape' }), errorWithCode('invalid_story_id'));
+  await assert.rejects(
+    session.status(fixture.source, { storyId: STORY_ID, runId: 'run-%2fescape' }),
+    errorWithCode('invalid_run_id')
+  );
+  const stdout = capture();
+  const stderr = capture();
+  const result = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', 'invalid',
+    '--json'
+  ], {
+    stdout,
+    stderr,
+    guardedRunDependencies: fixture.dependencies()
+  });
+  assert.equal(result.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'invalid_run_id');
+  assert.equal(stdout.text(), '');
+
+  const missingValueError = capture();
+  const missingValue = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id',
+    '--json'
+  ], {
+    stdout: capture(),
+    stderr: missingValueError,
+    guardedRunDependencies: fixture.dependencies()
+  });
+  assert.equal(missingValue.exitCode, 2);
+  assert.equal(JSON.parse(missingValueError.text()).stop_reason.code, 'invalid_run_id');
+});
+
+test('GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const stdout = capture();
+  const stderr = capture();
+  const created = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--json'
+  ], { stdout, stderr, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(created.exitCode, 0);
+  const state = JSON.parse(stdout.text());
+  assert.equal(state.run_id, RUN_ID);
+  assert.equal(stdout.text(), await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8'));
+  assert.equal(stderr.text(), '');
+
+  const legacyOut = capture();
+  const legacy = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--json'
+  ], { stdout: legacyOut, stderr: capture(), guardedRunDependencies: { service: {} } });
+  assert.equal(legacy.exitCode, 0);
+  assert.equal(JSON.parse(legacyOut.text()).story_id, STORY_ID);
+  assert.equal(JSON.parse(legacyOut.text()).run_id, undefined);
+});
+
+test('GRS-S-6 C-001 execute help advertises guarded commands without removing legacy commands', async () => {
+  const stdout = capture();
+  const result = await runCli(['execute', '--help'], { stdout, stderr: capture() });
+  assert.equal(result.exitCode, 0);
+  const usage = stdout.text().split('\n').find((line) => line.includes('vibepro execute <'));
+  assert.ok(usage);
+  for (const command of ['run', 'status', 'watch', 'resume', 'cancel', 'start', 'next', 'merge']) {
+    assert.match(usage, new RegExp(`(?:<|\\|)${command}(?:\\||>)`));
+  }
+  assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
+  assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
+});
+
+test('GRS-S-9 INV-004 guarded Run source surface excludes action/runtime/waiver/merge imports and service replacement', async () => {
+  const source = await readFile(new URL('../src/guarded-run-session.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager|action).*['"]/i);
+  assert.doesNotMatch(source, /guardedRunSession|guardedRunService/);
+  assert.match(source, /artifactIo/);
+  assert.match(source, /readdir/);
+});
+
+async function createFixture(t, options = {}) {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const source = path.join(root, 'source');
+  const managed = path.join(root, 'managed');
+  await Promise.all([mkdir(source, { recursive: true }), mkdir(managed, { recursive: true })]);
+  await Promise.all([writeConfig(source), writeConfig(managed)]);
+  const identities = new Map([
+    [source, { root_realpath: source, git_dir_realpath: path.join(root, 'git', 'source'), head_sha: 'a'.repeat(40) }],
+    [managed, { root_realpath: managed, git_dir_realpath: path.join(root, 'git', 'managed'), head_sha: 'a'.repeat(40) }]
+  ]);
+  const mode = options.mode ?? 'disabled';
+  const managedStatus = options.managedStatus ?? (mode === 'disabled' ? 'disabled' : 'created');
+  const binding = {
+    status: managedStatus,
+    required: mode === 'required',
+    mode,
+    source_repo: source,
+    source_relative_path: null,
+    path: mode === 'disabled' || managedStatus === 'unavailable' ? null : managed,
+    relative_path: mode === 'disabled' ? null : '.worktrees/vibepro/story-guarded-run-test',
+    branch: 'codex/story-guarded-run-test',
+    actual_branch: managedStatus === 'unavailable' ? null : 'codex/story-guarded-run-test',
+    branch_match: managedStatus === 'unavailable' ? null : true,
+    base_ref: 'main',
+    created_from_sha: 'a'.repeat(40),
+    current_head_sha: managedStatus === 'unavailable' ? null : 'a'.repeat(40),
+    dirty: null,
+    dirty_paths: [],
+    dirty_check_error: null,
+    failure_reason: managedStatus === 'unavailable' ? 'fixture_unavailable' : null
+  };
+  const legacy = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    target: 'pr_create',
+    managed_worktree: binding
+  };
+  if (options.preexistingLegacy) await writeLegacy(source, legacy);
+  const clock = { value: FIRST_TIME };
+
+  const fixture = {
+    root,
+    source,
+    managed,
+    legacy,
+    disabledBinding: normalizeExpectedBinding(binding),
+    identity(repo) {
+      return identities.get(path.resolve(repo));
+    },
+    setHead(repo, headSha) {
+      const resolved = path.resolve(repo);
+      const identity = identities.get(resolved);
+      if (!identity) throw new Error(`unknown fixture worktree: ${resolved}`);
+      identity.head_sha = headSha;
+    },
+    runFile(repo, runId) {
+      return path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', runId, 'state.json');
+    },
+    dependencies(overrides = {}) {
+      return {
+        now: () => new Date(clock.value),
+        randomBytes: () => Buffer.from([1, 2, 3, 4]),
+        resolveGitIdentity: async (repo) => {
+          const resolved = path.resolve(repo);
+          await stat(resolved);
+          const identity = identities.get(resolved);
+          if (!identity) throw new Error(`unknown fixture worktree: ${resolved}`);
+          return { ...identity };
+        },
+        startExecution: async () => {
+          await writeLegacy(source, legacy);
+          if (managedStatus !== 'unavailable' && mode !== 'disabled') await writeLegacy(managed, legacy);
+          return { state: legacy, found: true };
+        },
+        readGateReadiness: async () => ({ ready_for_pr_create: false }),
+        ...overrides
+      };
+    },
+    session(overrides = {}) {
+      return createGuardedRunSession(fixture.dependencies(overrides));
+    }
+  };
+  return fixture;
+}
+
+async function writeConfig(repo) {
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded Run test' }] }
+  }, null, 2)}\n`);
+}
+
+async function writeLegacy(repo, legacy) {
+  const file = path.join(repo, '.vibepro', 'executions', STORY_ID, 'state.json');
+  await mkdir(path.dirname(file), { recursive: true });
+  await writeFile(file, `${JSON.stringify(legacy, null, 2)}\n`);
+}
+
+function normalizeExpectedBinding(binding) {
+  return {
+    ...binding,
+    source_repo: path.resolve(binding.source_repo),
+    path: binding.path ? path.resolve(binding.path) : null
+  };
+}
+
+function errorWithCode(code) {
+  return (error) => error instanceof GuardedRunError && error.code === code;
+}
+
+function capture() {
+  let value = '';
+  return {
+    write(chunk) { value += String(chunk); },
+    text() { return value; }
+  };
+}
