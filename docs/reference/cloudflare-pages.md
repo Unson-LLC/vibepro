@@ -14,8 +14,12 @@ Deploy:
 npx wrangler pages deploy docs/.vitepress/dist \
   --project-name vibepro \
   --branch main \
-  --commit-dirty=true
+  --commit-dirty=false
 ```
+
+Deploy only from a clean tree. Local builds append `-dirty` to the
+`vibepro-source-commit` metadata when tracked or untracked source files differ
+from `HEAD`; Wrangler then refuses that deployment command.
 
 Before deploying, verify the account and Pages permission:
 

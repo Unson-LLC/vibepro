@@ -16,6 +16,8 @@ export default {
     'management/**',
     'marketing/**',
     'playbooks/**',
+    'reference/gate-tuning/**',
+    'reference/vibepro-ui-journey-e2e-dogfood.md',
     'specs/**',
     'static_site/**',
     'stories/**'
@@ -237,14 +239,22 @@ function referenceSidebar(locale) {
 }
 
 function resolveSourceCommit() {
+  const buildCommit = process.env.VIBEPRO_SOURCE_COMMIT?.trim();
+  if (buildCommit) return buildCommit;
   const cloudflareCommit = process.env.CF_PAGES_COMMIT_SHA?.trim();
   if (cloudflareCommit) return cloudflareCommit.slice(0, 12);
   try {
-    return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+    const head = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
       cwd: process.cwd(),
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore']
     }).trim();
+    const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=normal'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+    return dirty ? `${head}-dirty` : head;
   } catch {
     return 'unknown';
   }

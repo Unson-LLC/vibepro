@@ -33,11 +33,20 @@ test('public build configuration excludes internal operating corpora', async () 
   for (const internalPath of ['architecture/**', 'management/**', 'specs/**', 'stories/**']) {
     assert.match(config, new RegExp(internalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+  for (const internalReference of [
+    'reference/gate-tuning/**',
+    'reference/vibepro-ui-journey-e2e-dogfood.md'
+  ]) {
+    assert.match(config, new RegExp(internalReference.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
   assert.match(config, /vibepro-source-commit/);
+  assert.match(config, /VIBEPRO_SOURCE_COMMIT/);
+  assert.match(config, /\$\{head\}-dirty/);
   assert.match(config, /application\/ld\+json/);
   await Promise.all([
     readFile(path.join(root, 'docs/public/robots.txt'), 'utf8'),
-    readFile(path.join(root, 'docs/public/llms.txt'), 'utf8')
+    readFile(path.join(root, 'docs/public/llms.txt'), 'utf8'),
+    readFile(path.join(root, 'docs/public/assets/vibepro-header.png'))
   ]);
 });
 
