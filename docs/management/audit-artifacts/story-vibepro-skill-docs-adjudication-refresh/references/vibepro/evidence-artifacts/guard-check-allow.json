@@ -1,0 +1,7 @@
+{
+  "command": "git status",
+  "enabled": true,
+  "workspace_initialized": true,
+  "decision": "allow",
+  "reason": "command does not match any release surface pattern"
+}

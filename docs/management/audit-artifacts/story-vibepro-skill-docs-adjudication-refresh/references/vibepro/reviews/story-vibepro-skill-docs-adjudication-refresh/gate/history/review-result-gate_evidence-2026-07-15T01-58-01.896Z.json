@@ -1,0 +1,105 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review at head 7603d89: verification evidence (unit ac-verify.json + e2e e2e-flow-replay.json) reproduces cleanly; the one-line boundary-frontmatter delta touches no verified surface, prior pass stands.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Re-ran independent checks: sha256 of the 3 content-bound files matches verification-evidence.json content_binding; skills lint reproduces pass=7/0/0; cmp CLAUDE.md AGENTS.md exit 0; git diff --stat main...HEAD is exactly the 4 declared files; diff fd1f78a..7603d89 confirmed frontmatter-only delta.",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/verification-evidence.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/verification-evidence.json",
+      "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "skills/vibepro-gate-evidence/SKILL.md",
+      "skills/vibepro-workflow/SKILL.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "prior pass at fd1f78a -> pass at 7603d89 because the delta is a frontmatter boundary line touching no evidence-bound surface and both verification commands reproduce"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T01:58:01.896Z",
+  "git_context": {
+    "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T01:58:01.870Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "f2d8dd3f406297066dc3517bde7c387151edad1a79f710526998124e64f9af2c",
+        "size": 153275
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+        "sha256": "8b559f9a6e79000f1ee1c84e948e0ee824f4108c280562758a1f8c92e925413c",
+        "size": 4612
+      },
+      {
+        "path": "skills/vibepro-gate-evidence/SKILL.md",
+        "sha256": "4165cc597ba652dd60fd0f3334c920022964e2e65f4c1c47004845d71ab20f3e",
+        "size": 12395
+      },
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "2dc316805ae546fbd549d11f97d1e042a5a56b52a3eb3db6a68593f9008a9579",
+        "size": 23432
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a71ce57847b4217b4d31086b67b3cefec4f4efb33813b6ad91bcb786c7581f47"
+  },
+  "source_fingerprint": "aef129a8528b764feadabb2a36384f5dbe52a3d3a214fd8344118164dc786b0e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a85083126f57ffaba",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

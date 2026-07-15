@@ -1,0 +1,94 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Reaffirmed at head 8901e58: delta is two lineage frontmatter lines with no runtime or release-surface impact; release_ops closures (decision + release_note/rollback_instruction/observability_evidence observations in the unit record) are current-head; rollback remains a single revert.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified diff ced8e92..8901e58 contains only parent_design frontmatter; release_ops human-closure decision and axis decision re-recorded at 8901e58; unit verify record now carries release_note/rollback_instruction/observability_evidence observations grounded in the story frontmatter, PR body role, and replay artifacts.",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+    "inputs": [
+      "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
+      "design-ssot.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "pass at ced8e92 -> pass at 8901e58 because no release-relevant surface changed and all closures are current-head"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T02:14:27.016Z",
+  "git_context": {
+    "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T02:14:26.989Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "2a117d50a3131f74318abe770128f18609c8f6db8d9c611e712f922eefa1834b",
+        "size": 153765
+      },
+      {
+        "path": "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
+        "sha256": "e2ce90b127532cd445de5b49e344be15f4b0bf3ae2277044d80be383a7c3356f",
+        "size": 2719
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fb34e595e87870ce4af7fc1c3b1b985622292d06d06e7ff5ab0212afde7d3ef7"
+  },
+  "source_fingerprint": "46bb76adff9536f0028d748821c543f4c52e6993c07cbceae8cf3fcb8f871dbe",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a57496fd0652ae145",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a57496fd0652ae145",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/transcript-differential-a57496fd0652ae145.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a57496fd0652ae145",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

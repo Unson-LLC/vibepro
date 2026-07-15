@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "updated_at": "2026-07-15T02:12:18.900Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Ran `cmp -s CLAUDE.md AGENTS.md` directly: exit 0 (identical). Ran `git diff main...HEAD -- CLAUDE.md AGENTS.md`: empty output, confirming neither file appears in the diff. Both conditions of the clause directly verified by command execution, not inferred from a token check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:18.895Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Ran `node bin/vibepro.js skills lint .` directly in the worktree: output shows all 7 skills pass, Summary: pass=7, issue_count=0, error_count=0, warning_count=0. Directly reproduces the claimed outcome, no inference needed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:18.026Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "SKILL.md documents `vibepro guard check|install|status`, blocked-recovery via rerunning `pr prepare`, and VIBEPRO_GUARD_BYPASS logged to .vibepro/guard/bypass-log.jsonl with command/story/head SHA/timestamp. Verified against src/cli.js (exact flag set: --command, --pre-push, --pretooluse, --claude for install) and src/guard.js (bypass entry object literally contains reason, command, surface, story_id, head_sha, recorded_at, appended as JSONL to path.join(getWorkspaceDir(root),'guard','bypass-log.jsonl')). Release patterns (gh pr create/merge, fly deploy, vercel deploy/--prod, npm publish) also match DEFAULT_RELEASE_PATTERNS exactly; the commands and bypass mechanics the doc asserts are all factually correct.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:16.960Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "skills/vibepro-workflow/SKILL.md Operating Order step 19 explicitly reads: 'Close the adjudication gates before PR create when pr prepare reports gate:evidence_adjudication or gate:judgment_dag_adjudication unresolved...' and precedes step 20 (pr-body.md) and step 22 (pr create). Confirmed by direct grep and by reading the diff — the step was inserted as new step 19, renumbering the old 19-24 to 20-25, placed strictly before the pr create step.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:15.970Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "SKILL.md's 'Scanner Conclusiveness' section states scanners examining zero targets report `inconclusive` (not pass), reserving `not_applicable` for out-of-scope scanners, and that inconclusive must never be presented as a passing gate. This matches src/scan-status.js resolveScanConclusiveness precisely: scannedCount>0 returns no override; scannedCount===0 with applicable=true returns 'inconclusive'; applicable=false returns 'not_applicable'. The doc's semantic distinction is exactly the code's.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:15.132Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "SKILL.md states verdicts are head-bound and fail closed: a verdict without head_commit, or an unknown current HEAD, never counts as fresh. This is a verbatim match of the code comment/logic in buildEvidenceAdjudicationGate/buildJudgmentDagAdjudicationGate: `if (!headSha || entry.head_commit !== headSha) continue;` — both sides of the comparison fail closed exactly as documented.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:14.267Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "SKILL.md documents all 6 verdict tokens (demonstrated/not_demonstrated/not_verifiable_by_automation, judged_sound/judged_unsound/needs_human_judgment) and the human-closure command `vibepro decision record . --id <story-id> --type needs_review --source gate:evidence_adjudication:<clause-id> --status accepted --reason <> --artifact <>` (judgment: gate:judgment_dag_adjudication:<item-id>). This matches src/adjudication.js's acceptedHumanClosures logic exactly, which requires decision.status==='accepted' AND reason AND artifact, filtered by the same source-prefix string. The doc text correctly requires both reason and artifact, matching the code's AND condition.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:13.332Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Read skills/vibepro-gate-evidence/SKILL.md lines 21-24, 53-56: it describes `vibepro adjudicate prepare . --id <story-id>` generating adjudication-request.md, dispatch to an independent fresh-context subagent (never the implementing agent), and `vibepro adjudicate record . --id <story-id> --clause <id> --verdict <v> --reason <text> --agent-system ... --agent-id ...`, plus the --judgment variant. Cross-checked against src/adjudication.js prepareAdjudication/recordAdjudication/prepareJudgmentAdjudication/recordJudgmentAdjudication: file paths, CLI arg names (--clause, --item, --agent-system, --agent-id, --session-ref), and the fresh-context/independent-agent framing all match the actual implementation, not just superficial keyword presence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:12.393Z"
+    }
+  ]
+}

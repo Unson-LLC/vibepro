@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "created_at": "2026-07-15T02:19:44.159Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: "
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-skill-docs-adjudication-refresh.md)"
+    },
+    "decision_records": {
+      "total": 15,
+      "open": 0,
+      "by_type": {
+        "needs_review": 15
+      },
+      "by_status": {
+        "accepted": 15
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784081515198-3cead599",
+        "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:pr_scope_judgment",
+        "source_status": null,
+        "summary": "split_pr recommendation overridden: design-ssot registration must ship with the docs it registers (head 8901e58)",
+        "reason": "The design-ssot.json change exists solely to register this story doc and its spec doc mirror under the vibepro-agent-guidance-ssot design root — splitting it would leave the story PR failing gate:design_ssot_reconciliation and the registration PR referencing docs absent from main. The child_links backfill of other roots is deterministic CLI normalization, declared in the story boundary. Total diff is 5 files / docs-only.",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 2,
+          "entries": [
+            {
+              "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence-artifacts/ac-verify.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+          "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-15T02:11:55.188Z"
+        },
+        "recorded_at": "2026-07-15T02:11:55.200Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-15T02:19:42.370Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/story-skill-docs-refresh"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/story-skill-docs-refresh/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/story-skill-docs-refresh/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "branch": "story-vibepro-skill-docs-adjudication-refresh",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "0cc037102b402838b269666205cf7aedef8e4aa4",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

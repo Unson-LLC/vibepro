@@ -1,0 +1,97 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "All 4 prior needs_changes findings resolved: adjudication verdicts and decisions re-recorded at current head 7603d89; story boundary now declares design-ssot.json registration incl. CLI child_links backfill; a sound gate:pr_scope_judgment decision documents the split_pr override; decisions carry current head_sha.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified adjudication.json 8 AC verdicts and judgment-adjudication.json items carry head_commit=7603d89; decision-records.json newest entries carry head_sha=7603d89; story reason.boundary declares the design-ssot.json scope; split override decision (source gate:pr_scope_judgment) rationale independently checked: splitting would fail gate:design_ssot_reconciliation in the story lane and orphan the registration lane; diff is exactly the 4 declared files.",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/pr-prepare.json",
+      ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/adjudication.json",
+      ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/judgment-adjudication.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+      "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes (4 findings at fd1f78a) -> pass at 7603d89 because boundary declaration, split-override decision, and current-head re-records resolve each finding; residual spine:failure_modes staleness was re-recorded at 7603d89 before this record"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T01:58:03.371Z",
+  "git_context": {
+    "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T01:58:03.346Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "f2d8dd3f406297066dc3517bde7c387151edad1a79f710526998124e64f9af2c",
+        "size": 153275
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+        "sha256": "8b559f9a6e79000f1ee1c84e948e0ee824f4108c280562758a1f8c92e925413c",
+        "size": 4612
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a57ff9bf17e780662969cdf62037ed944153d87ca20876b6abb76d391debae44"
+  },
+  "source_fingerprint": "3e1b970402622a709bf58dbca823aff2d4a2e951bb58b805065c675897c47605",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a85083126f57ffaba",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

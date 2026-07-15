@@ -1,0 +1,94 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Reaffirmed at head 8901e58: diff remains the same 5 files within the declared story boundary; verdicts and 4 decision records are current-head; the split-override rationale is unchanged.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified diff ced8e92..8901e58 adds only two parent_design frontmatter lines (no new file, no new scope category); decision-records.json newest entries at head 8901e58; boundary declaration matches git diff --name-only vs main exactly (5 files).",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "design-ssot.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json"
+    ]
+  },
+  "judgment_delta": [
+    "pass at ced8e92 -> pass at 8901e58 because the delta introduces no scope change and all records were re-bound to the current head"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T02:14:25.052Z",
+  "git_context": {
+    "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T02:14:25.026Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "2a117d50a3131f74318abe770128f18609c8f6db8d9c611e712f922eefa1834b",
+        "size": 153765
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+        "sha256": "f8c95016cc04d530c6457ece3d085fb65dca24f1dc4949ca56d68cfb4be02fa5",
+        "size": 4815
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a688296934ac7d48f65f7acbebfead00cbb4f6506dd5188206a066e9701bac0d"
+  },
+  "source_fingerprint": "1c9ef6550cd26a31faa2ca937b30d2fb28b1e4e740681818708e8f0560071ba9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a57496fd0652ae145",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a57496fd0652ae145",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/transcript-differential-a57496fd0652ae145.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a57496fd0652ae145",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

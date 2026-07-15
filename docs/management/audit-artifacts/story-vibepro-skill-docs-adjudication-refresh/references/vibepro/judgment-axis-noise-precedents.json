@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "decision_id": "decision-1784080043225-7c860007",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "release_note: the PR body serves as the change notice to the only consumers (agents/maintainers of this repo); no end-user release exists. rollback_instruction: single git revert of the one docs commit restores the previous Skill text, declared in story frontmatter reason.rollback. observability_evidence: not applicable — no running system changes; guard/adjudication runtime behavior is untouched (verified by diff scope in ac-verify.json). No operator action is required.",
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T01:51:30.363Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "decision_id": "decision-1784080041903-264deddc",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "contract_doc: no public CLI/API/config/output contract is touched — git diff main...HEAD contains only skills/*.md, the story doc, and a design-ssot.json child_links registration; no src/ change. compat_or_output_test: ac-verify.json (27 checks) verifies the docs describe the existing vibepro adjudicate/guard command contracts accurately without changing them, and e2e-flow-replay.json confirms the live CLI output matches the documented contract.",
+      "artifact": ".vibepro/evidence-artifacts/ac-verify.json",
+      "activation_candidates": [
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T01:51:30.363Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

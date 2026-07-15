@@ -1,0 +1,205 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "generated_by": {
+    "caller": "claude-code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "skills/vibepro-gate-evidence/SKILL.md documents the closure procedure for gate:evidence_adjudication and gate:judgment_dag_adjudication: vibepro adjudicate prepare (with --judgment for the judgment DAG) generates the request, an independent fresh-context subagent (not the implementing agent) is dispatched, and vibepro adjudicate record (with --judgment) records per-clause / per-item verdicts.",
+      "rationale": "Story AC-1",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "vibepro adjudicate prepare",
+            "file": "skills/vibepro-gate-evidence/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "skills/vibepro-gate-evidence/SKILL.md documents the adjudication verdict vocabularies (demonstrated / not_demonstrated / not_verifiable_by_automation and judged_sound / judged_unsound / needs_human_judgment) and the human-closure procedure via vibepro decision record with source gate:evidence_adjudication:<clause-id> (judgment side gate:judgment_dag_adjudication:<item-id>) plus both reason and artifact.",
+      "rationale": "Story AC-2",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "not_verifiable_by_automation",
+            "file": "skills/vibepro-gate-evidence/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "skills/vibepro-gate-evidence/SKILL.md states that adjudication verdicts are head-bound and fail closed: a verdict without a recorded head_commit, or evaluated when the current HEAD is unknown, never counts as fresh.",
+      "rationale": "Story AC-3",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "fail closed",
+            "file": "skills/vibepro-gate-evidence/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "skills/vibepro-gate-evidence/SKILL.md documents the scanner conclusiveness distinction: inconclusive (zero scanned targets is not evidence of a pass) versus not_applicable (out of scope), and explicitly forbids presenting an inconclusive result as a passing gate.",
+      "rationale": "Story AC-4",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "inconclusive",
+            "file": "skills/vibepro-gate-evidence/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "The Operating Order in skills/vibepro-workflow/SKILL.md includes an adjudication step that closes gate:evidence_adjudication and gate:judgment_dag_adjudication after pr prepare and before pr create.",
+      "rationale": "Story AC-5",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "gate:evidence_adjudication",
+            "file": "skills/vibepro-workflow/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-006",
+      "type": "contract",
+      "statement": "skills/vibepro-workflow/SKILL.md documents the Release Surface Guard: vibepro guard check|install|status commands, recovery through pr prepare when a release surface is blocked, and VIBEPRO_GUARD_BYPASS bypasses recorded with a reason to .vibepro/guard/bypass-log.jsonl for audit.",
+      "rationale": "Story AC-6",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5
+          }
+        ],
+        "code_refs": [
+          {
+            "anchor": "VIBEPRO_GUARD_BYPASS",
+            "file": "skills/vibepro-workflow/SKILL.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "C-007",
+      "type": "contract",
+      "statement": "node bin/vibepro.js skills lint . reports pass for all skills with zero errors and warnings after the documentation changes.",
+      "rationale": "Story AC-7",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "CLAUDE.md and AGENTS.md remain byte-for-byte identical and unchanged by this story (cmp -s CLAUDE.md AGENTS.md exits 0 and neither file appears in the diff).",
+      "rationale": "Story AC-8",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-15T01:30:10.834Z",
+      "last_revised_at": "2026-07-15T01:30:10.834Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  A[tree finalized + committed] --> B[vibepro verify record]\n  B --> C[Agent Review lifecycle]\n  C --> D[vibepro adjudicate prepare / --judgment]\n  D --> E[independent fresh-context subagent judges clauses and items]\n  E --> F[vibepro adjudicate record / --judgment]\n  F --> G[vibepro pr prepare]\n  G --> H{ready_for_pr_create?}\n  H -- yes --> I[vibepro pr create]\n  H -- no --> B\n  I --> J[Release Surface Guard allows release surfaces]",
+      "entities": [
+        "verify record",
+        "Agent Review",
+        "adjudicate prepare",
+        "adjudicate record",
+        "pr prepare",
+        "pr create",
+        "Release Surface Guard"
+      ],
+      "rationale": "Documented gate-closure workflow order that the updated Skills describe (Story AC-1, AC-5)."
+    },
+    {
+      "kind": "state",
+      "mermaid": "stateDiagram-v2\n  [*] --> missing\n  missing --> demonstrated: adjudicate record (fresh head_commit)\n  missing --> not_demonstrated: adjudicate record\n  missing --> not_verifiable_by_automation: adjudicate record\n  not_demonstrated --> missing: new evidence + re-adjudication\n  not_verifiable_by_automation --> human_closed: accepted decision record (reason + artifact)\n  demonstrated --> missing: new commit (head-bound, fail closed)\n  human_closed --> [*]\n  demonstrated --> [*]",
+      "entities": [
+        "missing",
+        "demonstrated",
+        "not_demonstrated",
+        "not_verifiable_by_automation",
+        "human_closed"
+      ],
+      "rationale": "Adjudication verdict lifecycle documented in the updated gate-evidence Skill (Story AC-2, AC-3): a clause starts missing, moves to a recorded verdict, and not_verifiable_by_automation becomes human_closed via an accepted decision record."
+    }
+  ],
+  "open_questions": [],
+  "generated_at": "2026-07-15T01:30:10.827Z",
+  "previous_spec_id": null
+}

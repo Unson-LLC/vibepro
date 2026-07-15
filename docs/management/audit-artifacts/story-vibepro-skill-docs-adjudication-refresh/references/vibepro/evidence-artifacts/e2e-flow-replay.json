@@ -1,0 +1,36 @@
+{
+ "status": "pass",
+ "exit_code": 0,
+ "head": "8901e5822bb0d385a1251301175244dd21255d48",
+ "replays": [
+  {
+   "flow": "release_surface_guard_block",
+   "command": "node bin/vibepro.js guard check . --command 'gh pr create --title test' --story-id story-vibepro-skill-docs-adjudication-refresh",
+   "observed_exit_code": 2,
+   "decision": "block",
+   "surface": "raw_pr_create",
+   "expected": "block while story not ready_for_pr_create",
+   "match": true
+  },
+  {
+   "flow": "release_surface_guard_allow",
+   "command": "node bin/vibepro.js guard check . --command 'git status' --story-id story-vibepro-skill-docs-adjudication-refresh",
+   "observed_exit_code": 0,
+   "decision": "allow",
+   "expected": "allow for non-release command",
+   "match": true
+  },
+  {
+   "flow": "adjudication_workflow",
+   "artifacts": [
+    ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/adjudication-request.md",
+    ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/judgment-adjudication-request.md",
+    ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-skill-docs-adjudication-refresh/judgment-adjudication.json"
+   ],
+   "observed": "adjudicate prepare generated both request docs; adjudicate record wrote clause/item verdicts from an independent claude_code subagent (a71396ca821d470db); pr prepare re-reported the gates as head-bound after the amend (stale verdicts correctly dropped = fail-closed head binding observed)",
+   "match": true
+  }
+ ],
+ "note": "guard block/allow replays re-executed at 8901e58"
+}

@@ -1,0 +1,688 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "updated_at": "2026-07-15T02:11:55.200Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784081515198-3cead599",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "split_pr recommendation overridden: design-ssot registration must ship with the docs it registers (head 8901e58)",
+      "reason": "The design-ssot.json change exists solely to register this story doc and its spec doc mirror under the vibepro-agent-guidance-ssot design root — splitting it would leave the story PR failing gate:design_ssot_reconciliation and the registration PR referencing docs absent from main. The child_links backfill of other roots is deterministic CLI normalization, declared in the story boundary. Total diff is 5 files / docs-only.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:11:55.188Z"
+      },
+      "recorded_at": "2026-07-15T02:11:55.200Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784081513053-bb6634e7",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "human closure of needs_human_judgment on axis:release_ops (head 8901e58)",
+      "reason": "Internal agent-operating docs (skills/*.md) only; no deployed runtime, no end-user release surface. rollback_instruction: single git revert of the one docs commit restores the previous Skill text (story frontmatter reason.rollback). release_note: PR body itself serves as the change notice to the only consumers. No operator communication or observability_evidence applies because no running system changes.",
+      "reviewer": "k.sato (coordinator-recorded per autonomous execution policy; PR merge remains human-gated)",
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:11:53.037Z"
+      },
+      "recorded_at": "2026-07-15T02:11:53.055Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784081510770-6899df15",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops axis closure (head 8901e58)",
+      "reason": "release_note: the PR body serves as the change notice to the only consumers (agents/maintainers). rollback_instruction: single git revert of the one docs commit, declared in story frontmatter reason.rollback and the spec doc mirror. observability_evidence: e2e-flow-replay.json and guard-check artifacts provide owner-visible evidence; no running system changes. No operator action is required.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:11:50.760Z"
+      },
+      "recorded_at": "2026-07-15T02:11:50.772Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784081508389-3ce5e5b6",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "public_contract axis closure (head 8901e58)",
+      "reason": "contract_doc: no public CLI/API/config/output contract is touched — the diff contains only skills/*.md, the story doc, the spec doc mirror, and design-ssot.json registration; no src/ change. compat_or_output_test: ac-verify.json (27 checks) verifies the docs describe the existing vibepro adjudicate/guard command contracts accurately, and e2e-flow-replay.json confirms live CLI output matches the documented contract.",
+      "reviewer": null,
+      "artifact": ".vibepro/evidence-artifacts/ac-verify.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:11:48.377Z"
+      },
+      "recorded_at": "2026-07-15T02:11:48.391Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080975372-62892604",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "split_pr recommendation overridden: design-ssot registration must ship with the story it registers (re-recorded at head ced8e92)",
+      "reason": "split-plan.json recommends split_by_lane_then_prepare, but the design-ssot.json change exists solely to register this story doc and its spec doc mirror under the vibepro-agent-guidance-ssot design root — splitting it into a separate PR would leave the story PR failing gate:design_ssot_reconciliation (unregistered_changed_design_doc) and the registration PR referencing docs that do not exist on main yet. The child_links backfill of other roots is deterministic CLI normalization emitted by vibepro design-ssot link, not hand-authored scope; it is declared in the story boundary. Total diff remains 5 files / docs-only.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:02:55.363Z"
+      },
+      "recorded_at": "2026-07-15T02:02:55.373Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080974106-3f816516",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "human closure of needs_human_judgment on axis:release_ops (re-recorded at head ced8e92)",
+      "reason": "Internal agent-operating docs (skills/*.md) only; no deployed runtime, no end-user release surface. rollback_instruction: single git revert of the one docs commit restores the previous Skill text (declared in story frontmatter reason.rollback). release_note: PR body itself serves as the change notice to the only consumers (agents/maintainers pulling this repo). No operator communication or observability_evidence applies because no running system changes.",
+      "reviewer": "k.sato (coordinator-recorded per autonomous execution policy; PR merge remains human-gated)",
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:02:54.097Z"
+      },
+      "recorded_at": "2026-07-15T02:02:54.107Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080972701-2c0f8381",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops axis closure for docs-only internal Skill change (re-recorded at head ced8e92)",
+      "reason": "release_note: the PR body serves as the change notice to the only consumers (agents/maintainers of this repo); no end-user release exists. rollback_instruction: single git revert of the one docs commit restores the previous Skill text, declared in story frontmatter reason.rollback. observability_evidence: not applicable — no running system changes; guard/adjudication runtime behavior is untouched (verified by diff scope in ac-verify.json). No operator action is required.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:02:52.692Z"
+      },
+      "recorded_at": "2026-07-15T02:02:52.703Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080971100-b45e65e2",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "public_contract axis closure for docs-only Skill update (re-recorded at head ced8e92)",
+      "reason": "contract_doc: no public CLI/API/config/output contract is touched — git diff main...HEAD contains only skills/*.md, the story doc, the spec doc mirror, and a design-ssot.json child_links registration; no src/ change. compat_or_output_test: ac-verify.json (27 checks) verifies the docs describe the existing vibepro adjudicate/guard command contracts accurately without changing them, and e2e-flow-replay.json confirms the live CLI output matches the documented contract.",
+      "reviewer": null,
+      "artifact": ".vibepro/evidence-artifacts/ac-verify.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:02:51.090Z"
+      },
+      "recorded_at": "2026-07-15T02:02:51.101Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080341467-fc67e2b7",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "split_pr recommendation overridden: design-ssot registration must ship with the story it registers",
+      "reason": "split-plan.json recommends split_by_lane_then_prepare (requirements-ssot vs misc-follow-up), but the design-ssot.json change exists solely to register this story doc under the vibepro-agent-guidance-ssot design root — splitting it into a separate PR would leave the story PR failing gate:design_ssot_reconciliation (unregistered_changed_design_doc) and the registration PR referencing a story doc that does not exist on main yet. The child_links backfill of other roots is deterministic CLI normalization emitted by vibepro design-ssot link, not hand-authored scope; it is declared in the story boundary. Total diff remains 4 files / docs-only.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:52:21.453Z"
+      },
+      "recorded_at": "2026-07-15T01:52:21.470Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080339354-0f84eafd",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "human closure of needs_human_judgment on axis:release_ops (re-recorded at head 7603d89)",
+      "reason": "Internal agent-operating docs (skills/*.md) only; no deployed runtime, no end-user release surface. rollback_instruction: single git revert of the one docs commit restores the previous Skill text (declared in story frontmatter reason.rollback). release_note: PR body itself serves as the change notice to the only consumers (agents/maintainers pulling this repo). No operator communication or observability_evidence applies because no running system changes.",
+      "reviewer": "k.sato (coordinator-recorded per autonomous execution policy; PR merge remains human-gated)",
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:52:19.341Z"
+      },
+      "recorded_at": "2026-07-15T01:52:19.356Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080337797-1b097b23",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops axis closure for docs-only internal Skill change (re-recorded at head 7603d89)",
+      "reason": "release_note: the PR body serves as the change notice to the only consumers (agents/maintainers of this repo); no end-user release exists. rollback_instruction: single git revert of the one docs commit restores the previous Skill text, declared in story frontmatter reason.rollback. observability_evidence: not applicable — no running system changes; guard/adjudication runtime behavior is untouched (verified by diff scope in ac-verify.json). No operator action is required.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:52:17.788Z"
+      },
+      "recorded_at": "2026-07-15T01:52:17.798Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080336534-587d0c7d",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "public_contract axis closure for docs-only Skill update (re-recorded at head 7603d89)",
+      "reason": "contract_doc: no public CLI/API/config/output contract is touched — git diff main...HEAD contains only skills/*.md, the story doc, and a design-ssot.json child_links registration; no src/ change. compat_or_output_test: ac-verify.json (27 checks) verifies the docs describe the existing vibepro adjudicate/guard command contracts accurately without changing them, and e2e-flow-replay.json confirms the live CLI output matches the documented contract.",
+      "reviewer": null,
+      "artifact": ".vibepro/evidence-artifacts/ac-verify.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7603d89a388ee9e20aa9e5d840b164c50389f7ab",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:52:16.525Z"
+      },
+      "recorded_at": "2026-07-15T01:52:16.536Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080043225-7c860007",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "release_ops axis closure for docs-only internal Skill change",
+      "reason": "release_note: the PR body serves as the change notice to the only consumers (agents/maintainers of this repo); no end-user release exists. rollback_instruction: single git revert of the one docs commit restores the previous Skill text, declared in story frontmatter reason.rollback. observability_evidence: not applicable — no running system changes; guard/adjudication runtime behavior is untouched (verified by diff scope in ac-verify.json). No operator action is required.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fd1f78a325304397344a62329f536c76e84ef7a4",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:47:23.216Z"
+      },
+      "recorded_at": "2026-07-15T01:47:23.226Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784080041903-264deddc",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "public_contract axis closure for docs-only Skill update",
+      "reason": "contract_doc: no public CLI/API/config/output contract is touched — git diff main...HEAD contains only skills/*.md, the story doc, and a design-ssot.json child_links registration; no src/ change. compat_or_output_test: ac-verify.json (27 checks) verifies the docs describe the existing vibepro adjudicate/guard command contracts accurately without changing them, and e2e-flow-replay.json confirms the live CLI output matches the documented contract.",
+      "reviewer": null,
+      "artifact": ".vibepro/evidence-artifacts/ac-verify.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fd1f78a325304397344a62329f536c76e84ef7a4",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:47:21.894Z"
+      },
+      "recorded_at": "2026-07-15T01:47:21.904Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784079564469-1adef81f",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": null,
+      "summary": "release_ops judgment closure for docs-only internal Skill change",
+      "reason": "Internal agent-operating docs (skills/*.md) only; no deployed runtime, no end-user release surface. rollback_instruction: single git revert of the one docs commit restores the previous Skill text (declared in story frontmatter reason.rollback). release_note: PR body itself serves as the change notice to the only consumers (agents/maintainers pulling this repo). No operator communication or observability_evidence applies because no running system changes.",
+      "reviewer": "k.sato (coordinator-recorded per autonomous execution policy; PR merge remains human-gated)",
+      "artifact": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ccefaac87d03c3a489e7c64d5c205f5510196fb",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T01:39:24.462Z"
+      },
+      "recorded_at": "2026-07-15T01:39:24.471Z"
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "open": 0,
+    "by_type": {
+      "needs_review": 15
+    },
+    "by_status": {
+      "accepted": 15
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784081515198-3cead599",
+      "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "split_pr recommendation overridden: design-ssot registration must ship with the docs it registers (head 8901e58)",
+      "reason": "The design-ssot.json change exists solely to register this story doc and its spec doc mirror under the vibepro-agent-guidance-ssot design root — splitting it would leave the story PR failing gate:design_ssot_reconciliation and the registration PR referencing docs absent from main. The child_links backfill of other roots is deterministic CLI normalization, declared in the story boundary. Total diff is 5 files / docs-only.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/ac-verify.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8901e5822bb0d385a1251301175244dd21255d48",
+        "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T02:11:55.188Z"
+      },
+      "recorded_at": "2026-07-15T02:11:55.200Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json"
+}

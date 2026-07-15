@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "updated_at": "2026-07-15T02:12:27.646Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "The parse_failure candidate is marked not_required by the mechanical layer. Verified directly against the delta: the only machine-parsed input touched is design-ssot.json; python3 json.load parses the full file without error at head fd1f78a; the additions are structurally well-formed CLI-generated entries (vibepro design-ssot link), not hand-edits; downstream consumers demonstrably parsed it after the change (pr prepare regenerated the judgment request including this item; guard-check evaluated gate:design_ssot_reconciliation). No parser or JSON-extraction code in src/ is modified, so not_required is the correct discharge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:27.641Z"
+    },
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Evidence cited is the same generic verify-ac.sh anchor-grep summary rather than a specific workflow-state-transition test, which is a weak citation on its face. However, independently confirmed via the diff that no state-transition code (pr-manager.js, workflow state files, gate DAG builders) was touched — only SKILL.md prose. Since no code implementing workflow/gate state transitions changed, the absence of stale/over-green state risk is directly derivable from the diff itself, not merely asserted by boilerplate evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:26.823Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "This failure mode is specifically about gate/evidence-lifecycle code changes producing misleading green artifacts. Confirmed via git diff --stat that src/adjudication.js, src/guard.js, and src/scan-status.js (the actual gate-implementation files) were NOT touched by this diff — only documentation that describes their existing behavior. 'not_required' correctly reflects that no evidence-lifecycle code was changed here; this PR only catches documentation up to already-shipped mechanics.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:26.076Z"
+    },
+    {
+      "item_id": "axis:release_ops",
+      "verdict": "needs_human_judgment",
+      "reason": "Mechanical status is 'block', and the cited evidence is the same generic boilerplate (focused_test/scope_reviewed) reused across every axis item, not specific to release-ops concerns. Whether an internal agent-operating-doc change to VibePro Skills (as opposed to a shipped end-user product) warrants release notes, operator communication, or a rollback plan is an organizational-process judgment call, not something derivable purely from the diff. Given the mechanical layer itself left this 'block' rather than resolving it, and the question turns partly on org policy for internal tooling docs, this is better closed by a human decision record than asserted sound by an LLM.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:25.358Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "The question is whether this change breaks external CLI/API/config/output-format/PR-body contracts. Confirmed via git diff --stat that no src/ files were touched — only two SKILL.md docs and a story doc changed. No CLI flags, output schemas, or config were modified; the docs merely describe pre-existing `vibepro adjudicate`/`guard` commands (present in src/adjudication.js and src/guard.js unchanged by this diff). The axis's generic reused evidence citations (focused_test/scope_reviewed) are boilerplate rather than contract-specific, but the substantive answer — no contract touched — is independently verifiable and holds.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:24.536Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "For a light-route docs change, deferring 'done' to downstream Unit/skills-lint gates is appropriate given AC-7 (skills lint) and AC-8 (cmp) are themselves directly re-runnable deterministic checks that the adjudicator executed and confirmed pass. There's no missing completion signal for a change of this scope.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:23.624Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "The light route requires no additional failure-mode evidence beyond Story/diff classification. Checked against the actual diff: only the two SKILL.md docs, the story doc, and the design-ssot.json registration changed; none of the gate/guard/scanner implementation files (src/adjudication.js, src/guard.js, src/scan-status.js) were touched, so the plausible failure modes reduce to (a) documenting behavior that does not match the code and (b) regressing skills lint / CLAUDE-AGENTS invariants — both independently verified not to occur (doc claims cross-checked line-by-line against source; skills lint pass=7/0 errors; cmp CLAUDE.md AGENTS.md identical). The named failure-mode candidates (parse_failure, evidence_lifecycle_regression, workflow_state_regression) were separately itemized and judged, so the spine-level claim genuinely holds for this docs-only surface. Reaffirmed by the adjudicator at head 7603d89.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:22.926Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "No high-risk boundary is plausible for a diff touching only two SKILL.md docs and one story doc — no CLI, config schema, or runtime behavior surface is touched (verified via git diff --stat and reading full diff). 'No high-risk boundary surface detected' is a correct read of the actual change, not just an unexamined pass-through.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:22.176Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Light route with docs-only surface; the only real invariant at stake (CLAUDE.md/AGENTS.md byte-identity) is directly checked (AC-8, confirmed by cmp). No code invariants apply since no runtime code changed in this diff — the 'no additional invariant evidence required' framing correctly reflects the actual change surface.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:21.355Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Docs-only diff (only skills/vibepro-gate-evidence/SKILL.md, skills/vibepro-workflow/SKILL.md, and the story doc changed; confirmed via git diff --stat). The spec.json's 8 clauses each carry code_refs anchoring specific text into the two changed SKILL.md files, and I independently verified those anchors exist and are accurate against source (src/adjudication.js, scan-status.js, guard.js). Current-reality traceability for a docs-only change genuinely holds here, not merely asserted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:20.595Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "The story explicitly states 8 acceptance criteria describing intent (document adjudication gate closure procedure, verdict vocab, head-bound fail-closed rule, scanner conclusiveness, workflow ordering, release guard, skills lint pass, CLAUDE/AGENTS invariance). Cross-checked against .vibepro/spec/.../spec.json which ties 8 spec clauses 1:1 to these 8 story ACs with code_refs anchored into the actual changed files. Intent is genuinely legible and traceable, not a token-matching artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a71396ca821d470db",
+        "session_ref": "claude-code-subagent-a71396ca821d470db-reaffirmed-at-8901e58"
+      },
+      "head_commit": "8901e5822bb0d385a1251301175244dd21255d48",
+      "recorded_at": "2026-07-15T02:12:19.818Z"
+    }
+  ]
+}

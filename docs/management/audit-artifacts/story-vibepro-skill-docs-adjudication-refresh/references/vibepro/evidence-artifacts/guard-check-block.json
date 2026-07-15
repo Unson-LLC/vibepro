@@ -1,0 +1,45 @@
+{
+  "command": "gh pr create --title test",
+  "enabled": true,
+  "workspace_initialized": true,
+  "decision": "block",
+  "surface": {
+    "id": "raw_pr_create",
+    "pattern": "(^|[\\s;&|])gh\\s+pr\\s+create\\b"
+  },
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "overall_status": "needs_verification",
+  "blocking_gates": [
+    {
+      "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "status": "needs_evidence",
+      "label": "Evidence Lifecycle Gate"
+    },
+    {
+      "id": "gate:artifact_consistency",
+      "status": "stale_evidence",
+      "label": "Artifact Consistency Gate"
+    },
+    {
+      "id": "gate:evidence_adjudication",
+      "status": "needs_evidence",
+      "label": "Evidence Adjudication Gate"
+    },
+    {
+      "id": "gate:judgment_dag_adjudication",
+      "status": "needs_evidence",
+      "label": "Judgment DAG Adjudication Gate"
+    },
+    {
+      "id": "gate:senior_gap_judgment",
+      "status": "needs_review",
+      "label": "Senior Gap Judgment Gate"
+    }
+  ],
+  "reason": "release surface \"raw_pr_create\" is blocked: story story-vibepro-skill-docs-adjudication-refresh is not ready_for_pr_create; blocking gates: Evidence Lifecycle Gate:needs_evidence, Artifact Consistency Gate:stale_evidence, Evidence Adjudication Gate:needs_evidence, Judgment DAG Adjudication Gate:needs_evidence, Senior Gap Judgment Gate:needs_review",
+  "next_commands": [
+    "vibepro pr prepare . --story-id story-vibepro-skill-docs-adjudication-refresh",
+    "vibepro pr create . (VibePro経由のPR作成・throwベースのenforcementを通す)",
+    "set VIBEPRO_GUARD_BYPASS=\"<reason>\" only for a genuine emergency; the bypass is recorded for audit"
+  ]
+}

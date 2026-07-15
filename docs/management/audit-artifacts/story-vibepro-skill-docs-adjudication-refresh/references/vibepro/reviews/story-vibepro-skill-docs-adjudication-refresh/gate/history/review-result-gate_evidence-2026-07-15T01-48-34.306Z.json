@@ -1,0 +1,95 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Evidence is fresh and content-bound to current HEAD fd1f78a3; both unit and e2e verification commands correspond to real, reproducible artifacts; docs-only change is internally consistent and traceable.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed main...HEAD; read verification-evidence.json and all four evidence-artifacts JSONs; cross-checked head SHAs/content bindings against git rev-parse HEAD; independently reran skills lint (pass=7, error 0) reproducing the recorded claim; confirmed guard-check block/allow exit codes 2/0 match the e2e summary. Initial staleness concern about the reuse key resolved: current verification-evidence.json is fresh for the current head.",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/verification-evidence.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/verification-evidence.json",
+      ".vibepro/evidence-artifacts/ac-verify.json",
+      ".vibepro/evidence-artifacts/e2e-flow-replay.json",
+      "skills/vibepro-gate-evidence/SKILL.md",
+      "skills/vibepro-workflow/SKILL.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: reuse-key evidence flagged stale -> final pass because the current verification-evidence.json entries are head-bound to fd1f78a3 with matching content bindings and independently reproduced lint results"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T01:48:34.306Z",
+  "git_context": {
+    "head_sha": "fd1f78a325304397344a62329f536c76e84ef7a4",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T01:48:34.280Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "fd1f78a325304397344a62329f536c76e84ef7a4",
+    "surface_files": [
+      {
+        "path": "skills/vibepro-gate-evidence/SKILL.md",
+        "sha256": "4165cc597ba652dd60fd0f3334c920022964e2e65f4c1c47004845d71ab20f3e",
+        "size": 12395
+      },
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "2dc316805ae546fbd549d11f97d1e042a5a56b52a3eb3db6a68593f9008a9579",
+        "size": 23432
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "992e36a946302b84272ca6edbf0d4be51a5f3f5e51703d53052e2d6e027fc34d"
+  },
+  "source_fingerprint": "b1a8fba768d6e1bbfe91955ae2fe5aee355e7e411f02084ef861b9e7139e4828",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a40f4292daf27680e",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

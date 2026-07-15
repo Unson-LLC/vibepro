@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-skill-docs-adjudication-refresh",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Delta is docs-only (prose spec mirror + deterministic CLI traceability link) with no runtime, deployment, or release-surface impact; axis:release_ops human closure is recorded at current head with a single-revert rollback path.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed the new spec doc is pure markdown (no executable content); design-ssot.json delta is 16 lines of additive child_link JSON + updated_at; release_ops closure decision at head ced8e92 with reviewer populated and rollback_instruction referencing single git revert.",
+    "evidence": ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json",
+    "inputs": [
+      "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
+      "design-ssot.json",
+      ".vibepro/pr/story-vibepro-skill-docs-adjudication-refresh/decision-records.json"
+    ]
+  },
+  "judgment_delta": [
+    "prior pass at 7603d89 -> pass at ced8e92 because the amend introduces no new release-surface or runtime exposure and the release_ops human closure remains valid at the new head"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-15T02:07:44.595Z",
+  "git_context": {
+    "head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+    "current_branch": "story-vibepro-skill-docs-adjudication-refresh",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T02:07:44.568Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "ced8e9223101d397e53c30de4c3e7ec14e1f1e90",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "2a117d50a3131f74318abe770128f18609c8f6db8d9c611e712f922eefa1834b",
+        "size": 153765
+      },
+      {
+        "path": "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
+        "sha256": "be35528be2f32b7a51f2ed640eb5ae29f5a97f49b4c1b15c01a2dff69a083e38",
+        "size": 2611
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "89d9d864941183fc4031d6732b7e08b865e2f5fad776b2a5b33aa89fae1e33eb"
+  },
+  "source_fingerprint": "afc6e7d630356047fac47e244f8be63b24a0a3b9216cdbd7c2b4a7feb491cf3d",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a57496fd0652ae145",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a57496fd0652ae145",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/transcript-differential-a57496fd0652ae145.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-skill-docs-adjudication-refresh/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a57496fd0652ae145",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
