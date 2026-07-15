@@ -127,6 +127,21 @@ test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and
     driftError.text(),
     new RegExp(`vibepro execute watch ${fixture.source} --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`)
   );
+  const authorityRaw = await readFile(authorityFile, 'utf8');
+  await writeFile(authorityFile, `${JSON.stringify({ ...created, story_id: 'story-safe; touch /tmp/copied-command' }, null, 2)}\n`);
+  const tamperedError = capture();
+  const tamperedResult = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', RUN_ID
+  ], { stdout: capture(), stderr: tamperedError, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(tamperedResult.exitCode, 2);
+  assert.match(
+    tamperedError.text(),
+    new RegExp(`vibepro execute watch ${fixture.source} --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`)
+  );
+  assert.doesNotMatch(tamperedError.text(), /story-safe; touch/);
+  await writeFile(authorityFile, authorityRaw);
   const repaired = await session.watch(fixture.source, {
     storyId: STORY_ID,
     runId: RUN_ID,
@@ -639,6 +654,14 @@ test('GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact r
     explicitOutput,
     new RegExp(`vibepro execute watch '/tmp/VibePro user'\\\\''s repo' --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`)
   );
+
+  const quotedIdentifiers = renderGuardedRunError(new GuardedRunError(
+    'linked_copy_out_of_sync',
+    'Run authority and linked mirror are out of sync.',
+    { run_id: "run-safe; touch /tmp/run", story_id: "story-safe; touch /tmp/story" }
+  ));
+  assert.match(quotedIdentifiers, /--story-id 'story-safe; touch \/tmp\/story'/);
+  assert.match(quotedIdentifiers, /--run-id 'run-safe; touch \/tmp\/run'/);
 });
 
 test('GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it', async (t) => {
