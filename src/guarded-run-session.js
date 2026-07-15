@@ -942,7 +942,7 @@ function normalizeManagedBinding(managed = {}, sourceRoot) {
     status: managed.status ?? null,
     required: managed.required ?? managed.mode === 'required',
     mode: managed.mode ?? (managed.required ? 'required' : 'preferred'),
-    source_repo: path.resolve(managed.source_repo ?? sourceRoot),
+    source_repo: path.resolve(sourceRoot ?? managed.source_repo),
     source_relative_path: managed.source_relative_path ?? null,
     path: managed.path ? path.resolve(managed.path) : null,
     relative_path: managed.relative_path ?? null,

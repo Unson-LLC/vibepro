@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -118,6 +118,33 @@ test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and
     errorWithCode('worktree_unavailable')
   );
   assert.equal((await readFile(mirrorFile, 'utf8')).includes(RUN_ID), true);
+});
+
+test('GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonically and remains an allowed control root', async (t) => {
+  const fixture = await createFixture(t, {
+    mode: 'preferred',
+    managedStatus: 'created',
+    preexistingLegacy: true,
+    sourceAlias: true
+  });
+  await writeLegacy(fixture.managed, fixture.legacy);
+  const session = fixture.session();
+  const created = await session.run(fixture.sourceAlias, { storyId: STORY_ID });
+
+  assert.equal(created.managed_worktree.source_repo, fixture.source);
+  assert.deepEqual(await session.status(fixture.sourceAlias, { storyId: STORY_ID, runId: RUN_ID }), created);
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+  assert.deepEqual(await session.watch(fixture.sourceAlias, { storyId: STORY_ID, runId: RUN_ID }), created);
+  assert.deepEqual(await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+
+  await session.transition(fixture.managed, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked'
+  });
+  assert.equal((await session.resume(fixture.sourceAlias, { storyId: STORY_ID, runId: RUN_ID })).status, 'running');
+  assert.equal((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).status, 'cancelled');
 });
 
 test('GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind', async (t) => {
@@ -485,6 +512,49 @@ test('GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON an
   assert.equal(humanResult.exitCode, 0);
   assert.match(humanOut.text(), new RegExp(`run_id: ${created.run_id}`));
   assert.equal(await readFile(mirror, 'utf8'), await readFile(fixture.runFile(fixture.managed, created.run_id), 'utf8'));
+});
+
+test('GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const commands = [
+    ['run'],
+    ['status'],
+    ['status', '--run-id', RUN_ID],
+    ['resume'],
+    ['cancel'],
+    ['start'],
+    ['next'],
+    ['reconcile'],
+    ['merge']
+  ];
+
+  for (const [index, commandArgs] of commands.entries()) {
+    const json = index % 2 === 0;
+    const stdout = capture();
+    const stderr = capture();
+    const result = await runCli([
+      'execute', commandArgs[0], fixture.source, ...commandArgs.slice(1),
+      '--story-id', STORY_ID,
+      '--repair-linked-copy',
+      ...(json ? ['--json'] : [])
+    ], {
+      stdout,
+      stderr,
+      guardedRunDependencies: { service: {} }
+    });
+    assert.equal(result.exitCode, 2, commandArgs.join(' '));
+    assert.equal(stdout.text(), '', commandArgs.join(' '));
+    if (json) {
+      assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'repair_linked_copy_not_supported');
+    } else {
+      assert.match(stderr.text(), /code: repair_linked_copy_not_supported/);
+      assert.match(stderr.text(), /supported only by execute watch/);
+    }
+  }
+  await assert.rejects(
+    readdir(path.join(fixture.source, '.vibepro', 'executions')),
+    (error) => error.code === 'ENOENT'
+  );
 });
 
 test('GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run', async (t) => {
@@ -922,6 +992,8 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
+  assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
+  assert.doesNotMatch(usage, /--repair-linked-copy/);
 });
 
 test('GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree', async (t) => {
@@ -1024,19 +1096,22 @@ async function createFixture(t, options = {}) {
   t.after(() => rm(root, { recursive: true, force: true }));
   const source = path.join(root, 'source');
   const managed = path.join(root, 'managed');
+  const sourceAlias = path.join(root, 'source-alias');
   await Promise.all([mkdir(source, { recursive: true }), mkdir(managed, { recursive: true })]);
+  if (options.sourceAlias) await symlink(source, sourceAlias, 'dir');
   await Promise.all([writeConfig(source), writeConfig(managed)]);
   const identities = new Map([
     [source, { root_realpath: source, git_dir_realpath: path.join(root, 'git', 'source'), head_sha: 'a'.repeat(40) }],
     [managed, { root_realpath: managed, git_dir_realpath: path.join(root, 'git', 'managed'), head_sha: 'a'.repeat(40) }]
   ]);
+  if (options.sourceAlias) identities.set(sourceAlias, identities.get(source));
   const mode = options.mode ?? 'disabled';
   const managedStatus = options.managedStatus ?? (mode === 'disabled' ? 'disabled' : 'created');
   const binding = {
     status: managedStatus,
     required: mode === 'required',
     mode,
-    source_repo: source,
+    source_repo: options.sourceAlias ? sourceAlias : source,
     source_relative_path: null,
     path: mode === 'disabled' || managedStatus === 'unavailable' ? null : managed,
     relative_path: mode === 'disabled' ? null : '.worktrees/vibepro/story-guarded-run-test',
@@ -1063,6 +1138,7 @@ async function createFixture(t, options = {}) {
   const fixture = {
     root,
     source,
+    sourceAlias: options.sourceAlias ? sourceAlias : source,
     managed,
     legacy,
     disabledBinding: normalizeExpectedBinding(binding),
