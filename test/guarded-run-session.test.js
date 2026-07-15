@@ -818,6 +818,72 @@ test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed 
   assert.equal(JSON.parse(missingValueError.text()).stop_reason.code, 'invalid_run_id');
 });
 
+test('GRS-S-1 GRS-S-9 C-001 C-006 execute run rejects supplied valid and invalid Run ids before every side effect', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const baseDependencies = fixture.dependencies();
+  let identityCalls = 0;
+  let bootstrapCalls = 0;
+  const dependencies = {
+    ...baseDependencies,
+    resolveGitIdentity: async (...args) => {
+      identityCalls += 1;
+      return baseDependencies.resolveGitIdentity(...args);
+    },
+    startExecution: async (...args) => {
+      bootstrapCalls += 1;
+      return baseDependencies.startExecution(...args);
+    }
+  };
+  const session = createGuardedRunSession(dependencies);
+
+  await assert.rejects(
+    session.run(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('run_id_not_allowed')
+  );
+  await assert.rejects(
+    session.run(fixture.source, { storyId: STORY_ID, runId: 'run-%2fescape' }),
+    errorWithCode('invalid_run_id')
+  );
+
+  const humanStdout = capture();
+  const humanStderr = capture();
+  const validResult = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', RUN_ID
+  ], {
+    stdout: humanStdout,
+    stderr: humanStderr,
+    guardedRunDependencies: dependencies
+  });
+  assert.equal(validResult.exitCode, 2);
+  assert.match(humanStderr.text(), /run_id_not_allowed/);
+  assert.match(humanStderr.text(), /execute run generates its Run id/);
+  assert.equal(humanStdout.text(), '');
+
+  const jsonStdout = capture();
+  const jsonStderr = capture();
+  const invalidResult = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', 'invalid',
+    '--json'
+  ], {
+    stdout: jsonStdout,
+    stderr: jsonStderr,
+    guardedRunDependencies: dependencies
+  });
+  assert.equal(invalidResult.exitCode, 2);
+  assert.equal(JSON.parse(jsonStderr.text()).stop_reason.code, 'invalid_run_id');
+  assert.equal(jsonStdout.text(), '');
+  assert.equal(identityCalls, 0);
+  assert.equal(bootstrapCalls, 0);
+  await assert.rejects(
+    readdir(path.join(fixture.source, '.vibepro', 'executions')),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
 test('GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const stdout = capture();

@@ -142,6 +142,13 @@ export function renderGuardedRunError(error, options = {}) {
 }
 
 async function createRun(deps, repoRoot, options) {
+  if (options.runId != null) {
+    const suppliedRunId = requireRunId(options.runId);
+    throw contractError('run_id_not_allowed', 'execute run generates its Run id; --run-id is not accepted.', {
+      run_id: suppliedRunId,
+      command: 'execute run'
+    });
+  }
   const storyId = requireStoryId(options.storyId);
   const caller = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
   await assertRegisteredStory(deps, caller.root_realpath, storyId);
