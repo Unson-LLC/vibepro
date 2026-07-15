@@ -4014,12 +4014,26 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
           {
             "kind": "spec",
             "path": "docs/specs/story-vibepro-skills-claude-md-refresh.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -4035,8 +4049,22 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-skill-docs-adjudication-refresh.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-skills-claude-md-refresh.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-skill-docs-adjudication-refresh.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -4445,7 +4473,31 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-evidence-adjudication-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-evidence-adjudication-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-evidence-adjudication-gate.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-release-surface-guard",
@@ -4495,7 +4547,31 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-release-surface-guard.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-release-surface-guard.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-release-surface-guard.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-scanner-inconclusive-coverage",
@@ -4545,7 +4621,31 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-scanner-inconclusive-coverage.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-scanner-inconclusive-coverage.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-scanner-inconclusive-coverage.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-judgment-dag-adjudication",
@@ -4586,7 +4686,24 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-judgment-dag-adjudication.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-judgment-dag-adjudication.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-gate-evidence-edge-robustness",
@@ -4627,8 +4744,25 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-gate-evidence-edge-robustness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-gate-evidence-edge-robustness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-13T05:40:22.879Z"
+  "updated_at": "2026-07-15T02:01:44.624Z"
 }

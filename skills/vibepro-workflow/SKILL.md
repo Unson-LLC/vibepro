@@ -65,12 +65,13 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-19. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
-20. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
-21. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
-22. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
-23. Merge through `vibepro execute merge <repo> --story-id <id> --strategy merge` (`--infer-session` or `--session-id auto` attaches session cost accounting); do not use raw GitHub merge as the normal VibePro completion path. `execute merge` writes `pr-merge.json` and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
-24. After merge, close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
+19. Close the adjudication gates before PR create when `pr prepare` reports `gate:evidence_adjudication` or `gate:judgment_dag_adjudication` unresolved: `vibepro adjudicate prepare <repo> --id <story-id>` (and `--judgment`), dispatch the generated request to an **independent fresh-context subagent** (not the implementing agent), record verdicts with `vibepro adjudicate record`, and close `not_verifiable_by_automation` / `needs_human_judgment` entries with accepted decision records. Verdicts are head-bound and fail closed; see `vibepro-gate-evidence` for the full playbook.
+20. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
+21. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
+22. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`. When the Release Surface Guard blocks a release command, restore readiness via `pr prepare` instead of working around the guard (see Release Surface Guard below).
+23. After the PR exists, wait for remote checks, import CI evidence with `vibepro verify import-ci`, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
+24. Merge through `vibepro execute merge <repo> --story-id <id> --strategy merge` (`--infer-session` or `--session-id auto` attaches session cost accounting); do not use raw GitHub merge as the normal VibePro completion path. `execute merge` writes `pr-merge.json` and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
+25. After merge, close the audit loop when asked about traceability, cost, or ROI: `vibepro audit replay <repo> --story-id <id>`, `vibepro audit session-cost <repo> --story-id <id>`, `vibepro trace backfill <repo>` / `vibepro trace declare <repo> --story-id <id> --lifecycle <state>`, and `vibepro usage report <repo> --subagent-roi --gate-roi`.
 
 ## Human Artifact Language
 
@@ -86,6 +87,13 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 - Run implementation, verification, review, PR preparation, and PR creation from the reported worktree. Do not claim VibePro created a worktree unless the command output records that state.
 - Create branches from inside the worktree. Running `git switch -c` from another checkout (for example the canonical repo) creates the branch in the wrong place.
 
+## Release Surface Guard
+
+- `vibepro guard` blocks release-surface commands (`gh pr create`, `gh pr merge`, `fly deploy`, `vercel deploy|--prod`, `npm publish`, pushes to protected branches) while the selected story is not `ready_for_pr_create=true`. Readiness that cannot be evaluated **fails closed**: release surfaces stay blocked.
+- Commands: `vibepro guard check [--command <cmd>] [--pre-push <remote>] [--pretooluse]`, `vibepro guard install [--claude]` (git pre-push hook / Claude Code PreToolUse hook), `vibepro guard status`, `vibepro guard uninstall`.
+- When blocked, the correct response is to close the blocking gates and rerun `vibepro pr prepare` — not to reroute the release through another surface.
+- Bypass exists only for genuine emergencies: set `VIBEPRO_GUARD_BYPASS="<reason>"`; the bypass is appended to `.vibepro/guard/bypass-log.jsonl` with command, story, head SHA, and timestamp for audit. Never bypass silently or without a real reason.
+
 ## Context Economy
 
 - Do not read full PR artifacts into agent context first. Start from `vibepro pr prepare <repo> --story-id <id> --summary-json` or a limited `--view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>`.
@@ -100,6 +108,9 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 - Do not skip Story -> Architecture -> Spec ordering when the task is a refactor.
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
 - Do not ignore unresolved Gates. Add evidence, split the PR, block, or record a waiver reason.
+- Do not treat an `inconclusive` scanner status as a pass. Zero scanned targets means nothing was examined; only `not_applicable` is a legitimate out-of-scope resolution.
+- Do not record adjudication verdicts from the implementing agent. `gate:evidence_adjudication` and `gate:judgment_dag_adjudication` require an independent fresh-context subagent, and verdicts are head-bound (fail closed on missing or mismatched `head_commit`).
+- Do not work around the Release Surface Guard. A blocked release surface means gate readiness is not real yet; bypass only with a recorded `VIBEPRO_GUARD_BYPASS` reason in a genuine emergency.
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not treat Agent Review Gate as optional. When it is unresolved, the coordinator must prepare, dispatch, record, and rerun the VibePro review flow before calling the work complete.
 - Do not record a passing Agent Review result without Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`). Manual `pass` records are audit notes, not enough to satisfy `gate:agent_review`.
@@ -173,6 +184,8 @@ Before saying VibePro confirmed the work, name the exact VibePro command or arti
 - `docs/management/audit-artifacts/<story-id>/`: canonical persisted audit artifacts written at merge time.
 - `.vibepro/uiux/<story-id>/`: uiux intake, map, evidence, and prepare artifacts for intent-first UI/UX work.
 - `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`: required parallel subagent dispatch instructions when Agent Review Gate is unresolved.
+- `.vibepro/adjudication/<story-id>/adjudication.json` / `judgment-adjudication.json`: head-bound adjudication verdicts for AC clauses and judgment items; `adjudication-request.md` / `judgment-adjudication-request.md` are the subagent dispatch requests.
+- `.vibepro/guard/bypass-log.jsonl`: audit log of Release Surface Guard bypasses.
 - `.vibepro/checks/<pack>/<run-id>/check.json`: purpose-level diagnosis package evidence.
 - `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.
 - `.vibepro/checks/ui/<run-id>/check.json`: UI check evidence, including `flow_design.interactive_contract_hits`.
