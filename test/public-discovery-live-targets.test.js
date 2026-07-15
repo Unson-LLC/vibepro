@@ -191,8 +191,9 @@ test('PDLT-AC-002/003: live mode scans root and same-origin sitemap pages only',
   assert.equal(scan.scan_coverage.omission_summary.cross_origin, 1);
   assert.equal(scan.scan_coverage.scanned_count, 2);
   assert.equal(scan.scan_coverage.status, 'pass');
-  assert.equal(requests.includes('https://site.example/guide'), true);
-  assert.equal(requests.some((url) => url.includes('external.example')), false);
+  const requestUrls = requests.map((request) => new URL(request));
+  assert.equal(requestUrls.some((url) => url.origin === 'https://site.example' && url.pathname === '/guide'), true);
+  assert.equal(requestUrls.some((url) => url.hostname === 'external.example'), false);
   assert.equal(scan.route_targets.some((target) => target.file === '/guide'), true);
   assert.equal(requestOptions.every((options) => options.method === 'GET' && options.redirect === 'manual'), true);
 });
