@@ -551,6 +551,24 @@ test('GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non
       assert.match(stderr.text(), /supported only by execute watch/);
     }
   }
+
+  const unknownStdout = capture();
+  const unknownStderr = capture();
+  const unknownResult = await runCli([
+    'execute', 'nonsense', fixture.source,
+    '--story-id', STORY_ID,
+    '--repair-linked-copy',
+    '--json'
+  ], {
+    stdout: unknownStdout,
+    stderr: unknownStderr,
+    guardedRunDependencies: { service: {} }
+  });
+  assert.equal(unknownResult.exitCode, 1);
+  assert.equal(unknownStdout.text(), '');
+  assert.match(unknownStderr.text(), /Unknown execute command: nonsense/);
+  assert.doesNotMatch(unknownStderr.text(), /repair_linked_copy_not_supported/);
+
   await assert.rejects(
     readdir(path.join(fixture.source, '.vibepro', 'executions')),
     (error) => error.code === 'ENOENT'

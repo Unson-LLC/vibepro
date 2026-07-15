@@ -2095,7 +2095,13 @@ export async function runCli(argv, io = {}) {
         runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
         repairLinkedCopy: hasFlag(rest, '--repair-linked-copy')
       };
-      if (runOptions.repairLinkedCopy && subcommand !== 'watch') {
+      const knownExecuteSubcommands = new Set([
+        'run', 'status', 'watch', 'resume', 'cancel',
+        'start', 'next', 'reconcile', 'merge'
+      ]);
+      if (runOptions.repairLinkedCopy
+          && knownExecuteSubcommands.has(subcommand)
+          && subcommand !== 'watch') {
         const error = new GuardedRunError(
           'repair_linked_copy_not_supported',
           '--repair-linked-copy is supported only by execute watch.',

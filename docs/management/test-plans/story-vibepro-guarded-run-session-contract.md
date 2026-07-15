@@ -18,7 +18,7 @@ The Run Session module is covered primarily by deterministic unit/integration te
 | `execute watch --repair-linked-copy` | explicit + omitted | human + JSON | source + managed + repository/source-fallback | mirror restored from authority with no Run transition, or typed nonmutating `linked_copy_not_configured` |
 | `execute resume` | explicit + omitted | human + JSON | recorded source control, managed authority, unmanaged-secondary, wrong, missing, stale-HEAD worktree | same Run and incremented attempt from either allowed managed control root, or nonmutating typed stop |
 | `execute cancel` | explicit + omitted | human + JSON | source + managed + missing authority | cancelled transition; after recognized migration reaches canonical `0.1.0`, repeated cancel preserves artifact bytes and transition count |
-| non-`watch` `execute` + `--repair-linked-copy` | explicit option | alternating human + JSON | all execute subcommands | typed exit-2 `repair_linked_copy_not_supported` before dispatch, identity, reads, or mutation; never a silent no-op |
+| non-`watch` `execute` + `--repair-linked-copy` | explicit option | alternating human + JSON | every recognized execute subcommand plus unknown-command fallback | recognized commands return typed exit-2 `repair_linked_copy_not_supported` before dispatch, identity, reads, or mutation; an unknown command retains its established unknown-command error and exit 1; never a silent no-op |
 
 ## State and persistence cases
 
