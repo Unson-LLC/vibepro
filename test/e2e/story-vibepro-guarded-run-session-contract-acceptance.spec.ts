@@ -19,7 +19,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass 45\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
+  assert.match(result.stdout, /# pass 47\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
   assert.match(result.stdout, /# fail 0\b/, 'focused contract and process-replay suites must have no failures');
 
   const ac1 = 'AC-1 execute run creates a Run with run_id, story_id, target, and autonomy_mode; disabled managed-worktree mode uses the source repository as repository authority';
@@ -38,7 +38,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
 
   const ac5 = 'AC-5 unknown transitions, stale HEAD, and resume from another worktree are rejected with a typed stop reason';
   assert.match(result.stdout, /resume fails closed on a stale authoritative HEAD without mutating the Run/, ac5);
-  assert.match(result.stdout, /artifact path identity mismatches fail without mutation/, ac5);
+  assert.match(result.stdout, /resume from another worktree fails closed without mutating either artifact/, ac5);
   assert.match(result.stdout, /unknown persisted status and transition target fail closed without mutation/, ac5);
 
   const ac6 = 'AC-6 existing execute start, status, next, and reconcile behavior and legacy state artifacts remain compatible';

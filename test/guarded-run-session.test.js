@@ -760,6 +760,25 @@ test('GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD 
   assert.equal(await readFile(fixture.runFile(fixture.source, RUN_ID), 'utf8'), before);
 });
 
+test('GRS-S-5 resume from another worktree fails closed without mutating either artifact', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const authorityArtifact = fixture.runFile(fixture.source, RUN_ID);
+  await persistBlockedState(authorityArtifact, '2026-07-15T01:03:00.000Z');
+  const authorityBefore = await readFile(authorityArtifact, 'utf8');
+  const copiedArtifact = fixture.runFile(fixture.managed, RUN_ID);
+  await mkdir(path.dirname(copiedArtifact), { recursive: true });
+  await writeFile(copiedArtifact, authorityBefore);
+
+  await assert.rejects(
+    session.resume(fixture.managed, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('worktree_mismatch')
+  );
+  assert.equal(await readFile(authorityArtifact, 'utf8'), authorityBefore);
+  assert.equal(await readFile(copiedArtifact, 'utf8'), authorityBefore);
+});
+
 test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
@@ -1211,6 +1230,38 @@ test('GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation', 
     );
     assert.equal(await readFile(artifact, 'utf8'), raw);
   }
+});
+
+test('GRS-S-9 malformed Story catalog and legacy JSON fail closed without mutating state', async (t) => {
+  const catalogFixture = await createFixture(t, { mode: 'disabled' });
+  const malformedCatalog = '{"brainbase":';
+  const catalogArtifact = path.join(catalogFixture.source, '.vibepro', 'config.json');
+  await writeFile(catalogArtifact, malformedCatalog);
+  await assert.rejects(
+    catalogFixture.session().run(catalogFixture.source, { storyId: STORY_ID }),
+    errorWithCode('invalid_story_id')
+  );
+  assert.equal(await readFile(catalogArtifact, 'utf8'), malformedCatalog);
+  await assert.rejects(
+    readdir(path.join(catalogFixture.source, '.vibepro', 'executions')),
+    (error) => error.code === 'ENOENT'
+  );
+
+  const legacyFixture = await createFixture(t, { mode: 'disabled' });
+  const legacySession = legacyFixture.session();
+  await legacySession.run(legacyFixture.source, { storyId: STORY_ID });
+  const runArtifact = legacyFixture.runFile(legacyFixture.source, RUN_ID);
+  const runBefore = await readFile(runArtifact, 'utf8');
+  const legacyArtifact = path.join(legacyFixture.source, '.vibepro', 'executions', STORY_ID, 'state.json');
+  const malformedLegacy = '{"managed_worktree":';
+  await writeFile(legacyArtifact, malformedLegacy);
+
+  await assert.rejects(
+    legacySession.status(legacyFixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('invalid_state')
+  );
+  assert.equal(await readFile(legacyArtifact, 'utf8'), malformedLegacy);
+  assert.equal(await readFile(runArtifact, 'utf8'), runBefore);
 });
 
 test('GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating', async (t) => {
