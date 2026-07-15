@@ -18,7 +18,8 @@ Use this Skill when recording `vibepro verify record` / `vibepro review record` 
 1. Finalize the entire tree (see Commit Ordering Rule below).
 2. Record verification evidence with structured observations and strong artifacts.
 3. Run the Agent Review lifecycle once, in order, with honest inspection inputs.
-4. `pr prepare --summary-json`, resolve remaining gate ids using the troubleshooting patterns, then `pr create`.
+4. Run the adjudication gates (evidence + judgment DAG) with an independent fresh-context subagent.
+5. `pr prepare --summary-json`, resolve remaining gate ids using the troubleshooting patterns, then `pr create`.
 
 ## Commit Ordering Rule (most important)
 
@@ -48,6 +49,21 @@ Order per role: `review prepare` → `review start` (with the **real** subagent 
 - `vibepro review repair <repo> --story-id <id>` generates the prepare→start→close→record command sequence for incomplete review evidence.
 - Subagent dispatch prompt must state explicitly: work autonomously without spawning further agents, do not run the full test suite yourself (read the coordinator's run logs instead), and the final message of this run must be the verdict JSON only. Omitting these produces subagents that return no verdict.
 - After a rebase, a differential re-review (one subagent covering multiple roles over the delta scope) is a valid fast path.
+
+## Adjudication Gates (`gate:evidence_adjudication` / `gate:judgment_dag_adjudication`)
+
+Token matching and record existence are no longer the final word: two required gates re-judge the *meaning* of the evidence, and both must be closed by an **independent fresh-context subagent — never the implementing agent**.
+
+- **Evidence adjudication** judges whether the recorded evidence actually demonstrates each acceptance-criteria clause. Flow: `vibepro adjudicate prepare . --id <story-id>` generates `.vibepro/adjudication/<story-id>/adjudication-request.md`; dispatch it to the independent subagent; record each clause with `vibepro adjudicate record . --id <story-id> --clause <clause-id> --verdict <v> --reason <text> --agent-system codex|claude_code --agent-id <id>`.
+- Evidence verdicts: `demonstrated` (the observation reaches the outcome with no inferential leap), `not_demonstrated` (string/field-existence checks, unrelated passing tests, or ungrounded observations — the gate **fails** until better evidence exists), `not_verifiable_by_automation` (needs human observation; choosing it honestly is the correct outcome, not a penalty).
+- **Judgment DAG adjudication** re-judges spine/axes/failure-mode items that were mechanically consumed by token matching or decision records. Same flow with `--judgment`: `vibepro adjudicate prepare . --id <story-id> --judgment`, then `vibepro adjudicate record . --id <story-id> --judgment --item <item-id> --verdict <v> --reason <text> ...`. Verdicts: `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold — gate fails), `needs_human_judgment`.
+- Human closure: `not_verifiable_by_automation` clauses and `needs_human_judgment` items close only with an accepted decision record carrying **both** reason and artifact: `vibepro decision record . --id <story-id> --type needs_review --source gate:evidence_adjudication:<clause-id> --status accepted --reason <human-observation> --artifact <evidence-path>` (judgment side: `--source gate:judgment_dag_adjudication:<item-id>`).
+- Verdicts are head-bound and **fail closed**: a verdict without a recorded `head_commit`, or evaluated when the current HEAD is unknown, never counts as fresh. Any commit after recording invalidates all verdicts — adjudicate after the tree is final, in the same pass as (after) Agent Review.
+- Stories with no AC clauses / routes with no active judgment items resolve as explicit `not_applicable`, which is not a pass.
+
+## Scanner Conclusiveness (`inconclusive` vs `not_applicable`)
+
+Scanners that examine zero targets no longer report `pass`. `inconclusive` means the scanner applied to the story but discovered no scan targets — absence of coverage is not evidence of a pass; give the scanner real targets or fix discovery before treating the gate as closed. `not_applicable` means the scanner is out of scope for the story. Never present an `inconclusive` result as a passing gate.
 
 ## Architecture / Spec Write
 
@@ -82,6 +98,8 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 - "A quick manual review note will satisfy the review gate." Required Agent Review needs the full lifecycle with subagent provenance, `--agent-closed`, and inspection inputs.
 - "Rewording the summary should clear the gate." Gates match observation text and artifacts; add verifiable facts, not phrasing.
 - "I'll write the Spec first so the gates are ready." `spec write` validates that code_refs/test_refs exist; register it after or with implementation.
+- "The judgment-axis tokens matched, so the item is closed." Token matching only feeds the mechanical layer; `gate:judgment_dag_adjudication` can still rule the item `judged_unsound` against the actual diff.
+- "The scanner found nothing, so the gate passes." Zero scanned targets is `inconclusive`, not a pass.
 
 ## Red Flags
 
@@ -90,6 +108,8 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 - A `pass` verify record with no artifact on a judgment-spine-gated story.
 - Editing files while a test suite is running.
 - Resolving a blocked gate by rewording summaries instead of adding verifiable observations or artifacts.
+- Adjudication verdicts recorded by the implementing agent itself, or verdicts whose `head_commit` no longer matches the current head.
+- An `inconclusive` scanner status reported as a pass.
 
 ## Verification
 
