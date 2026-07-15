@@ -3,33 +3,36 @@ layout: home
 
 hero:
   name: VibePro
-  text: AI駆動PRを安全に進めるためのマニュアル
-  tagline: CodexやClaude Codeが作る変更を、GitHub PRやリリース手順へ進める前に、意図・仕様・検証・レビュー証跡で確認するCLIです。
+  text: プロダクトジャーニーを可視化する
+  tagline: AIエージェントの変更を、証拠付きで安全に出荷できるPRへ変えるリポジトリローカル制御基盤。人間が入口と出口を握ります。
   image:
     src: /assets/vibepro-header.png
     alt: VibePro
   actions:
     - theme: brand
-      text: マニュアルを読む
+      text: VibeProを理解する
       link: /ja/guide/what-is-vibepro
     - theme: alt
-      text: 初回チェックを走らせる
-      link: /ja/guide/getting-started
+      text: 制御ループを見る
+      link: /ja/guide/control-loop
     - theme: alt
-      text: CLIの使い方
-      link: /ja/reference/cli
+      text: Betaを導入する
+      link: /ja/guide/getting-started
 
 features:
-  - title: コードより先に意図を固定する
-    details: AIエージェントが変更を始める前に、作業の目的、設計上の前提、満たすべき仕様を明示します。
-  - title: リスクに応じてゲートを広げる
-    details: 画面操作、実行環境、API契約、データ、リリース、エージェント運用に関わる変更では、確認すべき項目を増やします。
-  - title: レビュー証跡を残す
-    details: PR文脈、Gate状態、分割計画、検証記録、エージェントレビュー結果を `.vibepro/` に保存します。
+  - title: 意図を出荷契約に変える
+    details: Story、Architecture、Specで、目的、境界、受け入れ条件、rollback前提をコードより先に確認できる形へ固定します。
+  - title: リスクに応じて証跡を広げる
+    details: 変更が触る面に合わせて、検証、独立レビュー、adjudication、release guardを追加します。
+  - title: 出荷後まで監査できる
+    details: PR準備、CI再取込、merge実行、canonical audit、ROIレポートを現在のcommitに結びつけ、チャット履歴だけに残しません。
 ---
 
-## このマニュアルの位置づけ
+## 役割から読む
 
-このサイトはVibeProの入口です。VibeProの考え方、通常のPR作成手順、生成されるファイル、ゲートに止められた時に何を見るべきかを説明します。
+- **実装者:** [インストールと初回実行](/ja/guide/getting-started) → [制御ループ](/ja/guide/control-loop) → [Managed Execution](/ja/guide/managed-execution)
+- **Reviewer / adjudicator:** [エージェントレビュー](/ja/guide/agent-review) → [安全モデル](/ja/guide/safety-model)
+- **Release operator:** [リリースと監査](/ja/guide/release-and-audit) → [CLIリファレンス](/ja/reference/cli)
+- **Engineering manager:** [VibeProとは](/ja/guide/what-is-vibepro) → [機能マップ](/ja/guide/feature-map) → [リリースと監査](/ja/guide/release-and-audit)
 
-Cloudflare Pagesは現在の公開先です。VibeProの概念そのものはホスティング環境に依存しません。公開・デプロイに関する話だけを [Cloudflare Pages](/ja/reference/cloudflare-pages) に分けています。
+このマニュアルはhosting platformに依存しません。Cloudflare Pagesは現在の公開先にすぎず、運用リファレンスに分離しています。

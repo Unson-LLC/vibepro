@@ -1,8 +1,48 @@
+import { execFileSync } from 'node:child_process';
+
+const siteUrl = 'https://vibepro.pages.dev';
+const sourceCommit = resolveSourceCommit();
+const productDescription = 'Repository-local control plane for evidence-backed, safe AI-agent delivery';
+
 export default {
   title: 'VibePro',
-  description: 'Product-intent gates and review evidence for AI coding agents',
+  description: productDescription,
   cleanUrls: true,
-  srcExclude: ['management/**', 'playbooks/story-engineering-playbook/features/_feature-template/**'],
+  sitemap: { hostname: siteUrl },
+  srcExclude: [
+    'architecture/**',
+    'contracts/**',
+    'frames/**',
+    'management/**',
+    'marketing/**',
+    'playbooks/**',
+    'specs/**',
+    'static_site/**',
+    'stories/**'
+  ],
+  head: [
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:site_name', content: 'VibePro Manual' }],
+    ['meta', { property: 'og:title', content: 'VibePro — Evidence-backed AI delivery control plane' }],
+    ['meta', { property: 'og:description', content: productDescription }],
+    ['meta', { property: 'og:image', content: `${siteUrl}/assets/vibepro-header.png` }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'VibePro — Evidence-backed AI delivery control plane' }],
+    ['meta', { name: 'twitter:description', content: productDescription }],
+    ['meta', { name: 'twitter:image', content: `${siteUrl}/assets/vibepro-header.png` }],
+    ['meta', { name: 'vibepro-source-commit', content: sourceCommit }],
+    ['script', { type: 'application/ld+json' }, JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'VibePro',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'macOS, Linux, Windows',
+      softwareVersion: '0.1.0-beta.0',
+      url: siteUrl,
+      codeRepository: 'https://github.com/Unson-LLC/vibepro',
+      license: 'https://www.apache.org/licenses/LICENSE-2.0'
+    })]
+  ],
   themeConfig: {
     siteTitle: 'VibePro Manual',
     nav: [
@@ -43,7 +83,7 @@ export default {
       text: 'Edit this page on GitHub'
     },
     footer: {
-      message: 'Released under the Apache-2.0 License.',
+      message: `Apache-2.0 · docs source ${sourceCommit}`,
       copyright: 'Copyright Unson LLC'
     }
   },
@@ -75,7 +115,7 @@ export default {
           text: 'GitHubでこのページを編集'
         },
         footer: {
-          message: 'Apache-2.0 Licenseで公開されています。',
+          message: `Apache-2.0 · docs source ${sourceCommit}`,
           copyright: 'Copyright Unson LLC'
         },
         outline: { label: 'このページ' },
@@ -95,12 +135,15 @@ function guideSidebar(locale) {
     locale === 'ja'
       ? {
           start: 'はじめに',
-          ops: 'VibeProを運用する',
+          loop: '制御ループ',
+          workflows: 'ワークフロー',
+          safety: '安全と出荷',
           overview: '概要',
           what: 'VibeProとは',
           gettingStarted: 'インストールと初回実行',
           concepts: '基本概念',
           features: '機能マップ',
+          controlLoop: '証拠付き出荷の制御ループ',
           workflow: 'AI PRの進め方',
           gates: 'ゲートと証跡',
           impact: 'Impact Context連携',
@@ -108,16 +151,22 @@ function guideSidebar(locale) {
           agentReview: 'エージェントレビュー',
           checks: 'Check Packs',
           verification: '検証・判断・CI証跡',
-          execution: 'チェックポイントと実行'
+          execution: 'チェックポイントと実行',
+          managed: 'Managed Execution',
+          safetyModel: '安全モデル',
+          releaseAudit: 'リリースと監査'
         }
       : {
           start: 'Start Here',
-          ops: 'Operating VibePro',
+          loop: 'Control Loop',
+          workflows: 'Workflows',
+          safety: 'Safety and Shipping',
           overview: 'Overview',
           what: 'What VibePro Is',
           gettingStarted: 'Install and First Run',
           concepts: 'Core Concepts',
           features: 'Feature Map',
+          controlLoop: 'Guarded Delivery Control Loop',
           workflow: 'AI PR Workflow',
           gates: 'Gates and Evidence',
           impact: 'Impact Context Integrations',
@@ -125,7 +174,10 @@ function guideSidebar(locale) {
           agentReview: 'Agent Review',
           checks: 'Check Packs',
           verification: 'Verification, Decisions, and CI',
-          execution: 'Checkpoints and Execution'
+          execution: 'Checkpoints and Execution',
+          managed: 'Managed Execution',
+          safetyModel: 'Safety Model',
+          releaseAudit: 'Release and Audit'
         };
 
   return [
@@ -140,16 +192,30 @@ function guideSidebar(locale) {
       ]
     },
     {
-      text: labels.ops,
+      text: labels.loop,
+      items: [
+        { text: labels.controlLoop, link: `${prefix}/guide/control-loop` },
+        { text: labels.traceability, link: `${prefix}/guide/story-spec-traceability` },
+        { text: labels.verification, link: `${prefix}/guide/verification-decisions-ci` },
+        { text: labels.agentReview, link: `${prefix}/guide/agent-review` },
+        { text: labels.gates, link: `${prefix}/guide/gates-and-evidence` }
+      ]
+    },
+    {
+      text: labels.workflows,
       items: [
         { text: labels.workflow, link: `${prefix}/guide/ai-pr-workflow` },
-        { text: labels.gates, link: `${prefix}/guide/gates-and-evidence` },
         { text: labels.impact, link: `${prefix}/guide/graphify-impact` },
-        { text: labels.traceability, link: `${prefix}/guide/story-spec-traceability` },
-        { text: labels.agentReview, link: `${prefix}/guide/agent-review` },
         { text: labels.checks, link: `${prefix}/guide/check-packs` },
-        { text: labels.verification, link: `${prefix}/guide/verification-decisions-ci` },
-        { text: labels.execution, link: `${prefix}/guide/checkpoints-and-execution` }
+        { text: labels.execution, link: `${prefix}/guide/checkpoints-and-execution` },
+        { text: labels.managed, link: `${prefix}/guide/managed-execution` }
+      ]
+    },
+    {
+      text: labels.safety,
+      items: [
+        { text: labels.safetyModel, link: `${prefix}/guide/safety-model` },
+        { text: labels.releaseAudit, link: `${prefix}/guide/release-and-audit` }
       ]
     }
   ];
@@ -168,4 +234,18 @@ function referenceSidebar(locale) {
       ]
     }
   ];
+}
+
+function resolveSourceCommit() {
+  const cloudflareCommit = process.env.CF_PAGES_COMMIT_SHA?.trim();
+  if (cloudflareCommit) return cloudflareCommit.slice(0, 12);
+  try {
+    return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+  } catch {
+    return 'unknown';
+  }
 }

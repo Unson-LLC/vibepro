@@ -5,9 +5,13 @@
 | Story and Spec | `story list`, `story derive`, `story diagnose` | Story catalog, diagnosis reports, traceability context |
 | Graph artifacts | `graph` | `.vibepro/graphify/` |
 | PR readiness | `pr prepare`, `check pr-readiness` | `.vibepro/pr/<story-id>/` |
-| Verification | `verify record`, `verify status` | `.vibepro/verification-artifacts/` |
-| Review | `review prepare`, `review record`, `review status` | `.vibepro/reviews/` |
+| Verification and CI | `verify record`, `verify import-ci` | `.vibepro/verification-artifacts/`, CI evidence |
+| Independent review | `review prepare`, `review start`, `review close`, `review record`, `review status` | `.vibepro/reviews/`, lifecycle and provenance |
+| Adjudication | `adjudicate prepare`, `adjudicate record` | Clause and senior-judgment verdicts |
 | Decisions | `decision record`, `decision status` | Risk acceptance and waiver records |
+| Release guard | `guard check`, `guard status` | Fail-closed release boundary |
+| Managed execution | `execute start`, `execute status`, `execute reconcile`, `execute merge` | `.vibepro/executions/`, audited merge state |
+| Audit and ROI | `audit replay`, `audit session-cost`, `usage report` | Canonical replay, cost, gate/subagent ROI |
 | UI/UX intake and IA | `journey handoff`, `story map`, `design-modernize plan` | Journey context, Story links, route and flow assumptions |
 | Native Design System | `design-system init`, `design-system derive`, `design-system validate` | `.vibepro/design-system/<ds-id>/` |
 | UI modernization evidence | `design-modernize derive-system`, `design-modernize plan`, `verify visual`, `uiux evidence` | `.vibepro/design-modernize/<story-id>/`, visual residuals, responsive and accessibility evidence |

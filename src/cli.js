@@ -700,12 +700,12 @@ Usage:
 // assert every command is exercised end-to-end — a missing/broken handler import
 // must fail a test before merge, not at runtime (the bug class behind #117/#118).
 export const TOP_LEVEL_COMMANDS = [
-  'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
+  'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
   'decision', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
-  'nocodb', 'repo-status', 'workspace'
+  'workspace'
 ];
 
 export async function runCli(argv, io = {}) {
