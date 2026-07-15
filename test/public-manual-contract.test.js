@@ -30,7 +30,17 @@ test('public manual states the current positioning and human authority boundary'
 
 test('public build configuration excludes internal operating corpora', async () => {
   const config = await readFile(path.join(root, 'docs/.vitepress/config.mjs'), 'utf8');
-  for (const internalPath of ['architecture/**', 'management/**', 'specs/**', 'stories/**']) {
+  for (const internalPath of [
+    'architecture/**',
+    'management/**',
+    'specs/**',
+    'stories/**',
+    'contracts/**',
+    'frames/**',
+    'marketing/**',
+    'playbooks/**',
+    'static_site/**'
+  ]) {
     assert.match(config, new RegExp(internalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   for (const internalReference of [

@@ -2,9 +2,21 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const FORBIDDEN_PUBLIC_ROUTES = [
+export const FORBIDDEN_PUBLIC_ROUTES = [
   'reference/gate-tuning/2026-07',
   'reference/vibepro-ui-journey-e2e-dogfood'
+];
+
+export const FORBIDDEN_PUBLIC_CORPORA = [
+  'architecture',
+  'management',
+  'specs',
+  'stories',
+  'contracts',
+  'frames',
+  'marketing',
+  'playbooks',
+  'static_site'
 ];
 
 const REQUIRED_FILES = [
@@ -22,6 +34,15 @@ export async function checkPublicManualBuild(distDir) {
   }
 
   const files = await walk(distDir);
+  for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
+    const forbiddenOutput = files.find((file) => {
+      const normalized = normalize(file);
+      return normalized === corpus || normalized.startsWith(`${corpus}/`);
+    });
+    if (forbiddenOutput) {
+      throw new Error(`Public build contains forbidden corpus output: ${normalize(forbiddenOutput)}`);
+    }
+  }
   for (const forbiddenRoute of FORBIDDEN_PUBLIC_ROUTES) {
     const forbiddenOutput = files.find((file) => normalize(file).includes(forbiddenRoute));
     if (forbiddenOutput) {
@@ -32,6 +53,14 @@ export async function checkPublicManualBuild(distDir) {
   const searchableFiles = files.filter((file) => /\.(?:html|js|json|txt|xml)$/u.test(file));
   for (const file of searchableFiles) {
     const content = await readFile(path.join(distDir, file), 'utf8');
+    for (const corpus of FORBIDDEN_PUBLIC_CORPORA) {
+      const escapedCorpus = escapeRegExp(corpus);
+      const publicLink = new RegExp(`(?:href|src)=["'](?:https://vibepro\\.pages\\.dev)?/?${escapedCorpus}/`, 'u');
+      const sitemapLocation = new RegExp(`<loc>[^<]*/${escapedCorpus}/`, 'u');
+      if (publicLink.test(content) || sitemapLocation.test(content)) {
+        throw new Error(`Public build references forbidden corpus ${corpus} in ${normalize(file)}`);
+      }
+    }
     for (const forbiddenRoute of FORBIDDEN_PUBLIC_ROUTES) {
       if (content.includes(forbiddenRoute)) {
         throw new Error(`Public build references forbidden route ${forbiddenRoute} in ${normalize(file)}`);
@@ -78,6 +107,10 @@ async function walk(root, current = '') {
 
 function normalize(file) {
   return file.split(path.sep).join('/');
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : null;

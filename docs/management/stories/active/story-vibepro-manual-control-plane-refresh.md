@@ -6,6 +6,7 @@ view: dev
 period: 2026-07
 created_at: 2026-07-15
 updated_at: 2026-07-15
+parent_design: vibepro-manual-control-plane-refresh
 reason: "A single public-manual refresh is preferred over scattered copy edits because positioning, command validity, release truth, navigation, SEO, and source exposure form one user journey. Compatibility impact is limited to documentation, VitePress build configuration, and documentation drift tests; rollback is a single focused revert; architecture/spec/story internals remain repository-local and Brainbase remains an optional upstream context source."
 ---
 
@@ -46,6 +47,8 @@ the public product
   output while retaining curated public guides.
 - Add sitemap, robots, llms.txt, Open Graph/Twitter metadata, and SoftwareApplication
   structured data.
+- Add a clean-tree deployment preflight, exact commit provenance, live
+  observability checks, and an executable rollback runbook for Cloudflare Pages.
 
 ## Acceptance Criteria
 
