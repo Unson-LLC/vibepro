@@ -17,6 +17,10 @@ test('public manual build provenance is fixed before generated files can make th
 
   const head = git(repository, 'rev-parse', '--short=12', 'HEAD');
   assert.equal(resolveBuildSourceCommit(repository), head);
+  assert.equal(resolveBuildSourceCommit(repository, {
+    CF_PAGES_COMMIT_SHA: 'aaaaaaaaaaaa9999',
+    VIBEPRO_SOURCE_COMMIT: 'bbbbbbbbbbbb8888'
+  }), 'bbbbbbbbbbbb');
 
   await writeFile(path.join(repository, 'generated.tmp'), 'generated\n');
   assert.equal(resolveBuildSourceCommit(repository), `${head}-dirty`);

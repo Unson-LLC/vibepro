@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  assertBuiltSourceCommit,
+  deployBuildEnvironment,
   resolveCleanSourceCommit,
   wranglerPagesArguments
 } from '../scripts/deploy-public-manual.mjs';
@@ -48,5 +50,30 @@ test('public manual deployment rejects untracked source files before Wrangler', 
   assert.throws(
     () => resolveCleanSourceCommit(repo),
     /requires a clean git worktree/
+  );
+});
+
+test('public manual deployment fixes build provenance to the clean HEAD', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-public-deploy-provenance-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  const commitHash = '1234567890abcdef1234567890abcdef12345678';
+  const environment = deployBuildEnvironment(commitHash, {
+    CF_PAGES_COMMIT_SHA: 'ffffffffffff0000',
+    KEEP_ME: 'yes'
+  });
+
+  assert.equal(environment.VIBEPRO_SOURCE_COMMIT, '1234567890ab');
+  assert.equal(environment.CF_PAGES_COMMIT_SHA, undefined);
+  assert.equal(environment.KEEP_ME, 'yes');
+
+  const dist = path.join(repo, 'docs/.vitepress/dist');
+  await mkdir(dist, { recursive: true });
+  await writeFile(path.join(dist, 'index.html'), '<meta name="vibepro-source-commit" content="1234567890ab">');
+  assert.doesNotThrow(() => assertBuiltSourceCommit(repo, commitHash));
+
+  await writeFile(path.join(dist, 'index.html'), '<meta name="vibepro-source-commit" content="ffffffffffff">');
+  assert.throws(
+    () => assertBuiltSourceCommit(repo, commitHash),
+    /source commit mismatch/
   );
 });

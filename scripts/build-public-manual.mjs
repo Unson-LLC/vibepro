@@ -5,8 +5,11 @@ import { fileURLToPath } from 'node:url';
 const scriptPath = fileURLToPath(import.meta.url);
 const repositoryRoot = path.resolve(path.dirname(scriptPath), '..');
 
-export function resolveBuildSourceCommit(root) {
-  const cloudflareCommit = process.env.CF_PAGES_COMMIT_SHA?.trim();
+export function resolveBuildSourceCommit(root, environment = process.env) {
+  const explicitCommit = environment.VIBEPRO_SOURCE_COMMIT?.trim();
+  if (explicitCommit) return explicitCommit.slice(0, 12);
+
+  const cloudflareCommit = environment.CF_PAGES_COMMIT_SHA?.trim();
   if (cloudflareCommit) return cloudflareCommit.slice(0, 12);
 
   const head = execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {
