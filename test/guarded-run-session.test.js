@@ -426,6 +426,13 @@ test('GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact r
   assert.match(output, /authority_artifact: \/authority\/state\.json/);
   assert.match(output, /mirror_artifact: \/mirror\/state\.json/);
   assert.match(output, new RegExp(`vibepro execute watch \\. --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`));
+
+  const explicitRepo = "/tmp/VibePro user's repo";
+  const explicitOutput = renderGuardedRunError(error, { repoRoot: explicitRepo });
+  assert.match(
+    explicitOutput,
+    new RegExp(`vibepro execute watch '/tmp/VibePro user'\\\\''s repo' --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`)
+  );
 });
 
 test('GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it', async (t) => {

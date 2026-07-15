@@ -100,8 +100,15 @@ export function renderGuardedRunSummary(state) {
   return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
-export function renderGuardedRunError(error) {
+function shellQuoteCommandArg(value) {
+  const text = String(value);
+  if (/^[a-zA-Z0-9_./:=@+-]+$/.test(text)) return text;
+  return `'${text.replaceAll("'", "'\\''")}'`;
+}
+
+export function renderGuardedRunError(error, options = {}) {
   const details = error.details ?? {};
+  const repoRoot = options.repoRoot ?? '.';
   const lines = [
     '# VibePro Guarded Run Error',
     '',
@@ -126,7 +133,7 @@ export function renderGuardedRunError(error) {
     }
   }
   if (error.code === 'linked_copy_sync_failed' && details.story_id && details.run_id) {
-    lines.push(`- next_action: vibepro execute watch . --story-id ${details.story_id} --run-id ${details.run_id} --repair-linked-copy`);
+    lines.push(`- next_action: vibepro execute watch ${shellQuoteCommandArg(repoRoot)} --story-id ${details.story_id} --run-id ${details.run_id} --repair-linked-copy`);
   }
   if (error.code === 'run_selection_blocked') {
     lines.push('- next_action: rerun with --run-id <validated-run-id> after inspecting the rejected candidates');

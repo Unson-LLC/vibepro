@@ -2125,7 +2125,7 @@ export async function runCli(argv, io = {}) {
           if (!isGuardedRunError(error)) throw error;
           write(stderr, jsonOutput
             ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
-            : renderGuardedRunError(error));
+            : renderGuardedRunError(error, { repoRoot }));
           return { exitCode: 2, command, subcommand, result: error.toJSON() };
         }
       }
