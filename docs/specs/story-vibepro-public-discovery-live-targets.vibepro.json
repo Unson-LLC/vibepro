@@ -27,7 +27,7 @@
         "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "collectBuiltTargets" }]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "missing explicit public directory" }]
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "built mode recursively scans HTML" }]
       }
     },
     {
@@ -63,7 +63,7 @@
     {
       "id": "INV-PDLT-5",
       "type": "invariant",
-      "statement": "Existing block and review findings remain stronger than coverage and preserve their fail or needs_review top-level result, finding IDs, severity, and suppression behavior.",
+      "statement": "Zero scanned pages remains inconclusive; when one or more pages are scanned, existing block and review findings prevent both scan_coverage and the top-level result from reporting pass while preserving finding IDs, severity, and suppression behavior.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "findingStatus" }]

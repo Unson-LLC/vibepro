@@ -111,6 +111,11 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
   result.summary.suppression_warnings = result.suppressions.warnings.length;
   result.summary.finding_count = Object.keys(result.risk_summary)
     .reduce((total, key) => total + result[key].length, 0);
+  const findingStatus = Object.values(result.risk_summary).some((summary) => summary.block > 0)
+    ? 'fail'
+    : Object.values(result.risk_summary).some((summary) => summary.review > 0)
+      ? 'needs_review'
+      : 'pass';
   const coverageVerdict = resolveScanConclusiveness({ scannedCount, applicable: true });
   result.scan_coverage = {
     mode: collected.mode,
@@ -125,7 +130,7 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
     failed_count: collected.errors.length,
     errors: collected.errors,
     limits: collected.limits,
-    status: coverageVerdict.status ?? 'pass',
+    status: coverageVerdict.status ?? (findingStatus === 'pass' ? 'pass' : findingStatus),
     reason: coverageVerdict.reason
       ? `${coverageVerdict.reason} ${coverageRecoveryHint(collected.mode)}`
       : null
@@ -133,11 +138,6 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
   result.summary.scanned_files = scannedCount;
   result.summary.discovered_files = collected.discoveredCount;
   result.summary.failed_targets = collected.errors.length;
-  const findingStatus = Object.values(result.risk_summary).some((summary) => summary.block > 0)
-    ? 'fail'
-    : Object.values(result.risk_summary).some((summary) => summary.review > 0)
-      ? 'needs_review'
-      : 'pass';
   result.status = findingStatus === 'pass' ? result.scan_coverage.status : findingStatus;
   if (result.status === 'inconclusive') result.reason = result.scan_coverage.reason;
   return result;
@@ -146,17 +146,21 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
 async function collectDiscoveryTargets(root, options) {
   if (options.baseUrl) return collectLiveTargets(options.baseUrl, options.fetchImpl ?? globalThis.fetch, options.liveLimits ?? LIVE_LIMITS);
   if (options.publicDir) return collectBuiltTargets(root, options.publicDir);
-  const pages = await collectPublicFiles(root);
+  const discoveredPages = await collectPublicFiles(root);
+  const pages = discoveredPages.slice(0, SOURCE_LIMITS.max_pages);
+  const omittedCandidates = discoveredPages.slice(SOURCE_LIMITS.max_pages).map((file) => ({
+    target: file.relativePath,
+    reason_code: 'page_limit',
+    reason: `source page omitted by max_pages=${SOURCE_LIMITS.max_pages}`
+  }));
   return {
     mode: 'source',
     roots: ['index.html', 'public/**/*.html', 'app/**/page.*', 'pages/**/*', 'content/**/*'],
     pages,
-    discoveredCount: pages.length,
-    eligibleCount: pages.length,
+    discoveredCount: discoveredPages.length,
+    eligibleCount: discoveredPages.length,
     selectedCount: pages.length,
-    omittedCount: 0,
-    omissionSummary: {},
-    omissions: [],
+    ...summarizeOmissions(omittedCandidates),
     errors: [],
     limits: SOURCE_LIMITS,
     robots: await readFirstExisting(root, ['robots.txt', 'public/robots.txt']),
@@ -189,7 +193,7 @@ async function collectBuiltTargets(root, publicDir) {
     errors.push({ target: repoRelativeRoot, reason: `指定した公開ディレクトリが存在しない / explicit public directory does not exist: ${error.message}` });
     return emptyCollected('built', [repoRelativeRoot], errors, BUILT_LIMITS);
   }
-  const discoveredCandidates = (await walk(publicRoot))
+  const discoveredCandidates = (await walk(publicRoot, publicRoot, { ignoredDirs: null }))
     .filter((file) => ['.html', '.htm'].includes(path.extname(file.relativePath).toLowerCase()));
   const omittedCandidates = discoveredCandidates.slice(BUILT_LIMITS.max_pages).map((file) => ({
     target: path.posix.join(repoRelativeRoot, file.relativePath),
@@ -513,8 +517,7 @@ async function collectPublicFiles(root) {
   const candidates = await walk(root);
   return candidates
     .filter((file) => PAGE_EXTENSIONS.has(path.extname(file.relativePath).toLowerCase()))
-    .filter((file) => isPublicPageFile(file.relativePath))
-    .slice(0, 400);
+    .filter((file) => isPublicPageFile(file.relativePath));
 }
 
 function isPublicPageFile(relativePath) {
@@ -634,15 +637,15 @@ function mergeMetadataSignals(a, b) {
   };
 }
 
-async function walk(root, dir = root) {
+async function walk(root, dir = root, { ignoredDirs = IGNORED_DIRS } = {}) {
   const entries = await safeReaddir(dir);
   const files = [];
   for (const entry of entries) {
-    if (IGNORED_DIRS.has(entry.name)) continue;
+    if (ignoredDirs?.has(entry.name)) continue;
     const absolutePath = path.join(dir, entry.name);
     const relativePath = path.relative(root, absolutePath).replaceAll(path.sep, '/');
     if (entry.isDirectory()) {
-      files.push(...await walk(root, absolutePath));
+      files.push(...await walk(root, absolutePath, { ignoredDirs }));
     } else if (entry.isFile()) {
       files.push({ absolutePath, relativePath });
     }
@@ -794,7 +797,8 @@ function summarizeRouteTargets(routeTargets) {
 
 async function safeReaddir(dir) {
   try {
-    return await readdir(dir, { withFileTypes: true });
+    return (await readdir(dir, { withFileTypes: true }))
+      .sort((left, right) => left.name.localeCompare(right.name));
   } catch (error) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
     throw error;

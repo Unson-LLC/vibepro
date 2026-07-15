@@ -40,19 +40,22 @@ test('PDLT-AC-001/003: built mode recursively scans HTML and wins over source mo
   await writeFile(path.join(repo, 'index.html'), '<main>source must not be selected</main>');
   const output = path.join(repo, 'dist');
   await mkdir(path.join(output, 'guide'), { recursive: true });
+  await mkdir(path.join(output, 'nested', 'dist'), { recursive: true });
   await writeFile(path.join(output, 'index.html'), COMPLETE_HTML);
   await writeFile(path.join(output, 'guide', 'index.html'), COMPLETE_HTML.replace('VibePro</title>', 'Guide</title>'));
+  await writeFile(path.join(output, 'nested', 'dist', 'index.html'), COMPLETE_HTML.replace('VibePro</title>', 'Nested build</title>'));
   await writeCrawlerFiles(output);
 
   const scan = await scanPublicDiscovery(repo, { publicDir: 'dist' });
 
   assert.equal(scan.scan_coverage.mode, 'built');
   assert.deepEqual(scan.scan_coverage.roots, ['dist']);
-  assert.equal(scan.scan_coverage.discovered_count, 2);
-  assert.equal(scan.scan_coverage.scanned_count, 2);
+  assert.equal(scan.scan_coverage.discovered_count, 3);
+  assert.equal(scan.scan_coverage.scanned_count, 3);
   assert.equal(scan.scan_coverage.failed_count, 0);
   assert.equal(scan.scan_coverage.status, 'pass');
   assert.equal(scan.route_targets.every((target) => target.file.startsWith('dist/')), true);
+  assert.equal(scan.route_targets.some((target) => target.file === 'dist/nested/dist/index.html'), true);
 });
 
 test('PDLT-AC-003: built coverage distinguishes discovered, selected, and omitted pages at the cap', async () => {
@@ -75,6 +78,26 @@ test('PDLT-AC-003: built coverage distinguishes discovered, selected, and omitte
   assert.equal(scan.scan_coverage.omission_samples_truncated, true);
 });
 
+test('PDLT-AC-003/008: source coverage records candidates omitted by the page cap', async () => {
+  const repo = await makeRepository();
+  const output = path.join(repo, 'public');
+  await mkdir(output, { recursive: true });
+  await Promise.all(Array.from({ length: 405 }, (_, index) => (
+    writeFile(path.join(output, `page-${String(index).padStart(3, '0')}.html`), COMPLETE_HTML)
+  )));
+  await writeCrawlerFiles(output);
+
+  const scan = await scanPublicDiscovery(repo);
+
+  assert.equal(scan.scan_coverage.mode, 'source');
+  assert.equal(scan.scan_coverage.discovered_count, 405);
+  assert.equal(scan.scan_coverage.eligible_count, 405);
+  assert.equal(scan.scan_coverage.selected_count, 400);
+  assert.equal(scan.scan_coverage.scanned_count, 400);
+  assert.equal(scan.scan_coverage.omitted_count, 5);
+  assert.equal(scan.scan_coverage.omission_summary.page_limit, 5);
+});
+
 test('PDLT-AC-004/007: zero source pages are inconclusive instead of a vacuum pass', async () => {
   const repo = await makeRepository();
   await mkdir(path.join(repo, 'public'), { recursive: true });
@@ -95,7 +118,7 @@ test('PDLT-AC-005/008: findings remain stronger than conclusive coverage', async
 
   const scan = await scanPublicDiscovery(repo);
 
-  assert.equal(scan.scan_coverage.status, 'pass');
+  assert.equal(scan.scan_coverage.status, 'needs_review');
   assert.equal(scan.scan_coverage.scanned_count, 1);
   assert.equal(scan.status, 'needs_review');
   assert.equal(scan.metadata_findings.some((finding) => finding.kind === 'missing_title'), true);
