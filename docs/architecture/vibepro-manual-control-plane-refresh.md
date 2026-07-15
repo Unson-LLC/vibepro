@@ -43,8 +43,10 @@ flowchart LR
 ## Compatibility and Rollback
 
 No CLI or artifact schema changes are introduced. Existing public guide URLs
-remain available, while new routes are additive. Internal routes intentionally
-stop building. The production rollback authority is the last known-good
+remain available through the explicit `REQUIRED_PUBLIC_ROUTES` build contract,
+while new routes are additive. Internal routes intentionally stop building and
+are a security-boundary correction rather than a compatibility promise. The
+production rollback authority is the last known-good
 Cloudflare Pages production deployment: an operator restores it from **Workers
 & Pages → vibepro → Deployments → Rollback to this deployment** and verifies the
 restored public contract. This remains usable when the known-good Git commit

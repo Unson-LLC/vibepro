@@ -19,6 +19,51 @@ export const FORBIDDEN_PUBLIC_CORPORA = [
   'static_site'
 ];
 
+export const REQUIRED_PUBLIC_ROUTES = [
+  'guide/agent-review.html',
+  'guide/ai-pr-workflow.html',
+  'guide/check-packs.html',
+  'guide/checkpoints-and-execution.html',
+  'guide/ci-integration.html',
+  'guide/control-loop.html',
+  'guide/core-concepts.html',
+  'guide/feature-map.html',
+  'guide/gate-tuning-ritual.html',
+  'guide/gates-and-evidence.html',
+  'guide/getting-started.html',
+  'guide/graphify-impact.html',
+  'guide/managed-execution.html',
+  'guide/release-and-audit.html',
+  'guide/safety-model.html',
+  'guide/story-spec-traceability.html',
+  'guide/verification-decisions-ci.html',
+  'guide/what-is-vibepro.html',
+  'reference/artifact-map.html',
+  'reference/cli.html',
+  'reference/cloudflare-pages.html',
+  'reference/version-history.html',
+  'ja/guide/agent-review.html',
+  'ja/guide/ai-pr-workflow.html',
+  'ja/guide/check-packs.html',
+  'ja/guide/checkpoints-and-execution.html',
+  'ja/guide/control-loop.html',
+  'ja/guide/core-concepts.html',
+  'ja/guide/feature-map.html',
+  'ja/guide/gates-and-evidence.html',
+  'ja/guide/getting-started.html',
+  'ja/guide/graphify-impact.html',
+  'ja/guide/managed-execution.html',
+  'ja/guide/release-and-audit.html',
+  'ja/guide/safety-model.html',
+  'ja/guide/story-spec-traceability.html',
+  'ja/guide/verification-decisions-ci.html',
+  'ja/guide/what-is-vibepro.html',
+  'ja/reference/artifact-map.html',
+  'ja/reference/cli.html',
+  'ja/reference/cloudflare-pages.html',
+  'ja/reference/version-history.html'
+];
+
 const REQUIRED_FILES = [
   'index.html',
   'ja/index.html',
@@ -30,6 +75,9 @@ const REQUIRED_FILES = [
 
 export async function checkPublicManualBuild(distDir) {
   for (const relativePath of REQUIRED_FILES) {
+    await requireFile(distDir, relativePath);
+  }
+  for (const relativePath of REQUIRED_PUBLIC_ROUTES) {
     await requireFile(distDir, relativePath);
   }
 

@@ -11,26 +11,28 @@ const targets = [
   { language: 'ja', sourceLanguage: 'en', file: 'docs/ja/reference/cli.md' }
 ];
 
-let drifted = false;
-for (const target of targets) {
-  const commands = readUsageCommands(target.sourceLanguage);
-  const content = renderReference(target.language, target.sourceLanguage, commands);
-  const outputPath = path.join(root, target.file);
+export function generateCliReferences() {
+  let drifted = false;
+  for (const target of targets) {
+    const commands = readUsageCommands(target.sourceLanguage);
+    const content = renderReference(target.language, target.sourceLanguage, commands);
+    const outputPath = path.join(root, target.file);
 
-  if (checkOnly) {
-    const current = readFileSync(outputPath, 'utf8');
-    if (current !== content) {
-      drifted = true;
-      process.stderr.write(`${target.file} is stale; run npm run docs:cli\n`);
+    if (checkOnly) {
+      const current = readFileSync(outputPath, 'utf8');
+      if (current !== content) {
+        drifted = true;
+        process.stderr.write(`${target.file} is stale; run npm run docs:cli\n`);
+      }
+      continue;
     }
-    continue;
+
+    writeFileSync(outputPath, content, 'utf8');
+    process.stdout.write(`generated ${target.file} (${commands.length} commands)\n`);
   }
 
-  writeFileSync(outputPath, content, 'utf8');
-  process.stdout.write(`generated ${target.file} (${commands.length} commands)\n`);
+  if (drifted) process.exitCode = 1;
 }
-
-if (drifted) process.exitCode = 1;
 
 function readUsageCommands(language) {
   const output = execFileSync(
@@ -38,6 +40,10 @@ function readUsageCommands(language) {
     ['bin/vibepro.js', 'help', '--language', language],
     { cwd: root, encoding: 'utf8' }
   );
+  return parseUsageCommands(output, language);
+}
+
+export function parseUsageCommands(output, language = 'unknown') {
   const usageIndex = output.indexOf('\nUsage:\n');
   if (usageIndex === -1) throw new Error(`Usage section missing from ${language} help`);
 
@@ -66,3 +72,6 @@ function renderReference(language, sourceLanguage, commands) {
 
   return `# ${title}\n\n${notice}\n\n${intro}\n\n${workflow}\n\n## ${japanese ? '現在のUsage' : 'Current Usage'}\n\n\`\`\`text\n${commands.join('\n')}\n\`\`\`\n\n## ${japanese ? 'ドリフト確認' : 'Drift Check'}\n\n\`\`\`bash\nnpm run docs:cli:check\n\`\`\`\n`;
 }
+
+const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : null;
+if (invokedPath === fileURLToPath(import.meta.url)) generateCliReferences();

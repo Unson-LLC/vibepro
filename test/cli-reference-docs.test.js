@@ -3,6 +3,25 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { TOP_LEVEL_COMMANDS } from '../src/cli.js';
+import { parseUsageCommands } from '../scripts/generate-cli-reference.mjs';
+
+test('CLI reference parser fails closed on malformed or empty Usage output', () => {
+  assert.throws(
+    () => parseUsageCommands('VibePro help without a usage section', 'en'),
+    /Usage section missing from en help/
+  );
+  assert.throws(
+    () => parseUsageCommands('VibePro\nUsage:\n  unrelated command\n', 'en'),
+    /No commands found in en help/
+  );
+});
+
+test('CLI reference parser accepts only complete vibepro Usage commands', () => {
+  assert.deepEqual(
+    parseUsageCommands('VibePro\nUsage:\n  vibepro status [repo]  \n  npm test\n  vibepro pr prepare [repo]\n', 'en'),
+    ['  vibepro status [repo]', '  vibepro pr prepare [repo]']
+  );
+});
 
 test('generated CLI references match the current help contract', () => {
   const result = spawnSync(process.execPath, ['scripts/generate-cli-reference.mjs', '--check'], {
