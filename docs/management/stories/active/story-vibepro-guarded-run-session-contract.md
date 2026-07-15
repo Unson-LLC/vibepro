@@ -47,7 +47,7 @@ updated_at: 2026-07-15
 - [ ] GRS-S-7: schema migration、restart/resume、cancel、stale HEAD、legacy互換のテストがある。
 - [ ] GRS-S-8: source/managed worktree間のartifact authority、許可されたcontrol root、authoritative execution context、全候補妥当時だけの最新Run決定順、human/JSON error contractが一意であり、棄却候補を黙殺せず明示Run選択を要求する。既存managed bindingがunavailableならsource fallback・再bootstrap・Run作成なしで`worktree_unavailable`になる。ただし同じbootstrapで作成済みの`source_fallback` Runは固定fieldのcanonical fingerprintが一致する失敗bindingより自身のauthorityを優先し、未知のauthority kindや欠落fingerprintは非変更でfail closedになる。
 - [ ] GRS-S-9: path traversal、破損JSON、未知の将来schema、権限昇格、Gate回避をfail closedで拒否する。
-- [ ] GRS-S-10: Run作成後のmirror同期失敗は生成済み`run_id`を返して明示repairへ誘導し、既存Run mutationのretryだけがtransition exactly-onceを保証する。`startExecution`がsource legacy stateだけcommitしてlinked-copyで失敗した場合は、そのstateをfallback authorityへ昇格せず`legacy_bootstrap_partial`でRun作成を停止し、creation lockを解放する。
+- [ ] GRS-S-10: Run作成後のmirror同期失敗は生成済み`run_id`を返して明示repairへ誘導し、既存Run mutationのretryだけがtransition exactly-onceを保証する。legacy authority確立前もGit common directoryから全linked worktree共通のStory-scoped creation lockを導出する。`startExecution`がsource legacy stateだけcommitしてlinked-copyで失敗した場合は、そのstateをfallback authorityへ昇格せず`legacy_bootstrap_partial`でRun作成を停止し、creation lockを解放する。
 
 ## 依存関係・完了順
 
