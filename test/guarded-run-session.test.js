@@ -87,10 +87,17 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   assert.deepEqual(await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), cancelled);
   assert.equal(await readFile(artifact, 'utf8'), before);
 
+  const repairBefore = JSON.parse(before);
   await assert.rejects(
     session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID, repairLinkedCopy: true }),
     errorWithCode('linked_copy_not_configured')
   );
+  const repairAfterRaw = await readFile(artifact, 'utf8');
+  const repairAfter = JSON.parse(repairAfterRaw);
+  assert.equal(repairAfterRaw, before);
+  assert.equal(repairAfter.updated_at, repairBefore.updated_at);
+  assert.deepEqual(repairAfter.transitions, repairBefore.transitions);
+  await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
 });
 
 test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority', async (t) => {
@@ -171,7 +178,7 @@ test('GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind',
   assert.equal(await readFile(mirrorFile, 'utf8'), raw);
 });
 
-test('GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a fingerprinted source fallback, but pre-existing unavailable fails closed', async (t) => {
+test('GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed', async (t) => {
   const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable' });
   const session = fixture.session();
   const created = await session.run(fixture.source, { storyId: STORY_ID });
@@ -181,6 +188,34 @@ test('GRS-S-3 GRS-S-8 S-001 S-009 new preferred unavailable bootstrap creates a 
     buildBootstrapBindingFingerprint(created.managed_worktree)
   );
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+
+  const restarted = fixture.session();
+  assert.deepEqual(await restarted.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+  assert.deepEqual(await restarted.watch(fixture.source, { storyId: STORY_ID }), created);
+  assert.deepEqual(await restarted.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), created);
+  await restarted.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'source_fallback_restart_blocked',
+    stopReason: stopReason('source_fallback_restart_blocked')
+  });
+  assert.equal((await restarted.resume(fixture.source, { storyId: STORY_ID })).status, 'running');
+  assert.equal((await restarted.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).status, 'cancelled');
+
+  const authorityFile = fixture.runFile(fixture.source, RUN_ID);
+  const repairBeforeRaw = await readFile(authorityFile, 'utf8');
+  const repairBefore = JSON.parse(repairBeforeRaw);
+  await assert.rejects(
+    restarted.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID, repairLinkedCopy: true }),
+    errorWithCode('linked_copy_not_configured')
+  );
+  const repairAfterRaw = await readFile(authorityFile, 'utf8');
+  const repairAfter = JSON.parse(repairAfterRaw);
+  assert.equal(repairAfterRaw, repairBeforeRaw);
+  assert.equal(repairAfter.updated_at, repairBefore.updated_at);
+  assert.deepEqual(repairAfter.transitions, repairBefore.transitions);
+  await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
 
   const second = await createFixture(t, { mode: 'preferred', managedStatus: 'unavailable', preexistingLegacy: true });
   let bootstrapCalls = 0;
@@ -264,6 +299,37 @@ test('GRS-S-8 INV-004 source and managed callers use the same Story creation loc
     errorWithCode('run_creation_locked')
   );
   await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let releaseBootstrap;
+  let reportBootstrapEntered;
+  let bootstrapCalls = 0;
+  const bootstrapEntered = new Promise((resolve) => { reportBootstrapEntered = resolve; });
+  const bootstrapReleased = new Promise((resolve) => { releaseBootstrap = resolve; });
+  const session = fixture.session({
+    startExecution: async (repoRoot) => {
+      bootstrapCalls += 1;
+      if (path.resolve(repoRoot) !== fixture.source) {
+        throw new Error('secondary worktree entered bootstrap');
+      }
+      reportBootstrapEntered();
+      await bootstrapReleased;
+      await writeLegacy(fixture.source, fixture.legacy);
+      return { state: fixture.legacy, found: true };
+    }
+  });
+
+  const first = session.run(fixture.source, { storyId: STORY_ID });
+  await bootstrapEntered;
+  await assert.rejects(
+    session.run(fixture.managed, { storyId: STORY_ID }),
+    errorWithCode('run_creation_locked')
+  );
+  releaseBootstrap();
+  await first;
+  assert.equal(bootstrapCalls, 1);
 });
 
 test('GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed', async (t) => {
@@ -1250,11 +1316,12 @@ test('GRS-S-8 INV-002 production Git identity resolves a real repository and lin
   assert.equal(sourceIdentity.root_realpath, await realpath(repo));
   assert.equal(linkedIdentity.root_realpath, await realpath(linked));
   assert.notEqual(sourceIdentity.git_dir_realpath, linkedIdentity.git_dir_realpath);
+  assert.equal(sourceIdentity.git_common_dir_realpath, linkedIdentity.git_common_dir_realpath);
   assert.match(linkedIdentity.git_dir_realpath, /[/\\]worktrees[/\\]/);
   assert.equal(sourceIdentity.head_sha, linkedIdentity.head_sha);
 });
 
-test('GRS-S-6 GRS-S-8 C-001 production CLI survives fresh processes across human and JSON Run commands', async (t) => {
+test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-cli-'));
   t.after(() => rm(repo, { recursive: true, force: true }));
   await git(repo, ['init', '-b', 'main']);
@@ -1297,6 +1364,20 @@ test('GRS-S-6 GRS-S-8 C-001 production CLI survives fresh processes across human
   assert.match(humanWatch.stdout, /status: running/);
 
   const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+  const beforeRepair = await readFile(stateFile, 'utf8');
+  await assert.rejects(
+    runVibeproProcess([
+      'execute', 'watch', repo, '--story-id', STORY_ID, '--run-id', created.run_id,
+      '--repair-linked-copy', '--json'
+    ], repo),
+    (error) => {
+      assert.equal(error.code, 2);
+      assert.match(`${error.stdout ?? ''}${error.stderr ?? ''}`, /linked_copy_not_configured/);
+      return true;
+    }
+  );
+  assert.equal(await readFile(stateFile, 'utf8'), beforeRepair);
+
   await persistBlockedState(stateFile, '2026-07-15T04:00:00.000Z');
   const jsonResume = await runVibeproProcess([
     'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
@@ -1336,8 +1417,18 @@ async function createFixture(t, options = {}) {
   if (options.sourceAlias) await symlink(source, sourceAlias, 'dir');
   await Promise.all([writeConfig(source), writeConfig(managed)]);
   const identities = new Map([
-    [source, { root_realpath: source, git_dir_realpath: path.join(root, 'git', 'source'), head_sha: 'a'.repeat(40) }],
-    [managed, { root_realpath: managed, git_dir_realpath: path.join(root, 'git', 'managed'), head_sha: 'a'.repeat(40) }]
+    [source, {
+      root_realpath: source,
+      git_dir_realpath: path.join(root, 'git', 'source'),
+      git_common_dir_realpath: path.join(source, '.git'),
+      head_sha: 'a'.repeat(40)
+    }],
+    [managed, {
+      root_realpath: managed,
+      git_dir_realpath: path.join(root, 'git', 'managed'),
+      git_common_dir_realpath: path.join(source, '.git'),
+      head_sha: 'a'.repeat(40)
+    }]
   ]);
   if (options.sourceAlias) identities.set(sourceAlias, identities.get(source));
   const mode = options.mode ?? 'disabled';

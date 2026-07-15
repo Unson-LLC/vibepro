@@ -214,13 +214,22 @@ async function resolveCreationLockRoot(deps, caller, legacy) {
       || managed.mode === 'disabled'
       || managed.status === 'disabled'
       || isManagedUnavailable(managed)) {
-    return caller.root_realpath;
+    return resolveRepositorySharedLockRoot(caller);
   }
-  if (!managed.path) return caller.root_realpath;
+  if (!managed.path) return resolveRepositorySharedLockRoot(caller);
   const authority = await resolveIdentity(deps, managed.path, 'worktree_unavailable');
   const source = await resolveIdentity(deps, managed.source_repo ?? caller.root_realpath, 'worktree_mismatch');
   assertAllowedCaller(caller, authority, source);
   return source.root_realpath;
+}
+
+function resolveRepositorySharedLockRoot(identity) {
+  if (!identity.git_common_dir_realpath) {
+    throw contractError('worktree_mismatch', 'Git identity does not expose a repository-shared common directory.', {
+      root_realpath: identity.root_realpath
+    });
+  }
+  return path.dirname(identity.git_common_dir_realpath);
 }
 
 async function readRun(deps, repoRoot, options) {
