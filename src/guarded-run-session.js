@@ -317,6 +317,15 @@ async function transitionRun(deps, repoRoot, options) {
       to
     });
   }
+  if (RECOVERABLE_STATUSES.has(to)
+      && isAllowedTransition(loaded.state.status, to, options.reason ?? 'run_transition')
+      && !isTypedStopReason(options.stopReason)) {
+    throw contractError('invalid_state', 'A recoverable Run transition requires a fresh typed stop reason.', {
+      run_id: loaded.state.run_id,
+      from: loaded.state.status,
+      to
+    });
+  }
   if (to === 'pr_ready') {
     const gate = await deps.readGateReadiness(loaded.state.execution_context.root_realpath, {
       storyId: loaded.state.story_id

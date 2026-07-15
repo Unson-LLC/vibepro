@@ -973,6 +973,7 @@ test('GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop
 
 test('GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence', async (t) => {
   const invalidStopReasons = [
+    null,
     'not-an-object',
     {},
     { code: '', message: 'message' },
