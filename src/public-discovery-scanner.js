@@ -19,6 +19,7 @@ const AI_BOTS = ['GPTBot', 'ClaudeBot', 'PerplexityBot'];
 const LIVE_LIMITS = Object.freeze({ max_pages: 40, max_response_bytes: 2 * 1024 * 1024, timeout_ms: 10_000 });
 const BUILT_LIMITS = Object.freeze({ max_pages: 400, max_response_bytes: null, timeout_ms: null });
 const SOURCE_LIMITS = Object.freeze({ max_pages: 400, max_response_bytes: null, timeout_ms: null });
+const OMISSION_SAMPLE_LIMIT = 25;
 
 export async function scanPublicDiscovery(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -115,6 +116,12 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
     mode: collected.mode,
     ...buildScanCoverage({ scannedCount, roots: collected.roots }),
     discovered_count: collected.discoveredCount,
+    eligible_count: collected.eligibleCount,
+    selected_count: collected.selectedCount,
+    omitted_count: collected.omittedCount,
+    omission_summary: collected.omissionSummary,
+    omissions: collected.omissions,
+    omission_samples_truncated: collected.omittedCount > collected.omissions.length,
     failed_count: collected.errors.length,
     errors: collected.errors,
     limits: collected.limits,
@@ -137,7 +144,7 @@ export async function scanPublicDiscovery(repoRoot, options = {}) {
 }
 
 async function collectDiscoveryTargets(root, options) {
-  if (options.baseUrl) return collectLiveTargets(options.baseUrl, options.fetchImpl ?? globalThis.fetch);
+  if (options.baseUrl) return collectLiveTargets(options.baseUrl, options.fetchImpl ?? globalThis.fetch, options.liveLimits ?? LIVE_LIMITS);
   if (options.publicDir) return collectBuiltTargets(root, options.publicDir);
   const pages = await collectPublicFiles(root);
   return {
@@ -145,6 +152,11 @@ async function collectDiscoveryTargets(root, options) {
     roots: ['index.html', 'public/**/*.html', 'app/**/page.*', 'pages/**/*', 'content/**/*'],
     pages,
     discoveredCount: pages.length,
+    eligibleCount: pages.length,
+    selectedCount: pages.length,
+    omittedCount: 0,
+    omissionSummary: {},
+    omissions: [],
     errors: [],
     limits: SOURCE_LIMITS,
     robots: await readFirstExisting(root, ['robots.txt', 'public/robots.txt']),
@@ -177,8 +189,14 @@ async function collectBuiltTargets(root, publicDir) {
     errors.push({ target: repoRelativeRoot, reason: `指定した公開ディレクトリが存在しない / explicit public directory does not exist: ${error.message}` });
     return emptyCollected('built', [repoRelativeRoot], errors, BUILT_LIMITS);
   }
-  const candidates = (await walk(publicRoot))
-    .filter((file) => ['.html', '.htm'].includes(path.extname(file.relativePath).toLowerCase()))
+  const discoveredCandidates = (await walk(publicRoot))
+    .filter((file) => ['.html', '.htm'].includes(path.extname(file.relativePath).toLowerCase()));
+  const omittedCandidates = discoveredCandidates.slice(BUILT_LIMITS.max_pages).map((file) => ({
+    target: path.posix.join(repoRelativeRoot, file.relativePath),
+    reason_code: 'page_limit',
+    reason: `built page omitted by max_pages=${BUILT_LIMITS.max_pages}`
+  }));
+  const candidates = discoveredCandidates
     .slice(0, BUILT_LIMITS.max_pages)
     .map((file) => ({
       ...file,
@@ -191,7 +209,10 @@ async function collectBuiltTargets(root, publicDir) {
     mode: 'built',
     roots: [repoRelativeRoot],
     pages: candidates,
-    discoveredCount: candidates.length,
+    discoveredCount: discoveredCandidates.length,
+    eligibleCount: discoveredCandidates.length,
+    selectedCount: candidates.length,
+    ...summarizeOmissions(omittedCandidates),
     errors,
     limits: BUILT_LIMITS,
     robots: prefixEvidence(await readFirstExisting(publicRoot, ['robots.txt'])),
@@ -200,7 +221,7 @@ async function collectBuiltTargets(root, publicDir) {
   };
 }
 
-async function collectLiveTargets(baseUrl, fetchImpl) {
+async function collectLiveTargets(baseUrl, fetchImpl, limits = LIVE_LIMITS) {
   const errors = [];
   let base;
   try {
@@ -208,44 +229,66 @@ async function collectLiveTargets(baseUrl, fetchImpl) {
     if (!['http:', 'https:'].includes(base.protocol)) throw new Error('only HTTP(S) URLs are supported');
   } catch (error) {
     errors.push({ target: String(baseUrl), reason: `base URLは有効なHTTP(S) URLでなければならない / base URL must be a valid HTTP(S) URL: ${error.message}` });
-    return emptyCollected('live', [String(baseUrl)], errors, LIVE_LIMITS);
+    return emptyCollected('live', [String(baseUrl)], errors, limits);
   }
   if (typeof fetchImpl !== 'function') {
     errors.push({ target: base.href, reason: 'HTTP fetch implementation is unavailable; provide a runtime with global fetch' });
-    return emptyCollected('live', [base.href], errors, LIVE_LIMITS);
+    return emptyCollected('live', [base.href], errors, limits);
   }
 
-  const rootResult = await fetchBounded(fetchImpl, base, LIVE_LIMITS, 'page');
+  const rootResult = await fetchBounded(fetchImpl, base, limits, 'page');
   if (rootResult.error) errors.push(rootResult.error);
   const robotsUrl = new URL('/robots.txt', base);
   const llmsUrl = new URL('/llms.txt', base);
   const sitemapUrl = new URL('/sitemap.xml', base);
   const [robotsResult, llmsResult, sitemapResult] = await Promise.all([
-    fetchBounded(fetchImpl, robotsUrl, LIVE_LIMITS, 'support'),
-    fetchBounded(fetchImpl, llmsUrl, LIVE_LIMITS, 'support'),
-    fetchBounded(fetchImpl, sitemapUrl, LIVE_LIMITS, 'sitemap')
+    fetchBounded(fetchImpl, robotsUrl, limits, 'support'),
+    fetchBounded(fetchImpl, llmsUrl, limits, 'support'),
+    fetchBounded(fetchImpl, sitemapUrl, limits, 'sitemap')
   ]);
   for (const response of [robotsResult, llmsResult, sitemapResult]) {
     if (response.error) errors.push(response.error);
   }
 
   const pageUrls = [base];
+  const eligibleUrls = new Set([base.href]);
+  const omissions = [];
+  let sitemapLocations = [];
   if (sitemapResult.content) {
-    for (const location of extractSitemapLocations(sitemapResult.content)) {
+    const parsedSitemap = parseSitemapLocations(sitemapResult.content);
+    sitemapLocations = parsedSitemap.locations;
+    if (parsedSitemap.error) errors.push({ target: sitemapUrl.href, reason: parsedSitemap.error });
+    for (const location of sitemapLocations) {
       try {
         const candidate = new URL(location, base);
-        if (candidate.origin !== base.origin || !['http:', 'https:'].includes(candidate.protocol)) continue;
-        if (!pageUrls.some((item) => item.href === candidate.href)) pageUrls.push(candidate);
-        if (pageUrls.length >= LIVE_LIMITS.max_pages) break;
+        if (!['http:', 'https:'].includes(candidate.protocol)) {
+          omissions.push({ target: location, reason_code: 'non_http', reason: 'sitemap location is not HTTP(S)' });
+          continue;
+        }
+        if (candidate.origin !== base.origin) {
+          omissions.push({ target: candidate.href, reason_code: 'cross_origin', reason: 'sitemap location is outside the base origin' });
+          continue;
+        }
+        if (eligibleUrls.has(candidate.href)) {
+          omissions.push({ target: candidate.href, reason_code: 'duplicate', reason: 'duplicate sitemap location' });
+          continue;
+        }
+        eligibleUrls.add(candidate.href);
+        if (pageUrls.length < limits.max_pages) {
+          pageUrls.push(candidate);
+        } else {
+          omissions.push({ target: candidate.href, reason_code: 'page_limit', reason: `live page omitted by max_pages=${limits.max_pages}` });
+        }
       } catch {
         errors.push({ target: location, reason: 'sitemap locをURLとして解釈できない / sitemap loc is not a valid URL' });
+        omissions.push({ target: location, reason_code: 'invalid_url', reason: 'sitemap location is not a valid URL' });
       }
     }
   }
 
   const pages = [];
   for (const pageUrl of pageUrls) {
-    const fetched = pageUrl.href === base.href ? rootResult : await fetchBounded(fetchImpl, pageUrl, LIVE_LIMITS, 'page');
+    const fetched = pageUrl.href === base.href ? rootResult : await fetchBounded(fetchImpl, pageUrl, limits, 'page');
     if (fetched.error) {
       if (pageUrl.href !== base.href) errors.push(fetched.error);
       continue;
@@ -264,9 +307,12 @@ async function collectLiveTargets(baseUrl, fetchImpl) {
     mode: 'live',
     roots: [base.href],
     pages,
-    discoveredCount: pageUrls.length,
+    discoveredCount: 1 + sitemapLocations.length,
+    eligibleCount: eligibleUrls.size,
+    selectedCount: pageUrls.length,
+    ...summarizeOmissions(omissions),
     errors,
-    limits: LIVE_LIMITS,
+    limits,
     robots: robotsResult.content ? { relativePath: robotsUrl.href, content: robotsResult.content } : null,
     llms: llmsResult.content ? { relativePath: llmsUrl.href, content: llmsResult.content } : null,
     headerConfig: { has_config: rootHeaders.length > 0, files: [base.href], headers: rootHeaders }
@@ -279,6 +325,11 @@ function emptyCollected(mode, roots, errors, limits) {
     roots,
     pages: [],
     discoveredCount: 0,
+    eligibleCount: 0,
+    selectedCount: 0,
+    omittedCount: 0,
+    omissionSummary: {},
+    omissions: [],
     errors,
     limits,
     robots: null,
@@ -337,10 +388,36 @@ async function readBoundedResponseBody(response, maxBytes) {
   return Buffer.concat(chunks, total);
 }
 
-function extractSitemapLocations(content) {
-  return [...content.matchAll(/<loc\b[^>]*>([\s\S]*?)<\/loc>/gi)]
+function parseSitemapLocations(content) {
+  const rootMatch = content.match(/<(urlset|sitemapindex)\b/i);
+  const rootName = rootMatch?.[1]?.toLowerCase() ?? null;
+  const rootClosed = rootName ? new RegExp(`</${rootName}\\s*>`, 'i').test(content) : false;
+  const openLocCount = [...content.matchAll(/<loc\b/gi)].length;
+  const closeLocCount = [...content.matchAll(/<\/loc\s*>/gi)].length;
+  if (!rootName || !rootClosed || openLocCount !== closeLocCount) {
+    return {
+      locations: [],
+      error: 'sitemap XMLを解釈できない / sitemap XML is malformed or has an unsupported root'
+    };
+  }
+  return {
+    locations: [...content.matchAll(/<loc\b[^>]*>([\s\S]*?)<\/loc>/gi)]
     .map((match) => match[1].trim().replaceAll('&amp;', '&'))
-    .filter(Boolean);
+    .filter(Boolean),
+    error: null
+  };
+}
+
+function summarizeOmissions(items) {
+  const omissionSummary = {};
+  for (const item of items) {
+    omissionSummary[item.reason_code] = (omissionSummary[item.reason_code] ?? 0) + 1;
+  }
+  return {
+    omittedCount: items.length,
+    omissionSummary,
+    omissions: items.slice(0, OMISSION_SAMPLE_LIMIT)
+  };
 }
 
 function looksLikeHtml(content, contentType) {

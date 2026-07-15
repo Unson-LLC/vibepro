@@ -21,7 +21,7 @@
     {
       "id": "CON-PDLT-2",
       "type": "contract",
-      "statement": "Built mode recursively scans up to 400 HTML files from an explicit repository-contained directory, rejects missing/non-directory/outside/symlink-escaped targets, and reads crawler evidence from that same root.",
+      "statement": "Built mode recursively discovers HTML files from an explicit repository-contained directory, scans up to 400, records pre-cap discovery and cap omissions separately, rejects missing/non-directory/outside/symlink-escaped targets, and reads crawler evidence from that same root.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "collectBuiltTargets" }]
@@ -33,7 +33,7 @@
     {
       "id": "CON-PDLT-3",
       "type": "contract",
-      "statement": "Live mode uses bounded read-only HTTP(S) GET requests for the base root and same-origin sitemap locations only, with manual redirect handling, a 40-page limit, a 2 MiB response limit, and a 10-second timeout.",
+      "statement": "Live mode uses bounded read-only HTTP(S) GET requests for the base root and same-origin sitemap locations only, with manual redirect handling, explicit malformed sitemap and omission evidence, a 40-page limit, a 2 MiB response limit, and a 10-second timeout.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [
@@ -48,7 +48,7 @@
     {
       "id": "INV-PDLT-4",
       "type": "invariant",
-      "statement": "scan_coverage records mode, roots, discovered_count, scanned_count, failed_count, errors, limits, status, and reason; zero scanned public pages is inconclusive and never a coverage pass.",
+      "statement": "scan_coverage records mode, roots, discovered_count before caps, eligible_count, selected_count, scanned_count, omitted_count and reasons, failed_count, errors, limits, status, and reason; zero scanned public pages is inconclusive and never a coverage pass.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [

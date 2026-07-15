@@ -55,6 +55,26 @@ test('PDLT-AC-001/003: built mode recursively scans HTML and wins over source mo
   assert.equal(scan.route_targets.every((target) => target.file.startsWith('dist/')), true);
 });
 
+test('PDLT-AC-003: built coverage distinguishes discovered, selected, and omitted pages at the cap', async () => {
+  const repo = await makeRepository();
+  const output = path.join(repo, 'dist');
+  await mkdir(output, { recursive: true });
+  await Promise.all(Array.from({ length: 430 }, (_, index) => (
+    writeFile(path.join(output, `page-${String(index).padStart(3, '0')}.html`), COMPLETE_HTML)
+  )));
+
+  const scan = await scanPublicDiscovery(repo, { publicDir: 'dist' });
+
+  assert.equal(scan.scan_coverage.discovered_count, 430);
+  assert.equal(scan.scan_coverage.eligible_count, 430);
+  assert.equal(scan.scan_coverage.selected_count, 400);
+  assert.equal(scan.scan_coverage.scanned_count, 400);
+  assert.equal(scan.scan_coverage.omitted_count, 30);
+  assert.equal(scan.scan_coverage.omission_summary.page_limit, 30);
+  assert.equal(scan.scan_coverage.omissions.length, 25);
+  assert.equal(scan.scan_coverage.omission_samples_truncated, true);
+});
+
 test('PDLT-AC-004/007: zero source pages are inconclusive instead of a vacuum pass', async () => {
   const repo = await makeRepository();
   await mkdir(path.join(repo, 'public'), { recursive: true });
@@ -141,7 +161,11 @@ test('PDLT-AC-002/003: live mode scans root and same-origin sitemap pages only',
   });
 
   assert.equal(scan.scan_coverage.mode, 'live');
-  assert.equal(scan.scan_coverage.discovered_count, 2);
+  assert.equal(scan.scan_coverage.discovered_count, 3);
+  assert.equal(scan.scan_coverage.eligible_count, 2);
+  assert.equal(scan.scan_coverage.selected_count, 2);
+  assert.equal(scan.scan_coverage.omitted_count, 1);
+  assert.equal(scan.scan_coverage.omission_summary.cross_origin, 1);
   assert.equal(scan.scan_coverage.scanned_count, 2);
   assert.equal(scan.scan_coverage.status, 'pass');
   assert.equal(requests.includes('https://site.example/guide'), true);
@@ -181,9 +205,44 @@ test('PDLT-AC-002: live mode rejects redirects/non-HTML and caps sitemap pages a
       return new Response(COMPLETE_HTML, { headers: { 'content-type': 'text/html' } });
     }
   });
-  assert.equal(capped.scan_coverage.discovered_count, 40);
+  assert.equal(capped.scan_coverage.discovered_count, 51);
+  assert.equal(capped.scan_coverage.eligible_count, 51);
+  assert.equal(capped.scan_coverage.selected_count, 40);
   assert.equal(capped.scan_coverage.scanned_count, 40);
+  assert.equal(capped.scan_coverage.omitted_count, 11);
+  assert.equal(capped.scan_coverage.omission_summary.page_limit, 11);
   assert.equal(pageRequests.length, 40);
+});
+
+test('PDLT-AC-002/007: live timeout and malformed sitemap remain explicit', async () => {
+  const repo = await makeRepository();
+  const timeout = await scanPublicDiscovery(repo, {
+    baseUrl: 'https://timeout.example/',
+    liveLimits: { max_pages: 40, max_response_bytes: 2 * 1024 * 1024, timeout_ms: 5 },
+    fetchImpl: async (_input, options) => new Promise((_resolve, reject) => {
+      options.signal.addEventListener('abort', () => reject(new Error('aborted by timeout')), { once: true });
+    })
+  });
+  assert.equal(timeout.scan_coverage.status, 'inconclusive');
+  assert.equal(timeout.scan_coverage.scanned_count, 0);
+  assert.equal(timeout.scan_coverage.errors.some((error) => /timeout|aborted/.test(error.reason)), true);
+
+  const malformed = await scanPublicDiscovery(repo, {
+    baseUrl: 'https://malformed.example/',
+    fetchImpl: async (input) => {
+      const url = new URL(input);
+      if (url.pathname === '/sitemap.xml') {
+        return new Response('<urlset><url><loc>https://malformed.example/guide</loc></url>', {
+          headers: { 'content-type': 'application/xml' }
+        });
+      }
+      if (url.pathname === '/robots.txt' || url.pathname === '/llms.txt') return new Response('User-agent: *\n');
+      return new Response(COMPLETE_HTML, { headers: { 'content-type': 'text/html' } });
+    }
+  });
+  assert.equal(malformed.scan_coverage.scanned_count, 1);
+  assert.equal(malformed.scan_coverage.errors.some((error) => /sitemap XML/.test(error.reason)), true);
+  assert.equal(malformed.scan_coverage.failed_count > 0, true);
 });
 
 test('PDLT-AC-002/007: invalid or unreachable live input is explicit and inconclusive', async () => {
@@ -238,4 +297,47 @@ test('PDLT-AC-006/009: CLI forwards public-dir and renders independent coverage 
   const helpCapture = { output: '' };
   await runCli(['help'], { stdout: { write: (chunk) => { helpCapture.output += chunk; } } });
   assert.match(helpCapture.output, /vibepro check .*--base-url <url>.*--public-dir <dir>/);
+  assert.match(helpCapture.output, /検査0件は合格ではなくinconclusive/);
+
+  const englishHelpCapture = { output: '' };
+  await runCli(['help', '--language', 'en'], { stdout: { write: (chunk) => { englishHelpCapture.output += chunk; } } });
+  assert.match(englishHelpCapture.output, /Zero scanned pages are inconclusive,\s+not a clean pass/);
+});
+
+test('PDLT-AC-002/006/009: CLI forwards live targets for public-discovery and all', async () => {
+  const repo = await makeRepository();
+  const fetchImpl = async (input) => {
+    const url = new URL(input);
+    if (url.pathname === '/sitemap.xml') {
+      return new Response(`<urlset>
+        <url><loc>https://cli-live.example/guide</loc></url>
+        <url><loc>https://external.example/private</loc></url>
+      </urlset>`, { headers: { 'content-type': 'application/xml' } });
+    }
+    if (url.pathname === '/robots.txt') return new Response('User-agent: *\nAllow: /\n');
+    if (url.pathname === '/llms.txt') return new Response('# CLI live\n');
+    return new Response(COMPLETE_HTML, { headers: { 'content-type': 'text/html' } });
+  };
+
+  for (const pack of ['public-discovery', 'all']) {
+    const capture = { stdout: '', stderr: '' };
+    const result = await runCli([
+      'check', pack, repo, '--base-url', 'https://cli-live.example/', '--run-id', `live-${pack}`, '--json'
+    ], {
+      fetchImpl,
+      stdout: { write: (chunk) => { capture.stdout += chunk; } },
+      stderr: { write: (chunk) => { capture.stderr += chunk; } }
+    });
+
+    assert.equal(result.exitCode, 0);
+    const coverage = result.result.check.evidence.public_discovery.scan_coverage;
+    assert.equal(coverage.mode, 'live');
+    assert.equal(coverage.discovered_count, 3);
+    assert.equal(coverage.selected_count, 2);
+    assert.equal(coverage.omitted_count, 1);
+    const coverageRow = result.result.check.checks.find((check) => check.id === 'public_discovery.coverage');
+    assert.match(coverageRow.summary, /selected=2; omitted=1/);
+    const markdown = await readFile(path.join(repo, '.vibepro', 'checks', pack, `live-${pack}`, 'check.md'), 'utf8');
+    assert.match(markdown, /selected=2; omitted=1/);
+  }
 });

@@ -68,6 +68,7 @@ reason: >-
 1. Public Discoveryの対象解決とcoverage契約
    - `base-url > public-dir > repository source` の優先順位で検査対象を解決する
    - live/built/sourceの制限、失敗理由、検査件数を `scan_coverage` に記録する
+   - 上限適用前の発見数と、選択数・除外数・除外理由を分離し、cap超過や外部originをsilentにしない
    - 0対象を `inconclusive` とし、既存findingのfail/needs_reviewを優先する
 2. CLIとcheck pack成果物の公開入力対応
    - `check public-discovery|all` へ `--base-url` と `--public-dir` を伝播する
@@ -92,6 +93,6 @@ reason: >-
 
 ## 検証メモ
 
-ローカルfixtureでsource/built/liveの3mode、同一origin制限、0件inconclusive、到達不能、
-findings優先、CLI引数伝播、JSON/Markdown表示を自動検証する。公開サイトへの最終確認は
+ローカルfixtureでsource/built/liveの3mode、同一origin制限、cap超過、timeout、壊れたsitemap、
+0件inconclusive、到達不能、findings優先、CLI引数伝播、JSON/Markdown表示を自動検証する。公開サイトへの最終確認は
 本Storyマージ後のCloudflare Pagesデプロイ監査で別途実施する。

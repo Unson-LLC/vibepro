@@ -250,7 +250,7 @@ function summarizeChecks({ packId, evidence, architectureProfile, language = 'ja
         id: 'public_discovery.coverage',
         label: 'Public discovery: Coverage',
         status: normalizeCheckStatus(coverage.status),
-        summary: `${coverage.mode}; scanned=${coverage.scanned_count ?? 0}/${coverage.discovered_count ?? 0}; failed=${coverage.failed_count ?? 0}${coverage.reason ? `; ${describeScanStatus(coverage.status, language)}: ${coverage.reason}` : ''}`
+        summary: `${coverage.mode}; scanned=${coverage.scanned_count ?? 0}/${coverage.discovered_count ?? 0}; selected=${coverage.selected_count ?? coverage.discovered_count ?? 0}; omitted=${coverage.omitted_count ?? 0}; failed=${coverage.failed_count ?? 0}${coverage.reason ? `; ${describeScanStatus(coverage.status, language)}: ${coverage.reason}` : ''}`
       });
     }
     checks.push(...summarizeRiskGroups('public_discovery', 'Public discovery', evidence.public_discovery, [

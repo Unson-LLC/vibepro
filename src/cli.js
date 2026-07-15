@@ -352,6 +352,12 @@ Existing UI modernization:
   journey-context.json into the plan artifacts, and keeps non-curated handoff
   evidence visible instead of treating it as an authoritative product Journey.
 
+Public Discovery targets:
+  --base-url inspects the deployed HTTP(S) root and same-origin sitemap pages;
+  --public-dir inspects built HTML recursively; without either flag, source files are inspected.
+  Target priority is base-url > public-dir > source. Zero scanned pages are inconclusive,
+  not a clean pass; coverage also reports discovered, selected, omitted, failed, and scanned counts.
+
 Usage:
   vibepro help [command]
   vibepro version
@@ -579,6 +585,12 @@ base branch:
   design-modernize plan は top-level Journey context にも接続します。Journey context pack が
   未生成ならJourney workflow経由で作成し、plan artifactにjourney-context.jsonを書き、
   curatedではないhandoff証跡をauthoritative Journeyとして扱わずに表示します。
+
+Public Discoveryの対象:
+  --base-url は公開済みHTTP(S) rootと同一originのsitemapページ、--public-dir は
+  build済みHTMLを再帰検査し、どちらも無ければsourceを検査します。優先順位は
+  base-url > public-dir > sourceです。検査0件は合格ではなくinconclusiveであり、
+  coverageには発見・選択・除外・失敗・検査件数をそれぞれ残します。
 
 英語で表示したい場合:
   vibepro init <repo> --language en
@@ -1454,6 +1466,7 @@ export async function runCli(argv, io = {}) {
         includePublicDiscovery: hasFlag(rest, '--include-public-discovery'),
         baseUrl: getOption(rest, '--base-url'),
         publicDir: getOption(rest, '--public-dir'),
+        fetchImpl: io.fetchImpl,
         pages: parseCsvOption(rest, '--pages'),
         apis: parseCsvOption(rest, '--apis'),
         samples: parseNumberOption(rest, '--samples') ?? 5,
