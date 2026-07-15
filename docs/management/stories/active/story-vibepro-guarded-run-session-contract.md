@@ -32,7 +32,7 @@ updated_at: 2026-07-15
 - `vibepro execute run|status|watch|resume|cancel`の公開契約を追加する。
 - `.vibepro/executions/<story-id>/runs/<run-id>/state.json`をRunの正本とする。
 - `run_id`はVibeProだけが生成するopaque IDとし、外部入力はpathを組み立てる前に厳格検証する。
-- 既定targetは`pr_ready`、既定autonomyは`guarded`とし、mergeは対象外にする。
+- targetは`pr_ready`だけを受け付け、既定autonomyは`guarded`とし、mergeは対象外にする。
 - `running`、`waiting_for_human`、`waiting_for_runtime`、`blocked`、`failed`、`cancelled`、`pr_ready`を型付き状態として扱う。
 - Run stateをStory、Managed Worktree、current HEAD、Gate DAGへ結び付ける。
 
@@ -45,7 +45,7 @@ updated_at: 2026-07-15
 - [ ] GRS-S-5: 不明な状態遷移、古いHEAD、別worktreeからの再開を拒否し、型付き停止理由を返す。
 - [ ] GRS-S-6: 既存の`execute start/status/next/reconcile`と既存state artifactは互換維持される。
 - [ ] GRS-S-7: schema migration、restart/resume、cancel、stale HEAD、legacy互換のテストがある。
-- [ ] GRS-S-8: source/managed worktree間のartifact authority、許可されたcontrol root、authoritative execution context、最新Runの決定順、human/JSON error contractが一意であり、既存managed bindingがunavailableならsource fallback・再bootstrap・Run作成なしで`worktree_unavailable`になる。ただし同じbootstrapで作成済みの`source_fallback` Runは固定fieldのcanonical fingerprintが一致する失敗bindingより自身のauthorityを優先し、未知のauthority kindや欠落fingerprintは非変更でfail closedになる。
+- [ ] GRS-S-8: source/managed worktree間のartifact authority、許可されたcontrol root、authoritative execution context、全候補妥当時だけの最新Run決定順、human/JSON error contractが一意であり、棄却候補を黙殺せず明示Run選択を要求する。既存managed bindingがunavailableならsource fallback・再bootstrap・Run作成なしで`worktree_unavailable`になる。ただし同じbootstrapで作成済みの`source_fallback` Runは固定fieldのcanonical fingerprintが一致する失敗bindingより自身のauthorityを優先し、未知のauthority kindや欠落fingerprintは非変更でfail closedになる。
 - [ ] GRS-S-9: path traversal、破損JSON、未知の将来schema、権限昇格、Gate回避をfail closedで拒否する。
 - [ ] GRS-S-10: Run作成後のmirror同期失敗は生成済み`run_id`を返して明示repairへ誘導し、既存Run mutationのretryだけがtransition exactly-onceを保証する。`startExecution`がsource legacy stateだけcommitしてlinked-copyで失敗した場合は、そのstateをfallback authorityへ昇格せず`legacy_bootstrap_partial`でRun作成を停止し、creation lockを解放する。
 

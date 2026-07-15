@@ -101,12 +101,37 @@ export function renderGuardedRunSummary(state) {
 }
 
 export function renderGuardedRunError(error) {
-  const artifact = error.details?.artifact
-    ?? error.details?.authority_artifact
-    ?? error.details?.quarantine_artifact
-    ?? error.details?.lock_artifact
-    ?? null;
-  return `# VibePro Guarded Run Error\n\n- code: ${error.code}\n- message: ${error.message}${artifact ? `\n- artifact: ${artifact}` : ''}\n`;
+  const details = error.details ?? {};
+  const lines = [
+    '# VibePro Guarded Run Error',
+    '',
+    `- code: ${error.code}`,
+    `- message: ${error.message}`
+  ];
+  for (const [label, key] of [
+    ['run_id', 'run_id'],
+    ['story_id', 'story_id'],
+    ['artifact', 'artifact'],
+    ['authority_artifact', 'authority_artifact'],
+    ['mirror_artifact', 'mirror_artifact'],
+    ['quarantine_artifact', 'quarantine_artifact'],
+    ['lock_artifact', 'lock_artifact'],
+    ['legacy_artifact', 'legacy_artifact']
+  ]) {
+    if (details[key]) lines.push(`- ${label}: ${details[key]}`);
+  }
+  if (Array.isArray(details.rejected_candidates)) {
+    for (const candidate of details.rejected_candidates) {
+      lines.push(`- rejected_candidate: ${candidate.run_id} (${candidate.code}) ${candidate.artifact}`);
+    }
+  }
+  if (error.code === 'linked_copy_sync_failed' && details.story_id && details.run_id) {
+    lines.push(`- next_action: vibepro execute watch . --story-id ${details.story_id} --run-id ${details.run_id} --repair-linked-copy`);
+  }
+  if (error.code === 'run_selection_blocked') {
+    lines.push('- next_action: rerun with --run-id <validated-run-id> after inspecting the rejected candidates');
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 async function createRun(deps, repoRoot, options) {
@@ -636,6 +661,7 @@ async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile
   } catch (error) {
     throw contractError('linked_copy_sync_failed', 'Run authority committed but linked mirror synchronization failed.', {
       run_id: state.run_id,
+      story_id: state.story_id,
       authority_artifact: authorityFile,
       mirror_artifact: mirrorFile,
       cause: error.message
@@ -798,23 +824,51 @@ async function selectLatestRunId(deps, location, caller, storyId) {
     throw error;
   }
   const candidates = [];
+  const rejectedCandidates = [];
   for (const runId of entries.filter((entry) => RUN_ID_PATTERN.test(entry))) {
     const filePath = getRunStatePath(authorityRoot, storyId, runId);
     const raw = await readOptionalFile(deps, filePath);
-    if (raw === null) continue;
+    if (raw === null) {
+      rejectedCandidates.push({
+        run_id: runId,
+        code: 'invalid_state',
+        message: 'Guarded Run directory has no state artifact.',
+        artifact: filePath
+      });
+      continue;
+    }
     let state;
     try {
-      state = JSON.parse(raw);
+      try {
+        state = JSON.parse(raw);
+      } catch (error) {
+        if (!(error instanceof SyntaxError)) throw error;
+        throw contractError('corrupt_state', 'Guarded Run state is corrupt.', { artifact: filePath });
+      }
       state = migrateRunState(state).state;
       await validateAuthorityBinding(deps, caller, state, location.authority, {
         storyId,
         runId,
         expectedAuthorityKind: location.expectedAuthorityKind
       });
-    } catch {
+    } catch (error) {
+      if (!isGuardedRunError(error)) throw error;
+      rejectedCandidates.push({
+        run_id: runId,
+        code: error.code,
+        message: error.message,
+        artifact: error.details?.artifact ?? filePath
+      });
       continue;
     }
     candidates.push({ runId, createdAt: state.created_at });
+  }
+  if (rejectedCandidates.length > 0) {
+    throw contractError(
+      'run_selection_blocked',
+      'Implicit Run selection found rejected candidates; inspect them and select a validated Run explicitly.',
+      { story_id: storyId, rejected_candidates: rejectedCandidates }
+    );
   }
   candidates.sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.runId.localeCompare(left.runId));
   if (candidates.length === 0) {

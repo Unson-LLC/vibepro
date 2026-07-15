@@ -1,19 +1,26 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
-  createGuardedRunSession
+  createGuardedRunSession,
+  renderGuardedRunError
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
+import { resolveGitIdentity } from '../src/git-identity.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
 const RUN_ID = 'run-20260715T010203Z-01020304';
+const execFileAsync = promisify(execFile);
+const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
   assert.throws(() => createGuardedRunSession({ service: {} }), /Unknown guarded Run dependency/);
@@ -362,7 +369,7 @@ test('GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run
   assert.equal(sameTimeHigherId.run_id > first.run_id, true);
 });
 
-test('GRS-S-8 C-005 implicit Run selection skips newer artifacts that are not valid authority candidates', async (t) => {
+test('GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const valid = await fixture.session().run(fixture.source, { storyId: STORY_ID });
   const invalidRunId = 'run-20260715T030000Z-ffffffff';
@@ -376,8 +383,101 @@ test('GRS-S-8 C-005 implicit Run selection skips newer artifacts that are not va
   await mkdir(path.dirname(invalidFile), { recursive: true });
   await writeFile(invalidFile, `${JSON.stringify(invalid, null, 2)}\n`);
 
-  assert.equal((await fixture.session().watch(fixture.source, { storyId: STORY_ID })).run_id, valid.run_id);
+  let failure;
+  try {
+    await fixture.session().watch(fixture.source, { storyId: STORY_ID });
+  } catch (error) {
+    failure = error;
+  }
+  assert.equal(failure?.code, 'run_selection_blocked');
+  assert.deepEqual(failure?.details?.rejected_candidates, [{
+    run_id: invalidRunId,
+    code: 'invalid_state',
+    message: 'Run Story identity does not match its artifact path.',
+    artifact: invalidFile
+  }]);
+  assert.equal((await fixture.session().watch(fixture.source, {
+    storyId: STORY_ID,
+    runId: valid.run_id
+  })).run_id, valid.run_id);
+  const stderr = capture();
+  const cliFailure = await runCli([
+    'execute', 'watch', fixture.source, '--story-id', STORY_ID
+  ], { stdout: capture(), stderr, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(cliFailure.exitCode, 2);
+  assert.match(stderr.text(), new RegExp(`rejected_candidate: ${invalidRunId} \\(invalid_state\\)`));
+  assert.match(stderr.text(), /rerun with --run-id <validated-run-id>/);
   assert.equal(JSON.parse(await readFile(invalidFile, 'utf8')).story_id, invalid.story_id);
+});
+
+test('GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact repair command', () => {
+  const error = new GuardedRunError(
+    'linked_copy_sync_failed',
+    'Run authority committed but linked mirror synchronization failed.',
+    {
+      run_id: RUN_ID,
+      story_id: STORY_ID,
+      authority_artifact: '/authority/state.json',
+      mirror_artifact: '/mirror/state.json'
+    }
+  );
+  const output = renderGuardedRunError(error);
+  assert.match(output, new RegExp(`run_id: ${RUN_ID}`));
+  assert.match(output, /authority_artifact: \/authority\/state\.json/);
+  assert.match(output, /mirror_artifact: \/mirror\/state\.json/);
+  assert.match(output, new RegExp(`vibepro execute watch \\. --story-id ${STORY_ID} --run-id ${RUN_ID} --repair-linked-copy`));
+});
+
+test('GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const stderr = capture();
+  const result = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--target', 'pr_create',
+    '--json'
+  ], { stdout: capture(), stderr, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(result.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'invalid_target');
+  const humanError = capture();
+  const humanResult = await runCli([
+    'execute', 'watch', fixture.source,
+    '--story-id', STORY_ID,
+    '--target', 'pr_create'
+  ], { stdout: capture(), stderr: humanError, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(humanResult.exitCode, 2);
+  assert.match(humanError.text(), /code: invalid_target/);
+  assert.match(humanError.text(), /support only target=pr_ready/);
+  await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON and human forms', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const mirror = fixture.runFile(fixture.source, created.run_id);
+  await writeFile(mirror, `${JSON.stringify({ ...created, iteration: 7 }, null, 2)}\n`);
+  const jsonOut = capture();
+  const jsonResult = await runCli([
+    'execute', 'watch', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', created.run_id,
+    '--repair-linked-copy',
+    '--json'
+  ], { stdout: jsonOut, stderr: capture(), guardedRunDependencies: fixture.dependencies() });
+  assert.equal(jsonResult.exitCode, 0);
+  assert.deepEqual(JSON.parse(jsonOut.text()), created);
+
+  await writeFile(mirror, `${JSON.stringify({ ...created, iteration: 8 }, null, 2)}\n`);
+  const humanOut = capture();
+  const humanResult = await runCli([
+    'execute', 'watch', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', created.run_id,
+    '--repair-linked-copy'
+  ], { stdout: humanOut, stderr: capture(), guardedRunDependencies: fixture.dependencies() });
+  assert.equal(humanResult.exitCode, 0);
+  assert.match(humanOut.text(), new RegExp(`run_id: ${created.run_id}`));
+  assert.equal(await readFile(mirror, 'utf8'), await readFile(fixture.runFile(fixture.managed, created.run_id), 'utf8'));
 });
 
 test('GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run', async (t) => {
@@ -748,6 +848,94 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
+  assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
+});
+
+test('GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-git-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const repo = path.join(root, 'repo');
+  const linked = path.join(root, 'linked');
+  await mkdir(repo, { recursive: true });
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await writeFile(path.join(repo, 'README.md'), '# fixture\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize real git fixture']);
+  await git(repo, ['worktree', 'add', '-b', 'feature/linked', linked]);
+
+  const sourceIdentity = await resolveGitIdentity(repo);
+  const linkedIdentity = await resolveGitIdentity(linked);
+  assert.equal(sourceIdentity.root_realpath, await realpath(repo));
+  assert.equal(linkedIdentity.root_realpath, await realpath(linked));
+  assert.notEqual(sourceIdentity.git_dir_realpath, linkedIdentity.git_dir_realpath);
+  assert.match(linkedIdentity.git_dir_realpath, /[/\\]worktrees[/\\]/);
+  assert.equal(sourceIdentity.head_sha, linkedIdentity.head_sha);
+});
+
+test('GRS-S-6 GRS-S-8 C-001 production CLI survives fresh processes across human and JSON Run commands', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-cli-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await writeConfig(repo, { managedWorktree: 'disabled' });
+  await writeFile(path.join(repo, 'README.md'), '# guarded Run CLI fixture\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize guarded Run CLI fixture']);
+
+  const createdProcess = await runVibeproProcess([
+    'execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json'
+  ], repo);
+  const created = JSON.parse(createdProcess.stdout);
+  assert.equal(created.status, 'running');
+  assert.equal(created.execution_context.authority_kind, 'repository');
+  assert.equal(created.execution_context.root_realpath, await realpath(repo));
+  const humanCreated = await runVibeproProcess([
+    'execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready'
+  ], repo);
+  assert.match(humanCreated.stdout, /# VibePro Guarded Run/);
+  assert.match(humanCreated.stdout, /status: running/);
+
+  const jsonStatus = await runVibeproProcess([
+    'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+  ], repo);
+  assert.deepEqual(JSON.parse(jsonStatus.stdout), created);
+  const humanStatus = await runVibeproProcess([
+    'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', created.run_id
+  ], repo);
+  assert.match(humanStatus.stdout, new RegExp(`run_id: ${created.run_id}`));
+
+  const jsonWatch = await runVibeproProcess([
+    'execute', 'watch', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+  ], repo);
+  assert.equal(JSON.parse(jsonWatch.stdout).run_id, created.run_id);
+  const humanWatch = await runVibeproProcess([
+    'execute', 'watch', repo, '--story-id', STORY_ID, '--run-id', created.run_id
+  ], repo);
+  assert.match(humanWatch.stdout, /status: running/);
+
+  const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+  await persistBlockedState(stateFile, '2026-07-15T04:00:00.000Z');
+  const jsonResume = await runVibeproProcess([
+    'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+  ], repo);
+  assert.equal(JSON.parse(jsonResume.stdout).status, 'running');
+  await persistBlockedState(stateFile, '2026-07-15T04:01:00.000Z');
+  const humanResume = await runVibeproProcess([
+    'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', created.run_id
+  ], repo);
+  assert.match(humanResume.stdout, /status: running/);
+
+  const jsonCancel = await runVibeproProcess([
+    'execute', 'cancel', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+  ], repo);
+  assert.equal(JSON.parse(jsonCancel.stdout).status, 'cancelled');
+  const humanCancel = await runVibeproProcess([
+    'execute', 'cancel', repo, '--story-id', STORY_ID, '--run-id', created.run_id
+  ], repo);
+  assert.match(humanCancel.stdout, /status: cancelled/);
 });
 
 test('GRS-S-9 INV-004 guarded Run source surface excludes action/runtime/waiver/merge imports and service replacement', async () => {
@@ -844,12 +1032,37 @@ async function createFixture(t, options = {}) {
   return fixture;
 }
 
-async function writeConfig(repo) {
+async function writeConfig(repo, options = {}) {
   await mkdir(path.join(repo, '.vibepro'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
     schema_version: '0.1.0',
-    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded Run test' }] }
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded Run test' }] },
+    ...(options.managedWorktree ? { execution: { managed_worktree: options.managedWorktree } } : {})
   }, null, 2)}\n`);
+}
+
+async function git(cwd, args) {
+  return execFileAsync('git', args, { cwd, encoding: 'utf8' });
+}
+
+async function runVibeproProcess(args, cwd) {
+  return execFileAsync(process.execPath, [CLI_BIN, ...args], { cwd, encoding: 'utf8' });
+}
+
+async function persistBlockedState(stateFile, timestamp) {
+  const state = JSON.parse(await readFile(stateFile, 'utf8'));
+  state.status = 'blocked';
+  state.stop_reason = { code: 'fixture_blocked', message: 'fixture blocked', details: {} };
+  state.updated_at = timestamp;
+  state.last_progress_at = timestamp;
+  state.transitions.push({
+    sequence: state.transitions.length + 1,
+    from: 'running',
+    to: 'blocked',
+    reason: 'fixture_blocked',
+    timestamp
+  });
+  await writeFile(stateFile, `${JSON.stringify(state, null, 2)}\n`);
 }
 
 async function writeLegacy(repo, legacy) {

@@ -126,6 +126,7 @@ import {
   updateExecutionStateFromPrPrepare
 } from './execution-state.js';
 import {
+  GuardedRunError,
   createGuardedRunSession,
   isGuardedRunError,
   renderGuardedRunError,
@@ -300,7 +301,8 @@ Guarded Run sessions:
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-      Observe, resume, or cancel a Run. Omission selects the newest Run deterministically.
+      Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
+      Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
       Restore a configured linked mirror from its authority; never promote the mirror.
 
@@ -534,7 +536,8 @@ Guarded Runセッション:
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-      Runを監視・再開・取消します。省略時は決定的な順序で最新Runを選びます。
+      Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
+      guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
       設定済みmirrorだけをauthorityから復旧し、mirrorをauthorityへ昇格しません。
 
@@ -2098,6 +2101,13 @@ export async function runCli(argv, io = {}) {
         const jsonOutput = hasFlag(rest, '--json');
         const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
         try {
+          if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
+            throw new GuardedRunError(
+              'invalid_target',
+              'Guarded Run commands support only target=pr_ready.',
+              { target: executionOptions.target, supported_target: 'pr_ready' }
+            );
+          }
           const result = subcommand === 'run'
             ? await guardedRun.run(repoRoot, runOptions)
             : subcommand === 'status'
