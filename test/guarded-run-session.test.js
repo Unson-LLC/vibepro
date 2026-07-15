@@ -276,14 +276,47 @@ test('GRS-S-8 S-008 existing creation lock fails closed without bootstrapping an
   const lock = fixture.creationLock();
   await mkdir(lock, { recursive: true });
   let bootstrapCalls = 0;
-  const session = fixture.session({
+  const dependencies = fixture.dependencies({
     startExecution: async () => {
       bootstrapCalls += 1;
       throw new Error('must not bootstrap while locked');
     }
   });
+  const session = createGuardedRunSession(dependencies);
 
-  await assert.rejects(session.run(fixture.source, { storyId: STORY_ID }), errorWithCode('run_creation_locked'));
+  await assert.rejects(
+    session.run(fixture.source, { storyId: STORY_ID }),
+    (error) => {
+      assert.equal(error.code, 'run_creation_locked');
+      assert.equal(error.details.lock_artifact, lock);
+      return true;
+    }
+  );
+
+  const jsonError = capture();
+  const jsonResult = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--json'
+  ], {
+    stdout: capture(),
+    stderr: jsonError,
+    guardedRunDependencies: dependencies
+  });
+  assert.equal(jsonResult.exitCode, 2);
+  assert.equal(JSON.parse(jsonError.text()).stop_reason.details.lock_artifact, lock);
+
+  const humanError = capture();
+  const humanResult = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID
+  ], {
+    stdout: capture(),
+    stderr: humanError,
+    guardedRunDependencies: dependencies
+  });
+  assert.equal(humanResult.exitCode, 2);
+  assert.ok(humanError.text().includes(`- lock_artifact: ${lock}\n`));
   assert.equal(bootstrapCalls, 0);
   assert.equal((await stat(lock)).isDirectory(), true);
 });
