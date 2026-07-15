@@ -19,7 +19,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass 43\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
+  assert.match(result.stdout, /# pass 45\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
   assert.match(result.stdout, /# fail 0\b/, 'focused contract and process-replay suites must have no failures');
 
   const ac1 = 'AC-1 execute run creates a Run with run_id, story_id, target, and autonomy_mode; disabled managed-worktree mode uses the source repository as repository authority';
@@ -30,7 +30,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
   assert.match(result.stdout, /recoverable transitions require a fresh typed stop reason without mutation/, ac2);
 
   const ac3 = 'AC-3 status and resume restore the same Run after restart, including a fingerprint-matched preferred-bootstrap source fallback without requiring extra legacy fields';
-  assert.match(result.stdout, /source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed/, ac3);
+  assert.match(result.stdout, /preferred source-fallback Run resumes from its canonical artifact in fresh CLI processes/, ac3);
 
   const ac4 = 'AC-4 watch displays transitions, cancel records terminal state without new side effects, repeated canonical cancel is byte-stable, and the lifecycle is a closed state machine';
   assert.match(result.stdout, /lifecycle matrix accepts only the closed transition set/, ac4);
@@ -39,6 +39,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
   const ac5 = 'AC-5 unknown transitions, stale HEAD, and resume from another worktree are rejected with a typed stop reason';
   assert.match(result.stdout, /resume fails closed on a stale authoritative HEAD without mutating the Run/, ac5);
   assert.match(result.stdout, /artifact path identity mismatches fail without mutation/, ac5);
+  assert.match(result.stdout, /unknown persisted status and transition target fail closed without mutation/, ac5);
 
   const ac6 = 'AC-6 existing execute start, status, next, and reconcile behavior and legacy state artifacts remain compatible';
   assert.match(result.stdout, /CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route/, ac6);

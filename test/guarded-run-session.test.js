@@ -874,6 +874,36 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
   }
 });
 
+test('GRS-S-5 unknown persisted status and transition target fail closed without mutation', async (t) => {
+  const transitionFixture = await createFixture(t, { mode: 'disabled' });
+  const transitionSession = transitionFixture.session();
+  await transitionSession.run(transitionFixture.source, { storyId: STORY_ID });
+  const transitionArtifact = transitionFixture.runFile(transitionFixture.source, RUN_ID);
+  const transitionBefore = await readFile(transitionArtifact, 'utf8');
+  await assert.rejects(
+    transitionSession.transition(transitionFixture.source, {
+      storyId: STORY_ID,
+      runId: RUN_ID,
+      to: 'future_status',
+      reason: 'fixture_future_transition'
+    }),
+    errorWithCode('unknown_status')
+  );
+  assert.equal(await readFile(transitionArtifact, 'utf8'), transitionBefore);
+
+  const persistedFixture = await createFixture(t, { mode: 'disabled' });
+  const persistedSession = persistedFixture.session();
+  const persisted = await persistedSession.run(persistedFixture.source, { storyId: STORY_ID });
+  const persistedArtifact = persistedFixture.runFile(persistedFixture.source, RUN_ID);
+  const unknown = `${JSON.stringify({ ...persisted, status: 'future_status' }, null, 2)}\n`;
+  await writeFile(persistedArtifact, unknown);
+  await assert.rejects(
+    persistedSession.status(persistedFixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('unknown_status')
+  );
+  assert.equal(await readFile(persistedArtifact, 'utf8'), unknown);
+});
+
 test('GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation', async (t) => {
   for (const to of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']) {
     const fixture = await createFixture(t, { mode: 'disabled' });
