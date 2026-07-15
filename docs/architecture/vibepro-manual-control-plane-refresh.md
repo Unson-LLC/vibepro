@@ -44,9 +44,14 @@ flowchart LR
 
 No CLI or artifact schema changes are introduced. Existing public guide URLs
 remain available, while new routes are additive. Internal routes intentionally
-stop building; rollback is a focused revert of the documentation/config commit.
-If build provenance is unavailable, the footer reports `unknown` rather than
-claiming a commit.
+stop building. The production rollback authority is the last known-good
+Cloudflare Pages production deployment: an operator restores it from **Workers
+& Pages → vibepro → Deployments → Rollback to this deployment** and verifies the
+restored public contract. This remains usable when the known-good Git commit
+predates the guarded deploy command. Reverting or repairing source and issuing a
+new guarded deployment is the follow-up corrective path, not the emergency
+rollback path. If build provenance is unavailable, the footer reports `unknown`
+rather than claiming a commit.
 
 ## Release Operations
 
@@ -57,5 +62,7 @@ claiming a commit.
 - Observability evidence: verify the English and Japanese roots, a
   representative guide route, required discovery files, social metadata, and
   `vibepro-source-commit` after deployment.
-- Rollback instruction: restore the last known-good commit, rerun the guarded
-  deploy, repeat the live checks, and record both failed and restored releases.
+- Rollback instruction: restore the last known-good successful production
+  deployment through the Cloudflare Pages Deployments dashboard, repeat the
+  live checks, and record both failed and restored deployment URLs and commit
+  provenance. Repair or revert source separately before a later guarded deploy.

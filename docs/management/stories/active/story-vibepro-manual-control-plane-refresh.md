@@ -7,7 +7,7 @@ period: 2026-07
 created_at: 2026-07-15
 updated_at: 2026-07-15
 parent_design: vibepro-manual-control-plane-refresh
-reason: "A single public-manual refresh is preferred over scattered copy edits because positioning, command validity, release truth, navigation, SEO, and source exposure form one user journey. Compatibility impact is limited to documentation, VitePress build configuration, and documentation drift tests; rollback is a single focused revert; architecture/spec/story internals remain repository-local and Brainbase remains an optional upstream context source."
+reason: "A single public-manual refresh is preferred over scattered copy edits because positioning, command validity, release truth, navigation, SEO, and source exposure form one user journey. Compatibility impact is limited to documentation, VitePress build configuration, and documentation drift tests; production rollback restores the last known-good Cloudflare Pages deployment while source repair or revert remains a separate follow-up; architecture/spec/story internals remain repository-local and Brainbase remains an optional upstream context source."
 ---
 
 # Story
