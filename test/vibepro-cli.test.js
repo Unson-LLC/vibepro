@@ -2646,6 +2646,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /workflow_heavy/);
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(output, /vibepro review record <repo>.*--inspection-summary <text>.*--inspection-input <path>.*--judgment-delta <text>/);
   assert.match(output, /vibepro execute merge <repo> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system init \[repo\]/);
@@ -4019,7 +4020,13 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
   assert.equal(staleReviewDetail.stage, 'implementation');
   assert.equal(staleReviewDetail.blocking, true);
   assert.match(staleReviewDetail.remediation_command, /vibepro review prepare \. --id story-pr-prepare --stage implementation/);
-  assert.equal(staleReviewDetail.remediation_commands.some((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command)), true);
+  const staleReviewRecordCommand = staleReviewDetail.remediation_commands
+    .find((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command));
+  assert.ok(staleReviewRecordCommand);
+  assert.match(staleReviewRecordCommand, /--inspection-summary "<inspection-summary>"/);
+  assert.match(staleReviewRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(staleReviewRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+  assert.match(staleReviewRecordCommand, /--agent-close-evidence <artifact>/);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'verification_command'), true);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'agent_review_result'), true);
   assert.match(staleGate.reason, /not bound to the current git state/);

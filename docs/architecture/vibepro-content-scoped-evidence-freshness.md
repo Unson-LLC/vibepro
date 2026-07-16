@@ -77,6 +77,10 @@ distinguish policy from an ad hoc override.
 - Strict HEAD evidence remains stale after any commit that changes the HEAD.
 - `gate:pr_freshness` exposes the binding model, bound surface, recorded/current
   heads, surface hashes, and stale reason for each bound evidence item.
+- Any `review record --status pass` command emitted by CLI help or stale-evidence
+  remediation includes the same inspection-summary, inspection-input, and
+  judgment-delta contract enforced by the recorder. Recovery guidance is a
+  public contract consumer, not detached documentation.
 
 ## Tradeoff
 

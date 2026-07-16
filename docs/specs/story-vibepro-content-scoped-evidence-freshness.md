@@ -83,6 +83,13 @@ Strict HEAD freshness MUST change invalidation policy only. The review record
 MUST still persist the inspected files and deterministic surface hash so a
 handoff can reconstruct what the reviewer inspected.
 
+### CEF-CONTRACT-009: Generated recovery commands satisfy the pass contract
+
+CLI help and stale agent-review remediation MUST include the inspection summary,
+existing inspection input, and judgment delta required by `review record
+--status pass`. A generated recovery command MUST NOT advertise the legacy
+assertion-only invocation.
+
 ## Scenarios
 
 - `CEF-S-1`: Given verification evidence bound to a source file, when a later
@@ -122,3 +129,5 @@ handoff can reconstruct what the reviewer inspected.
   roles that cannot be weakened by a global default, rejection of a global
   strict default, reason-required role policies, and reason-required CLI
   overrides, pass inspection requirements, and strict-mode surface persistence.
+- CLI and stale-artifact coverage assert that every advertised passing review
+  command includes the required inspection and judgment arguments.

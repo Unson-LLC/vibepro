@@ -59,7 +59,10 @@ reason:
 ## 既存挙動（inherited behavior）
 
 - Evidence recorded with explicit HEAD binding under the strict setting behaves as today and is unchanged.
-- Stale artifact remediation guidance (`stale_artifact_details` with remediation_command) is unchanged.
+- Stale artifact remediation semantics (`stale_artifact_details`) are unchanged,
+  but generated `review record` remediation commands must carry the new
+  inspection summary/input and judgment-delta arguments so the advertised
+  recovery path remains executable.
 - Evidence invalidation scoping by changed surface introduced in story-vibepro-scoped-evidence-invalidation remains valid and is extended, not replaced.
 
 ## CLI migration

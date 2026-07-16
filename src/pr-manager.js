@@ -11338,11 +11338,16 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
   if (artifact.artifact_type === 'agent_review_result') {
     const stageArg = artifact.stage ? shellQuote(artifact.stage) : '<stage>';
     const roleArg = artifact.role ? shellQuote(artifact.role) : '<role>';
+    const recordCommand = buildReviewRecordCommandTemplate(
+      storyId ?? '<story-id>',
+      artifact.stage ?? '<stage>',
+      artifact.role ?? '<role>'
+    );
     return [
       `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
       `vibepro review start . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-system codex --agent-id <agent-id>`,
       `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      `vibepro review record . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-transcript <artifact> --agent-closed --agent-close-evidence <artifact>`,
+      `${recordCommand} --agent-transcript <artifact> --agent-close-evidence <artifact>`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
