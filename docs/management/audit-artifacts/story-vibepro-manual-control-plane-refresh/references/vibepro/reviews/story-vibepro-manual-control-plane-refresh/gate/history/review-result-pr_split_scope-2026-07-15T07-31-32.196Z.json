@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "45ファイルは公開マニュアル刷新の一意図に収束し、生成元・生成物・日英導線・公開境界・テストが相互依存するためsplit不要",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "split-plan-stale-input",
+      "detail": "旧HEADのsplit-planはstaleなので現HEADでpr prepareを再生成する"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "全45変更パスをStory/Architecture/Spec 8条項へ分類し、差分、現HEAD証跡、公開dist、CLI smokeを確認",
+    "evidence": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-manual-control-plane-refresh.md",
+      ".vibepro/spec/story-vibepro-manual-control-plane-refresh/spec.json",
+      ".vibepro/qa/manual-control-plane-refresh/docs-build.json"
+    ]
+  },
+  "judgment_delta": [
+    "45ファイルでsplit候補 -> 日英対称ガイドと生成契約の原子的変更なのでbundled scopeを承認"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "actual_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T07:31:32.196Z",
+  "git_context": {
+    "head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T07:31:32.195Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "d20f0a448de28c50a9bd118180a477a6821a77f453b6fc8b9adbf6c419779ee0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/docs_pr_split_scope",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/manual-control-plane-refresh/review-pr-split-scope.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/manual-control-plane-refresh/review-pr-split-scope.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "checked_at": "2026-07-15T11:57:30Z",
+  "head": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+  "command": "npm view vibepro dist-tags --json",
+  "dist_tags": {
+    "alpha": "0.1.0-alpha.0",
+    "latest": "0.1.0-beta.0",
+    "beta": "0.1.0-beta.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+  "command": "node --test test/public-manual-deploy.test.js test/public-manual-build-contract.test.js test/public-manual-contract.test.js test/public-manual-build-runner.test.js test/cli-reference-docs.test.js test/cli-smoke.test.js test/uiux-docs-feature-map.test.js test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js test/adjudication.test.js test/judgment-adjudication.test.js test/pr-readiness-gate-status.test.js test/cli-status-honesty.test.js test/agent-review-independence.test.js",
+  "tests": 76,
+  "passed": 76,
+  "failed": 0,
+  "duration_ms": 52568.398084,
+  "coverage": [
+    "all eight acceptance criteria",
+    "tracked and untracked deploy preflight rejection",
+    "deploy build and generated metadata bound to immutable source commit",
+    "explicit public route inventory with missing-route rejection",
+    "generated CLI reference parity with malformed Usage rejection",
+    "public control-plane and human-authority contract",
+    "evidence and review lifecycle regression paths"
+  ]
+}

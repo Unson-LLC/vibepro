@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEADのrollback、parse failure、strict-head verification、common spine、responsibility authority、judgment adjudicationはすべて整合し、Gate Evidenceは十分",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-review-input-stale",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-gate_evidence.md"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "responsibility-unit-regression-evidence-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-prepare.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "rollback-evidence-artifact-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        "docs/reference/cloudflare-pages.md"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "再生成request、current pr-prepare、verification evidence、decision ledger、judgment adjudicationをHEAD 7ac051cのclean treeで再確認した",
+    "evidence": ".vibepro/qa/manual-control-plane-refresh/review-gate-evidence-v9.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "旧rollback path・stale input・parse underclassification・responsibility unit bindingの各欠落は、current active decision、fresh request、covered failure mode、full contract refsによりすべて解消した"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+    "current_head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "actual_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "current_head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T12:35:45.686Z",
+  "git_context": {
+    "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+    "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T12:35:45.648Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "30a76e247d05a8dfdd1d296264aab90a266f4d77a6b6a89804b2010c22416282",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/manual_gate_evidence_v4",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/manual-control-plane-refresh/review-gate-evidence-v9.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,358 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "差分が 55 files あり、レビュー可能な目安 30 files を超えている",
+    "repo制御ファイルやagent設定が差分に含まれている",
+    "baseからのcommitが 9 件あり、Story外の変更混入を確認する必要がある",
+    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 5 changed files が一致し、96 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 4205,
+    "edge_count": 9283,
+    "matched_file_count": 5,
+    "related_file_count": 96,
+    "investigation_files": [
+      "src/adjudication.js",
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/codex-manager.js",
+      "src/decision-records.js",
+      "src/design-modernize.js",
+      "src/design-ssot.js",
+      "src/design-system.js",
+      "src/diagnostic-engine.js",
+      "src/doctor.js",
+      "src/environment-graph.js",
+      "src/execution-state.js",
+      "src/explore-evidence.js",
+      "src/flow-verifier.js",
+      "src/graphify-adapter.js",
+      "src/guard.js",
+      "src/journey-map.js",
+      "src/language.js",
+      "src/managed-worktree-gate.js",
+      "src/managed-worktree.js",
+      "src/merge-manager.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "scripts/generate-cli-reference.mjs",
+        "matched_nodes": [
+          "scripts_generate_cli_reference_mjs",
+          "scripts_generate_cli_reference_readusagecommands",
+          "scripts_generate_cli_reference_renderreference"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_resolvediagnosisphaseoption",
+          "src_cli_getoption",
+          "src_cli_defaultsessionid",
+          "src_cli_renderauditmemoryresult",
+          "src_cli_renderhelp",
+          "src_cli_rendercheckpointlist"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/architecture-store.js",
+          "src/brainbase-importer.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/codex-manager.js"
+        ]
+      },
+      {
+        "file": "test/cli-reference-docs.test.js",
+        "matched_nodes": [
+          "test_cli_reference_docs_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/cli-smoke.test.js",
+        "matched_nodes": [
+          "test_cli_smoke_test_js",
+          "test_cli_smoke_test_git",
+          "test_cli_smoke_test_makestoryrepo",
+          "test_cli_smoke_test_makebaregitrepo",
+          "test_cli_smoke_test_repofor"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/uiux-docs-feature-map.test.js",
+        "matched_nodes": [
+          "test_uiux_docs_feature_map_test_js",
+          "test_uiux_docs_feature_map_test_readrepofile"
+        ],
+        "related_files": []
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "repo-control",
+      "order": 5,
+      "title": "Repository control and agent policy",
+      "category": "repo_control",
+      "recommendation": "separate_pr",
+      "files": [
+        "package.json"
+      ],
+      "required_gates": [
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "アプリ挙動変更とrepo制御変更が混ざっていないか",
+        "無関係なagent設定やignore規則を巻き込んでいないか"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-manual-control-plane-refresh-repo-control"
+    },
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-manual-control-plane-refresh.md",
+        "docs/architecture/vibepro-manual-control-plane-refresh.md",
+        "docs/public/llms.txt",
+        "docs/public/robots.txt"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-manual-control-plane-refresh-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "scripts/build-public-manual.mjs",
+        "scripts/check-public-manual-build.mjs",
+        "scripts/deploy-public-manual.mjs",
+        "scripts/generate-cli-reference.mjs",
+        "src/cli.js",
+        "test/cli-reference-docs.test.js",
+        "test/cli-smoke.test.js",
+        "test/public-manual-build-contract.test.js",
+        "test/public-manual-build-runner.test.js",
+        "test/public-manual-contract.test.js",
+        "test/public-manual-deploy.test.js",
+        "test/uiux-docs-feature-map.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 12,
+      "graph_investigation_files": [
+        "src/adjudication.js",
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/architecture-store.js",
+        "src/brainbase-importer.js",
+        "src/canonical-audit.js",
+        "src/check-packs.js",
+        "src/checkpoint-manager.js",
+        "src/ci-evidence.js",
+        "src/codex-manager.js"
+      ],
+      "suggested_branch": "feat/vibepro-manual-control-plane-refresh-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "CHANGELOG.md",
+        "design-ssot.json",
+        "docs/.vitepress/config.mjs",
+        "docs/guide/agent-review.md",
+        "docs/guide/ai-pr-workflow.md",
+        "docs/guide/checkpoints-and-execution.md",
+        "docs/guide/control-loop.md",
+        "docs/guide/feature-map.md",
+        "docs/guide/gates-and-evidence.md",
+        "docs/guide/getting-started.md",
+        "docs/guide/graphify-impact.md",
+        "docs/guide/managed-execution.md",
+        "docs/guide/release-and-audit.md",
+        "docs/guide/safety-model.md",
+        "docs/guide/verification-decisions-ci.md",
+        "docs/guide/what-is-vibepro.md",
+        "docs/index.md",
+        "docs/ja/guide/agent-review.md",
+        "docs/ja/guide/ai-pr-workflow.md",
+        "docs/ja/guide/checkpoints-and-execution.md",
+        "docs/ja/guide/control-loop.md",
+        "docs/ja/guide/feature-map.md",
+        "docs/ja/guide/gates-and-evidence.md",
+        "docs/ja/guide/getting-started.md",
+        "docs/ja/guide/graphify-impact.md",
+        "docs/ja/guide/managed-execution.md",
+        "docs/ja/guide/release-and-audit.md",
+        "docs/ja/guide/safety-model.md",
+        "docs/ja/guide/verification-decisions-ci.md",
+        "docs/ja/guide/what-is-vibepro.md",
+        "docs/ja/index.md",
+        "docs/ja/reference/cli.md",
+        "docs/ja/reference/cloudflare-pages.md",
+        "docs/ja/reference/version-history.md",
+        "docs/public/assets/vibepro-header.png",
+        "docs/reference/cli.md",
+        "docs/reference/cloudflare-pages.md",
+        "docs/reference/version-history.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 38,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-manual-control-plane-refresh-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "repo-control",
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 4,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "repo-control",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "git diff --check",
+          "npm run docs:cli:check && node --test --test-concurrency=2 test/workspace-status.test.js test/traceability-usage-report.test.js test/e2e/story-vibepro-usage-report-main.test.js"
+        ],
+        "cumulative_checks": [],
+        "review_note": "repo-control は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-concurrency=2 test/cli-reference-docs.test.js test/cli-smoke.test.js test/public-manual-build-contract.test.js test/public-manual-build-runner.test.js test/public-manual-contract.test.js test/public-manual-deploy.test.js test/uiux-docs-feature-map.test.js",
+          "npm run docs:cli:check && node --test --test-concurrency=2 test/workspace-status.test.js test/traceability-usage-report.test.js test/e2e/story-vibepro-usage-report-main.test.js"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test --test-concurrency=2 test/cli-reference-docs.test.js test/cli-smoke.test.js test/public-manual-build-contract.test.js test/public-manual-build-runner.test.js test/public-manual-contract.test.js test/public-manual-deploy.test.js test/uiux-docs-feature-map.test.js",
+        "npm run docs:cli:check && node --test --test-concurrency=2 test/workspace-status.test.js test/traceability-usage-report.test.js test/e2e/story-vibepro-usage-report-main.test.js"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "repo-control",
+      "action": "Create feat/vibepro-manual-control-plane-refresh-repo-control with 1 files",
+      "command": "git switch -c feat/vibepro-manual-control-plane-refresh-repo-control <base> && git add package.json"
+    },
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-manual-control-plane-refresh-requirements-ssot with 4 files",
+      "command": "git switch -c feat/vibepro-manual-control-plane-refresh-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-manual-control-plane-refresh.md docs/architecture/vibepro-manual-control-plane-refresh.md docs/public/llms.txt docs/public/robots.txt"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-manual-control-plane-refresh-runtime-behavior with 12 files",
+      "command": "git switch -c feat/vibepro-manual-control-plane-refresh-runtime-behavior <base> && git add scripts/build-public-manual.mjs scripts/check-public-manual-build.mjs scripts/deploy-public-manual.mjs scripts/generate-cli-reference.mjs src/cli.js test/cli-reference-docs.test.js test/cli-smoke.test.js test/public-manual-build-contract.test.js test/public-manual-build-runner.test.js test/public-manual-contract.test.js test/public-manual-deploy.test.js test/uiux-docs-feature-map.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-manual-control-plane-refresh-misc-follow-up with 38 files",
+      "command": "git switch -c feat/vibepro-manual-control-plane-refresh-misc-follow-up <base> && git add CHANGELOG.md design-ssot.json docs/.vitepress/config.mjs docs/guide/agent-review.md docs/guide/ai-pr-workflow.md docs/guide/checkpoints-and-execution.md docs/guide/control-loop.md docs/guide/feature-map.md docs/guide/gates-and-evidence.md docs/guide/getting-started.md docs/guide/graphify-impact.md docs/guide/managed-execution.md docs/guide/release-and-audit.md docs/guide/safety-model.md docs/guide/verification-decisions-ci.md docs/guide/what-is-vibepro.md docs/index.md docs/ja/guide/agent-review.md docs/ja/guide/ai-pr-workflow.md docs/ja/guide/checkpoints-and-execution.md docs/ja/guide/control-loop.md docs/ja/guide/feature-map.md docs/ja/guide/gates-and-evidence.md docs/ja/guide/getting-started.md docs/ja/guide/graphify-impact.md docs/ja/guide/managed-execution.md docs/ja/guide/release-and-audit.md docs/ja/guide/safety-model.md docs/ja/guide/verification-decisions-ci.md docs/ja/guide/what-is-vibepro.md docs/ja/index.md docs/ja/reference/cli.md docs/ja/reference/cloudflare-pages.md docs/ja/reference/version-history.md docs/public/assets/vibepro-header.png docs/reference/cli.md docs/reference/cloudflare-pages.md docs/reference/version-history.md"
+    }
+  ]
+}

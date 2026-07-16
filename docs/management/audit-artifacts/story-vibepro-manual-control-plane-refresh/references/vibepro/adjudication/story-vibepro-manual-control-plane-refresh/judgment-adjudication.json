@@ -1,0 +1,212 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "updated_at": "2026-07-15T12:27:44.575Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Malformed and empty Usage inputs fail closed in parseUsageCommands, and four current-head strict-bound CLI reference tests pass; the covered classification now matches the implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:27:44.574Z"
+    },
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Current-head tests exercise stale, missing, pending, and blocking gate transitions through adjudication and PR readiness with strict-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:27:07.297Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Current-head targeted lifecycle tests verify stale and strict-head evidence, independent review inspection, adjudication, artifact handoff behavior, and the full suite has no remaining known failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:27:07.031Z"
+    },
+    {
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "reason": "Latest decision records bind rollback evidence to the existing English and Japanese Cloudflare Pages runbooks; clean-tree, commit-provenance, and rollback instructions are verified before PR, while Cloudflare authority, deployment ID, and live rollback observation are explicitly bounded to post-merge operations without being claimed as pre-PR facts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:18:19.757Z"
+    },
+    {
+      "item_id": "failure:workflow_state",
+      "verdict": "judged_sound",
+      "reason": "Review and adjudication tests cover state transitions and PR-readiness blocking behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:14.699Z"
+    },
+    {
+      "item_id": "failure:evidence_lifecycle",
+      "verdict": "judged_sound",
+      "reason": "Focused lifecycle tests verify strict-head evidence freshness and independent review provenance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:14.344Z"
+    },
+    {
+      "item_id": "failure:parse",
+      "verdict": "judged_sound",
+      "reason": "Generated CLI reference parsing fails closed when Usage output or command discovery is absent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:13.942Z"
+    },
+    {
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "reason": "Build provenance and guarded deployment mechanics are evidenced, with live deployment explicitly deferred until after merge.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:13.444Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "The branch is a focused public-manual control-plane refresh with coherent Story, architecture, spec, tests, and runbooks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:12.882Z"
+    },
+    {
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "reason": "The documentation-only change does not mutate persisted data and the recorded decision correctly bounds this axis.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:12.346Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "The explicit 42-route contract, robots, sitemap, llms, metadata, and internal-route exclusions are verified by build checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:11.663Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Strict-head unit, integration, typecheck, build, and acceptance-criteria evidence covers the stated completion surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:11.278Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "CLI drift, route loss, dirty-tree deploys, stale evidence, and review lifecycle failures are represented by negative-path checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:10.902Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Public documentation publishing is separated from internal corpora and from post-merge Cloudflare operational authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:10.535Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Bilingual parity, generated CLI truth, internal-corpus exclusion, and source-commit provenance are explicit and verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:10.274Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current HEAD is supported by 76 focused tests, a 162-file documentation build, and the reconciled 1113-test full-suite closure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:09.999Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Story acceptance criteria, scope, non-goals, boundaries, and manual control-plane intent agree with the inspected implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/manual_judgment_adjudication_v6",
+        "session_ref": "/root/manual_judgment_adjudication_v6"
+      },
+      "head_commit": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+      "recorded_at": "2026-07-15T12:15:09.713Z"
+    }
+  ]
+}

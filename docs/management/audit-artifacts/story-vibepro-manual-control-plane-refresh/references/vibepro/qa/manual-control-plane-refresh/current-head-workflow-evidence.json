@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+  "workflow_replay": {
+    "command": "node --test --test-concurrency=2 test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js test/judgment-adjudication.test.js test/pr-readiness-gate-status.test.js test/agent-review-independence.test.js",
+    "tests": 36,
+    "passed": 36,
+    "failed": 0,
+    "flow_replay": "pass",
+    "artifact_replay": "pass",
+    "scenario_clause_e2e": "pass"
+  },
+  "responsibility_regression": {
+    "command": "npm run docs:cli:check && node --test --test-concurrency=2 test/workspace-status.test.js test/traceability-usage-report.test.js test/e2e/story-vibepro-usage-report-main.test.js",
+    "tests": 20,
+    "passed": 20,
+    "failed": 0,
+    "VIBE-CORE-COST-001": "unit_regression pass",
+    "VIBE-CORE-STATUS-001": "unit_regression pass",
+    "integration_runtime_path": "pass",
+    "negative_path": "pass"
+  },
+  "release_operations": {
+    "command": "npm run docs:build",
+    "files": 162,
+    "release_note": "CHANGELOG.md",
+    "rollout_plan": "docs/reference/cloudflare-pages.md",
+    "rollback_instruction": "Cloudflare Pages last-known-good production deployment",
+    "observability_evidence": "EN/JA landing, discovery files, and source-commit live checks",
+    "canonical_source_guard": "fresh origin/main before and after build",
+    "status": "pass"
+  }
+}

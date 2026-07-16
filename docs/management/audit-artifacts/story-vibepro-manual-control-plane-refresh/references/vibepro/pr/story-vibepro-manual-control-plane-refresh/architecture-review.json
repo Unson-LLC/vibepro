@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "created_at": "2026-07-16T11:38:48.883Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-manual-control-plane-refresh.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-manual-control-plane-refresh.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-manual-control-plane-refresh.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "8 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T11:38:46.274Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "fa5685efbeb4f60ef0cc81b2f8b1189f7d06023f",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
