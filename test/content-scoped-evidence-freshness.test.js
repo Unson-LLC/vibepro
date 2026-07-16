@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { buildContentBinding } from '../src/content-binding.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -54,6 +55,29 @@ async function makeGitRepoWithStory() {
 function findGate(result, id) {
   return result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === id);
 }
+
+test('content binding fails closed on unreadable inspection inputs without exposing the repository root', async () => {
+  const repo = await makeGitRepoWithStory();
+  const target = path.join(repo, 'src', 'content-binding-target.js');
+  await chmod(target, 0o000);
+  try {
+    await assert.rejects(
+      buildContentBinding(repo, {
+        inspectionInputs: ['src/content-binding-target.js'],
+        gitContext: { head_sha: 'test-head' }
+      }),
+      (error) => {
+        assert.equal(error.code, 'CONTENT_BINDING_READ_FAILED');
+        assert.equal(error.cause_code, 'EACCES');
+        assert.equal(error.message, 'cannot read content binding surface: src/content-binding-target.js');
+        assert.equal(error.message.includes(repo), false);
+        return true;
+      }
+    );
+  } finally {
+    await chmod(target, 0o600);
+  }
+});
 
 test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and stales on bound surface changes', async () => {
   const repo = await makeGitRepoWithStory();

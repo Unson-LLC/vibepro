@@ -154,7 +154,10 @@ async function snapshotFile(repoRoot, filePath) {
     };
   } catch (error) {
     if (error.code === 'ENOENT') return { missing: true, file: null };
-    throw error;
+    const wrapped = new Error(`cannot read content binding surface: ${filePath}`);
+    wrapped.code = 'CONTENT_BINDING_READ_FAILED';
+    wrapped.cause_code = error.code ?? 'UNKNOWN';
+    throw wrapped;
   }
 }
 

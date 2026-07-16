@@ -6,6 +6,7 @@ const STORY_ID = 'story-vibepro-content-scoped-evidence-freshness';
 
 test('story-vibepro-content-scoped-evidence-freshness acceptance coverage', async () => {
   const implementation = await readFile(new URL('../content-scoped-evidence-freshness.test.js', import.meta.url), 'utf8');
+  const inspectionContract = await readFile(new URL('../review-inspection-first.test.js', import.meta.url), 'utf8');
   const prManager = await readFile(new URL('../../src/pr-manager.js', import.meta.url), 'utf8');
 
   // story-vibepro-content-scoped-evidence-freshness ac:1
@@ -38,6 +39,22 @@ test('story-vibepro-content-scoped-evidence-freshness acceptance coverage', asyn
   assert.match(implementation, /CEF-S-1\/2\/5/);
   assert.match(implementation, /CEF-S-3/);
   assert.match(implementation, /CEF-S-4/);
+
+  // story-vibepro-content-scoped-evidence-freshness ac:7
+  // CEF-S-7: 通常roleはcontent-surface、高リスクroleと理由付きoverrideだけがstrict HEADを使う。
+  assert.match(implementation, /high-risk gate roles strict by default/);
+  assert.match(implementation, /strict HEAD CLI override requires and records an explicit reason/);
+
+  // story-vibepro-content-scoped-evidence-freshness ac:8
+  // CEF-S-8: pass reviewはinspection summary、実在input、judgment delta、束縛surfaceが必須。
+  assert.match(inspectionContract, /without inspection flags rejects gate_evidence pass/);
+  assert.match(inspectionContract, /without handoff inputs and judgment delta/);
+  assert.match(implementation, /rejects generated workspace artifacts as the only inspection input/);
+
+  // story-vibepro-content-scoped-evidence-freshness ac:9
+  // CEF-S-9: strict HEAD reviewでもinspected surface/hashを保存する。
+  assert.match(implementation, /preserving inspected files/);
+  assert.match(implementation, /content_binding\.surface_files/);
 
   // story-vibepro-content-scoped-evidence-freshness S-001
   // Given verification evidence bound to a source file, when a later commit changes only docs, then `pr prepare` treats that evidence as current.

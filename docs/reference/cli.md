@@ -4,7 +4,7 @@
 
 The running binary is authoritative. Check its package version with `vibepro version`; when reading the manual from `main`, use [Release and Audit](/guide/release-and-audit) to distinguish unreleased behavior from the published package.
 
-Run `story diagnose --phase design-input --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `story diagnose --phase pre-implementation --run-graphify`. The normal shipping path is `story diagnose` → Architecture / Spec → implementation → `verify record` → `review prepare/start/close/record` → `adjudicate` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` → `execute merge`. Use the generated Usage below for the complete argument contract.
+Run `story diagnose --phase design-input --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `story diagnose --phase pre-implementation --run-graphify`. The normal shipping path is `story diagnose` → Architecture / Spec → implementation → `verify record` → `review prepare/start/close/record` → `adjudicate` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` → `execute merge`. A `review record --status pass` now requires `--inspection-summary`, an existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`. Legacy assertion-only pass records intentionally fail closed, so existing automation must migrate. Use the generated Usage below for the complete argument contract.
 
 ## Current Usage
 
