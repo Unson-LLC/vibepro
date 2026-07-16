@@ -6,7 +6,7 @@ This file is the thin, always-loaded entrypoint for agents working **on the Vibe
 
 1. **Self-dogfood**: changes to this repo go through VibePro's own flow — Story → Architecture → Spec → Task → Code → Gate → PR. Do not bypass with raw `gh pr create` or raw GitHub merge; use `vibepro pr create` and `vibepro execute merge`.
 2. **Run the CLI via the `vibepro` binary or `node bin/vibepro.js` from the repo root.** Never `node src/cli.js` from a symlinked path (e.g. `/private/tmp` worktrees): the entrypoint check fails silently and the command becomes a no-op with exit 0.
-3. **Commit ordering**: finalize the whole tree (code, tests, Story/Spec docs, config registration) → record verification evidence → run Agent Review once → `pr prepare` → `pr create`. Evidence and reviews are head-bound; commits after recording make them stale.
+3. **Evidence freshness**: finalize the intended review surface before recording. Reviews are content-surface-bound by default, so unrelated commits may preserve them; only configured high-risk roles or a reasoned `--strict-head-binding` override are bound to every HEAD change.
 4. **One intent = one focused commit.** Stage explicitly; never `git add -A` in mixed worktrees. Create branches only from inside the target worktree.
 5. **Evidence over assertion**: when claiming something works, cite the command, artifact, log, or test used to verify it. `pr-prepare.json` gate_status is the readiness source of truth, not the PR body.
 6. **Do not clean dirty worktrees by reflex.** Classify first (status, diffs, reflog); see the Git guardrails in `skills/vibepro-workflow/SKILL.md`.

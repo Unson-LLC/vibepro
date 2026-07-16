@@ -27,7 +27,13 @@ async function setupRepo() {
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);
   await writeFile(path.join(root, 'README.md'), '# test');
-  await git(root, ['add', 'README.md']);
+  await mkdir(path.join(root, 'src'), { recursive: true });
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'src', 'agent-review.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'test', 'foo.test.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'test', 'review-inspection-first.test.js'), 'export const fixture = true;\n');
+  await git(root, ['add', 'README.md', 'src', 'test']);
   await git(root, ['commit', '-m', 'init']);
   await mkdir(path.join(root, '.vibepro'), { recursive: true });
   await writeFile(
@@ -98,6 +104,10 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /inspection_evidence/);
   assert.match(content, /inspection_inputs/);
   assert.match(content, /judgment_delta/);
+  assert.match(content, /actual source, test, Story, Spec, contract, or config files/i);
+  assert.match(content, /generated `.vibepro` artifact alone is not a content surface/i);
+  assert.match(content, /Do not add `--strict-head-binding` unless making a deliberate CLI override/i);
+  assert.match(content, /`--strict-head-reason` is required/i);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {

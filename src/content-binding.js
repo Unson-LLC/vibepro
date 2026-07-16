@@ -7,19 +7,6 @@ export const CONTENT_BINDING_MODEL = 'vibepro-content-scoped-evidence-freshness-
 export async function buildContentBinding(repoRoot, options = {}) {
   const mode = options.strictHead === true ? 'strict_head' : 'content_surface';
   const refs = collectSurfaceRefs(options);
-  if (mode === 'strict_head') {
-    return {
-      schema_version: '0.1.0',
-      model: CONTENT_BINDING_MODEL,
-      mode,
-      status: 'strict_head',
-      reason: 'strict HEAD binding was requested for this evidence',
-      recorded_head_sha: options.gitContext?.head_sha ?? null,
-      surface_files: [],
-      missing_files: [],
-      surface_hash: null
-    };
-  }
   const surfaceFiles = [];
   const missingFiles = [];
   for (const ref of refs) {
@@ -36,6 +23,19 @@ export async function buildContentBinding(repoRoot, options = {}) {
   }
   const dedupedFiles = dedupeSurfaceFiles(surfaceFiles);
   const dedupedMissing = [...new Set(missingFiles)].sort();
+  if (mode === 'strict_head') {
+    return {
+      schema_version: '0.1.0',
+      model: CONTENT_BINDING_MODEL,
+      mode,
+      status: 'strict_head',
+      reason: 'strict HEAD binding was requested for this evidence',
+      recorded_head_sha: options.gitContext?.head_sha ?? null,
+      surface_files: dedupedFiles,
+      missing_files: dedupedMissing,
+      surface_hash: dedupedFiles.length > 0 ? hashSurface(dedupedFiles) : null
+    };
+  }
   return {
     schema_version: '0.1.0',
     model: CONTENT_BINDING_MODEL,

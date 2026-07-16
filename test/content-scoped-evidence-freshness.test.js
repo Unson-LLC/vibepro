@@ -14,6 +14,16 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
+async function captureRunCli(args) {
+  let stdout = '';
+  let stderr = '';
+  const result = await runCli(args, {
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: (chunk) => { stderr += chunk; } }
+  });
+  return { ...result, stdout, stderr };
+}
+
 async function makeGitRepoWithStory() {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-content-binding-'));
   await git(repo, ['init', '-b', 'main']);
@@ -131,6 +141,8 @@ test('CEF-S-3 review evidence uses inspected input content binding across docs-o
   ]);
   assert.equal(recordResult.exitCode, 0);
   assert.equal(recordResult.result.review.content_binding.mode, 'content_surface');
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
+  assert.equal(recordResult.result.review.freshness_policy.source, 'content_surface_default');
 
   await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nReview still current.\n');
   await git(repo, ['add', 'docs/notes.md']);
@@ -147,6 +159,264 @@ test('CEF-S-3 review evidence uses inspected input content binding across docs-o
   assert.equal(staleRole.binding_status, 'stale');
   assert.match(staleRole.stale_reason, /content-bound evidence surface changed/);
   assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
+});
+
+test('review freshness policy keeps high-risk gate roles strict by default while preserving inspected files', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', 'gate_evidence']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence reviewed',
+    '--inspection-summary',
+    'read the implementation surface and gate inputs',
+    '--inspection-input',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'generic pass -> accepted after inspecting the implementation surface',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-gate-freshness-review',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
+  assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
+  assert.match(recordResult.result.review.freshness_policy.reason, /gate evidence reviews/);
+  assert.equal(recordResult.result.review.content_binding.mode, 'strict_head');
+  assert.deepEqual(
+    recordResult.result.review.content_binding.surface_files.map((file) => file.path),
+    ['src/content-binding-target.js']
+  );
+});
+
+test('role policy can explicitly narrow a built-in strict exception to content surface', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    roles: {
+      gate_evidence: {
+        freshness_mode: 'content_surface'
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', 'gate_evidence']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence reviewed against an explicit surface',
+    '--inspection-summary',
+    'read the implementation surface',
+    '--inspection-input',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'built-in strict default -> content scoped because the role policy names a complete file surface',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-gate-content-policy-review',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
+  assert.equal(recordResult.result.review.freshness_policy.source, 'role_policy');
+  assert.equal(recordResult.result.review.content_binding.mode, 'content_surface');
+});
+
+test('global content-surface default cannot weaken a built-in strict role', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    defaults: {
+      freshness_mode: 'content_surface'
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', 'gate_evidence']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence keeps its built-in strict policy',
+    '--inspection-summary',
+    'read the implementation surface',
+    '--inspection-input',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'global content default -> built-in strict policy retained',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-gate-global-default-review',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
+  assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
+});
+
+test('review strict HEAD CLI override requires and records an explicit reason', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);
+  const baseArgs = [
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'runtime contract reviewed',
+    '--inspection-summary',
+    'read the runtime implementation',
+    '--inspection-input',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'content-scoped default -> strict because the complete release head is the review subject',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-cli-strict-review',
+    '--agent-closed',
+    '--strict-head-binding'
+  ];
+  const missingReason = await captureRunCli(baseArgs);
+  assert.equal(missingReason.exitCode, 1);
+  assert.match(missingReason.stderr, /requires --strict-head-reason/);
+
+  const recorded = await runCli([
+    ...baseArgs,
+    '--strict-head-reason',
+    'the complete release candidate head is the inspected contract'
+  ]);
+  assert.equal(recorded.exitCode, 0);
+  assert.equal(recorded.result.review.freshness_policy.effective_mode, 'strict_head');
+  assert.equal(recorded.result.review.freshness_policy.source, 'cli_override');
+  assert.equal(
+    recorded.result.review.freshness_policy.reason,
+    'the complete release candidate head is the inspected contract'
+  );
+});
+
+test('custom strict HEAD role policy requires and persists its rationale', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    roles: {
+      runtime_contract: { freshness_mode: 'strict_head' }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);
+  const args = [
+    'review', 'record', repo,
+    '--id', 'story-content-binding',
+    '--stage', 'implementation',
+    '--role', 'runtime_contract',
+    '--status', 'pass',
+    '--summary', 'runtime contract reviewed as a full-head exception',
+    '--inspection-summary', 'read the runtime implementation',
+    '--inspection-input', 'src/content-binding-target.js',
+    '--judgment-delta', 'content surface default -> strict because the runtime contract spans the release head',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'codex-config-strict-review',
+    '--agent-closed'
+  ];
+  const missingReason = await captureRunCli(args);
+  assert.equal(missingReason.exitCode, 1);
+  assert.match(missingReason.stderr, /configures strict_head freshness without freshness_reason/);
+
+  config.agent_reviews.roles.runtime_contract.freshness_reason = 'runtime compatibility spans the complete release head';
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const recorded = await runCli(args);
+  assert.equal(recorded.exitCode, 0);
+  assert.equal(recorded.result.review.freshness_policy.source, 'role_policy');
+  assert.equal(recorded.result.review.freshness_policy.reason, 'runtime compatibility spans the complete release head');
+});
+
+test('content-scoped pass rejects generated workspace artifacts as the only inspection input', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);
+  const result = await captureRunCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'generated request only',
+    '--inspection-summary',
+    'read only the generated review request',
+    '--inspection-input',
+    '.vibepro/reviews/story-content-binding/implementation/review-request-runtime_contract.md',
+    '--artifact',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'generic pass -> unsupported because no implementation input was inspected',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-generated-only-review',
+    '--agent-closed'
+  ]);
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /actual inspected surface is captured/);
 });
 
 test('CEF-S-4 strict HEAD binding still invalidates docs-only commits', async () => {

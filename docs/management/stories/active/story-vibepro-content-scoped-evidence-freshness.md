@@ -15,7 +15,13 @@ related_stories:
 spec_docs:
   - docs/specs/story-vibepro-content-scoped-evidence-freshness.md
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-17
+reason:
+  decision: "通常レビューは inspected content surface に束縛し、HEAD 全体への束縛は高リスク role または理由付き明示指定に限定する"
+  alternatives: "全レビューを HEAD 束縛のまま維持する案は、無関係コミットによる再レビューを増やし、判断品質ではなく運用コストだけを増やすため採用しない"
+  compatibility: "gate_evidence と release_risk は built-in strict role として従来の HEAD 鮮度を維持し、CLI でも理由付き strict override を残す。pass review の旧呼び出しは暗黙補完せず fail closed とし、inspection-summary / inspection-input / judgment-delta を追加する明示移行を要求する"
+  rollback: "既定 freshness policy と strict role 定義を従来値へ戻せば、保存済み content_binding を破壊せず旧挙動へ戻せる"
+  boundary: "dependency graph からの surface 自動推論や、inspection を伴わない pass の自動補完は行わない"
 ---
 
 # Story
@@ -34,6 +40,8 @@ updated_at: 2026-07-05
 - `pr prepare` の鮮度判定は、束縛された surface のコンテンツハッシュが現在のツリーと一致するかで行う。surface 外のファイルだけが変わったコミットでは証跡は current のまま。
 - レビュー証跡（agent review record）にも同じコンテンツ束縛を適用する。
 - 高リスクゲート（security 系・release 系）には strict HEAD 束縛を要求できる設定を残す。
+- 通常レビューの既定を `content_surface` とし、strict HEAD は built-in 高リスク role、理由付き role policy、または理由付き明示指定に限定する。
+- `pass` レビューは inspection summary、実在する `.vibepro` 外の inspection input、judgment delta、inspection input と交差する content-bound surface を必須とする。
 - `gate:pr_freshness` の詳細に、各証跡がどの surface に束縛され、どのファイル変更で失効したかを表示する。
 
 ## Acceptance Criteria
@@ -44,12 +52,23 @@ updated_at: 2026-07-05
 - [ ] CEF-S-4: strict HEAD 束縛を要求する設定が有効なゲートでは、任意のコミットで従来どおり失効する。
 - [ ] CEF-S-5: `gate:pr_freshness` の詳細から、証跡ごとの束縛 surface と失効理由（どのファイルが変わったか）を確認できる。
 - [ ] CEF-S-6: テストで docs-only 継続 / surface 内変更失効 / review 証跡 / strict 設定の各分岐を固定する。
+- [ ] CEF-S-7: 通常 role は既定で content-surface freshness を使い、built-in 高リスク role、`freshness_reason` を伴う role policy、または理由付き `--strict-head-binding` だけが strict HEAD freshness を使う。
+- [ ] CEF-S-8: `pass` の記録は inspection summary、実在する `.vibepro` 外の inspection input、judgment delta、および inspection input に束縛された surface が揃わない限り拒否される。
+- [ ] CEF-S-9: strict HEAD review でも inspected surface/hash を保存し、何を読んだ判断かを後から再構成できる。
 
 ## 既存挙動（inherited behavior）
 
 - Evidence recorded with explicit HEAD binding under the strict setting behaves as today and is unchanged.
 - Stale artifact remediation guidance (`stale_artifact_details` with remediation_command) is unchanged.
 - Evidence invalidation scoping by changed surface introduced in story-vibepro-scoped-evidence-invalidation remains valid and is extended, not replaced.
+
+## CLI migration
+
+既存の `review record --status pass` 自動化は、`--inspection-summary`、
+少なくとも1つの実在する `.vibepro` 外の `--inspection-input`、および
+`--judgment-delta` を渡すよう更新する。旧呼び出しを暗黙にpassへ昇格する
+互換shimは設けない。判断根拠を再構成できない既存自動化はエラーで停止し、
+入力を追加して再実行する。`needs_changes` と `block` の記録契約は変更しない。
 
 ## Non Goals
 
