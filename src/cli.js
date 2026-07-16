@@ -372,6 +372,12 @@ Existing UI modernization:
   journey-context.json into the plan artifacts, and keeps non-curated handoff
   evidence visible instead of treating it as an authoritative product Journey.
 
+Public Discovery targets:
+  --base-url inspects the deployed HTTP(S) root and same-origin sitemap pages;
+  --public-dir inspects built HTML recursively; without either flag, source files are inspected.
+  Target priority is base-url > public-dir > source. Zero scanned pages are inconclusive,
+  not a clean pass; coverage also reports discovered, selected, omitted, failed, and scanned counts.
+
 Usage:
   vibepro help [command]
   vibepro version
@@ -402,7 +408,7 @@ Usage:
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check list
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
@@ -614,6 +620,12 @@ base branch:
   未生成ならJourney workflow経由で作成し、plan artifactにjourney-context.jsonを書き、
   curatedではないhandoff証跡をauthoritative Journeyとして扱わずに表示します。
 
+Public Discoveryの対象:
+  --base-url は公開済みHTTP(S) rootと同一originのsitemapページ、--public-dir は
+  build済みHTMLを再帰検査し、どちらも無ければsourceを検査します。優先順位は
+  base-url > public-dir > sourceです。検査0件は合格ではなくinconclusiveであり、
+  coverageには発見・選択・除外・失敗・検査件数をそれぞれ残します。
+
 英語で表示したい場合:
   vibepro init <repo> --language en
   vibepro config language <repo> --language en
@@ -648,7 +660,7 @@ Usage:
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check list
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
@@ -1488,6 +1500,8 @@ export async function runCli(argv, io = {}) {
         includeHarness: hasFlag(rest, '--include-harness'),
         includePublicDiscovery: hasFlag(rest, '--include-public-discovery'),
         baseUrl: getOption(rest, '--base-url'),
+        publicDir: getOption(rest, '--public-dir'),
+        fetchImpl: io.fetchImpl,
         pages: parseCsvOption(rest, '--pages'),
         apis: parseCsvOption(rest, '--apis'),
         samples: parseNumberOption(rest, '--samples') ?? 5,

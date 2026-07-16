@@ -32,6 +32,9 @@ Use these mappings:
 - PR readiness: `vibepro check pr-readiness <repo> --story-id <story-id> --base <ref> --head <ref>`
 - Release or handoff readiness: `vibepro check launch-readiness <repo> --story-id <story-id>`
 - Broad inspection: `vibepro check all <repo> --story-id <story-id>`
+- Public page source inspection: `vibepro check public-discovery <repo>`
+- Built public site inspection: `vibepro check public-discovery <repo> --public-dir <build-output-dir>`
+- Deployed public site inspection: `vibepro check public-discovery <repo> --base-url <https-url>`
 
 Package evidence is written to:
 
@@ -111,6 +114,15 @@ Run evidence is written to:
 - If a direct server function / Server Action call is replaced by an HTTP API call, treat it as a contract change requiring route, schema, auth/runtime, and network-aware E2E evidence.
 - In `vibepro verify flow`, API 4xx/5xx, API HTML responses, console/page errors, `Failed to fetch`, `Unexpected token '<'`, and visible loading failure text are Gate failures even when the UI appears to render.
 
+## Public Discovery Guardrails
+
+- Prefer `--base-url` when the claim concerns the deployed site, and `--public-dir` when the claim concerns generated HTML before deploy. Argument-free source mode cannot prove the built or deployed representation.
+- Input precedence is `--base-url` over `--public-dir` over repository source. An explicit input that cannot be inspected must stay explicit; do not silently fall back to source mode.
+- Inspect `evidence.public_discovery.scan_coverage` in `check.json`. Report `mode`, `roots`, `discovered_count`, `scanned_count`, `failed_count`, and `errors` alongside findings.
+- `scan_coverage.status: inconclusive` means VibePro inspected zero public pages. It is non-blocking for compatibility, but it is not evidence of a pass. Preserve the aggregate `inconclusive_count` in reports.
+- Public Discovery finding rows and coverage are independent. Zero findings means no matching issue was found; only `scan_coverage.scanned_count > 0` proves that at least one page was actually inspected.
+- Live mode is read-only and bounded: HTTP(S) GET only, same-origin root/sitemap targets, at most 40 pages, 2 MiB per response, and 10 seconds per request. It does not execute client JavaScript or inspect authenticated flows.
+
 ## UI Interactive Contract Guardrails
 
 - `vibepro check ui` must evaluate the screen at the level of visible interaction contracts, not only at the Story E2E level.
@@ -134,6 +146,7 @@ Run evidence is written to:
 - "The main E2E path passed, so UI controls are fine." UI-heavy changes need clickable-looking controls and alternate surfaces checked.
 - "No API error appeared visually, so network contracts are safe." Network Contract Gate needs route/schema/runtime evidence and should catch hidden 4xx/5xx or HTML responses.
 - "A skipped check is a pass." Skipped, unavailable, auth-required, or unknown states must stay visible.
+- "Public Discovery had zero findings, so the deployed pages passed." Reject this unless `scan_coverage.mode` matches the claimed layer and `scanned_count` is greater than zero.
 
 ## Red Flags
 
@@ -143,10 +156,13 @@ Run evidence is written to:
 - UI findings do not say whether clickable controls have an interaction contract.
 - Network/API changes are evaluated without route existence and network-aware flow evidence.
 - A package report hides `blocked`, `needs_review`, `timeout`, `auth_required`, `resource_unavailable`, or `unknown` runs.
+- A deployed-site claim is based on source mode, or Public Discovery omits its coverage mode/count/errors.
 
 ## Verification
 
 Run the purpose-level package, inspect both `.vibepro/checks/<pack>/<run-id>/check.json` and `check.md`, and report the pack status, key findings, and artifact path. For performance, define metrics, record comparable before/after runs, and use `vibepro performance compare` before claiming an improvement rate.
+
+For Public Discovery, also report the selected target layer and coverage. If the deployed page is the subject, use `--base-url`; if build output is the subject, use `--public-dir`. Never translate `inconclusive` or zero scanned pages into a clean result.
 
 ## Review Checklist
 
@@ -158,3 +174,4 @@ Before saying VibePro confirmed the result:
 - p50, p90, max, sample count, and incomplete rate are shown for performance comparisons.
 - The answer separates internal readiness from user-perceived readiness.
 - UI findings include whether clickable-looking controls have an interaction contract or are explicitly disabled/unfinished.
+- Public Discovery reports mode, scanned/failed counts, and preserves inconclusive when zero pages were inspected.

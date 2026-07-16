@@ -1,0 +1,123 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "CON-PDLT-1",
+      "type": "contract",
+      "statement": "Public Discovery selects exactly one target mode with base-url taking precedence over public-dir and repository source, and an invalid explicit input never silently falls back to another mode.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "collectDiscoveryTargets" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "PDLT-AC-001/003" }]
+      }
+    },
+    {
+      "id": "CON-PDLT-2",
+      "type": "contract",
+      "statement": "Built mode recursively discovers HTML files from an explicit repository-contained directory, scans up to 400, records pre-cap discovery and cap omissions separately, rejects missing/non-directory/outside/symlink-escaped targets, and reads crawler evidence from that same root.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "collectBuiltTargets" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "built mode recursively scans HTML" }]
+      }
+    },
+    {
+      "id": "CON-PDLT-3",
+      "type": "contract",
+      "statement": "Live mode uses bounded read-only HTTP(S) GET requests for the base root and same-origin sitemap locations only, with manual redirect handling, explicit malformed sitemap and omission evidence, a 40-page limit, a 2 MiB response limit, and a 10-second timeout.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [
+          { "file": "src/public-discovery-scanner.js", "anchor": "collectLiveTargets" },
+          { "file": "src/public-discovery-scanner.js", "anchor": "fetchBounded" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "PDLT-AC-002/003" }]
+      }
+    },
+    {
+      "id": "INV-PDLT-4",
+      "type": "invariant",
+      "statement": "scan_coverage records mode, roots, discovered_count before caps, eligible_count, selected_count, scanned_count, omitted_count and reasons, failed_count, errors, limits, status, and reason; zero scanned public pages is inconclusive and never a coverage pass.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [
+          { "file": "src/public-discovery-scanner.js", "anchor": "scan_coverage" },
+          { "file": "src/scan-status.js", "anchor": "resolveScanConclusiveness" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "zero source pages are inconclusive" }]
+      }
+    },
+    {
+      "id": "INV-PDLT-5",
+      "type": "invariant",
+      "statement": "Zero scanned pages remains inconclusive; when one or more pages are scanned, existing block and review findings prevent both scan_coverage and the top-level result from reporting pass while preserving finding IDs, severity, and suppression behavior.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "src/public-discovery-scanner.js", "anchor": "findingStatus" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "findings remain stronger" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "public-discovery applies documented suppressions" }
+        ]
+      }
+    },
+    {
+      "id": "CON-PDLT-6",
+      "type": "contract",
+      "statement": "The check pack forwards explicit Public Discovery inputs, implicitly includes Public Discovery for all when either target input is present, and emits a separate public_discovery.coverage row in JSON and Markdown while retaining inconclusive_count.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [
+          { "file": "src/check-packs.js", "anchor": "public_discovery.coverage" },
+          { "file": "src/cli.js", "anchor": "--public-dir" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "CLI forwards public-dir" }]
+      }
+    },
+    {
+      "id": "CON-PDLT-7",
+      "type": "contract",
+      "statement": "CLI help and the diagnosis package skill explain how to choose source, built, or live evidence and prohibit translating zero scanned targets or inconclusive into a clean deployed-site claim.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [
+          { "file": "src/cli.js", "anchor": "--base-url <url>] [--public-dir <dir>" },
+          { "file": "skills/vibepro-diagnosis-packages/SKILL.md", "anchor": "Public Discovery Guardrails" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/public-discovery-live-targets.test.js", "must_contain": "--public-dir <dir>" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-PDLT-FLOW",
+      "kind": "flow",
+      "title": "Public Discovery target selection and verdict flow",
+      "mermaid": "flowchart TD\n  I[CLI input] --> M{mode}\n  M -->|base-url| L[live bounded GET]\n  M -->|public-dir| B[built HTML walk]\n  M -->|none| S[source convention scan]\n  L --> C[scan_coverage]\n  B --> C\n  S --> C\n  C --> F{findings}\n  F -->|block/review| R[fail or needs_review]\n  F -->|none and scanned > 0| P[pass]\n  F -->|none and scanned = 0| X[inconclusive]"
+    },
+    {
+      "id": "DG-PDLT-THREAT",
+      "kind": "threat_model",
+      "title": "Public Discovery filesystem and network trust boundaries",
+      "mermaid": "flowchart LR\n  U[Untrusted CLI target] --> V{validate explicit target}\n  V -->|public-dir| R[realpath repository containment]\n  V -->|base-url| H[HTTP or HTTPS and same-origin policy]\n  R --> W[bounded HTML walk max 400]\n  H --> G[GET only manual redirect max 40]\n  G --> Z[timeout 10s and stream limit 2 MiB]\n  W --> A[scanner input]\n  Z --> A\n  V -->|invalid or escaped| E[inconclusive error evidence]\n  G -->|redirect external non-HTML or fetch failure| E\n  A --> O[findings plus scan_coverage]"
+    }
+  ]
+}

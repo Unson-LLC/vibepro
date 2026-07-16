@@ -1,5 +1,7 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
+
+import { buildScanCoverage, resolveScanConclusiveness } from './scan-status.js';
 
 const IGNORED_DIRS = new Set([
   '.git',
@@ -14,17 +16,22 @@ const IGNORED_DIRS = new Set([
 
 const PAGE_EXTENSIONS = new Set(['.html', '.htm', '.jsx', '.tsx', '.md', '.mdx']);
 const AI_BOTS = ['GPTBot', 'ClaudeBot', 'PerplexityBot'];
+const LIVE_LIMITS = Object.freeze({ max_pages: 40, max_response_bytes: 2 * 1024 * 1024, timeout_ms: 10_000 });
+const BUILT_LIMITS = Object.freeze({ max_pages: 400, max_response_bytes: null, timeout_ms: null });
+const SOURCE_LIMITS = Object.freeze({ max_pages: 400, max_response_bytes: null, timeout_ms: null });
+const OMISSION_SAMPLE_LIMIT = 25;
 
-export async function scanPublicDiscovery(repoRoot) {
+export async function scanPublicDiscovery(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const files = await collectPublicFiles(root);
-  const metadataContext = await buildAppRouterMetadataContext(root);
+  const collected = await collectDiscoveryTargets(root, options);
+  const files = collected.pages;
+  const metadataContext = collected.mode === 'source'
+    ? await buildAppRouterMetadataContext(root)
+    : { layouts: [] };
   const suppressionConfig = await readPublicDiscoverySuppressions(root);
-  const robots = await readFirstExisting(root, ['robots.txt', 'public/robots.txt']);
-  const llms = await readFirstExisting(root, ['llms.txt', 'public/llms.txt']);
-  const headerConfig = await inspectHeaderConfig(root);
+  const { robots, llms, headerConfig } = collected;
   const result = {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     status: 'pass',
     summary: {
       scanned_files: files.length,
@@ -45,6 +52,7 @@ export async function scanPublicDiscovery(repoRoot) {
     content_findings: [],
     ai_bot_findings: [],
     response_header_findings: [],
+    scan_coverage: null,
     risk_summary: {
       structured_data_findings: { block: 0, review: 0, info: 0 },
       metadata_findings: { block: 0, review: 0, info: 0 },
@@ -71,11 +79,21 @@ export async function scanPublicDiscovery(repoRoot) {
     }
   };
 
+  let scannedCount = 0;
   for (const file of files) {
-    const content = await readFile(file.absolutePath, 'utf8');
+    let content = file.content;
+    if (content === undefined) {
+      try {
+        content = await readFile(file.absolutePath, 'utf8');
+      } catch (error) {
+        collected.errors.push({ target: file.relativePath, reason: `公開ページを読み込めない / failed to read public page: ${error.message}` });
+        continue;
+      }
+    }
     const target = classifyPublicDiscoveryTarget(file.relativePath, content);
     result.route_targets.push(target);
     if (target.scan_mode === 'skip') continue;
+    scannedCount += 1;
     inspectPage(result, file.relativePath, content, {
       target,
       metadata: resolvePageMetadataContext(file.relativePath, content, metadataContext)
@@ -93,12 +111,328 @@ export async function scanPublicDiscovery(repoRoot) {
   result.summary.suppression_warnings = result.suppressions.warnings.length;
   result.summary.finding_count = Object.keys(result.risk_summary)
     .reduce((total, key) => total + result[key].length, 0);
-  result.status = Object.values(result.risk_summary).some((summary) => summary.block > 0)
+  const findingStatus = Object.values(result.risk_summary).some((summary) => summary.block > 0)
     ? 'fail'
     : Object.values(result.risk_summary).some((summary) => summary.review > 0)
       ? 'needs_review'
       : 'pass';
+  const coverageVerdict = resolveScanConclusiveness({ scannedCount, applicable: true });
+  result.scan_coverage = {
+    mode: collected.mode,
+    ...buildScanCoverage({ scannedCount, roots: collected.roots }),
+    discovered_count: collected.discoveredCount,
+    eligible_count: collected.eligibleCount,
+    selected_count: collected.selectedCount,
+    omitted_count: collected.omittedCount,
+    omission_summary: collected.omissionSummary,
+    omissions: collected.omissions,
+    omission_samples_truncated: collected.omittedCount > collected.omissions.length,
+    failed_count: collected.errors.length,
+    errors: collected.errors,
+    limits: collected.limits,
+    status: coverageVerdict.status ?? (findingStatus === 'pass' ? 'pass' : findingStatus),
+    reason: coverageVerdict.reason
+      ? `${coverageVerdict.reason} ${coverageRecoveryHint(collected.mode)}`
+      : null
+  };
+  result.summary.scanned_files = scannedCount;
+  result.summary.discovered_files = collected.discoveredCount;
+  result.summary.failed_targets = collected.errors.length;
+  result.status = findingStatus === 'pass' ? result.scan_coverage.status : findingStatus;
+  if (result.status === 'inconclusive') result.reason = result.scan_coverage.reason;
   return result;
+}
+
+async function collectDiscoveryTargets(root, options) {
+  if (options.baseUrl) return collectLiveTargets(options.baseUrl, options.fetchImpl ?? globalThis.fetch, options.liveLimits ?? LIVE_LIMITS);
+  if (options.publicDir) return collectBuiltTargets(root, options.publicDir);
+  const discoveredPages = await collectPublicFiles(root);
+  const pages = discoveredPages.slice(0, SOURCE_LIMITS.max_pages);
+  const omittedCandidates = discoveredPages.slice(SOURCE_LIMITS.max_pages).map((file) => ({
+    target: file.relativePath,
+    reason_code: 'page_limit',
+    reason: `source page omitted by max_pages=${SOURCE_LIMITS.max_pages}`
+  }));
+  return {
+    mode: 'source',
+    roots: ['index.html', 'public/**/*.html', 'app/**/page.*', 'pages/**/*', 'content/**/*'],
+    pages,
+    discoveredCount: discoveredPages.length,
+    eligibleCount: discoveredPages.length,
+    selectedCount: pages.length,
+    ...summarizeOmissions(omittedCandidates),
+    errors: [],
+    limits: SOURCE_LIMITS,
+    robots: await readFirstExisting(root, ['robots.txt', 'public/robots.txt']),
+    llms: await readFirstExisting(root, ['llms.txt', 'public/llms.txt']),
+    headerConfig: await inspectHeaderConfig(root)
+  };
+}
+
+async function collectBuiltTargets(root, publicDir) {
+  const publicRoot = path.resolve(root, publicDir);
+  const repoRelativeRoot = path.relative(root, publicRoot).replaceAll(path.sep, '/') || '.';
+  const errors = [];
+  if (repoRelativeRoot === '..' || repoRelativeRoot.startsWith('../') || path.isAbsolute(repoRelativeRoot)) {
+    errors.push({ target: String(publicDir), reason: '公開ディレクトリはrepository内でなければならない / public directory must stay inside the repository' });
+    return emptyCollected('built', [String(publicDir)], errors, BUILT_LIMITS);
+  }
+  try {
+    const details = await stat(publicRoot);
+    if (!details.isDirectory()) {
+      errors.push({ target: repoRelativeRoot, reason: '指定した公開パスはdirectoryではない / explicit public path is not a directory' });
+      return emptyCollected('built', [repoRelativeRoot], errors, BUILT_LIMITS);
+    }
+    const [realRoot, realPublicRoot] = await Promise.all([realpath(root), realpath(publicRoot)]);
+    const realRelative = path.relative(realRoot, realPublicRoot);
+    if (realRelative === '..' || realRelative.startsWith(`..${path.sep}`) || path.isAbsolute(realRelative)) {
+      errors.push({ target: repoRelativeRoot, reason: '公開ディレクトリのsymlinkはrepository外を指せない / public directory symlink must not escape the repository' });
+      return emptyCollected('built', [repoRelativeRoot], errors, BUILT_LIMITS);
+    }
+  } catch (error) {
+    errors.push({ target: repoRelativeRoot, reason: `指定した公開ディレクトリが存在しない / explicit public directory does not exist: ${error.message}` });
+    return emptyCollected('built', [repoRelativeRoot], errors, BUILT_LIMITS);
+  }
+  const discoveredCandidates = (await walk(publicRoot, publicRoot, { ignoredDirs: null }))
+    .filter((file) => ['.html', '.htm'].includes(path.extname(file.relativePath).toLowerCase()));
+  const omittedCandidates = discoveredCandidates.slice(BUILT_LIMITS.max_pages).map((file) => ({
+    target: path.posix.join(repoRelativeRoot, file.relativePath),
+    reason_code: 'page_limit',
+    reason: `built page omitted by max_pages=${BUILT_LIMITS.max_pages}`
+  }));
+  const candidates = discoveredCandidates
+    .slice(0, BUILT_LIMITS.max_pages)
+    .map((file) => ({
+      ...file,
+      relativePath: path.posix.join(repoRelativeRoot, file.relativePath)
+    }));
+  const prefixEvidence = (entry) => entry
+    ? { ...entry, relativePath: path.posix.join(repoRelativeRoot, entry.relativePath) }
+    : null;
+  return {
+    mode: 'built',
+    roots: [repoRelativeRoot],
+    pages: candidates,
+    discoveredCount: discoveredCandidates.length,
+    eligibleCount: discoveredCandidates.length,
+    selectedCount: candidates.length,
+    ...summarizeOmissions(omittedCandidates),
+    errors,
+    limits: BUILT_LIMITS,
+    robots: prefixEvidence(await readFirstExisting(publicRoot, ['robots.txt'])),
+    llms: prefixEvidence(await readFirstExisting(publicRoot, ['llms.txt'])),
+    headerConfig: await inspectHeaderConfig(publicRoot)
+  };
+}
+
+async function collectLiveTargets(baseUrl, fetchImpl, limits = LIVE_LIMITS) {
+  const errors = [];
+  let base;
+  try {
+    base = new URL(baseUrl);
+    if (!['http:', 'https:'].includes(base.protocol)) throw new Error('only HTTP(S) URLs are supported');
+  } catch (error) {
+    errors.push({ target: String(baseUrl), reason: `base URLは有効なHTTP(S) URLでなければならない / base URL must be a valid HTTP(S) URL: ${error.message}` });
+    return emptyCollected('live', [String(baseUrl)], errors, limits);
+  }
+  if (typeof fetchImpl !== 'function') {
+    errors.push({ target: base.href, reason: 'HTTP fetch implementation is unavailable; provide a runtime with global fetch' });
+    return emptyCollected('live', [base.href], errors, limits);
+  }
+
+  const rootResult = await fetchBounded(fetchImpl, base, limits, 'page');
+  if (rootResult.error) errors.push(rootResult.error);
+  const robotsUrl = new URL('/robots.txt', base);
+  const llmsUrl = new URL('/llms.txt', base);
+  const sitemapUrl = new URL('/sitemap.xml', base);
+  const [robotsResult, llmsResult, sitemapResult] = await Promise.all([
+    fetchBounded(fetchImpl, robotsUrl, limits, 'support'),
+    fetchBounded(fetchImpl, llmsUrl, limits, 'support'),
+    fetchBounded(fetchImpl, sitemapUrl, limits, 'sitemap')
+  ]);
+  for (const response of [robotsResult, llmsResult, sitemapResult]) {
+    if (response.error) errors.push(response.error);
+  }
+
+  const pageUrls = [base];
+  const eligibleUrls = new Set([base.href]);
+  const omissions = [];
+  let sitemapLocations = [];
+  if (sitemapResult.content) {
+    const parsedSitemap = parseSitemapLocations(sitemapResult.content);
+    sitemapLocations = parsedSitemap.locations;
+    if (parsedSitemap.error) errors.push({ target: sitemapUrl.href, reason: parsedSitemap.error });
+    for (const location of sitemapLocations) {
+      try {
+        const candidate = new URL(location, base);
+        if (!['http:', 'https:'].includes(candidate.protocol)) {
+          omissions.push({ target: location, reason_code: 'non_http', reason: 'sitemap location is not HTTP(S)' });
+          continue;
+        }
+        if (candidate.origin !== base.origin) {
+          omissions.push({ target: candidate.href, reason_code: 'cross_origin', reason: 'sitemap location is outside the base origin' });
+          continue;
+        }
+        if (eligibleUrls.has(candidate.href)) {
+          omissions.push({ target: candidate.href, reason_code: 'duplicate', reason: 'duplicate sitemap location' });
+          continue;
+        }
+        eligibleUrls.add(candidate.href);
+        if (pageUrls.length < limits.max_pages) {
+          pageUrls.push(candidate);
+        } else {
+          omissions.push({ target: candidate.href, reason_code: 'page_limit', reason: `live page omitted by max_pages=${limits.max_pages}` });
+        }
+      } catch {
+        errors.push({ target: location, reason: 'sitemap locをURLとして解釈できない / sitemap loc is not a valid URL' });
+        omissions.push({ target: location, reason_code: 'invalid_url', reason: 'sitemap location is not a valid URL' });
+      }
+    }
+  }
+
+  const pages = [];
+  for (const pageUrl of pageUrls) {
+    const fetched = pageUrl.href === base.href ? rootResult : await fetchBounded(fetchImpl, pageUrl, limits, 'page');
+    if (fetched.error) {
+      if (pageUrl.href !== base.href) errors.push(fetched.error);
+      continue;
+    }
+    if (!looksLikeHtml(fetched.content, fetched.contentType)) {
+      errors.push({ target: pageUrl.href, reason: '公開ページ応答がHTMLではない / public page response is not HTML' });
+      continue;
+    }
+    pages.push({
+      relativePath: `${pageUrl.pathname || '/'}${pageUrl.search}`,
+      content: fetched.content
+    });
+  }
+  const rootHeaders = rootResult.headers ?? [];
+  return {
+    mode: 'live',
+    roots: [base.href],
+    pages,
+    discoveredCount: 1 + sitemapLocations.length,
+    eligibleCount: eligibleUrls.size,
+    selectedCount: pageUrls.length,
+    ...summarizeOmissions(omissions),
+    errors,
+    limits,
+    robots: robotsResult.content ? { relativePath: robotsUrl.href, content: robotsResult.content } : null,
+    llms: llmsResult.content ? { relativePath: llmsUrl.href, content: llmsResult.content } : null,
+    headerConfig: { has_config: rootHeaders.length > 0, files: [base.href], headers: rootHeaders }
+  };
+}
+
+function emptyCollected(mode, roots, errors, limits) {
+  return {
+    mode,
+    roots,
+    pages: [],
+    discoveredCount: 0,
+    eligibleCount: 0,
+    selectedCount: 0,
+    omittedCount: 0,
+    omissionSummary: {},
+    omissions: [],
+    errors,
+    limits,
+    robots: null,
+    llms: null,
+    headerConfig: { has_config: false, files: [], headers: [] }
+  };
+}
+
+async function fetchBounded(fetchImpl, url, limits, kind) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), limits.timeout_ms);
+  try {
+    const response = await fetchImpl(url.href, { method: 'GET', redirect: 'manual', signal: controller.signal });
+    if (!response?.ok) {
+      return { error: { target: url.href, reason: `${kind} GET returned HTTP ${response?.status ?? 'unknown'}` } };
+    }
+    const declaredLength = Number(response.headers?.get?.('content-length'));
+    if (Number.isFinite(declaredLength) && declaredLength > limits.max_response_bytes) {
+      return { error: { target: url.href, reason: `${kind} response exceeds ${limits.max_response_bytes} bytes` } };
+    }
+    const bytes = await readBoundedResponseBody(response, limits.max_response_bytes);
+    if (bytes === null) {
+      return { error: { target: url.href, reason: `${kind} response exceeds ${limits.max_response_bytes} bytes` } };
+    }
+    return {
+      content: bytes.toString('utf8'),
+      contentType: response.headers?.get?.('content-type') ?? null,
+      headers: response.headers ? [...response.headers.keys()].map((name) => name.toLowerCase()) : []
+    };
+  } catch (error) {
+    return { error: { target: url.href, reason: `${kind} GET failed: ${error.message}` } };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function readBoundedResponseBody(response, maxBytes) {
+  const reader = response.body?.getReader?.();
+  if (!reader) {
+    const bytes = Buffer.from(await response.arrayBuffer());
+    return bytes.length <= maxBytes ? bytes : null;
+  }
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = Buffer.from(value);
+    total += chunk.length;
+    if (total > maxBytes) {
+      await reader.cancel('response size limit exceeded');
+      return null;
+    }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks, total);
+}
+
+function parseSitemapLocations(content) {
+  const rootMatch = content.match(/<(urlset|sitemapindex)\b/i);
+  const rootName = rootMatch?.[1]?.toLowerCase() ?? null;
+  const rootClosed = rootName ? new RegExp(`</${rootName}\\s*>`, 'i').test(content) : false;
+  const openLocCount = [...content.matchAll(/<loc\b/gi)].length;
+  const closeLocCount = [...content.matchAll(/<\/loc\s*>/gi)].length;
+  if (!rootName || !rootClosed || openLocCount !== closeLocCount) {
+    return {
+      locations: [],
+      error: 'sitemap XMLを解釈できない / sitemap XML is malformed or has an unsupported root'
+    };
+  }
+  return {
+    locations: [...content.matchAll(/<loc\b[^>]*>([\s\S]*?)<\/loc>/gi)]
+    .map((match) => match[1].trim().replaceAll('&amp;', '&'))
+    .filter(Boolean),
+    error: null
+  };
+}
+
+function summarizeOmissions(items) {
+  const omissionSummary = {};
+  for (const item of items) {
+    omissionSummary[item.reason_code] = (omissionSummary[item.reason_code] ?? 0) + 1;
+  }
+  return {
+    omittedCount: items.length,
+    omissionSummary,
+    omissions: items.slice(0, OMISSION_SAMPLE_LIMIT)
+  };
+}
+
+function looksLikeHtml(content, contentType) {
+  if (contentType && !/^\s*(text\/html|application\/xhtml\+xml)\b/i.test(contentType)) return false;
+  return /<!doctype\s+html|<html\b|<head\b|<body\b|<main\b/i.test(content);
+}
+
+function coverageRecoveryHint(mode) {
+  if (mode === 'live') return '到達可能な公開URLを --base-url で指定する / provide a reachable public URL with --base-url.';
+  if (mode === 'built') return 'HTMLを含むbuild出力directoryを --public-dir で指定する / provide a build output directory containing HTML with --public-dir.';
+  return '公開ページsourceを追加するか、--public-dir / --base-url で実ターゲットを指定する / add public page sources or provide real targets with --public-dir / --base-url.';
 }
 
 function inspectPage(result, file, content, context = {}) {
@@ -183,8 +517,7 @@ async function collectPublicFiles(root) {
   const candidates = await walk(root);
   return candidates
     .filter((file) => PAGE_EXTENSIONS.has(path.extname(file.relativePath).toLowerCase()))
-    .filter((file) => isPublicPageFile(file.relativePath))
-    .slice(0, 400);
+    .filter((file) => isPublicPageFile(file.relativePath));
 }
 
 function isPublicPageFile(relativePath) {
@@ -304,15 +637,15 @@ function mergeMetadataSignals(a, b) {
   };
 }
 
-async function walk(root, dir = root) {
+async function walk(root, dir = root, { ignoredDirs = IGNORED_DIRS } = {}) {
   const entries = await safeReaddir(dir);
   const files = [];
   for (const entry of entries) {
-    if (IGNORED_DIRS.has(entry.name)) continue;
+    if (ignoredDirs?.has(entry.name)) continue;
     const absolutePath = path.join(dir, entry.name);
     const relativePath = path.relative(root, absolutePath).replaceAll(path.sep, '/');
     if (entry.isDirectory()) {
-      files.push(...await walk(root, absolutePath));
+      files.push(...await walk(root, absolutePath, { ignoredDirs }));
     } else if (entry.isFile()) {
       files.push({ absolutePath, relativePath });
     }
@@ -321,7 +654,7 @@ async function walk(root, dir = root) {
 }
 
 async function inspectHeaderConfig(root) {
-  const candidates = ['vercel.json', 'next.config.js', 'next.config.mjs', 'next.config.ts', 'public/_headers', 'netlify.toml'];
+  const candidates = ['vercel.json', 'next.config.js', 'next.config.mjs', 'next.config.ts', '_headers', 'public/_headers', 'netlify.toml'];
   const files = [];
   const headers = new Set();
   for (const relativePath of candidates) {
@@ -464,7 +797,8 @@ function summarizeRouteTargets(routeTargets) {
 
 async function safeReaddir(dir) {
   try {
-    return await readdir(dir, { withFileTypes: true });
+    return (await readdir(dir, { withFileTypes: true }))
+      .sort((left, right) => left.name.localeCompare(right.name));
   } catch (error) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
     throw error;
