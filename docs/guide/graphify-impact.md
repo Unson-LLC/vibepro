@@ -30,7 +30,7 @@ After installation and indexing, `pr prepare` runs a read-only `detect_changes` 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 codebase-memory-mcp cli index_repository '{"repo_path":"'"$(pwd)"'"}'
-vibepro pr prepare . --id <story-id>
+vibepro pr prepare . --story-id <story-id>
 ```
 
 VibePro passes both `repo_path` and the derived project name to the provider for compatibility with current `codebase-memory-mcp` CLI behavior.

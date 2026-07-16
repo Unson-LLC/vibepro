@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "created_at": "2026-07-16T01:24:47.020Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-guarded-run-session-contract.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-guarded-run-session-contract.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "17 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T01:24:44.336Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

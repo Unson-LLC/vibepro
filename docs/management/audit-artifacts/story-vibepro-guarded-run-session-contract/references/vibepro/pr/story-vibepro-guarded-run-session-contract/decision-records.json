@@ -1,0 +1,199 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "updated_at": "2026-07-15T20:46:08.779Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784148368778-8b8591e7",
+      "story_id": "story-vibepro-guarded-run-session-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted_followup",
+      "summary": "Single vertical slice reviewed through independent role decomposition",
+      "reason": "The 8-file change is one guarded Run contract slice spanning Story, architecture, spec, implementation, CLI wiring, and focused tests; splitting would sever contract traceability. Fifteen head-bound role reviews across product, architecture, spec, test, implementation, and gate ownership provide bounded reviewability, while unrelated cleanup remains outside this branch.",
+      "reviewer": "/root/grs_planning_product_current",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/final-review-product-22b8ce2.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/affected-surface.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "22b8ce2f8b55d1bea8d3548088f2523d3eee4894",
+        "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T20:46:08.776Z"
+      },
+      "recorded_at": "2026-07-15T20:46:08.779Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784133838458-b0117ef5",
+      "story_id": "story-vibepro-guarded-run-session-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Guarded Run契約は単一の公開ライフサイクル判断としてレビュー可能",
+      "reason": "scope_reviewed: execute run/status/watch/resume/cancelと永続Run stateは同一契約であり分離すると整合性判断を失う。review_owner_map: gate_evidence reviewerが公開契約、authority、failure mode、互換性を一貫して所有する。decision_record: 後続のaction orchestrationやhuman checkpointは別Storyに分離済み。",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-guarded-run-session-contract/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "2bb11b59fc1fef5c9b018073918e3eb7eb4722dd",
+        "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T16:43:58.455Z"
+      },
+      "recorded_at": "2026-07-15T16:43:58.458Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784119211213-b2bd61f7",
+      "story_id": "story-vibepro-guarded-run-session-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Guarded Run contract is intentionally bundled as one reviewable Story PR",
+      "reason": "Story, Architecture, Spec, CLI, persistence, Git identity, tests, and test plan jointly define one additive public contract. Splitting requirements, runtime, and evidence lanes would make intermediate PRs internally inconsistent and would not reduce runtime blast radius. Review ownership is explicit across architecture_spec, implementation, gate_evidence, and adjudication stages.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-guarded-run-session-contract/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "dc9ddbabba5718b9b2d7e397fcc407b4903e73a9",
+        "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:40:11.211Z"
+      },
+      "recorded_at": "2026-07-15T12:40:11.214Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784148368778-8b8591e7",
+      "story_id": "story-vibepro-guarded-run-session-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted_followup",
+      "summary": "Single vertical slice reviewed through independent role decomposition",
+      "reason": "The 8-file change is one guarded Run contract slice spanning Story, architecture, spec, implementation, CLI wiring, and focused tests; splitting would sever contract traceability. Fifteen head-bound role reviews across product, architecture, spec, test, implementation, and gate ownership provide bounded reviewability, while unrelated cleanup remains outside this branch.",
+      "reviewer": "/root/grs_planning_product_current",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/final-review-product-22b8ce2.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/affected-surface.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "22b8ce2f8b55d1bea8d3548088f2523d3eee4894",
+        "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T20:46:08.776Z"
+      },
+      "recorded_at": "2026-07-15T20:46:08.779Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-guarded-run-session-contract/decision-records.json"
+}

@@ -1,0 +1,33 @@
+{
+  "status": "pass",
+  "summary": "現HEAD c409a74 の gate_evidence は十分です。実CLIのfresh-process artifact replay、責務ID別の回帰bundle、失敗モードの直接assertionが揃い、旧3 findings は解消されています。",
+  "inspection_summary": "Story、Architecture、Final Spec、Test Plan、origin/main...HEAD差分、current-head verification records、各status artifactを照合し、acceptance replayとCOST/PR/Managed Worktree/legacy回帰テストを独立再実行しました。c409a74はd2c51e8以降、test planとacceptance replayのみのtest-only deltaであることもGitで確認しました。",
+  "inspection_evidence": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/{targeted.json,e2e-current-head.json,affected-surface.json,full-suite.json}",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+    "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts"
+  ],
+  "judgment_delta": [
+    "旧E2E binding overclaimは実CLI別process artifact replay 43件とAC別TAP bindingで解消。",
+    "旧responsibility mismatchはCOST 22+3、PR 4、WT 12、legacy 4の責務別証跡で解消。",
+    "旧failure-mode gapはtimeoutを未主張とし、parse/schema/retry/evidence lifecycle/workflow stateを具体assertionへ限定して解消。",
+    "親full-suite 1133 effectiveと現HEAD test-only deltaを分離しており、現HEAD full suite再実行を過大主張していない。"
+  ],
+  "findings": [],
+  "agent": {
+    "system": "codex",
+    "id": "/root/grs_gate_c409",
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high"
+  }
+}

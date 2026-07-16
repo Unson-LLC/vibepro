@@ -1,0 +1,8 @@
+{
+  "status": "needs_changes",
+  "summary": "The prior lock-artifact output finding is resolved, but the first raw verification artifacts recorded an incorrect full SHA.",
+  "inspection_summary": "Inspected final delta, Story, architecture, Spec S-008, Test Plan, implementation, tests, and verification artifacts without rerunning tests.",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md", "docs/architecture/story-vibepro-guarded-run-session-contract.md", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md", "src/guarded-run-session.js", "test/guarded-run-session.test.js", ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/affected-surface.json"],
+  "judgment_delta": ["Exact lock_artifact direct, JSON, and human output gap is resolved; evidence SHA mismatch required correction."],
+  "findings": [{"severity": "medium", "id": "current-head-verification-artifact-mismatch", "detail": "Correct raw verification artifact head_commit to actual HEAD and re-record evidence."}]
+}

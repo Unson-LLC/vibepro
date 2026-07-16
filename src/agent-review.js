@@ -10,6 +10,7 @@ import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js'
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
+import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -409,6 +410,10 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  });
+  await refreshActiveRunContextCapsule(root, {
+    storyId,
+    reason: 'review_recorded'
   });
   return {
     review: result,

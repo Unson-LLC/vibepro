@@ -1,0 +1,19 @@
+{
+  "status": "needs_changes",
+  "summary": "Runtime behavior passes, but current Spec clause IDs drift from their test and acceptance anchors.",
+  "inspection_summary": "Compared Story, Architecture, Test Plan, Spec, source, CLI routing, tests, graph traces, and exact-head evidence; focused suite passed 47/47.",
+  "evidence": [
+    "Source behavior, legacy routing, fallback, repair, migration, and fail-closed paths pass.",
+    "Spec S-002/S-004/S-005 and INV-002/INV-005 meanings were swapped relative to stable test anchors."
+  ],
+  "judgment_delta": [
+    "Functional evidence was sufficient, but exact traceability remained contradictory."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "spec-clause-id-traceability-drift",
+      "detail": "Restore stable clause IDs so Spec statements match their test and acceptance anchors."
+    }
+  ]
+}

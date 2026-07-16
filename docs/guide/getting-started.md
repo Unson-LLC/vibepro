@@ -1,9 +1,9 @@
 # Install and First Run
 
-Install VibePro from the package or from a local checkout.
+Install the published early beta or use a local checkout of current `main`.
 
 ```bash
-npm install -g vibepro
+npm install -g vibepro@beta
 vibepro version
 ```
 
@@ -20,8 +20,13 @@ Run a first health check in the target repository:
 ```bash
 vibepro doctor .
 vibepro story list .
-vibepro pr prepare . --id <story-id>
+vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
+vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
 ```
+
+The npm package and this manual may represent different commits. The installed
+binary's `vibepro help` is authoritative for its command contract; see
+[Release and Audit](/guide/release-and-audit) for the version boundary.
 
 ## Optional: codebase-memory-mcp
 

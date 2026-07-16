@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "needs_changes",
+  "summary": "公開distに内部レポートが残り、Hero/OG画像が欠落し、dirty deploy時にsource commitを誤表示できる",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "release-risk-public-output-leak",
+      "detail": "内部運用レポート2ページが公開distとsitemapに残る"
+    },
+    {
+      "severity": "high",
+      "id": "release-risk-missing-social-hero-asset",
+      "detail": "HeroとOG画像が生成distに存在しない"
+    },
+    {
+      "severity": "high",
+      "id": "release-risk-dirty-source-provenance",
+      "detail": "dirty buildでもclean HEADだけをsource commitとして表示する"
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-built-artifact-coverage",
+      "detail": "dist sitemap meta assetのpositive negative assertionが不足"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "差分、VitePress設定、CLI生成、公開境界テスト、Cloudflare手順、current-head evidence、実生成distとsitemapを照合",
+    "evidence": "docs/.vitepress/dist/sitemap.xml",
+    "inputs": [
+      "docs/.vitepress/config.mjs",
+      "test/public-manual-contract.test.js",
+      "docs/reference/cloudflare-pages.md",
+      ".vibepro/qa/manual-control-plane-refresh/docs-build.json"
+    ]
+  },
+  "judgment_delta": [
+    "docs-onlyかつテスト成功で低リスク候補 -> 実配布物に3つの出荷欠陥がありneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "actual_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T07:31:35.269Z",
+  "git_context": {
+    "head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T07:31:35.268Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "ec71e03f302268f9228b5793222f7703762b2c73f6cd2c841d6886d18a387ae1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/docs_release_risk",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/manual-control-plane-refresh/review-release-risk.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/manual-control-plane-refresh/review-release-risk.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

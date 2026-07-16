@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "created_at": "2026-07-16T11:38:48.883Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-manual-control-plane-refresh.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "8 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 13,
+      "open": 0,
+      "by_type": {
+        "needs_review": 11,
+        "noise": 2
+      },
+      "by_status": {
+        "accepted": 10,
+        "superseded": 3
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784201594050-199510be",
+        "story_id": "story-vibepro-manual-control-plane-refresh",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:mirror_source_traceability",
+        "source_status": "needs_evidence",
+        "summary": "This is a repository-native documentation change, not an external mirror",
+        "reason": "The authoritative source is this repository branch and PR #333. Merge commit 14e002d only incorporated current origin/main contracts; no external mirror or separate source authority exists, and source provenance is bound to repository commits.",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-prepare.json",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+          "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-16T11:33:14.049Z"
+        },
+        "recorded_at": "2026-07-16T11:33:14.050Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T11:38:46.274Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "fa5685efbeb4f60ef0cc81b2f8b1189f7d06023f",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

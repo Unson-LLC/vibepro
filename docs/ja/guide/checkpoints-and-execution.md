@@ -13,3 +13,11 @@ VibeProのcheckpointは、複数段階の作業を監査可能にします。
 - マージまたはリリース判断を記録した
 
 managed executionを使う場合は、停止または失敗したrunを再開する前に `.vibepro/executions/` とPR artifact directoryを確認します。
+
+```bash
+vibepro execute status . --story-id <story-id>
+vibepro execute next . --story-id <story-id>
+vibepro execute reconcile . --story-id <story-id>
+```
+
+reconcileは外部状態を読みますが、新しいrelease actionを許可するものではありません。詳細は[Managed Execution](/ja/guide/managed-execution)を参照してください。

@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-run-context-capsule",
+  "updated_at": "2026-07-16T04:47:45.381Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Only Run mutations refresh the projection; reads stay non-mutating and recovery reconstructs state from authorities without making gates green.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:45.380Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Evidence review and decision authorities commit first, and capsule refresh failure cannot rewrite their result or return contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:45.173Z"
+    },
+    {
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "reason": "Atomic authority failure preserves old bytes; mirror failure is typed only after authority commit, with regression coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:44.968Z"
+    },
+    {
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "reason": "No provider or network dependency is added and provider transcript content is excluded from capsule inputs and persistence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:44.761Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Malformed capsule and source JSON produce typed failures and preserve existing projection bytes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:44.477Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "The change is cohesive around one Run Context Capsule contract with bounded hooks, tests, and documentation under one Story.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:44.170Z"
+    },
+    {
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "reason": "Authority then mirror then capsule ordering is explicit; projection failure does not roll back authority and lifecycle integrations are regression tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:43.866Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "Existing Run verification review and decision return contracts remain intact; capsule refresh is additive and occurs after authority persistence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:43.611Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Strict-head evidence at 7dd3e237 records 104 integration tests and AC-1 through AC-7 acceptance replay.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:43.390Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Malformed and oversized data, stale missing or new sources, authority and mirror failures, ambiguity, and identity mismatch all fail closed in tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:43.144Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "The capsule remains a disposable projection and does not replace Story Run Gate or evidence authorities; dependencies and hooks preserve that boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:42.872Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "The 32KiB bound, no raw payload persistence, authority priority, binding checks, fingerprints, and byte stability are fixed by code and contract tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:42.638Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current HEAD passed 104 focused integration tests and the acceptance replay, covering restart handoff and recorder integration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:42.394Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Story intent and RCC-S-1 through RCC-S-7 align directly with a typed bounded non-authoritative restart projection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudication_identity_head",
+        "session_ref": "collaboration:/root/judgment_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:47:42.095Z"
+    }
+  ]
+}

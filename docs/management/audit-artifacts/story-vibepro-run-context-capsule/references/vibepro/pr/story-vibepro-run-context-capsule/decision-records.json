@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-run-context-capsule",
+  "updated_at": "2026-07-16T03:33:05.739Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784172785739-e73bd442",
+      "story_id": "story-vibepro-run-context-capsule",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep this as one focused PR owned by the gate-evidence reviewer because Story, architecture, implementation hooks, and tests form one atomic Run Context Capsule contract.",
+      "reason": "Splitting persistence, refresh hooks, and recovery tests would create temporarily inconsistent public behavior and would force reviewers to reason across dependent PRs; unrelated cleanup is excluded.",
+      "reviewer": "root",
+      "artifact": "docs/architecture/story-vibepro-run-context-capsule.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+        "current_branch": "codex/story-vibepro-run-context-capsule",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T03:33:05.737Z"
+      },
+      "recorded_at": "2026-07-16T03:33:05.739Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784172785739-e73bd442",
+      "story_id": "story-vibepro-run-context-capsule",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep this as one focused PR owned by the gate-evidence reviewer because Story, architecture, implementation hooks, and tests form one atomic Run Context Capsule contract.",
+      "reason": "Splitting persistence, refresh hooks, and recovery tests would create temporarily inconsistent public behavior and would force reviewers to reason across dependent PRs; unrelated cleanup is excluded.",
+      "reviewer": "root",
+      "artifact": "docs/architecture/story-vibepro-run-context-capsule.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+        "current_branch": "codex/story-vibepro-run-context-capsule",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T03:33:05.737Z"
+      },
+      "recorded_at": "2026-07-16T03:33:05.739Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-run-context-capsule/decision-records.json"
+}

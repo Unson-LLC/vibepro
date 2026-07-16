@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "summary": "Story、Architecture、最終Spec、Test Plan、実装は整合。明示Run IDはvalid=>run_id_not_allowed、malformed=>invalid_run_id、exit 2かつ全作成副作用前に拒否する契約へ同期済み。",
+  "inspection_summary": "最終HEADの全差分、17 Spec clauses、Story/Architecture参照、CLI、Run実装、対象34件、全体1124件を照合し、focused supplied-id testも再確認した。",
+  "inspection_evidence": [
+    "final Spec validation: 17 clauses、0 errors、0 warnings",
+    "createRunの先頭でsupplied idを分類しStory/Git/bootstrap/lock/persistence前に拒否",
+    "focused supplied-id test 1/1 pass",
+    "strict-head targeted 34/34、full 1124/1124 pass",
+    "git diff --check pass、worktree clean"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/review-request-spec_consistency.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "silent ignore懸念はCLI flag保持とcreateRun先頭のtyped rejectionで解消",
+    "副作用前拒否は実装順序とidentity/bootstrap 0回、executions非生成テストで証明",
+    "17 clausesはvalidator 0 errors/warningsで、実装・対象テスト対応を直接照合",
+    "全1124件とlegacy経路によりregression_guardを満たす",
+    "run/status/watch/resume/cancel、human/JSON、authority modes、migration/mirror/lock/failureを34件で合成網羅"
+  ],
+  "findings": []
+}

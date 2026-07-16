@@ -1,0 +1,33 @@
+{
+  "status": "needs_changes",
+  "summary": "暗黙選択のsilent suppressionは解消したが、宣言済みCLI Path Surface Matrixには未検証経路が残る。",
+  "inspection_summary": "Current HEAD def9e98をStory、Architecture、Spec、Test Plan、実装、33件のfocused tests、current-head verification 1123/1123と照合した。run_selection_blocked実装は妥当だが、追加されたfresh-process試験はrepository authorityのexplicit happy pathに限定され、Test Planのmanaged/source-fallback、implicit selection、異常ID、repair/help行列を満たしていない。",
+  "inspection_evidence": [
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+    "git diff a2c9076..def9e98 -- test/guarded-run-session.test.js docs/management/test-plans/story-vibepro-guarded-run-session-contract.md src/guarded-run-session.js src/cli.js",
+    "rg -n execute test/guarded-run-session.test.js"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/implementation/review-request-code_spec_alignment.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    "src/git-identity.js",
+    "test/guarded-run-session.test.js"
+  ],
+  "judgment_delta": [
+    "旧implicit-selection-silent-invalid-suppression指摘 -> 解消。棄却候補があれば非変更のrun_selection_blockedを返す。",
+    "旧path-surface-cli-matrix-unverified指摘 -> 一部改善したが、Test Planの表現が実証済み範囲を超える。"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "path-surface-cli-matrix-unverified",
+      "detail": "Test Planは主要authority/restart/selection経路の全行列を約束するが、実際の試験は合成的カバレッジである。試験追加または受け入れ境界の正確化が必要。"
+    }
+  ]
+}

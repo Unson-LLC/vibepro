@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+  "command": "npm run docs:build",
+  "cli_reference_drift": "none",
+  "vitepress_build": "pass",
+  "sitemap": "generated",
+  "built_files": 162,
+  "public_contract": "pass",
+  "internal_corpora": "excluded",
+  "source_commit": "7ac051c28401"
+}

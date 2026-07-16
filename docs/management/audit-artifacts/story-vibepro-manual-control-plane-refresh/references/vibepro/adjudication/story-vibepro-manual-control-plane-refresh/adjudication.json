@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "updated_at": "2026-07-16T11:32:59.191Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Replay commands passed at the final commit with strict-head evidence binding, independent reviews, and Story/Spec traceability.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:59.190Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "The built-site contract requires robots.txt, llms.txt, sitemap.xml, social/meta tags, and JSON-LD; site config supplies them.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:59.027Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "srcExclude and the public contract yield 162 public files, reject forbidden routes and links, and preserve compatibility routes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:58.814Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Release authority distinguishes npm beta/main, public footer source commit, and local artifacts; generated metadata exposes provenance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:58.630Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "The CLI reference generator invokes bin/vibepro.js help, drift check fails on mismatch, docs build runs the check, and 124 commands are generated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:58.450Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "EN/JA persona, navigation, control, safety, managed-flow, release, UI/UX, and journey routes are present and enforced by the build contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:58.261Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Published command examples match current CLI usage; the current public-manual suite passes 28/28 and rejects retired command forms.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:58.088Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "EN/JA landing and What is VibePro define evidence-driven Story-to-PR control, explicit human authority, the full lifecycle, non-goals, and optional Brainbase integration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_release_risk_333",
+        "session_ref": ".vibepro/qa/manual-control-plane-refresh/evidence-adjudication-6e53e3a.md"
+      },
+      "head_commit": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+      "recorded_at": "2026-07-16T11:32:57.901Z"
+    }
+  ]
+}

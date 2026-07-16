@@ -10,7 +10,7 @@ async function readRepoFile(repoPath) {
   return readFile(path.join(PACKAGE_ROOT, repoPath), 'utf8');
 }
 
-test('UI/UX docs feature map exposes a single modernization workflow without changing runtime contracts', async () => {
+test('UI/UX docs feature map remains available internally while the public build excludes playbooks', async () => {
   const [
     readme,
     readmeJa,
@@ -52,8 +52,8 @@ test('UI/UX docs feature map exposes a single modernization workflow without cha
   assert.match(storyDoc, /does not remove the whole\nplaybook corpus/);
   assert.match(storyDoc, /minimal playbook link targets needed for public docs build/);
   assert.match(storyDoc, /CLI commands, public API behavior, configuration schema,\nruntime execution, and PR creation semantics are intentionally out of scope/);
-  assert.doesNotMatch(vitepressConfig, /['"]playbooks\/\*\*['"]/);
-  assert.match(vitepressConfig, /playbooks\/story-engineering-playbook\/features\/_feature-template\/\*\*/);
+  assert.match(vitepressConfig, /['"]playbooks\/\*\*['"]/);
+  assert.doesNotMatch(vitepressConfig, /playbooks\/story-engineering-playbook\/features\/_feature-template\/\*\*/);
   assert.match(playbookFeatureIndex, /機能仕様/);
   assert.match(playbookInformationArchitecture, /情報設計/);
   assert.match(playbookStateGuidelines, /状態表示/);

@@ -1,0 +1,122 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "現在HEADへの証跡bindingは良好だがHero/OG画像がdistに存在せず生成物検査も不足",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-social-image-output-missing",
+      "detail": "HeroとOG/Twitterが参照する画像がdistに存在せず404になる"
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-built-surface-contract-gap",
+      "detail": "distとsitemapとstatic assetを検証する回帰テストが不足"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Story/Architecture/Spec、current-head evidence、dist 47 HTML、内部corpora除外、日英導線、discovery files、social imageの入力元と出力先を照合",
+    "evidence": "docs/.vitepress/dist/index.html",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-manual-control-plane-refresh.md",
+      ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+      ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+      "docs/.vitepress/dist/index.html"
+    ]
+  },
+  "judgment_delta": [
+    "13/13とdocs build成功でpass候補 -> 生成HTMLの画像参照先が404のためneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+    "expected_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-manual-control-plane-refresh-impl-v2",
+      "branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "actual_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+      "current_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T07:31:29.113Z",
+  "git_context": {
+    "head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T07:31:29.112Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8fc53f0ee91aca631d1d0b7a5874e591bff533b9",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "011aeecd5cb0381a5b11ce1ccb7bfe3438efe1dcef520ae9bbe10078eab1e1e5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/docs_gate_evidence",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/manual-control-plane-refresh/review-gate-evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-manual-control-plane-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/manual-control-plane-refresh/review-gate-evidence.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

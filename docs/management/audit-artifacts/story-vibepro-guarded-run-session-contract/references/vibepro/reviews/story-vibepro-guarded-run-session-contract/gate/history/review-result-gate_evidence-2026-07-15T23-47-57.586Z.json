@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "現行HEADのStory・Architecture・Final Spec 17 clauses・実装・fresh-process E2E・責務回帰・current-head evidenceは整合し、旧3 findingは解消済み。deadlineはadvisory-only、post_pr_ready監視は対象外、既存責務テストはinherited regressionとして限定した。",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-e2e-binding-overclaim",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head-verified.json"
+      ],
+      "reason": "resolved_by_current_fresh_process_evidence",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-failure-mode-binding-gap",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/unit-and-runtime-cost-current-head.json"
+      ],
+      "reason": "resolved_by_current_failure_mode_evidence",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-responsibility-contract-mismatch",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/responsibility-current-head.json"
+      ],
+      "reason": "resolved_by_current_responsibility_evidence",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-e0a-transcript.json"
+  ],
+  "inspection": {
+    "summary": "現行HEADでStory、Architecture、Final Spec、実装、unit/E2E/責務回帰証拠と旧findingの解消を独立確認した。",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-e0a-transcript.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "旧3 findingはいずれも現行HEADの厳密な証拠へ置換され、overclaimなしで解消した。"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+    "current_head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T23:47:57.586Z",
+  "git_context": {
+    "head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T23:47:57.578Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "ceaeb28c07f6a7a09fe83ff15c906bdbe4178b9e2e50037c9d14353cb458a109",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/grs_gate_final",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-e0a-transcript.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-e0a-transcript.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

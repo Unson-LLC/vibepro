@@ -1,0 +1,792 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-manual-control-plane-refresh",
+  "updated_at": "2026-07-16T11:33:14.050Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784201594050-199510be",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:mirror_source_traceability",
+      "source_status": "needs_evidence",
+      "summary": "This is a repository-native documentation change, not an external mirror",
+      "reason": "The authoritative source is this repository branch and PR #333. Merge commit 14e002d only incorporated current origin/main contracts; no external mirror or separate source authority exists, and source provenance is bound to repository commits.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-prepare.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T11:33:14.049Z"
+      },
+      "recorded_at": "2026-07-16T11:33:14.050Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784201592105-b98145f0",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:common_judgment_spine",
+      "source_status": "needs_evidence",
+      "summary": "Current reality, failure modes, and done evidence are explicit",
+      "reason": "Current reality was an outdated public manual and drifting CLI examples. Failure modes include retired commands, internal corpus leakage, stale or unmerged production deployment, and provenance mismatch. Done evidence is the exact 28/28 public suite, 36/36 lifecycle suite, 20/20 responsibility suite, 162-file docs build, strict-head reviews, and independent AC adjudication.",
+      "reviewer": null,
+      "artifact": "docs/management/architecture/story-vibepro-manual-control-plane-refresh.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T11:33:12.104Z"
+      },
+      "recorded_at": "2026-07-16T11:33:12.106Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784201590450-5f1b62c5",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "needs_evidence",
+      "summary": "Release operations are explicitly owned and reproducible",
+      "reason": "CHANGELOG records the release; docs/reference/cloudflare-pages.md and its Japanese counterpart define npm run docs:deploy, EN/JA/discovery/source-commit live checks, dashboard rollback, and the deploy script now fails closed unless HEAD equals freshly fetched origin/main before and after build.",
+      "reviewer": null,
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T11:33:10.448Z"
+      },
+      "recorded_at": "2026-07-16T11:33:10.450Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784119311591-afe17b52",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "needs_evidence",
+      "summary": "No persistent data-state change; no migration evidence is applicable",
+      "reason": "The current HEAD only changes public documentation, static-site build/deployment guards, CLI help rendering, and contract tests. It changes no schema, migration, query, cache, idempotency, replay, or stored application state. Missing data-state evidence is therefore not applicable, and no persisted-state risk is deferred.",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:41:51.586Z"
+      },
+      "recorded_at": "2026-07-15T12:41:51.591Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784119248156-c23bd32c",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "accepted",
+      "summary": "No persistent data-state change",
+      "reason": "The diff is limited to public documentation, static-site build and deployment guards, CLI help rendering, and contract tests. It changes no schema, migration, query, cache, idempotency, replay, or stored application state semantics; the data_state signal is a lexical false positive.",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:40:48.151Z"
+      },
+      "recorded_at": "2026-07-15T12:40:48.157Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784118142172-863a2288",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "accepted",
+      "summary": "Canonical rollback authority is the last-known-good Cloudflare Pages production deployment",
+      "reason": "This canonical decision replaces decision-1784117028797-06f048b0: pre-deploy guards prove clean tree and immutable provenance, the existing EN/JA Cloudflare runbooks define rollback, and live authority and deployment ID remain a post-merge operational observation.",
+      "reviewer": "codex",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:22:22.171Z"
+      },
+      "recorded_at": "2026-07-15T12:22:22.173Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784118139662-0b1ce29b",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "superseded",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "superseded",
+      "summary": "Supersede rollback decision decision-1784117028797-06f048b0 with nonexistent runbook path",
+      "reason": "The earlier accepted decision referenced docs/runbooks/public-manual-deploy.md, which does not exist; decision-1784117491238-4bffaf3a and the canonical Cloudflare Pages runbook replace that evidence binding.",
+      "reviewer": "codex",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "verification_evidence_summary": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:22:19.662Z"
+      },
+      "recorded_at": "2026-07-15T12:22:19.662Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117491238-4bffaf3a",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "superseded",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "superseded",
+      "summary": "rollbackはCloudflare Pagesの直前正常deploymentを権威ある復旧点とする",
+      "reason": "deploy前はclean treeとimmutable source commitを強制し、deploy後のlive確認で異常なら日英のCloudflare Pages runbookに従いlast-known-good production deploymentへrollbackする。live権限と実deployment IDはPR merge後のdeploy時に検証する運用境界で、pre-PRではrunbookとguard契約を実証済み。",
+      "reviewer": "codex-primary",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:11:31.236Z"
+      },
+      "recorded_at": "2026-07-15T12:11:31.238Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117046560-d56ce0ea",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "split不要、公開distribution contractをatomicにreviewする",
+      "reason": "変更集合はStory MCPR-S-1からMCPR-S-8を同時に成立させる一つの公開配布境界で、managed worktreeはclean、unrelated user changesは含まない。[REDACTED:bca5743845b4]を分離しない。",
+      "reviewer": "codex-primary",
+      "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:04:06.558Z"
+      },
+      "recorded_at": "2026-07-15T12:04:06.561Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117042092-d5eb977d",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "clean managed branch上の単一公開マニュアルPRとして進める",
+      "reason": "repo-control分類はdesign-ssotとpackage scriptを含むためだが、変更は全てStoryの公開distribution contractに束縛されている。別PR化するとgenerated docs、route inventory、deploy guardの整合を壊すため、明示的bundled-scope justificationで解決する。",
+      "reviewer": "codex-primary",
+      "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:04:02.091Z"
+      },
+      "recorded_at": "2026-07-15T12:04:02.093Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117036389-4e44b4c3",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "公開配布契約を一つのreviewable unitとしてbundled scopeで維持する",
+      "reason": "日英copy、VitePress route/SEO設定、generated CLI reference、build/deploy guard、契約テストは同じ公開distribution contractの入力と検証であり、分割すると一時的に誤った文書または検証されない配布面を作る。review ownerはpublic manual distribution contract reviewer一名で一貫して判断できる。",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:03:56.299Z"
+      },
+      "recorded_at": "2026-07-15T12:03:56.390Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117028797-06f048b0",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "superseded",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "superseded",
+      "summary": "rollbackはCloudflare Pagesの直前正常deploymentを権威ある復旧点とする",
+      "reason": "deploy前はclean treeとimmutable source commitを強制し、deploy後のlive確認で異常ならCloudflare Pages Deploymentsからlast-known-good production deploymentへrollbackする。live権限と実deployment IDはPR merge後のdeploy時に検証する運用境界で、pre-PRではrunbookとguard契約を実証済み。",
+      "reviewer": "codex-primary",
+      "artifact": "docs/runbooks/public-manual-deploy.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:03:48.791Z"
+      },
+      "recorded_at": "2026-07-15T12:03:48.797Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784117022406-f1fcb546",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "needs_evidence",
+      "summary": "この変更は永続データ状態を変更しない",
+      "reason": "変更対象は公開文書、静的build/deploy guard、CLI help表示、契約テストのみで、schema、migration、query、cache、idempotency、replay semanticsを変更しない。data_state軸の活性化はrelease metadata中のstate語由来の偽陽性。",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/npm-registry.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/full-suite-closure.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/manual-control-plane-refresh/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7ac051c2840138214ba3be0b1ff69c3ce46300cf",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T12:03:42.404Z"
+      },
+      "recorded_at": "2026-07-15T12:03:42.406Z"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "open": 0,
+    "by_type": {
+      "needs_review": 11,
+      "noise": 2
+    },
+    "by_status": {
+      "accepted": 10,
+      "superseded": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784201594050-199510be",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:mirror_source_traceability",
+      "source_status": "needs_evidence",
+      "summary": "This is a repository-native documentation change, not an external mirror",
+      "reason": "The authoritative source is this repository branch and PR #333. Merge commit 14e002d only incorporated current origin/main contracts; no external mirror or separate source authority exists, and source provenance is bound to repository commits.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/pr-prepare.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
+        "current_branch": "codex/story-vibepro-manual-control-plane-refresh-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T11:33:14.049Z"
+      },
+      "recorded_at": "2026-07-16T11:33:14.050Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-manual-control-plane-refresh/decision-records.json"
+}

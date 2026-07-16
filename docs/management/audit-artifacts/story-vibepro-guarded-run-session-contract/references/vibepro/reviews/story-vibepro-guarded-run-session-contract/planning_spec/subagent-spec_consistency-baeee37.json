@@ -1,0 +1,8 @@
+{
+  "status": "needs_changes",
+  "summary": "New S-008 and INV-004 references resolve, but one stale S-001 test anchor remains in Spec and Test Plan.",
+  "inspection_summary": "Compared every Spec and Test Plan test anchor with exact test names at final HEAD.",
+  "inspection_inputs": ["review-request-spec_consistency.md", "spec.json", "story test plan", "test/guarded-run-session.test.js", "verification-evidence.json"],
+  "judgment_delta": ["The new references passed exact matching; complete anchor validation exposed one older S-001 name that no longer exists."],
+  "findings": [{"severity": "medium", "id": "stale-s001-test-ref-anchor", "detail": "Replace the obsolete S-001 anchor with the existing source fallback survives restart paths test name in Spec and Test Plan."}]
+}

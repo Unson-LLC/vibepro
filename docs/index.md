@@ -3,33 +3,36 @@ layout: home
 
 hero:
   name: VibePro
-  text: Manual for safer AI-driven PRs
-  tagline: A CLI that sits between AI coding agents and GitHub PRs, making intent, specifications, evidence, reviews, and release readiness inspectable.
+  text: Make the product journey visible
+  tagline: A repository-local control plane that turns AI-agent changes into evidence-backed, safely shippable pull requests. Humans hold the entry and exit decisions.
   image:
     src: /assets/vibepro-header.png
     alt: VibePro
   actions:
     - theme: brand
-      text: Read the Manual
+      text: Understand VibePro
       link: /guide/what-is-vibepro
     - theme: alt
-      text: First Run
-      link: /guide/getting-started
+      text: Run the Control Loop
+      link: /guide/control-loop
     - theme: alt
-      text: CLI Reference
-      link: /reference/cli
+      text: Install the Beta
+      link: /guide/getting-started
 
 features:
-  - title: Fix intent before code
-    details: State the product purpose, design assumptions, and acceptance criteria before implementation starts.
-  - title: Expand gates by risk
-    details: Add the right checks when changes touch UI flows, runtime topology, APIs, data, release operations, or agent workflows.
-  - title: Keep review evidence
-    details: Store PR context, gate state, split plans, verification records, and review artifacts under `.vibepro/`.
+  - title: Intent becomes a delivery contract
+    details: Story, Architecture, and Spec keep the product purpose, boundaries, acceptance criteria, and rollback assumptions inspectable before code is trusted.
+  - title: Evidence expands with risk
+    details: Verification, independent review, adjudication, and release guards activate according to the surfaces the change actually touches.
+  - title: Shipping stays auditable
+    details: PR preparation, CI refresh, merge execution, canonical audit, and ROI reports remain bound to the current commit instead of disappearing into chat history.
 ---
 
-## How to Read This Manual
+## Choose Your Path
 
-Start with [What VibePro Is](/guide/what-is-vibepro), then run through [Install and First Run](/guide/getting-started). Operators who already have a working repository usually need [AI PR Workflow](/guide/ai-pr-workflow), [Gates and Evidence](/guide/gates-and-evidence), and [Impact Context Integrations](/guide/graphify-impact).
+- **Implementer:** [Install and First Run](/guide/getting-started) → [Control Loop](/guide/control-loop) → [Managed Execution](/guide/managed-execution)
+- **Reviewer or adjudicator:** [Agent Review](/guide/agent-review) → [Safety Model](/guide/safety-model)
+- **Release operator:** [Release and Audit](/guide/release-and-audit) → [CLI Reference](/reference/cli)
+- **Engineering manager:** [What VibePro Is](/guide/what-is-vibepro) → [Feature Map](/guide/feature-map) → [Release and Audit](/guide/release-and-audit)
 
-The manual source lives in this repository and is built with VitePress. Cloudflare Pages is only the current hosting target; the product concepts do not depend on Cloudflare.
+The manual is platform-agnostic. Cloudflare Pages is only the current hosting target and is documented separately in the operations reference.

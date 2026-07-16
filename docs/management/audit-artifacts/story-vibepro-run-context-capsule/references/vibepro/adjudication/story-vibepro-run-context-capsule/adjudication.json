@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-run-context-capsule",
+  "updated_at": "2026-07-16T04:48:11.807Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Executable contracts cover bounds staleness malformed and oversized data atomic and mirror failures idempotence ambiguity restart recovery and canonical identity revalidation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:11.806Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Fresh child processes and managed fixtures recover binding blocker and open decisions without transcript input while preserving exact mirror bytes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:11.580Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Stale HEAD and Story or Run mismatch fail closed; canonical authority reload is revalidated and mismatched run_id returns stale_binding without capsule mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:11.329Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Exact authority bytes and source set define event identity; unchanged bytes stay byte-stable and changed bytes regenerate with reason and fingerprints.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:11.113Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Forbidden raw bodies are absent while each authority source is retained as a relative reference and SHA-256 digest.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:10.914Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Large-data fixture keeps serialized size at or below 32768 bytes and accounts for every reduced section in truncated_sections.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:10.671Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Projector generates every required typed field from authorities and the fixture verifies each value and structure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/ac_adjudication_identity_head",
+        "session_ref": "collaboration:/root/ac_adjudication_identity_head"
+      },
+      "head_commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "recorded_at": "2026-07-16T04:48:10.428Z"
+    }
+  ]
+}

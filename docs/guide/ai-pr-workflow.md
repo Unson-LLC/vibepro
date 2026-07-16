@@ -5,7 +5,7 @@ Run VibePro before the PR body becomes the only source of truth.
 ```bash
 vibepro story list .
 vibepro check pr-readiness . --story-id <story-id> --base main
-vibepro pr prepare . --id <story-id>
+vibepro pr prepare . --story-id <story-id> --summary-json
 ```
 
 `pr prepare` collects:
@@ -18,6 +18,8 @@ vibepro pr prepare . --id <story-id>
 - Gate DAG and human-readable review artifacts.
 
 The generated GitHub PR body should be a self-contained judgment brief: Story interpretation, origin, root cause, solution, review focus, and final verification first. Detailed evidence belongs in `.vibepro/pr/<story-id>/`, especially `pr-prepare.json`, `gate-dag.html`, `review-cockpit.html`, and `split-plan.html`.
+
+When `gate_status` is ready, use `vibepro pr create`; after CI, use `verify import-ci`, refresh `pr prepare` / `pr create`, and finish with `vibepro execute merge`. See the [Control Loop](/guide/control-loop) for the complete sequence.
 
 If `code_topology_context.available=false`, inspect the `reason`. It may simply mean the provider is not installed, the repository is clean, or no changed files matched the indexed project.
 

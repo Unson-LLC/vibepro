@@ -53,6 +53,8 @@ const SMOKE = {
   init: { setup: 'bare', args: (r) => ['init', r, '--story-id', 'story-i', '--title', 'T', '--view', 'dev', '--period', '2026-W18'] },
   config: { setup: 'story', args: (r) => ['config', 'language', r, '--language', 'en'] },
   doctor: { setup: 'story', args: (r) => ['doctor', r] },
+  status: { setup: 'story', args: (r) => ['status', r] },
+  usage: { setup: 'story', args: (r) => ['usage', 'report', r, '--json'] },
   graph: { setup: 'story', args: (r) => ['graph', r] },
   env: { setup: 'story', args: (r) => ['env', 'graph', r] },
   harness: { setup: 'story', args: (r) => ['harness', 'status', r] },
@@ -81,8 +83,6 @@ const SMOKE = {
   uiux: { setup: 'story', args: (r) => ['uiux', 'intake', 'template', r, '--id', 'story-x'] },
   explore: { setup: 'story', args: (r) => ['explore', r] },
   performance: { setup: 'story', args: (r) => ['performance', r] },
-  nocodb: { setup: 'none', args: () => ['nocodb'] },
-  'repo-status': { setup: 'story', args: (r) => ['repo-status', r] },
   workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] }
 };
 

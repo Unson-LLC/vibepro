@@ -1,0 +1,30 @@
+{
+  "status": "needs_changes",
+  "summary": "17 clausesと明示run-id拒否契約は概ね整合するが、legacy source_repoのsymlink表現がcanonical rootへ正規化されない。",
+  "inspection_summary": "現HEAD 326a58eでStory、Architecture、全17 clauses、Test Plan、実装と証跡を確認し、symlink由来のlegacy source_repoでworktree_mismatchを再現した。",
+  "inspection_evidence": [
+    "targeted 34/34 and full-suite 1124/1124 pass at HEAD 326a58e",
+    "legacy managed_worktree.source_repoにsource symlink pathを記録したfixtureで、managed Run作成後のsource aliasからのstatusがworktree_mismatch",
+    "normalizeManagedBinding/buildBootstrapBindingFingerprintはpath.resolve、resolveGitIdentityはfs.realpath、validateAuthorityBindingは両者を文字列比較"
+  ],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "test/guarded-run-session.test.js"
+  ],
+  "judgment_delta": [
+    "通常経路は整合するが、canonical source rootの隔離fixtureで仕様違反を確認したためpass候補からneeds_changesへ変更。"
+  ],
+  "findings": [
+    {
+      "id": "canonical-source-root-symlink-mismatch",
+      "severity": "medium",
+      "summary": "legacy source_repoのsymlink表現がcanonical rootへ正規化されず、正当なsource control rootからmanaged Runを復元できない。",
+      "evidence": "source_repoのpath.resolve値とcaller.root_realpathが不一致になり、作成直後のstatusがworktree_mismatch。",
+      "recommendation": "source identityのroot_realpathを保存・fingerprint・validationに一貫利用し、symlink alias/canonical sourceの回帰fixtureを追加する。"
+    }
+  ]
+}

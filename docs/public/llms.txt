@@ -1,0 +1,23 @@
+# VibePro
+
+VibePro is a repository-local control plane for evidence-backed, safe delivery by AI coding agents.
+
+Canonical manual: https://vibepro.pages.dev/
+Source: https://github.com/Unson-LLC/vibepro
+License: Apache-2.0
+
+Start here:
+- https://vibepro.pages.dev/guide/what-is-vibepro
+- https://vibepro.pages.dev/guide/control-loop
+- https://vibepro.pages.dev/guide/safety-model
+- https://vibepro.pages.dev/guide/release-and-audit
+- https://vibepro.pages.dev/reference/cli
+
+Japanese:
+- https://vibepro.pages.dev/ja/guide/what-is-vibepro
+- https://vibepro.pages.dev/ja/guide/control-loop
+- https://vibepro.pages.dev/ja/guide/safety-model
+- https://vibepro.pages.dev/ja/guide/release-and-audit
+- https://vibepro.pages.dev/ja/reference/cli
+
+The public manual intentionally excludes repository-internal Story, Architecture, Spec, contract, and runtime evidence corpora. The running CLI and current-head artifacts remain authoritative for command and gate decisions.

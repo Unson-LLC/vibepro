@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "summary": "前回finding spec-run-explicit-run-id-silently-ignoredは解消済みで、有効・無効な明示run_idは副作用前にtyped error/exit 2で拒否される。",
+  "inspection_summary": "Story AC、Architecture、Spec、Test Plan、CLI routing、Run Session、追加テスト、現HEAD証跡を照合し、focused test 1/1を確認した。",
+  "inspection_evidence": [
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/review-request-spec_consistency.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md"
+  ],
+  "judgment_delta": [
+    "silent suppression懸念はvalid/human、invalid/JSON、service direct、Git/bootstrap spy、artifact不在の組合せで解消した。"
+  ],
+  "findings": []
+}

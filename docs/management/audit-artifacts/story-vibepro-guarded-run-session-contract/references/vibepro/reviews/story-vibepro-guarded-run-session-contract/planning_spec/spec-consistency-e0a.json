@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "summary": "最終Specの全17 clauseはID・意味・Story AC・Architecture・Test Plan・code/test anchorが現行HEADで整合している。",
+  "inspection_summary": "全17 clauseの一意性とanchorを機械確認し、修正済みS-004/S-005、INV-002/INV-004/INV-005、S-002、C-006/C-007を含め意味の入れ替わりが残っていないことを確認。focused 45/45とacceptance 1/1（内部47/47）を再実行した。",
+  "inspection_evidence": [".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "test/guarded-run-session.test.js", "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts"],
+  "judgment_delta": "stale reuseには依存せず最終Spec全件と現HEADテストを再検証してpassへ確定した。",
+  "findings": []
+}

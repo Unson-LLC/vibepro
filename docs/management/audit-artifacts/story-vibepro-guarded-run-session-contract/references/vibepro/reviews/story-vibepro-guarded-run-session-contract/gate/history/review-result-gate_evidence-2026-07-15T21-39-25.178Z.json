@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD c409a74 gate evidence is sufficient: real CLI fresh-process replay, responsibility-specific regressions, and directly bound failure-mode assertions resolve the prior findings without overstating the full-suite baseline.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-e2e-binding-overclaim",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-failure-mode-binding-gap",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-responsibility-contract-mismatch",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/affected-surface.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independent reviewer inspected Story, Architecture, final Spec, Test Plan, origin/main-to-HEAD diff, current verification records and actual test bodies; it reran acceptance 1/1 nested 43/43 and the responsibility bundles.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-c409-transcript.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "E2E binding overclaim -> resolved by real CLI cross-process artifact replay and concrete TAP-to-clause bindings.",
+    "Responsibility mismatch -> resolved by COST 22+3, PR 4, managed-worktree 12, and legacy 4 exact bundles.",
+    "Failure-mode gap -> resolved by limiting claims to directly asserted parse/schema/retry/evidence/workflow paths; timeout is not claimed."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "c409a74ba0f992a4244297863681cbec15cd2227",
+    "current_head_sha": "c409a74ba0f992a4244297863681cbec15cd2227",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "c409a74ba0f992a4244297863681cbec15cd2227",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T21:39:25.178Z",
+  "git_context": {
+    "head_sha": "c409a74ba0f992a4244297863681cbec15cd2227",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T21:39:25.169Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c409a74ba0f992a4244297863681cbec15cd2227",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "f0ceb857097e4a34d659e7443c09e784f055ad25c1ed91a01a368c2ab8b3168b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/grs_gate_c409",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-c409-transcript.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-c409-transcript.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

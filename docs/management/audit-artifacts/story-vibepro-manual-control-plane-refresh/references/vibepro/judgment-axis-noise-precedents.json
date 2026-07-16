@@ -1,0 +1,86 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:55|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "decision_id": "decision-1784117036389-4e44b4c3",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "日英copy、VitePress route/SEO設定、generated CLI reference、build/deploy guard、契約テストは同じ公開distribution contractの入力と検証であり、分割すると一時的に誤った文書または検証されない配布面を作る。review ownerはpublic manual distribution contract reviewer一名で一貫して判断できる。",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:55",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T12:06:19.717Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "decision_id": "decision-1784118142172-863a2288",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "This canonical decision replaces decision-1784117028797-06f048b0: pre-deploy guards prove clean tree and immutable provenance, the existing EN/JA Cloudflare runbooks define rollback, and live authority and deployment ID remain a post-merge operational observation.",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T12:22:22.173Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "decision_id": "decision-1784117022406-f1fcb546",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "変更対象は公開文書、静的build/deploy guard、CLI help表示、契約テストのみで、schema、migration、query、cache、idempotency、replay semanticsを変更しない。data_state軸の活性化はrelease metadata中のstate語由来の偽陽性。",
+      "artifact": "docs/architecture/vibepro-manual-control-plane-refresh.md",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T12:06:19.717Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "decision_id": "decision-1784118142172-863a2288",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "This canonical decision replaces decision-1784117028797-06f048b0: pre-deploy guards prove clean tree and immutable provenance, the existing EN/JA Cloudflare runbooks define rollback, and live authority and deployment ID remain a post-merge operational observation.",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T11:29:21.930Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-manual-control-plane-refresh",
+      "decision_id": "decision-1784201590450-5f1b62c5",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "CHANGELOG records the release; docs/reference/cloudflare-pages.md and its Japanese counterpart define npm run docs:deploy, EN/JA/discovery/source-commit live checks, dashboard rollback, and the deploy script now fails closed unless HEAD equals freshly fetched origin/main before and after build.",
+      "artifact": "docs/reference/cloudflare-pages.md",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T11:33:21.938Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

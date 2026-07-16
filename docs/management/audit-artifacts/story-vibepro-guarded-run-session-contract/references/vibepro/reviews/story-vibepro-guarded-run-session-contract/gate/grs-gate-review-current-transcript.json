@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "summary": "現行HEADの証拠はfreshかつstrict-head-boundで、旧指摘2件は実装・契約文書・修正前実装を落とす回帰テスト・人間/JSON出力確認まで一貫して解消されている。",
+  "inspection_summary": "レビュー依頼の境界付き成果物を起点にStory、Architecture、Final Spec、Test Plan、origin/mainからの8ファイル差分、Run state validatorとtransition/CLI経路、旧レビュー、current-head verification evidenceを確認し、旧指摘直結4テストを再実行して4/4 passを確認した。regression_guardはfull suite 1130/1130、path_surface_coverageはtargeted 40/40とRun作成・状態読込/遷移・migration・legacy CLI・human/JSON・authority/mirror各面のfixtureで満たされる。",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/decision-index.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-plan.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    "src/git-identity.js",
+    "test/guarded-run-session.test.js",
+    "git diff origin/main...HEAD",
+    "git show 41a6cb0 -- src/guarded-run-session.js test/guarded-run-session.test.js docs/management/stories/active/story-vibepro-guarded-run-session-contract.md docs/architecture/story-vibepro-guarded-run-session-contract.md docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "node --test --test-name-pattern='recoverable transitions require|malformed transition metadata|nullable state unions|historical stopped null' test/guarded-run-session.test.js"
+  ],
+  "inspection_evidence": ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json; targeted.json and JUnit show 40/40 with zero failures; full-suite.json and JUnit show 1130/1130 with zero failures; focused current-head rerun shows 4/4 with zero failures.",
+  "judgment_delta": [
+    "旧判断: stopped-state-reason-missing -> 現行判断: recoverable遷移はoptions.stopReasonを必須入力としてvalidatorを通り、欠落時はauthority artifact非変更のinvalid_state。stopped間遷移でも旧理由を継承せず、human/JSON statusが型付き理由を表示するfixtureまで確認したため解消。",
+    "旧判断: typed-state-validation-gap -> 現行判断: canonical 0.1.0とrecognized predecessorのstop_reason/deadline/pending_decisionをclosed nullable unionとして検証し、不正shapeを移行・永続化前に非変更で拒否するfixtureを確認したため解消。",
+    "回帰懸念 -> 現行判断: additive CLI/legacy status、repository/managed/source_fallback authority、implicit/explicit selection、mirror repair、migration/corruption/future schemaをtargeted 40件が覆い、全体1130件もcurrent HEADで成功しているためrelease-blocking regressionは認めない。",
+    "経路・出力面の懸念 -> 現行判断: source artifactだけでなくhuman summary、JSON persisted contract、legacy route、migration/predecessor、canonical read、authority/mirror outputを具体的fixtureで検証し、棄却・失敗はtyped error/candidate/artifactとして可視化されるためsilentな未確認経路は認めない。"
+  ],
+  "findings": []
+}

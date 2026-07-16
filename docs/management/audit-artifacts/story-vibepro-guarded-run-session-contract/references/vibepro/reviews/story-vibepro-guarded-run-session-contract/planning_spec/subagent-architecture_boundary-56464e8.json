@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "summary": "外部run_id拒否は既存のauthority、mirror、source_fallback、Git identity、lock、migration、quarantine、Non Goals、責任境界を補強する。",
+  "inspection_summary": "review request、Story、Architecture、Spec、現HEAD差分、実装、Test Plan、責任契約、current-head証跡を照合し、focused test 34/34を確認した。",
+  "inspection_evidence": [
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+  ],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/contracts/vibepro-core-responsibilities.json",
+    "test/guarded-run-session.test.js"
+  ],
+  "judgment_delta": [
+    "supplied run_idが作成副作用へ到達する懸念はcreateRun冒頭の拒否とspy/no-directory assertionsで解消した。",
+    "mirror promotion、source_fallback自己認可、任意command実行の境界は維持されている。"
+  ],
+  "findings": []
+}

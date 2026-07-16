@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "needs_changes",
+  "summary": "Managed-context selection and creation retry semantics required changes.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "managed-run-context-resolution",
+      "detail": "Source and managed invocation could select the wrong authority or create a nested worktree."
+    },
+    {
+      "severity": "medium",
+      "id": "run-creation-partial-failure-idempotency",
+      "detail": "Fresh execute run cannot be blindly idempotent after partial creation."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected existing execute routing, managed worktree creation, persistence, and CLI regression tests.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/transcripts/grs_archspec_risk.md",
+    "inputs": [
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json"
+    ]
+  },
+  "judgment_delta": [
+    "Base failure handling was sound -> needs changes because nested worktree and blind creation retry behavior were not fixed."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+      "dirty": true,
+      "dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md\n?? docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md\n?? docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T05:39:40.080Z",
+  "git_context": {
+    "head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "7abe780d89ff32553e0ffe780e8269f4d3ccc89af34c3e5db18c9affe910f092",
+    "user_status_fingerprint_hash": "7abe780d89ff32553e0ffe780e8269f4d3ccc89af34c3e5db18c9affe910f092",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T05:39:40.069Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+        "sha256": "ef017f35a4bc95853e8180a513c0c39c9df09fccc2579838c0e5e92e1359a2fe",
+        "size": 12668
+      },
+      {
+        "path": "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+        "sha256": "be903293d492a1b4705440495cb602583e78c2df7c1e98e2ba3263f161e793f0",
+        "size": 4410
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8ba1ef99799901d0dd9da63f4a93f7b14c601a18001b92dadb6e17765a41795d"
+  },
+  "source_fingerprint": "3a5713c32ac7eecff128a2df02db64f4cc20b964e96b6538abca1f7a6735ab07",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "grs_archspec_risk",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/transcripts/grs_archspec_risk.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

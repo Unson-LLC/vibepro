@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_commit": "05ab5efbb1c07ba3f6f0d951a4cae84383d71665",
+  "status": "pass",
+  "commands": [
+    "node --test --test-name-pattern='execute start keeps legacy and disabled worktree modes compatible|execute next keeps disabled managed-worktree fresh stories on direct PR preparation|execute state tracks next action before and after pr prepare|execute state reads standalone gate dag with pr gate semantics' test/vibepro-cli.test.js",
+    "node --test --test-name-pattern='required managed worktree guard covers review lifecycle, review record, task execute, and pr create|pr create blocks non-workspace dirty files before creating push-only PR evidence|execute merge dry-run plans external checks without executing them|execute merge dry-run ignores stale pr-create selectors' test/vibepro-cli.test.js",
+    "node --test test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+    "node --test test/session-efficiency-audit.test.js",
+    "node --test --test-name-pattern='execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros|execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros|AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance' test/vibepro-cli.test.js"
+  ],
+  "exit_code": 0,
+  "tests": 45,
+  "passed": 45,
+  "failed": 0,
+  "scope_note": "The 45-test responsibility regression bundle passed at parent HEAD a42472b. The only 05ab5ef delta is guarded-Run tests and its Test Plan; the current-head 47-test acceptance replay passed. Each component artifact retains its exact command and result."
+}

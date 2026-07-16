@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+  "summary": "PASS。guarded run session は既存 execute CLI の前段に限定的・加算的に接続され、run-id なしの legacy status、既存 start/next/reconcile/merge、unknown-command の経路を保持している。authority-first persistence、managed-worktree mirror、migration/quarantine/lock、Git identity、failure injection、fresh stop metadata、JSON/human/help の各面は、現行HEADの focused 40/40 と full suite 1130/1130 の証拠、および実装・テストの独立確認で回帰リスクが十分に閉じられている。",
+  "findings": [],
+  "inspection": {
+    "summary": "必須レンズ regression_guard と path_surface_coverage を独立評価した。CLI routing、永続化境界、migration/quarantine、creation lock、managed mirror、Git identity、失敗時非破壊性、fresh-process CLI、出力契約、help、Story/Architecture/Spec/config/evidence の整合を確認し、blocking finding は認めなかった。",
+    "evidence": [
+      "現行HEAD 41a6cb076c3ba03096c8e27545c246211158a9c0 で node --test test/guarded-run-session.test.js を独立再実行し 40/40 pass。",
+      "cmp -s CLAUDE.md AGENTS.md を独立実行し parity pass。",
+      "current-head unit/e2e verification evidence は focused suite 40/40 pass。fresh-process human/JSON、artifact replay、negative paths を含む。",
+      "current-head integration/full-suite evidence は 1130/1130 pass、exit 0。既存 CLI・API・artifact surface の横断回帰を検査している。",
+      "src/cli.js は guarded status を --run-id 指定時だけ選択し、run-id なし status は既存 route に残す。repair-linked-copy は watch 以外で dispatch/service side effect 前に拒否し、unknown execute command の既存 exit/error を保持する。",
+      "test/guarded-run-session.test.js は run-id なし legacy status、unknown command、JA/EN help、JSON/human output、明示・暗黙 target、全 lifecycle pair、fresh typed stop reason、stale-head nonmutation を検証する。",
+      "persistence tests は schema-only migration、future schema preservation、corrupt quarantine、predecessor cancel migration、creation lock、legacy partial bootstrap、authority-first mirror、explicit repair、managed predecessor migration、rename failure injection を検証する。",
+      "Git identity tests は実 Git repository と linked worktree を使用し、source/managed/source_fallback/unmanaged、symlink/deleted authority、厳格 ID 検証と path composition 前の拒否を検証する。",
+      "success JSON は persisted state と一致し、human failure は run_id、authority/mirror artifact、shell-quoted repair command を提示するため、抑制や復旧失敗が無言化されない。",
+      "実装は agent dispatch、runtime shell、waiver、merge の import/実行を持たず、Gate までの pr_ready 契約に閉じている。"
+    ],
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-regression_risk.md",
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/architecture/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/specs/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/config.json",
+      "src/cli.js",
+      "src/guarded-run-session.js",
+      "src/git-identity.js",
+      "test/guarded-run-session.test.js",
+      ".vibepro/evidence/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/evidence/story-vibepro-guarded-run-session-contract/targeted-test-41a6.json",
+      ".vibepro/evidence/story-vibepro-guarded-run-session-contract/full-suite-41a6.json",
+      ".vibepro/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "初期懸念: 新しい execute routes が legacy status や unknown-command routing を奪う可能性。最終判断: guarded status は --run-id 付きに限定され、run-id なし status と既存コマンド経路は実装・focused test・full suite の三層で保持を確認した。",
+    "初期懸念: authority-first mirror、migration、repair の失敗で mirror が暗黙昇格したり二重状態が生じる可能性。最終判断: authority を唯一の正本とし、mirror は明示 repair のみ。rename failure、corrupt quarantine、future preservation、lock、partial bootstrap の非破壊テストがある。",
+    "初期懸念: 新UXの検証が happy path とJSONだけに偏る可能性。最終判断: human/JSON、JA/EN help、fresh-process、legacy/fallback、managed/unmanaged/source_fallback、生成artifact、復旧案内まで利用者面と派生面を横断している。",
+    "pr-prepare の artifact-consistency block は旧HEAD review artifacts の stale 判定であり、現行HEADのコード回帰ではない。本レビューを含む current-head review 再生成で解消すべきプロセス上の状態として扱った。"
+  ],
+  "mandatory_lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "reason": "既存 route を変更せず加算的に guarded route を選択し、legacy status と unknown command を明示検証している。full suite 1130/1130、focused 40/40、実Git/linked-worktree、fresh-process CLI、failure injection によりコード・データ・運用面の回帰をカバーする。UI、browser accessibility、network service、DB schema は本Storyの変更面に存在せず N/A。security は厳格ID検証、shell-quoted repair guidance、path composition 前拒否、外部実行非搭載で境界を確認した。",
+      "evidence_refs": [
+        "test/guarded-run-session.test.js",
+        "src/cli.js",
+        "src/guarded-run-session.js",
+        ".vibepro/evidence/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+        ".vibepro/evidence/story-vibepro-guarded-run-session-contract/full-suite-41a6.json"
+      ]
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "reason": "入力、派生、永続化、出力、legacy/fallback、help/config/report/gate の各surfaceを列挙して検査した。typed error、rejected candidate list、run artifact、repair command により抑制は非サイレントで、side-effect absence、byte equality、exact JSON/state equality、fresh process、rename failure の検査は修正前に失敗する具体的な回帰テストになっている。",
+      "covered_surfaces": [
+        "execute run/status/watch/resume/cancel の guarded command selection",
+        "run-id なし execute status と既存 start/next/reconcile/merge/unknown command",
+        "明示 target、default target、非 pr_ready target rejection",
+        "human output、JSON output、JA/EN help、fresh-process CLI",
+        "source、managed worktree、source_fallback、unmanaged、symlink/deleted authority",
+        "authority state、managed mirror、run artifact、explicit linked-copy repair",
+        "canonical/predecessor migration、future schema、corrupt quarantine、creation lock、partial bootstrap",
+        "Git identity、strict IDs、stale head、failure injection、fresh stop metadata",
+        "Story/Architecture/Spec/test-plan/config registration、verification evidence、pr-prepare gate"
+      ],
+      "evidence_refs": [
+        "test/guarded-run-session.test.js",
+        "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+        "docs/management/specs/story-vibepro-guarded-run-session-contract.md",
+        ".vibepro/config.json"
+      ]
+    }
+  },
+  "independent_checks": [
+    {
+      "command": "node --test test/guarded-run-session.test.js",
+      "result": "pass",
+      "tests_passed": 40,
+      "tests_failed": 0
+    },
+    {
+      "command": "cmp -s CLAUDE.md AGENTS.md",
+      "result": "pass"
+    }
+  ]
+}

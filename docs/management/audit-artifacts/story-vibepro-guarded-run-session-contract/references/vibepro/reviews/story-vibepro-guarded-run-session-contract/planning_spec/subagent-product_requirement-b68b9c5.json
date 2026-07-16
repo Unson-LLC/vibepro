@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "Prior repository identity loss is resolved: the bootstrap lock uses the Git common directory itself, shared within one repository and isolated across sibling repositories.",
+  "inspection_summary": "Compared Story, Architecture, Spec, Test Plan, implementation, real separate-git-dir regression, and current-head 42/42 plus 55/55 evidence.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md", "src/guarded-run-session.js", "test/guarded-run-session.test.js"],
+  "judgment_delta": ["dirname(common-dir) collision was blocking; exact common-dir namespace preserves repository identity and the real Git fixture fails the prior implementation"],
+  "findings": []
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "spec_consistency",
+  "status": "needs_changes",
+  "summary": "Implementation is sound, but C-007 and S-009 overstate repository and source_fallback repair/restart test coverage.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "source-fallback-repair-path-evidence-gap",
+      "detail": "Add repository and source_fallback no-mirror repair nonmutation tests and bind C-007 to them."
+    },
+    {
+      "severity": "medium",
+      "id": "source-fallback-restart-surface-overclaim",
+      "detail": "Exercise the declared source_fallback restart sequence or narrow the Test Plan, and bind S-009 to matching repository restart and repair tests."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/spec-consistency-41a6.json"
+  ],
+  "inspection": {
+    "summary": "Independent review mapped all Story ACs and 17 clauses to implementation and tests, finding two path-surface traceability gaps.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/spec-consistency-41a6.json",
+    "inputs": [
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial expectation of complete path traceability -> repository repair nonmutation and source_fallback restart surfaces are not fully demonstrated."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T18:42:42.274Z",
+  "git_context": {
+    "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T18:42:42.273Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "7f7f0142596632cb51f40436d499b42e2b61fe807972e7ac723e9f57b594e356",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/grs_ac_adjudicator",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/spec-consistency-41a6.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-spec_consistency.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/spec-consistency-41a6.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "019f63f2-cdd9-7c63-9bc3-fb9925a3720d",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

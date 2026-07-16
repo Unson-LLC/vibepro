@@ -5,9 +5,13 @@
 | Story / Spec | `story list`, `story derive`, `story diagnose` | Story catalog、診断レポート、追跡性文脈 |
 | Graph artifact | `graph` | `.vibepro/graphify/` |
 | PR readiness | `pr prepare`, `check pr-readiness` | `.vibepro/pr/<story-id>/` |
-| 検証 | `verify record`, `verify status` | `.vibepro/verification-artifacts/` |
-| レビュー | `review prepare`, `review record`, `review status` | `.vibepro/reviews/` |
+| 検証 / CI | `verify record`, `verify import-ci` | `.vibepro/verification-artifacts/`、CI evidence |
+| 独立レビュー | `review prepare`, `review start`, `review close`, `review record`, `review status` | `.vibepro/reviews/`、lifecycle / provenance |
+| Adjudication | `adjudicate prepare`, `adjudicate record` | Clause / Senior Judgment verdict |
 | 判断 | `decision record`, `decision status` | リスク受容とwaiver記録 |
+| Release guard | `guard check`, `guard status` | fail-closed release境界 |
+| Managed execution | `execute start`, `execute status`, `execute reconcile`, `execute merge` | `.vibepro/executions/`、監査済みmerge状態 |
+| Audit / ROI | `audit replay`, `audit session-cost`, `usage report` | canonical replay、cost、gate / subagent ROI |
 | UI/UX intake / IA | `journey handoff`, `story map`, `design-modernize plan` | Journey文脈、Storyリンク、routeとflowの仮説 |
 | Native Design System | `design-system init`, `design-system derive`, `design-system validate` | `.vibepro/design-system/<ds-id>/` |
 | UI modernization証跡 | `design-modernize derive-system`, `design-modernize plan`, `verify visual`, `uiux evidence` | `.vibepro/design-modernize/<story-id>/`、visual residual、responsive / accessibility証跡 |

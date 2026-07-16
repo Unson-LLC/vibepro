@@ -1,0 +1,12 @@
+{
+  "head_sha": "6cb1101cc2dd249002a95cc03afdeb7c60369eb1",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "No remaining regression finding: null is rejected before mutation with the SSOT-defined invalid_state code, lifecycle precedence is preserved, and current-head replay is green.",
+  "inspection_summary": "Independent review checked state-machine compatibility, authority ordering, legacy paths, schema/restart behavior, performance evidence, and corrected an initially supplied non-SSOT error-code expectation.",
+  "inspection_evidence": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md:42", "docs/architecture/story-vibepro-guarded-run-session-contract.md:34", "src/guarded-run-session.js:320-327", "test/guarded-run-session.test.js:974-1000", "node --test test/guarded-run-session.test.js test/e2e/story-vibepro-guarded-run-session-contract-main.test.js => 47/47 pass", ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json", ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/runtime-cost-responsibility.json"],
+  "inspection_inputs": ["review-request-regression_risk.md", "Story", "Architecture", "implementation", "tests", "full-suite and performance evidence"],
+  "judgment_delta": "Initial invalid_stop_reason concern -> withdrawn after SSOT verification showed invalid_state is the explicit public contract; no compatibility or performance regression remains.",
+  "findings": []
+}

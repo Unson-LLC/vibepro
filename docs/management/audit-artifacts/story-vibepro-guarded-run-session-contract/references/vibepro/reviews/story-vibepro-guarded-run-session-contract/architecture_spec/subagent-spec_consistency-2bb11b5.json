@@ -1,0 +1,42 @@
+{
+  "status": "pass",
+  "summary": "現HEAD 2bb11b5では、Story・Architecture・Test Plan・全17 clauses・実装・テストが整合している。--repair-linked-copyは認識済みの非watch executeコマンドだけをtyped errorにし、未知コマンドは既存fallbackを維持する。canonical sourceRootと明示run IDの副作用前拒否も契約どおりである。",
+  "inspection_summary": "過去レビューの証跡は現HEAD判定には再利用せず、review request、Story、Architecture、Test Plan、最終Spec、実装、テスト、現HEAD証跡を独立に確認した。さらに現HEADでfocused suiteを再実行し36/36 passを確認した。mandatory lensのregression_guardでは未知execute fallbackとlegacy execute surfaceの不変性を、path_surface_coverageでは認識済み全execute command、watch、未知command、human/JSON、help、無副作用境界を確認した。",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-spec_consistency.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/verification/story-vibepro-guarded-run-session-contract.json",
+    "git diff af070b8..2bb11b5",
+    "node --test test/guarded-run-session.test.js",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "judgment_delta": [
+    "regression_guard: af070b8で指摘された未知execute commandの誤分類は、認識済みsubcommand setによる境界とpre-fix-sensitive testで解消した。未知commandは--repair-linked-copy併用時も既存のexit 1・Unknown execute command fallbackへ到達する。",
+    "path_surface_coverage: run、status（legacy/guarded）、resume、cancel、start、next、reconcile、mergeの全認識済み非watch surfaceをhuman/JSON両契約で覆い、watch positive path、未知command fallback、help scope、実行artifact非生成まで確認した。",
+    "canonical sourceRoot: repository/source_fallbackはcaller.root_realpath、managed bindingはcanonical source.root_realpathを永続化・fingerprint・validationへ一貫利用し、alias/canonical両経路の回帰テストが通る。",
+    "supplied run ID: createRunはStory lookup、Git identity、legacy bootstrap、lock、Run/mirror生成より前にvalid/malformed run IDを拒否し、spy count 0とexecutions directory非生成で副作用なしを検証している。",
+    "current-head evidence: 記録済みtargeted 36/36とfull suite 1126/1126に加え、独立focused run 36/36 passを現HEADで確認した。"
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "repair-flag-intercepts-unknown-execute-command",
+      "severity": "medium",
+      "detail": "2bb11b5で解消。repair guardを認識済み非watch execute commandに限定し、未知commandは従来のunknown-command errorとexit 1を維持する。",
+      "evidence": "src/cli.js:2098-2114,2219-2220; test/guarded-run-session.test.js:517-576; fresh node --test test/guarded-run-session.test.js 36/36 passed"
+    },
+    {
+      "id": "canonical-source-root-symlink-mismatch",
+      "severity": "medium",
+      "detail": "af070b8で解消され、2bb11b5でも維持。sourceRootの保存・fingerprint・authority validationをcanonical realpathに統一した。",
+      "evidence": "src/guarded-run-session.js canonical binding and authority-validation paths; test/guarded-run-session.test.js symlink alias/canonical source regression; fresh focused suite 36/36 passed"
+    }
+  ]
+}

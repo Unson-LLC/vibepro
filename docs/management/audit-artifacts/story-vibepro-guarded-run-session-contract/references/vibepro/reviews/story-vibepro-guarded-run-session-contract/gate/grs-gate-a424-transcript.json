@@ -1,0 +1,6 @@
+{
+  "agent_id": "/root/grs_gate_a424",
+  "head": "a42472b3b71bf04b9a7885fb857ed51d9a58c3c7",
+  "status": "pass",
+  "summary": "Gate evidence was independently inspected and the focused acceptance replay passed 45/45 before subsequent test-only evidence-gap fixes. This lifecycle is closed for audit hygiene; its result is not reused as current-HEAD review evidence."
+}
