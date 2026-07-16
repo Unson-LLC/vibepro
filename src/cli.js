@@ -125,6 +125,13 @@ import {
   updateExecutionStateFromPrMerge,
   updateExecutionStateFromPrPrepare
 } from './execution-state.js';
+import {
+  GuardedRunError,
+  createGuardedRunSession,
+  isGuardedRunError,
+  renderGuardedRunError,
+  renderGuardedRunSummary
+} from './guarded-run-session.js';
 import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
@@ -288,6 +295,19 @@ Typical PR-safety flow:
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
 
+Guarded Run sessions:
+  vibepro execute run <repo> --story-id <id>
+      Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
+      This command only persists state; it does not dispatch agents or execute actions.
+  vibepro execute status <repo> --story-id <id> --run-id <run-id>
+      Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
+  vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+      Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
+      watch returns one current snapshot and exits; it does not stream.
+      Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
+  vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
+      Restore a configured linked mirror from its authority; never promote the mirror.
+
 PR prepare creates evidence-plan, decision-index, concise pr-body, verification
 evidence, and plan-selected gate/review artifacts under .vibepro/pr/<story-id>/
 when initialized.
@@ -428,7 +448,8 @@ Usage:
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
-  vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
+  vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
+  vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -511,6 +532,19 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
+
+Guarded Runセッション:
+  vibepro execute run <repo> --story-id <id>
+      pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
+      このコマンドは状態を永続化するだけで、agentやactionを実行しません。
+  vibepro execute status <repo> --story-id <id> --run-id <run-id>
+      指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
+  vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+      Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
+      watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
+      guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
+  vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
+      設定済みmirrorだけをauthorityから復旧し、mirrorをauthorityへ昇格しません。
 
 risk-adaptive Gate DAG:
   workflow_heavy 変更では、workflow replay / production path / release confidence /
@@ -658,7 +692,8 @@ Usage:
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
-  vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
+  vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
+  vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
@@ -2059,6 +2094,65 @@ export async function runCli(argv, io = {}) {
         taskId: getOption(rest, '--task'),
         groupId: getOption(rest, '--group')
       };
+      const runOptions = {
+        ...executionOptions,
+        runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
+        repairLinkedCopy: hasFlag(rest, '--repair-linked-copy')
+      };
+      const knownExecuteSubcommands = new Set([
+        'run', 'status', 'watch', 'resume', 'cancel',
+        'start', 'next', 'reconcile', 'merge'
+      ]);
+      if (runOptions.repairLinkedCopy
+          && knownExecuteSubcommands.has(subcommand)
+          && subcommand !== 'watch') {
+        const error = new GuardedRunError(
+          'repair_linked_copy_not_supported',
+          '--repair-linked-copy is supported only by execute watch.',
+          { command: `execute ${subcommand}`, supported_command: 'execute watch' }
+        );
+        const jsonOutput = hasFlag(rest, '--json');
+        write(stderr, jsonOutput
+          ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
+          : renderGuardedRunError(error, { repoRoot }));
+        return { exitCode: 2, command, subcommand, result: error.toJSON() };
+      }
+      if (subcommand === 'run'
+          || subcommand === 'watch'
+          || subcommand === 'resume'
+          || subcommand === 'cancel'
+          || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
+        const jsonOutput = hasFlag(rest, '--json');
+        const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
+        try {
+          if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
+            throw new GuardedRunError(
+              'invalid_target',
+              'Guarded Run commands support only target=pr_ready.',
+              { target: executionOptions.target, supported_target: 'pr_ready' }
+            );
+          }
+          const result = subcommand === 'run'
+            ? await guardedRun.run(repoRoot, runOptions)
+            : subcommand === 'status'
+              ? await guardedRun.status(repoRoot, runOptions)
+              : subcommand === 'watch'
+                ? await guardedRun.watch(repoRoot, runOptions)
+                : subcommand === 'resume'
+                  ? await guardedRun.resume(repoRoot, runOptions)
+                  : await guardedRun.cancel(repoRoot, runOptions);
+          write(stdout, jsonOutput
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderGuardedRunSummary(result));
+          return { exitCode: 0, command, subcommand, result };
+        } catch (error) {
+          if (!isGuardedRunError(error)) throw error;
+          write(stderr, jsonOutput
+            ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
+            : renderGuardedRunError(error, { repoRoot }));
+          return { exitCode: 2, command, subcommand, result: error.toJSON() };
+        }
+      }
       if (subcommand === 'start') {
         const result = await startExecution(repoRoot, executionOptions);
         write(stdout, hasFlag(rest, '--json')
