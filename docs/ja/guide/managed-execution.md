@@ -20,7 +20,7 @@ VibeProが返したworktree pathとnext commandを使います。CLIはinstalled
 1. execution status、記録済みbranch、worktree、headを確認する
 2. worktreeに対象Storyの差分だけがあることを確認する
 3. 外部PR / CI / merge状態が変わった可能性があればreconcileする
-4. commit後はhead-boundなverification、review、adjudication、PR prepareを再実行する
+4. commit後はstrict HEAD-boundなCI・高リスクreview・adjudicationを再実行し、content-surface-boundなverification・通常reviewはsurface変更時だけ取り直す
 5. provider unavailable、CI import失敗、runtime欠落を「結果0の成功」に変換しない
 
 Managed executionは `.vibepro/executions/` にorchestration stateを記録します。codeとPR状態の正本はrepositoryとGitHubです。

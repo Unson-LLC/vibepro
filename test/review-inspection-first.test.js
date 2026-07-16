@@ -67,6 +67,18 @@ test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-
   assert.match(INVESTIGATION_GUIDELINES_BLOCK, /--inspection-summary/);
 });
 
+test('Japanese agent review guide keeps executable pass arguments and freshness semantics current', async () => {
+  const guide = await readFile(new URL('../docs/ja/guide/agent-review.md', import.meta.url), 'utf8');
+  assert.match(guide, /--inspection-summary/);
+  assert.match(guide, /--inspection-input <source-test-story-spec-contract-or-config>/);
+  assert.match(guide, /--judgment-delta/);
+  assert.match(guide, /content-surface-bound/);
+  assert.match(guide, /strict HEAD-bound/);
+  assert.match(guide, /\.vibepro.*だけではinspection surfaceになりません/);
+  assert.doesNotMatch(guide, /--inspection-input <diff-or-artifact>/);
+  assert.doesNotMatch(guide, /record後のcommitはhead-bound evidenceをstaleにします/);
+});
+
 test('review request markdown emits Investigation Guidelines between Mandatory Review Lenses and Instructions (INV-RIF-1)', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
