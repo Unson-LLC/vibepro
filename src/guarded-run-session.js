@@ -5,6 +5,7 @@ import path from 'node:path';
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
 import { evaluateGateReadiness as defaultReadGateReadiness } from './pr-manager.js';
+import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
 export const GUARDED_RUN_SCHEMA_VERSION = '0.1.0';
@@ -34,6 +35,7 @@ const DEPENDENCY_KEYS = new Set([
   'randomBytes',
   'startExecution',
   'readGateReadiness',
+  'refreshContextCapsule',
   'artifactIo',
   'resolveGitIdentity'
 ]);
@@ -69,6 +71,7 @@ export function createGuardedRunSession(dependencies = {}) {
     randomBytes: dependencies.randomBytes ?? nodeRandomBytes,
     startExecution: dependencies.startExecution ?? defaultStartExecution,
     readGateReadiness: dependencies.readGateReadiness ?? defaultReadGateReadiness,
+    refreshContextCapsule: dependencies.refreshContextCapsule ?? defaultRefreshContextCapsule,
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
@@ -202,7 +205,7 @@ async function createRun(deps, repoRoot, options) {
     const mirrorFile = binding.mirror
       ? getRunStatePath(binding.mirror.root_realpath, storyId, runId)
       : null;
-    await persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile);
+    await persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile, 'run_started');
     return state;
   } finally {
     await deps.artifactIo.rm(lockPath, { recursive: true, force: true });
@@ -281,7 +284,7 @@ async function resumeRun(deps, repoRoot, options) {
     stop_reason: null,
     pending_decision: null
   });
-  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile);
+  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'run_resumed');
   return next;
 }
 
@@ -302,7 +305,7 @@ async function cancelRun(deps, repoRoot, options) {
     },
     pending_decision: null
   });
-  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile);
+  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'terminal_transition');
   return next;
 }
 
@@ -348,7 +351,7 @@ async function transitionRun(deps, repoRoot, options) {
     pending_decision: options.pendingDecision ?? loaded.state.pending_decision
   });
   if (next === loaded.state) return next;
-  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile);
+  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, classifyCapsuleReason(next, options.reason));
   return next;
 }
 
@@ -396,7 +399,7 @@ async function loadSelectedRun(deps, repoRoot, options, requirements = {}) {
     }
   );
   if (migration.changed) {
-    await persistAuthorityThenMirror(deps, migration.state, selected.authorityFile, selected.mirrorFile);
+    await persistAuthorityThenMirror(deps, migration.state, selected.authorityFile, selected.mirrorFile, 'run_migrated');
   }
   return {
     ...selected,
@@ -689,11 +692,14 @@ function isAllowedTransition(from, to, reason) {
   return false;
 }
 
-async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile) {
+async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile, capsuleReason) {
   validateRunShape(state);
   const raw = serializeState(state);
   await writeRawAtomic(deps, authorityFile, raw);
-  if (!mirrorFile) return;
+  if (!mirrorFile) {
+    await refreshCapsuleProjection(deps, state, authorityFile, null, capsuleReason);
+    return;
+  }
   try {
     await writeRawAtomic(deps, mirrorFile, raw);
   } catch (error) {
@@ -705,6 +711,23 @@ async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile
       cause: error.message
     });
   }
+  await refreshCapsuleProjection(deps, state, authorityFile, mirrorFile, capsuleReason);
+}
+
+async function refreshCapsuleProjection(deps, state, authorityFile, mirrorFile, reason) {
+  try {
+    await deps.refreshContextCapsule({ state, authorityFile, mirrorFile, reason });
+  } catch {
+    // The capsule is a rebuildable projection. Run authority has already committed.
+  }
+}
+
+function classifyCapsuleReason(state, reason) {
+  if (state.status === 'waiting_for_human') return 'human_decision';
+  if (state.status === 'waiting_for_runtime') return 'runtime_wait';
+  if (state.status === 'failed' || state.status === 'blocked') return 'failure_or_block';
+  if (state.status === 'cancelled' || state.status === 'pr_ready') return 'terminal_transition';
+  return reason ?? 'run_transition';
 }
 
 async function writeRawAtomic(deps, filePath, raw) {

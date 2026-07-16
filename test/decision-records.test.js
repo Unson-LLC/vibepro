@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -130,4 +130,54 @@ test('DRES-SCENARIO-004 CLI end-to-end: vibepro decision record exposes verifica
   assert.equal(result.decision.verification_evidence_summary.count, 1);
   assert.equal(result.decision.verification_evidence_summary.entries[0].type, 'unit');
   assert.equal(result.decision.verification_evidence_summary.entries[0].result, 'pass');
+});
+
+test('DRES-SCENARIO-005 recording a decision refreshes the single active Run Context Capsule', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-decision-capsule-hook-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const storyId = 'story-decision-capsule-hook';
+  const runId = 'run-20260716T020304Z-a1b2c3d4';
+  const storyDir = path.join(root, 'docs', 'management', 'stories', 'active');
+  await Promise.all([
+    mkdir(path.join(root, '.vibepro'), { recursive: true }),
+    mkdir(storyDir, { recursive: true })
+  ]);
+  await writeFile(
+    path.join(root, '.vibepro', 'vibepro-manifest.json'),
+    `${JSON.stringify({ schema_version: '0.1.0', runs: [], latest_run_by_story: {} }, null, 2)}\n`
+  );
+  await writeFile(
+    path.join(storyDir, `${storyId}.md`),
+    `---\nstory_id: ${storyId}\ntitle: Decision capsule hook\nstatus: active\n---\n\n# Decision capsule hook\n\n**So that** decision context survives restart\n`
+  );
+  await execFileAsync('git', ['init', root]);
+  await execFileAsync('git', ['-C', root, 'config', 'user.email', 'capsule@example.test']);
+  await execFileAsync('git', ['-C', root, 'config', 'user.name', 'Capsule Test']);
+  await execFileAsync('git', ['-C', root, 'add', 'docs']);
+  await execFileAsync('git', ['-C', root, 'commit', '-m', 'test: seed decision capsule hook']);
+  const { stdout } = await execFileAsync('git', ['-C', root, 'rev-parse', 'HEAD']);
+  const runDir = path.join(root, '.vibepro', 'executions', storyId, 'runs', runId);
+  await mkdir(runDir, { recursive: true });
+  await writeFile(path.join(runDir, 'state.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: storyId,
+    run_id: runId,
+    status: 'running',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: stdout.trim(),
+    execution_context: { authority_kind: 'repository', root_realpath: root },
+    transitions: [{ sequence: 1, from: null, to: 'running', reason: 'run_created' }]
+  }, null, 2)}\n`);
+
+  await recordDecision(root, {
+    storyId,
+    type: 'needs_review',
+    summary: 'Choose the handoff owner.',
+    status: 'open'
+  });
+
+  const capsule = JSON.parse(await readFile(path.join(runDir, 'context-capsule.json'), 'utf8'));
+  assert.ok(capsule.open_decisions.some((decision) => decision.prompt === 'Choose the handoff owner.'));
+  assert.ok(capsule.source_fingerprints.some((source) => source.kind === 'decisions'));
 });
