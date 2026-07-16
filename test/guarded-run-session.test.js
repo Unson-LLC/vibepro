@@ -31,6 +31,35 @@ test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service rep
   assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
 });
 
+test('RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const events = [];
+  const session = fixture.session({
+    refreshContextCapsule: async (event) => {
+      events.push({
+        reason: event.reason,
+        run_id: event.state.run_id,
+        status: event.state.status,
+        authority_exists: await stat(event.authorityFile).then(() => true, () => false)
+      });
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'decision_required',
+    stopReason: stopReason('decision_required'),
+    pendingDecision: { id: 'decision-1', prompt: 'Continue?' }
+  });
+
+  assert.deepEqual(events, [
+    { reason: 'run_started', run_id: RUN_ID, status: 'running', authority_exists: true },
+    { reason: 'human_decision', run_id: RUN_ID, status: 'waiting_for_human', authority_exists: true }
+  ]);
+});
+
 test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
