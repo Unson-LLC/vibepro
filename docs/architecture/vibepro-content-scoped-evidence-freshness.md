@@ -47,10 +47,12 @@ flowchart TD
 
 ## Review freshness policy
 
-`agent_reviews.defaults.freshness_mode` and
-`agent_reviews.roles.<role>.freshness_mode` accept `content_surface` or
-`strict_head`. `content_surface` is the default. A configured `strict_head`
-policy must also provide `freshness_reason` at the same role or defaults level.
+`agent_reviews.defaults.freshness_mode` may explicitly retain
+`content_surface`. Strict binding is role-specific:
+`agent_reviews.roles.<role>.freshness_mode` accepts `strict_head` only together
+with `freshness_reason` on that role. A global `strict_head` default is rejected
+so an unrelated ordinary role cannot become HEAD-bound without an explicit,
+reviewable risk decision.
 
 `gate_evidence` and `release_risk` remain built-in strict-HEAD roles because they
 currently cover head-bound canonical artifacts or the complete release

@@ -119,5 +119,6 @@ handoff can reconstruct what the reviewer inspected.
 - Strict HEAD coverage records `--strict-head-binding` evidence and asserts the
   legacy HEAD mismatch behavior.
 - Review policy coverage asserts content-surface defaults, built-in strict
-  roles that cannot be weakened by a global default, reason-required strict
+  roles that cannot be weakened by a global default, rejection of a global
+  strict default, reason-required role policies, and reason-required CLI
   overrides, pass inspection requirements, and strict-mode surface persistence.

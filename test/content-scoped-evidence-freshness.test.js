@@ -406,6 +406,30 @@ test('custom strict HEAD role policy requires and persists its rationale', async
   assert.equal(recorded.result.review.freshness_policy.reason, 'runtime compatibility spans the complete release head');
 });
 
+test('global strict HEAD default is rejected so ordinary roles remain content-scoped', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    defaults: {
+      freshness_mode: 'strict_head',
+      freshness_reason: 'apply strict binding to every role'
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const rejected = await captureRunCli([
+    'review', 'prepare', repo,
+    '--id', 'story-content-binding',
+    '--stage', 'implementation',
+    '--role', 'runtime_contract'
+  ]);
+
+  assert.equal(rejected.exitCode, 1);
+  assert.match(rejected.stderr, /defaults\.freshness_mode cannot be strict_head/);
+  assert.match(rejected.stderr, /each high-risk role/);
+});
+
 test('content-scoped pass rejects generated workspace artifacts as the only inspection input', async () => {
   const repo = await makeGitRepoWithStory();
   await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);

@@ -1282,6 +1282,10 @@ async function readAgentReviewPolicy(repoRoot) {
 }
 
 function normalizeAgentReviewPolicy(raw = {}) {
+  const defaultFreshnessMode = normalizeOptionalFreshnessMode(raw?.defaults?.freshness_mode);
+  if (defaultFreshnessMode === 'strict_head') {
+    throw new Error('agent_reviews.defaults.freshness_mode cannot be strict_head; configure strict_head with freshness_reason on each high-risk role.');
+  }
   const stages = {};
   const rawStages = isPlainObject(raw?.stages) ? raw.stages : {};
   for (const stage of Object.keys(DEFAULT_REVIEW_STAGE_ROLES)) {
@@ -1306,8 +1310,7 @@ function normalizeAgentReviewPolicy(raw = {}) {
   return {
     defaults: {
       timeout_ms: raw?.defaults?.timeout_ms,
-      freshness_mode: normalizeOptionalFreshnessMode(raw?.defaults?.freshness_mode),
-      freshness_reason: normalizeNullable(raw?.defaults?.freshness_reason),
+      freshness_mode: defaultFreshnessMode,
       model_policy: normalizeModelPolicy(raw?.defaults?.model_policy)
     },
     stages,
@@ -1368,7 +1371,6 @@ function getRolePolicy(policy, role) {
     ...configuredRole,
     freshness_mode: freshnessMode,
     freshness_reason: configuredRole.freshness_reason
-      ?? policy?.defaults?.freshness_reason
       ?? (freshnessMode === 'strict_head' ? builtInReason : null),
     freshness_source: freshnessSource
   };
