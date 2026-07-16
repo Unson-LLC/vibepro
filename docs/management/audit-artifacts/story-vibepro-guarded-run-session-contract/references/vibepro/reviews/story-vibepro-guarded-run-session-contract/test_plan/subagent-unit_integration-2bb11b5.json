@@ -1,0 +1,71 @@
+{
+  "status": "pass",
+  "summary": "HEAD 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd passes the unit_integration Test Plan review. The 36-case focused suite is pre-fix-sensitive and covers the guarded Run contract across repository, managed, and source_fallback authority; negative and nonmutating paths; creation locking and partial bootstrap; canonical Git identity; schema migration, corruption, future schema, lifecycle closure, mirror failure/repair; CLI human/JSON/legacy surfaces; and fresh-process persistence. Strict-head evidence reports targeted 36/36 and full suite 1126/1126. This is role-local only: the persisted pr-prepare remains overall_status=needs_verification and ready_for_pr_create=false because other review/evidence gates remain open.",
+  "inspection_summary": "Independently compared the current Test Plan path/surface matrix and final Spec clauses with src/cli.js, guarded Run implementation boundaries, all 36 focused test cases, legacy execute coverage in the full suite, current-head verification artifacts, and the af070b8-to-2bb11b5 compatibility fix. Verified regression_guard and path_surface_coverage, including pre-fix failure sensitivity, negative-path nonmutation, concurrency/lock behavior, canonical identity and symlink aliases, migration/mirror ordering, recognized versus unknown execute dispatch, user-visible human/JSON/error/help surfaces, and evidence-handling injection indicators. No current-head unit/integration coverage defect was found.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/review-request-unit_integration.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "test/vibepro-cli.test.js",
+    "git diff af070b819dbeb13f38176e45436b7f91bf819f29..2bb11b59fc1fef5c9b018073918e3eb7eb4722dd -- src/cli.js test/guarded-run-session.test.js docs/management/test-plans/story-vibepro-guarded-run-session-contract.md .vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    "node --test test/guarded-run-session.test.js",
+    "node bin/vibepro.js execute nonsense . --story-id story-vibepro-guarded-run-session-contract --repair-linked-copy --json",
+    "git diff --check $(git merge-base HEAD main)..HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "inspection_evidence": [
+    "test/guarded-run-session.test.js defines 36 focused cases. Lines 25-575 cover closed dependency injection, exact initial persistence, repository/managed/source_fallback authority, canonical source aliases, unavailable binding failures, fallback fingerprints, creation locks, partial bootstrap, authority-first mirror failures, deterministic selection, repair output, incompatible targets, and all recognized non-watch plus unknown execute surfaces.",
+    "test/guarded-run-session.test.js:578-1000 covers stale HEAD nonmutation, explicit failed-run resume, the full closed lifecycle transition matrix, schema-only migration, corrupt quarantine, future-schema preservation, predecessor cancellation, managed migration ordering and repair, path identity mismatch, forbidden history, Gate-only pr_ready, strict and caller-supplied IDs before side effects, persisted JSON equality, and exact legacy status routing.",
+    "test/guarded-run-session.test.js:1001-1130 covers additive help without broad repair advertisement, production Git identity with a real linked worktree, fresh-process human/JSON run-status-watch-resume-cancel, and a static source-surface guard against runtime/action/waiver/merge authority or whole-service replacement.",
+    "The af070b8 implementation classified every non-watch token with --repair-linked-copy as repair_linked_copy_not_supported exit 2. The 2bb11b5 fixture asserts an unknown token instead exits 1 with `Unknown execute command: nonsense`, excludes the repair code, and creates no .vibepro/executions artifact; therefore this regression test fails on the pre-fix implementation. The same table keeps typed exit-2 pre-dispatch assertions for run, omitted and explicit status, resume, cancel, start, next, reconcile, and merge.",
+    "Concurrency/identity/migration coverage is behavioral rather than assertion-only: orphan and cross-root Story locks assert no bootstrap or Run creation; partial bootstrap asserts lock release and fail-closed retry; symlink source_repo is asserted canonical across create/status/watch/resume/cancel; real Git fixtures distinguish linked-worktree git_dir identities; migration asserts schema-only preservation, raw-byte mirror ordering, corrupt quarantine, future-schema immutability, missing-field rejection, and explicit repair after an injected mirror failure.",
+    "Current strict-head artifacts bind both commands to 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd: targeted.json reports 36 passed, 0 failed; full-suite.json reports 1126 passed with 0 failed/cancelled/skipped/todo. A fresh focused run in this review also returned 36 passed, and a fresh real CLI unknown-command probe returned exit 1 with the established error.",
+    "For regression_guard, full-suite coverage includes the pre-existing execute start/status/next/reconcile/merge families and managed-worktree behavior in test/vibepro-cli.test.js; the focused suite separately asserts exact legacy status output routing and additive help. For path_surface_coverage, the Test Plan explicitly maps run/status/watch/repair/resume/cancel and every recognized non-watch command plus the unknown fallback across human/JSON, authority, fallback, mirror, artifact, and help surfaces, with compositional rather than falsely claimed Cartesian coverage.",
+    "A case-insensitive search over the Story, Architecture, Test Plan, final Spec, implementation, and focused tests found no evidence-handling override pattern. The persisted pr-prepare is not used as approval evidence: it still reports overall_status=needs_verification and ready_for_pr_create=false and predates the refreshed strict-head verification records at 2026-07-15T16:26Z."
+  ],
+  "judgment_delta": [
+    "Initial concern: a large new persistence contract might be covered mainly by successful creation and command smoke tests. Final conclusion: the focused suite is dominated by failure injection and before/after artifact assertions, including stale identity, unavailable authority, bad fingerprints, lock contention, partial bootstrap, mirror failure, invalid transitions, corrupt/future state, traversal IDs, and deleted authority, so negative paths and nonmutation are materially guarded.",
+    "Initial concern: concurrency and authority identity could be simulated too narrowly to catch cross-root and restart defects. Final conclusion: one shared Story lock is exercised from source and managed callers, orphan-lock and finally-release behavior are asserted, symlink/canonical aliases and unmanaged worktree rejection are covered, production Git identity uses real repository/worktree fixtures, and repository Runs survive fresh CLI processes.",
+    "Initial concern: migration tests might only assert the new schema_version while silently defaulting or rewriting other fields. Final conclusion: predecessor fixtures preserve non-default fields and raw bytes, reject other missing fields, cover cancelled idempotence, source_fallback fingerprints, managed authority-first/mirror-second ordering, injected mirror failure, out-of-sync restart, explicit repair, corrupt quarantine, and future-schema preservation.",
+    "Initial concern under path_surface_coverage: the 2bb11b5 repair-guard fix might pass on both old and new implementations or leave legacy execute routes untested. Final conclusion: the unknown-command assertion concretely fails on af070b8, while the same fixture enumerates every recognized execute branch and alternates human/JSON errors before dispatch; focused legacy status/help assertions plus 1126/1126 full-suite evidence cover the established execute families.",
+    "Initial concern under regression_guard: refreshed verification could be inferred from an old review result or stale readiness file. Final conclusion: this verdict uses the current 2bb11b5 request and diff, a fresh 36-test execution, a fresh CLI probe, and strict-head targeted/full verification artifacts; the still-not-ready pr-prepare is explicitly treated as an overall workflow blocker, not overridden by this role pass."
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "severity": "medium",
+      "id": "unknown-execute-repair-regression-coverage",
+      "detail": "Resolved at 2bb11b5 with a pre-fix-sensitive integration assertion: unknown execute subcommands carrying --repair-linked-copy retain the established Unknown execute command message and exit 1, never emit repair_linked_copy_not_supported, and create no Run artifact; af070b8 fails this contract by returning typed exit 2."
+    },
+    {
+      "severity": "medium",
+      "id": "canonical-source-root-identity-coverage",
+      "detail": "Resolved and covered: a legacy symlink source_repo is persisted as the canonical Git root, while symlink and canonical spellings remain authorized aliases across status/watch/resume/cancel; a real Git fixture separately distinguishes source and linked-worktree git_dir identities."
+    },
+    {
+      "severity": "medium",
+      "id": "creation-concurrency-and-partial-bootstrap-coverage",
+      "detail": "Resolved and covered: orphan/cross-root creation lock fixtures assert no lock stealing or bootstrap, the partial-bootstrap fixture proves lock release and no Run/mirror creation, and retry resolves the committed unavailable legacy binding fail-closed rather than promoting source fallback."
+    },
+    {
+      "severity": "medium",
+      "id": "migration-and-mirror-ordering-coverage",
+      "detail": "Resolved and covered: schema-only predecessor migration, missing-field rejection, corrupt quarantine, future-schema immutability, cancelled idempotence, source_fallback fingerprint validation, managed authority-first migration, mirror failure, restart divergence, and explicit repair are all asserted with persisted artifact comparisons."
+    },
+    {
+      "severity": "medium",
+      "id": "caller-supplied-run-id-side-effect-coverage",
+      "detail": "Resolved and covered: valid and invalid caller-supplied Run IDs are rejected before Git identity, bootstrap, path/artifact creation, or mirror writes in both service and CLI human/JSON paths."
+    }
+  ]
+}

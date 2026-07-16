@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "summary": "Human and JSON recovery surfaces, bilingual help, fallback errors, and legacy discoverability are complete.",
+  "inspection_summary": "Inspected real CLI output and reran ten UX-focused tests.",
+  "evidence": [
+    "Recovery handles and safe copyable commands are present.",
+    "JSON and human errors share the stable typed contract.",
+    "English and Japanese help accurately state persistence-only run and single-snapshot watch.",
+    "UX-focused replay passed 10/10."
+  ],
+  "judgment_delta": [
+    "Former recovery and help ambiguities are resolved across human, JSON, legacy, and fallback paths."
+  ],
+  "findings": []
+}

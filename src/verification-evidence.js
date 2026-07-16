@@ -6,6 +6,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext } from './git-fingerprint.js';
 import { buildContentBinding } from './content-binding.js';
+import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -84,6 +85,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     };
     await writeJsonAtomic(evidencePath, nextEvidence);
     return nextEvidence;
+  });
+  await refreshActiveRunContextCapsule(root, {
+    storyId,
+    reason: 'verification_recorded'
   });
   return {
     evidence,

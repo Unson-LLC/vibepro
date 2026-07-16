@@ -40,6 +40,6 @@ test('generated CLI references cover every top-level command and current critica
     assert.match(content, /pr prepare \[repo\].*--story-id <id>/);
     assert.match(content, /verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>.*--status <pass\|fail\|needs_setup>/);
     assert.match(content, /review record \[repo\].*--stage <stage>.*--status <pass\|needs_changes\|block>/);
-    assert.match(content, /execute <start\|status\|next\|reconcile\|merge>/);
+    assert.match(content, /execute <run\|status\|watch\|resume\|cancel\|start\|next\|reconcile\|merge>/);
   }
 });

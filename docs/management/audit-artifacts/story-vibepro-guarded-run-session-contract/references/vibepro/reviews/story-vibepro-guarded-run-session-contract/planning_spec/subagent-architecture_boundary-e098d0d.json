@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "summary": "Repository-specific Git common-directory lock boundary and exact lock_artifact output coverage are preserved.",
+  "inspection_summary": "Inspected final delta, lock resolution, Git identity, separate-git-dir fixture, output assertions, and current-head evidence without rerunning tests.",
+  "inspection_inputs": ["src/guarded-run-session.js", "src/git-identity.js", "test/guarded-run-session.test.js", ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"],
+  "judgment_delta": ["Parent-directory collision remains eliminated and direct, JSON, and human lock paths are now asserted."],
+  "findings": []
+}

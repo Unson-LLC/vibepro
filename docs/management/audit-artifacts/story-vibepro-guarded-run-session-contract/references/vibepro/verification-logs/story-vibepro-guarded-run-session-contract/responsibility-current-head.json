@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+  "status": "pass",
+  "tests": 38,
+  "passed": 38,
+  "failed": 0,
+  "scope": [
+    {
+      "responsibility": "vibepro.pr_lifecycle.execution",
+      "tests": 4,
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/pr-lifecycle-responsibility-current-head-junit.xml"
+    },
+    {
+      "responsibility": "vibepro.runtime_cost.telemetry_ingestion",
+      "tests": 22,
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/runtime-cost-responsibility-current-head-junit.xml"
+    },
+    {
+      "responsibility": "vibepro.managed_worktree.execution_locality",
+      "tests": 12,
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/managed-worktree-responsibility-current-head-junit.xml"
+    }
+  ],
+  "scope_note": "Current-head regression evidence for inherited responsibility contracts only; this does not claim that Story #1 implements runtime-cost ingestion, PR lifecycle orchestration, or managed-worktree ownership."
+}

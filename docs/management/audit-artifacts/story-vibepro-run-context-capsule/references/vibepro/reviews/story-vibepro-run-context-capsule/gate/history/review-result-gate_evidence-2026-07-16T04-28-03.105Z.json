@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-run-context-capsule",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Authority recovery is fixed, but public managed recovery can leave the configured linked-copy capsule divergent.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "capsule-explicit-rebuild-managed-mirror-desync",
+      "detail": "Public recoverRunContext rebuild discovers authority state but does not derive the configured managed linked-copy state path, so authority and mirror capsules can diverge after explicit recovery."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "capsule-explicit-rebuild-invalid-existing",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/run-context-capsule.test.js"
+      ],
+      "reason": "forced replacement and malformed plus oversized regressions resolve the prior defect",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "capsule-new-source-staleness",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/run-context-capsule.test.js"
+      ],
+      "reason": "complete source-set comparison resolves the defect",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "capsule-semantic-event-churn",
+      "disposition": "rejected",
+      "resolved_by": [],
+      "reason": "exact authoritative bytes are the documented event identity",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-missing-status-artifacts",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/unit-status.json"
+      ],
+      "reason": "current-head machine-readable status artifacts resolve the defect",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected clean current HEAD, Story, Architecture, Test Plan, forced replacement, managed discovery, prior findings, verification artifacts, and independently ran 65 focused tests. Path-surface coverage found managed public recovery omitted configured mirror discovery.",
+    "evidence": ".vibepro/pr/story-vibepro-run-context-capsule/verification-evidence.json",
+    "inputs": [
+      "src/run-context-capsule.js",
+      "test/run-context-capsule.test.js",
+      "docs/architecture/story-vibepro-run-context-capsule.md",
+      "docs/management/test-plans/story-vibepro-run-context-capsule.md",
+      ".vibepro/pr/story-vibepro-run-context-capsule/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "Provisional pass became needs_changes after tracing public recovery and finding configured managed mirror discovery was only present in active-run refresh."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "expected_head_sha": "c06bc72d307bd7650d949c428460416ca179679f",
+    "current_head_sha": "c06bc72d307bd7650d949c428460416ca179679f",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+      "branch": "codex/story-vibepro-run-context-capsule",
+      "actual_branch": "codex/story-vibepro-run-context-capsule",
+      "current_head_sha": "c06bc72d307bd7650d949c428460416ca179679f",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-16T04:28:03.105Z",
+  "git_context": {
+    "head_sha": "c06bc72d307bd7650d949c428460416ca179679f",
+    "current_branch": "codex/story-vibepro-run-context-capsule",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T04:28:03.087Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c06bc72d307bd7650d949c428460416ca179679f",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "f8d08aaaed826cf67d5d6e3badc02e35d5d32296d094d0c6b904ed1af0434755",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_final_recovery",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-run-context-capsule/gate/transcript-gate_evidence-final-recovery.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-run-context-capsule/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

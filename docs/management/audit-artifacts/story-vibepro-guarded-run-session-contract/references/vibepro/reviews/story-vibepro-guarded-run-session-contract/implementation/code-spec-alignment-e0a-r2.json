@@ -1,0 +1,19 @@
+{
+  "status": "needs_changes",
+  "summary": "Scenario IDs and lifecycle ID were repaired, but invariant and contract clause identity swaps remained.",
+  "inspection_summary": "Re-read current Spec statements and origin test refs against the stable Test Plan and test names.",
+  "evidence": [
+    "S-002/S-004/S-005 and INV-005 were aligned.",
+    "INV-002/INV-004 and C-006/C-007 still had swapped statement-to-anchor meanings."
+  ],
+  "judgment_delta": [
+    "Previous finding partially resolved; remaining clause identity swaps kept traceability contradictory."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "spec-clause-id-traceability-drift",
+      "detail": "Align INV-002/INV-004 and C-006/C-007 with stable Test Plan and test anchors."
+    }
+  ]
+}

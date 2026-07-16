@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "summary": "HEAD e0a38eb の Guarded Run E2E/UX は、repository と source_fallback の fresh-process replay、human/JSON/error/recovery surface、AC-1〜10 binding、legacy/regression guard を満たしている。",
+  "inspection_summary": "review request、Story AC、test plan の path/UX matrix、CLI dispatch/rendering、Guarded Run authority/recovery implementation、focused contract・fresh-process・acceptance tests、current-head verification artifacts を照合し、acceptance replay を独立再実行して 1/1 outer test（内部 contract + process replay 47/47）pass を確認した。",
+  "inspection_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/grs-e2e-e0a-transcript.json",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/review-request-e2e_ux.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/cli.js: execute guarded dispatch, help, JSON/human routing, typed exit-2 handling",
+    "src/guarded-run-session.js: authority selection, summary/error renderer, linked-copy recovery guidance, restart persistence",
+    "test/guarded-run-session.test.js: 45 contract/CLI/regression cases",
+    "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js: 2 fresh-process real-Git replay cases",
+    "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts: AC-1 through AC-10 and final-scenario executable bindings",
+    "command: node --test test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts (pass 1/1; nested focused suites pass 47/47)",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head-verified.json (HEAD e0a38eb, outer 3/3, nested 47)",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/responsibility-current-head.json (HEAD e0a38eb, inherited responsibility regressions 38/38)",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-composite.json (1138/1138 qualified ancestor run plus complete current-head delta coverage; no single-head overclaim)",
+    "git diff main...e0a38eb and git diff 6cb1101..e0a38eb for changed surfaces"
+  ],
+  "judgment_delta": [
+    "Initial concern: the dedicated source_fallback E2E seeds the canonical Run artifact instead of forcing an OS-level preferred-bootstrap failure -> Final: pass, because it independently exercises status/watch/resume/cancel/replay in fresh CLI processes against real Git identity, while actual fallback creation, canonical fingerprint construction, one-field mismatch rejection, and partial-bootstrap failure are covered by the same executed 45-case contract suite; the test plan explicitly claims compositional rather than Cartesian coverage.",
+    "Initial concern: human and JSON UX might be demonstrated only on the happy path -> Final: pass, because real subprocess coverage exercises human and JSON run/status/watch/resume/cancel for repository authority, contract CLI coverage asserts JSON deep-equality to persisted state, visible typed stop reasons and transitions, exit-2 envelopes, quarantine/lock/artifact handles, rejected-candidate guidance, and shell-quoted linked-copy repair commands; source_fallback fresh-process JSON replay is combined with the same renderer/dispatch contract rather than silently claiming a separate exhaustive matrix.",
+    "regression_guard: adding guarded dispatch before legacy execute routes could change established commands -> pass, because no-run-id status remains on the legacy route with compatible JSON, help retains start/status/next/reconcile/merge, repair is rejected before dispatch for every recognized non-watch command, current-head inherited responsibility suites pass 38/38, and the qualified 1138-test full-suite artifact explicitly avoids a false single-head claim while the complete later three-file delta is current-head covered.",
+    "path_surface_coverage: implicit selection, repository/managed/source_fallback authority, source/managed/untrusted roots, stale/deleted authority, corrupt/future schema, mirror divergence, repair, human/JSON/help/legacy surfaces could diverge -> pass, because the test-plan matrix names each surface and the executed fixtures assert deterministic or fail-closed behavior without silent suppression; run_selection_blocked exposes rejected ids/codes/artifacts and recovery guidance, and linked-copy errors expose authoritative repair handles.",
+    "AC binding: marker-only acceptance assertions could pass without behavior -> pass, because the acceptance wrapper first executes the 45 contract tests and 2 real-process replay tests and requires 47/47 with zero failures before matching every AC-1 through AC-10 to concrete TAP test names; those names correspond to inspected assertions for persistence, restart, state machine, compatibility, authority, security, and exactly-once recovery."
+  ],
+  "findings": []
+}

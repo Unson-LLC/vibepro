@@ -1,0 +1,63 @@
+{
+  "status": "needs_changes",
+  "summary": "The CLI is the user-facing surface for this Story, so browser/UI E2E is correctly non-applicable and the real-process CLI integration suite is an appropriate substitute. Current behavior is sound: run/status/watch/resume/cancel work across human and JSON output, legacy status remains distinct, repair failures expose actionable handles, symlink/canonical roots remain usable, and unknown-command semantics are preserved. However, the changed English Guarded Run help surface has no automated regression assertion: the only execute-help test exercises the default Japanese renderer even though both HELP_EN and HELP_JA were changed. Add a pre-fix-sensitive English help test before this e2e_ux Test Plan can pass.",
+  "inspection_summary": "Inspected the current-head Story, Test Plan, help renderer and execute routing, the 36-case focused CLI/session suite, current strict-head verification artifacts, and prior e2e_ux review history. Re-ran all 36 focused tests and manually invoked both English and Japanese execute help. Confirmed that CLI subprocess integration is sufficient user-journey evidence for this CLI-only Story, while identifying one path_surface_coverage gap: English help changes are manually correct today but not protected by an executable regression test.",
+  "inspection_evidence": [
+    "Fresh `node --test test/guarded-run-session.test.js` at 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd: 36 passed, 0 failed, including fresh-process human/JSON run-status-watch-resume-cancel.",
+    "Fresh `node bin/vibepro.js execute --help --language en` and `--language ja`: both exit 0 and currently display the expected guarded Run commands, legacy status distinction, pr_ready target, and watch-only repair usage.",
+    "src/cli.js:269-499 and src/cli.js:500-741 define separate English and Japanese help templates; the current diff changes the execute usage in both templates.",
+    "test/guarded-run-session.test.js:1003-1016 invokes only `runCli(['execute', '--help'])` and asserts Japanese prose. No English Guarded Run help assertion exists in the focused or general CLI tests.",
+    "test/guarded-run-session.test.js:1041-1101 is a real-Git, fresh-process CLI journey covering human/JSON run, explicit status, watch, resume, and cancel. The remaining service-level fixtures compose legacy fallback, alias/canonical root authority, repair, visible recovery handles, and unknown-command behavior.",
+    "Current strict-head targeted/full evidence reports 36/36 and 1126/1126. pr-prepare.json remains overall_status=needs_verification and is treated only as overall workflow readiness, not as evidence that overrides this role finding."
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/review-request-e2e_ux.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/review-result-e2e_ux.json",
+    "git diff 326a58e..2bb11b59fc1fef5c9b018073918e3eb7eb4722dd -- src/cli.js test/guarded-run-session.test.js",
+    "node --test test/guarded-run-session.test.js",
+    "node bin/vibepro.js execute --help --language en",
+    "node bin/vibepro.js execute --help --language ja",
+    "git diff --check 326a58e..HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "judgment_delta": [
+    "Initial concern: a browser/UI E2E might be missing for a claimed autonomous UX. Final conclusion: this Story exposes no browser or app UI; its actual user journey is the CLI, and the real Git/fresh-process subprocess test is a stronger and correctly scoped E2E substitute than browser automation.",
+    "Initial concern under regression_guard: the new guarded commands might only cover JSON happy paths and break established execute behavior. Final conclusion: fresh-process human/JSON journeys, explicit legacy status routing, recognized non-watch repair rejection, preserved unknown-command exit 1, exact repair output, and the 1126-test full suite materially guard the existing CLI surface.",
+    "Initial concern under path_surface_coverage: help discoverability might be asserted only generally. Final conclusion: Japanese aggregate help is pre-fix-sensitive and watch-only repair scope is asserted, but the independently changed English template is reached only by manual inspection; the Test Plan therefore lacks durable automated coverage for one changed user-visible output surface.",
+    "Initial concern: symlink alias/canonical and repair-handle behavior might require a Cartesian CLI subprocess matrix. Final conclusion: compositional coverage is proportionate here because CLI argument routing is thin, while service fixtures prove canonical authority and renderer tests prove exact visible recovery handles; no separate browser surface exists."
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "english-guarded-help-regression-coverage",
+      "detail": "Both English and Japanese execute-help templates are changed in src/cli.js, but test/guarded-run-session.test.js:1003-1016 calls only default-language `execute --help` and asserts Japanese text. The English output is correct in a fresh manual invocation, so this is not a current product defect, but it is an uncovered changed user-visible surface. Add an automated `execute --help --language en` assertion for guarded commands, the legacy no-run-id status distinction, pr_ready-only target language, watch-only --repair-linked-copy usage, and absence of repair from the broad execute usage. Because subcommand help shares renderHelp, one explicit English aggregate route is sufficient if that shared routing remains directly established."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "severity": "medium",
+      "id": "e2e-ux-executable-cli-coverage",
+      "detail": "The earlier broad CLI journey gap is resolved: current tests exercise run/status/watch/resume/cancel through fresh processes on a real Git repository in both human and JSON modes, with separate integration fixtures for legacy fallback, errors, repair, authority selection, and nonmutation. The remaining finding is limited to English help regression coverage."
+    },
+    {
+      "severity": "medium",
+      "id": "repair-flag-command-surface-ux",
+      "detail": "Resolved at 2bb11b5: help advertises --repair-linked-copy only on execute watch, every recognized non-watch execute command returns a visible typed exit-2 error before dispatch, and an unknown command preserves its established error and exit 1 instead of being misclassified as a repair request."
+    },
+    {
+      "severity": "medium",
+      "id": "canonical-root-and-recovery-handle-ux",
+      "detail": "Resolved and evidenced compositionally: symlink and canonical source roots remain authorized controls after canonical persistence, and human failures display run_id, authority and mirror artifact handles plus an exact shell-safe repair command."
+    }
+  ]
+}

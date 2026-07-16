@@ -1,0 +1,9 @@
+{
+  "agent_id": "/root/grs_impl_runtime",
+  "status": "needs_changes",
+  "summary": "Runtime persistence and authority mechanics are coherent, but implicit selection can target an older Run and production Git/worktree evidence is incomplete.",
+  "findings": [
+    "runtime-selection-silent-invalid-skip",
+    "runtime-production-worktree-evidence-gap"
+  ]
+}

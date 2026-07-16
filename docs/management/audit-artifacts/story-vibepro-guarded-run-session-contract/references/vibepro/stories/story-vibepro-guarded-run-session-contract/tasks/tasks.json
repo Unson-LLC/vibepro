@@ -1,0 +1,685 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-15T12:39:35.060Z",
+  "story": {
+    "story_id": "story-vibepro-guarded-run-session-contract",
+    "title": "story-vibepro-guarded-run-session-contract",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-15T045848Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-15T05:06:20.126Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": true,
+    "allowed_paths": [
+      "src/guarded-run-session.js",
+      "src/git-identity.js",
+      "test/guarded-run-session.test.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      "docs/**",
+      "design-ssot.json",
+      ".vibepro/**"
+    ],
+    "source": "cli_declared",
+    "recorded_at": "2026-07-15T12:39:35.066Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-guarded-run-session-contract-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-guarded-run-session-contract-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "high",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/authorization-scoring.js",
+        "src/network-contract-scanner.js",
+        "src/nocodb-story-sync.js",
+        "src/responsibility-authority.js",
+        "src/session-efficiency-audit.js",
+        "src/session-learning.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-task-generator.js",
+        "src/cli.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/authorization-scoring.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/network-contract-scanner.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/responsibility-authority.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/session-efficiency-audit.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/session-learning.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-guarded-run-session-contract-business_context_gap",
+          "story_id": "story-vibepro-guarded-run-session-contract",
+          "title": "Guarded Execute Runの再開可能なセッション契約",
+          "type": "business_context_gap",
+          "severity": "high",
+          "reason": "Storyの事業/利用文脈が未確定。",
+          "potential_bug": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。",
+          "recommended_review": "対象ユーザー、利用場面、成功状態をStory正本に明記してからSpecを承認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "needs_recovery",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+              "docs/architecture/story-vibepro-guarded-run-session-contract.md"
+            ],
+            "files": [
+              "src/authorization-scoring.js",
+              "src/network-contract-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js"
+            ],
+            "open_question": "business_context"
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md"
+            ],
+            "spec": [],
+            "architecture": [
+              "docs/architecture/story-vibepro-guarded-run-session-contract.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/authorization-scoring.js",
+              "src/network-contract-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js",
+              "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+              "src/architecture-profiler.js",
+              "src/check-packs.js",
+              "src/playbook-exporter.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 133
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 131
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 2,
+                "degree": 126
+              },
+              {
+                "id": "src_session_efficiency_audit_js",
+                "label": "session-efficiency-audit.js",
+                "source_file": "src/session-efficiency-audit.js",
+                "community": 12,
+                "degree": 91
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 5,
+                "node_count": 166,
+                "edge_count": 419
+              },
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 275
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 91,
+                "edge_count": 218
+              },
+              {
+                "id": 23,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 53,
+                "edge_count": 98
+              },
+              {
+                "id": 31,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 39,
+                "edge_count": 86
+              },
+              {
+                "id": 35,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 34,
+                "edge_count": 70
+              },
+              {
+                "id": 14,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 39,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 7,
+                "edge_count": 12
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 26,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 28,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 1209,
+            "impact_score": 0.1303,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        },
+        {
+          "id": "story-vibepro-guarded-run-session-contract-missing_spec_source",
+          "story_id": "story-vibepro-guarded-run-session-contract",
+          "title": "Guarded Execute Runの再開可能なセッション契約",
+          "type": "missing_spec_source",
+          "severity": "high",
+          "reason": "Spec正本が未復元のため、受け入れ基準がコード由来の仮説に留まっている。",
+          "potential_bug": "実装上の分岐や表示が、そのまま本来の要件だと誤認されている可能性がある。",
+          "recommended_review": "Spec草案を作り、コード由来条件と人間が承認する受け入れ基準を分ける。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "needs_recovery",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+              "docs/architecture/story-vibepro-guarded-run-session-contract.md"
+            ],
+            "files": [
+              "src/authorization-scoring.js",
+              "src/network-contract-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md"
+            ],
+            "spec": [],
+            "architecture": [
+              "docs/architecture/story-vibepro-guarded-run-session-contract.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/authorization-scoring.js",
+              "src/network-contract-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/responsibility-authority.js",
+              "src/session-efficiency-audit.js",
+              "src/session-learning.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js",
+              "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+              "src/architecture-profiler.js",
+              "src/check-packs.js",
+              "src/playbook-exporter.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 133
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 131
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 2,
+                "degree": 126
+              },
+              {
+                "id": "src_session_efficiency_audit_js",
+                "label": "session-efficiency-audit.js",
+                "source_file": "src/session-efficiency-audit.js",
+                "community": 12,
+                "degree": 91
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 5,
+                "node_count": 166,
+                "edge_count": 419
+              },
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 275
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 91,
+                "edge_count": 218
+              },
+              {
+                "id": 23,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 53,
+                "edge_count": 98
+              },
+              {
+                "id": 31,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 39,
+                "edge_count": 86
+              },
+              {
+                "id": 35,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 34,
+                "edge_count": 70
+              },
+              {
+                "id": 14,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 39,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 7,
+                "edge_count": 12
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 26,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 28,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 1209,
+            "impact_score": 0.1303,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 11,
+        "matched_file_count": 11,
+        "matched_files": [
+          "src/authorization-scoring.js",
+          "src/network-contract-scanner.js",
+          "src/nocodb-story-sync.js",
+          "src/responsibility-authority.js",
+          "src/session-efficiency-audit.js",
+          "src/session-learning.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 542,
+        "affected_communities": [
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 5,
+            "node_count": 166,
+            "edge_count": 419
+          },
+          {
+            "id": 5,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 275
+          },
+          {
+            "id": 12,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 91,
+            "edge_count": 218
+          },
+          {
+            "id": 23,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 53,
+            "edge_count": 98
+          },
+          {
+            "id": 31,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 39,
+            "edge_count": 86
+          },
+          {
+            "id": 35,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 34,
+            "edge_count": 70
+          },
+          {
+            "id": 14,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 39,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 7,
+            "edge_count": 12
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 26,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 28,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 6
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 133
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 131
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 5,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 2,
+            "degree": 126
+          },
+          {
+            "id": "src_session_efficiency_audit_js",
+            "label": "session-efficiency-audit.js",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 12,
+            "degree": 91
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/pr-manager.js",
+          "src/diagnostic-engine.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+          "src/architecture-profiler.js",
+          "src/check-packs.js",
+          "src/playbook-exporter.js"
+        ],
+        "related_edge_count": 1209,
+        "impact_score": 0.1303,
+        "community_span": 11,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    }
+  ]
+}

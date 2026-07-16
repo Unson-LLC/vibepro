@@ -1,0 +1,9 @@
+{
+  "status": "needs_changes",
+  "summary": "The lock namespace contract is synchronized, but the changed lock_artifact output surface is not asserted despite the Spec and Test Plan claiming human/JSON evidence.",
+  "inspection_summary": "The implementation and real Git regression prove repository isolation, but contention tests only assert the error code and do not verify the common-dir lock path in human and JSON CLI output.",
+  "inspection_evidence": "node --test test/guarded-run-session.test.js: 42/42 pass; current-head affected-surface evidence: 55/55 pass",
+  "inspection_inputs": [".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md", "src/guarded-run-session.js", "test/guarded-run-session.test.js"],
+  "judgment_delta": ["code/docs contract is aligned, but path_surface_coverage is incomplete because user-visible lock_artifact rendering is unverified"],
+  "findings": [{"severity": "medium", "id": "lock-artifact-output-surface-unverified", "detail": "Assert details.lock_artifact and human/JSON runCli rendering for the Git common-directory lock path."}]
+}

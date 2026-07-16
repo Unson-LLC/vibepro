@@ -1,0 +1,10 @@
+{
+  "agent_id": "/root/grs_impl_ux",
+  "status": "needs_changes",
+  "summary": "Legacy compatibility is strong, but recovery handles and human CLI coverage are incomplete and guarded target input is silently ignored.",
+  "findings": [
+    "ux-repair-handle-not-rendered",
+    "path-surface-human-cli-coverage-missing",
+    "ux-silent-target-option"
+  ]
+}

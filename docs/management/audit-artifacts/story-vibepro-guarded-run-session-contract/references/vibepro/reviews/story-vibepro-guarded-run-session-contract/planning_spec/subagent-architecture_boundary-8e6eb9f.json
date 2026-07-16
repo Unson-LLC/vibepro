@@ -1,0 +1,8 @@
+{
+  "status": "needs_changes",
+  "summary": "標準linked worktreeの共有bootstrap lockは成立するが、separate git-dir構成ではlock namespaceがrepo外へ逸脱し別repository間で衝突する。",
+  "inspection_summary": "41a6cb..HEAD差分、Story/Architecture/Spec、lock・Git identity・authority実装、targeted 41/41を照合し、separate-git-dirでcross-repository collisionを実測した。",
+  "inspection_inputs": ["git diff 41a6cb..8e6eb9f", "docs/architecture/story-vibepro-guarded-run-session-contract.md", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "src/guarded-run-session.js", "src/git-identity.js", "test/guarded-run-session.test.js"],
+  "judgment_delta": ["通常linked worktreeの共有は解消", "common-dir由来ならrepository scopedとの判断はdirnameによるidentity喪失のためneeds_changes"],
+  "findings": [{"id":"architecture-boundary-common-dir-parent-collision","severity":"high","description":"path.dirname(git_common_dir_realpath) makes sibling separate Git directories share a lock root; use repository-unique common-dir namespace or fail closed.","file":"src/guarded-run-session.js","line":226}]
+}

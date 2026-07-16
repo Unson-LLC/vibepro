@@ -1,0 +1,29 @@
+{
+  "status": "needs_changes",
+  "summary": "Legacy互換、migration、authority境界は保たれるが、--repair-linked-copyがwatch以外でsilent no-opになる。",
+  "inspection_summary": "現HEAD 326a58eでguarded/legacy CLI routing、help、migration、failure rendering、path surfaceと34件のtargetedを独立確認した。",
+  "inspection_evidence": [
+    "node --test test/guarded-run-session.test.js: 34/34 passed",
+    "full-suite.json: 1124/1124 passed at HEAD 326a58e",
+    "runOptionsは全guarded subcommandへrepairLinkedCopyを渡すがwatchRunだけが読む"
+  ],
+  "inspection_inputs": [
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "test/guarded-run-session.test.js"
+  ],
+  "judgment_delta": [
+    "Legacy routingとmigration safetyはpass。path_surface_coverageはunsupported repair flagのsilent no-opを確認したためneeds_changes。"
+  ],
+  "findings": [
+    {
+      "id": "repair-flag-silent-outside-watch",
+      "severity": "medium",
+      "summary": "--repair-linked-copyはwatch以外のguarded commandで黙って無視される。",
+      "evidence": "CLIはrun/status/watch/resume/cancelへ同一optionsを渡すが、repairLinkedCopyを読むのはwatchRunだけ。",
+      "recommendation": "watch以外では副作用前にtyped exit-2で拒否し、run/status/resume/cancelのhuman/JSON negative testsを追加する。"
+    }
+  ]
+}

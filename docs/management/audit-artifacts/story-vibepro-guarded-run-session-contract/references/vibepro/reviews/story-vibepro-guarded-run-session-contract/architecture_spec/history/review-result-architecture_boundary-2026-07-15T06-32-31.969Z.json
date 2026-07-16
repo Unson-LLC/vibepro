@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Fail-closed bootstrap authority boundary is coherent.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed partial bootstrap, lock scope, authority resolution, and legacy compatibility.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/grs_archspec5_arch.md",
+    "inputs": [
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json"
+    ]
+  },
+  "judgment_delta": [
+    "No actionable architecture boundary findings."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+      "dirty": true,
+      "dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md\n?? docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md\n?? docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T06:32:31.969Z",
+  "git_context": {
+    "head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "41eb60cd67f806fbf31891a1e8f519007cc9dec4ad6ff682108fad756d3c0b34",
+    "user_status_fingerprint_hash": "41eb60cd67f806fbf31891a1e8f519007cc9dec4ad6ff682108fad756d3c0b34",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T06:32:31.968Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "1183431d5b9d858b5e81599fb477825ba520ae7144988c4ac27d0f6a761d340c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "grs_archspec5_arch",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/grs_archspec5_arch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

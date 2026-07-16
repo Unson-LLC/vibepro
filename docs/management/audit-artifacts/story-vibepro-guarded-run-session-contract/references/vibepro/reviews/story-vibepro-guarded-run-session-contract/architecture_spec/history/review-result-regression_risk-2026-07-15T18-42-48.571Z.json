@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "The additive guarded Run contract is regression-contained at HEAD 41a6cb0: legacy execute status remains on its original route, managed/repository/source-fallback authority and mirror paths fail closed, predecessor and corrupt-state handling are explicit, and current-head targeted plus full-suite evidence covers adjacent VibePro behavior.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the complete origin/main...HEAD surface, Story/Architecture/test plan, CLI delegation, Git identity and Run persistence/transition code, regression-focused tests and current-head evidence; also replayed five compatibility and nullable-state tests (5/5 pass) without rerunning the full suite.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-regression-risk-41a6.json",
+    "inputs": [
+      "git diff --stat origin/main...HEAD (8 files; additive guarded Run module plus bounded CLI/Git identity changes)",
+      "git diff origin/main...HEAD -- src/cli.js src/git-identity.js",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "src/git-identity.js",
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "test/guarded-run-session.test.js",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json (HEAD 41a6cb0, 40/40)",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json (HEAD 41a6cb0, 1130/1130)",
+      "node --test --test-name-pattern='recoverable transitions require|nullable state unions reject|legacy status without run-id|repair-linked-copy is rejected|unknown execute subcommands|historical stopped null' test/guarded-run-session.test.js (5/5 pass)",
+      "git diff --check origin/main...HEAD",
+      "git status --short (clean)"
+    ]
+  },
+  "judgment_delta": [
+    "Initial regression concern: adding execute run/watch/resume/cancel and shared option parsing could divert the existing execute status/start/next/reconcile/merge routes -> final: CLI dispatch enters the new service only for the four additive commands or status with an explicit --run-id; the focused legacy-status test proves status without --run-id still returns the legacy artifact, and the current-head full suite reports 1130/1130.",
+    "Initial path-surface concern: a happy-path Run implementation could silently trust mirrors, unavailable worktrees, malformed candidates, or legacy predecessor state -> final: authority selection, source-fallback fingerprinting, all-candidate validation, mirror divergence, explicit repair, migration, corrupt quarantine and future-schema stops are separate fail-closed paths with artifact-bearing errors and dedicated tests; suppression is not silent.",
+    "Initial compatibility concern: requiring typed stop metadata could make historical stopped artifacts unreadable or permit reason inheritance on new transitions -> final: new recoverable transitions require a fresh valid reason before authority persistence, canonical and 0.0.0/unversioned invalid unions are non-mutating invalid_state, while the explicitly documented historical null stop remains readable; focused replay passed.",
+    "Initial evidence concern: new-contract tests alone would not establish regression safety -> final: evidence is bound to the exact reviewed HEAD and combines 40/40 guarded contract scenarios with 1130/1130 repository-wide tests; no modified DB/UI/API surface or migration outside additive .vibepro Run artifacts was found."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T18:42:48.571Z",
+  "git_context": {
+    "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T18:42:48.569Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "746a170c8afded2f65c3b665bf6e423a69ac93486de2e9955e98e6c21fd12973",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/grs_regression_risk_current",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-regression-risk-41a6.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-regression-risk-41a6.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "019f63f2-cdd9-7c63-9bc3-fb9925a3720d",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

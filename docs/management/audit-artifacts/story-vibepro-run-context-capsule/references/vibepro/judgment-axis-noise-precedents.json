@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-run-context-capsule",
+      "decision_id": "decision-1784172785739-e73bd442",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Splitting persistence, refresh hooks, and recovery tests would create temporarily inconsistent public behavior and would force reviewers to reason across dependent PRs; unrelated cleanup is excluded.",
+      "artifact": "docs/architecture/story-vibepro-run-context-capsule.md",
+      "activation_candidates": [
+        "changed_files:16",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T03:33:15.460Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:390|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-run-context-capsule",
+      "decision_id": "decision-1784172785739-e73bd442",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Splitting persistence, refresh hooks, and recovery tests would create temporarily inconsistent public behavior and would force reviewers to reason across dependent PRs; unrelated cleanup is excluded.",
+      "artifact": "docs/architecture/story-vibepro-run-context-capsule.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:390",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T04:50:24.844Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

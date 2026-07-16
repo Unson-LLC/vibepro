@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "summary": "現HEADは再開可能なGuarded Run契約というユーザー価値をScopeとNon Goalsを越えず実装し、AC 1-10をArchitecture、Spec、Test Plan、実装、現行証跡へ追跡できる。",
+  "inspection_summary": "Story、Architecture、Spec、Test Plan、全変更面、CLI、Run Session、Git identity、33件の契約テストとcurrent-head証跡を独立照合した。",
+  "inspection_evidence": [
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json: dc9ddba, 33/33 pass",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json: dc9ddba, 1123/1123 pass",
+    "git diff --check c8a3d7f..HEAD: clean"
+  ],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/cli.js",
+    "src/git-identity.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json"
+  ],
+  "judgment_delta": [
+    "自律実行まで過大に含む懸念から、Run追跡、停止理由、再開可能性へ限定され後続Storyへ権限を分離しているため整合と判断した。",
+    "happy path偏重の懸念から、legacy/fallback/authority/mirror/corruption/human/JSON面まで具体的fixtureで覆うためpassと判断した。",
+    "回帰証拠が新規テストだけの懸念から、現HEADの全1123テスト成功とlegacy route専用テストによりpassと判断した。"
+  ],
+  "findings": []
+}

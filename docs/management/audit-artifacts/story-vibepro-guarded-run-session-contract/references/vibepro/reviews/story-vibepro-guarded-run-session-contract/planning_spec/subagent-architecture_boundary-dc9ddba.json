@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "summary": "Run Sessionは既存Execution Stateの横に置かれた追加レイヤーとして責務が限定され、CLI、Execution bootstrap、Git identity、Gate readinessへの依存は一方向である。",
+  "inspection_summary": "Story、Architecture、Spec、責務契約、全差分、CLIとRun moduleの依存面、Test Plan、current-head verification、PR readiness責務解決結果を確認した。",
+  "inspection_evidence": [
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json#responsibility_authority"
+  ],
+  "inspection_inputs": [
+    "git diff c8a3d7f..dc9ddbabba5718b9b2d7e397fcc407b4903e73a9",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "Execution Stateを置換する懸念から、versioned Run artifactを横に追加しlegacy routeを維持しているためpassと判断した。",
+    "Gateやmerge権限を内包する懸念から、closed dependency factoryとread-only readiness依存によりpassと判断した。",
+    "Managed Worktree authorityを奪う懸念から、既存metadataをauthority sourceとして再利用し不一致をfail closedにするためpassと判断した。"
+  ],
+  "findings": []
+}

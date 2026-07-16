@@ -1,0 +1,188 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-run-context-capsule",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-RCC-1",
+      "type": "contract",
+      "statement": "A Run Context Capsule contains the typed Story, Run, HEAD, objective, invariants, bottleneck, evidence, decision, budget, and last-progress fields required to resume a guarded Run.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Artifact contract" }],
+        "code_refs": [{ "file": "src/run-context-capsule.js", "anchor": "refreshCapsule" }],
+        "test_refs": [{ "file": "test/run-context-capsule.test.js", "case": "RCC-S-1 RCC-S-2 RCC-S-3 capsule is typed, bounded, and accounts for every reduced section" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "budget_state" }],
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_contain": "RCC-S-1" }]
+      }
+    },
+    {
+      "id": "INV-RCC-2",
+      "type": "invariant",
+      "statement": "The serialized UTF-8 capsule is at most 32768 bytes and records every deterministically reduced optional section in truncated_sections while retaining source references.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Artifact contract" }],
+        "code_refs": [{ "file": "src/run-context-capsule.js", "anchor": "RUN_CONTEXT_CAPSULE_MAX_BYTES" }],
+        "test_refs": [{ "file": "test/run-context-capsule.test.js", "case": "RCC-S-1 RCC-S-2 RCC-S-3 capsule is typed, bounded, and accounts for every reduced section" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "RUN_CONTEXT_CAPSULE_MAX_BYTES = 32 * 1024" }],
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_contain": "RCC-S-2" }]
+      }
+    },
+    {
+      "id": "INV-RCC-3",
+      "type": "invariant",
+      "statement": "Capsules persist allowlisted summaries, relative source references, and SHA-256 fingerprints but never persist tool output, full source JSON, diffs, test logs, provider transcripts, prompts, or hidden reasoning.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Source selection and data minimization" }],
+        "code_refs": [{ "file": "src/run-context-capsule.js", "anchor": "source_fingerprints" }],
+        "test_refs": [{ "file": "test/run-context-capsule.test.js", "case": "RCC-S-1 RCC-S-2 RCC-S-3 capsule is typed, bounded, and accounts for every reduced section" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "source_ref" }],
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_contain": "provider_transcript" }]
+      }
+    },
+    {
+      "id": "C-RCC-4",
+      "type": "contract",
+      "statement": "Capsule projection runs only after authoritative Run, verification, review, or decision persistence; exact authoritative bytes define event identity, so an unchanged source set stays byte-stable and any source-byte or source-set change regenerates the capsule.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Meaningful-event refresh" }],
+        "code_refs": [
+          { "file": "src/run-context-capsule.js", "anchor": "event_fingerprint" },
+          { "file": "src/guarded-run-session.js", "anchor": "refreshCapsuleProjection" },
+          { "file": "src/verification-evidence.js", "anchor": "verification_recorded" },
+          { "file": "src/agent-review.js", "anchor": "review_recorded" },
+          { "file": "src/decision-records.js", "anchor": "decision_recorded" }
+        ],
+        "test_refs": [
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-4 refresh is byte-stable until a meaningful source changes" },
+          { "file": "test/guarded-run-session.test.js", "case": "RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit" },
+          { "file": "test/decision-records.test.js", "case": "DRES-SCENARIO-005 recording a decision refreshes the single active Run Context Capsule" }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "regenerated: false" }],
+        "test_pattern": [{ "file_glob": "test/{run-context-capsule,guarded-run-session}.test.js", "must_contain": "RCC-S-4" }]
+      },
+      "inherited_behaviors": [
+        {
+          "condition": "loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready'",
+          "classification": "unchanged",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "loaded.state.status === 'cancelled'",
+          "classification": "unchanged",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "canonical.execution_context.authority_kind !== 'managed' || !selected.mirrorFile",
+          "classification": "existing",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "authorityState.execution_context?.authority_kind !== 'managed'",
+          "classification": "existing",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "mirrorRaw === null || mirrorRaw !== authorityRaw",
+          "classification": "existing",
+          "files": ["src/guarded-run-session.js"]
+        }
+      ]
+    },
+    {
+      "id": "INV-RCC-5",
+      "type": "invariant",
+      "statement": "A capsule whose Story id, Run id, persisted HEAD, current authoritative Git HEAD, source existence, exact source fingerprint, or complete currently available source set does not match fails closed with a typed non-mutating error and may only be rebuilt from authoritative sources.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Authority and linked worktrees" }],
+        "code_refs": [{ "file": "src/run-context-capsule.js", "anchor": "validateCapsule" }],
+        "test_refs": [
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 stale HEAD and missing sources fail closed without rewriting the capsule" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 a newly available optional source stales the old capsule and explicit rebuild recovers it" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 malformed capsule and malformed optional JSON fail closed without projection mutation" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 mismatched Story frontmatter fails closed before capsule creation" }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "stale_binding" }],
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_contain": "RCC-S-5" }]
+      },
+      "inherited_behavior": {
+        "condition": "!options.authorityFile || path.resolve(authorityFile",
+        "classification": "existing",
+        "files": ["src/run-context-capsule.js"]
+      }
+    },
+    {
+      "id": "S-RCC-6",
+      "type": "scenario",
+      "statement": "After a process restart or managed-worktree handoff, a fresh process reconstructs the current blocker, open decisions, evidence references, budget, and progress from persisted files without transcript input.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Recovery contract" }],
+        "code_refs": [{ "file": "src/run-context-capsule.js", "anchor": "recoverRunContext" }],
+        "test_refs": [
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-6 RCC-S-7 fresh-process recovery reconstructs the blocker and decision context without transcript input" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-4 RCC-S-6 managed refresh mirrors exact bytes and a new process recovers decisions" }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/run-context-capsule.js", "must_contain": "recoverRunContext" }],
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_contain": "new process recovers decisions" }]
+      }
+    },
+    {
+      "id": "C-RCC-7",
+      "type": "contract",
+      "statement": "Contract tests cover size and truncation bookkeeping, forbidden raw bodies, stale HEAD, missing and newly available sources, malformed JSON, atomic and mirror failures, decision refresh, ambiguous active Runs, managed mirroring, and fresh-process recovery.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-run-context-capsule.md", "section": "Verification matrix" }],
+        "test_refs": [
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-1 RCC-S-2 RCC-S-3 capsule is typed, bounded, and accounts for every reduced section" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 stale HEAD and missing sources fail closed without rewriting the capsule" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 atomic authority failure preserves the previous capsule bytes" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 mirror failure is typed after the authority commits" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-5 multiple active runs produce an explicit ambiguous result" },
+          { "file": "test/run-context-capsule.test.js", "case": "RCC-S-4 RCC-S-6 managed refresh mirrors exact bytes and a new process recovers decisions" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/run-context-capsule.test.js", "must_cover": "RCC-S-7" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "rationale": "Shows the authority-first event projection and validated restart path required by RCC-S-4 through RCC-S-6.",
+      "mermaid": "flowchart LR\n  Event[\"Run, verification, review, or decision event\"] --> Authority[\"persist authoritative artifact\"]\n  Authority --> Project[\"derive bounded capsule\"]\n  Project --> Canonical[\"write authority capsule\"]\n  Canonical --> Mirror[\"copy exact bytes to managed mirror\"]\n  Canonical --> Validate[\"validate Story, Run, HEAD, sources\"]\n  Validate --> Recover[\"restart or handoff decision view\"]"
+    },
+    {
+      "kind": "state",
+      "entities": ["missing", "fresh", "unchanged", "stale", "rebuilt"],
+      "rationale": "Captures missing, fresh, unchanged, stale, and rebuilt states in the fail-closed freshness lifecycle.",
+      "mermaid": "stateDiagram-v2\n  [*] --> missing\n  missing --> fresh: meaningful event or explicit rebuild\n  fresh --> unchanged: identical event fingerprint\n  fresh --> stale: HEAD, source bytes, or source set changes\n  stale --> rebuilt: explicit rebuild from authorities\n  rebuilt --> fresh\n  unchanged --> fresh: meaningful source change"
+    },
+    {
+      "kind": "threat_model",
+      "rationale": "Documents the data-minimization boundary that prevents transcript and raw evidence duplication.",
+      "mermaid": "flowchart LR\n  Sources[\"authoritative Story, Run, Gate, evidence, decisions\"] --> Allowlist[\"allowlisted scalar extraction\"]\n  Allowlist --> Capsule[\"context capsule <= 32 KiB\"]\n  Raw[\"logs, diffs, full JSON, transcripts, prompts\"] -.->|\"never embedded\"| Capsule\n  Capsule --> Reader[\"binding and fingerprint validator\"]\n  Reader --> Decision[\"bounded recovery view\"]"
+    }
+  ]
+}

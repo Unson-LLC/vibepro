@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "updated_at": "2026-07-16T01:09:39.767Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "閉じた遷移行列と失敗時非変更、加算CLI分岐で既存workflowを保護。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:39.767Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "既存Gateを参照するだけでevidence・waiver・merge lifecycleを変更しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:39.579Z"
+    },
+    {
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "reason": "mirror repair、lock競合、partial bootstrap、exactly-once mutationを検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:39.382Z"
+    },
+    {
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "reason": "未来schemaと不正shapeを拒否し認識済みpredecessorだけを移行。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:39.193Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "破損Runを隔離しparse失敗をtypedに報告して元artifactを保全。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:39.025Z"
+    },
+    {
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "reason": "persistence-onlyでtimer/action/long-pollを持たずdeadline enforcementは後続責務。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:38.775Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "変更をRun契約の単一境界に限定しorchestrationを混在させない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:38.589Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "human/JSON、help、exit、typed recoveryと既存CLI互換を維持。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:38.405Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "現HEAD unit、responsibility、E2Eと独立acceptanceで完了証拠を確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:38.222Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "破損、未来schema、stale Git、競合、partial commit、mirror失敗、選択曖昧性を負例検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:38.055Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Run永続化、CLI、authority、Gateを分離し後続責務へ越境しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:37.867Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "schema、authority、遷移、Git境界を中央validatorと全遷移行列で実装。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:37.581Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "実Git identityとfresh process、現HEAD差分証跡で現実経路を確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:37.322Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "永続Run契約に集中し自律実行・merge・waiverを除外。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:37.056Z"
+    }
+  ]
+}

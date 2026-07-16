@@ -1,0 +1,21 @@
+{
+  "status": "needs_changes",
+  "summary": "Current-head tests pass, but two promised persistence and CLI failure surfaces are not yet demonstrated with exact artifact assertions and Spec anchors.",
+  "inspection_evidence": [
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "test/guarded-run-session.test.js"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-pr-ready-persistence-coverage",
+      "detail": "The INV-004 Gate test checks only status in source-fallback mode. It must assert blocked authority and mirror bytes remain unchanged, a ready Gate appends exactly one validated pr_ready transition, both copies agree, and the anchor is registered in the Spec."
+    },
+    {
+      "severity": "medium",
+      "id": "s008-partial-bootstrap-surface-coverage",
+      "detail": "The S-008 partial-bootstrap test is service-level only. It must cover human and JSON exit-2 legacy artifact and cause details, preserved legacy bytes, absent Run and mirror, lock release, the subsequent worktree_unavailable result, and register the anchor in the Spec."
+    }
+  ]
+}

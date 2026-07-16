@@ -1,0 +1,35 @@
+{
+  "status": "needs_changes",
+  "summary": "主要な状態遷移、権限境界、後方互換性は概ね整合するが、execute run --run-id が明示Run IDを検証も拒否もせず黙って無視するため契約違反がある。",
+  "inspection_summary": "Story、Architecture、Spec、CLI/UX契約、Test Plan、対象実装、テスト、全差分、検証証跡を確認し、regression_guardとpath_surface_coverageを評価した。",
+  "inspection_evidence": [
+    "StoryとArchitectureはRun IDをVibeProが生成し、供給されたIDをパス構築前に検証すると定める。",
+    "src/cli.jsは--run-idをrunOptionsへ格納するがsrc/guarded-run-session.jsのcreateRunはoptions.runIdを参照せず新IDを生成する。",
+    "test/guarded-run-session.test.jsとTest Planにはexecute run --run-idの拒否と副作用不発生の検証がない。",
+    "現HEAD証跡は33/33と1123/1123 passだが、この入力経路は未網羅である。"
+  ],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "git diff c8a3d7f..HEAD"
+  ],
+  "judgment_delta": [
+    "主要設計契約は整合する判断から、execute runの明示--run-id入力が生成・検証契約に反するためneeds_changesへ変更した。",
+    "legacy回帰はpassだが、run-id入力経路の回帰防止テストが必要と判断した。",
+    "外部入力--run-idが黙って抑制されるためpath_surface_coverageはneeds_changesと判断した。"
+  ],
+  "findings": [
+    {
+      "id": "spec-run-explicit-run-id-silently-ignored",
+      "severity": "medium",
+      "title": "execute runが明示指定されたRun IDを黙って無視する",
+      "evidence": "CLIは--run-idを渡すがcreateRunは参照せず新規IDを生成し、拒否ケースのテストもない。",
+      "recommendation": "execute runへの--run-idをGit/bootstrap/Run/mirror副作用より前にtyped contract errorで拒否し、正しい形式と不正形式の双方でhuman/JSON出力と無変更を証明する。"
+    }
+  ]
+}

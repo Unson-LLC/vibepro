@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "planning_spec",
+  "role": "spec_consistency",
+  "status": "needs_changes",
+  "summary": "Lifecycle intent is clear, but selection, schema failures, legacy regressions, and threat boundaries are not separately testable.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "spec-consistency-status-default-route",
+      "detail": "Status default route has mutually exclusive meanings."
+    },
+    {
+      "severity": "high",
+      "id": "path-surface-latest-run-ordering",
+      "detail": "Creation time and deterministic tie-breaking are unspecified."
+    },
+    {
+      "severity": "high",
+      "id": "regression-guard-legacy-output-matrix",
+      "detail": "Legacy output and nonmutation behavior are not enumerated."
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-schema-failure-conflation",
+      "detail": "Corrupt JSON and future schema are combined despite distinct behavior."
+    },
+    {
+      "severity": "medium",
+      "id": "spec-threat-model-missing",
+      "detail": "Traversal, stale binding, authority escalation, and gate waiver threats are absent."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Cross-checked every clause against Story and Architecture, focusing on deterministic observability, negative cases, and authority boundaries.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/transcripts/grs_planning_spec.md",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initially expected scenarios to cover the contract; final judgment is needs_changes because several distinct guarantees are conflated or absent."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+      "dirty": true,
+      "dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M design-ssot.json\n?? docs/architecture/story-vibepro-guarded-run-session-contract.md\n?? docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T05:14:00.992Z",
+  "git_context": {
+    "head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "08cc77d3b2d07e2daf779ae1a901a121018c4b1a3bf7a6acb4ab15a8eb9cc229",
+    "user_status_fingerprint_hash": "08cc77d3b2d07e2daf779ae1a901a121018c4b1a3bf7a6acb4ab15a8eb9cc229",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T05:14:00.991Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "1fbd0a7050cf3227e0ef93b2f57466c65f2f5583b5eac8f43d7953124a1280ae",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "grs_planning_spec",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/transcripts/grs_planning_spec.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/review-request-spec_consistency.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

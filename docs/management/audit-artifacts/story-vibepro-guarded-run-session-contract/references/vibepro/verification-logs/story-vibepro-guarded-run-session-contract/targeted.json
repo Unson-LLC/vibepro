@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_commit": "05ab5efbb1c07ba3f6f0d951a4cae84383d71665",
+  "command": "node --test test/guarded-run-session.test.js test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+  "status": "pass",
+  "exit_code": 0,
+  "tests": 47,
+  "passed": 47,
+  "failed": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 15428.063709,
+  "scope_note": "Current-head Guarded Run unit contract plus repository and preferred source-fallback fresh CLI-process artifact replay E2E, including direct cross-worktree resume rejection and malformed Story-catalog and legacy-state parse failures."
+}
