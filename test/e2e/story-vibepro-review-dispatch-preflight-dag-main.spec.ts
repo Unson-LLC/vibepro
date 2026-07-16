@@ -156,7 +156,7 @@ async function recordGateEvidence(repo: string, status = 'pass', agentSystem = '
     '--inspection-evidence',
     `${status} review fixture evidence`,
     '--inspection-input',
-    'test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts',
+    'src/agent-review.js',
     '--judgment-delta',
     `missing dispatch preflight fixture -> ${status} because fixture evidence was recorded`,
     '--agent-system',
