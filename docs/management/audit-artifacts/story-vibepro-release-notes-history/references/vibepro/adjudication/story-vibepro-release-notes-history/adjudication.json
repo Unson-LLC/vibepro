@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-release-notes-history",
+  "updated_at": "2026-07-16T13:58:28.755Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "取得日と281/273、各月PRリンクの日英完全一致、日英10 route全件、navigationとversion-history導線をassertし15/15で成功した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:28.754Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "public build contractに日英indexと4か月分の計10 routeが登録され、production buildは192 filesで成功した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:28.384Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "日英navigation、release sidebar、version historyの導線をfocused testとproduction buildで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:28.184Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Published表がGitHub internal betaとnpm alpha/betaの版・公開日・channelをDevelopment Historyと分離している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:27.939Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "2026年1月・5月・6月・7月の8ページが存在し、各月の直接PR URLと日英PR番号完全一致をテストが確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:27.669Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "日英indexに2026-07-16の取得日、merged PR 281件、main向け273件があり、focused testが両言語の値と日付を固定している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:27.434Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "日英indexがpublished releaseとPR由来development milestoneを別定義し、npm公開を含意しない境界を明示している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_notes_fix_review",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json"
+      },
+      "head_commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "recorded_at": "2026-07-16T13:58:26.990Z"
+    }
+  ]
+}

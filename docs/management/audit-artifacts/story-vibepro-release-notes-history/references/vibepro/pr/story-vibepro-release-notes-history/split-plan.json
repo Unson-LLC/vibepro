@@ -1,0 +1,219 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-release-notes-history",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 2 changed files が一致し、6 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 4386,
+    "edge_count": 9762,
+    "matched_file_count": 2,
+    "related_file_count": 6,
+    "investigation_files": [
+      "src/content-binding.js",
+      "src/environment-graph.js",
+      "src/public-discovery-scanner.js",
+      "src/run-context-capsule.js",
+      "src/spec-fingerprint.js",
+      "test/public-manual-build-contract.test.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "scripts/check-public-manual-build.mjs",
+        "matched_nodes": [
+          "scripts_check_public_manual_build_mjs",
+          "scripts_check_public_manual_build_checkpublicmanualbuild",
+          "scripts_check_public_manual_build_requirefile",
+          "scripts_check_public_manual_build_walk",
+          "scripts_check_public_manual_build_normalize",
+          "scripts_check_public_manual_build_escaperegexp"
+        ],
+        "related_files": [
+          "src/content-binding.js",
+          "src/spec-fingerprint.js",
+          "test/public-manual-build-contract.test.js"
+        ]
+      },
+      {
+        "file": "test/public-release-notes.test.js",
+        "matched_nodes": [
+          "test_public_release_notes_test_js",
+          "test_public_release_notes_test_read"
+        ],
+        "related_files": [
+          "src/environment-graph.js",
+          "src/public-discovery-scanner.js",
+          "src/run-context-capsule.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-release-notes-history.md",
+        "docs/specs/story-vibepro-release-notes-history.vibepro.json",
+        "docs/specs/vibepro-release-notes-history.md",
+        "docs/architecture/vibepro-release-notes-history.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-release-notes-history-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "scripts/check-public-manual-build.mjs",
+        "test/public-release-notes.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 2,
+      "graph_investigation_files": [
+        "src/content-binding.js",
+        "src/environment-graph.js",
+        "src/public-discovery-scanner.js",
+        "src/run-context-capsule.js",
+        "src/spec-fingerprint.js",
+        "test/public-manual-build-contract.test.js"
+      ],
+      "suggested_branch": "feat/vibepro-release-notes-history-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "docs/.vitepress/config.mjs",
+        "docs/ja/reference/version-history.md",
+        "docs/ja/releases/2026-01.md",
+        "docs/ja/releases/2026-05.md",
+        "docs/ja/releases/2026-06.md",
+        "docs/ja/releases/2026-07.md",
+        "docs/ja/releases/index.md",
+        "docs/reference/version-history.md",
+        "docs/releases/2026-01.md",
+        "docs/releases/2026-05.md",
+        "docs/releases/2026-06.md",
+        "docs/releases/2026-07.md",
+        "docs/releases/index.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 14,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-release-notes-history-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/public-release-notes.test.js test/public-manual-build-contract.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29505191048/job/87643998419"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/public-release-notes.test.js test/public-manual-build-contract.test.js",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29505191048/job/87643998419"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-release-notes-history-requirements-ssot with 4 files",
+      "command": "git switch -c feat/vibepro-release-notes-history-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-release-notes-history.md docs/specs/story-vibepro-release-notes-history.vibepro.json docs/specs/vibepro-release-notes-history.md docs/architecture/vibepro-release-notes-history.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-release-notes-history-runtime-behavior with 2 files",
+      "command": "git switch -c feat/vibepro-release-notes-history-runtime-behavior <base> && git add scripts/check-public-manual-build.mjs test/public-release-notes.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-release-notes-history-misc-follow-up with 14 files",
+      "command": "git switch -c feat/vibepro-release-notes-history-misc-follow-up <base> && git add design-ssot.json docs/.vitepress/config.mjs docs/ja/reference/version-history.md docs/ja/releases/2026-01.md docs/ja/releases/2026-05.md docs/ja/releases/2026-06.md docs/ja/releases/2026-07.md docs/ja/releases/index.md docs/reference/version-history.md docs/releases/2026-01.md docs/releases/2026-05.md docs/releases/2026-06.md docs/releases/2026-07.md docs/releases/index.md"
+    }
+  ]
+}

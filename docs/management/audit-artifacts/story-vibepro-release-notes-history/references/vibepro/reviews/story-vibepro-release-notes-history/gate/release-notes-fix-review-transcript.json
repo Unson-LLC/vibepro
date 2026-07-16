@@ -1,0 +1,21 @@
+{
+  "agent_id": "/root/release_notes_fix_review",
+  "reviewed_head": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+  "status": "pass",
+  "summary": "前回の2件はcurrent HEADで解消済み。実在するテストの15/15成功と、取得日、日英PR parity、全10 routeのdrift assertionを確認した。",
+  "findings": [],
+  "adjudication": {
+    "AC-1": "demonstrated",
+    "AC-2": "demonstrated",
+    "AC-3": "demonstrated",
+    "AC-4": "demonstrated",
+    "AC-5": "demonstrated",
+    "AC-6": "demonstrated",
+    "AC-7": "demonstrated"
+  },
+  "final_recheck": {
+    "status": "pass",
+    "summary": "Current evidence explicitly binds AC-1 through AC-7, current reality, and concrete failure modes. Accepted scope and rollback decisions are sound for one coherent documentation vertical slice.",
+    "reviewed_evidence_at": "2026-07-16T13:59:09.272Z"
+  }
+}

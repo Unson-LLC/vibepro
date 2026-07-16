@@ -1,0 +1,20 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-notes-history",
+  "status": "pass",
+  "command": "node --test test/public-release-notes.test.js test/public-manual-build-contract.test.js",
+  "result": {
+    "tests": 15,
+    "passed": 15,
+    "failed": 0
+  },
+  "coverage": {
+    "flow_replay": "The built public manual exposes the ten bilingual release-note routes.",
+    "artifact_replay": "The build contract rejects missing routes and internal corpus output.",
+    "scenario_clause_e2e": "VRNH-AC-001 through VRNH-AC-007 are covered by executable assertions.",
+    "release_note": "Monthly English and Japanese release-note pages are present and linked.",
+    "rollout_plan": "The existing Pages workflow publishes the documentation after merge.",
+    "rollback_instruction": "Revert the two release-note commits, rebuild the manual, and redeploy Pages.",
+    "observability_evidence": "The docs build, ten-route contract, public discovery scan, and Pages CI expose failures."
+  }
+}

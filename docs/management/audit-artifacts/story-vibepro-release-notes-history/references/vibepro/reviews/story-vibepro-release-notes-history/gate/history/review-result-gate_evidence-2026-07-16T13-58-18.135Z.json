@@ -1,0 +1,117 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-notes-history",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "前回の2件はcurrent HEADで解消済み。実在するテストの15/15成功と、取得日・日英PR parity・全10 routeのdrift assertionを確認した。",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "HEAD dd3709cの差分、Story受け入れ基準、日英release notes、navigation/sidebar、version history導線、public build contract、focused tests、current-head verification evidence、前回review transcriptを確認した。",
+    "evidence": ".vibepro/pr/story-vibepro-release-notes-history/verification-evidence.json",
+    "inputs": [
+      "git show dd3709c -- test/public-release-notes.test.js",
+      "test/public-release-notes.test.js",
+      "test/public-manual-build-contract.test.js",
+      "docs/ja/releases/index.md",
+      "docs/releases/index.md",
+      "scripts/check-public-manual-build.mjs",
+      ".vibepro/pr/story-vibepro-release-notes-history/verification-evidence.json",
+      ".vibepro/evidence/story-vibepro-release-notes-history/unit-status.json",
+      ".vibepro/evidence/story-vibepro-release-notes-history/build-status.json",
+      ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-gate-review-transcript.json"
+    ]
+  },
+  "judgment_delta": [
+    "前回needs_changesから、無効なtest pathの除去と日付・PR parity・全10 route assertionの追加を実査してpassへ変更した。"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-release-notes-history",
+    "actual_root": "/private/tmp/vibepro-release-notes-history",
+    "expected_root": null,
+    "expected_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+    "current_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-notes-history",
+      "actual_root": "/private/tmp/vibepro-release-notes-history",
+      "expected_root": null,
+      "expected_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "current_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-16T13:58:18.135Z",
+  "git_context": {
+    "head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+    "current_branch": "codex/story-vibepro-release-notes-history",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T13:58:18.134Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "2648c397b3d16011246d6fb21da81c95f64aab6d87bd8a58505b51d1f4cd7248",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/release_notes_fix_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-notes-history/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-release-notes-history/gate/release-notes-fix-review-transcript.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/public-release-notes.test.js test/public-manual.test.js test/public-manual-build.test.js test/vitepress-contract.test.js",
+  "tests": 3,
+  "head_commit": "ac301fd"
+}

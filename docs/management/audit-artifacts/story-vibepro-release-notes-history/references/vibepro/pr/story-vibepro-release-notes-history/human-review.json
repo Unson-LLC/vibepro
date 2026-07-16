@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-notes-history",
+  "created_at": "2026-07-16T14:15:58.358Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-release-notes-history/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-release-notes-history/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-release-notes-history/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-release-notes-history/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-release-notes-history.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-release-notes-history.md, docs/specs/story-vibepro-release-notes-history.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-notes-history",
+          "actual_root": "/private/tmp/vibepro-release-notes-history",
+          "expected_root": null,
+          "expected_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+          "current_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784210497796-53f4a833",
+        "story_id": "story-vibepro-release-notes-history",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_release_ops",
+        "source_status": "block",
+        "summary": "Release operations are bounded by the existing Pages workflow: merge triggers the established documentation deployment; no manual user or operator migration is required. Docs maintainers own the release-note pages. Observability is the docs build, 10-route public contract, public discovery scan, and Pages CI. Rollback is to revert both commits and rebuild/redeploy the public manual.",
+        "reason": "No stored state or version skew exists. The owner-visible rollback instruction and validation commands are recorded in verification evidence and this decision.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-release-notes-history/verification-evidence.json",
+        "verification_evidence_summary": {
+          "count": 2,
+          "entries": [
+            {
+              "path": ".vibepro/evidence/story-vibepro-release-notes-history/unit-status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-release-notes-history/build-status.json",
+              "type": "build",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-release-notes-history",
+            "actual_root": "/private/tmp/vibepro-release-notes-history",
+            "expected_root": null,
+            "expected_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+            "current_head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+          "current_branch": "codex/story-vibepro-release-notes-history",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-16T14:01:37.794Z"
+        },
+        "recorded_at": "2026-07-16T14:01:37.796Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T14:15:56.084Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-release-notes-history"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-release-notes-history/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-release-notes-history/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "dd3709c8b036a23cd463a772f316f24671f0adc2",
+      "branch": "codex/story-vibepro-release-notes-history",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "abb0221ac3e09a4ae5a03a750568524713d7d922",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

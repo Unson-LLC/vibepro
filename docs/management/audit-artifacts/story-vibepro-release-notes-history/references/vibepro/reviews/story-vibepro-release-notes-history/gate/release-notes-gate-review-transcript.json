@@ -1,0 +1,11 @@
+{
+  "agent_id": "/root/release_notes_gate_review",
+  "reviewed_head": "ac301fd2fd19820f42d59821239a902011e1dad4",
+  "status": "needs_changes",
+  "summary": "公開内容、日英 parity、10 routes、PR 根拠は整合した。unit evidence の誤った test path と AC-7 の drift coverage 不足を指摘した。",
+  "findings": [
+    "unit-evidence-command-invalid",
+    "ac7-drift-coverage-incomplete"
+  ],
+  "resolution": "dd3709c で実在する test path に絞り、snapshot date、日英 PR link parity、10 routes を回帰テストへ追加した。"
+}
