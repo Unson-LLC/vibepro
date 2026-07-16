@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214658429-1e21e19b",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "CHANGELOG is the release note; the Spec documents GitHub Release trigger, Actions observation, npm gitHead/dist-tag checks, and rollback via dist-tag/deprecation. No application operator action or stored-state rollback exists.",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T15:11:47.714Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214657678-60d03e99",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Version metadata, matching CLI expectation, changelog, Story, Architecture and Spec must move together for one reviewable release candidate.",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T15:11:47.714Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214656981-9c9eca1e",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The release changes package metadata and docs only. If verification fails, do not promote tags; after publish, move beta/latest to the prior version and deprecate 0.2.0-beta.0 as specified.",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T15:11:47.714Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214658429-1e21e19b",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "CHANGELOG is the release note; the Spec documents GitHub Release trigger, Actions observation, npm gitHead/dist-tag checks, and rollback via dist-tag/deprecation. No application operator action or stored-state rollback exists.",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T16:17:37.013Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:695|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214657678-60d03e99",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Version metadata, matching CLI expectation, changelog, Story, Architecture and Spec must move together for one reviewable release candidate.",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:695",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T16:17:37.013Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214656981-9c9eca1e",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The release changes package metadata and docs only. If verification fails, do not promote tags; after publish, move beta/latest to the prior version and deprecate 0.2.0-beta.0 as specified.",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T16:17:37.013Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "decision_id": "decision-1784214657678-60d03e99",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Version metadata, matching CLI expectation, changelog, Story, Architecture and Spec must move together for one reviewable release candidate.",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T17:23:14.519Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

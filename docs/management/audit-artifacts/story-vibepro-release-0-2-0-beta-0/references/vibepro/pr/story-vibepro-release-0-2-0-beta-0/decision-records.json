@@ -1,0 +1,923 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-release-0-2-0-beta-0",
+  "updated_at": "2026-07-16T17:24:28.904Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "expected_root": null,
+      "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784222668903-51d6abd3",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path and recovery are documented",
+      "reason": "GitHub Release published trigger, npm dist-tag verification, partial-publish recovery, deprecate and fix-forward procedures are documented in the bilingual release guide; live publication verification follows after merge.",
+      "reviewer": "codex",
+      "artifact": "docs/guide/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".github/workflows/npm-publish.yml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": "package.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+          "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T17:24:28.902Z"
+      },
+      "recorded_at": "2026-07-16T17:24:28.904Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784219015819-88acae98",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Release control documents do not alter product UI or design lineage",
+      "reason": "The changed Architecture, Spec, workflow, package metadata, and release guides govern publication and recovery only. They add no route, component, visual token, interaction, or UX contract; registering them under product Design SSOT would create false lineage.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/npm-pack-surface.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:23:35.818Z"
+      },
+      "recorded_at": "2026-07-16T16:23:35.819Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784219015122-b2b361ed",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "needs_evidence",
+      "summary": "Release operator path and recovery are documented",
+      "reason": "release_note: CHANGELOG and EN/JA release indexes identify 0.2.0-beta.0. rollout_plan: create a GitHub prerelease after merge, which triggers npm publish. observability_evidence: inspect the GitHub Actions run, checkout SHA, npm version gitHead, and beta/latest dist-tags. rollback_instruction: before publish, stop; after partial registry transition, restore beta and latest independently, deprecate the immutable bad version, and fix forward.",
+      "reviewer": "codex",
+      "artifact": "docs/guide/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/npm-pack-surface.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:23:35.121Z"
+      },
+      "recorded_at": "2026-07-16T16:23:35.122Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784218802059-b0846cec",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Release control documents do not alter product UI or design lineage",
+      "reason": "The changed Architecture, Spec, workflow, package metadata, and release guides govern publication and recovery only. They add no route, component, visual token, interaction, or UX contract; registering them under the product Design SSOT would create false design lineage.",
+      "reviewer": "codex",
+      "artifact": "docs/management/architecture/active/architecture-vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/npm-pack-surface.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:20:02.058Z"
+      },
+      "recorded_at": "2026-07-16T16:20:02.060Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784218801432-c0ef1523",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path, observability, and immutable-registry recovery are documented",
+      "reason": "The published GitHub Release is the operator trigger; workflow logs plus GitHub release commit, Actions checkout SHA, npm gitHead, beta and latest dist-tags are owner-visible completion evidence. Pre-publish failure stops without registry mutation; partial post-publish failure is recovered by inspecting and restoring beta/latest independently, deprecating a bad immutable version, and fixing forward with a new prerelease.",
+      "reviewer": "codex",
+      "artifact": "docs/releases/en/guides/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/npm-pack-surface.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:20:01.431Z"
+      },
+      "recorded_at": "2026-07-16T16:20:01.432Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784214659142-3cffefe1",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Release Story, Architecture and Spec are intentionally local release-control documents",
+      "reason": "They do not alter product UI or the design-system root; registering these release-only documents in Design SSOT would create false design lineage.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/design-ssot-reconciliation.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "current_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:10:59.141Z"
+      },
+      "recorded_at": "2026-07-16T15:10:59.143Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784214658429-1e21e19b",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path and rollback are documented and owner-visible",
+      "reason": "CHANGELOG is the release note; the Spec documents GitHub Release trigger, Actions observation, npm gitHead/dist-tag checks, and rollback via dist-tag/deprecation. No application operator action or stored-state rollback exists.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "current_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:10:58.428Z"
+      },
+      "recorded_at": "2026-07-16T15:10:58.430Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784214657678-60d03e99",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "The PR is one coherent release-preparation intent and should remain unsplit",
+      "reason": "Version metadata, matching CLI expectation, changelog, Story, Architecture and Spec must move together for one reviewable release candidate.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "current_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:10:57.677Z"
+      },
+      "recorded_at": "2026-07-16T15:10:57.679Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784214656981-9c9eca1e",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "Beta rollback is bounded to npm dist-tags and deprecation; no stored state or migration is introduced",
+      "reason": "The release changes package metadata and docs only. If verification fails, do not promote tags; after publish, move beta/latest to the prior version and deprecate 0.2.0-beta.0 as specified.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/release-workflow-check.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "current_head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6180dfb38a58e4be79dd7b4e1ffa14248348a287",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:10:56.980Z"
+      },
+      "recorded_at": "2026-07-16T15:10:56.981Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784204986555-1df3add7",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Release Story, Architecture, and Spec lineage reviewed",
+      "reason": "The three documents are explicitly cross-linked by story_id, parent_design, architecture_docs, and spec_docs and describe the same release boundary.",
+      "reviewer": "user-directed-release",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "current_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T12:29:46.553Z"
+      },
+      "recorded_at": "2026-07-16T12:29:46.555Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784204985501-047acc91",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundled release scope accepted",
+      "reason": "The generated multi-PR split misclassifies CHANGELOG and release control docs as unrelated; they are required evidence for the same package version change.",
+      "reviewer": "user-directed-release",
+      "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "current_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T12:29:45.500Z"
+      },
+      "recorded_at": "2026-07-16T12:29:45.501Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784204984711-e9e5d19f",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep package metadata, release notes, version assertions, and Story/Architecture/Spec evidence in one focused release PR",
+      "reason": "All seven files implement or prove the single immutable 0.2.0-beta.0 publication intent; splitting audit documents from metadata would detach required release evidence without reducing implementation risk.",
+      "reviewer": "user-directed-release",
+      "artifact": "docs/management/stories/active/story-vibepro-release-0-2-0-beta-0.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "current_head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8be99e76da9bab87c71397ccf22498e20148f3ba",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T12:29:44.709Z"
+      },
+      "recorded_at": "2026-07-16T12:29:44.711Z"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "open": 0,
+    "by_type": {
+      "waiver": 1,
+      "needs_review": 11
+    },
+    "by_status": {
+      "accepted": 12
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+        "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+        "expected_root": null,
+        "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+        "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784222668903-51d6abd3",
+      "story_id": "story-vibepro-release-0-2-0-beta-0",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path and recovery are documented",
+      "reason": "GitHub Release published trigger, npm dist-tag verification, partial-publish recovery, deprecate and fix-forward procedures are documented in the bilingual release guide; live publication verification follows after merge.",
+      "reviewer": "codex",
+      "artifact": "docs/guide/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".github/workflows/npm-publish.yml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": "package.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+          "expected_root": null,
+          "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+          "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+        "current_branch": "codex/release-0.2.0-beta.0",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T17:24:28.902Z"
+      },
+      "recorded_at": "2026-07-16T17:24:28.904Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/decision-records.json"
+}

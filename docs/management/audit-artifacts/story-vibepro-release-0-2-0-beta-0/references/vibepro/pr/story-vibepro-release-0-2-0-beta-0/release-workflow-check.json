@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+  "workflow": ".github/workflows/npm-publish.yml",
+  "checks": {
+    "release_published": true,
+    "checkout": true,
+    "typecheck": true,
+    "tests": true,
+    "pack": true,
+    "publish": true,
+    "beta_tag_promotion": true,
+    "beta_latest_verification": true
+  }
+}

@@ -4,9 +4,9 @@ The authoritative package version is `package.json`; the installed binary report
 
 | Channel | Current value | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.1.0-beta.0` | Published registry state |
-| npm `beta` | `0.1.0-beta.0` | Published registry state |
-| Repository `main` | Unreleased work after the beta | Git commit and `CHANGELOG.md` |
+| npm `latest` | `0.2.0-beta.0` | Published registry state after the release workflow completes |
+| npm `beta` | `0.2.0-beta.0` | Published registry state after the release workflow completes |
+| Repository `main` | `0.2.0-beta.0` release source | Git commit and `CHANGELOG.md` |
 | Manual build | Footer/meta source commit | Deployed build artifact |
 
 ## Unreleased Manual-Visible Capabilities

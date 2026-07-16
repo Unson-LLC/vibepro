@@ -1,0 +1,80 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-release-0-2-0-beta-0",
+  "updated_at": "2026-07-16T17:30:03.430Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "The operator guide correlates GitHub Release SHA, Actions checkout SHA, npm gitHead and dist-tags, with rollback and fix-forward steps.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:03.429Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "The release.published workflow checks out the release revision, publishes it, then verifies beta and latest tags.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:03.203Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Exact current-head evidence verifies typecheck, 1195 tests with zero product failures, and the npm pack surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:02.905Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "CHANGELOG.md contains the 0.2.0-beta.0 release section.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:02.667Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The current CLI reports 0.2.0-beta.0 and the version behavior is covered by unit evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:02.420Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "package.json and package-lock.json both identify version 0.2.0-beta.0.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:02.220Z"
+    }
+  ]
+}

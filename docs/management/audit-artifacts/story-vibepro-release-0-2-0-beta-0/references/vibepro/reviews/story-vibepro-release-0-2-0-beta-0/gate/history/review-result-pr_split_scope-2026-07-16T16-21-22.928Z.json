@@ -1,0 +1,114 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-0-2-0-beta-0",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "EN/JA public version surfaces now align on 0.2.0-beta.0; the 15-file diff is one focused release intent and should not be split",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    "docs/releases/index.md"
+  ],
+  "inspection": {
+    "summary": "Inspected all origin/main...HEAD changes, single-commit topology, EN/JA version history and release indexes, release guides, tests, and current-head verification artifacts.",
+    "evidence": ".vibepro/pr/story-vibepro-release-0-2-0-beta-0/full-suite-status.json",
+    "inputs": [
+      "git diff origin/main...HEAD",
+      "docs/reference/version-history.md",
+      "docs/ja/reference/version-history.md",
+      "docs/releases/index.md",
+      "docs/ja/releases/index.md"
+    ]
+  },
+  "judgment_delta": [
+    "Previous public-surface inconsistency -> fixed by EN/JA 0.2.0-beta.0 updates and regression assertions; split no longer warranted"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+    "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+    "expected_root": null,
+    "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+    "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "expected_root": null,
+      "expected_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+      "current_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-16T16:21:22.928Z",
+  "git_context": {
+    "head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+    "current_branch": "codex/release-0.2.0-beta.0",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T16:21:22.926Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "63e52e19f7f10e0b9fecf8f8829e7c12f921aab6",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "30f5459a29f5e85e4fe97e285f46ac06562bda954b265bb6df479ed58d4ddac9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/pr_split_scope_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "final-head independent review result received",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

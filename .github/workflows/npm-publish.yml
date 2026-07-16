@@ -41,4 +41,8 @@ jobs:
             npm publish --access public --dry-run
           else
             npm publish --access public
+            VERSION=$(node -p "require('./package.json').version")
+            npm dist-tag add "vibepro@${VERSION}" beta
+            test "$(npm view vibepro@beta version)" = "${VERSION}"
+            test "$(npm view vibepro@latest version)" = "${VERSION}"
           fi

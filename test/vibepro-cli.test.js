@@ -7876,7 +7876,7 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
   assert.match(prepare.gate_status.agent_instruction, /Do not treat scope\.status=reviewable/);
   assert.equal(prepare.toolchain.package.name, 'vibepro');
-  assert.match(prepare.toolchain.package.version, /^0\.1\.0/);
+  assert.match(prepare.toolchain.package.version, /^0\.2\.0/);
   assert.equal(typeof prepare.toolchain.package.root, 'string');
   assert.equal(prepare.pr_context.toolchain.package.name, 'vibepro');
   assert.equal(prepare.task_context.task.id, 'TASK-001');
@@ -22946,7 +22946,7 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
-  assert.equal(packageJson.version, '0.1.0-beta.0');
+  assert.equal(packageJson.version, '0.2.0-beta.0');
   assert.match(packageJson.description, /Product-intent gates/);
   assert.equal(packageJson.keywords.includes('ai-agents'), true);
   assert.equal(packageJson.keywords.includes('developer-tools'), true);

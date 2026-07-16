@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "head": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+  "name": "vibepro",
+  "version": "0.2.0-beta.0",
+  "filename": "vibepro-0.2.0-beta.0.tgz",
+  "file_count": 167,
+  "allowed_roots": ["LICENSE", "NOTICE", "README.ja.md", "README.md", "agent-instructions", "bin", "docs", "package.json", "skills", "src"],
+  "observed_roots": ["LICENSE", "NOTICE", "README.ja.md", "README.md", "agent-instructions", "bin", "docs", "package.json", "skills", "src"],
+  "violations": [],
+  "package_size": "2.2 MB",
+  "unpacked_size": "5.1 MB",
+  "shasum": "9fab9aff85144dcdd95729366803aedcee8fc04b"
+}
