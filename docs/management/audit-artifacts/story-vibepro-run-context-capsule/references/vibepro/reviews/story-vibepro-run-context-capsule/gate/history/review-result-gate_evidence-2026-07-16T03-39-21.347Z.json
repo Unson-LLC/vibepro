@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-run-context-capsule",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Prior findings are resolved or explicitly bounded, but explicit recovery cannot rebuild malformed or oversized existing capsules.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "capsule-explicit-rebuild-invalid-existing",
+      "detail": "recover parses or reuses the disposable invalid capsule instead of forcing reconstruction from authoritative artifacts"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "capsule-explicit-rebuild-invalid-existing",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "capsule-new-source-staleness",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/run-context-capsule.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "capsule-semantic-event-churn",
+      "disposition": "rejected",
+      "resolved_by": [],
+      "reason": "exact authoritative bytes are the explicit event identity contract",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-missing-status-artifacts",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/unit-status.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-run-context-capsule/gate/transcript-gate_evidence-recheck.md"
+  ],
+  "inspection": {
+    "summary": "Reviewed current request, diff, Story, Architecture, Spec, Test Plan, capsule hooks, tests, prior review, verification evidence, generic status artifacts, and gate state.",
+    "evidence": ".vibepro/pr/story-vibepro-run-context-capsule/verification-evidence.json",
+    "inputs": [
+      "src/run-context-capsule.js",
+      "test/run-context-capsule.test.js",
+      "docs/management/stories/active/story-vibepro-run-context-capsule.md"
+    ]
+  },
+  "judgment_delta": [
+    "Provisional pass after prior-finding recheck -> needs_changes after tracing explicit rebuild and finding malformed and oversized capsules cannot be replaced."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+    "expected_head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+    "current_head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw",
+      "branch": "codex/story-vibepro-run-context-capsule",
+      "actual_branch": "codex/story-vibepro-run-context-capsule",
+      "current_head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-16T03:39:21.347Z",
+  "git_context": {
+    "head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+    "current_branch": "codex/story-vibepro-run-context-capsule",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T03:39:21.341Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "7f92608b3cbc1bfcc8398bf3ef9b167089fb4a813e7b7177ff5b90826229ae16",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_recheck",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-run-context-capsule/gate/transcript-gate_evidence-recheck.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-run-context-capsule/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-run-context-capsule/gate/transcript-gate_evidence-recheck.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "/root",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

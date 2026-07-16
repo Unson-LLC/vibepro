@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-run-context-capsule",
+  "created_at": "2026-07-16T04:57:38.979Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-run-context-capsule/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-run-context-capsule/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-run-context-capsule/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-run-context-capsule/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-run-context-capsule.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-run-context-capsule.vibepro.json, docs/specs/vibepro-run-context-capsule.md)"
+    },
+    "decision_records": {
+      "total": 1,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1
+      },
+      "by_status": {
+        "accepted": 1
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784172785739-e73bd442",
+        "story_id": "story-vibepro-run-context-capsule",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Keep this as one focused PR owned by the gate-evidence reviewer because Story, architecture, implementation hooks, and tests form one atomic Run Context Capsule contract.",
+        "reason": "Splitting persistence, refresh hooks, and recovery tests would create temporarily inconsistent public behavior and would force reviewers to reason across dependent PRs; unrelated cleanup is excluded.",
+        "reviewer": "root",
+        "artifact": "docs/architecture/story-vibepro-run-context-capsule.md",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/e2e-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/integration-status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-run-context-capsule/preflight-artifacts/unit-status.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "38fbaa62410bf7c41d7c885e544387a025ff17f9",
+          "current_branch": "codex/story-vibepro-run-context-capsule",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-16T03:33:05.737Z"
+        },
+        "recorded_at": "2026-07-16T03:33:05.739Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T04:57:36.470Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-run-context-capsule-msi8vw/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "7dd3e237727cb1febb479464c776ee9f23674861",
+      "branch": "codex/story-vibepro-run-context-capsule",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "88dd9d39aee5be1cc2dcc359c5310f7a0faeb717",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
