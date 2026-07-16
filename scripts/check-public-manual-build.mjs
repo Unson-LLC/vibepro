@@ -42,6 +42,11 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'reference/cli.html',
   'reference/cloudflare-pages.html',
   'reference/version-history.html',
+  'releases/index.html',
+  'releases/2026-01.html',
+  'releases/2026-05.html',
+  'releases/2026-06.html',
+  'releases/2026-07.html',
   'ja/guide/agent-review.html',
   'ja/guide/ai-pr-workflow.html',
   'ja/guide/check-packs.html',
@@ -61,7 +66,12 @@ export const REQUIRED_PUBLIC_ROUTES = [
   'ja/reference/artifact-map.html',
   'ja/reference/cli.html',
   'ja/reference/cloudflare-pages.html',
-  'ja/reference/version-history.html'
+  'ja/reference/version-history.html',
+  'ja/releases/index.html',
+  'ja/releases/2026-01.html',
+  'ja/releases/2026-05.html',
+  'ja/releases/2026-06.html',
+  'ja/releases/2026-07.html'
 ];
 
 const REQUIRED_FILES = [

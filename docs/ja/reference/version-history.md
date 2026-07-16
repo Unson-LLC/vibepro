@@ -19,4 +19,6 @@ package versionの正本は `package.json` で、installed binaryは `vibepro ve
 
 公開betaは `npm install -g vibepro@beta` で明示的に導入できます。installed helpとこのmanualが異なる場合は、実行中binaryのcontractが優先です。境界は[リリースと監査](/ja/guide/release-and-audit)とrepositoryの `CHANGELOG.md` を参照してください。
 
+何が変わったかは[リリースノート](/ja/releases/)で、正式公開版とPR由来の開発マイルストーンを分けて確認できます。
+
 `0.1.0-alpha.0` ではOSS公開用package形、phase checkpoint、Story / Spec review flow、public discovery documentationを追加しました。
