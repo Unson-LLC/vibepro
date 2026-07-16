@@ -9,9 +9,12 @@ Common statuses:
 - `needs_review`: Human or agent review is still required.
 - `blocked`: A condition must be fixed or explicitly waived.
 - `waived`: A recorded decision accepts the remaining risk.
+- `inconclusive`: The scanner could not inspect an eligible target; this is not a pass.
 
 ## Impact Context Is Supporting Evidence
 
 Graphify and `codebase-memory-mcp` can reveal related files, routes, symbols, call paths, and risk hints. VibePro can use those signals to activate Engineering Judgment axes such as `execution_topology`, `public_contract`, `security_boundary`, `data_state`, and `scope_reviewability`.
 
 Those signals do not close the required evidence for runtime behavior, security correctness, rollback safety, user experience, migrations, or release operations. Use them to decide what to inspect and test next.
+
+After any commit, treat prior verification, review, adjudication, and PR readiness as potentially stale and re-run the current-head gates.

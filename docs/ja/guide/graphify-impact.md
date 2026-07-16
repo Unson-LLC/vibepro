@@ -30,7 +30,7 @@ vibepro graph . --from graphify-out
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 codebase-memory-mcp cli index_repository '{"repo_path":"'"$(pwd)"'"}'
-vibepro pr prepare . --id <story-id>
+vibepro pr prepare . --story-id <story-id>
 ```
 
 VibeProは現在の `codebase-memory-mcp` CLI挙動に合わせて、providerに `repo_path` と派生したproject名の両方を渡します。

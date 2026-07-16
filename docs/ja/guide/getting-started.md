@@ -1,9 +1,9 @@
 # インストールと初回実行
 
-VibeProはnpm packageまたはローカルcheckoutから使います。
+公開済みearly beta、またはcurrent `main` のローカルcheckoutを使います。
 
 ```bash
-npm install -g vibepro
+npm install -g vibepro@beta
 vibepro version
 ```
 
@@ -20,8 +20,11 @@ vibepro version
 ```bash
 vibepro doctor .
 vibepro story list .
-vibepro pr prepare . --id <story-id>
+vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify
+vibepro pr prepare . --story-id <story-id> --base origin/main --summary-json
 ```
+
+npm packageとこのmanualが別commitを表す場合があります。command contractの正本はinstalled binaryの `vibepro help` です。版の境界は[リリースと監査](/ja/guide/release-and-audit)を参照してください。
 
 ## 任意: codebase-memory-mcp
 
