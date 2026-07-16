@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "updated_at": "2026-07-16T12:25:14.014Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Current-head E2E artifact replay explicitly covers zero-page non-green semantics, finding priority, and independent JSON and Markdown coverage rows.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:14.013Z"
+    },
+    {
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "reason": "Fetch exceptions and non-OK responses are directly tested and retained as target-specific failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:13.480Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Malformed sitemap parsing is directly tested and recorded as an explicit target error.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:13.021Z"
+    },
+    {
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "reason": "Abort-controlled timeout behavior is directly exercised and preserves explicit inconclusive coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:12.066Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "The diff is one coherent vertical Public Discovery contract with one rollback boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:11.511Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "CLI flags and scan coverage are additive while no-flag source behavior and existing findings remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:10.773Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Focused runtime replay, artifact replay, build, typecheck, and current-head full CI provide reconstructable completion evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:10.248Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Missing targets, timeout, malformed sitemap, provider failure, oversized response, and zero targets remain explicit without fallback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:09.859Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Filesystem and network boundaries including symlink escape, redirects, protocol, size, count, and timeout caps are enforced and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:09.421Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Precedence, containment, bounded same-origin access, finding priority, and compatibility invariants are directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:09.051Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Actual CLI to scanner to JSON and Markdown paths were replayed on the current head.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:08.680Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Story intent, implementation, and acceptance tests align on eliminating false green Public Discovery results.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/judgment-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:08.416Z"
+    }
+  ]
+}

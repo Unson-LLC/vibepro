@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "head": "dfad9bc",
+    "node_check_bin": "pass",
+    "node_check_src": "pass"
+  }
+}

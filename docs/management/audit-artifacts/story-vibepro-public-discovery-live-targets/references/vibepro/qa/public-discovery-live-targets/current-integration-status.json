@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+  "command": "node --test --test-concurrency=2 --test-name-pattern='PDLT-AC|check all leaves optional agent harness and public discovery|check public-discovery reports LLMO and public page readiness findings|public-discovery classifies private routes and inherits App Router metadata|public-discovery applies documented suppressions and reports warnings' test/public-discovery-live-targets.test.js test/vibepro-cli.test.js",
+  "tests": { "passed": 16, "failed": 0 },
+  "modes": ["live", "built", "source"],
+  "failure_modes": ["timeout", "malformed_sitemap", "unreachable", "missing_public_dir"]
+}

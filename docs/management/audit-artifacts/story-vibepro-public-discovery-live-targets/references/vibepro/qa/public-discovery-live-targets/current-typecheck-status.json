@@ -1,0 +1,5 @@
+{
+  "status": "pass",
+  "head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+  "command": "npm run typecheck"
+}

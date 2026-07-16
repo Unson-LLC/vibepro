@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current-head evidence is fresh and focused tests pass, but full-suite proof, replayable integration command, CLI live-path coverage, and visible omission evidence are missing.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "regression-full-suite-evidence-missing",
+      "detail": "Record current-head full suite and Skill lint evidence."
+    },
+    {
+      "severity": "medium",
+      "id": "command-reliability-integration-not-replayable",
+      "detail": "Replace prose with the exact focused integration command and exit-derived artifact."
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-live-cli-unverified",
+      "detail": "Add CLI-level public-discovery and all base-url fixtures with report assertions."
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-sitemap-exclusions-silent",
+      "detail": "Persist explicit evidence for cross-origin and cap omissions."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "HEAD 90a0c100 was clean; Story, Spec, scanner, CLI, check-pack, focused and legacy tests, verification records, and built-site reports were inspected; 8 new tests and 4 legacy regressions passed independently.",
+    "evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-v1.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-public-discovery-live-targets/verification-evidence.json",
+      ".vibepro/checks/public-discovery/public-discovery-built-head-valid/check.json"
+    ]
+  },
+  "judgment_delta": [
+    "Focused evidence initially supported pass; missing full-suite proof, non-replayable integration command, unverified CLI live forwarding, and silent sitemap omissions require changes."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_head_sha": "90a0c100f4f1aaf993dcaf2e197d8e13082c8fa5",
+    "current_head_sha": "90a0c100f4f1aaf993dcaf2e197d8e13082c8fa5",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "actual_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "current_head_sha": "90a0c100f4f1aaf993dcaf2e197d8e13082c8fa5",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T14:12:05.240Z",
+  "git_context": {
+    "head_sha": "90a0c100f4f1aaf993dcaf2e197d8e13082c8fa5",
+    "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T14:12:05.237Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "90a0c100f4f1aaf993dcaf2e197d8e13082c8fa5",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "b958528df626b2ef8b61854d7452a9af140dca89903d56d08f2ac06bf2a530a7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/public_discovery_gate_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-v1.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

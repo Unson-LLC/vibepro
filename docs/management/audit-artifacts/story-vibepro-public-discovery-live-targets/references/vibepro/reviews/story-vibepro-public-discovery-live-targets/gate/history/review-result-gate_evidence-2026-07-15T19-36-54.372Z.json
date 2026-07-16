@@ -1,0 +1,155 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Implementation and exact-head CI pass, but the local unit record claimed exit 0 for a command whose JUnit run had two environment failures; evidence binding must be repaired.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "command-reliability-unit-artifact-not-exit-derived",
+      "detail": "The unit verification record names a local full-suite command whose actual exit was nonzero, while its synthesized status artifact claims pass and exit_code 0."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "command-reliability-integration-not-replayable",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-public-discovery-live-targets/verification-evidence.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "path-surface-live-cli-unverified",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/public-discovery-live-targets.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "path-surface-omitted-targets-silent",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/public-discovery-scanner.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "regression-guard-full-suite-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-public-discovery-live-targets/ci-evidence/test_20_.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [
+    ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc.md"
+  ],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, Specs, full diff, strict-head verification, JUnit/status artifacts, built replay and exact-head GitHub checks; independently passed 16/16 focused tests.",
+    "evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-public-discovery-live-targets/verification-evidence.json",
+      ".vibepro/qa/public-discovery-live-targets/full-suite-dfad9bc-junit.xml"
+    ]
+  },
+  "judgment_delta": [
+    "Product judgment remains positive, but gate judgment changes from pass to needs_changes because the current unit status artifact is not exit-derived."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "actual_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T19:36:54.372Z",
+  "git_context": {
+    "head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T19:36:54.361Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "0fe6b58feabf31d1a9425a69662d18bc915bb296b481ba4937d5932871e97905",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "public_discovery_dfad9bc_gate_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

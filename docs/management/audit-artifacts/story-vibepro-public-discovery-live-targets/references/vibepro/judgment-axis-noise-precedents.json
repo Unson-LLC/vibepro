@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-public-discovery-live-targets",
+      "decision_id": "decision-1784137145347-665d5c7b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Story, Architecture, Specs, Design SSOT, scanner, CLI/check report, operator Skill, and regression tests implement one inseparable contract; splitting would create a temporarily false or unreachable public contract. No unrelated Story or repository-control change is included.",
+      "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-15T17:39:46.607Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:567|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-public-discovery-live-targets",
+      "decision_id": "decision-1784137145347-665d5c7b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Story, Architecture, Specs, Design SSOT, scanner, CLI/check report, operator Skill, and regression tests implement one inseparable contract; splitting would create a temporarily false or unreachable public contract. No unrelated Story or repository-control change is included.",
+      "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:567",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T12:25:44.084Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

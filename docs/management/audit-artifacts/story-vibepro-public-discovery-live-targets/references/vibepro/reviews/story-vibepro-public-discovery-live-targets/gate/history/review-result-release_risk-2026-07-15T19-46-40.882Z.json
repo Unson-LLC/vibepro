@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "needs_changes",
+  "summary": "Runtime contract is bounded and compatible, but docs-first release order requires regenerated CLI references, CHANGELOG entry, merge reconciliation, and current-head re-verification.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "release-order-generated-cli-reference-drift",
+      "detail": "After docs PR #333, regenerate both CLI references, add CHANGELOG Unreleased entry, reconcile Design SSOT, and reacquire exact-head gates."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected runtime limits, default compatibility, failure visibility, exact-head tests/CI, docs PR #333 generator contract, and merge-tree.",
+    "evidence": ".vibepro/qa/public-discovery-live-targets/review-release-risk-dfad9bc.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-release_risk.md",
+      ".vibepro/pr/story-vibepro-public-discovery-live-targets/verification-evidence.json",
+      "codex/story-vibepro-manual-control-plane-refresh-v2:docs/reference/cli.md"
+    ]
+  },
+  "judgment_delta": [
+    "Runtime risks are bounded; release judgment changed to needs_changes because docs-first order would publish stale generated CLI references without regeneration and changelog."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "actual_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T19:46:40.882Z",
+  "git_context": {
+    "head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T19:46:40.881Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "1f0962900823e08993b43755ad10643da2c87fa71cf389b4e656b58374b5e0a7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "public_discovery_dfad9bc_release_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/public-discovery-live-targets/review-release-risk-dfad9bc.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/public-discovery-live-targets/review-release-risk-dfad9bc.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "updated_at": "2026-07-16T12:25:08.051Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "CLI help and diagnosis Skill document the inputs and zero-target meaning; targeted 16 of 16 and current-head full CI passed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:08.051Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Compatibility tests preserve no-argument source scanning, suppressions, robots and llms, metadata, structured-data findings, and check-all behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:07.723Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Negative-path tests preserve explicit missing directory, unreachable URL, and zero-target reasons without silent fallback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:07.481Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Artifact replay demonstrates independent Public Discovery coverage in JSON and Markdown without treating zero findings as scan proof.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:07.254Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Tests demonstrate pass requires inspected pages and no findings, while findings take precedence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:07.001Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Tests demonstrate zero inspected pages without findings produces inconclusive rather than pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:06.801Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Runtime replay demonstrates base-url over public-dir over source precedence and machine-readable scan coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:06.533Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Current-head tests demonstrate bounded same-origin HTTP scanning from root and sitemap with explicit exclusions and failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:06.289Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Current-head tests demonstrate recursive built HTML scanning with repository containment.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "public_discovery_final_adjudication",
+        "session_ref": ".vibepro/qa/public-discovery-live-targets/evidence-adjudication-8d86674-v2.md"
+      },
+      "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "recorded_at": "2026-07-16T12:25:06.079Z"
+    }
+  ]
+}

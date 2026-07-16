@@ -1,0 +1,16 @@
+{
+  "status": "fail",
+  "exit_code": 1,
+  "observed": {
+    "head": "dfad9bc",
+    "tests": 1102,
+    "passed_in_full_suite": 1100,
+    "sandbox_blocked": 2,
+    "isolated_reruns_passed": 2,
+    "failed_assertions": 0,
+    "junit_duration_ms": 2353329.072542,
+    "local_full_suite": "environment_blocked",
+    "github_node_20": "pass",
+    "github_node_22": "pass"
+  }
+}

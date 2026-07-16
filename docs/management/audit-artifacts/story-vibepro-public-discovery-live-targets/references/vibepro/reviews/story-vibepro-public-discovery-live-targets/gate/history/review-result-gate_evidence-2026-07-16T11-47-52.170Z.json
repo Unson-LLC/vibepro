@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head verification is traceable and reproducible; the stale artifact finding was fixed and all evidence now binds to 8d86674.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-8d86674-v2.md"
+  ],
+  "inspection": {
+    "summary": "Inspected Story/Spec AC mapping, origin/main...HEAD, targeted 16/16, compatibility 25/25, built replay 45/45, docs build 162, and corrected strict-head artifact.",
+    "evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-8d86674-v2.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes to pass after replacing old-head integration artifact with a current-head 16/16 artifact and rerecording observations."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+    "current_head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "actual_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "current_head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-16T11:47:52.170Z",
+  "git_context": {
+    "head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+    "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T11:47:52.168Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "65ef0a6aeaaaad9db28528c47c6db0084413f99bb0263cb75b80194823d86d45",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "public_discovery_8d86674_gate_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-8d86674-v2.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-8d86674-v2.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

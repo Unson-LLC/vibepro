@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "head": "dfad9bc",
+    "scan_artifact": ".vibepro/checks/public-discovery/public-discovery-live-targets-final-dfad9bc/check.json",
+    "artifact_status": "needs_review",
+    "coverage_status": "needs_review",
+    "discovered": 483,
+    "selected": 400,
+    "scanned": 397,
+    "omitted": 83,
+    "failed_targets": 0,
+    "flow_replay": "pass",
+    "artifact_replay": "pass",
+    "scenario_clause_e2e": "pass",
+    "surface": "review_surface"
+  }
+}

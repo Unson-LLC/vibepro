@@ -1,0 +1,192 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "updated_at": "2026-07-15T17:39:07.536Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784137147536-b1fbab00",
+      "story_id": "story-vibepro-public-discovery-live-targets",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep the ten-file vertical contract bundled; do not split runtime from contract, operator, or regression surfaces",
+      "reason": "All changed files belong to one Public Discovery input/coverage contract and share one rollback boundary; the artifact documents file groups, owner map, blast radius, and why each apparent split would be unsafe.",
+      "reviewer": "Codex",
+      "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/build-status.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "be796491d0e061d818339a1ca8ba410d6929cdca",
+        "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T17:39:07.535Z"
+      },
+      "recorded_at": "2026-07-15T17:39:07.536Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784137145347-665d5c7b",
+      "story_id": "story-vibepro-public-discovery-live-targets",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One vertical Public Discovery contract is reviewable as a single PR with explicit role ownership and atomic rollback",
+      "reason": "Story, Architecture, Specs, Design SSOT, scanner, CLI/check report, operator Skill, and regression tests implement one inseparable contract; splitting would create a temporarily false or unreachable public contract. No unrelated Story or repository-control change is included.",
+      "reviewer": "Codex",
+      "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/build-status.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "be796491d0e061d818339a1ca8ba410d6929cdca",
+        "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T17:39:05.342Z"
+      },
+      "recorded_at": "2026-07-15T17:39:05.347Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784137147536-b1fbab00",
+      "story_id": "story-vibepro-public-discovery-live-targets",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep the ten-file vertical contract bundled; do not split runtime from contract, operator, or regression surfaces",
+      "reason": "All changed files belong to one Public Discovery input/coverage contract and share one rollback boundary; the artifact documents file groups, owner map, blast radius, and why each apparent split would be unsafe.",
+      "reviewer": "Codex",
+      "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/build-status.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/public-discovery-live-targets/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "be796491d0e061d818339a1ca8ba410d6929cdca",
+        "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-15T17:39:07.535Z"
+      },
+      "recorded_at": "2026-07-15T17:39:07.536Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-public-discovery-live-targets/decision-records.json"
+}

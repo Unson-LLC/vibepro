@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "head_sha": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+  "command": "npm run docs:build && node bin/vibepro.js skills lint . && cmp -s CLAUDE.md AGENTS.md && jq empty .vibepro/config.json docs/specs/story-vibepro-public-discovery-live-targets.vibepro.json design-ssot.json",
+  "public_manual_files": 162,
+  "skills": { "passed": 7, "issues": 0 }
+}

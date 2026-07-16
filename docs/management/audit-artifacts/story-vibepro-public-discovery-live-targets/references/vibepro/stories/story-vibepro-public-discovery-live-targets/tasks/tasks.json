@@ -1,0 +1,408 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-15T13:17:24.684Z",
+  "story": {
+    "story_id": "story-vibepro-public-discovery-live-targets",
+    "title": "Public Discoveryをビルド成果物・公開URLで検証し、0対象を判定不能にする",
+    "ssot": "local",
+    "status": "active",
+    "horizon": "month",
+    "view": "dev",
+    "period": "2026-07",
+    "category": "quality"
+  },
+  "source_run": {
+    "run_id": "2026-07-15T131208Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-15T13:17:09.797Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": false,
+    "allowed_paths": [
+      "src/public-discovery-scanner.js",
+      "src/code-quality-scanner.js",
+      "src/nocodb-story-sync.js",
+      "src/story-candidate-generator.js",
+      "src/story-catalog-generator.js",
+      "src/story-html.js",
+      "src/story-manager.js",
+      "src/story-task-generator.js"
+    ],
+    "source": "derived_from_target_files",
+    "recorded_at": "2026-07-15T13:17:24.686Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-public-discovery-live-targets-review",
+      "source_type": "story_plan_candidate",
+      "source_id": "story-vibepro-public-discovery-live-targets-review",
+      "finding_id": null,
+      "title": "Story仮説をレビューする",
+      "priority": "low",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 8,
+      "target_files": [
+        "src/public-discovery-scanner.js",
+        "src/code-quality-scanner.js",
+        "src/nocodb-story-sync.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-task-generator.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/code-quality-scanner.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/public-discovery-scanner.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/story-html.js",
+          "reason": "Story story-vibepro-public-discovery-live-targets の根拠コード"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Graphifyで対象Storyの周辺依存として検出"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Graphifyで対象Storyの周辺依存として検出"
+        },
+        {
+          "file": "src/diagnostic-engine.js",
+          "reason": "Graphifyで対象Storyの周辺依存として検出"
+        },
+        {
+          "file": "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+          "reason": "Graphifyで対象Storyの周辺依存として検出"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "review",
+        "reason": "意味づけ、根拠、反証を確認し次アクションを決める"
+      },
+      "implementation_steps": [
+        {
+          "id": "review-story",
+          "title": "Story仮説をレビューする",
+          "detail": "meaning confidenceとcounter_evidenceを確認して次アクションを決める"
+        }
+      ],
+      "acceptance_criteria": [
+        "meaning confidenceを確認する",
+        "次に診断するか、仕様を補うか、実装するか決める"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 8,
+        "matched_file_count": 8,
+        "matched_files": [
+          "src/code-quality-scanner.js",
+          "src/nocodb-story-sync.js",
+          "src/public-discovery-scanner.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 401,
+        "affected_communities": [
+          {
+            "id": 4,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 275
+          },
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 29,
+            "edge_count": 122
+          },
+          {
+            "id": 10,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 21,
+            "edge_count": 61
+          },
+          {
+            "id": 8,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 121,
+            "edge_count": 280
+          },
+          {
+            "id": 20,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 45,
+            "edge_count": 103
+          },
+          {
+            "id": 34,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 35,
+            "edge_count": 73
+          },
+          {
+            "id": 16,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 4
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 133
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 131
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 4,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 8,
+            "degree": 126
+          },
+          {
+            "id": "src_public_discovery_scanner_js",
+            "label": "public-discovery-scanner.js",
+            "source_file": "src/public-discovery-scanner.js",
+            "community": 20,
+            "degree": 44
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/diagnostic-engine.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+          "src/architecture-profiler.js",
+          "src/check-packs.js",
+          "src/playbook-exporter.js",
+          "src/visual-verifier.js"
+        ],
+        "related_edge_count": 910,
+        "impact_score": 0.0978,
+        "community_span": 8,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    },
+    {
+      "id": "story-vibepro-public-discovery-live-targets-01-public-discovery-coverage",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-public-discovery-live-targets-01-public-discovery-coverage",
+      "finding_id": null,
+      "title": "Public Discoveryの対象解決とcoverage契約",
+      "priority": "medium",
+      "status": "todo",
+      "order": 20,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-public-discovery-live-targets.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "base-url > public-dir > repository source の優先順位で検査対象を解決する",
+          "detail": "base-url > public-dir > repository source の優先順位で検査対象を解決する"
+        },
+        {
+          "id": "step-2",
+          "title": "live/built/sourceの制限、失敗理由、検査件数を scan_coverage に記録する",
+          "detail": "live/built/sourceの制限、失敗理由、検査件数を scan_coverage に記録する"
+        },
+        {
+          "id": "step-3",
+          "title": "0対象を inconclusive とし、既存findingのfail/needs_reviewを優先する",
+          "detail": "0対象を inconclusive とし、既存findingのfail/needs_reviewを優先する"
+        }
+      ],
+      "acceptance_criteria": [
+        "base-url > public-dir > repository source の優先順位で検査対象を解決する",
+        "live/built/sourceの制限、失敗理由、検査件数を scan_coverage に記録する",
+        "0対象を inconclusive とし、既存findingのfail/needs_reviewを優先する"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null
+    },
+    {
+      "id": "story-vibepro-public-discovery-live-targets-02-cli-check-pack",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-public-discovery-live-targets-02-cli-check-pack",
+      "finding_id": null,
+      "title": "CLIとcheck pack成果物の公開入力対応",
+      "priority": "medium",
+      "status": "todo",
+      "order": 30,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-public-discovery-live-targets.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "check public-discovery|all へ --base-url と --public-dir を伝播する",
+          "detail": "check public-discovery|all へ --base-url と --public-dir を伝播する"
+        },
+        {
+          "id": "step-2",
+          "title": "JSON/Markdown summaryへPublic Discovery coverageを独立表示する",
+          "detail": "JSON/Markdown summaryへPublic Discovery coverageを独立表示する"
+        },
+        {
+          "id": "step-3",
+          "title": "CLI helpと診断Skillに入力mode・上限・0対象の意味を記載する",
+          "detail": "CLI helpと診断Skillに入力mode・上限・0対象の意味を記載する"
+        }
+      ],
+      "acceptance_criteria": [
+        "check public-discovery|all へ --base-url と --public-dir を伝播する",
+        "JSON/Markdown summaryへPublic Discovery coverageを独立表示する",
+        "CLI helpと診断Skillに入力mode・上限・0対象の意味を記載する"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null
+    },
+    {
+      "id": "story-vibepro-public-discovery-live-targets-03-public-discovery-live-built-source",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-public-discovery-live-targets-03-public-discovery-live-built-source",
+      "finding_id": null,
+      "title": "Public Discoveryのlive/built/source回帰検証",
+      "priority": "medium",
+      "status": "todo",
+      "order": 40,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-public-discovery-live-targets.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "再帰ビルド走査、同一origin sitemap、到達不能、過大応答をtargeted testで検証する",
+          "detail": "再帰ビルド走査、同一origin sitemap、到達不能、過大応答をtargeted testで検証する"
+        },
+        {
+          "id": "step-2",
+          "title": "従来source走査、CLI引数、check pack成果物の互換性を検証する",
+          "detail": "従来source走査、CLI引数、check pack成果物の互換性を検証する"
+        },
+        {
+          "id": "step-3",
+          "title": "targeted test、full suite、Skill lint、AGENTS同期を完了する",
+          "detail": "targeted test、full suite、Skill lint、AGENTS同期を完了する"
+        }
+      ],
+      "acceptance_criteria": [
+        "再帰ビルド走査、同一origin sitemap、到達不能、過大応答をtargeted testで検証する",
+        "従来source走査、CLI引数、check pack成果物の互換性を検証する",
+        "targeted test、full suite、Skill lint、AGENTS同期を完了する"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null
+    }
+  ]
+}

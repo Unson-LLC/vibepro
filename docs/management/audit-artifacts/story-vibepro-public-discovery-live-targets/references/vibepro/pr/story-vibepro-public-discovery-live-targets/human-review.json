@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "created_at": "2026-07-16T12:26:56.304Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-public-discovery-live-targets/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-public-discovery-live-targets/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-public-discovery-live-targets/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-public-discovery-live-targets/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-public-discovery-live-targets.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-public-discovery-live-targets.md, docs/specs/story-vibepro-public-discovery-live-targets.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784137147536-b1fbab00",
+        "story_id": "story-vibepro-public-discovery-live-targets",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "Keep the ten-file vertical contract bundled; do not split runtime from contract, operator, or regression surfaces",
+        "reason": "All changed files belong to one Public Discovery input/coverage contract and share one rollback boundary; the artifact documents file groups, owner map, blast radius, and why each apparent split would be unsafe.",
+        "reviewer": "Codex",
+        "artifact": ".vibepro/qa/public-discovery-live-targets/scope-review-decision.md",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/qa/public-discovery-live-targets/unit-status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/public-discovery-live-targets/build-status.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/public-discovery-live-targets/typecheck-status.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/public-discovery-live-targets/e2e-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/public-discovery-live-targets/integration-status.json",
+              "type": "integration",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "be796491d0e061d818339a1ca8ba410d6929cdca",
+          "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-15T17:39:07.535Z"
+        },
+        "recorded_at": "2026-07-15T17:39:07.536Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T12:26:51.503Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "52633af04ff3548a4f4fa97aeb445b2fe86c07bb",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

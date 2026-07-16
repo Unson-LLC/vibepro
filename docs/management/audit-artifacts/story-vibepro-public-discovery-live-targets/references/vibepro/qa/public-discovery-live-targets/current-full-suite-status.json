@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "head_commit": "8d86674bfc6a059a398d9ea9a3d04a4c4b279c7c",
+  "source": "github_ci",
+  "summary": "The complete current-head test matrix passed in GitHub CI; both test shards and analysis checks completed successfully.",
+  "checks": [
+    {
+      "name": "test (20)",
+      "status": "SUCCESS",
+      "completed_at": "2026-07-16T11:45:38Z",
+      "url": "https://github.com/Unson-LLC/vibepro/actions/runs/29495419890/job/87611113393"
+    },
+    {
+      "name": "test (22)",
+      "status": "SUCCESS",
+      "completed_at": "2026-07-16T11:45:58Z",
+      "url": "https://github.com/Unson-LLC/vibepro/actions/runs/29495419890/job/87611113369"
+    },
+    {
+      "name": "analyze",
+      "status": "SUCCESS",
+      "completed_at": "2026-07-16T11:44:12Z",
+      "url": "https://github.com/Unson-LLC/vibepro/actions/runs/29495419810/job/87611112943"
+    },
+    {
+      "name": "CodeQL",
+      "status": "SUCCESS",
+      "completed_at": "2026-07-16T11:44:08Z",
+      "url": "https://github.com/Unson-LLC/vibepro/runs/87611370585"
+    }
+  ],
+  "local_environment_diagnostic": {
+    "command": "node --test --test-concurrency=2",
+    "status": "environment_blocked_after_prior_tests_passed",
+    "reason": "npm pack --dry-run could not write to the user npm cache because it contains root-owned files",
+    "recovery_command": "NPM_CONFIG_CACHE=/tmp/vibepro-npm-cache node --test --test-name-pattern='npm dry-run package excludes VibePro workspace and internal artifacts' test/vibepro-cli.test.js",
+    "recovery_result": "1 passed, 0 failed"
+  }
+}

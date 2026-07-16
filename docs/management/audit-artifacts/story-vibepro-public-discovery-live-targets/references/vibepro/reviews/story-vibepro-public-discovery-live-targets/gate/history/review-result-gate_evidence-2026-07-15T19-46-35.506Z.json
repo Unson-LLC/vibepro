@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-public-discovery-live-targets",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Previous unit mismatch is resolved, but recorded integration replay selects 5 tests while claiming 19 and the request predates final evidence.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "command-reliability-integration-pattern-count-mismatch",
+      "detail": "Recorded integration command replays 5/5, not the claimed 19/19 or all AC surfaces."
+    },
+    {
+      "severity": "medium",
+      "id": "evidence-lifecycle-review-prepared-before-final-record",
+      "detail": "Review request predates the final integration evidence and must be regenerated."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "command-reliability-unit-artifact-not-exit-derived",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-public-discovery-live-targets/ci-evidence/test_20_.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected and replayed exact-head unit/integration evidence, current CI, Story/Architecture/Spec, implementation, tests, and built artifact.",
+    "evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc-fixed.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-public-discovery-live-targets/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Old unit finding resolved by exact-head CI; integration replay changed judgment to needs_changes because command and claimed coverage diverge."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+    "expected_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-public-discovery-live-targets-impl-v2",
+      "branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "actual_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+      "current_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T19:46:35.506Z",
+  "git_context": {
+    "head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "current_branch": "codex/story-vibepro-public-discovery-live-targets-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T19:46:35.505Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "dfad9bc2758363e70022f55db3b7fb26659f74d1",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "0fe6b58feabf31d1a9425a69662d18bc915bb296b481ba4937d5932871e97905",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "public_discovery_dfad9bc_gate_review_fixed",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc-fixed.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-public-discovery-live-targets/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/public-discovery-live-targets/review-gate-evidence-dfad9bc-fixed.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
