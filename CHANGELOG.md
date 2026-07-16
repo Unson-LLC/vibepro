@@ -4,6 +4,8 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0-beta.0 - 2026-07-16
+
 - Document the complete guarded delivery loop: managed execution, independent
   review and adjudication, release guard, PR/CI refresh, merge, canonical audit,
   and usage/ROI reporting.
@@ -11,6 +13,7 @@ All notable changes to VibePro will be documented in this file.
   and fail documentation builds when it drifts.
 - Separate the published npm beta from current `main` and expose the documentation
   build's source commit.
+- Promote and verify both npm `beta` and `latest` dist-tags during publication.
 - Restrict the public manual build to curated guide/reference content, require
   production deploys to match freshly fetched `origin/main`, and add
   robots, sitemap, llms.txt, social metadata, and structured data.

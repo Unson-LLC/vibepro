@@ -4,7 +4,7 @@
 
 | Surface | 意味 | 確認方法 |
 | --- | --- | --- |
-| npm `latest` / `beta` | 公開済みearly beta: `0.1.0-beta.0` | `npm view vibepro dist-tags --json` と `vibepro version` |
+| npm `latest` / `beta` | 公開対象: `0.2.0-beta.0` | `npm view vibepro dist-tags --json` と `vibepro version` |
 | GitHub `main` | unreleased changeを含む現在のsource | `git rev-parse HEAD` と `CHANGELOG.md` のUnreleased |
 | このmanual build | footerと `vibepro-source-commit` meta tagに出るcommit | GitHub `main` と比較 |
 | Local artifact | 特定repo / Story / headの証跡 | `.vibepro/` とGit headを確認 |

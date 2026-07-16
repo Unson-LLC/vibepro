@@ -16,6 +16,7 @@ test('VRNH-AC-001/002/004 release index separates published versions from the PR
     assert.match(content, snapshotDate);
     assert.match(content, /281/);
     assert.match(content, /273/);
+    assert.match(content, /0\.2\.0-beta\.0/);
     assert.match(content, /0\.1\.0-beta\.0/);
     assert.match(content, /0\.1\.0-alpha\.0/);
     assert.match(content, /v0\.1\.0-internal-beta\.1/);
@@ -60,4 +61,8 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
+  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.0`/);
+  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.0`/);
+  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.0`/);
+  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.0`/);
 });
