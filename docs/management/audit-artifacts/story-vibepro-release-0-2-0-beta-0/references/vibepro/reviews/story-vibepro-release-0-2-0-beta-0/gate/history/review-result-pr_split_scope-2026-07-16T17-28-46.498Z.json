@@ -1,0 +1,111 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-0-2-0-beta-0",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "All 16 files form one coherent 0.2.0-beta.0 release intent",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    "design-ssot.json"
+  ],
+  "inspection": {
+    "summary": "origin/main diff and Design SSOT registration inspected; no unrelated runtime/API/UI changes",
+    "evidence": "design-ssot.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-release-0-2-0-beta-0.md",
+      "docs/specs/story-vibepro-release-0-2-0-beta-0.md"
+    ]
+  },
+  "judgment_delta": [
+    "Design SSOT addition inspected -> required release traceability, not a separate shippable intent"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+    "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+    "expected_root": null,
+    "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+    "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "actual_root": "/private/tmp/vibepro-release-0.2.0-beta.0",
+      "expected_root": null,
+      "expected_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "current_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-16T17:28:46.498Z",
+  "git_context": {
+    "head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+    "current_branch": "codex/release-0.2.0-beta.0",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T17:28:46.496Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "b4badffeb8a2676aae2cb8afd424a694303eedc014672d41c53a1a3cd2ffaa00",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/pr_split_scope_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-pr_split_scope-final.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-pr_split_scope-final.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

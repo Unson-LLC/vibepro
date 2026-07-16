@@ -1,0 +1,431 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-16T12:23:19.436Z",
+  "story": {
+    "story_id": "story-vibepro-release-0-2-0-beta-0",
+    "title": "story-vibepro-release-0-2-0-beta-0",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-16T115649Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-16T12:23:19.320Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": false,
+    "allowed_paths": [
+      "src/nocodb-story-sync.js",
+      "src/story-candidate-generator.js",
+      "src/story-catalog-generator.js",
+      "src/story-html.js",
+      "src/story-manager.js",
+      "src/story-task-generator.js",
+      "src/cli.js",
+      "src/workspace.js",
+      "src/diagnostic-engine.js",
+      "src/architecture-profiler.js",
+      "src/playbook-exporter.js",
+      "src/visual-verifier.js"
+    ],
+    "source": "derived_from_target_files",
+    "recorded_at": "2026-07-16T12:23:19.436Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-release-0-2-0-beta-0-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-release-0-2-0-beta-0-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "high",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/nocodb-story-sync.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-task-generator.js",
+        "src/cli.js",
+        "src/workspace.js",
+        "src/diagnostic-engine.js",
+        "src/architecture-profiler.js",
+        "src/playbook-exporter.js",
+        "src/visual-verifier.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-html.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-manager.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-task-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "局所変更のつもりで責務境界を跨ぎ、別flowや共有serviceの挙動を壊す可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-release-0-2-0-beta-0-cross_community_without_architecture",
+          "story_id": "story-vibepro-release-0-2-0-beta-0",
+          "title": "VibePro 0.2.0 betaを現在のmainから公開する",
+          "type": "cross_community_without_architecture",
+          "severity": "high",
+          "reason": "Graphify上で複数communityに跨るが、Architecture/ADR正本が未確定。",
+          "potential_bug": "局所変更のつもりで責務境界を跨ぎ、別flowや共有serviceの挙動を壊す可能性がある。",
+          "recommended_review": "hub/related fileを先に読み、ADRが必要な境界変更か、Storyをflow単位に分割すべきか判断する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "story_backed",
+            "architecture_status": "implicit",
+            "source_type": "config_story",
+            "confidence": "high",
+            "open_questions": [],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "operational_change",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-release-0-2-0-beta-0.md"
+            ],
+            "files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/visual-verifier.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-release-0-2-0-beta-0.md"
+            ],
+            "spec": [],
+            "architecture": []
+          },
+          "graph": {
+            "matched_files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/visual-verifier.js",
+              "src/brainbase-importer.js",
+              "src/html-report.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 139
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 131
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 10,
+                "degree": 126
+              },
+              {
+                "id": "src_story_task_generator_js",
+                "label": "story-task-generator.js",
+                "source_file": "src/story-task-generator.js",
+                "community": 23,
+                "degree": 34
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 275
+              },
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 37,
+                "edge_count": 152
+              },
+              {
+                "id": 10,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 111,
+                "edge_count": 244
+              },
+              {
+                "id": 23,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 35,
+                "edge_count": 74
+              },
+              {
+                "id": 16,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 28,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 2,
+                "edge_count": 12
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 754,
+            "impact_score": 0.0775,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 6,
+        "matched_file_count": 6,
+        "matched_files": [
+          "src/nocodb-story-sync.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 336,
+        "affected_communities": [
+          {
+            "id": 5,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 275
+          },
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 37,
+            "edge_count": 152
+          },
+          {
+            "id": 10,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 111,
+            "edge_count": 244
+          },
+          {
+            "id": 23,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 35,
+            "edge_count": 74
+          },
+          {
+            "id": 16,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 28,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 2,
+            "edge_count": 12
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 4
+          },
+          {
+            "id": 12,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 6
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 139
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 131
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 5,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 10,
+            "degree": 126
+          },
+          {
+            "id": "src_story_task_generator_js",
+            "label": "story-task-generator.js",
+            "source_file": "src/story-task-generator.js",
+            "community": 23,
+            "degree": 34
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/diagnostic-engine.js",
+          "src/architecture-profiler.js",
+          "src/playbook-exporter.js",
+          "src/visual-verifier.js",
+          "src/brainbase-importer.js",
+          "src/html-report.js"
+        ],
+        "related_edge_count": 754,
+        "impact_score": 0.0775,
+        "community_span": 8,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    }
+  ]
+}

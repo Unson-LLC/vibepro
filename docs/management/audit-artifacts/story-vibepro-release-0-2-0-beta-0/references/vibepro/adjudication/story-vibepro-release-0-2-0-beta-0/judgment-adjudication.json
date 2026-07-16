@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-release-0-2-0-beta-0",
+  "updated_at": "2026-07-16T17:30:37.556Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "The workflow explicitly verifies publish success and exact beta/latest dist-tag state before completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:37.555Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "All gate reviews and evidence are strict-bound to the exact current HEAD with closed reviewer lifecycles.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:37.290Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Workflow and package metadata passed static parsing and packaging checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:37.039Z"
+    },
+    {
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "reason": "The accepted release-operations decision and bilingual runbook cover publication and live verification.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:36.785Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "The focused commit contains one coherent release intent and its required traceability artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:36.482Z"
+    },
+    {
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "reason": "The guide provides deprecation, dist-tag restoration, and fix-forward procedures without rewriting published artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:36.120Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "CLI version and npm package metadata expose the intended 0.2.0-beta.0 public contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:35.766Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Strict current-head typecheck, full test, pack, workflow, and independent-review evidence defines completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:35.523Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Tag drift, SHA mismatch, publish failure, verification failure, and recovery paths are documented and checked.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:35.229Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Publishing is bounded to a GitHub Release published event and does not occur on a main push alone.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:34.972Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Version agreement, immutable release identity, SHA correlation, and dist-tag verification are preserved.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:34.648Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current-head version files, tests, pack metadata, and workflow evidence describe the implemented release state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:34.355Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "The beta release intent, target version, and publication boundary are explicit and consistent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/release_current_adjudication",
+        "session_ref": ".vibepro/reviews/story-vibepro-release-0-2-0-beta-0/gate/transcript-release_risk-final.md"
+      },
+      "head_commit": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+      "recorded_at": "2026-07-16T17:30:34.078Z"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "ccaf7de2aea5e1fc3fb4d430eabd206cc155d3e8",
+  "tests": 1195,
+  "passed": 1195,
+  "failed": 0,
+  "duration_ms": 1584083.749042,
+  "components": {
+    "sandbox_full_suite": {
+      "passed": 1194,
+      "failed": 1,
+      "environment_failure": "listen EPERM: operation not permitted 0.0.0.0"
+    },
+    "unsandboxed_exact_rerun": {
+      "test": "measure records command, HTTP, startup, and Prisma log metrics",
+      "passed": 1,
+      "failed": 0,
+      "duration_ms": 732.039208
+    }
+  }
+}
