@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "summary": "Runtime authority, persistence, CLI, and recovery contracts satisfy the review lenses; all three prior findings are resolved at current HEAD.",
+  "inspection_summary": "Inspected current HEAD dc9ddbabba5718b9b2d7e397fcc407b4903e73a9 across the review request, Story, Architecture, Spec, test plan, main-to-HEAD source/test diff, strict-head evidence, implicit selection, Git/worktree identity, managed/source-fallback authority, CLI routing, repair output, and legacy compatibility. Four focused regression tests passed and the worktree remained clean.",
+  "inspection_evidence": [
+    "src/guarded-run-session.js:103-141,219-245,821-884",
+    "src/git-identity.js:8-19",
+    "src/cli.js:2075-2129",
+    "test/guarded-run-session.test.js:372-436,861-946",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    "focused regression run: 4/4 passed"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/implementation/review-request-runtime_contract.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "git diff main...HEAD"
+  ],
+  "judgment_delta": [
+    "runtime-selection-silent-invalid-skip -> resolved: omitted selection validates every syntactic candidate and returns nonmutating run_selection_blocked with recovery context.",
+    "runtime-production-worktree-evidence-gap -> resolved: real repository and linked-worktree identity plus a real-process repository-authoritative CLI fixture are covered.",
+    "runtime-managed-fresh-process-evidence-overclaim -> resolved: the test plan explicitly separates real-Git, repository fresh-process, and in-process managed/source fallback coverage."
+  ],
+  "findings": []
+}

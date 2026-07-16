@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+  "status": "pass",
+  "tests": 67,
+  "passed": 67,
+  "failed": 0,
+  "scope": [
+    {
+      "name": "guarded_run_contract",
+      "tests": 45,
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/unit-current-head-junit.xml"
+    },
+    {
+      "name": "inherited_runtime_cost_regression",
+      "tests": 22,
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/runtime-cost-responsibility-current-head-junit.xml"
+    }
+  ],
+  "scope_note": "Current-head unit evidence combines the Story #1 Run contract with inherited runtime-cost regression coverage; the latter is compatibility evidence, not a Story #1 ownership claim."
+}

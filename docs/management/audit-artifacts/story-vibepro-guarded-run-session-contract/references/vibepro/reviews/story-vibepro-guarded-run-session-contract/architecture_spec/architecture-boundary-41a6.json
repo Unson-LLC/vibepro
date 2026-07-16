@@ -1,0 +1,48 @@
+{
+  "status": "pass",
+  "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+  "summary": "Guarded Run persistence, lifecycle validation, Git identity, and linked-copy recovery are isolated behind a dedicated session boundary; CLI changes are additive routing only, authority remains canonical and fail-closed across repository, managed, and source_fallback modes, and current-head regression evidence covers the affected legacy and recovery surfaces.",
+  "findings": [],
+  "inspection": {
+    "summary": "Inspected the architecture request, Story rationale, architecture decision, final 17-clause Spec/test plan, implementation modules, CLI call sites/help surfaces, focused contract tests, current-head evidence artifacts, and repository diff. The dedicated session module owns state and authority decisions, Git identity is resolved through canonical real paths, CLI preserves the legacy no-run-id status route, mirror repair is authority-to-mirror only, and out-of-scope action/runtime/merge authority is not imported into this layer.",
+    "evidence": [
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json: unit/e2e 40/40 and integration 1130/1130, all strict-head bound to 41a6cb076c3ba03096c8e27545c246211158a9c0 with clean worktree fingerprints",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml: 40 testcases and no failure/error nodes",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml: 1130 testcases and no failure/error nodes",
+      "Independent focused replay on current HEAD: node --test test/guarded-run-session.test.js -> 40 passed, 0 failed",
+      "git status --short -> clean before review artifact creation; git diff --check base..HEAD -> clean; cmp -s CLAUDE.md AGENTS.md -> exit 0"
+    ],
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-architecture_boundary.md",
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "src/guarded-run-session.js",
+      "src/git-identity.js",
+      "src/cli.js",
+      "test/guarded-run-session.test.js",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+      "git rev-parse HEAD",
+      "git diff --name-status <merge-base>..HEAD",
+      "git status --short"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: adding a second execution-state concept could duplicate legacy execution authority -> Final conclusion: the architecture explicitly makes Run Session a Story-scoped persistence/control contract beside, not a replacement for, legacy Execution State and Gate DAG; the implementation imports only bootstrap and Gate-readiness boundaries and keeps action/runtime/waiver/merge authority out.",
+    "Initial concern: source and managed checkouts could disagree on the canonical Run or silently promote a mirror -> Final conclusion: canonical root and Git-dir identity are resolved with realpath-backed Git commands, managed authority is immutable, unavailable existing bindings fail closed, source_fallback is limited to a newly attempted preferred bootstrap and fingerprint-bound, and repair copies authority bytes to the mirror only.",
+    "Initial concern: additive guarded commands could alter existing execute behavior -> Final conclusion: routing is opt-in for run/watch/resume/cancel and status with an explicit run id, while status without a run id remains on the legacy route; help, human/JSON errors, non-watch repair rejection, and fresh-process behavior are directly tested.",
+    "Initial concern: the authority/mirror protocol may need a separate ADR -> Final conclusion: the material decision, alternatives, compatibility impact, rollback, responsibility boundary, and later-Story exclusions are recorded in the Story and Architecture; no additional ADR is necessary for this scoped additive contract."
+  ],
+  "mandatory_lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "assessment": "The change is additive and preserves the legacy execute status path. Focused tests cover CLI compatibility, human/JSON envelopes, fresh-process restart, authority loss, stale HEAD, corrupt/future schema, migration, locking, partial bootstrap, mirror divergence/failure/repair, and forbidden transitions. The current-head full suite passes 1130/1130, so evidence is not limited to the new happy path. No DB, UI, network API, performance-critical loop, accessibility surface, or privilege broadening is introduced by this persistence-only Story."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "assessment": "Inputs inspected include execute run/status/watch/resume/cancel, explicit and omitted run selection, source and managed callers, repository/managed/source_fallback authorities, malformed identifiers, recognized predecessor state, corrupt/future state, and CLI repair flag placement. Outputs inspected include canonical authority state, linked mirror, quarantine artifact, creation lock, typed human/JSON errors, recovery next_action, help in Japanese/English, transition history, and current-head verification/gate artifacts. Rejected candidates and suppression/failure conditions are surfaced as typed errors rather than silently ignored."
+    }
+  }
+}

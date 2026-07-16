@@ -1,0 +1,22 @@
+{
+  "status": "needs_changes",
+  "summary": "Current-head result artifacts are valid, but several structured observations overclaim what the executed tests demonstrate.",
+  "inspection_summary": "Reviewed HEAD 22b8ce2, verification evidence, raw 42/13/55 result artifacts, target tests, Story, architecture, contracts, traceability, and judgment artifacts without rerunning tests.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-e2e-binding-overclaim",
+      "detail": "Adjacent E2E tests do not execute the Guarded Run flow or reconstruct its persisted artifacts; add a real Guarded Run E2E or narrow the claim."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-responsibility-contract-mismatch",
+      "detail": "Runtime-cost, PR lifecycle, and managed-worktree responsibility labels exceed the directly exercised contract surface; use corresponding regression tests and accurate scope."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-failure-mode-binding-gap",
+      "detail": "Deadline expiry/advisory behavior and post-pr_ready Gate evidence degradation are not directly asserted."
+    }
+  ]
+}

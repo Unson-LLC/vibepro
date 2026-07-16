@@ -1,0 +1,59 @@
+{
+  "status": "needs_changes",
+  "summary": "旧repair flagのsilent no-opは解消したが、新しい先行ガードが未知execute subcommandの既存unknown-command経路を奪う回帰が残る。",
+  "inspection_summary": "現HEAD af070b8でreview request、Story、Architecture、Test Plan、Spec、CLI routing、managed binding正規化、回帰tests、current-head verification artifactsを独立確認し、focused 36 testsを再実行した。旧findingの解消を確認したうえで、未知subcommandとrepair flagの組合せを実行比較した。",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-regression_risk.md",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/subagent-regression_risk-326a58e.json",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    "git diff 326a58e..af070b8",
+    "node --test test/guarded-run-session.test.js",
+    "node bin/vibepro.js execute nonsense . --repair-linked-copy --json",
+    "node bin/vibepro.js execute nonsense . --json",
+    "git diff --check 326a58e..HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "inspection_evidence": [
+    "HEAD af070b819dbeb13f38176e45436b7f91bf819f29; tracked worktree was clean before this ignored review artifact was created",
+    "src/cli.js:2093-2109 now rejects --repair-linked-copy before guarded and legacy dispatch; test/guarded-run-session.test.js:517-558 covers run, legacy/guarded status, resume, cancel, start, next, reconcile, and merge in human/JSON modes and proves no executions artifact is created",
+    "test/guarded-run-session.test.js:983-996 verifies help advertises repair only on the watch-specific usage line; the broad execute usage omits the option",
+    "The new non-watch test is pre-fix-sensitive: at 326a58e the shared runOptions reached dispatch and non-watch implementations ignored repairLinkedCopy, whereas af070b8 returns typed exit 2 before dispatch",
+    "src/guarded-run-session.js:410-449,552-575,940-978 consistently passes a resolved root_realpath into normalizeManagedBinding before persistence and source_fallback fingerprint comparison; the symlink fixture exercises alias/canonical reads and mutations",
+    "fresh focused execution at current HEAD: 36/36 passed, 0 failed",
+    "recorded strict-head evidence at af070b8: targeted 36/36 passed and full suite 1126/1126 passed",
+    "runtime comparison: execute nonsense with --repair-linked-copy --json exits 2 as repair_linked_copy_not_supported, while the same unknown subcommand without the flag reaches the established Unknown execute command path and exits 1",
+    "src/cli.js:2098 applies the repair guard to every token except watch before src/cli.js:2213 can classify unknown execute commands; test/guarded-run-session.test.js:519-529 enumerates only valid subcommands",
+    "git diff --check passed and CLAUDE.md/AGENTS.md parity passed"
+  ],
+  "judgment_delta": [
+    "Initial concern: the accepted repair-flag-silent-outside-watch finding might still exist on a legacy or guarded branch. Final conclusion: resolved, because every documented non-watch execute subcommand now returns typed exit 2 before dispatch and the added test would fail against the pre-fix control flow.",
+    "Initial canonicalization concern: preferring sourceRoot might change migration/fallback fingerprints inconsistently. Final conclusion: no regression found, because all normalizeManagedBinding callers supply resolved canonical identities and the new alias fixture covers persistence, status/watch, resume, and cancel.",
+    "Initial pass candidate after 36/36 focused and 1126/1126 recorded full-suite success -> needs_changes after path-surface execution showed that the broad repair guard intercepts an unknown subcommand and changes its established exit/error surface; the new table test does not cover this fallback route."
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "repair-flag-intercepts-unknown-execute-command",
+      "detail": "src/cli.js:2098 checks --repair-linked-copy before validating that subcommand is one of the documented execute commands. Consequently `vibepro execute nonsense . --repair-linked-copy --json` exits 2 with repair_linked_copy_not_supported, while the established unknown-command fallback at src/cli.js:2213 exits 1 and renders `Unknown execute command: nonsense`. This changes an adjacent legacy CLI error/exit contract and misclassifies an invalid command as a valid non-watch command with an unsupported option. Restrict the repair guard to the known non-watch subcommand set (or validate the subcommand first), and add a pre-fix-sensitive regression assertion that unknown execute commands still reach the unknown-command path when the flag is present."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "repair-flag-silent-outside-watch",
+      "severity": "medium",
+      "detail": "Resolved at af070b8: all documented non-watch execute subcommands reject --repair-linked-copy with typed exit 2 before dispatch, identity resolution, reads, or mutation; help now scopes the option to watch.",
+      "evidence": "src/cli.js:2093-2109; test/guarded-run-session.test.js:517-558,983-996; fresh node --test test/guarded-run-session.test.js 36/36 passed"
+    }
+  ]
+}

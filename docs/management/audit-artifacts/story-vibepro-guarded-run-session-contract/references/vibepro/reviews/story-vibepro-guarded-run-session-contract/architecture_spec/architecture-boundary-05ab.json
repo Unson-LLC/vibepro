@@ -1,0 +1,16 @@
+{
+  "head_sha": "05ab5efbb1c07ba3f6f0d951a4cae84383d71665",
+  "role": "architecture_boundary",
+  "status": "needs_changes",
+  "summary": "Public recoverable transition accepted explicit null stopReason and persisted a blocked Run without a typed stop reason.",
+  "finding": {
+    "severity": "high",
+    "path": "src/guarded-run-session.js",
+    "line": 333,
+    "required_change": "Reject null and all non-typed stop reasons on allowed recoverable transitions; add a pre-fix-failing null fixture."
+  },
+  "evidence": [
+    "Focused lifecycle tests passed at the reviewed HEAD but omitted explicit null.",
+    "Independent temporary-repository probe persisted status=blocked and stop_reason=null."
+  ]
+}

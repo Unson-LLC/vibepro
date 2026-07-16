@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "summary": "実装・Spec・受け入れ基準は整合し、旧2指摘はいずれも解消している。",
+  "inspection_summary": "Current HEAD dc9ddbaをStory、Architecture、Spec、改訂Test Plan、main...HEAD差分、CLI/Run Session実装、33件のfocused tests、1123件のfull-suite evidenceと照合した。Test PlanはCartesianな全組合せ保証を撤回してcompositional coverageの境界を明記し、実際のfixture群と一致している。暗黙選択は棄却候補をrun_selection_blockedとしてhuman/JSON判断面へ残す。最新修正のrepair next_actionも元のrepo contextをshell-safeに保持する。",
+  "inspection_evidence": [
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json: HEAD dc9ddbabba5718b9b2d7e397fcc407b4903e73a9, 33/33 pass",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json: HEAD dc9ddbabba5718b9b2d7e397fcc407b4903e73a9, 1123/1123 pass",
+    "git diff --check main...HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/implementation/review-request-code_spec_alignment.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/cli.js",
+    "src/git-identity.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "git diff main...HEAD"
+  ],
+  "judgment_delta": [
+    "旧path-surface-cli-matrix-unverified -> 解消。Test Planはcompositional coverageの境界と非保証範囲を明記し、実際のfixture群と一致する。",
+    "旧implicit-selection-silent-invalid-suppression -> 解消。全候補を検証し、棄却理由と明示選択案内をhuman/JSONへ残す。",
+    "regression_guard -> 解消。legacy分岐と既存execute導線を保持し、current-head focused 33/33とfull 1123/1123が成功。"
+  ],
+  "findings": []
+}

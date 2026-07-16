@@ -1,0 +1,58 @@
+{
+  "status": "pass",
+  "summary": "既知execute subcommandのrepair flag silent no-opと、未知subcommandをtyped errorへ誤分類する回帰はともに解消され、現HEADのCLI・Spec・文書・回帰テスト・実行結果が一致する。",
+  "inspection_summary": "現HEAD 2bb11b5でreview request、af070b8からの差分、execute全routing、Architecture、Test Plan、Spec C-001/C-006、旧finding、current-head verification artifactを確認し、focused 36 testsと未知commandのflag有無を実CLIで再実行した。",
+  "inspection_evidence": [
+    "HEAD 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd; tracked worktree clean; git diff --check af070b8..HEAD passed",
+    "src/cli.js:2098-2115 restricts repair rejection to the complete known execute subcommand set; src/cli.js:2116-2218 dispatches that same set and src/cli.js:2219-2220 preserves the unknown-command fallback",
+    "test/guarded-run-session.test.js:517-575 covers every recognized non-watch execute surface in alternating human/JSON modes, the unknown fallback, and absence of execution artifacts",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md Command contract, docs/management/test-plans/story-vibepro-guarded-run-session-contract.md:12-21, and spec clauses C-001/C-006 state the same compatibility boundary",
+    "fresh node --test test/guarded-run-session.test.js: 36 passed, 0 failed",
+    "fresh real CLI comparison: execute nonsense with and without --repair-linked-copy --json both emitted Unknown execute command: nonsense and exited 1",
+    "strict-head recorded evidence: targeted 36/36 and full suite 1126/1126 passed at 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd",
+    "cmp -s CLAUDE.md AGENTS.md passed"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-regression_risk.md",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/subagent-regression_risk-326a58e.json",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/subagent-regression_risk-af070b8.json",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "test/guarded-run-session.test.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    "git diff af070b8..2bb11b5",
+    "git diff --check af070b8..HEAD",
+    "node --test test/guarded-run-session.test.js",
+    "node bin/vibepro.js execute nonsense . --repair-linked-copy --json",
+    "node bin/vibepro.js execute nonsense . --json",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "judgment_delta": [
+    "Initial concern: repair-flag-silent-outside-watch might remain on a legacy or guarded branch. Final conclusion: resolved because the known-command guard executes before every recognized non-watch dispatch, human/JSON assertions cover all nine recognized path variants, and no execution artifact is created.",
+    "Initial concern from af070b8: the repair guard intercepted unknown execute commands. Final conclusion: resolved because the guard now requires knownExecuteSubcommands.has(subcommand), the new assertion is pre-fix-sensitive, and real CLI runs with and without the flag both preserve Unknown execute command plus exit 1.",
+    "Initial evidence concern: the prior review reuse input was stale. Final conclusion: role pass is supported independently by fresh execution and by targeted/full-suite artifacts bound to 2bb11b5; pr-prepare still reports other workflow gates and stale review artifacts, which is overall readiness work rather than a regression_risk defect in this fix."
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "repair-flag-intercepts-unknown-execute-command",
+      "severity": "medium",
+      "detail": "Resolved at 2bb11b5: --repair-linked-copy is rejected only for recognized non-watch execute commands, so an unknown token reaches the established unknown-command fallback and exits 1.",
+      "evidence": "src/cli.js:2098-2115,2219-2220; test/guarded-run-session.test.js:555-570; fresh real CLI comparison for nonsense with and without the flag"
+    },
+    {
+      "id": "repair-flag-silent-outside-watch",
+      "severity": "medium",
+      "detail": "Resolved since af070b8 and reverified at 2bb11b5: every recognized non-watch execute route rejects the option visibly before dispatch, reads, identity resolution, or mutation in human or JSON form.",
+      "evidence": "src/cli.js:2098-2115; test/guarded-run-session.test.js:517-575; fresh focused suite 36/36"
+    }
+  ]
+}

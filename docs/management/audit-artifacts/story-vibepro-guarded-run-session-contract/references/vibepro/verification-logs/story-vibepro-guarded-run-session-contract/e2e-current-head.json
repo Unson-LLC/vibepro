@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+  "command": "node --test test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+  "status": "pass",
+  "exit_code": 0,
+  "tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 15575,
+  "nested_tests": {
+    "command": "node --test test/guarded-run-session.test.js test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+    "tests": 47,
+    "passed": 47,
+    "failed": 0
+  },
+  "scope_note": "The acceptance replay runs the complete guarded-Run contract suite and both repository and source-fallback fresh-process artifact replays before binding every Story AC and final Spec scenario to a concrete passing TAP test."
+}

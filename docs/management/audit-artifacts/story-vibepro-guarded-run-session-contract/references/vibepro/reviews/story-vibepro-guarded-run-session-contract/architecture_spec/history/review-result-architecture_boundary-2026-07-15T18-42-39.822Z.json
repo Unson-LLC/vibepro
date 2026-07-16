@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "needs_changes",
+  "summary": "The additive module, closed dependency seam, legacy CLI preservation, authority/mirror rules, and Gate-only pr_ready transition are well bounded, but the pre-bootstrap creation lock is caller-worktree-local rather than Story-scoped across repository worktrees.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "creation-lock-not-shared-before-bootstrap",
+      "detail": "In src/guarded-run-session.js:155-157 and 211-223, a missing legacy execution causes resolveCreationLockRoot() to return caller.root_realpath. Different linked or unmanaged worktrees for the same Git repository therefore create different .vibepro/executions/<story>/.run-creation.lock directories and can both enter startExecution() for the same Story before either authority binding is visible. The existing INV-004 test at test/guarded-run-session.test.js:256-267 only proves lock convergence when preexisting legacy metadata already names source/managed roots. This contradicts the Spec's Story-scoped exclusive bootstrap attribution boundary. Derive the bootstrap lock from a repository-shared canonical identity (for example the Git common directory with an explicit lock storage contract), or fail closed for noncanonical bootstrap callers, and add a concurrent two-linked-worktree/no-legacy regression fixture that fails on the current implementation and proves only one bootstrap can enter."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the Story, Architecture, 17-clause Spec, test plan, current eight-file diff, guarded session/CLI/Git-identity implementation, codebase-memory impact and call paths, fresh head-bound verification artifacts, and reran the focused guarded-run-session test file (40/40 pass). Managed, repository, source_fallback, mirror-repair, legacy CLI, lifecycle, migration, and typed-error surfaces are covered; the no-legacy alternate-worktree concurrency path is not.",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-architecture-boundary-41a6.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/architecture/architecture-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+      "docs/management/test-plans/test-plan-vibepro-guarded-run-session-contract.md",
+      "src/guarded-run-session.js:144-223",
+      "src/cli.js:2077-2219",
+      "src/git-identity.js",
+      "src/execution-state.js:22-40",
+      "test/guarded-run-session.test.js:239-267",
+      "git diff --name-status origin/main...41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "codebase-memory detect_changes(origin/main, depth=2) and trace_path(createGuardedRunSession/transitionRun/createRun)",
+      "node --test test/guarded-run-session.test.js (40 tests passed at 41a6cb076c3ba03096c8e27545c246211158a9c0)",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that the new Run Session authority might leak orchestration or mutate legacy commands -> the dedicated module, injected closed dependency set, forbidden-source assertions, additive CLI routing, and exact legacy-status regression test support the intended architecture boundary.",
+    "Initial expectation that INV-004/S-008 made bootstrap exclusive per Story -> resolveCreationLockRoot returns caller.root_realpath whenever no legacy state exists, so two linked/unmanaged worktrees of the same repository acquire different lock paths before authority exists; the current tests only unify source and managed callers after legacy state already identifies them.",
+    "Regression lens: fresh head-bound evidence reports the full suite passing and the focused 40-test rerun covers legacy CLI, failure, migration, and persistence behavior -> no existing-surface regression was observed, but passing evidence does not exercise the missing alternate-worktree race.",
+    "Path/surface lens: repository, managed, source_fallback, repair, implicit selection, human-readable error, and artifact surfaces are explicit -> final verdict remains needs_changes because the pre-bootstrap secondary-worktree input path can bypass the advertised Story-scoped lock and has no pre-fix-failing fixture."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+    "expected_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "actual_branch": "codex/story-vibepro-guarded-run-session-contract",
+      "current_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-15T18:42:39.822Z",
+  "git_context": {
+    "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-15T18:42:39.821Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "c9ef5602d93111fcf9e48d7642a0a40471662f91bd7cb7c18bcd67ef271144e6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/grs_arch_boundary_current",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-architecture-boundary-41a6.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/current-architecture-boundary-41a6.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "019f63f2-cdd9-7c63-9bc3-fb9925a3720d",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "updated_at": "2026-07-16T01:09:20.918Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Git common-dir lock、別repo分離、partial bootstrap、mirror repairを検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.917Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "path、破損、未来schema、authority downgrade、Gate回避をfail-closedで拒否。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.743Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "authority、許可root、Git identity、候補選択、復旧案内を固定。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.580Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "AC別acceptance outer 1/1、契約47/47を独立再実行。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.386Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "加算CLI分岐とlegacy execute互換を現HEAD差分で再検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.207Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "未知状態、不正遷移、stale HEAD、別worktreeをtypedかつ非変更で拒否。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:20.031Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "watch履歴、cancel冪等性、migration、全遷移行列を検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:19.858Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "別process復元とsource fallback fingerprint復元を検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:19.686Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "必須field、nullable union、typed stop reasonと不正値の非変更拒否を検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:19.512Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Run既定値、authority、fresh-process永続を検証。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/grs_adjudicate_e0a",
+        "session_ref": ".vibepro/adjudication/story-vibepro-guarded-run-session-contract/adjudicator-e0a.json"
+      },
+      "head_commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "recorded_at": "2026-07-16T01:09:19.358Z"
+    }
+  ]
+}

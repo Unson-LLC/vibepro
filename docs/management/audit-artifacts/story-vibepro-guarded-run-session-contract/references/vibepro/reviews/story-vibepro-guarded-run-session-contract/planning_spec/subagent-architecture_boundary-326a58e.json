@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "summary": "Guarded Runはpersistence-only境界を維持し、authority/mirror、Git identity、legacy compatibility、Gate DAG authorityを侵食しない。safe-action、agent/runtime、waiver、mergeは非責務のまま。",
+  "inspection_summary": "Story、Architecture、17-clause final Spec、Test Plan、CLI、Guarded Run、Git identity、responsibility contracts、current-head証跡を独立照合し、境界・回帰・経路網羅にblocking findingがないと確認した。",
+  "inspection_evidence": [
+    "HEAD 326a58eba3a43232ef5f55f254fd8b5dbd4a7f0b、worktree clean、diff check pass",
+    "依存面はexecution state、Gate readiness、Git identity、workspace、限定artifact IOだけでagent/runtime/action/waiver/merge capabilityなし",
+    "supplied runIdはcreateRun先頭でvalid=>run_id_not_allowed、malformed=>invalid_run_idとして副作用前に停止",
+    "status without run-idはlegacy getExecutionStatus routeを維持",
+    "existing unavailable managed bindingはfail closed、source_fallbackは単一bootstrapとfingerprintに限定、mirrorはauthorityへ昇格しない",
+    "authority-first persistenceと明示repair-only mirror同期を確認",
+    "targeted 34/34、full 1124/1124をfinal HEADで確認"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/planning_spec/review-request-architecture_boundary.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "docs/contracts/vibepro-core-responsibilities.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "後付けdocs不整合の懸念はArchitectureとC-003/C-006の同期で解消",
+    "silent supplied-id受理の懸念は先頭拒否とpre-fix-failing testで解消",
+    "managed authorityの暗黙昇格懸念はfail-closedとfingerprint、mirror非authorityで解消",
+    "safe-action/runtime責任先取りの懸念はclosed imports/dependencies/CLI/static testで解消",
+    "legacy回帰懸念は専用テストと全1124件で解消"
+  ],
+  "findings": []
+}

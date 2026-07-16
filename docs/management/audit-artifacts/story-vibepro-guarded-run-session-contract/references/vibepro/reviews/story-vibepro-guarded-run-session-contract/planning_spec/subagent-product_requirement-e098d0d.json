@@ -1,0 +1,8 @@
+{
+  "status": "needs_changes",
+  "summary": "The product contract is resolved, but the first current-head targeted artifact recorded an incorrect full SHA.",
+  "inspection_summary": "Inspected Story, architecture, Spec, implementation, tests, test plan, final delta, and verification chain without rerunning tests.",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md", "docs/architecture/story-vibepro-guarded-run-session-contract.md", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "test/guarded-run-session.test.js", ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json"],
+  "judgment_delta": ["Repository isolation and lock_artifact output are resolved; verification artifact SHA mismatch required correction."],
+  "findings": [{"severity": "medium", "id": "current-head-targeted-artifact-mismatch", "detail": "Correct targeted artifact head_commit to actual HEAD and re-record verification evidence."}]
+}

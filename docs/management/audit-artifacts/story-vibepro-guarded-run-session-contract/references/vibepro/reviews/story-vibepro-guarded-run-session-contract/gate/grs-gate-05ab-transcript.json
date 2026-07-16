@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "agent_id": "/root/grs_gate_05ab",
+  "agent_system": "codex",
+  "agent_model": "gpt-5",
+  "head_sha": "05ab5efbb1c07ba3f6f0d951a4cae84383d71665",
+  "status": "pass",
+  "summary": "Current-head gate evidence passes after the COST responsibility binding was corrected; no gate_evidence-owned blocker remains.",
+  "inspection_summary": "Reviewed the bounded readiness, gate-evidence and blocking views, Story, Architecture, Spec, Test Plan, implementation, CLI routing, current verification artifacts, responsibility evidence, and current acceptance replay.",
+  "inspection_evidence": [
+    "node --test test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts: 1/1 pass with nested 47/47",
+    "node --test test/session-efficiency-audit.test.js: 22/22 pass",
+    "responsibility_authority_status=passed",
+    "failure_mode_coverage_status=passed",
+    "AC adjudication 10/10 demonstrated",
+    "clean exact HEAD 05ab5efbb1c07ba3f6f0d951a4cae84383d71665"
+  ],
+  "findings": [],
+  "advisories": [
+    "Composite unit command display is non-blocking because the referenced runtime-cost artifact contains the literal replay command."
+  ],
+  "judgment_delta": "The previously reopened COST unit_regression finding is resolved by current-head VIBE-CORE-COST-001 evidence; other stale review stages remain coordinator-owned follow-up.",
+  "workspace_modified": false
+}

@@ -1,0 +1,218 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "reviewed_at": "2026-07-15T23:42:46Z",
+  "head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+  "status": "pass",
+  "summary": "現行 HEAD e0a38eb3c62a の Gate Evidence は、Story、Architecture、Final Spec 17 clauses、実装、focused contract/process replay、current-head verification evidence の間で整合している。旧 3 finding は解消済みであり、deadline は advisory_only、post_pr_ready monitoring は out_of_scope、PR lifecycle/runtime cost/managed-worktree は inherited_regression_only として限定され、Story #1 の新規所有 claim には使われていない。",
+  "inspection": {
+    "summary": "review request の bounded inputs を先に読み、旧 finding の resolution evidence、AC-1..AC-10 の具体的 test binding、Final Spec clauses、実装の authority/lifecycle/CLI surface の順に確認した。request 内の reuse snapshot は unit evidence 更新直前のため stale だったが、現在の verification-evidence.json と参照 artifact はすべて現行 HEAD に直接照合した。",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/review-request-gate_evidence.md",
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      "src/guarded-run-session.js",
+      "src/git-identity.js",
+      "src/cli.js",
+      "test/guarded-run-session.test.js",
+      "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+      "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/unit-and-runtime-cost-current-head.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head-verified.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/responsibility-current-head.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-composite.json",
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/gate-evidence-metadata-review-22b8ce2.json"
+    ],
+    "commands": [
+      {
+        "command": "git rev-parse HEAD",
+        "exit_code": 0,
+        "observed": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2"
+      },
+      {
+        "command": "git status --short",
+        "exit_code": 0,
+        "observed": "clean before review artifact creation"
+      },
+      {
+        "command": "node --test test/e2e/story-vibepro-guarded-run-session-contract-main.test.js test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+        "exit_code": 0,
+        "observed": "3 outer tests passed, 0 failed; acceptance replay required and observed 47 nested focused contract/process tests passed, 0 failed"
+      },
+      {
+        "command": "cmp -s CLAUDE.md AGENTS.md",
+        "exit_code": 0,
+        "observed": "agent instruction files remain byte-identical"
+      },
+      {
+        "command": "git diff --check 6cb1101cc2dd249002a95cc03afdeb7c60369eb1..HEAD",
+        "exit_code": 0,
+        "observed": "no whitespace errors"
+      }
+    ]
+  },
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-e2e-binding-overclaim",
+      "previous_severity": "high",
+      "disposition": "accepted_resolved",
+      "status": "resolved",
+      "resolution": "The current E2E record no longer relies on adjacent tests. A real temporary Git repository invokes bin/vibepro.js in fresh Node processes and replays run/status/watch/resume/cancel plus source_fallback state. The acceptance wrapper then binds AC-1..AC-10 to explicit passing focused test names.",
+      "resolution_refs": [
+        "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+        "test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head-verified.json",
+        ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+      ]
+    },
+    {
+      "finding_id": "gate-evidence-responsibility-contract-mismatch",
+      "previous_severity": "high",
+      "disposition": "accepted_resolved",
+      "status": "resolved",
+      "resolution": "Responsibility evidence now names exact inherited regression bundles only: PR lifecycle 4 tests, runtime-cost telemetry ingestion 22 tests, and managed-worktree execution locality 12 tests. The artifact explicitly sets responsibility_scope=inherited_regression_only and story1_ownership_claim=false.",
+      "resolution_refs": [
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/responsibility-current-head.json",
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/pr-lifecycle-responsibility-current-head-junit.xml",
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/runtime-cost-responsibility-current-head-junit.xml",
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/managed-worktree-responsibility-current-head-junit.xml",
+        ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+      ]
+    },
+    {
+      "finding_id": "gate-evidence-failure-mode-binding-gap",
+      "previous_severity": "medium",
+      "disposition": "accepted_resolved",
+      "status": "resolved",
+      "resolution_kind": "claim_narrowed_and_directly_verified",
+      "resolution": "Deadline is a validated and persisted advisory field only; automatic deadline expiry is not claimed. pr_ready means Gate DAG readiness and post_pr_ready degradation monitoring is explicitly outside this Story. Direct focused tests verify exact advisory defaults, nullable deadline validation, closed lifecycle behavior, and Gate-readiness-only positive pr_ready transition.",
+      "resolution_refs": [
+        "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+        ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+        "test/guarded-run-session.test.js",
+        ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/unit-and-runtime-cost-current-head.json",
+        ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"
+      ]
+    }
+  ],
+  "ac_bindings": [
+    {
+      "ac": "AC-1",
+      "status": "pass",
+      "test_anchors": [
+        "repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable",
+        "repository CLI survives fresh processes and repair is non-mutating"
+      ]
+    },
+    {
+      "ac": "AC-2",
+      "status": "pass",
+      "test_anchors": [
+        "nullable state unions reject canonical and predecessor values without mutation",
+        "recoverable transitions require a fresh typed stop reason without mutation"
+      ]
+    },
+    {
+      "ac": "AC-3",
+      "status": "pass",
+      "test_anchors": [
+        "preferred source-fallback Run resumes from its canonical artifact in fresh CLI processes",
+        "source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed"
+      ]
+    },
+    {
+      "ac": "AC-4",
+      "status": "pass",
+      "test_anchors": [
+        "lifecycle matrix accepts only the closed transition set",
+        "guarded Run survives fresh CLI processes and replays its canonical artifact"
+      ]
+    },
+    {
+      "ac": "AC-5",
+      "status": "pass",
+      "test_anchors": [
+        "resume fails closed on a stale authoritative HEAD without mutating the Run",
+        "resume from another worktree fails closed without mutating either artifact",
+        "unknown persisted status and transition target fail closed without mutation"
+      ]
+    },
+    {
+      "ac": "AC-6",
+      "status": "pass",
+      "test_anchors": [
+        "CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route",
+        "execute help advertises guarded commands without removing legacy commands"
+      ]
+    },
+    {
+      "ac": "AC-7",
+      "status": "pass",
+      "test_anchors": [
+        "migration changes schema only, corrupt state is quarantined, and future schema is preserved",
+        "guarded Run survives fresh CLI processes and replays its canonical artifact"
+      ]
+    },
+    {
+      "ac": "AC-8",
+      "status": "pass",
+      "test_anchors": [
+        "implicit Run selection fails closed when any candidate is rejected",
+        "source and managed callers use the same Story creation lock",
+        "human errors expose linked-copy recovery handles and exact repair command"
+      ]
+    },
+    {
+      "ac": "AC-9",
+      "status": "pass",
+      "test_anchors": [
+        "strict ids fail before path composition and CLI emits typed exit-2 JSON",
+        "migration changes schema only, corrupt state is quarantined, and future schema is preserved",
+        "Gate readiness is the only positive pr_ready transition"
+      ]
+    },
+    {
+      "ac": "AC-10",
+      "status": "pass",
+      "test_anchors": [
+        "existing mutation commits once across mirror failure and explicit repair",
+        "concurrent linked worktrees share the bootstrap lock before legacy authority exists",
+        "separate Git directories keep bootstrap locks repository-scoped",
+        "partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed"
+      ]
+    }
+  ],
+  "mandatory_lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "detail": "The full-suite evidence is honestly qualified as composite_not_single_head: 1138/1138 completed while HEAD advanced from 6cb1101 to e0a38eb. The current-head delta is limited to src/cli.js, src/guarded-run-session.js, and test/guarded-run-session.test.js and is covered by current-head focused unit/runtime-cost (67/67), fresh-process E2E replay (3/3 outer, 47/47 nested), and exact inherited responsibility bundles (38/38). No single-head full-suite claim is made."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "detail": "Coverage reaches repository, managed, and source_fallback authority; canonical source/managed/symlink control roots; explicit and implicit Run selection; corrupt/future/predecessor state; stale HEAD and other-worktree rejection; common-dir creation locks and repository isolation; partial bootstrap; authority-first mirror failure and explicit repair; human/JSON/help CLI surfaces; and legacy execute compatibility. Rejected candidates and recovery handles remain typed and visible rather than silently suppressed."
+    }
+  },
+  "scope_qualifications": {
+    "deadline": "advisory_only",
+    "post_pr_ready_monitoring": "out_of_scope",
+    "runtime_cost": "inherited_regression_only",
+    "pr_lifecycle": "inherited_regression_only",
+    "managed_worktree": "inherited_regression_only",
+    "story1_ownership_claim": false,
+    "full_suite": "composite_not_single_head"
+  },
+  "judgment_delta": [
+    "E2E binding changed from indirect adjacent-suite evidence to real fresh-process CLI replay plus explicit AC-1..AC-10 name bindings, resolving the prior overclaim.",
+    "Responsibility evidence changed from broad labels to exact current-head bundles and explicitly disclaims Story #1 ownership, resolving the contract mismatch.",
+    "Failure-mode claims changed from possible implied deadline/post-pr_ready behavior to the actual persistence-only boundary: advisory deadline and no post-pr_ready monitoring; focused tests directly establish the remaining claimed behavior.",
+    "The request's evidence-reuse snapshot reported stale unit evidence because verification was updated after request generation. Direct inspection of the newer current-head artifacts supersedes that snapshot for this review.",
+    "The full-suite record is accepted only as qualified regression background, not as a single-head proof. Current HEAD proof comes from the delta-focused unit, E2E, and inherited responsibility bundles."
+  ],
+  "overall_readiness_note": "This pass is limited to the gate_evidence role. It does not assert that pr-prepare is globally ready; current-head adjudication and any other coordinator-owned review lifecycle blockers must still be regenerated or closed separately."
+}

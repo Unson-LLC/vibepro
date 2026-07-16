@@ -1,0 +1,58 @@
+{
+  "status": "pass",
+  "summary": "HEAD 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd passes the architecture_boundary review. The Run Session remains a persistence-only, closed-dependency layer; canonical source-root authority and watch-only linked-copy repair remain intact; and the current fix restores the legacy Unknown execute command / exit-1 contract for unknown subcommands without weakening the typed pre-dispatch repair rejection for every recognized non-watch execute command. No separate ADR is required because the Story reason and Architecture already record authority, alternatives, compatibility, rollback, and follow-up boundaries. This is role-local only: pr-prepare still reports needs_verification and ready_for_pr_create=false because unrelated review/evidence gates remain open.",
+  "inspection_summary": "Freshly reviewed the current architecture_boundary request, Story, Architecture, final Spec, Test Plan, full implementation boundary, current-head delta, CLI dispatch order, focused tests, strict-head verification evidence, and PR readiness. Independently checked regression_guard and path_surface_coverage, including canonical sourceRoot, watch-only repair, recognized legacy execute routes, unknown-command fallback, human/JSON errors, help, nonmutation, and instruction-injection indicators. No current-head architecture-boundary defect was found.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-architecture_boundary.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "git diff af070b819dbeb13f38176e45436b7f91bf819f29..2bb11b59fc1fef5c9b018073918e3eb7eb4722dd",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    "node --test test/guarded-run-session.test.js",
+    "node bin/vibepro.js execute nonsense . --story-id story-vibepro-guarded-run-session-contract --repair-linked-copy --json",
+    "git diff --check $(git merge-base HEAD main)..HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "inspection_evidence": [
+    "src/cli.js:2098-2115 defines the complete recognized execute-subcommand set and applies repair_linked_copy_not_supported only to recognized non-watch commands before guarded service construction or legacy dispatch; src/cli.js:2116-2219 then preserves the established guarded, legacy, and Unknown execute command branches.",
+    "test/guarded-run-session.test.js:517-575 covers run, omitted/explicit status, resume, cancel, start, next, reconcile, and merge with alternating human/JSON repair failures, then asserts unknown nonsense returns exit 1 with Unknown execute command, never emits repair_linked_copy_not_supported, and creates no execution artifact. The unknown assertion fails on af070b8 because that version classified every non-watch token as repair_linked_copy_not_supported exit 2.",
+    "src/guarded-run-session.js:410-449 resolves the legacy source Git identity before normalizing managed bindings, and src/guarded-run-session.js:940-955 persists source_repo from that resolved sourceRoot. test/guarded-run-session.test.js:123-148 verifies symlink and canonical spellings across create/status/watch/resume/cancel.",
+    "Architecture command contract and Test Plan path matrix now explicitly distinguish every recognized non-watch command from the unknown-command fallback. Final Spec C-006 carries the same exit-2 versus exit-1 distinction; S-001 and INV-004 retain canonical source-root authority; C-007 and S-002 retain watch-only mirror repair.",
+    "Fresh `node --test test/guarded-run-session.test.js`: 36 passed, 0 failed/cancelled/skipped/todo. Fresh real CLI unknown-command probe returned exit 1 and `Unknown execute command: nonsense`. `git diff --check` and instruction parity both exited 0.",
+    "Current strict-head evidence is bound to 2bb11b59fc1fef5c9b018073918e3eb7eb4722dd with targeted 36/36 and full suite 1126/1126 pass. pr-prepare at the same head reports overall_status=needs_verification, ready_for_pr_create=false, unresolved_gate_count=19, so this role pass is not a PR-readiness approval.",
+    "A case-insensitive search over Story, Architecture, Test Plan, final Spec, implementation and tests found no evidence-handling override patterns. Commit subjects were also inspected and contained no review-steering instruction."
+  ],
+  "judgment_delta": [
+    "Initial concern: narrowing the repair guard could let recognized legacy commands silently accept --repair-linked-copy. Final conclusion: the explicit set includes every actual execute branch (run/status/watch/resume/cancel/start/next/reconcile/merge), and the table-driven fixture proves every non-watch member stops typed before dispatch or mutation.",
+    "Initial concern: the repair guard added at af070b8 changed the pre-existing unknown-command contract. Final conclusion: 2bb11b5 gates the repair error by recognized membership, so unknown tokens reach the existing Unknown execute command branch and exit 1; source, tests, Spec, docs, and a real CLI probe agree.",
+    "Initial concern: the compatibility fix might disturb canonical authority or expand Run Session responsibility. Final conclusion: guarded-run-session.js and git-identity.js are unchanged by 2bb11b5; canonical Git-root normalization, closed dependency direction, Gate-readiness-only positive pr_ready transition, and watch-only authority-to-mirror repair remain enforced and covered.",
+    "Initial concern: current evidence could merely repeat the stale af070b8 review. Final conclusion: the verdict uses the 2bb11b5 request/delta, fresh 36-test execution, a fresh CLI probe, and strict-head 2bb11b5 verification artifacts; prior judgment was not reused as approval evidence."
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "severity": "medium",
+      "id": "unknown-execute-repair-reclassification",
+      "detail": "Resolved at 2bb11b5: unknown execute subcommands carrying --repair-linked-copy again retain the established Unknown execute command message and exit 1 instead of being reclassified as repair_linked_copy_not_supported exit 2."
+    },
+    {
+      "severity": "medium",
+      "id": "canonical-source-root-alias",
+      "detail": "Remains resolved: legacy symlink source_repo input is converted through Git identity to the canonical sourceRoot before managed binding persistence and fingerprinting, while the symlink and canonical spellings remain aliases for the same allowed control root."
+    },
+    {
+      "severity": "medium",
+      "id": "repair-option-silent-nonwatch",
+      "detail": "Remains resolved: every recognized non-watch execute command rejects --repair-linked-copy with typed exit 2 before service construction, identity lookup, reads, dispatch, or mutation; repair itself remains supported only by execute watch."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "status": "needs_changes",
+  "summary": "通常のsource/linked worktreeでは共有bootstrap lockが機能するが、Git common directoryの親をlock rootにするため、separate-git-dir構成ではrepository identityを失う。",
+  "inspection_summary": "現HEADのStory、設計、Spec、Test Plan、差分、実装、証跡を照合し、targeted 41/41 passに加えて2つのseparate-git-dir repositoryが同じlock rootへ畳み込まれることを実測した。",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md", "docs/architecture/story-vibepro-guarded-run-session-contract.md", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "src/guarded-run-session.js", "src/git-identity.js", "test/guarded-run-session.test.js", ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json"],
+  "judgment_delta": ["worktree-local lockは解消したが、common-dirのdirnameを使う実装は非標準Git配置でrepository identityを失うためneeds_changes"],
+  "findings": [{"id":"bootstrap-lock-discards-repository-identity","severity":"medium","description":"resolveRepositorySharedLockRoot returns dirname(common-dir), so separate Git directories under the same parent collide.","file":"src/guarded-run-session.js","line":226}]
+}

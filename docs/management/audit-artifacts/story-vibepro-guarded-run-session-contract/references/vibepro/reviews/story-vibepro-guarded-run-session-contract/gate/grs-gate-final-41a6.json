@@ -1,0 +1,104 @@
+{
+  "status": "pass",
+  "summary": "HEAD 41a6cb076c3b の guarded Run session 契約は Story、Architecture、Final Spec、実装、テスト、current-head 証拠が整合し、旧 2 finding は解消されている。",
+  "inspection_summary": "Story、Architecture、Final Spec 17 clauses、Test Plan、guarded Run persistence/Git identity/CLI integration、40-test focused suite、1130-test full-suite artifacts、current-head verification evidence、および旧 gate review transcript を検査した。recoverable stopped transition は fresh typed stop_reason を必須化し、nullable union の不正 shape は canonical/predecessor の双方で永続化前または読込時に非変更拒否される。",
+  "inspection_evidence": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-final-41a6.json",
+  "inspection_inputs": [
+    "HEAD 41a6cb076c3ba03096c8e27545c246211158a9c0; git status --short => clean",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-reuse.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/gate/grs-gate-review-transcript.json",
+    "node --test test/guarded-run-session.test.js => 40 passed, 0 failed, exit 0, 25233.168875 ms",
+    "rg -c '<testcase ' targeted-junit.xml => 40; full-suite-junit.xml => 1130; no failure/error nodes",
+    "cmp -s CLAUDE.md AGENTS.md => exit 0",
+    "git diff --check c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045..HEAD => clean"
+  ],
+  "judgment_delta": [
+    "Initial high concern: recoverable stopped states could persist without an operator-visible reason -> final pass because transitionRun now supplies only the newly requested stopReason for waiting_for_human/waiting_for_runtime/blocked/failed, validateRunShape rejects null or malformed newly built stopped state before write, and focused tests prove missing/inherited reasons leave bytes unchanged while human and JSON surfaces expose valid typed reasons.",
+    "Initial medium concern: stop_reason/deadline/pending_decision were presence-only fields -> final pass because validateRunShape now enforces typed nullable unions for canonical and recognized predecessor artifacts, and the table-driven fixtures prove invalid values return invalid_state without mutation.",
+    "Initial regression concern: additive execute routing could alter legacy commands -> final pass because guarded routing is limited to run/watch/resume/cancel and status with explicit --run-id, legacy status remains on the original route, unknown execute commands retain their prior error, the focused suite passed 40/40, and the current-head full suite artifact records 1130/1130.",
+    "Initial authority/evidence concern: persistence and mirror recovery could silently promote a copy or repeat a transition -> final pass because authority-first writes, fail-closed binding checks, explicit watch repair, deterministic candidate rejection, strict-head evidence, and targeted failure-injection tests cover the changed paths."
+  ],
+  "mandatory_lenses": {
+    "public_contract": {
+      "status": "pass",
+      "detail": "run/status/watch/resume/cancel, human/JSON envelopes, generated Run identity, target restriction, explicit status selection, legacy route compatibility, and repair option placement are documented and tested."
+    },
+    "scope_reviewability": {
+      "status": "pass",
+      "detail": "The change is isolated to one persistence module, one Git identity helper, additive CLI routing, Story/Architecture/Test Plan/Final Spec, and one focused test file; action dispatch, waiver, merge, runtime launching, and automatic loop enforcement remain explicitly outside the module boundary."
+    },
+    "failure_modes": {
+      "status": "pass",
+      "detail": "Invalid identity/state/transition, stale HEAD, unavailable or mismatched authority, corrupt/future schema, creation lock, partial bootstrap, mirror failure/divergence, rejected implicit candidates, unsupported repair, and non-ready Gate DAG are fail-closed with preserved or quarantined evidence as specified."
+    },
+    "evidence_lifecycle": {
+      "status": "pass",
+      "detail": "Verification evidence is strict-head-bound to 41a6cb076c3b with clean managed-worktree context; referenced status artifacts and JUnit counts agree, and a fresh independent focused run passed 40/40. Other PR-readiness adjudication/review lifecycle blockers remain coordinator work and do not contradict this role verdict."
+    },
+    "workflow_state_regression": {
+      "status": "pass",
+      "detail": "Legacy execute status without --run-id remains byte-compatible and existing start/next/reconcile/merge routing is not replaced. Run authority and legacy Execution State remain separate, and pr_ready requires Gate DAG readiness."
+    },
+    "regression_guard": {
+      "status": "pass",
+      "detail": "The current-head full-suite artifact records 1130/1130 passed, while focused tests cover both additive behavior and legacy/unknown-command regressions."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "detail": "Repository, managed, source_fallback, source control root, managed root, symlinked source, unmanaged checkout, missing authority, linked mirror, implicit/explicit Run selection, human/JSON, help, restart, migration, and repair surfaces have implementation and compositional test evidence; rejected candidates and recovery handles are visible rather than silently suppressed."
+    }
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "stopped-state-reason-missing",
+      "status": "resolved",
+      "detail": "Every new transition into waiting_for_human, waiting_for_runtime, blocked, or failed requires a fresh typed stop_reason; omission and attempted inheritance fail before persistence, and human/JSON output assertions prove visibility."
+    },
+    {
+      "id": "typed-state-validation-gap",
+      "status": "resolved",
+      "detail": "stop_reason, deadline, and pending_decision now have explicit nullable-shape validation; malformed canonical and 0.0.0 predecessor artifacts return nonmutating invalid_state."
+    }
+  ],
+  "test_evidence": {
+    "focused_rerun": {
+      "command": "node --test test/guarded-run-session.test.js",
+      "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "status": "pass",
+      "tests": 40,
+      "passed": 40,
+      "failed": 0,
+      "duration_ms": 25233.168875
+    },
+    "recorded_targeted": {
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml",
+      "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "tests": 40,
+      "passed": 40,
+      "failed": 0
+    },
+    "recorded_full_suite": {
+      "artifact": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+      "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0",
+      "tests": 1130,
+      "passed": 1130,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  }
+}

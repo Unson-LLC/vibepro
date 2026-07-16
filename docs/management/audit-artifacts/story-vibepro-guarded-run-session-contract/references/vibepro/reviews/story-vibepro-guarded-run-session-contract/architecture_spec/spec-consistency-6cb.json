@@ -1,0 +1,12 @@
+{
+  "head_sha": "6cb1101cc2dd249002a95cc03afdeb7c60369eb1",
+  "stage": "architecture_spec",
+  "role": "spec_consistency",
+  "status": "pass",
+  "summary": "The final fix aligns with Story GRS-S-2, Architecture, and Spec invariants: null is rejected with invalid_state before persistence and the artifact is unchanged.",
+  "inspection_summary": "Independent review compared the complete final delta with Story, Architecture, Spec, Test Plan, public session API, persistence order, unit tests, acceptance replay, and final-head evidence.",
+  "inspection_evidence": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md:42", "docs/architecture/story-vibepro-guarded-run-session-contract.md:34", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "src/guarded-run-session.js:309-331", "test/guarded-run-session.test.js:926-1000", "node --test --test-name-pattern='malformed transition metadata fails before persistence|recoverable transitions require a fresh typed stop reason' test/guarded-run-session.test.js => 2/2 pass", "node --test test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts => 1/1 pass"],
+  "inspection_inputs": ["review-request-spec_consistency.md", "Story", "Architecture", "Spec", "Test Plan", "implementation", "tests", "strict-head evidence"],
+  "judgment_delta": "Null might have remained a valid nullable persisted value -> the public transition now rejects it as the documented invalid_state before applyTransition or persistence, without changing forbidden-transition precedence.",
+  "findings": []
+}

@@ -1,0 +1,47 @@
+{
+  "status": "pass",
+  "summary": "現HEAD af070b8ではStory・Architecture・17 clauses・実装・テストが整合し、旧canonical-source-root-symlink-mismatchは解消されている。必須のregression_guardとpath_surface_coverageにも新しいblocking findingはない。",
+  "inspection_summary": "staleな旧レビューを再利用せず、現HEADのreview request、Story、Architecture、Test Plan、Spec、canonicalization/authority validation、CLI repair option routing、回帰fixture、head-bound verification artifactsを独立に確認し、対象36 testsを再実行した。",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-spec_consistency.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    "git diff 326a58e..af070b8",
+    "node --test test/guarded-run-session.test.js",
+    "git diff --check 326a58e..HEAD",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "inspection_evidence": [
+    "HEAD af070b819dbeb13f38176e45436b7f91bf819f29; tracked worktree clean before review artifact creation",
+    "src/guarded-run-session.js:410-449 resolves caller/source identities first and passes caller.root_realpath or source.root_realpath into normalizeManagedBinding; lines 538-571 compare canonical caller/source roots and rebuild source_fallback fingerprints from the canonical authority root",
+    "src/guarded-run-session.js:940-978 persists sourceRoot instead of the legacy source_repo spelling and fingerprints the normalized snapshot",
+    "test/guarded-run-session.test.js:123-148 creates a real source symlink, asserts the canonical source_repo snapshot, and exercises status/watch from alias and canonical roots plus resume/cancel mutation; the pre-fix implementation would persist the alias and fail these assertions",
+    "src/cli.js:2093-2109 rejects --repair-linked-copy for non-watch commands before guarded/legacy dispatch with typed exit 2; test/guarded-run-session.test.js:517-558 covers run, legacy and guarded status, resume, cancel, start, next, reconcile, and merge in alternating JSON/human output and proves no execution artifact was created",
+    "test/guarded-run-session.test.js:985-996 verifies help exposes repair only on the watch-specific usage line, not as a family-wide execute option",
+    "fresh focused run at current HEAD: 36/36 pass, 0 fail, duration 18.65s",
+    "recorded current-head targeted evidence: 36/36 pass; recorded current-head full-suite evidence: 1126/1126 pass with 0 failed/cancelled/skipped/todo",
+    "git diff --check passed; CLAUDE.md/AGENTS.md parity passed; prompt-injection scan found no suspicious evidence text"
+  ],
+  "judgment_delta": [
+    "Initial concern: the previous review reproduced a valid source alias being rejected because a symlink spelling was persisted while callers were realpath-normalized. Final judgment: pass, because af070b8 now feeds resolved Git root_realpath into persistence and fingerprinting, and a pre-fix-sensitive fixture proves both alias and canonical control surfaces across reads and mutations.",
+    "Initial regression concern: restricting --repair-linked-copy could silently alter legacy execute paths. Final judgment: pass, because the Architecture/Spec define a typed rejection for this newly introduced option, the check precedes every non-watch dispatch, all documented execute subcommands and human/JSON outputs are covered, help scopes the option to watch, and the current-head full suite is green.",
+    "Initial evidence concern: review reuse metadata is stale. Final judgment: pass only after independent current-head inspection plus a fresh focused run and verification artifacts bound to af070b8."
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "canonical-source-root-symlink-mismatch",
+      "severity": "medium",
+      "detail": "Resolved at af070b8: managed binding persistence now uses the resolved source Git root rather than the legacy symlink spelling, so canonical caller comparison and source_fallback fingerprint reconstruction share one identity representation.",
+      "evidence": "src/guarded-run-session.js:442-449,538-571,940-978; test/guarded-run-session.test.js:123-148; fresh node --test test/guarded-run-session.test.js 36/36 pass"
+    }
+  ]
+}

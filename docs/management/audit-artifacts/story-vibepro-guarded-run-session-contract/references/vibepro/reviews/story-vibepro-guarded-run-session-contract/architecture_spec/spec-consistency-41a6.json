@@ -1,0 +1,57 @@
+{
+  "status": "needs_changes",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "source-fallback-repair-path-evidence-gap",
+      "detail": "Final Spec C-007 and the Test Plan path matrix require `execute watch --repair-linked-copy` to reject both repository and source_fallback Runs with `linked_copy_not_configured` while preserving the authority artifact byte-for-byte, including updated_at and transitions. The repository fixture at test/guarded-run-session.test.js:34-94 asserts the error but does not compare the artifact after that repair attempt, and the source_fallback fixture at lines 174-202 never invokes repair. The C-007 test_ref instead points to the managed repair test at lines 96-125, which cannot demonstrate the no-mirror contract. Add explicit repository and source_fallback repair fixtures that snapshot raw authority bytes and state fields before and after the rejection, assert no mirror is created, and update C-007 traceability to those tests."
+    },
+    {
+      "severity": "medium",
+      "id": "source-fallback-restart-surface-overclaim",
+      "detail": "The Test Plan states that a source_fallback Run survives a simulated restart across explicit status, implicit/explicit watch, resume, cancel, and repair, but its named S-001/S-009 fixture only creates the Run and calls explicit status. Final Spec S-009 describes the repository restart path, yet its sole test_ref points to that source_fallback creation fixture rather than the repository fresh-process test or repository contract fixture. The implementation appears consistent and fail-closed, but the claimed path/surface coverage and generated traceability are not supported by pre-fix-sensitive tests. Exercise the claimed source_fallback restart command sequence (or narrow the Test Plan claim) and bind S-009 to repository tests that cover its statement, including repair nonmutation."
+    }
+  ],
+  "summary": "Story, Architecture, implementation, and the current-head regression evidence agree on the guarded Run state contract and legacy CLI boundary, but path_surface_coverage is incomplete: the Test Plan and Final Spec overstate automated coverage for no-mirror repair and source_fallback/repository restart paths, and C-007/S-009 point to tests that do not demonstrate their full statements.",
+  "inspection": {
+    "summary": "Inspected AC-1 through AC-10, the Architecture, Test Plan, all 17 Final Spec clauses and their test_refs, guarded Run/CLI/Git-identity implementation, focused tests, and head-bound verification evidence. The requested state-union, reason-reset, historical-null, supplied-Run-ID, unknown-command, canonical-sourceRoot, and managed repair behaviors are implemented and tested; the remaining issue is a concrete Spec-to-test path coverage gap rather than an observed runtime defect.",
+    "evidence": [
+      "node --test test/guarded-run-session.test.js: 40 passed, 0 failed at HEAD 41a6cb076c3ba03096c8e27545c246211158a9c0",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json: integration 1130/1130, e2e 40/40, unit 40/40 at current HEAD",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md:18,38-39,65-79",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json: C-007 and S-009 statements and origin.test_refs",
+      "test/guarded-run-session.test.js:34-125,174-230,1257 onward"
+    ],
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-spec_consistency.md",
+      "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+      "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+      "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+      ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "src/git-identity.js",
+      "test/guarded-run-session.test.js",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+      ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: late stop-reason and nullable-state fixes might leave the Story, Architecture, or Final Spec inconsistent -> final conclusion: those contracts align because fresh recoverable transitions require typed reasons, running/pr_ready clear reasons, malformed canonical and predecessor unions fail without mutation, and historical stopped null remains readable with direct tests.",
+    "Initial concern: additive guarded execute routes might regress legacy CLI behavior -> final conclusion: regression_guard passes because run-id-free status remains byte-compatible, repair is rejected only on recognized non-watch commands, unknown execute commands retain exit 1 fallback, and current-head focused/full evidence is green.",
+    "Initial concern: the Test Plan and all 17 clause anchors might fully demonstrate every declared authority path -> final conclusion: path_surface_coverage needs changes because repository repair lacks a post-attempt byte assertion, source_fallback repair/restart command paths are not exercised, and C-007/S-009 anchors do not demonstrate the statements they are attached to."
+  ],
+  "mandatory_lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "reason": "Legacy execute routing, help scope, unknown-command fallback, schema migration, authority validation, and human/JSON error surfaces have pre-fix-sensitive focused tests, and the current-head evidence records 1130/1130 integration plus 40/40 e2e and 40/40 unit success. No adjacent compatibility regression was found."
+    },
+    "path_surface_coverage": {
+      "status": "needs_changes",
+      "reason": "Repository/source_fallback no-mirror repair and the Test Plan's claimed source_fallback restart sequence are not demonstrated by their named tests; generated Final Spec test_refs C-007/S-009 therefore overstate coverage even though source inspection indicates fail-closed behavior."
+    }
+  },
+  "head_sha": "41a6cb076c3ba03096c8e27545c246211158a9c0"
+}

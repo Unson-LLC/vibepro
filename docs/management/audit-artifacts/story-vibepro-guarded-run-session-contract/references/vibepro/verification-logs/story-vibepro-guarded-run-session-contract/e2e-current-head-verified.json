@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "head_sha": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+  "command": "node --test test/e2e/story-vibepro-guarded-run-session-contract-main.test.js test/e2e/story-vibepro-guarded-run-session-contract-acceptance.spec.ts",
+  "tests": 3,
+  "pass": 3,
+  "fail": 0,
+  "nested_acceptance_tests": 47,
+  "junit": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head-junit.xml"
+}

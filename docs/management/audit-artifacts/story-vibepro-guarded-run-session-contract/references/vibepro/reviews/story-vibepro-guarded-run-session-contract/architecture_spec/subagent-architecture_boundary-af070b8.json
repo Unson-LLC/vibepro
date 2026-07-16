@@ -1,0 +1,77 @@
+{
+  "status": "pass",
+  "summary": "HEAD af070b819dbeb13f38176e45436b7f91bf819f29 satisfies the architecture_boundary role. The guarded Run Session remains a persistence-only, closed-dependency layer over existing Execution State, managed-worktree identity, and Gate readiness. The current-head changes close the two boundary-sensitive gaps: legacy symlink source roots are normalized to the resolved canonical Git control root before persistence/fingerprinting, and --repair-linked-copy is rejected on every non-watch execute surface before Story lookup, Git identity, reads, dispatch, or mutation. No separate ADR is required because the Story reason and Architecture explicitly record alternatives, compatibility, rollback, authority, and follow-up boundaries. This is a role-local pass only; current pr-prepare remains not ready because other review/evidence/adjudication gates are unresolved.",
+  "inspection_summary": "Performed a fresh read-only review from the full architecture_boundary request and mandatory lenses, without reusing the stale 326a58e judgment. Inspected the Story, Architecture, Test Plan, generated Spec, full merge-base diff, current-head delta, implementation and tests; checked the core responsibility contract and graph index; independently searched the review inputs for instruction-injection language; ran the guarded Run contract suite; checked Git-identity behavior through a real symlink; and compared current-head verification/pr-prepare artifacts. No new architecture-boundary defect or contradiction was found.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/architecture_spec/review-request-architecture_boundary.md",
+    "docs/management/stories/active/story-vibepro-guarded-run-session-contract.md",
+    "docs/architecture/story-vibepro-guarded-run-session-contract.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/specs/story-vibepro-guarded-run-session-contract.json",
+    "design-ssot.json",
+    "docs/contracts/vibepro-core-responsibilities.json",
+    "src/guarded-run-session.js",
+    "src/git-identity.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "git diff $(git merge-base HEAD main)..HEAD",
+    "git diff 326a58eba3a43232ef5f55f254fd8b5dbd4a7f0b..af070b819dbeb13f38176e45436b7f91bf819f29",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json"
+  ],
+  "inspection_evidence": [
+    {
+      "lens": "architecture_boundary",
+      "evidence": "docs/architecture/story-vibepro-guarded-run-session-contract.md:32-62 and src/guarded-run-session.js:32-77 keep authority resolution, Run persistence, migration, lifecycle and Gate observation in a dedicated module with a closed dependency/IO set. Agent/runtime dispatch, arbitrary shell/actions, waiver creation and merge are excluded; src/git-identity.js uses fixed git argv rather than a shell surface."
+    },
+    {
+      "lens": "architecture_boundary",
+      "evidence": "src/guarded-run-session.js:410-452 resolves the existing source control identity before constructing managed bindings, and src/guarded-run-session.js:940-946 persists source_repo from the resolved source root. Architecture lines 38-46 document the same canonical authority/control-root contract."
+    },
+    {
+      "lens": "path_surface_coverage",
+      "evidence": "src/cli.js:2096-2102 rejects --repair-linked-copy for non-watch execute subcommands before createGuardedRunSession or legacy/guarded dispatch. The Test Plan matrix at lines 12-21 covers explicit/implicit selection, human/JSON output, source/managed/repository/source-fallback authority and every execute subcommand; test/guarded-run-session.test.js:517-556 alternates human/JSON across run, status, resume, cancel, start, next, reconcile and merge and asserts no artifact side effect."
+    },
+    {
+      "lens": "path_surface_coverage",
+      "evidence": "test/guarded-run-session.test.js:123-148 exercises a legacy symlink source root through creation, canonical persistence, status/watch from both spellings, then resume/cancel. Test Plan lines 33-38 require this canonical path behavior across restart and authority modes. The aggregate execute help assertions at test lines 985-997 keep repair discoverable only on watch while preserving legacy commands."
+    },
+    {
+      "lens": "regression_guard",
+      "evidence": "Fresh command `node --test test/guarded-run-session.test.js` completed with 36 tests passed, 0 failed, 0 cancelled, 0 skipped. `git diff --check $(git merge-base HEAD main)..HEAD` and `cmp -s CLAUDE.md AGENTS.md` both exited 0."
+    },
+    {
+      "lens": "regression_guard",
+      "evidence": "Current-head recorded verification is strict-head bound to af070b819dbeb13f38176e45436b7f91bf819f29: targeted 36/36 pass and full suite 1126/1126 pass with 0 failed/cancelled/skipped/todo. The full suite artifact notes its local-HTTP-listener sandbox exception explicitly rather than hiding it."
+    },
+    {
+      "lens": "authority_contract",
+      "evidence": "docs/contracts/vibepro-core-responsibilities.json clauses VIBE-CORE-PR-001 and VIBE-CORE-WT-001 retain Gate DAG readiness as PR lifecycle authority and managed-worktree locality/branch/expected-head checks. The Run module only observes readGateReadiness for the positive pr_ready transition (src/guarded-run-session.js:311-320) and does not acquire merge or waiver authority."
+    },
+    {
+      "lens": "independent_negative_checks",
+      "evidence": "A fresh case-insensitive search over the Story, Architecture, Test Plan, implementation and tests found no instruction-injection/review-steering patterns. A temporary real filesystem symlink to the current worktree produced the same repository root and common Git directory through production resolveGitIdentity. The codebase graph index did not contain the new guarded-run-session symbols, so it was treated as insufficient/stale and direct current-worktree source was inspected instead."
+    },
+    {
+      "lens": "readiness_scope",
+      "evidence": ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json is bound to af070b819dbeb13f38176e45436b7f91bf819f29 but reports overall_status=needs_verification and ready_for_pr_create=false due unresolved gates outside this role, including stale/missing other reviews and adjudication. This pass therefore makes no PR-readiness claim."
+    }
+  ],
+  "judgment_delta": [
+    {
+      "change": "Canonical source-control-root closure",
+      "judgment": "The af070b8 change makes a legacy symlink spelling non-authoritative by resolving Git identity first and using that canonical root for managed_worktree.source_repo and fingerprints. Both symlink and canonical spellings remain allowed control aliases for the same authority; an unrelated worktree does not."
+    },
+    {
+      "change": "Repair option surface closure",
+      "judgment": "The af070b8 CLI guard converts a previously ambiguous shared-option surface into a watch-only recovery contract. Every known non-watch execute subcommand fails typed and pre-dispatch, while help exposes repair only on the watch usage line."
+    },
+    {
+      "change": "Review freshness",
+      "judgment": "Prior architecture results at 326a58e are stale and were not used as approval evidence. This judgment is based on the current request, current source/spec/tests, fresh targeted execution, and strict-head af070b8 verification artifacts."
+    }
+  ],
+  "findings": []
+}

@@ -1,0 +1,59 @@
+{
+  "status": "needs_changes",
+  "summary": "機能回帰のcurrent-head testは通っているが、17 Spec clausesからtest refs、verification、PR/Gate artifactまでの監査可能な結線が未完成である。特にtargeted evidenceのJSON/JUnit不整合、Spec clauseのtraceability欠落、required review_surface rowの未証明が残る。",
+  "inspection_summary": "現HEAD 2bb11b5でreview request、最終Spec 17 clauses、Test Plan、36件のGuarded Run tests、current-head verification evidence、raw verification artifacts、traceability、evidence plan、pr-prepare Gate DAG、過去findingの解消記録を独立に照合した。regression_guardではcurrent-head targeted 36/36とfull 1126/1126、legacy/unknown-command fixtureを確認した。path_surface_coverageではCLIのcompositional coverage境界は実装と一致する一方、Gate利用面のclause bindingとreview_surface evidenceが欠けるためpassにはしなかった。",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/test_plan/review-request-gate_coverage.md",
+    "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md",
+    ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json",
+    "test/guarded-run-session.test.js",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/verification-evidence.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted-junit.xml",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite.json",
+    ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/full-suite-junit.xml",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/traceability.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/evidence-plan.json",
+    ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-prepare.json",
+    ".vibepro/reviews/story-vibepro-guarded-run-session-contract/implementation/subagent-code-spec-dc9ddba.json",
+    "node --test test/guarded-run-session.test.js (fresh current-head run: 36/36 passed)",
+    "current recorded full suite: 1126/1126 passed at 2bb11b5"
+  ],
+  "judgment_delta": [
+    "regression_guard: current-head targeted 36/36とfull 1126/1126、認識済み非watch commandとunknown-command fallbackのpre-fix-sensitive fixtureを確認したため、実装回帰そのものはpass相当と判断した。",
+    "path_surface_coverage: 旧CLI行列の過剰保証はcompositional coverageと非保証範囲の明記で解消しているが、PR Gateのrequired review_surface rowはmissing_surface_evidenceのままであり、利用者が読むGate面までcoverageが到達していない。",
+    "Spec-to-test binding: 17 clausesのうち16 IDはtest名に直接現れるがINV-001は直接参照されず、最終Specにtest_refsがなく、traceabilityはSpec clauseを0件として10 ACも全件weakly_mapped・mapped_tests=[]であるため、機能上の推定coverageを監査可能なGate evidenceとして採用できない。",
+    "evidence freshness: verification-evidence.jsonのunit summaryはcurrent-head 36/36だが、参照先targeted-junit.xmlは34 testcaseで現HEAD追加のsymlink canonicalization fixtureを含まない。pr-prepareもartifact_consistency=stale_evidenceとして明示的にblockしており、silent suppressionではないが再記録が必要である。"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "targeted-verification-artifact-count-mismatch",
+      "detail": ".vibepro/verification-logs/.../targeted.jsonはHEAD 2bb11b5で36/36 passと記録しtargeted-junit.xmlをartifactとして参照するが、同XMLは34 testcaseしかなく、現HEADのsymlink canonical source fixture等を含まない。Test Plan記載のtargeted commandはguarded-run-session.test.jsとvibepro-cli.test.jsの2本だが、current unit recordは前者のみである。reporter付きtargeted commandを現HEADで再実行・再記録し、JSON count、JUnit testcase、verification-evidence、pr-prepareを同一HEADへ揃える必要がある。"
+    },
+    {
+      "severity": "medium",
+      "id": "spec-clause-test-gate-binding-missing",
+      "detail": "最終Spec 17 clausesにtest_refsがなく、Test Planにも17 clause→testの明示表がない。test名には16 clause IDがある一方INV-001は直接参照されない。PR traceabilityはscenario_clause_count=0、10 ACすべてweakly_mapped、mapped_tests=[]で、gate:evidence_adjudicationもAC-1..AC-10のcurrent-head verdict不足を報告する。各17 clauseを具体的test名/行または非該当理由へ結び、current verification artifactとGate traceabilityに反映する必要がある。"
+    },
+    {
+      "severity": "medium",
+      "id": "required-review-surface-evidence-missing",
+      "detail": "pr-prepareのrequired gate:path_surface_matrixはreview_surface 1行をmissing_surface_evidenceとして残しpartial_surfaceである。current verification observationsにはpath_surface:review_surfaceとsurface=review_surfaceのstructured evidenceも、auditableな非該当decisionもない。review/Gate artifact出力面を証明または明示的に非該当化し、pr prepareを再実行する必要がある。"
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "path-surface-cli-matrix-unverified",
+      "severity": "high",
+      "detail": "dc9ddbaで解消し現HEADでも維持。Test PlanはCartesianな全組合せ保証を撤回してcompositional coverageと非保証範囲を明記し、実fixture群と一致する。",
+      "evidence": "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md CLI UX and restart matrix; test/guarded-run-session.test.js 36 focused cases; current full suite 1126/1126"
+    },
+    {
+      "id": "implicit-selection-silent-invalid-suppression",
+      "severity": "medium",
+      "detail": "dc9ddbaで解消し現HEADでも維持。implicit selectionは全候補を検証し、棄却候補があればrun_selection_blockedでreason、artifact、明示選択案内をhuman/JSONへ残す。",
+      "evidence": "test/guarded-run-session.test.js:381-438; Test Plan Path and surface matrix and CLI UX sections"
+    }
+  ]
+}

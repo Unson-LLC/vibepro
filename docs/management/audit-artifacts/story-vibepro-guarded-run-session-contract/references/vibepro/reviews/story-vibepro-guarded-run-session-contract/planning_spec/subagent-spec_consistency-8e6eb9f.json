@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "summary": "現HEADではpre-authority common-directory lockの文書・Spec・実装・回帰テスト間の文言は同期している。",
+  "inspection_summary": "Story GRS-S-10、Architecture、Spec INV-004/S-008、Test Plan、実装、41/41 targetedと1131/1131 full-suite evidenceを照合した。",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-guarded-run-session-contract.md", "docs/architecture/story-vibepro-guarded-run-session-contract.md", ".vibepro/spec/story-vibepro-guarded-run-session-contract/spec.json", "docs/management/test-plans/story-vibepro-guarded-run-session-contract.md", "src/git-identity.js", "src/guarded-run-session.js", "test/guarded-run-session.test.js"],
+  "judgment_delta": ["Story wording lagは8e6eb9fで解消し、標準linked-worktree contractは同期した"],
+  "findings": []
+}

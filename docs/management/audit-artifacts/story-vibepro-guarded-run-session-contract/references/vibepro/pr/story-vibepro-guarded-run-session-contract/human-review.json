@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-run-session-contract",
+  "created_at": "2026-07-16T01:24:47.020Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-guarded-run-session-contract/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-guarded-run-session-contract/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-guarded-run-session-contract/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-guarded-run-session-contract/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-guarded-run-session-contract.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "17 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784148368778-8b8591e7",
+        "story_id": "story-vibepro-guarded-run-session-contract",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "accepted_followup",
+        "summary": "Single vertical slice reviewed through independent role decomposition",
+        "reason": "The 8-file change is one guarded Run contract slice spanning Story, architecture, spec, implementation, CLI wiring, and focused tests; splitting would sever contract traceability. Fifteen head-bound role reviews across product, architecture, spec, test, implementation, and gate ownership provide bounded reviewability, while unrelated cleanup remains outside this branch.",
+        "reviewer": "/root/grs_planning_product_current",
+        "artifact": ".vibepro/reviews/story-vibepro-guarded-run-session-contract/final-review-product-22b8ce2.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/e2e-current-head.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/affected-surface.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verification-logs/story-vibepro-guarded-run-session-contract/targeted.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "22b8ce2f8b55d1bea8d3548088f2523d3eee4894",
+          "current_branch": "codex/story-vibepro-guarded-run-session-contract",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-15T20:46:08.776Z"
+        },
+        "recorded_at": "2026-07-15T20:46:08.779Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-16T01:24:44.336Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-run-session-contract-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e0a38eb3c62aea492bdfc0c6227e3a39734dc7c2",
+      "branch": "codex/story-vibepro-guarded-run-session-contract",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
