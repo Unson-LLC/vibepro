@@ -22,6 +22,34 @@ export function resolveCleanSourceCommit(root) {
   }).trim();
 }
 
+export function assertCanonicalProductionCommit(root, commitHash) {
+  try {
+    execFileSync('git', ['fetch', '--quiet', 'origin', 'main'], {
+      cwd: root,
+      stdio: ['ignore', 'ignore', 'pipe']
+    });
+  } catch (error) {
+    const detail = error?.stderr?.toString().trim();
+    throw new Error(`Public manual deployment could not refresh origin/main${detail ? `: ${detail}` : '.'}`);
+  }
+
+  let canonicalCommit;
+  try {
+    canonicalCommit = execFileSync('git', ['rev-parse', '--verify', 'refs/remotes/origin/main^{commit}'], {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    }).trim();
+  } catch {
+    throw new Error('Public manual deployment requires a fetched origin/main commit.');
+  }
+
+  if (canonicalCommit !== commitHash) {
+    throw new Error(`Public manual deployment requires HEAD ${commitHash} to match origin/main ${canonicalCommit}.`);
+  }
+  return canonicalCommit;
+}
+
 export function wranglerPagesArguments(commitHash) {
   return [
     'wrangler',
@@ -58,11 +86,13 @@ export function assertBuiltSourceCommit(root, commitHash) {
 
 export function deployPublicManual(root = repositoryRoot) {
   const commitHash = resolveCleanSourceCommit(root);
+  assertCanonicalProductionCommit(root, commitHash);
   run('npm', ['run', 'docs:build'], root, deployBuildEnvironment(commitHash));
   const postBuildCommit = resolveCleanSourceCommit(root);
   if (postBuildCommit !== commitHash) {
     throw new Error('Git HEAD changed while building the public manual.');
   }
+  assertCanonicalProductionCommit(root, postBuildCommit);
   assertBuiltSourceCommit(root, commitHash);
   run('npx', wranglerPagesArguments(commitHash), root);
 }

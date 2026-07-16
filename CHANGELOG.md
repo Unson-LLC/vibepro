@@ -11,7 +11,8 @@ All notable changes to VibePro will be documented in this file.
   and fail documentation builds when it drifts.
 - Separate the published npm beta from current `main` and expose the documentation
   build's source commit.
-- Restrict the public manual build to curated guide/reference content and add
+- Restrict the public manual build to curated guide/reference content, require
+  production deploys to match freshly fetched `origin/main`, and add
   robots, sitemap, llms.txt, social metadata, and structured data.
 - Expand UI/UX, Journey, Design System, review lifecycle, decision, guard,
   execution, audit, and ROI documentation for current VibePro behavior.

@@ -5,11 +5,29 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  assertCanonicalProductionCommit,
   assertBuiltSourceCommit,
   deployBuildEnvironment,
   resolveCleanSourceCommit,
   wranglerPagesArguments
 } from '../scripts/deploy-public-manual.mjs';
+
+async function createRepositoryWithOrigin(t, prefix) {
+  const fixture = await mkdtemp(path.join(os.tmpdir(), prefix));
+  const remote = path.join(fixture, 'origin.git');
+  const repo = path.join(fixture, 'repo');
+  t.after(() => rm(fixture, { recursive: true, force: true }));
+  execFileSync('git', ['init', '--bare', '-q', remote]);
+  execFileSync('git', ['clone', '-q', remote, repo]);
+  execFileSync('git', ['config', 'user.email', 'vibepro-test@example.invalid'], { cwd: repo });
+  execFileSync('git', ['config', 'user.name', 'VibePro Test'], { cwd: repo });
+  await writeFile(path.join(repo, 'manual.md'), 'main\n');
+  execFileSync('git', ['add', 'manual.md'], { cwd: repo });
+  execFileSync('git', ['commit', '-qm', 'main fixture'], { cwd: repo });
+  execFileSync('git', ['branch', '-M', 'main'], { cwd: repo });
+  execFileSync('git', ['push', '-qu', 'origin', 'main'], { cwd: repo });
+  return repo;
+}
 
 test('public manual deployment rejects a dirty worktree before Wrangler', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-public-deploy-'));
@@ -75,5 +93,38 @@ test('public manual deployment fixes build provenance to the clean HEAD', async 
   assert.throws(
     () => assertBuiltSourceCommit(repo, commitHash),
     /source commit mismatch/
+  );
+});
+
+test('public manual deployment accepts only the fetched origin/main commit', async (t) => {
+  const repo = await createRepositoryWithOrigin(t, 'vibepro-public-deploy-main-');
+  const mainCommit = resolveCleanSourceCommit(repo);
+  assert.equal(assertCanonicalProductionCommit(repo, mainCommit), mainCommit);
+
+  execFileSync('git', ['switch', '-qc', 'feature'], { cwd: repo });
+  await writeFile(path.join(repo, 'manual.md'), 'feature\n');
+  execFileSync('git', ['commit', '-qam', 'feature fixture'], { cwd: repo });
+  const featureCommit = resolveCleanSourceCommit(repo);
+  assert.throws(
+    () => assertCanonicalProductionCommit(repo, featureCommit),
+    /to match origin\/main/
+  );
+});
+
+test('public manual deployment rejects stale main after refreshing origin/main', async (t) => {
+  const repo = await createRepositoryWithOrigin(t, 'vibepro-public-deploy-stale-');
+  const staleCommit = resolveCleanSourceCommit(repo);
+  const publisher = path.join(path.dirname(repo), 'publisher');
+  execFileSync('git', ['clone', '-q', path.join(path.dirname(repo), 'origin.git'), publisher]);
+  execFileSync('git', ['config', 'user.email', 'vibepro-test@example.invalid'], { cwd: publisher });
+  execFileSync('git', ['config', 'user.name', 'VibePro Test'], { cwd: publisher });
+  execFileSync('git', ['switch', '-q', 'main'], { cwd: publisher });
+  await writeFile(path.join(publisher, 'manual.md'), 'new main\n');
+  execFileSync('git', ['commit', '-qam', 'advance main'], { cwd: publisher });
+  execFileSync('git', ['push', '-q', 'origin', 'main'], { cwd: publisher });
+
+  assert.throws(
+    () => assertCanonicalProductionCommit(repo, staleCommit),
+    /to match origin\/main/
   );
 });

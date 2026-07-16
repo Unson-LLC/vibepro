@@ -58,9 +58,10 @@ rather than claiming a commit.
 ## Release Operations
 
 - Release note: `CHANGELOG.md` records this public-manual contract refresh.
-- Rollout plan: deploy only from a clean merged commit with
-  `npm run docs:deploy`; the script builds, validates, and passes the exact
-  commit hash to Cloudflare Pages.
+- Rollout plan: deploy only when clean `HEAD` equals a freshly fetched
+  `origin/main` with `npm run docs:deploy`; the script checks that boundary
+  before and after the build, validates provenance, and passes the exact commit
+  hash to Cloudflare Pages.
 - Observability evidence: verify the English and Japanese roots, a
   representative guide route, required discovery files, social metadata, and
   `vibepro-source-commit` after deployment.
