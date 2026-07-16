@@ -49,11 +49,13 @@ export default {
     siteTitle: 'VibePro Manual',
     nav: [
       { text: 'Guide', link: '/guide/what-is-vibepro' },
+      { text: "What's New", link: '/releases/' },
       { text: 'Reference', link: '/reference/cli' },
       { text: 'GitHub', link: 'https://github.com/Unson-LLC/vibepro' }
     ],
     sidebar: {
       '/guide/': guideSidebar('en'),
+      '/releases/': releaseSidebar('en'),
       '/reference/': referenceSidebar('en')
     },
     socialLinks: [{ icon: 'github', link: 'https://github.com/Unson-LLC/vibepro' }],
@@ -105,11 +107,13 @@ export default {
         siteTitle: 'VibeProマニュアル',
         nav: [
           { text: 'ガイド', link: '/ja/guide/what-is-vibepro' },
+          { text: '新着情報', link: '/ja/releases/' },
           { text: 'リファレンス', link: '/ja/reference/cli' },
           { text: 'GitHub', link: 'https://github.com/Unson-LLC/vibepro' }
         ],
         sidebar: {
           '/ja/guide/': guideSidebar('ja'),
+          '/ja/releases/': releaseSidebar('ja'),
           '/ja/reference/': referenceSidebar('ja')
         },
         editLink: {
@@ -218,6 +222,25 @@ function guideSidebar(locale) {
       items: [
         { text: labels.safetyModel, link: `${prefix}/guide/safety-model` },
         { text: labels.releaseAudit, link: `${prefix}/guide/release-and-audit` }
+      ]
+    }
+  ];
+}
+
+function releaseSidebar(locale) {
+  const prefix = locale === 'ja' ? '/ja' : '';
+  const labels = locale === 'ja'
+    ? ['2026年7月', '2026年6月', '2026年5月', '2026年1月']
+    : ['July 2026', 'June 2026', 'May 2026', 'January 2026'];
+  return [
+    {
+      text: locale === 'ja' ? 'リリースノート' : 'Release Notes',
+      items: [
+        { text: locale === 'ja' ? '一覧' : 'Overview', link: `${prefix}/releases/` },
+        { text: labels[0], link: `${prefix}/releases/2026-07` },
+        { text: labels[1], link: `${prefix}/releases/2026-06` },
+        { text: labels[2], link: `${prefix}/releases/2026-05` },
+        { text: labels[3], link: `${prefix}/releases/2026-01` }
       ]
     }
   ];

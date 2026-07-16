@@ -19,4 +19,6 @@ The authoritative package version is `package.json`; the installed binary report
 
 Install the published beta explicitly with `npm install -g vibepro@beta`. When the installed help differs from this manual, the running binary's contract wins. See [Release and Audit](/guide/release-and-audit) and the repository `CHANGELOG.md` for the boundary.
 
+See [Release Notes](/releases/) for a reader-focused history that separates published versions from PR-derived development milestones.
+
 `0.1.0-alpha.0` introduced the OSS-ready package shape, phase checkpoints, Story/Spec review flow, and public discovery documentation.
