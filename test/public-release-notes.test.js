@@ -4,10 +4,16 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
+const pullRequestNumbers = (content) => [...content.matchAll(/https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/(\d+)/g)]
+  .map((match) => Number(match[1]));
 
 test('VRNH-AC-001/002/004 release index separates published versions from the PR snapshot', async () => {
-  for (const path of ['docs/ja/releases/index.md', 'docs/releases/index.md']) {
+  for (const [path, snapshotDate] of [
+    ['docs/ja/releases/index.md', /2026年7月16日/],
+    ['docs/releases/index.md', /July 16, 2026/]
+  ]) {
     const content = await read(path);
+    assert.match(content, snapshotDate);
     assert.match(content, /281/);
     assert.match(content, /273/);
     assert.match(content, /0\.1\.0-beta\.0/);
@@ -22,8 +28,10 @@ test('VRNH-AC-003/007 monthly notes preserve language parity and PR evidence', a
       read(`docs/ja/releases/2026-${month}.md`),
       read(`docs/releases/2026-${month}.md`)
     ]);
-    assert.match(ja, /https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/\d+/);
-    assert.match(en, /https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/\d+/);
+    const jaPullRequests = pullRequestNumbers(ja);
+    const enPullRequests = pullRequestNumbers(en);
+    assert.ok(jaPullRequests.length > 0, `Japanese ${month} note must cite a pull request`);
+    assert.deepEqual(enPullRequests, jaPullRequests, `${month} pull request citations must match across languages`);
   }
 });
 
@@ -36,7 +44,18 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   ]);
   assert.match(config, /\/releases\//);
   assert.match(config, /\/ja\/releases\//);
-  for (const route of ['releases/index.html', 'ja/releases/index.html', 'releases/2026-07.html', 'ja/releases/2026-07.html']) {
+  for (const route of [
+    'releases/index.html',
+    'releases/2026-01.html',
+    'releases/2026-05.html',
+    'releases/2026-06.html',
+    'releases/2026-07.html',
+    'ja/releases/index.html',
+    'ja/releases/2026-01.html',
+    'ja/releases/2026-05.html',
+    'ja/releases/2026-06.html',
+    'ja/releases/2026-07.html'
+  ]) {
     assert.match(contract, new RegExp(route.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
   assert.match(jaVersion, /\/ja\/releases\//);
