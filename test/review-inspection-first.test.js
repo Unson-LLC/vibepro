@@ -7,6 +7,8 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import {
+  AGENT_SKILL_DISCIPLINE_BLOCK,
+  AGENT_SKILL_DISCIPLINE_BLOCK_JA,
   INVESTIGATION_GUIDELINES_BLOCK,
   prepareAgentReview,
   recordAgentReview,
@@ -65,6 +67,15 @@ test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-
   assert.match(INVESTIGATION_GUIDELINES_BLOCK, /read-only/i);
   assert.match(INVESTIGATION_GUIDELINES_BLOCK, /inspection/i);
   assert.match(INVESTIGATION_GUIDELINES_BLOCK, /--inspection-summary/);
+});
+
+test('generated review discipline follows effective freshness policy instead of requiring HEAD globally', () => {
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK, /inspected content surface by default/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK, /current git head only for strict HEAD roles/);
+  assert.doesNotMatch(AGENT_SKILL_DISCIPLINE_BLOCK, /not bound to the current git head or artifact path/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /既定はinspectionしたcontent surface/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /strict HEAD roleだけはcurrent git head/);
+  assert.doesNotMatch(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /current git headまたはartifact pathに紐づいていない/);
 });
 
 test('Japanese agent review guide keeps executable pass arguments and freshness semantics current', async () => {
