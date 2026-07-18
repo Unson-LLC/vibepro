@@ -379,6 +379,10 @@ npx vibepro review record /path/to/repo \
   --role regression_risk \
   --status pass \
   --summary "No regression risk found in the changed flow." \
+  --inspection-summary "Inspected the changed flow and its regression tests." \
+  --inspection-input src/changed-flow.js \
+  --inspection-input test/changed-flow.test.js \
+  --judgment-delta "The suspected fallback regression is covered by the negative-path test." \
   --agent-system codex \
   --execution-mode parallel_subagent \
   --agent-id <spawned-subagent-id> \
@@ -402,6 +406,10 @@ npx vibepro review record /path/to/repo \
   --role regression_risk \
   --status pass \
   --summary "Manual review passed." \
+  --inspection-summary "Inspected the changed flow and its regression tests." \
+  --inspection-input src/changed-flow.js \
+  --inspection-input test/changed-flow.test.js \
+  --judgment-delta "The review found no unresolved regression risk in the inspected surface." \
   --agent-system human \
   --execution-mode manual_review \
   --recorded-by <reviewer>

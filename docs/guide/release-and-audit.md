@@ -20,7 +20,13 @@ Do not assume that a command documented from current `main` exists in an older i
 
 ## PR, CI, and Merge Freshness
 
-Evidence and reviews are head-bound. Finalize the tree, commit, record verification and independent review, then run `pr prepare` and `pr create`. After CI completes, import it, refresh preparation and the existing PR, then merge through `execute merge`.
+Verification evidence remains head-bound. Reviews use content-surface binding by
+default, so an unrelated commit does not invalidate a review when every inspected
+file is unchanged. High-risk roles such as `gate_evidence` and `release_risk`
+remain strictly head-bound, and callers can request strict binding explicitly.
+Finalize the intended review surface, commit, record verification and independent
+review, then run `pr prepare` and `pr create`. After CI completes, import it,
+refresh preparation and the existing PR, then merge through `execute merge`.
 
 ## Canonical Audit and ROI
 
