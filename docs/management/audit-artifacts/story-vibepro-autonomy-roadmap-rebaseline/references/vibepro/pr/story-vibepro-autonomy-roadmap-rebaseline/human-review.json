@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "created_at": "2026-07-18T03:18:13.712Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-autonomy-roadmap-rebaseline.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md)"
+    },
+    "decision_records": {
+      "total": 14,
+      "open": 0,
+      "by_type": {
+        "needs_review": 8,
+        "noise": 6
+      },
+      "by_status": {
+        "accepted": 14
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+          "expected_root": null,
+          "expected_head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+          "current_head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784344661299-6cd20fc6",
+        "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:senior_gap_judgment",
+        "source_status": "needs_review",
+        "summary": "Current-head senior roadmap judgment accepted",
+        "reason": "Independent adjudication demonstrated all six acceptance clauses and judged all 11 engineering judgment items sound at current HEAD.",
+        "reviewer": "/root/roadmap_split_scope",
+        "artifact": ".vibepro/adjudication/story-vibepro-autonomy-roadmap-rebaseline/judgment-adjudication.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/qa/roadmap-rebaseline-current-head.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_22_.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/verification-evidence.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+            "expected_root": null,
+            "expected_head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+            "current_head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+          "current_branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-18T03:17:41.298Z"
+        },
+        "recorded_at": "2026-07-18T03:17:41.299Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-18T03:18:12.255Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "a8629f5fbe6a3ca9a6cd0d96d2d74fde170c0b48",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

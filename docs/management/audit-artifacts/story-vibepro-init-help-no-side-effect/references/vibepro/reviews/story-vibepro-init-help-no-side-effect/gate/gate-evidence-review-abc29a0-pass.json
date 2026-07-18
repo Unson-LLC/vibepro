@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "summary": "The command-provenance mismatch is resolved. All active verification records exactly match their supporting artifacts, are bound to current HEAD abc29a0, and satisfy regression and path-surface coverage.",
+  "inspection_summary": "Re-inspected current verification evidence and regenerated PR preparation, compared every recorded verification command with its artifact command, confirmed strict current-HEAD binding and a clean worktree.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-init-help-no-side-effect/verification-evidence.json",
+  "inspection_inputs": [
+    ".vibepro/pr/story-vibepro-init-help-no-side-effect/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-init-help-no-side-effect/pr-prepare.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/targeted-current-head.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/runtime-cost-current-head.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/responsibility-authority-current-head.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/typecheck.json"
+  ],
+  "judgment_delta": [
+    "Previous command mismatch is resolved because all four record commands now match their artifacts exactly.",
+    "All records retain strict-head binding to abc29a0 with dirty=false.",
+    "The prior review blocker is lifecycle state only and is replaced by this fresh pass."
+  ],
+  "findings": []
+}

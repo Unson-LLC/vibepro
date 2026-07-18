@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Docs-only rebaseline has explicit compatibility and selective rollback with no runtime release risk.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed no runtime files changed, all surfaces are verified, and rollback retains child Stories.",
+    "evidence": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/pr-prepare.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md",
+      "docs/architecture/vibepro-autonomy-roadmap-rebaseline.md",
+      ".vibepro/qa/roadmap-rebaseline-current-head.json"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes for ambiguous rollback and stale readiness -> pass after selective rollback correction and current pr prepare refresh"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+    "expected_root": null,
+    "expected_head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+    "current_head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+      "expected_root": null,
+      "expected_head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+      "current_head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-18T01:29:35.303Z",
+  "git_context": {
+    "head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+    "current_branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T01:29:35.302Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "adf59516aa3fa6bcce46705321c98d3a08dc399e",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "b7267030b64844168684a393ab005029fcfd0e5c2d03e6f815983c4b1cc35371",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/release_risk_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

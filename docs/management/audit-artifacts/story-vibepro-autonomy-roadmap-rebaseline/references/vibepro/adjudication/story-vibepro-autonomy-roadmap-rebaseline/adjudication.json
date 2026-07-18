@@ -1,0 +1,80 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "updated_at": "2026-07-18T03:13:08.478Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Docs-only delta preserves runtime, Gate waiver, and merge authority; E-1 observes runtime_authority_unchanged=true.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:08.478Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Hardening is residual-gap-only and does not reimplement existing budget, cost, provenance, or freshness ownership.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:08.273Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "All eight unfinished Stories have sequential dependencies and entry/exit gates; E-1 observes sequential_gates=true.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:08.066Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "PR 338 and 321 blocking boundaries and PR 331 non-blocking input are explicit; E-1 observes open_pr_boundaries=true.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:07.858Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Architecture and child Stories separate all five ownership boundaries; E-1 observes ownership_boundaries=true.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:07.597Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Strict-head E-1 verifies unique 10-Story order with completed=2 and remaining=8.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:07.284Z"
+    }
+  ]
+}

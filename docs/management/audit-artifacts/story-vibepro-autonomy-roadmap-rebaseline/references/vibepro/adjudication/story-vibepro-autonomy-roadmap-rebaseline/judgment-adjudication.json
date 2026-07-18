@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "updated_at": "2026-07-18T03:13:10.804Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:10.804Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:10.603Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:10.393Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:10.095Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:09.905Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:09.697Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:09.503Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:09.287Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:09.091Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:08.885Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_split_scope",
+        "session_ref": null
+      },
+      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+      "recorded_at": "2026-07-18T03:13:08.692Z"
+    }
+  ]
+}

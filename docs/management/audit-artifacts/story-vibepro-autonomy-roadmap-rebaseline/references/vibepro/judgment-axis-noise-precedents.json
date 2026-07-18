@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:docs_only|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+      "decision_id": "decision-1784338694871-a8b69407",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Independent adjudication found only Markdown docs changed; no [REDACTED:c4b4a0858c67] implementation changed, so compat_or_output_test is non-applicable.",
+      "artifact": ".vibepro/adjudication/story-vibepro-autonomy-roadmap-rebaseline/judgment-adjudication.json",
+      "activation_candidates": [
+        "pr_route:docs_only",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T01:38:22.302Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+      "decision_id": "decision-1784338694871-a8b69407",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Independent adjudication found only Markdown docs changed; no [REDACTED:c4b4a0858c67] implementation changed, so compat_or_output_test is non-applicable.",
+      "artifact": ".vibepro/adjudication/story-vibepro-autonomy-roadmap-rebaseline/judgment-adjudication.json",
+      "activation_candidates": [
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T01:43:49.754Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+      "decision_id": "decision-1784344660705-1b1fefa2",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Current-head pr_split_scope review inspected the 12-file blast radius and found a single coherent parent Architecture Spec child-Story and Design SSOT lineage change.",
+      "artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-result-pr_split_scope.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T03:17:43.691Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "agent_id": "/root/gate_evidence_review",
+  "head": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+  "status": "needs_changes",
+  "summary": "Implementation and focused tests are sound, but required verification and PR gate artifacts remain bound to the pre-rebase HEAD.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-stale-head-binding",
+      "detail": "Verification artifacts are strict-bound to 5c00238 while the reviewed HEAD is ef921d0; rerun and rerecord at current HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-artifact-current-state-contradiction",
+      "detail": "PR and gate summaries still describe the pre-rebase state and must be regenerated after current-head verification."
+    }
+  ],
+  "inspection_inputs": [
+    "src/cli.js",
+    "test/vibepro-cli.test.js",
+    "focused init tests",
+    "npm run typecheck",
+    "verification-evidence.json",
+    "pr-prepare.json",
+    "bounded gate summaries"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "head": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+  "command": "node --test --test-name-pattern=\"init help aliases|init creates a repo-local\" test/vibepro-cli.test.js",
+  "status": "pass",
+  "tests": 2,
+  "passed": 2,
+  "failed": 0,
+  "duration_ms": 550.034417,
+  "notes": "Current-HEAD focused verification covers canonical help equality, both help aliases, no filesystem side effects, and normal init behavior. The complete 391-test suite passed on the code-identical predecessor before Design SSOT registry-only metadata was added."
+}

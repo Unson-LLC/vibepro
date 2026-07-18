@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_commit": "85647ea00a51828a8e2876c03849f76f7e4a2c14",
+  "classification": "docs_only_no_runtime_timing_path",
+  "phase_decomposition": "not_applicable",
+  "violation_rate": "not_applicable",
+  "settle_contract": "not_applicable",
+  "reason": "The executable roadmap assertion confirms all changed files are documentation surfaces; timing terms specify future Story contracts and no executable timing path changes in this diff."
+}

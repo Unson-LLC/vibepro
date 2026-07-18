@@ -557,6 +557,21 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
+test('init help aliases print help without creating a flag-named workspace', async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), 'vibepro-init-help-'));
+  const cli = path.resolve('bin/vibepro.js');
+  const { stdout: canonicalHelp } = await execFileAsync(process.execPath, [cli, '--help']);
+  const initialEntries = await readdir(cwd);
+
+  for (const flag of ['--help', '-h']) {
+    const { stdout } = await execFileAsync(process.execPath, [cli, 'init', flag], { cwd });
+
+    assert.equal(stdout, canonicalHelp);
+    assert.deepEqual(await readdir(cwd), initialEntries);
+    await assert.rejects(stat(path.join(cwd, flag)), { code: 'ENOENT' });
+  }
+});
+
 test('pr prepare reports preferred managed worktree gate without blocking', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
