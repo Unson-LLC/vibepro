@@ -95,6 +95,7 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
   assert.match(workflow, /trap release_lock EXIT/);
+  assert.match(workflow, /timeout-minutes: 90/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
   assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm run docs:deploy/);

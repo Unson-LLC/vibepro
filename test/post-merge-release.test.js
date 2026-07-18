@@ -149,6 +149,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /gh release edit/);
   assert.match(workflow, /npm-release-lock\.mjs acquire/);
   assert.match(workflow, /trap release_lock EXIT/);
+  assert.match(workflow, /timeout-minutes: 90/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
@@ -159,6 +160,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.match(manualWorkflow, /npm-release-lock\.mjs acquire/);
+  assert.match(manualWorkflow, /timeout-minutes: 90/);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
 });
 
