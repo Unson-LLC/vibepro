@@ -12767,7 +12767,7 @@ function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, 
   const prepareCommand = `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`;
   const startCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`;
-  const recordCommand = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-closed`;
+  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role);
   if (recoveryKind === 'timed_out') {
     return [
       lifecycleRecovery?.close_command,

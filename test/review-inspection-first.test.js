@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -137,6 +137,9 @@ test('recordAgentReview without inspection flags rejects gate_evidence pass (INV
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
+  const before = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const beforeRole = before.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(beforeRole.lifecycle.effective_status, 'running');
   await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
     stage: 'gate',
@@ -148,6 +151,13 @@ test('recordAgentReview without inspection flags rejects gate_evidence pass (INV
     agentId: 'task-test-1',
     agentClosed: true
   }), /requires --inspection-summary/);
+  const after = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const afterRole = after.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(afterRole.effective_status, 'missing');
+  assert.equal(afterRole.lifecycle.effective_status, 'running');
+  assert.equal(after.stages[0].lifecycle.closed_count, 0);
+  const reviewDirFiles = await readdir(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate'));
+  assert.equal(reviewDirFiles.some((file) => file.startsWith('review-result-gate_evidence')), false);
 });
 
 test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -132,6 +132,80 @@ test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and 
   assert.deepEqual(staleDetail.content_binding.changed_files, ['src/content-binding-target.js']);
 });
 
+test('CEF-S-2/5 deleted bound files stale evidence with an operator-visible missing-file reason', async () => {
+  const repo = await makeGitRepoWithStory();
+  const recordResult = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/content-binding.test.js',
+    '--summary',
+    'content binding unit coverage passed',
+    '--target',
+    'src/content-binding-target.js'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  await rm(path.join(repo, 'src', 'content-binding-target.js'));
+  await git(repo, ['add', '-u', 'src/content-binding-target.js']);
+  await git(repo, ['commit', '-m', 'refactor: remove bound evidence surface']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const artifactGate = findGate(result, 'gate:artifact_consistency');
+  const staleVerification = artifactGate.inconsistent_artifacts.find((artifact) => artifact.artifact_type === 'verification_command');
+  assert.equal(staleVerification.status, 'stale');
+  assert.match(staleVerification.reason, /file\(s\) are missing: src\/content-binding-target\.js/);
+  assert.deepEqual(staleVerification.content_binding.missing_files, ['src/content-binding-target.js']);
+  assert.deepEqual(staleVerification.content_binding.changed_files, ['src/content-binding-target.js']);
+
+  const freshnessGate = findGate(result, 'gate:pr_freshness');
+  const freshnessBinding = freshnessGate.content_binding_details.bindings.find((binding) => binding.artifact_type === 'verification_command');
+  assert.equal(freshnessBinding.status, 'stale');
+  assert.deepEqual(freshnessBinding.missing_files, ['src/content-binding-target.js']);
+  assert.match(freshnessBinding.reason, /file\(s\) are missing/);
+});
+
+test('agent review minimal recovery emits an executable inspection-aware pass command', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 2;\n');
+  await git(repo, ['add', 'src/content-binding-target.js']);
+  await git(repo, ['commit', '-m', 'feat: change runtime contract']);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const reviewGate = findGate(prepared, 'gate:agent_review');
+  const recovery = reviewGate.minimal_recovery_plan.current_stage_work[0];
+  const recordCommand = recovery.next_commands.find((command) => command.startsWith('vibepro review record'));
+  assert.ok(recordCommand);
+  assert.match(recordCommand, /--inspection-summary "<inspection-summary>"/);
+  assert.match(recordCommand, /--inspection-evidence <inspection-evidence>/);
+  assert.match(recordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+
+  const executable = recordCommand
+    .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
+    .replace('<summary>', 'recovery review passed')
+    .replace('<inspection-summary>', 'inspected the runtime contract source')
+    .replace('<inspection-evidence>', 'src/content-binding-target.js')
+    .replace('<inspection-input>', 'src/content-binding-target.js')
+    .replace('<initial judgment -> final judgment because evidence>', 'initial risk -> accepted after inspecting the runtime contract source')
+    .replace('<agent-id>', 'agent-minimal-recovery')
+    .replace('<agent-thread-id>', 'thread-minimal-recovery');
+  await execFileAsync('/bin/sh', ['-c', executable], { cwd: repo, encoding: 'utf8' });
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--json']);
+  const recoveredRole = status.result.stages[0].roles.find((role) => role.role === recovery.role);
+  assert.equal(recoveredRole.effective_status, 'pass');
+});
+
 test('CEF-S-3 review evidence uses inspected input content binding across docs-only commits', async () => {
   const repo = await makeGitRepoWithStory();
   await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation']);
@@ -185,46 +259,55 @@ test('CEF-S-3 review evidence uses inspected input content binding across docs-o
   assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
 });
 
-test('review freshness policy keeps high-risk gate roles strict by default while preserving inspected files', async () => {
-  const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', 'gate_evidence']);
-  const recordResult = await runCli([
-    'review',
-    'record',
-    repo,
-    '--id',
-    'story-content-binding',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--status',
-    'pass',
-    '--summary',
-    'gate evidence reviewed',
-    '--inspection-summary',
-    'read the implementation surface and gate inputs',
-    '--inspection-input',
-    'src/content-binding-target.js',
-    '--judgment-delta',
-    'generic pass -> accepted after inspecting the implementation surface',
-    '--agent-system',
-    'codex',
-    '--execution-mode',
-    'parallel_subagent',
-    '--agent-id',
-    'codex-gate-freshness-review',
-    '--agent-closed'
-  ]);
-  assert.equal(recordResult.exitCode, 0);
-  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
-  assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
-  assert.match(recordResult.result.review.freshness_policy.reason, /gate evidence reviews/);
-  assert.equal(recordResult.result.review.content_binding.mode, 'strict_head');
-  assert.deepEqual(
-    recordResult.result.review.content_binding.surface_files.map((file) => file.path),
-    ['src/content-binding-target.js']
-  );
+test('review freshness policy keeps every built-in high-risk gate role strict, preserves inspected files, and invalidates on HEAD movement', async () => {
+  for (const role of ['gate_evidence', 'release_risk']) {
+    const repo = await makeGitRepoWithStory();
+    await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', role]);
+    const recordResult = await runCli([
+      'review',
+      'record',
+      repo,
+      '--id',
+      'story-content-binding',
+      '--stage',
+      'gate',
+      '--role',
+      role,
+      '--status',
+      'pass',
+      '--summary',
+      `${role} reviewed`,
+      '--inspection-summary',
+      'read the implementation surface and gate inputs',
+      '--inspection-input',
+      'src/content-binding-target.js',
+      '--judgment-delta',
+      'generic pass -> accepted after inspecting the implementation surface',
+      '--agent-system',
+      'codex',
+      '--execution-mode',
+      'parallel_subagent',
+      '--agent-id',
+      `codex-${role}-freshness-review`,
+      '--agent-closed'
+    ]);
+    assert.equal(recordResult.exitCode, 0);
+    assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
+    assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
+    assert.equal(recordResult.result.review.content_binding.mode, 'strict_head');
+    assert.deepEqual(
+      recordResult.result.review.content_binding.surface_files.map((file) => file.path),
+      ['src/content-binding-target.js']
+    );
+
+    await writeFile(path.join(repo, 'docs', 'notes.md'), `# Notes\n\n${role} must stale.\n`);
+    await git(repo, ['add', 'docs/notes.md']);
+    await git(repo, ['commit', '-m', `docs: advance head after ${role}`]);
+    const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+    const staleRole = status.result.stages[0].roles.find((item) => item.role === role);
+    assert.equal(staleRole.binding_status, 'stale');
+    assert.match(staleRole.stale_reason, /recorded for .*current head/);
+  }
 });
 
 test('role policy can explicitly narrow a built-in strict exception to content surface', async () => {
@@ -272,6 +355,19 @@ test('role policy can explicitly narrow a built-in strict exception to content s
   assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
   assert.equal(recordResult.result.review.freshness_policy.source, 'role_policy');
   assert.equal(recordResult.result.review.content_binding.mode, 'content_surface');
+
+  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nContent-scoped review remains current.\n');
+  await git(repo, ['add', 'docs/notes.md']);
+  await git(repo, ['commit', '-m', 'docs: advance outside the explicit review surface']);
+  const docsStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+  const currentRole = docsStatus.result.stages[0].roles.find((item) => item.role === 'gate_evidence');
+  assert.equal(currentRole.binding_status, 'current');
+
+  await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 3;\n');
+  const sourceStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+  const staleRole = sourceStatus.result.stages[0].roles.find((item) => item.role === 'gate_evidence');
+  assert.equal(staleRole.binding_status, 'stale');
+  assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
 });
 
 test('global content-surface default cannot weaken a built-in strict role', async () => {

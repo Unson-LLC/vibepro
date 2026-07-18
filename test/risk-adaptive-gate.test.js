@@ -898,6 +898,13 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.current_stage_work.map((item) => `${item.stage}:${item.role}:${item.recovery_kind}`), [
     'architecture_spec:regression_risk:missing'
   ]);
+  const recoveryRecordCommand = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands
+    .find((command) => command.startsWith('vibepro review record'));
+  assert.ok(recoveryRecordCommand);
+  assert.match(recoveryRecordCommand, /--inspection-summary "<inspection-summary>"/);
+  assert.match(recoveryRecordCommand, /--inspection-evidence <inspection-evidence>/);
+  assert.match(recoveryRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
     'test_plan',
     'implementation',

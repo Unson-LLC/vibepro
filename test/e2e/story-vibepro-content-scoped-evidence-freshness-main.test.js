@@ -24,12 +24,14 @@ test('story-vibepro-content-scoped-evidence-freshness executes AC-1 through AC-9
 
   assert.doesNotMatch(stderr, /not ok|Warning:/);
   assert.match(stdout, /CEF-S-1\/2\/5 verification evidence stays current/);
+  assert.match(stdout, /deleted bound files stale evidence/);
+  assert.match(stdout, /minimal recovery emits an executable inspection-aware pass command/);
   assert.match(stdout, /CEF-S-3 review evidence uses inspected input content binding/);
   assert.match(stdout, /CEF-S-4 strict HEAD binding still invalidates/);
-  assert.match(stdout, /high-risk gate roles strict by default/);
+  assert.match(stdout, /every built-in high-risk gate role strict/);
   assert.match(stdout, /global strict HEAD default is rejected/);
   assert.match(stdout, /without inspection flags rejects gate_evidence pass/);
   assert.match(stdout, /rejects generated workspace artifacts as the only inspection input/);
-  assert.match(stdout, /preserving inspected files/);
+  assert.match(stdout, /preserves inspected files/);
   assert.match(stdout, /fail 0/);
 });
