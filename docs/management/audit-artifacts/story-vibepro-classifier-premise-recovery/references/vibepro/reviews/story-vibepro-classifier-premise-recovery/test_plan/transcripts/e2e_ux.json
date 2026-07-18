@@ -1,0 +1,26 @@
+{
+  "status": "block",
+  "summary": "AC1-AC10の実挙動化は解消済みだが、forged v2 legacy_originでGate passを再現",
+  "inspection_summary": "Story E2E 12/12とunit 21/21を実行し、resolver・Gate・legacy migrationを確認",
+  "inspection_inputs": [
+    "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+    "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js",
+    "test/judgment-adjudication.test.js",
+    "src/adjudication.js"
+  ],
+  "commands": [
+    "node --test test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js: 12/12 pass",
+    "node --test test/judgment-adjudication.test.js: 21/21 pass",
+    "read-only forged v2 legacy_origin probe: resolver valid and gate passed"
+  ],
+  "resolved_findings": [
+    {"id": "e2e-ac-coverage-marker-without-behavior", "detail": "AC1-AC10が実CLI・Gate・migration・READMEを消費するassertionへ置換済み"}
+  ],
+  "findings": [
+    {"severity": "high", "id": "v2-legacy-origin-provenance-bypass", "detail": "v2 events内のlegacy_origin自己申告でprovenanceのないjudged_soundがcritical Gateをpassする"}
+  ],
+  "judgment_delta": [
+    "marker-only E2E懸念は解消",
+    "v2 eventsのlegacy自己申告経路が未検証のためblock"
+  ]
+}

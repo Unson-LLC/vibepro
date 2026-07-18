@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "needs_changes",
+  "summary": "CLI recovery journey itself passes, but the canonical E2E gate does not recognize the Story test as executable AC coverage, so the user-facing path is not yet release-evidenced.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "e2e-story-coverage-not-consumed",
+      "detail": "The focused real-CLI test passes and would fail pre-fix, but canonical pr prepare --summary-json reports gate:e2e as needs_evidence: AC 2-10 are not recognized because coverage discovery expects test/e2e/story-vibepro-classifier-premise-recovery-*.spec.ts (or an accepted explicit executable marker), while the added test is test/e2e/story-vibepro-classifier-premise-recovery-main.test.js. Register the journey in a discovered E2E surface or add recognized executable coverage markers, then refresh HEAD-bound E2E evidence so e2e-status and the Gate/report agree."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed HEAD 8e8ecb2, inspected the CLI correction route, shared resolver, Gate/PR summary consumers, README/CLI-reference surfaces, current HEAD-bound verification artifacts, unit regression cases, and the real-CLI E2E; reran the focused CPR E2E successfully, then checked the canonical pr-prepare summary.",
+    "evidence": ".vibepro/qa/story-vibepro-classifier-premise-recovery/e2e-status.json; .vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json",
+    "inputs": [
+      "git rev-parse HEAD",
+      "git diff --name-status origin/main...HEAD",
+      "src/adjudication.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-classifier-premise-recovery-main.test.js",
+      "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js",
+      "test/judgment-adjudication.test.js",
+      "README.md",
+      "README.ja.md",
+      "docs/reference/cli.md",
+      "docs/ja/reference/cli.md",
+      ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json",
+      ".vibepro/qa/story-vibepro-classifier-premise-recovery/e2e-status.json",
+      "node --test test/e2e/story-vibepro-classifier-premise-recovery-main.test.js",
+      "node bin/vibepro.js pr prepare . --story-id story-vibepro-classifier-premise-recovery --summary-json",
+      "codebase-memory trace_path(buildJudgmentDagAdjudicationGate)"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: the new correction path might only prove a happy-path domain transition -> focused real-CLI E2E passed and visibly verifies missing-cause rejection, append-only correction, pending Gate state, generated reviewer request, and linked different-judge recovery.",
+    "Initial inclination: pass based on current HEAD-bound E2E and regression artifacts -> needs_changes because canonical pr-prepare still reports gate:e2e as needs_evidence for AC 2-10; the test file/markers are outside the recognized executable Story E2E surface, leaving the gate/report output inconsistent with e2e-status.json."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T10:51:22.613Z",
+  "git_context": {
+    "head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T10:51:22.612Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "f55b3e02d0f13ed0d7b773f8b9a139dd7a6b9cb37ce7ecc9719415c864d3607b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/test_plan_e2e",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e_ux.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e_ux.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

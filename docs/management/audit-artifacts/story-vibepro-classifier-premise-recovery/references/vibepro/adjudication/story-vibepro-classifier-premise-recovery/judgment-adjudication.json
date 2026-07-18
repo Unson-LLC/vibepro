@@ -1,0 +1,862 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "updated_at": "2026-07-18T17:31:17.205Z",
+  "events": [
+    {
+      "event_id": "2329eb6b-ff69-48bc-8df4-63879bb8a06d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "単一intentはitem scoped premise correctionと独立再裁定として実装に直結する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:25.168Z"
+    },
+    {
+      "event_id": "bab63717-8537-4e9a-b18d-4736f42ee3fa",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "real CLI E2Eがunsoundからcorrection pending linked verdictとlegacy移行を実証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:25.442Z"
+    },
+    {
+      "event_id": "0969198c-abf7-4f07-8f8e-7faf73a1a4e5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "criticality append-only HEAD item binding independent judge human互換 fail-closedを保持する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:25.766Z"
+    },
+    {
+      "event_id": "1212bb6b-a945-4b25-9a02-520bc3ef9e08",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "対象境界と除外範囲をArchitectureで定義しevidence path provenance lineage境界を検証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:26.163Z"
+    },
+    {
+      "event_id": "2cce0246-fe76-4cf8-9fec-523306066cfc",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed schema forged legacy symlink same judge branched lineage等をfail-closedで検証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:26.474Z"
+    },
+    {
+      "event_id": "6c5e1736-cae1-48fc-9f3c-6dbfe96b5344",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEADのtargeted unitとreal CLI E2E 33件が全件成功した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:26.710Z"
+    },
+    {
+      "event_id": "aea3a19b-c8ed-4ba6-a6e2-01506eda1b51",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI追加はadditiveでlegacy v1読込互換と日英docsをテストしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:26.940Z"
+    },
+    {
+      "event_id": "1df0574f-2dd1-4196-b9ba-8869df4e6b45",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "15ファイルは単一premise recovery lifecycleのschema resolver CLI gate docs testsで不可分な契約層である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:27.363Z"
+    },
+    {
+      "event_id": "437422b8-2988-4049-b707-ea6a7772ebc0",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "機械分類not_requiredは誤り。v2永続schemaとlegacy正規化とinvalid artifact拒否が中心リスクである。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:27.662Z"
+    },
+    {
+      "event_id": "285dcb80-cc72-44c6-96c5-8c193b7d5205",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "機械分類not_requiredは誤り。append-only裁定とcorrection evidenceとGate dischargeを変更している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:27.909Z"
+    },
+    {
+      "event_id": "6a487d9b-d57d-4f7f-b273-f37da3e71732",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "機械分類not_requiredは誤り。failed pending human resolved invalid_historyの状態遷移を追加している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": "/root/judgment_adjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:28.174Z"
+    },
+    {
+      "event_id": "951d8b46-a294-427c-9918-808ba84dec2c",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "437422b8-2988-4049-b707-ea6a7772ebc0",
+      "wrong_premise": "schema failure is not required",
+      "corrected_premise": "schema failure is a required risk and is covered by v2 validation legacy normalization and malformed history tests",
+      "reason": "機械分類のnot_required前提を現実の変更surfaceへ訂正する。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/story-vibepro-classifier-premise-recovery.md",
+          "sha256": "1c837387514197cdf14e9ef15b8979014c30f32aae4cef0f46a9d5cc913cd2cc"
+        },
+        {
+          "artifact": "test/judgment-adjudication.test.js",
+          "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "/root"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:47.407Z"
+    },
+    {
+      "event_id": "9e18db0f-f3f3-4a92-a1e7-2a46e63a57d4",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "285dcb80-cc72-44c6-96c5-8c193b7d5205",
+      "wrong_premise": "evidence lifecycle regression is not required",
+      "corrected_premise": "evidence lifecycle regression is a required risk and is covered by append-only lineage content binding and non-overwrite tests",
+      "reason": "機械分類のnot_required前提を現実の変更surfaceへ訂正する。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/story-vibepro-classifier-premise-recovery.md",
+          "sha256": "1c837387514197cdf14e9ef15b8979014c30f32aae4cef0f46a9d5cc913cd2cc"
+        },
+        {
+          "artifact": "test/judgment-adjudication.test.js",
+          "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "/root"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:47.669Z"
+    },
+    {
+      "event_id": "13d06c23-7294-496e-8069-bebca2ff1880",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "6a487d9b-d57d-4f7f-b273-f37da3e71732",
+      "wrong_premise": "workflow state regression is not required",
+      "corrected_premise": "workflow state regression is a required risk and is covered by failed pending human resolved and invalid history transition tests",
+      "reason": "機械分類のnot_required前提を現実の変更surfaceへ訂正する。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/story-vibepro-classifier-premise-recovery.md",
+          "sha256": "1c837387514197cdf14e9ef15b8979014c30f32aae4cef0f46a9d5cc913cd2cc"
+        },
+        {
+          "artifact": "test/judgment-adjudication.test.js",
+          "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "/root"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:23:47.949Z"
+    },
+    {
+      "event_id": "ff41779b-96e8-4fa2-8757-d5f8a4b122d3",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "951d8b46-a294-427c-9918-808ba84dec2c",
+      "reason": "訂正前提はv2 schema legacy normalization invalid-history surfaceと一致し関連fixtureがfail-closedとnon-overwriteを実証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": "/root/premise_readjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:25:22.001Z"
+    },
+    {
+      "event_id": "b795f8cd-ae0c-41ee-98bb-f3660fa2cdac",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "9e18db0f-f3f3-4a92-a1e7-2a46e63a57d4",
+      "reason": "訂正前提はappend-only correction binding independent judge evidence hashとinvalid history保全の実装・テストに一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": "/root/premise_readjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:25:22.224Z"
+    },
+    {
+      "event_id": "4de12a71-4302-43a5-868e-1e72d77df915",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "13d06c23-7294-496e-8069-bebca2ff1880",
+      "reason": "訂正前提はfailed pending human resolved invalid_history各遷移の実装と否定fixtureに一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": "/root/premise_readjudicator_340"
+      },
+      "head_commit": "f3fcf6043ff9cb6c3e8018caf4a3e15cf1780023",
+      "recorded_at": "2026-07-18T15:25:22.446Z"
+    },
+    {
+      "event_id": "70b84ceb-390d-42f8-8f47-446a1c3e668f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent is realized by append-only verdict, correction, re-adjudication, CLI, shared resolver, and Gate integration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:38.395Z"
+    },
+    {
+      "event_id": "5e881e3f-0b3b-4260-a7d3-e00ce51e525f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Real CLI E2E exercises recovery, independent re-adjudication, legacy compatibility, and critical waiver behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:39.007Z"
+    },
+    {
+      "event_id": "a25eeda2-8312-444a-8c4b-f37ec868f64e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests preserve criticality, item story and HEAD binding, explicit lineage, judge independence, and fail-closed history.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:39.758Z"
+    },
+    {
+      "event_id": "b55bc78e-ddef-45f7-b0d7-42b46da12ed3",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture, Spec, and tests cover evidence paths, provenance, symlink escape, and cross-item or HEAD boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:40.416Z"
+    },
+    {
+      "event_id": "19b43299-1e06-494f-9143-b99b281305e1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed artifacts, forged legacy state, path escape, replay, dangling lineage, and resolution branches are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:41.402Z"
+    },
+    {
+      "event_id": "e1934988-af06-4ba8-a78c-296e2177196a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head run passed all 33 targeted unit and real CLI E2E cases.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:42.044Z"
+    },
+    {
+      "event_id": "e5a93a2a-fff3-4c76-ab29-38b81d12d03a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI changes are additive except intentional stricter validation; legacy reads remain compatible and fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:42.689Z"
+    },
+    {
+      "event_id": "857f7137-8d98-436b-a536-70d807d6b2c7",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The code, schema, CLI, Gate, docs, tests, and Design lineage form one coherent reviewable intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:43.299Z"
+    },
+    {
+      "event_id": "14889799-5397-4a63-b4b5-9c7c931ab400",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSON parsing is directly relevant to persisted adjudication artifacts and is tested fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:43.595Z"
+    },
+    {
+      "event_id": "105b450a-1a43-4537-8c52-b16c79d66ea0",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Schema validation and legacy normalization are central to this implementation and cannot be not_required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:43.856Z"
+    },
+    {
+      "event_id": "8911059a-dff5-4a4b-af71-587e463d6217",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Append-only lineage, hashes, independent re-adjudication, and migration directly change evidence lifecycle.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:44.361Z"
+    },
+    {
+      "event_id": "65e08e77-7f4a-4a25-9c11-e0310f10b88d",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Failed, awaiting re-adjudication, human judgment, resolved, and invalid-history transitions are core workflow states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:34:44.982Z"
+    },
+    {
+      "event_id": "f1bb8abc-beb7-42b9-8906-6472e66bc5a9",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "14889799-5397-4a63-b4b5-9c7c931ab400",
+      "wrong_premise": "Parsing is not required because adjudication artifacts are internal.",
+      "corrected_premise": "Persisted adjudication JSON is an input boundary, so malformed parsing must be tested fail closed.",
+      "reason": "Independent judgment showed this failure mode is directly exercised by the current Story.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/judgment-adjudication.test.js",
+          "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:35:07.042Z"
+    },
+    {
+      "event_id": "b80af972-56f2-4729-9ebf-e74d9db032f7",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "105b450a-1a43-4537-8c52-b16c79d66ea0",
+      "wrong_premise": "Schema failure is not required for a resolver change.",
+      "corrected_premise": "The resolver and recorders change v2 schema and legacy migration, making schema validation required.",
+      "reason": "Independent judgment showed this failure mode is directly exercised by the current Story.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/judgment-adjudication.test.js",
+          "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:35:07.636Z"
+    },
+    {
+      "event_id": "67da9ed4-e4b2-4346-9188-73bb325cdc22",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "8911059a-dff5-4a4b-af71-587e463d6217",
+      "wrong_premise": "Evidence lifecycle is unaffected by adjudication recovery.",
+      "corrected_premise": "Correction and independent re-adjudication introduce new append-only evidence lifecycle transitions.",
+      "reason": "Independent judgment showed this failure mode is directly exercised by the current Story.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+          "sha256": "d7729521094182d7c10fb669fe898000edab33e6fae61f0e124cbcc7d21a88d9"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:35:08.136Z"
+    },
+    {
+      "event_id": "7088cb8c-0f56-4eef-80f3-b83bab50a617",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "65e08e77-7f4a-4a25-9c11-e0310f10b88d",
+      "wrong_premise": "Workflow state is unaffected by adjudication recovery.",
+      "corrected_premise": "Recovery adds failed, needs evidence, human judgment, resolved, and invalid-history workflow states.",
+      "reason": "Independent judgment showed this failure mode is directly exercised by the current Story.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+          "sha256": "d7729521094182d7c10fb669fe898000edab33e6fae61f0e124cbcc7d21a88d9"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:35:08.444Z"
+    },
+    {
+      "event_id": "54a800d3-54b1-4183-a7cb-ee7b46a903ee",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "f1bb8abc-beb7-42b9-8906-6472e66bc5a9",
+      "reason": "Correction is sound: malformed persisted JSON is an input boundary and current-head tests fail loudly.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:36:36.343Z"
+    },
+    {
+      "event_id": "f62de7ad-7217-4d53-bdeb-b6e2b83368bf",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "b80af972-56f2-4729-9ebf-e74d9db032f7",
+      "reason": "Correction is sound: v2 schema validation and legacy migration are directly covered by current-head tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:36:36.835Z"
+    },
+    {
+      "event_id": "7611eb68-59de-420a-bc49-77640aefe6e6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "67da9ed4-e4b2-4346-9188-73bb325cdc22",
+      "reason": "Correction is sound: real CLI E2E covers append-only correction and independent linked re-adjudication.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:36:37.156Z"
+    },
+    {
+      "event_id": "5b749a92-774d-4299-bfeb-56b93f11d5c7",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "7088cb8c-0f56-4eef-80f3-b83bab50a617",
+      "reason": "Correction is sound: E2E and unit tests cover failed, pending, human, resolved, and invalid-history states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/premise_readjudicator_340",
+        "session_ref": null
+      },
+      "head_commit": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "recorded_at": "2026-07-18T15:36:37.518Z"
+    },
+    {
+      "event_id": "c6c29a70-e574-4036-a326-bf0b15d219d3",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "誤分類救済を原因分類、訂正、独立再裁定として定義し実装と一致",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.741Z"
+    },
+    {
+      "event_id": "840a830a-7aaf-4eff-832e-152129c735d2",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実CLI E2Eでfailedからneeds_evidence、pass/fail/humanの状態を観測",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.889Z"
+    },
+    {
+      "event_id": "b77838c8-a0d0-432e-804a-f141093416f5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "append-only、story/item/HEAD、provenance、critical blocker不変条件を両境界で強制",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.100Z"
+    },
+    {
+      "event_id": "60d93aa8-3d62-4fbb-9632-0c628fbd410a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI入力、artifact schema、realpath/symlink、PR Gate境界を明示",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.243Z"
+    },
+    {
+      "event_id": "7b238b6b-3381-4e33-b0fc-284006415be5",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed lineage、cycle、downgrade、forgery、same judge、stale HEAD、symlinkを敵対試験",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.385Z"
+    },
+    {
+      "event_id": "43d9d456-3939-4704-ae9c-1883e2c73fc8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI/Gate/summary/request/PR prepareの外部出力をE2Eで検証しfresh 33/33",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.551Z"
+    },
+    {
+      "event_id": "c93e4b34-bf2e-4aac-8322-e13f5d377e85",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive CLI、EN/JA help、v1 migration、既存JDA回帰で互換性を担保",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.707Z"
+    },
+    {
+      "event_id": "4b18ba23-1424-4265-a33b-1f1370f12c66",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "単一recovery contractをStoryからtestsまで縦に閉じ、lineage整合性を一貫してレビュー可能",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.842Z"
+    },
+    {
+      "event_id": "6c0c683c-ea8f-44e8-9686-5eb81600998b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt JSONと不整合schemaをfail-closedで扱う回帰を実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:47.988Z"
+    },
+    {
+      "event_id": "8cc99194-b018-4fab-aa3c-22abca29e149",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "partial provenance、不正schema、偽legacy markerを拒否し不正artifactを非破壊保持",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:48.125Z"
+    },
+    {
+      "event_id": "e1cbfa3b-95e0-4c63-a794-91d327473ca8",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "shared resolverをGate/summary/request/PR経路で使い訂正前後とinvalid preservationを検証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:48.299Z"
+    },
+    {
+      "event_id": "c6543350-bad5-42d5-b729-e47f193dd3bc",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failed→needs_evidence→pass、unsound継続fail、human decision、same/stale拒否を実CLIで検証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:48.431Z"
+    },
+    {
+      "event_id": "6fc6cc47-95f6-4101-9c0d-b2471f25ce3f",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実行トポロジーはCLI入力境界、current HEAD・provenance検証、append-only event保存、共有resolver、Gate/PR consumerの単一直列系譜に閉じ、二重正本・非同期worker・silent dischargeを追加しない。real CLI E2Eと独立51/51再実行で失敗・再裁定・stale/分岐/循環/legacyをfail-closed確認済み。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-execution-topology-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:31:17.205Z"
+    }
+  ]
+}

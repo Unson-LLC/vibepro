@@ -1,0 +1,29 @@
+{
+  "status": "block",
+  "summary": "legacy migrationは解消したが、legacy_origin自己申告によるprovenance迂回と矛盾artifact上書きを再現",
+  "inspection_summary": "HEAD 651d6c2の実装と33件の対象テストを確認し、record APIとforged v2 eventを追加再現した",
+  "inspection_inputs": [
+    "src/adjudication.js",
+    "test/judgment-adjudication.test.js",
+    "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+    "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js"
+  ],
+  "commands": [
+    "node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js: 33/33 pass",
+    "recordJudgmentAdjudication against contradictory v2 verdicts artifact: overwrite reproduced",
+    "forged v2 legacy_origin event: resolver valid and gate passed reproduced"
+  ],
+  "resolved_findings": [
+    {"id": "legacy-migration-provenance-marker-loss", "detail": "v1 to v2 round-tripで解消"},
+    {"id": "adjudication-recorder-unknown-provenance", "detail": "closed-set validationで解消"},
+    {"id": "gate-evidence-symlink-escape", "detail": "realpath boundary validationで解消"}
+  ],
+  "findings": [
+    {"severity": "high", "id": "legacy-origin-downgrade-bypass", "detail": "v2 eventがlegacy_originとevent_id prefixを自己申告するとprovenance検証を迂回しcritical gateをpassできる"},
+    {"severity": "medium", "id": "recorder-format-error-overwrite", "detail": "両recorderがformat_errorsを永続化前に拒否せず矛盾artifactを上書きし得る"}
+  ],
+  "judgment_delta": [
+    "legacy marker消失は解消したが自己申告markerにより別のdowngrade経路が生じた",
+    "CPR-S-010はconsumerを閉じたがrecord経路を閉じていない"
+  ]
+}

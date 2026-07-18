@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "Honest recovery のGate契約は、主要CLIだけでなくresolver、Gate、PR summary、legacy移行、human decision互換、破損artifact保全まで検証され、既存のcritical failure境界も維持されている。",
+  "inspection_summary": "現HEADのStory/Spec、実装差分、verification evidence、CPR/JADJ unit・E2Eを確認し、33件を再実行して全件成功した。staleなreuse snapshotには依存せずcurrent-HEADのcontent surfaceを直接確認した。",
+  "inspection_evidence": "node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js => 33 pass, 0 fail",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-classifier-premise-recovery.md", "docs/specs/story-vibepro-classifier-premise-recovery.md", "src/adjudication.js", "src/cli.js", "src/pr-manager.js", "test/judgment-adjudication.test.js", "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts", "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js", ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json", ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json", ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json", ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json"],
+  "judgment_delta": ["既存契約弱体化の懸念はJADJ互換E2Eとcritical境界検証で解消", "happy-path CLI限定の懸念はresolver、Gate、summary、legacy、invalid-history保全の否定fixtureで解消", "stale reuseには依存せず現HEADで33件を再実行"],
+  "findings": []
+}

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "現HEADのunit/integration計画は、原因分類・append-only系譜・独立再裁定・legacy互換・不正artifactのfail-closed/non-overwriteを修正前に失敗する具体fixtureで覆い、Gate/PR summary/CLIの主要surfaceと既存JDA契約の回帰も確認できる。",
+  "inspection_summary": "src/adjudication.jsの正規化・resolver・2 recorder・Gate/summary、src/cli.jsとsrc/pr-manager.jsの接続、CPR unit/E2Eおよび既存JDA E2E、現HEAD verification-evidenceを読み、関連33テストを現HEADで再実行して33/33成功を確認した。",
+  "inspection_evidence": "node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js => 33 pass, 0 fail",
+  "inspection_inputs": ["src/adjudication.js", "src/cli.js", "src/pr-manager.js", "test/judgment-adjudication.test.js", "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts", "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js", ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json"],
+  "judgment_delta": ["legacy/invalid history/既存JDA経路の不足懸念は33/33の具体assertionで解消", "Gate/summary面の矛盾懸念はresolverからpending itemとsummary zeroingまでの検証で解消", "stale reuseには依存せず現HEADで対象テストを再実行"],
+  "findings": []
+}

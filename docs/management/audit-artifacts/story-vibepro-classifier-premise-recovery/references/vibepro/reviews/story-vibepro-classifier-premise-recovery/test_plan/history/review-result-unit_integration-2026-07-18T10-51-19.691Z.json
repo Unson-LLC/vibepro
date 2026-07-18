@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "block",
+  "summary": "A correction-linked needs_human_judgment verdict is an uncovered allowed branch that permanently deadlocks the required judgment gate, even after an accepted human decision.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "linked-needs-human-dead-end",
+      "detail": "src/cli.js permits needs_human_judgment together with --correction-id, but resolveCurrentJudgmentState in src/adjudication.js classifies every correction-linked needs_human_judgment event as awaiting_re_adjudication before consulting accepted human decisions. The gate therefore emits pending_correction_items instead of human_judgment_items. recordJudgmentAdjudication subsequently rejects another response for the same correction, making the required gate unrecoverable. Add a unit and CLI integration regression test that fails on the current implementation, then define consistent recovery semantics by either honoring accepted human closure for this branch or rejecting the verdict before persistence."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed the exact HEAD and clean tree; inspected adjudication state resolution and recording, CLI exposure, PR gate integration, Spec clauses, focused unit/E2E coverage, and HEAD-bound verification artifacts. Reran the focused unit file successfully at 17/17, then reproduced the missing branch with a read-only synthetic gate probe: a correction-linked needs_human_judgment event plus an accepted human decision still returned needs_evidence, with the item incorrectly retained under pending_correction_items.",
+    "evidence": ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json",
+    "inputs": [
+      "git rev-parse HEAD => 8e8ecb2f30f83c75c2bdf723633e53f6398fb473; git status --short => clean",
+      "src/adjudication.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "docs/specs/story-vibepro-classifier-premise-recovery.vibepro.json",
+      "test/judgment-adjudication.test.js",
+      "test/e2e/story-vibepro-classifier-premise-recovery-main.test.js",
+      ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json",
+      ".vibepro/qa/story-vibepro-classifier-premise-recovery/unit-status.json",
+      "node --test test/judgment-adjudication.test.js => 17 passed, 0 failed",
+      "Read-only linked needs_human_judgment gate probe => status=needs_evidence, human_judgment_items=[], pending_correction_items=[axis:x]"
+    ]
+  },
+  "judgment_delta": [
+    "The HEAD-bound focused suite initially supported the stated regression guard, but branch enumeration showed coverage only for root needs_human_judgment, correction-linked judged_sound, and correction-linked judged_unsound.",
+    "The direct gate probe proved the allowed correction-linked needs_human_judgment branch ignores an accepted human closure; because a second response to the correction is rejected by the append-only recorder, the state cannot progress. This changed the verdict to block.",
+    "The verification artifact's passing counts do not establish path_surface_coverage for this critical recovery branch because no test exercises it."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T10:51:19.691Z",
+  "git_context": {
+    "head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T10:51:19.690Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "1278b3d3f587e1cb0e930ca9df615bcb0c5dccaffc8091baf8c014ac13d02926",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/test_plan_unit",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/unit_integration.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-unit_integration.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/unit_integration.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
