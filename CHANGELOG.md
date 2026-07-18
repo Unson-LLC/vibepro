@@ -4,6 +4,12 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Bind ordinary reviews to their inspected content surface while keeping
+  `gate_evidence` and `release_risk` reviews strictly bound to the full commit.
+  Passing `review record` calls must now include `--inspection-summary`, at least
+  one existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`;
+  existing automation must add these arguments when upgrading.
+
 ## 0.2.0-beta.0 - 2026-07-16
 
 - Document the complete guarded delivery loop: managed execution, independent

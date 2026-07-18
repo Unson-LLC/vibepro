@@ -20,7 +20,7 @@ current `main` のmanualにあるcommandが古いinstalled binaryにもあると
 
 ## PR・CI・mergeのfreshness
 
-Evidenceとreviewはhead-boundです。treeを確定してcommitし、verificationと独立reviewを記録してから `pr prepare` / `pr create` を実行します。CI完了後はimportし、prepareと既存PRをrefreshしてから `execute merge` します。
+Evidenceと通常roleのreviewは既定でcontent-surface-boundです。検査したsurfaceが変わればstaleになり、無関係なcommitだけならcurrentを維持します。CI evidenceと高リスクroleなどのstrict HEAD-bound evidenceは任意のcommitでstaleになります。treeを確定してcommitし、verificationと独立reviewを記録してから `pr prepare` / `pr create` を実行します。CI完了後はimportし、prepareと既存PRをrefreshしてから `execute merge` します。
 
 ## Canonical auditとROI
 

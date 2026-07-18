@@ -295,6 +295,11 @@ Typical PR-safety flow:
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
 
+Review record migration:
+  A pass result now requires --inspection-summary, at least one existing non-.vibepro
+  --inspection-input, and --judgment-delta. Existing automation must add those inputs;
+  VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
+
 Guarded Run sessions:
   vibepro execute run <repo> --story-id <id>
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
@@ -450,7 +455,7 @@ Usage:
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
@@ -526,8 +531,9 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       現在のgit状態で実行した検証証跡を記録します。
   vibepro review prepare <repo> --id <id> --stage gate
       Codex / Claude Code の並列サブエージェントへ渡すレビュー依頼を作ります。
-  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed
+  vibepro review record <repo> --id <id> --stage gate --role <role> --status pass --summary <text> --inspection-summary <text> --inspection-input <path> --judgment-delta <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed
       required Agent Review Gate を通すレビュー結果を、現在のgit状態・サブエージェント証跡・close済みlifecycleに紐づけて記録します。
+      passには --inspection-summary、実在する.vibepro外の --inspection-input、--judgment-delta が必須です。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。
       サブエージェントの結果を受け取った後、review record を実行する前にそのサブエージェントを close/shutdown してください。
       人間レビューは監査文脈として記録できますが、required gate のpass代替にはなりません。
   vibepro review status <repo> --id <id>
@@ -702,7 +708,7 @@ Usage:
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro execute watch [repo] --story-id <id> [--run-id <id>] [--repair-linked-copy] [--json]
@@ -1783,6 +1789,7 @@ export async function runCli(argv, io = {}) {
           inspectionInputs: getOptions(rest, '--inspection-input'),
           judgmentDeltas: getOptions(rest, '--judgment-delta'),
           strictHeadBinding: hasFlag(rest, '--strict-head-binding'),
+          strictHeadReason: getOption(rest, '--strict-head-reason'),
           recordedBy: getOption(rest, '--recorded-by'),
           stdinText,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),

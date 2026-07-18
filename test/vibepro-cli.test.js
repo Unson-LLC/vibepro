@@ -13,7 +13,7 @@ import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
-import { runCli } from '../src/cli.js';
+import { runCli as coreRunCli } from '../src/cli.js';
 import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
@@ -26,6 +26,42 @@ import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
+
+async function runCli(args, io = {}) {
+  const effectiveArgs = [...args];
+  if (isPassingReviewRecord(effectiveArgs)) {
+    const repo = effectiveArgs[2] && !effectiveArgs[2].startsWith('--') ? effectiveArgs[2] : process.cwd();
+    if (!effectiveArgs.includes('--inspection-summary')) {
+      effectiveArgs.push('--inspection-summary', 'inspected the concrete fixture contract for this passing review');
+    }
+    const inputs = effectiveArgs
+      .map((value, index) => value === '--inspection-input' ? effectiveArgs[index + 1] : null)
+      .filter(Boolean);
+    if (!inputs.some((input) => !String(input).startsWith('.vibepro/'))) {
+      const fixtureInput = await firstExistingReviewFixture(repo);
+      if (fixtureInput) effectiveArgs.push('--inspection-input', fixtureInput);
+    }
+    if (!effectiveArgs.includes('--judgment-delta')) {
+      effectiveArgs.push('--judgment-delta', 'generic fixture pass -> accepted after concrete fixture inspection');
+    }
+  }
+  return coreRunCli(effectiveArgs, io);
+}
+
+function isPassingReviewRecord(args) {
+  const statusIndex = args.indexOf('--status');
+  return args[0] === 'review'
+    && args[1] === 'record'
+    && statusIndex >= 0
+    && args[statusIndex + 1] === 'pass';
+}
+
+async function firstExistingReviewFixture(repo) {
+  for (const candidate of ['index.html', 'README.md', 'package.json']) {
+    if (await pathExists(path.join(repo, candidate))) return candidate;
+  }
+  return null;
+}
 
 async function makeRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-test-'));
@@ -403,9 +439,12 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
         `thread-${stage}-${role}`,
         '--agent-model',
         'gpt-5.5',
-        ...(stage === 'gate' && role === 'gate_evidence'
-          ? ['--inspection-summary', 'read route gate evidence and verified required test coverage']
-          : []),
+        '--inspection-summary',
+        `read ${stage}:${role} inputs and verified the fixture contract`,
+        '--inspection-input',
+        'index.html',
+        '--judgment-delta',
+        `generic ${stage}:${role} pass -> accepted after inspecting the fixture contract`,
         '--agent-closed'
       ]);
       assert.equal(result.exitCode, 0);
@@ -413,7 +452,7 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
   }
 }
 
-async function recordAgentReviewStage(repo, storyId, stage, roles) {
+async function recordAgentReviewStage(repo, storyId, stage, roles, options = {}) {
   await runCli([
     'review',
     'prepare',
@@ -425,6 +464,8 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
     ...roles.flatMap((role) => ['--role', role])
   ]);
   for (const role of roles) {
+    const strictHead = (options.strictHeadRoles ?? []).includes(role);
+    const inspectionInput = options.inspectionInputsByRole?.[role] ?? 'index.html';
     const result = await runCliWithStdout([
       'review',
       'record',
@@ -447,18 +488,17 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
       `${stage}-${role}-agent`,
       '--agent-thread-id',
       `${stage}-${role}-thread`,
-      ...(stage === 'gate'
-        ? [
-            '--inspection-summary',
-            `read ${stage}:${role} evidence and verified required test coverage`,
-            '--inspection-input',
-            '.vibepro/pr/story-pr-prepare/pr-prepare.json',
-            '--inspection-input',
-            'test/vibepro-cli.test.js',
-            '--judgment-delta',
-            `generic ${stage}:${role} pass -> accepted because PR artifacts and focused tests were inspected`
-          ]
-        : []),
+      '--inspection-summary',
+      `read ${stage}:${role} evidence and verified the fixture contract`,
+      '--inspection-input',
+      inspectionInput,
+      '--judgment-delta',
+      `generic ${stage}:${role} pass -> accepted because the fixture contract was inspected`,
+      ...(strictHead ? [
+        '--strict-head-binding',
+        '--strict-head-reason',
+        `test fixture requires ${stage}:${role} to cover the complete HEAD`
+      ] : []),
       '--agent-closed'
     ]);
     assert.equal(result.exitCode, 0, JSON.stringify(result, null, 2));
@@ -2621,6 +2661,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /workflow_heavy/);
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(output, /vibepro review record <repo>.*--inspection-summary <text>.*--inspection-input <path>.*--judgment-delta <text>/);
   assert.match(output, /vibepro execute merge <repo> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system init \[repo\]/);
@@ -3920,6 +3961,8 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
     'pass',
     '--summary',
     'runtime contract reviewed for artifact consistency',
+    '--inspection-input',
+    'src/artifact-consistency.js',
     '--agent-system',
     'codex',
     '--execution-mode',
@@ -3935,6 +3978,15 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
     'test:artifact-consistency-runtime'
   ]);
   assert.equal(reviewRecordResult.exitCode, 0);
+
+  // This artifact-consistency test covers compatibility with reviews recorded
+  // before content-surface binding existed. Content-bound invalidation itself is
+  // covered by content-scoped-evidence-freshness.test.js.
+  const legacyReviewPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-runtime_contract.json');
+  const legacyReview = await readJson(legacyReviewPath);
+  delete legacyReview.content_binding;
+  delete legacyReview.freshness_policy;
+  await writeJson(legacyReviewPath, legacyReview);
 
   const currentResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(currentResult.exitCode, 0);
@@ -3983,7 +4035,13 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
   assert.equal(staleReviewDetail.stage, 'implementation');
   assert.equal(staleReviewDetail.blocking, true);
   assert.match(staleReviewDetail.remediation_command, /vibepro review prepare \. --id story-pr-prepare --stage implementation/);
-  assert.equal(staleReviewDetail.remediation_commands.some((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command)), true);
+  const staleReviewRecordCommand = staleReviewDetail.remediation_commands
+    .find((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command));
+  assert.ok(staleReviewRecordCommand);
+  assert.match(staleReviewRecordCommand, /--inspection-summary "<inspection-summary>"/);
+  assert.match(staleReviewRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(staleReviewRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+  assert.match(staleReviewRecordCommand, /--agent-close-evidence <artifact>/);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'verification_command'), true);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'agent_review_result'), true);
   assert.match(staleGate.reason, /not bound to the current git state/);
@@ -9833,7 +9891,9 @@ test('review lifecycle preserves concurrent stage starts', async () => {
 test('review status orders running close commands before stale record commands', async () => {
   const repo = await makeGitRepoWithStory();
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--role', 'e2e_ux', '--role', 'gate_coverage']);
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage'], {
+    strictHeadRoles: ['e2e_ux', 'gate_coverage']
+  });
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'mixed-review-order.js'), 'export const changed = true;\n');
   await git(repo, ['add', '.']);
@@ -10170,6 +10230,18 @@ test('subagent ROI report classifies decision signal, waste signal, and missing 
     '--agent-closed',
     '--json'
   ]);
+
+  // Preserve coverage for historical pass-only artifacts. Current review record
+  // rejects this shape, but usage reporting must still classify existing data.
+  const passOnlyResultPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-code_spec_alignment.json');
+  const passOnlyResult = await readJson(passOnlyResultPath);
+  passOnlyResult.judgment_delta = [];
+  await writeJson(passOnlyResultPath, passOnlyResult);
+  const passOnlySummaryPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-summary.json');
+  const passOnlySummary = await readJson(passOnlySummaryPath);
+  const passOnlyRole = passOnlySummary.roles.find((role) => role.role === 'code_spec_alignment');
+  passOnlyRole.judgment_delta = [];
+  await writeJson(passOnlySummaryPath, passOnlySummary);
 
   const report = await runCliWithStdout(['usage', 'report', repo, '--subagent-roi', '--json']);
   assert.equal(report.exitCode, 0);
@@ -10623,6 +10695,8 @@ test('review record updates status summary and marks stale after source change',
     'pass',
     '--summary',
     'runtime contract reviewed',
+    '--inspection-input',
+    'src/agent-review-target.js',
     '--agent-system',
     'codex',
     '--execution-mode',
@@ -10647,7 +10721,7 @@ test('review record updates status summary and marks stale after source change',
   const after = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
   const roleAfter = after.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
   assert.equal(roleAfter.effective_status, 'stale');
-  assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
+  assert.match(roleAfter.stale_reason, /content-bound evidence surface/i);
 });
 
 test('review status keeps content-bound review current after merge delta outside inspected inputs', async () => {
@@ -10772,6 +10846,8 @@ test('review status keeps strict-head review stale after docs-only commit', asyn
     '--agent-cost-tier',
     'medium',
     '--strict-head-binding',
+    '--strict-head-reason',
+    'this regression fixture intentionally reviews the complete git head',
     '--agent-closed'
   ]);
   assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
@@ -10853,7 +10929,7 @@ test('review status keeps stale review after merge delta touches inspected input
   assert.deepEqual(role.content_binding.changed_files, ['src/merge-delta-touch-target.js']);
 });
 
-test('review status does not reuse merge delta review without inspected file inputs', async () => {
+test('review record rejects pass without inspected file inputs', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -10862,7 +10938,8 @@ test('review status does not reuse merge delta review without inspected file inp
   await git(repo, ['commit', '-m', 'feat: add no-input review target']);
 
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
-  const recordResult = await runCli([
+  let recordStderr = '';
+  const recordResult = await coreRunCli([
     'review',
     'record',
     repo,
@@ -10891,19 +10968,11 @@ test('review status does not reuse merge delta review without inspected file inp
     '--agent-cost-tier',
     'medium',
     '--agent-closed'
-  ]);
-  assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
-
-  await writeFile(path.join(repo, 'docs', 'base-sync-no-input.md'), 'unrelated base sync note\n');
-  await git(repo, ['add', 'docs/base-sync-no-input.md']);
-  await git(repo, ['commit', '-m', 'chore: sync unrelated docs after no-input review']);
-
-  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
-  assert.equal(status.exitCode, 0);
-  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
-  assert.equal(role.effective_status, 'stale');
-  assert.equal(role.binding_status, 'stale');
-  assert.match(role.stale_reason, /no inspected file surface/);
+  ], {
+    stderr: { write: (chunk) => { recordStderr += chunk; } }
+  });
+  assert.equal(recordResult.exitCode, 1, JSON.stringify(recordResult));
+  assert.match(recordStderr, /requires --inspection-summary/);
 });
 
 test('review status keeps stale review when merge delta diff cannot be resolved', async () => {
@@ -10948,6 +11017,8 @@ test('review status keeps stale review when merge delta diff cannot be resolved'
     '--agent-cost-tier',
     'medium',
     '--strict-head-binding',
+    '--strict-head-reason',
+    'this missing-head fixture requires strict historical head comparison',
     '--agent-closed'
   ]);
   assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
@@ -11103,6 +11174,8 @@ test('review status keeps legacy full-fingerprint review stale when tracked Vibe
 
   const resultPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-runtime_contract.json');
   const review = await readJson(resultPath);
+  delete review.content_binding;
+  delete review.freshness_policy;
   delete review.git_context.user_status_fingerprint_hash;
   delete review.git_context.fingerprint_scope;
   await writeJson(resultPath, review);
@@ -14380,6 +14453,16 @@ architecture_docs:
 
 test('pr prepare requires only final agent review gates; phase reviews are checkpoint-gated', async () => {
   const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    ...(config.agent_reviews ?? {}),
+    roles: {
+      ...(config.agent_reviews?.roles ?? {}),
+      gate_evidence: { freshness_mode: 'content_surface' }
+    }
+  };
+  await writeJson(configPath, config);
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
 story_id: story-pr-prepare
@@ -14476,7 +14559,9 @@ architecture_docs:
   assert.equal(implementationComplete.exitCode, 2);
   assert.equal(implementationComplete.result.findings.some((finding) => finding.review_stage === 'implementation'), true);
 
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence'], {
+    inspectionInputsByRole: { gate_evidence: 'src/cli-helper.js' }
+  });
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const passedGate = passedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   const passedDag = passedResult.result.preparation.pr_context.gate_dag;
@@ -14500,17 +14585,15 @@ architecture_docs:
   const reusedDag = reusedResult.result.preparation.pr_context.gate_dag;
   const reusedArtifactGate = reusedDag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(reusedArtifactGate.status, 'passed');
-  assert.match(reusedArtifactGate.reason, /merge-delta reused/);
+  assert.match(reusedArtifactGate.reason, /accepted for artifact consistency.*current/);
   assert.doesNotMatch(reusedArtifactGate.reason, /are bound to the current git state/);
   const reusedPreflightNode = reusedDag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
-  assert.equal(reusedPreflightNode.preflight_kind, 'dedupe_reused_merge_delta_pass');
-  assert.doesNotMatch(reusedPreflightNode.reason, /current git state|current review/);
+  assert.equal(reusedPreflightNode.preflight_kind, 'dedupe_current_pass');
+  assert.match(reusedPreflightNode.reason, /current .*review/i);
   const reusedRecordNode = reusedDag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence');
-  assert.match(reusedRecordNode.reason, /merge-delta reuse/);
-  assert.doesNotMatch(reusedRecordNode.reason, /current git state/);
+  assert.match(reusedRecordNode.reason, /current/i);
   const reusedJoinNode = reusedDag.nodes.find((node) => node.id === 'review:join:gate');
-  assert.match(reusedJoinNode.reason, /merge-delta reuse/);
-  assert.doesNotMatch(reusedJoinNode.reason, /current git state/);
+  assert.match(reusedJoinNode.reason, /current/i);
 
   await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
   const staleResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
@@ -14521,11 +14604,11 @@ architecture_docs:
   assert.equal(stalePreflightNode.preflight_kind, 'git_stability');
   const staleRoleNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:gate:gate_evidence');
   assert.equal(staleRoleNode.status, 'stale');
-  assert.match(staleRoleNode.reason, /review was recorded for|dirty worktree fingerprint/);
+  assert.match(staleRoleNode.reason, /content-bound evidence surface changed/);
   assert.doesNotMatch(staleRoleNode.reason, /passed/);
   const staleRecordNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence');
   assert.equal(staleRecordNode.status, 'needs_review');
-  assert.match(staleRecordNode.reason, /review was recorded for|dirty worktree fingerprint/);
+  assert.match(staleRecordNode.reason, /content-bound evidence surface changed/);
   assert.doesNotMatch(staleRecordNode.reason, /current git state/);
 });
 
@@ -18815,6 +18898,11 @@ test('high-risk review pass requires inspection evidence in PR gate', async () =
   assert.equal(inspectionGate.status, 'needs_inspection');
   assert.equal(inspectionGate.high_risk, true);
   assert.equal(inspectionGate.missing_inspections[0].missing.includes('inspection_evidence'), true);
+  const inspectionRecovery = inspectionGate.required_actions.find((action) => action.startsWith('vibepro review record'));
+  assert.match(inspectionRecovery, /--status <pass\|needs_changes\|block>/);
+  assert.match(inspectionRecovery, /--inspection-summary "<inspection-summary>"/);
+  assert.match(inspectionRecovery, /--inspection-input <inspection-input>/);
+  assert.match(inspectionRecovery, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.equal(
     result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:review_inspection_required'),
     true

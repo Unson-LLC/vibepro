@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -7,6 +7,8 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import {
+  AGENT_SKILL_DISCIPLINE_BLOCK,
+  AGENT_SKILL_DISCIPLINE_BLOCK_JA,
   INVESTIGATION_GUIDELINES_BLOCK,
   prepareAgentReview,
   recordAgentReview,
@@ -27,7 +29,13 @@ async function setupRepo() {
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);
   await writeFile(path.join(root, 'README.md'), '# test');
-  await git(root, ['add', 'README.md']);
+  await mkdir(path.join(root, 'src'), { recursive: true });
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'src', 'agent-review.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'test', 'foo.test.js'), 'export const fixture = true;\n');
+  await writeFile(path.join(root, 'test', 'review-inspection-first.test.js'), 'export const fixture = true;\n');
+  await git(root, ['add', 'README.md', 'src', 'test']);
   await git(root, ['commit', '-m', 'init']);
   await mkdir(path.join(root, '.vibepro'), { recursive: true });
   await writeFile(
@@ -61,6 +69,27 @@ test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-
   assert.match(INVESTIGATION_GUIDELINES_BLOCK, /--inspection-summary/);
 });
 
+test('generated review discipline follows effective freshness policy instead of requiring HEAD globally', () => {
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK, /inspected content surface by default/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK, /current git head only for strict HEAD roles/);
+  assert.doesNotMatch(AGENT_SKILL_DISCIPLINE_BLOCK, /not bound to the current git head or artifact path/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /既定はinspectionしたcontent surface/);
+  assert.match(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /strict HEAD roleだけはcurrent git head/);
+  assert.doesNotMatch(AGENT_SKILL_DISCIPLINE_BLOCK_JA, /current git headまたはartifact pathに紐づいていない/);
+});
+
+test('Japanese agent review guide keeps executable pass arguments and freshness semantics current', async () => {
+  const guide = await readFile(new URL('../docs/ja/guide/agent-review.md', import.meta.url), 'utf8');
+  assert.match(guide, /--inspection-summary/);
+  assert.match(guide, /--inspection-input <source-test-story-spec-contract-or-config>/);
+  assert.match(guide, /--judgment-delta/);
+  assert.match(guide, /content-surface-bound/);
+  assert.match(guide, /strict HEAD-bound/);
+  assert.match(guide, /\.vibepro.*だけではinspection surfaceになりません/);
+  assert.doesNotMatch(guide, /--inspection-input <diff-or-artifact>/);
+  assert.doesNotMatch(guide, /record後のcommitはhead-bound evidenceをstaleにします/);
+});
+
 test('review request markdown emits Investigation Guidelines between Mandatory Review Lenses and Instructions (INV-RIF-1)', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
@@ -83,6 +112,9 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
   assert.match(content, /inspection_evidence/);
   assert.match(content, /inspection_inputs/);
   assert.match(content, /judgment_delta/);
+  assert.match(content, /effective freshness policy/);
+  assert.match(content, /inspected content surface by default/);
+  assert.doesNotMatch(content, /adequately covered for the current head\./);
 });
 
 test('parallel dispatch record command and prompt include inspection fields', async () => {
@@ -98,12 +130,19 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /inspection_evidence/);
   assert.match(content, /inspection_inputs/);
   assert.match(content, /judgment_delta/);
+  assert.match(content, /actual source, test, Story, Spec, contract, or config files/i);
+  assert.match(content, /generated `.vibepro` artifact alone is not a content surface/i);
+  assert.match(content, /Do not add `--strict-head-binding` unless making a deliberate CLI override/i);
+  assert.match(content, /`--strict-head-reason` is required/i);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
+  const before = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const beforeRole = before.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(beforeRole.lifecycle.effective_status, 'running');
   await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
     stage: 'gate',
@@ -115,6 +154,13 @@ test('recordAgentReview without inspection flags rejects gate_evidence pass (INV
     agentId: 'task-test-1',
     agentClosed: true
   }), /requires --inspection-summary/);
+  const after = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const afterRole = after.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(afterRole.effective_status, 'missing');
+  assert.equal(afterRole.lifecycle.effective_status, 'running');
+  assert.equal(after.stages[0].lifecycle.closed_count, 0);
+  const reviewDirFiles = await readdir(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate'));
+  assert.equal(reviewDirFiles.some((file) => file.startsWith('review-result-gate_evidence')), false);
 });
 
 test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async () => {

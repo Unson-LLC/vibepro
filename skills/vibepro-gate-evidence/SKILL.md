@@ -23,14 +23,14 @@ Use this Skill when recording `vibepro verify record` / `vibepro review record` 
 
 ## Commit Ordering Rule (most important)
 
-Every verification record and review record is bound to the current git head. Committing after recording makes all of it stale.
+Verification and review records are content-surface-bound by default. A later commit only makes them stale when it changes a recorded target or inspected file. Configured high-risk review roles remain strict-HEAD-bound; a CLI override requires both `--strict-head-binding` and `--strict-head-reason`.
 
-1. Finalize the **entire tree first**: implementation, tests, Story/Spec/Architecture docs, frontmatter, lineage, config registration.
+1. Finalize the intended verification and review surfaces first: implementation, tests, relevant Story/Spec/Architecture docs, frontmatter, lineage, config registration.
 2. Then record verification evidence.
 3. Then run Agent Review last, in one pass.
 4. Only then `pr prepare` → `pr create`.
 
-Touching any file listed in a review's inspected surface (even a Story doc) after the review invalidates it. If main advances underneath you, expect a PR-freshness rebase; after `ready_for_pr_create=true`, push and create the PR immediately to close the window.
+Touching any file listed in a review's inspected surface (even a Story doc) after the review invalidates that review. An unrelated main advance does not invalidate a content-scoped review. Strict roles still invalidate on every HEAD change.
 
 ## Verification Evidence
 
@@ -45,7 +45,8 @@ Touching any file listed in a review's inspected surface (even a Story doc) afte
 Order per role: `review prepare` → `review start` (with the **real** subagent id) → dispatch the subagent → `review close --close-reason completed` → `review record --agent-closed`.
 
 - Started with a placeholder id? Repair: `close --close-reason replaced` → `start` with the real id → `close completed` → `record`.
-- Always pass `--inspection-input <ref>` listing the real files inspected. Without it the record cannot be reused across head moves. Keep the list honest and minimal — every listed file that later changes makes the review stale.
+- Always pass `--inspection-input <ref>` listing the real source, test, Story, Spec, contract, or config files inspected. A review-request path or generated `.vibepro` artifact alone is not a content surface. Keep the list honest and minimal — every listed file that later changes makes the review stale.
+- Do not append `--strict-head-binding` to every review. Configured strict roles apply automatically; a deliberate override must include `--strict-head-reason <text>`.
 - `vibepro review repair <repo> --story-id <id>` generates the prepare→start→close→record command sequence for incomplete review evidence.
 - Subagent dispatch prompt must state explicitly: work autonomously without spawning further agents, do not run the full test suite yourself (read the coordinator's run logs instead), and the final message of this run must be the verdict JSON only. Omitting these produces subagents that return no verdict.
 - After a rebase, a differential re-review (one subagent covering multiple roles over the delta scope) is a valid fast path.

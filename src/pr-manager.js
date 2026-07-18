@@ -2154,8 +2154,8 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
   });
 }
 
-function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
-  return [
+function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null } = {}) {
+  const command = [
     'vibepro review record .',
     '--id',
     shellQuote(storyId),
@@ -2163,7 +2163,7 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
     shellQuote(stage),
     '--role',
     shellQuote(roleArg),
-    '--status pass',
+    '--status <pass|needs_changes|block>',
     '--summary "<summary>"',
     '--inspection-summary "<inspection-summary>"',
     '--inspection-evidence <inspection-evidence>',
@@ -2175,6 +2175,8 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
     '--agent-thread-id <agent-thread-id>',
     '--agent-closed'
   ].join(' ');
+  if (contentBinding?.mode !== 'strict_head') return command;
+  return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
 function buildReviewPrepareCommand(storyId, stage, roles = []) {
@@ -11330,19 +11332,41 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
   if (artifact.artifact_type === 'verification_command') {
     const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
     const commandArg = artifact.command ? ` --command ${shellQuote(artifact.command)}` : '';
+    const summaryArg = artifact.summary ? ` --summary ${shellQuote(artifact.summary)}` : '';
+    const artifactArg = artifact.artifact ? ` --artifact ${shellQuote(artifact.artifact)}` : '';
+    const targetArgs = (artifact.observation?.targets ?? [])
+      .map((target) => ` --target ${shellQuote(target)}`)
+      .join('');
+    const scenarioArgs = (artifact.observation?.scenarios ?? [])
+      .map((scenario) => ` --scenario ${shellQuote(scenario)}`)
+      .join('');
+    const observedArgs = Object.entries(artifact.observation?.values ?? {})
+      .map(([key, value]) => ` --observed ${shellQuote(`${key}=${value}`)}`)
+      .join('');
+    const strictFreshnessArg = artifact.content_binding?.mode === 'strict_head'
+      ? ' --strict-head-binding'
+      : '';
     return [
-      `vibepro verify record . --id ${storyArg} --kind ${kindArg} --status pass${commandArg}`,
+      `vibepro verify record . --id ${storyArg} --kind ${kindArg} --status pass${commandArg}${summaryArg}${artifactArg}${targetArgs}${scenarioArgs}${observedArgs}${strictFreshnessArg}`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
   if (artifact.artifact_type === 'agent_review_result') {
     const stageArg = artifact.stage ? shellQuote(artifact.stage) : '<stage>';
     const roleArg = artifact.role ? shellQuote(artifact.role) : '<role>';
+    const recordCommand = buildReviewRecordCommandTemplate(
+      storyId ?? '<story-id>',
+      artifact.stage ?? '<stage>',
+      artifact.role ?? '<role>'
+    );
+    const strictFreshnessArgs = artifact.content_binding?.mode === 'strict_head'
+      ? ' --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"'
+      : '';
     return [
       `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
       `vibepro review start . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-system codex --agent-id <agent-id>`,
       `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      `vibepro review record . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-transcript <artifact> --agent-closed --agent-close-evidence <artifact>`,
+      `${recordCommand}${strictFreshnessArgs} --agent-transcript <artifact> --agent-close-evidence <artifact>`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
@@ -11418,7 +11442,9 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       artifact_type: 'verification_command',
       kind: command.kind ?? null,
       command: command.command ?? null,
-      artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
+      summary: command.summary ?? null,
+      artifact: command.artifact ?? null,
+      observation: command.observation ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
       recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
       recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,
@@ -12710,7 +12736,8 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
       stage: item.stage,
       role: item.role,
       recoveryKind,
-      lifecycleRecovery
+      lifecycleRecovery,
+      contentBinding: role?.content_binding ?? null
     })
   };
 }
@@ -12758,11 +12785,11 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   };
 }
 
-function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery }) {
+function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
   const prepareCommand = `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`;
   const startCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`;
-  const recordCommand = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-closed`;
+  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, { contentBinding });
   if (recoveryKind === 'timed_out') {
     return [
       lifecycleRecovery?.close_command,
@@ -12840,6 +12867,7 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
   });
   const missing = inspectedRoles.filter((role) => role.missing.length > 0);
   const status = missing.length === 0 ? 'passed' : 'needs_inspection';
+  const storyId = agentReviews?.story_id ?? '<story-id>';
   return {
     id: 'gate:review_inspection_required',
     type: 'review_inspection_required_gate',
@@ -12853,7 +12881,7 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
     missing_inspections: missing,
     required_actions: missing.length === 0 ? [] : [
       `Record inspection summary and evidence for high-risk review role(s): ${missing.map((role) => `${role.stage}:${role.role}`).join(', ')}`,
-      'Use `vibepro review record --inspection-summary "<summary>" --inspection-evidence <ref> ... --agent-closed` for each missing role',
+      ...missing.map((role) => buildReviewRecordCommandTemplate(storyId, role.stage, role.role)),
       'Rerun `vibepro pr prepare` after current-bound inspection evidence is recorded'
     ],
     reason: status === 'passed'
@@ -14133,9 +14161,9 @@ function formatCriticalGateEvidenceInstructions(gates) {
         return `${gate.label ?? gate.id} requires workflow-heavy evidence: explicit scenario clauses, production path matrix coverage, and passing flow replay evidence.`;
       }
       if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and using the generated review requests with permitted Codex/Claude Code subagents.`;
-      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for the current git head, dirty fingerprint, and closed subagent lifecycle.`;
+      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for its effective freshness policy (content surface by default; current HEAD only for strict roles), current dirty fingerprint, and closed subagent lifecycle.`;
       if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned review role.`;
-      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires `vibepro review prepare` plus passing `vibepro review record --execution-mode parallel_subagent --agent-closed` results from permitted Codex/Claude Code subagents for the current git head, dirty fingerprint, and closed subagent lifecycle.';
+      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires `vibepro review prepare` plus passing `vibepro review record --execution-mode parallel_subagent --agent-closed` results from permitted Codex/Claude Code subagents under each role\'s effective freshness policy (content surface by default; current HEAD only for strict roles), current dirty fingerprint, and closed subagent lifecycle.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })

@@ -27,12 +27,15 @@ vibepro review record . \
   --reviewer-identity separate_session \
   --implementation-session-id <implementation-session> \
   --inspection-summary "<what was inspected>" \
-  --inspection-input <diff-or-artifact> \
-  --inspection-evidence <transcript-or-result>
+  --inspection-input <source-test-story-spec-contract-or-config> \
+  --inspection-evidence <transcript-or-result> \
+  --judgment-delta "<initial judgment -> final judgment because evidence>"
 
 vibepro review status . --id <story-id> --stage gate
 ```
 
-Valid review statuses are `pass`, `needs_changes`, and `block`. Any commit after recording makes head-bound evidence stale; fix accepted findings, re-verify, and repeat the review once for the final tree.
+Valid review statuses are `pass`, `needs_changes`, and `block`. A passing review must name an existing non-`.vibepro` source, test, Story, Spec, contract, or config as an inspection input; generated `.vibepro` artifacts alone do not define an inspection surface.
+
+Normal roles are content-surface-bound by default: later commits preserve the review while its inspected surface is unchanged, and changes to that surface make it stale. `gate_evidence`, `release_risk`, role policies with a reason, and `--strict-head-binding --strict-head-reason <reason>` remain strict HEAD-bound and become stale after any commit. Fix accepted findings, re-verify, and repeat only the reviews invalidated by the final tree.
 
 Adjudication is a separate independent judgment. Use `adjudicate prepare` and `adjudicate record` for clause-by-clause demonstration and senior-judgment items after the implementation and evidence are final.

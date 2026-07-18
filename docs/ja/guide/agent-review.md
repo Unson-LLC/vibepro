@@ -27,12 +27,15 @@ vibepro review record . \
   --reviewer-identity separate_session \
   --implementation-session-id <implementation-session> \
   --inspection-summary "<what was inspected>" \
-  --inspection-input <diff-or-artifact> \
-  --inspection-evidence <transcript-or-result>
+  --inspection-input <source-test-story-spec-contract-or-config> \
+  --inspection-evidence <transcript-or-result> \
+  --judgment-delta "<initial judgment -> final judgment because evidence>"
 
 vibepro review status . --id <story-id> --stage gate
 ```
 
-有効なstatusは `pass`、`needs_changes`、`block` です。record後のcommitはhead-bound evidenceをstaleにします。accepted findingを修正し、再検証して、final treeに対するreviewを一度だけ取り直します。
+有効なstatusは `pass`、`needs_changes`、`block` です。`pass` のinspection inputには、実際に読んだ `.vibepro` 外のsource、test、Story、Spec、contract、configを指定します。生成された `.vibepro` artifactだけではinspection surfaceになりません。
+
+通常roleのreviewは既定でcontent-surface-boundです。record後にcommitが増えてもinspection surfaceが不変ならcurrentを維持し、inspection surfaceを変更するとstaleになります。`gate_evidence`、`release_risk`、理由付きrole policy、または `--strict-head-binding --strict-head-reason <reason>` のreviewはstrict HEAD-boundで、任意のcommit後にstaleになります。accepted findingを修正し、再検証して、final treeに対するreviewを取り直します。
 
 Adjudicationは別の独立判断です。実装と証跡の確定後、`adjudicate prepare` / `adjudicate record` でSpec clauseのdemonstrationとSenior Judgment itemを裁定します。

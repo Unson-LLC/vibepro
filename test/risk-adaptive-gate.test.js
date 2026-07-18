@@ -898,6 +898,14 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.current_stage_work.map((item) => `${item.stage}:${item.role}:${item.recovery_kind}`), [
     'architecture_spec:regression_risk:missing'
   ]);
+  const recoveryRecordCommand = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands
+    .find((command) => command.startsWith('vibepro review record'));
+  assert.ok(recoveryRecordCommand);
+  assert.match(recoveryRecordCommand, /--inspection-summary "<inspection-summary>"/);
+  assert.match(recoveryRecordCommand, /--inspection-evidence <inspection-evidence>/);
+  assert.match(recoveryRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+  assert.match(recoveryRecordCommand, /--status <pass\|needs_changes\|block>/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
     'test_plan',
     'implementation',
@@ -982,7 +990,9 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
     '--agent-system', 'codex',
     '--execution-mode', 'parallel_subagent',
     '--agent-id', 'agent-regression-risk',
-    '--agent-closed'
+    '--agent-closed',
+    '--strict-head-binding',
+    '--strict-head-reason', 'the complete workflow release head is the review subject'
   ])).exitCode, 0);
 
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status-v2"; }\n');
@@ -1012,6 +1022,10 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
   assert.equal(plan.current_stage_work[0].lifecycle.lifecycle_id, 'lifecycle-timeout');
   assert.match(plan.current_stage_work[0].lifecycle.close_command, /review close .*--agent-id "agent-timeout".*--close-reason timeout/);
   assert.match(plan.current_stage_work[0].lifecycle.replacement_command, /review start .*--replacement-for lifecycle-timeout/);
+  const strictRecoveryCommand = plan.current_stage_work[0].next_commands
+    .find((command) => command.startsWith('vibepro review record'));
+  assert.match(strictRecoveryCommand, /--strict-head-binding/);
+  assert.match(strictRecoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
   assert.equal(plan.first_command, plan.current_stage_work[0].lifecycle.close_command);
   assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), [
     'test_plan',

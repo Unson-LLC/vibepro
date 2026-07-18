@@ -267,6 +267,14 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
     'pass',
     '--summary',
     'agent id only must not verify',
+    '--inspection-summary',
+    'inspected the fake-value workflow fixture before evaluating provenance',
+    '--inspection-evidence',
+    'runtime contract provenance fixture',
+    '--inspection-input',
+    'src/fake-value-workflow.js',
+    '--judgment-delta',
+    'runtime contract present -> provenance remains unverified because only an agent id was supplied',
     '--agent-system',
     'codex',
     '--execution-mode',
@@ -351,9 +359,9 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
     '--summary',
     'gate evidence handoff is reconstructable',
     '--inspection-summary',
-    'read Gate DAG and verification evidence',
+    'read the workflow source that drives Gate DAG and verification evidence',
     '--inspection-input',
-    '.vibepro/pr/story-vibepro-fake-value-hardening/gate-dag.json',
+    'src/fake-value-workflow.js',
     '--judgment-delta',
     'missing handoff -> concrete input and judgment delta recorded',
     '--agent-system',
@@ -367,7 +375,7 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
     '--agent-closed'
   ]);
   assert.equal(validGatePass.exitCode, 0);
-  assert.deepEqual(validGatePass.result.review.inspection.inputs, ['.vibepro/pr/story-vibepro-fake-value-hardening/gate-dag.json']);
+  assert.deepEqual(validGatePass.result.review.inspection.inputs, ['src/fake-value-workflow.js']);
   assert.equal(validGatePass.result.review.judgment_delta.length, 1);
 });
 
