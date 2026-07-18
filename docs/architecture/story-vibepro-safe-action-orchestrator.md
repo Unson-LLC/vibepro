@@ -7,6 +7,8 @@ related_stories:
   - story-vibepro-safe-action-orchestrator
   - story-vibepro-guarded-run-session-contract
   - story-vibepro-run-context-capsule
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 ---
 
 # VibePro Safe Action Orchestrator Architecture
