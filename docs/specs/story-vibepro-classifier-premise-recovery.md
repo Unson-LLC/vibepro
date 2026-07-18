@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-classifier-premise-recovery
 title: Classifier Premise Recovery Spec
+parent_design: vibepro-classifier-premise-recovery
 status: final
 ---
 
