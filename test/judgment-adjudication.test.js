@@ -12,7 +12,10 @@ import {
   collectJudgmentItems,
   prepareJudgmentAdjudication,
   readJudgmentAdjudicationIfExists,
-  recordJudgmentAdjudication
+  recordJudgmentAdjudication,
+  recordPremiseCorrection,
+  resolveCurrentJudgmentState,
+  summarizeJudgmentAdjudicationForPr
 } from '../src/adjudication.js';
 import { preparePullRequest } from '../src/pr-manager.js';
 
@@ -170,8 +173,8 @@ test('JADJ-S-004 record --judgment validates verdict, reason, provenance, binds 
   const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
   assert.equal(result.entry.head_commit, stdout.trim());
   const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
-  assert.equal(stored.verdicts.length, 1);
-  assert.equal(stored.verdicts[0].item_id, 'axis:public_contract');
+  assert.equal(stored.events.length, 1);
+  assert.equal(stored.events[0].item_id, 'axis:public_contract');
 
   const nonGit = await mkdtemp(path.join(os.tmpdir(), 'vibepro-judgment-nogit-'));
   await mkdir(path.join(nonGit, '.vibepro'), { recursive: true });
@@ -341,3 +344,291 @@ test('JADJ-S-011 corrupt artifacts are reported as parse failures, not silently 
     /exists but is not valid JSON/
   );
 });
+
+test('CPR-S-001 new unsound verdicts require an explicit cause and records are append-only v2 events', async () => {
+  const repo = await makeRepo();
+  const base = {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_unsound',
+    reason: 'classifier assumed a public output change that is absent from the diff',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  };
+  await assert.rejects(() => recordJudgmentAdjudication(repo, base), /--unsound-cause/);
+  await assert.rejects(
+    () => recordJudgmentAdjudication(repo, { ...base, unsoundCause: 'unknown' }),
+    /implementation_unsound, classifier_premise_unsound/
+  );
+  await assert.rejects(
+    () => recordJudgmentAdjudication(repo, { ...base, verdict: 'judged_sound', unsoundCause: 'implementation_unsound' }),
+    /only valid with judged_unsound/
+  );
+
+  const first = await recordJudgmentAdjudication(repo, { ...base, unsoundCause: 'classifier_premise_unsound' });
+  const second = await recordJudgmentAdjudication(repo, {
+    ...base,
+    itemId: 'spine:current_reality',
+    verdict: 'judged_sound',
+    reason: 'runtime evidence answers the item',
+    unsoundCause: null,
+    agentId: 'judge-other'
+  });
+  assert.match(first.entry.event_id, /.+/);
+  assert.equal(first.entry.unsound_cause, 'classifier_premise_unsound');
+  assert.equal(second.records.schema_version, '0.2.0');
+  assert.equal(second.records.model, 'vibepro-judgment-dag-adjudication-v2');
+  assert.equal(second.records.events.length, 2);
+  assert.deepEqual(second.records.events.map((event) => event.event_id), [first.entry.event_id, second.entry.event_id]);
+});
+
+test('CPR-S-002 correction validates lineage and evidence, then only a different linked judge can resolve it', async () => {
+  const repo = await makeRepo();
+  const evidencePath = path.join(repo, 'docs', 'premise-proof.md');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
+  await writeFile(evidencePath, '# Replacement evidence\n\nThe public output is unchanged.\n', 'utf8');
+  const original = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_unsound',
+    unsoundCause: 'classifier_premise_unsound',
+    reason: 'classifier assumed a public output change',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  });
+
+  await assert.rejects(() => recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:other',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff and compatibility fixture prove the corrected premise',
+    replacementEvidence: ['docs/premise-proof.md'],
+    agentSystem: 'codex',
+    agentId: 'operator'
+  }), /same item/);
+
+  const correction = await recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff and compatibility fixture prove the corrected premise',
+    replacementEvidence: ['docs/premise-proof.md'],
+    agentSystem: 'codex',
+    agentId: 'operator'
+  });
+  assert.equal(correction.entry.type, 'premise_correction');
+  assert.match(correction.entry.replacement_evidence[0].sha256, /^[a-f0-9]{64}$/);
+
+  const items = [{ id: 'axis:public_contract' }];
+  let artifact = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  let gate = buildJudgmentDagAdjudicationGate({ storyId: STORY_ID, items, adjudication: artifact, headSha: await gitHead(repo) });
+  assert.equal(gate.status, 'needs_evidence');
+  assert.deepEqual(gate.pending_correction_items, ['axis:public_contract']);
+
+  await assert.rejects(() => recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    correctionId: correction.entry.event_id,
+    verdict: 'judged_sound',
+    reason: 'same judge cannot independently re-adjudicate',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  }), /different independent judge/);
+
+  await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    correctionId: correction.entry.event_id,
+    verdict: 'judged_sound',
+    reason: 'replacement evidence proves the corrected premise and the item now holds',
+    agentSystem: 'codex',
+    agentId: 'judge-fresh'
+  });
+  artifact = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  gate = buildJudgmentDagAdjudicationGate({ storyId: STORY_ID, items, adjudication: artifact, headSha: await gitHead(repo) });
+  assert.equal(gate.status, 'passed');
+  assert.equal(artifact.events.length, 3);
+  assert.deepEqual(artifact.events.map((event) => event.type), ['verdict', 'premise_correction', 'verdict']);
+});
+
+test('CPR-S-003 resolver is reference-driven, order-independent, and legacy unsound remains implementation failure', () => {
+  const original = {
+    event_id: 'verdict-original', type: 'verdict', item_id: 'axis:public_contract',
+    verdict: 'judged_unsound', unsound_cause: 'classifier_premise_unsound', responds_to_correction_id: null,
+    reason: 'wrong premise', provenance: { agent_system: 'codex', agent_id: 'judge-a' }, head_commit: 'head-1'
+  };
+  const correction = {
+    event_id: 'correction-1', type: 'premise_correction', item_id: 'axis:public_contract',
+    corrects_verdict_id: 'verdict-original', wrong_premise: 'changed', corrected_premise: 'unchanged',
+    reason: 'replacement evidence', replacement_evidence: [{ artifact: 'docs/proof.md', sha256: 'a'.repeat(64) }],
+    provenance: { agent_system: 'codex', agent_id: 'operator' }, head_commit: 'head-1'
+  };
+  const resolved = {
+    event_id: 'verdict-resolved', type: 'verdict', item_id: 'axis:public_contract', verdict: 'judged_sound',
+    unsound_cause: null, responds_to_correction_id: 'correction-1', reason: 'holds now',
+    provenance: { agent_system: 'codex', agent_id: 'judge-b' }, head_commit: 'head-1'
+  };
+  const options = { storyId: STORY_ID, itemIds: ['axis:public_contract'], headSha: 'head-1' };
+  const forward = resolveCurrentJudgmentState({ ...options, adjudication: { story_id: STORY_ID, events: [original, correction, resolved] } });
+  const reverse = resolveCurrentJudgmentState({ ...options, adjudication: { story_id: STORY_ID, events: [resolved, correction, original] } });
+  assert.deepEqual(reverse, forward);
+  assert.equal(forward.items[0].status, 'resolved');
+
+  const legacyGate = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:public_contract' }],
+    adjudication: { story_id: STORY_ID, verdicts: [{ item_id: 'axis:public_contract', verdict: 'judged_unsound', reason: 'legacy gap', head_commit: 'head-1' }] },
+    headSha: 'head-1'
+  });
+  assert.equal(legacyGate.status, 'failed');
+  assert.equal(legacyGate.judged_unsound_items[0].unsound_cause, 'implementation_unsound');
+});
+
+test('CPR-S-004 summary counts resolved current item state, not append-only history rows', () => {
+  const events = [
+    { event_id: 'v1', type: 'verdict', item_id: 'axis:x', verdict: 'judged_unsound', unsound_cause: 'classifier_premise_unsound', reason: 'wrong', provenance: { agent_system: 'codex', agent_id: 'a' }, head_commit: 'h' },
+    { event_id: 'c1', type: 'premise_correction', item_id: 'axis:x', corrects_verdict_id: 'v1', wrong_premise: 'x', corrected_premise: 'y', reason: 'proof', replacement_evidence: [{ artifact: 'docs/p.md', sha256: 'a'.repeat(64) }], provenance: { agent_system: 'codex', agent_id: 'op' }, head_commit: 'h' },
+    { event_id: 'v2', type: 'verdict', item_id: 'axis:x', verdict: 'judged_sound', responds_to_correction_id: 'c1', reason: 'ok', provenance: { agent_system: 'codex', agent_id: 'b' }, head_commit: 'h' }
+  ];
+  const summary = summarizeJudgmentAdjudicationForPr({ items: [{ id: 'axis:x' }], adjudication: { story_id: STORY_ID, events }, headSha: 'h', storyId: STORY_ID });
+  assert.equal(summary.fresh_verdict_count, 1);
+  assert.equal(summary.judged_sound_count, 1);
+  assert.equal(summary.judged_unsound_count, 0);
+});
+
+test('CPR-S-005 implementation failures cannot be corrected and a linked unsound re-adjudication remains failed', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'proof.md'), 'replacement proof\n', 'utf8');
+  const implementationFailure = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:implementation',
+    verdict: 'judged_unsound',
+    unsoundCause: 'implementation_unsound',
+    reason: 'the implementation does not preserve the contract',
+    agentSystem: 'codex',
+    agentId: 'judge-a'
+  });
+  await assert.rejects(() => recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:implementation',
+    originalVerdictId: implementationFailure.entry.event_id,
+    incorrectPremise: 'contract changed',
+    correctedPremise: 'contract unchanged',
+    reason: 'attempted waiver',
+    replacementEvidence: ['docs/proof.md'],
+    agentSystem: 'codex',
+    agentId: 'operator'
+  }), /only classifier_premise_unsound/);
+
+  const classifierFailure = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:classifier',
+    verdict: 'judged_unsound',
+    unsoundCause: 'classifier_premise_unsound',
+    reason: 'classifier premise is wrong',
+    agentSystem: 'codex',
+    agentId: 'judge-a'
+  });
+  const correction = await recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:classifier',
+    originalVerdictId: classifierFailure.entry.event_id,
+    incorrectPremise: 'output changed',
+    correctedPremise: 'output unchanged',
+    reason: 'proof corrects the premise',
+    replacementEvidence: ['docs/proof.md'],
+    agentSystem: 'codex',
+    agentId: 'operator'
+  });
+  await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:classifier',
+    correctionId: correction.entry.event_id,
+    verdict: 'judged_unsound',
+    unsoundCause: 'implementation_unsound',
+    reason: 'the corrected premise reveals a real implementation gap',
+    agentSystem: 'codex',
+    agentId: 'judge-b'
+  });
+  const artifact = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  const gate = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:implementation' }, { id: 'axis:classifier' }],
+    adjudication: artifact,
+    headSha: await gitHead(repo)
+  });
+  assert.equal(gate.status, 'failed');
+  assert.ok(gate.judged_unsound_items.some((item) => item.item_id === 'axis:classifier'
+    && item.reason.includes('real implementation gap')));
+});
+
+test('CPR-S-006 malformed correction lineage fails closed instead of selecting a convenient array entry', () => {
+  const artifact = {
+    story_id: STORY_ID,
+    events: [
+      {
+        event_id: 'v1', type: 'verdict', item_id: 'axis:x', verdict: 'judged_unsound',
+        unsound_cause: 'classifier_premise_unsound', reason: 'wrong premise',
+        provenance: { agent_system: 'codex', agent_id: 'a' }, head_commit: 'h'
+      },
+      {
+        event_id: 'c1', type: 'premise_correction', item_id: 'axis:x', corrects_verdict_id: 'missing',
+        wrong_premise: 'x', corrected_premise: 'y', reason: 'proof',
+        replacement_evidence: [{ artifact: 'docs/p.md', sha256: 'a'.repeat(64) }],
+        provenance: { agent_system: 'codex', agent_id: 'op' }, head_commit: 'h'
+      },
+      {
+        event_id: 'v2', type: 'verdict', item_id: 'axis:x', verdict: 'judged_sound',
+        responds_to_correction_id: 'c1', reason: 'looks sound',
+        provenance: { agent_system: 'codex', agent_id: 'b' }, head_commit: 'h'
+      }
+    ]
+  };
+  const gate = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:x' }],
+    adjudication: artifact,
+    headSha: 'h'
+  });
+  assert.equal(gate.status, 'failed');
+  assert.match(gate.reason, /history is invalid/);
+
+  const malformedFields = {
+    story_id: STORY_ID,
+    events: [
+      {
+        type: 'verdict', item_id: 'axis:x', verdict: 'judged_unsound',
+        unsound_cause: 'classifier_premise_unsound', reason: 'missing event id',
+        provenance: null, head_commit: 'h'
+      },
+      {
+        event_id: 'c2', type: 'premise_correction', item_id: 'axis:x', corrects_verdict_id: 'missing',
+        wrong_premise: 'x', corrected_premise: 'y', reason: 'proof',
+        replacement_evidence: [{ artifact: 'docs/p.md', sha256: 'a'.repeat(64) }],
+        provenance: null, head_commit: 'h'
+      },
+      {
+        event_id: 'v3', type: 'verdict', item_id: 'axis:x', verdict: 'judged_sound',
+        responds_to_correction_id: 'c2', reason: 'looks sound', provenance: null, head_commit: 'h'
+      }
+    ]
+  };
+  const malformedGate = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:x' }],
+    adjudication: malformedFields,
+    headSha: 'h'
+  });
+  assert.equal(malformedGate.status, 'failed');
+  assert.match(malformedGate.reason, /history is invalid/);
+});
+
+async function gitHead(repo) {
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  return stdout.trim();
+}

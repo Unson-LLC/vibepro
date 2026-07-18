@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -10,8 +11,10 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 const execFileAsync = promisify(execFile);
 
 export const ADJUDICATION_SCHEMA_VERSION = '0.1.0';
+export const JUDGMENT_ADJUDICATION_SCHEMA_VERSION = '0.2.0';
 export const ADJUDICATION_VERDICTS = ['demonstrated', 'not_demonstrated', 'not_verifiable_by_automation'];
 export const JUDGMENT_ADJUDICATION_VERDICTS = ['judged_sound', 'judged_unsound', 'needs_human_judgment'];
+export const JUDGMENT_UNSOUND_CAUSES = ['implementation_unsound', 'classifier_premise_unsound'];
 
 const VERDICT_DEFINITIONS = {
   demonstrated: '紐づく証拠が、このclauseの成果が実際に起きたことを実証している。証拠の観測内容から成果へ推論の飛躍なしに到達できる場合のみ選ぶ。',
@@ -347,6 +350,229 @@ function requireValue(value, message) {
   return normalized;
 }
 
+function requireCliValue(value, message) {
+  const normalized = requireValue(value, message);
+  if (typeof normalized === 'string' && normalized.startsWith('--')) throw new Error(message);
+  return normalized;
+}
+
+function judgeIdentity(provenance = {}) {
+  const value = provenance && typeof provenance === 'object' ? provenance : {};
+  return `${value.agent_system ?? ''}:${value.agent_id ?? ''}`;
+}
+
+function compareEventIds(a, b) {
+  return String(a?.event_id ?? '').localeCompare(String(b?.event_id ?? ''));
+}
+
+function legacyJudgmentEventId(entry, index) {
+  const digest = createHash('sha256').update(JSON.stringify([index, entry])).digest('hex').slice(0, 24);
+  return `legacy-verdict-${digest}`;
+}
+
+export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = null } = {}) {
+  const source = adjudication && typeof adjudication === 'object' ? adjudication : {};
+  const events = Array.isArray(source.events)
+    ? source.events.map((event) => ({ ...event }))
+    : (Array.isArray(source.verdicts) ? source.verdicts : []).map((entry, index) => ({
+        event_id: entry.event_id ?? legacyJudgmentEventId(entry, index),
+        type: 'verdict',
+        item_id: entry.item_id,
+        verdict: entry.verdict,
+        unsound_cause: entry.verdict === 'judged_unsound'
+          ? (entry.unsound_cause ?? 'implementation_unsound')
+          : null,
+        responds_to_correction_id: entry.responds_to_correction_id ?? null,
+        reason: entry.reason,
+        provenance: entry.provenance ?? null,
+        head_commit: entry.head_commit ?? null,
+        recorded_at: entry.recorded_at ?? null
+      }));
+  return {
+    schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
+    model: 'vibepro-judgment-dag-adjudication-v2',
+    story_id: source.story_id ?? storyId,
+    updated_at: source.updated_at ?? null,
+    events
+  };
+}
+
+function acceptedHumanJudgmentItems(decisions = []) {
+  return new Set(
+    decisions
+      .filter((decision) => decision?.status === 'accepted' && decision?.reason && decision?.artifact)
+      .map((decision) => String(decision.source ?? ''))
+      .filter((source) => source.startsWith('gate:judgment_dag_adjudication:'))
+      .map((source) => source.slice('gate:judgment_dag_adjudication:'.length))
+  );
+}
+
+function validateReplacementEvidence(evidence) {
+  return Array.isArray(evidence)
+    && evidence.length > 0
+    && evidence.every((item) => typeof item?.artifact === 'string'
+      && item.artifact.trim().length > 0
+      && /^[a-f0-9]{64}$/.test(item.sha256 ?? ''));
+}
+
+export function resolveCurrentJudgmentState({
+  storyId = null,
+  itemIds = [],
+  adjudication = null,
+  headSha = null,
+  decisions = []
+} = {}) {
+  const normalized = normalizeJudgmentAdjudicationArtifact(adjudication, { storyId });
+  const invalid = [];
+  if (storyId && normalized.story_id && normalized.story_id !== storyId) {
+    invalid.push(`artifact story_id ${normalized.story_id} does not match ${storyId}`);
+  }
+  const eventById = new Map();
+  for (const event of normalized.events) {
+    if (!event?.event_id || typeof event.event_id !== 'string') {
+      invalid.push('event is missing event_id');
+      continue;
+    }
+    if (eventById.has(event.event_id)) invalid.push(`duplicate event_id ${event.event_id}`);
+    eventById.set(event.event_id, event);
+  }
+  const activeIds = new Set(itemIds);
+  const currentEvents = headSha
+    ? normalized.events.filter((event) => event?.head_commit === headSha)
+    : [];
+  const currentById = new Map(currentEvents.filter((event) => event?.event_id).map((event) => [event.event_id, event]));
+  const correctionsByVerdict = new Map();
+  const responsesByCorrection = new Map();
+  for (const event of currentEvents) {
+    if (!event?.item_id || typeof event.item_id !== 'string') {
+      invalid.push(`event ${event?.event_id ?? '(unknown)'} is missing item_id`);
+      continue;
+    }
+    if (activeIds.size > 0 && !activeIds.has(event.item_id)) {
+      invalid.push(`event ${event.event_id} targets inactive item ${event.item_id}`);
+    }
+    if (event.type === 'premise_correction') {
+      if (!event.corrects_verdict_id) invalid.push(`correction ${event.event_id} is missing corrects_verdict_id`);
+      if (!event.wrong_premise || !event.corrected_premise || !event.reason) {
+        invalid.push(`correction ${event.event_id} is missing premise or reason`);
+      }
+      if (!validateReplacementEvidence(event.replacement_evidence)) {
+        invalid.push(`correction ${event.event_id} has invalid replacement evidence`);
+      }
+      const target = currentById.get(event.corrects_verdict_id);
+      if (!target || target.type !== 'verdict') {
+        invalid.push(`correction ${event.event_id} has a dangling or cross-HEAD verdict reference`);
+      } else {
+        if (target.item_id !== event.item_id) invalid.push(`correction ${event.event_id} must reference a verdict for the same item`);
+        if (target.verdict !== 'judged_unsound' || (target.unsound_cause ?? 'implementation_unsound') !== 'classifier_premise_unsound') {
+          invalid.push(`correction ${event.event_id} may only correct classifier_premise_unsound`);
+        }
+      }
+      const linked = correctionsByVerdict.get(event.corrects_verdict_id) ?? [];
+      linked.push(event);
+      correctionsByVerdict.set(event.corrects_verdict_id, linked);
+      continue;
+    }
+    if (event.type !== 'verdict') {
+      invalid.push(`event ${event.event_id} has unknown type ${event.type ?? '(missing)'}`);
+      continue;
+    }
+    if (!JUDGMENT_ADJUDICATION_VERDICTS.includes(event.verdict)) {
+      invalid.push(`verdict ${event.event_id} has unknown verdict ${event.verdict ?? '(missing)'}`);
+    }
+    const cause = event.unsound_cause ?? (event.verdict === 'judged_unsound' ? 'implementation_unsound' : null);
+    if (event.verdict === 'judged_unsound' && !JUDGMENT_UNSOUND_CAUSES.includes(cause)) {
+      invalid.push(`verdict ${event.event_id} has unknown unsound cause ${cause}`);
+    }
+    if (event.verdict !== 'judged_unsound' && event.unsound_cause) {
+      invalid.push(`verdict ${event.event_id} has unsound cause without judged_unsound`);
+    }
+    if (event.responds_to_correction_id) {
+      const correction = currentById.get(event.responds_to_correction_id);
+      if (!correction || correction.type !== 'premise_correction') {
+        invalid.push(`verdict ${event.event_id} has a dangling or cross-HEAD correction reference`);
+      } else if (correction.item_id !== event.item_id) {
+        invalid.push(`verdict ${event.event_id} must respond to a correction for the same item`);
+      }
+      const linked = responsesByCorrection.get(event.responds_to_correction_id) ?? [];
+      linked.push(event);
+      responsesByCorrection.set(event.responds_to_correction_id, linked);
+    }
+  }
+
+  const humanClosures = acceptedHumanJudgmentItems(decisions);
+  const resolvedItems = itemIds.map((itemId) => {
+    const roots = currentEvents
+      .filter((event) => event.type === 'verdict' && event.item_id === itemId && !event.responds_to_correction_id)
+      .sort(compareEventIds);
+    if (roots.length === 0) return { item_id: itemId, status: 'missing', current_verdict: null, correction: null };
+    if (roots.length > 1) {
+      invalid.push(`item ${itemId} has multiple root verdicts for current HEAD`);
+      return { item_id: itemId, status: 'invalid_history', current_verdict: null, correction: null };
+    }
+    const visited = new Set();
+    let verdict = roots[0];
+    let lastCorrection = null;
+    while (verdict) {
+      if (visited.has(verdict.event_id)) {
+        invalid.push(`item ${itemId} contains a judgment correction cycle`);
+        return { item_id: itemId, status: 'invalid_history', current_verdict: verdict, correction: lastCorrection };
+      }
+      visited.add(verdict.event_id);
+      if (verdict.verdict === 'judged_sound') {
+        return { item_id: itemId, status: 'resolved', current_verdict: verdict, correction: lastCorrection };
+      }
+      if (verdict.verdict === 'needs_human_judgment') {
+        if (verdict.responds_to_correction_id) {
+          return { item_id: itemId, status: 'awaiting_re_adjudication', current_verdict: verdict, correction: lastCorrection };
+        }
+        return {
+          item_id: itemId,
+          status: humanClosures.has(itemId) ? 'resolved' : 'needs_human_judgment',
+          current_verdict: verdict,
+          correction: lastCorrection
+        };
+      }
+      const cause = verdict.unsound_cause ?? 'implementation_unsound';
+      if (cause !== 'classifier_premise_unsound') {
+        return { item_id: itemId, status: 'failed', current_verdict: { ...verdict, unsound_cause: cause }, correction: lastCorrection };
+      }
+      const corrections = (correctionsByVerdict.get(verdict.event_id) ?? []).sort(compareEventIds);
+      if (corrections.length === 0) {
+        return { item_id: itemId, status: 'failed', current_verdict: verdict, correction: lastCorrection };
+      }
+      if (corrections.length > 1) {
+        invalid.push(`verdict ${verdict.event_id} has multiple premise corrections`);
+        return { item_id: itemId, status: 'invalid_history', current_verdict: verdict, correction: null };
+      }
+      lastCorrection = corrections[0];
+      const responses = (responsesByCorrection.get(lastCorrection.event_id) ?? []).sort(compareEventIds);
+      if (responses.length === 0) {
+        return { item_id: itemId, status: 'awaiting_re_adjudication', current_verdict: verdict, correction: lastCorrection };
+      }
+      if (responses.length > 1) {
+        invalid.push(`correction ${lastCorrection.event_id} has multiple re-adjudication verdicts`);
+        return { item_id: itemId, status: 'invalid_history', current_verdict: verdict, correction: lastCorrection };
+      }
+      const response = responses[0];
+      if (judgeIdentity(response.provenance) === judgeIdentity(verdict.provenance)) {
+        invalid.push(`correction ${lastCorrection.event_id} was re-adjudicated by the same judge`);
+        return { item_id: itemId, status: 'invalid_history', current_verdict: response, correction: lastCorrection };
+      }
+      verdict = response;
+    }
+    return { item_id: itemId, status: 'invalid_history', current_verdict: null, correction: lastCorrection };
+  });
+  invalid.sort();
+  return {
+    story_id: normalized.story_id ?? storyId,
+    head_commit: headSha,
+    status: invalid.length > 0 ? 'invalid_history' : 'valid',
+    invalid_reasons: invalid,
+    items: resolvedItems
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Judgment-DAG adjudication: the senior-judgment checklist (spine subchecks,
 // judgment axes, failure modes) is mechanically discharged by token matching.
@@ -449,6 +675,20 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
   const changedFiles = (prPrepare?.git?.changed_files ?? prPrepare?.pr_context?.git?.changed_files ?? [])
     .map((file) => file.path ?? file)
     .slice(0, 100);
+  const headCommit = await resolveHeadCommit(root);
+  const existing = await readJudgmentAdjudicationIfExists(root, storyId);
+  const currentState = resolveCurrentJudgmentState({
+    storyId,
+    itemIds: items.map((item) => item.id),
+    adjudication: existing,
+    headSha: headCommit,
+    decisions: prPrepare?.pr_context?.decision_records?.decisions ?? []
+  });
+  if (currentState.status === 'invalid_history') {
+    throw new Error(
+      `adjudicate prepare --judgment: judgment history is invalid: ${currentState.invalid_reasons.join('; ')}`
+    );
+  }
   const lines = [
     `# Judgment DAG Adjudication Request: ${storyId}`,
     '',
@@ -471,12 +711,30 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
     '',
     ...JUDGMENT_ADJUDICATION_VERDICTS.map((verdict) => `- \`${verdict}\`: ${JUDGMENT_VERDICT_DEFINITIONS[verdict]}`),
     '',
+    '### judged_unsound の原因分類',
+    '',
+    '- `implementation_unsound`: 実装・証拠・判断そのものが成立していない。前提訂正では解決できず、実装または証拠を直して新しいHEADで裁定し直す。',
+    '- `classifier_premise_unsound`: 判定器が差分について置いた前提だけが誤っている。元判定を残したまま、根拠付き前提訂正と別judgeの再裁定が必要。',
+    '- 原因未記録のlegacy `judged_unsound` は安全側で `implementation_unsound` と扱う。generic waiverや設定無効化で代替してはならない。',
+    '',
     '### 記録方法',
     '',
     '項目ごとに以下を実行する（reasonには検討の中身を具体的に書く）:',
     '',
     '```bash',
-    `vibepro adjudicate record . --id ${storyId} --judgment --item <item-id> --verdict <verdict> --reason "<検討内容>" --agent-system <codex|claude_code> --agent-id <subagent-id> [--session-ref <ref>]`,
+    `vibepro adjudicate record . --id ${storyId} --judgment --item <item-id> --verdict <verdict> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] --reason "<検討内容>" --agent-system <codex|claude_code> --agent-id <subagent-id> [--session-ref <ref>]`,
+    '```',
+    '',
+    '`classifier_premise_unsound` の前提だけを訂正する場合:',
+    '',
+    '```bash',
+    `vibepro adjudicate correct . --id ${storyId} --judgment --item <item-id> --original-verdict-id <verdict-event-id> --incorrect-premise "<誤った前提>" --corrected-premise "<訂正後の前提>" --reason "<訂正理由>" --replacement-evidence <workspace-relative-file> --agent-system <codex|claude_code> --agent-id <operator-id>`,
+    '```',
+    '',
+    '訂正後は、元のjudgeとは異なるfresh contextのjudgeが次を実行する:',
+    '',
+    '```bash',
+    `vibepro adjudicate record . --id ${storyId} --judgment --item <item-id> --correction-id <correction-event-id> --verdict <verdict> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] --reason "<再検討内容>" --agent-system <codex|claude_code> --agent-id <different-subagent-id>`,
     '```',
     '',
     '## 変更ファイル',
@@ -486,7 +744,8 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
     '## 判断チェックリスト',
     ''
   ];
-  for (const item of items) {
+  for (const [index, item] of items.entries()) {
+    const state = currentState.items[index];
     lines.push(
       `### ${item.id}`,
       '',
@@ -494,8 +753,25 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
       '',
       `- 機械的消化の現状: ${item.mechanical_status ?? '-'}`,
       `- 一致した証拠: ${item.evidence_summary ?? '（なし）'}`,
+      `- 現在の裁定状態: ${state?.status ?? 'missing'}`,
+      ...(state?.current_verdict ? [
+        `- current verdict event: ${state.current_verdict.event_id}`,
+        `- current verdict: ${state.current_verdict.verdict}`,
+        `- unsound cause: ${state.current_verdict.unsound_cause ?? '-'}`,
+        `- judge reason: ${state.current_verdict.reason ?? '-'}`
+      ] : []),
       ''
     );
+    if (state?.correction) {
+      lines.push(
+        `- correction event: ${state.correction.event_id}`,
+        `- 訂正前提: ${state.correction.wrong_premise}`,
+        `- 訂正後前提: ${state.correction.corrected_premise}`,
+        `- replacement evidence: ${state.correction.replacement_evidence.map((entry) => `${entry.artifact} (${entry.sha256})`).join(', ')}`,
+        `- 再裁定command: \`vibepro adjudicate record . --id ${storyId} --judgment --item ${item.id} --correction-id ${state.correction.event_id} --verdict <verdict> --reason "<再検討内容>" --agent-system <codex|claude_code> --agent-id <different-subagent-id>\``,
+        ''
+      );
+    }
   }
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const requestPath = judgmentAdjudicationRequestPath(root, storyId);
@@ -511,24 +787,66 @@ export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
 }
 
 export async function recordJudgmentAdjudication(repoRoot, options = {}) {
-  const storyId = requireValue(options.storyId, 'adjudicate record --judgment requires --id <story-id>');
-  const itemId = requireValue(options.itemId, 'adjudicate record --judgment requires --item <item-id>');
-  const verdict = requireValue(options.verdict, 'adjudicate record --judgment requires --verdict <verdict>');
+  const storyId = requireCliValue(options.storyId, 'adjudicate record --judgment requires --id <story-id>');
+  const itemId = requireCliValue(options.itemId, 'adjudicate record --judgment requires --item <item-id>');
+  const verdict = requireCliValue(options.verdict, 'adjudicate record --judgment requires --verdict <verdict>');
   if (!JUDGMENT_ADJUDICATION_VERDICTS.includes(verdict)) {
     throw new Error(`adjudicate record --judgment --verdict must be one of: ${JUDGMENT_ADJUDICATION_VERDICTS.join(', ')}`);
   }
-  const reason = requireValue(options.reason, 'adjudicate record --judgment requires --reason <text> so the judgment is auditable');
-  const agentSystem = requireValue(options.agentSystem, 'adjudicate record --judgment requires --agent-system <codex|claude_code>');
-  const agentId = requireValue(options.agentId, 'adjudicate record --judgment requires --agent-id <id> so adjudicator provenance is auditable');
+  const reason = requireCliValue(options.reason, 'adjudicate record --judgment requires --reason <text> so the judgment is auditable');
+  const agentSystem = requireCliValue(options.agentSystem, 'adjudicate record --judgment requires --agent-system <codex|claude_code>');
+  const agentId = requireCliValue(options.agentId, 'adjudicate record --judgment requires --agent-id <id> so adjudicator provenance is auditable');
+  const unsoundCause = options.unsoundCause == null ? null : requireCliValue(
+    options.unsoundCause,
+    'adjudicate record --judgment --verdict judged_unsound requires --unsound-cause <implementation_unsound|classifier_premise_unsound>'
+  );
+  if (verdict === 'judged_unsound' && !unsoundCause) {
+    throw new Error('adjudicate record --judgment --verdict judged_unsound requires --unsound-cause <implementation_unsound|classifier_premise_unsound>');
+  }
+  if (verdict === 'judged_unsound' && !JUDGMENT_UNSOUND_CAUSES.includes(unsoundCause)) {
+    throw new Error(`adjudicate record --judgment --unsound-cause must be one of: ${JUDGMENT_UNSOUND_CAUSES.join(', ')}`);
+  }
+  if (verdict !== 'judged_unsound' && unsoundCause) {
+    throw new Error('adjudicate record --judgment --unsound-cause is only valid with judged_unsound');
+  }
+  const correctionId = options.correctionId == null ? null : requireCliValue(
+    options.correctionId,
+    'adjudicate record --judgment --correction-id requires an event id'
+  );
   const root = path.resolve(repoRoot);
   const headCommit = await resolveHeadCommit(root);
   if (!headCommit) {
     throw new Error('adjudicate record --judgment could not resolve the current HEAD commit (git rev-parse HEAD failed); verdicts must be head-bound, so run this command inside the target git repository');
   }
   const existing = await readJudgmentAdjudicationIfExists(root, storyId);
+  const normalized = normalizeJudgmentAdjudicationArtifact(existing, { storyId });
+  if (normalized.story_id && normalized.story_id !== storyId) {
+    throw new Error(`judgment adjudication artifact belongs to ${normalized.story_id}, not ${storyId}`);
+  }
+  const currentEvents = normalized.events.filter((event) => event.head_commit === headCommit);
+  let correction = null;
+  if (correctionId) {
+    correction = currentEvents.find((event) => event.event_id === correctionId && event.type === 'premise_correction') ?? null;
+    if (!correction) throw new Error(`--correction-id ${correctionId} does not reference a current-HEAD premise correction`);
+    if (correction.item_id !== itemId) throw new Error(`--correction-id ${correctionId} must reference a correction for the same item`);
+    const original = currentEvents.find((event) => event.event_id === correction.corrects_verdict_id && event.type === 'verdict') ?? null;
+    if (!original) throw new Error(`correction ${correctionId} does not reference a current-HEAD original verdict`);
+    if (judgeIdentity(original.provenance) === judgeIdentity({ agent_system: agentSystem, agent_id: agentId })) {
+      throw new Error('premise correction must be re-adjudicated by a different independent judge');
+    }
+    if (currentEvents.some((event) => event.type === 'verdict' && event.responds_to_correction_id === correctionId)) {
+      throw new Error(`correction ${correctionId} already has a re-adjudication verdict; history is append-only`);
+    }
+  } else if (currentEvents.some((event) => event.type === 'verdict' && event.item_id === itemId && !event.responds_to_correction_id)) {
+    throw new Error(`item ${itemId} already has a current-HEAD root verdict; use a linked premise correction flow instead of overwriting history`);
+  }
   const entry = {
+    event_id: randomUUID(),
+    type: 'verdict',
     item_id: itemId,
     verdict,
+    unsound_cause: verdict === 'judged_unsound' ? unsoundCause : null,
+    responds_to_correction_id: correction?.event_id ?? null,
     reason,
     provenance: {
       agent_system: agentSystem,
@@ -538,16 +856,12 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
     head_commit: headCommit,
     recorded_at: new Date().toISOString()
   };
-  const verdicts = [
-    entry,
-    ...(existing?.verdicts ?? []).filter((item) => item.item_id !== itemId)
-  ];
   const next = {
-    schema_version: ADJUDICATION_SCHEMA_VERSION,
-    model: 'vibepro-judgment-dag-adjudication-v1',
+    schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
+    model: 'vibepro-judgment-dag-adjudication-v2',
     story_id: storyId,
     updated_at: new Date().toISOString(),
-    verdicts
+    events: [...normalized.events, entry]
   };
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
@@ -557,6 +871,97 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
     records: next,
     artifact: toWorkspaceRelative(root, artifactPath)
   };
+}
+
+async function resolveReplacementEvidence(root, artifacts) {
+  if (!Array.isArray(artifacts) || artifacts.length === 0) {
+    throw new Error('adjudicate correct requires at least one --replacement-evidence <workspace-relative-file>');
+  }
+  const resolved = [];
+  for (const rawArtifact of artifacts) {
+    const artifact = requireCliValue(rawArtifact, 'adjudicate correct --replacement-evidence requires a workspace-relative file');
+    if (path.isAbsolute(artifact)) throw new Error(`replacement evidence must be workspace-relative: ${artifact}`);
+    const absolute = path.resolve(root, artifact);
+    const relative = path.relative(root, absolute);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new Error(`replacement evidence must stay inside the workspace: ${artifact}`);
+    }
+    let metadata;
+    let body;
+    try {
+      metadata = await stat(absolute);
+      body = await readFile(absolute);
+    } catch (error) {
+      throw new Error(`replacement evidence is not readable: ${artifact} (${error.message})`);
+    }
+    if (!metadata.isFile()) throw new Error(`replacement evidence must be a regular file: ${artifact}`);
+    resolved.push({
+      artifact: relative.split(path.sep).join('/'),
+      sha256: createHash('sha256').update(body).digest('hex')
+    });
+  }
+  return resolved;
+}
+
+export async function recordPremiseCorrection(repoRoot, options = {}) {
+  const storyId = requireCliValue(options.storyId, 'adjudicate correct requires --id <story-id>');
+  const itemId = requireCliValue(options.itemId, 'adjudicate correct requires --item <item-id>');
+  const originalVerdictId = requireCliValue(options.originalVerdictId, 'adjudicate correct requires --original-verdict-id <event-id>');
+  const wrongPremise = requireCliValue(options.incorrectPremise, 'adjudicate correct requires --incorrect-premise <text>');
+  const correctedPremise = requireCliValue(options.correctedPremise, 'adjudicate correct requires --corrected-premise <text>');
+  const reason = requireCliValue(options.reason, 'adjudicate correct requires --reason <text>');
+  const agentSystem = requireCliValue(options.agentSystem, 'adjudicate correct requires --agent-system <codex|claude_code>');
+  const agentId = requireCliValue(options.agentId, 'adjudicate correct requires --agent-id <id>');
+  const root = path.resolve(repoRoot);
+  const headCommit = await resolveHeadCommit(root);
+  if (!headCommit) {
+    throw new Error('adjudicate correct could not resolve the current HEAD commit (git rev-parse HEAD failed); corrections must be head-bound');
+  }
+  const existing = await readJudgmentAdjudicationIfExists(root, storyId);
+  const normalized = normalizeJudgmentAdjudicationArtifact(existing, { storyId });
+  if (normalized.story_id && normalized.story_id !== storyId) {
+    throw new Error(`judgment adjudication artifact belongs to ${normalized.story_id}, not ${storyId}`);
+  }
+  const currentEvents = normalized.events.filter((event) => event.head_commit === headCommit);
+  const original = currentEvents.find((event) => event.event_id === originalVerdictId && event.type === 'verdict') ?? null;
+  if (!original) throw new Error(`--original-verdict-id ${originalVerdictId} does not reference a current-HEAD verdict`);
+  if (original.item_id !== itemId) throw new Error(`--original-verdict-id ${originalVerdictId} must reference a verdict for the same item`);
+  const cause = original.unsound_cause ?? (original.verdict === 'judged_unsound' ? 'implementation_unsound' : null);
+  if (original.verdict !== 'judged_unsound' || cause !== 'classifier_premise_unsound') {
+    throw new Error('only classifier_premise_unsound verdicts may receive a premise correction; implementation_unsound remains failed');
+  }
+  if (currentEvents.some((event) => event.type === 'premise_correction' && event.corrects_verdict_id === originalVerdictId)) {
+    throw new Error(`verdict ${originalVerdictId} already has a premise correction; history is append-only`);
+  }
+  const replacementEvidence = await resolveReplacementEvidence(root, options.replacementEvidence);
+  const entry = {
+    event_id: randomUUID(),
+    type: 'premise_correction',
+    item_id: itemId,
+    corrects_verdict_id: originalVerdictId,
+    wrong_premise: wrongPremise,
+    corrected_premise: correctedPremise,
+    reason,
+    replacement_evidence: replacementEvidence,
+    provenance: {
+      agent_system: agentSystem,
+      agent_id: agentId,
+      session_ref: options.sessionRef ?? null
+    },
+    head_commit: headCommit,
+    recorded_at: new Date().toISOString()
+  };
+  const next = {
+    schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
+    model: 'vibepro-judgment-dag-adjudication-v2',
+    story_id: storyId,
+    updated_at: new Date().toISOString(),
+    events: [...normalized.events, entry]
+  };
+  await mkdir(adjudicationDir(root, storyId), { recursive: true });
+  const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
+  await writeFile(artifactPath, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
+  return { entry, records: next, artifact: toWorkspaceRelative(root, artifactPath) };
 }
 
 export function buildJudgmentDagAdjudicationGate({
@@ -581,50 +986,56 @@ export function buildJudgmentDagAdjudicationGate({
       reason: 'This route does not carry active judgment items (spine/axes/failure modes are not the release decision surface here). This is explicit non-applicability, not a pass.'
     };
   }
-  const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const freshVerdictByItem = new Map();
-  for (const entry of verdicts) {
-    if (!entry?.item_id) continue;
-    // Fail closed: a verdict without a head_commit, or evaluated without a
-    // known current HEAD, is never fresh.
-    if (!headSha || entry.head_commit !== headSha) continue;
-    freshVerdictByItem.set(entry.item_id, entry);
+  const state = resolveCurrentJudgmentState({
+    storyId,
+    itemIds: items.map((item) => item.id),
+    adjudication,
+    headSha,
+    decisions
+  });
+  if (state.status === 'invalid_history') {
+    return {
+      ...base,
+      status: 'failed',
+      invalid_history: state.invalid_reasons,
+      reason: `Judgment adjudication history is invalid and cannot be resolved safely: ${state.invalid_reasons.join('; ')}.`
+    };
   }
-  const acceptedHumanClosures = new Set(
-    (decisions ?? [])
-      .filter((decision) => decision?.status === 'accepted' && decision?.reason && decision?.artifact)
-      .map((decision) => String(decision.source ?? ''))
-      .filter((source) => source.startsWith('gate:judgment_dag_adjudication:'))
-      .map((source) => source.slice('gate:judgment_dag_adjudication:'.length))
-  );
   const missing = [];
   const unsound = [];
   const needsHuman = [];
-  for (const item of items) {
-    const entry = freshVerdictByItem.get(item.id) ?? null;
-    if (!entry) {
-      missing.push(item.id);
-      continue;
+  const pendingCorrections = [];
+  for (const item of state.items) {
+    if (item.status === 'missing') missing.push(item.item_id);
+    if (item.status === 'failed') {
+      unsound.push({
+        item_id: item.item_id,
+        reason: item.current_verdict?.reason,
+        unsound_cause: item.current_verdict?.unsound_cause ?? 'implementation_unsound',
+        verdict_id: item.current_verdict?.event_id ?? null
+      });
     }
-    if (entry.verdict === 'judged_unsound') {
-      unsound.push({ item_id: item.id, reason: entry.reason });
-      continue;
+    if (item.status === 'needs_human_judgment') {
+      needsHuman.push({ item_id: item.item_id, reason: item.current_verdict?.reason });
     }
-    if (entry.verdict === 'needs_human_judgment' && !acceptedHumanClosures.has(item.id)) {
-      needsHuman.push({ item_id: item.id, reason: entry.reason });
-    }
+    if (item.status === 'awaiting_re_adjudication') pendingCorrections.push(item.item_id);
   }
   if (unsound.length > 0) {
+    const classifierRecovery = unsound
+      .filter((item) => item.unsound_cause === 'classifier_premise_unsound')
+      .map((item) => `For ${item.item_id}, record an evidence-backed premise correction with `
+        + `\`vibepro adjudicate correct . --id ${storyId} --judgment --item ${item.item_id} --original-verdict-id ${item.verdict_id} ...\`.`);
     return {
       ...base,
       status: 'failed',
       judged_unsound_items: unsound,
       reason: `Judge ruled ${unsound.length} judgment item(s) unsound (tokens present but the judgment does not hold): `
-        + unsound.map((item) => `${item.item_id} (${item.reason})`).join('; ')
-        + '. Address the judgment gap, then re-run judgment adjudication.'
+        + unsound.map((item) => `${item.item_id} [${item.unsound_cause}] (${item.reason})`).join('; ')
+        + '. implementation_unsound requires an implementation/evidence change and a new-HEAD adjudication. '
+        + (classifierRecovery.length > 0 ? classifierRecovery.join(' ') : '')
     };
   }
-  if (missing.length > 0 || needsHuman.length > 0) {
+  if (missing.length > 0 || needsHuman.length > 0 || pendingCorrections.length > 0) {
     const reasons = [];
     if (missing.length > 0) {
       reasons.push(`${missing.length} judgment item(s) have no current-head adjudication: ${missing.join(', ')}. `
@@ -635,11 +1046,16 @@ export function buildJudgmentDagAdjudicationGate({
         + needsHuman.map((item) => item.item_id).join(', ')
         + '. Close each with a decision record: `vibepro decision record . --id <story-id> --type needs_review --source gate:judgment_dag_adjudication:<item-id> --status accepted --reason <human-judgment> --artifact <evidence-path>`.');
     }
+    if (pendingCorrections.length > 0) {
+      reasons.push(`${pendingCorrections.length} item(s) have an accepted premise correction but still require fresh linked re-adjudication: ${pendingCorrections.join(', ')}. `
+        + 'Dispatch a different independent judge and record its verdict with `vibepro adjudicate record --judgment --correction-id <correction-event-id>`.');
+    }
     return {
       ...base,
       status: 'needs_evidence',
       missing_items: missing,
       human_judgment_items: needsHuman,
+      pending_correction_items: pendingCorrections,
       reason: reasons.join(' ')
     };
   }
@@ -650,14 +1066,24 @@ export function buildJudgmentDagAdjudicationGate({
   };
 }
 
-export function summarizeJudgmentAdjudicationForPr({ items = [], adjudication = null, headSha = null } = {}) {
-  const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const fresh = verdicts.filter((entry) => Boolean(headSha) && entry.head_commit === headSha);
+export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [], adjudication = null, headSha = null, decisions = [] } = {}) {
+  const state = resolveCurrentJudgmentState({
+    storyId,
+    itemIds: items.map((item) => item.id),
+    adjudication,
+    headSha,
+    decisions
+  });
+  const current = state.items
+    .map((item) => item.current_verdict)
+    .filter(Boolean);
   return {
     item_count: items.length,
-    fresh_verdict_count: fresh.length,
-    judged_sound_count: fresh.filter((entry) => entry.verdict === 'judged_sound').length,
-    judged_unsound_count: fresh.filter((entry) => entry.verdict === 'judged_unsound').length,
-    needs_human_judgment_count: fresh.filter((entry) => entry.verdict === 'needs_human_judgment').length
+    fresh_verdict_count: current.length,
+    judged_sound_count: current.filter((entry) => entry.verdict === 'judged_sound').length,
+    judged_unsound_count: current.filter((entry) => entry.verdict === 'judged_unsound').length,
+    needs_human_judgment_count: current.filter((entry) => entry.verdict === 'needs_human_judgment').length,
+    pending_correction_count: state.items.filter((item) => item.status === 'awaiting_re_adjudication').length,
+    invalid_history_count: state.invalid_reasons.length
   };
 }

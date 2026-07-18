@@ -405,9 +405,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
       decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.judgment_dag_adjudication = summarizeJudgmentAdjudicationForPr({
+      storyId: story.story_id,
       items: judgmentItems,
       adjudication: judgmentRecords,
-      headSha: reviewGit.head_sha
+      headSha: reviewGit.head_sha,
+      decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.gate_dag.nodes.push(judgmentGate);
     prContext.gate_dag.summary.judgment_dag_adjudication = {
