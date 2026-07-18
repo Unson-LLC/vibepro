@@ -477,6 +477,12 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
   assert.match(recoveryCommand, /--status <pass\|needs_changes\|block>/);
   assert.match(recoveryCommand, /--strict-head-binding/);
   assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
+  const statusRecoveryCommand = status.result.blocking_summary.next_commands
+    .find((command) => command.startsWith('vibepro review record'));
+  assert.match(statusRecoveryCommand, /--strict-head-binding/);
+  assert.match(statusRecoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
 });
 
 test('custom strict HEAD role policy requires and persists its rationale', async () => {

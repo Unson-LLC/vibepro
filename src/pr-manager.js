@@ -2154,8 +2154,8 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
   });
 }
 
-function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
-  return [
+function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null } = {}) {
+  const command = [
     'vibepro review record .',
     '--id',
     shellQuote(storyId),
@@ -2175,6 +2175,8 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
     '--agent-thread-id <agent-thread-id>',
     '--agent-closed'
   ].join(' ');
+  if (contentBinding?.mode !== 'strict_head') return command;
+  return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
 function buildReviewPrepareCommand(storyId, stage, roles = []) {
@@ -12718,7 +12720,8 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
       stage: item.stage,
       role: item.role,
       recoveryKind,
-      lifecycleRecovery
+      lifecycleRecovery,
+      contentBinding: role?.content_binding ?? null
     })
   };
 }
@@ -12766,11 +12769,11 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   };
 }
 
-function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery }) {
+function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
   const prepareCommand = `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`;
   const startCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`;
-  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role);
+  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, { contentBinding });
   if (recoveryKind === 'timed_out') {
     return [
       lifecycleRecovery?.close_command,

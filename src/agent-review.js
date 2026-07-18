@@ -863,7 +863,12 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
     reason: requirement.reason ?? null,
     prepared: stage?.parallel_dispatch?.prepared ?? false,
     prepare_command: buildReviewPrepareCommand({ storyId, stage: requirement.stage, roles: [requirement.role] }),
-    record_command: buildReviewRecordCommand({ storyId, stage: requirement.stage, role: requirement.role }),
+    record_command: buildReviewRecordCommand({
+      storyId,
+      stage: requirement.stage,
+      role: requirement.role,
+      contentBinding: role?.content_binding ?? null
+    }),
     artifact: role?.artifact ?? null,
     history_artifacts: role?.history_artifacts ?? [],
     lifecycle: role?.lifecycle ?? null
@@ -1806,7 +1811,7 @@ ${agentSkillDiscipline}
 - Return concrete findings tied to files, behavior, gates, or missing evidence.
 - Use \`block\` for release-blocking bugs, broken contracts, or unverified critical paths.
 - Use \`needs_changes\` when the work may proceed after specific fixes/evidence.
-- Use \`pass\` only when this role's concern is adequately covered for the current head.
+- Use \`pass\` only when this role's concern is adequately covered for its effective freshness policy: the inspected content surface by default, or the current HEAD for a strict HEAD role.
 - Return the result to the coordinator. The coordinator records it with:
   \`${recordCommand}\`
 - Codex coordinators must include the spawned subagent id/thread/call id when recording the result.
@@ -1865,7 +1870,7 @@ ${agentSkillDiscipline}
 - file、挙動、gate、不足証跡に結びつく具体的なfindingを返す。
 - release-blocking bug、壊れたcontract、未検証critical pathには \`block\` を使う。
 - specific fix/evidenceで進められる場合は \`needs_changes\` を使う。
-- このroleの関心がcurrent headに対して十分に満たされている時だけ \`pass\` を使う。
+- このroleの関心がeffective freshness policyに対して十分に満たされている時だけ \`pass\` を使う。既定はinspectionしたcontent surface、strict HEAD roleはcurrent HEADを対象にする。
 - 結果はcoordinatorへ返す。coordinatorは次のcommandで記録する:
   \`${recordCommand}\`
 - Codex coordinatorは記録時にspawned subagent id/thread/call idを含める。
@@ -2048,8 +2053,10 @@ function renderMandatoryReviewLenses(lenses) {
   ].join('\n')).join('\n\n');
 }
 
-function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript <artifact> --agent-closed`;
+function buildReviewRecordCommand({ storyId, stage, role, contentBinding = null }) {
+  const command = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript <artifact> --agent-closed`;
+  if (contentBinding?.mode !== 'strict_head') return command;
+  return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
 function buildReviewStartCommand({ storyId, stage, role, timeoutMs, modelPolicy = null }) {
@@ -2308,7 +2315,7 @@ function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parall
     if (role.effective_status === 'pass') continue;
     if (role.lifecycle?.effective_status === 'running') {
       const latest = role.lifecycle.latest;
-      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${storyId} --stage ${stage} --role ${role.role} ${latest?.agent_id ? `--agent-id "${latest.agent_id}"` : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`} --close-reason completed --close-evidence <evidence>\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${storyId} --stage ${stage} --role ${role.role} ${latest?.agent_id ? `--agent-id "${latest.agent_id}"` : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`} --close-reason completed --close-evidence <evidence>\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
       continue;
     }
     if (!parallelDispatchPrepared) {
@@ -2316,13 +2323,13 @@ function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parall
       continue;
     }
     if (role.effective_status === 'missing') {
-      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
     } else if (role.effective_status === 'stale') {
-      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
     } else if (role.effective_status === 'unverified_agent') {
-      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
     } else if (role.effective_status === 'needs_changes' || role.effective_status === 'block') {
-      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
     }
   }
   return [...new Set(actions)];
@@ -2334,6 +2341,7 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
     return { status: 'legacy', reason: 'review result is not bound to a git head' };
   }
   const contentBinding = await evaluateContentBinding(repoRoot, result.content_binding, currentGitContext);
+  const recordedContentBinding = contentBinding?.content_binding ?? result.content_binding ?? null;
   if (contentBinding?.status === 'current') {
     return contentBinding;
   }
@@ -2344,7 +2352,7 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
     return {
       status: 'stale',
       reason: `strict HEAD review was recorded for ${recorded.head_sha.slice(0, 12)}, current head is ${currentGitContext.head_sha.slice(0, 12)}`,
-      content_binding: contentBinding.content_binding ?? null
+      content_binding: recordedContentBinding
     };
   }
   if (currentGitContext.head_sha && recorded.head_sha !== currentGitContext.head_sha) {
@@ -2353,14 +2361,16 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
       return {
         status: 'reused_merge_delta',
         reason: mergeDeltaReuse.reason,
-        merge_delta_reuse: mergeDeltaReuse
+        merge_delta_reuse: mergeDeltaReuse,
+        content_binding: recordedContentBinding
       };
     }
     return {
       status: 'stale',
       reason: mergeDeltaReuse.reason
         ?? `review was recorded for ${recorded.head_sha.slice(0, 12)}, current head is ${currentGitContext.head_sha.slice(0, 12)}`,
-      merge_delta_reuse: mergeDeltaReuse.recorded_head_sha ? mergeDeltaReuse : null
+      merge_delta_reuse: mergeDeltaReuse.recorded_head_sha ? mergeDeltaReuse : null,
+      content_binding: recordedContentBinding
     };
   }
   const comparison = compareFingerprintContexts(recorded, currentGitContext);
@@ -2369,7 +2379,8 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
       status: 'stale',
       reason: comparison.usingUserFingerprint
         ? 'review was recorded with a different user dirty worktree fingerprint'
-        : 'review was recorded with a different dirty worktree fingerprint'
+        : 'review was recorded with a different dirty worktree fingerprint',
+      content_binding: recordedContentBinding
     };
   }
   const expectedFingerprint = buildSourceFingerprint({
@@ -2382,10 +2393,15 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
   if (result.source_fingerprint && result.source_fingerprint !== expectedFingerprint) {
     return {
       status: 'stale',
-      reason: 'review source fingerprint no longer matches current source artifacts'
+      reason: 'review source fingerprint no longer matches current source artifacts',
+      content_binding: recordedContentBinding
     };
   }
-  return { status: 'current', reason: 'review is bound to the current git state' };
+  return {
+    status: 'current',
+    reason: 'review is bound to the current git state',
+    content_binding: recordedContentBinding
+  };
 }
 
 async function evaluateMergeDeltaReviewReuse(repoRoot, result, recordedContext, currentGitContext) {

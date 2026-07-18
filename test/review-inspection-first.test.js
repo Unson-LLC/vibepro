@@ -112,6 +112,9 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
   assert.match(content, /inspection_evidence/);
   assert.match(content, /inspection_inputs/);
   assert.match(content, /judgment_delta/);
+  assert.match(content, /effective freshness policy/);
+  assert.match(content, /inspected content surface by default/);
+  assert.doesNotMatch(content, /adequately covered for the current head\./);
 });
 
 test('parallel dispatch record command and prompt include inspection fields', async () => {
