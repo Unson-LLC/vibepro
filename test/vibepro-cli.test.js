@@ -15571,6 +15571,7 @@ test('pr prepare requires scenario clause coverage in E2E specs', async () => {
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'app', 'checkout'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'workflow'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
 story_id: story-pr-prepare
 title: PR準備
@@ -15591,6 +15592,7 @@ architecture_docs:
 Checkout moves from confirmation to completion after the user submits payment.
 `);
   await writeFile(path.join(repo, 'src', 'app', 'checkout', 'page.tsx'), 'export default function Checkout() { return <button>Pay</button>; }\n');
+  await writeFile(path.join(repo, 'src', 'workflow', 'checkout-runner.js'), 'export const transitionCheckout = () => "completed";\n');
   await writeInferredSpec(repo, 'story-pr-prepare', {
     schema_version: '0.1.0',
     story_id: 'story-pr-prepare',
@@ -15599,7 +15601,7 @@ Checkout moves from confirmation to completion after the user submits payment.
       {
         id: 'S-001',
         type: 'scenario',
-        statement: 'Given checkout confirmation is visible, when the user submits payment, then the completion screen is shown.',
+        statement: 'Given checkout confirmation is visible in the workflow state, when the user submits payment, then the completion screen is shown after a state transition.',
         origin: {
           story_refs: [{ kind: 'acceptance_criteria', index: 0 }],
           architecture_refs: [{ file: 'docs/architecture/story-pr-prepare.md', section: 'UI Flow' }]
@@ -15632,7 +15634,7 @@ Checkout moves from confirmation to completion after the user submits payment.
 import { expect, test } from '@playwright/test';
 test('story-pr-prepare S-001 checkout completion scenario', async () => {
   // story-pr-prepare S-001
-  // Given checkout confirmation is visible, when the user submits payment, then the completion screen is shown.
+  // Given checkout confirmation is visible in the workflow state, when the user submits payment, then the completion screen is shown after a state transition.
   expect('completion screen is shown').toContain('completion');
 });
 `);
@@ -15658,6 +15660,9 @@ test('story-pr-prepare S-001 checkout completion scenario', async () => {
   assert.deepEqual(coveredGate.acceptance_e2e_coverage.missing_scenario_clauses, []);
   assert.equal(coveredResult.result.preparation.pr_context.traceability_clause_coverage.scenario_clause_count, 1);
   assert.equal(coveredResult.result.preparation.pr_context.gate_dag.summary.scenario_clauses[0].id, 'S-001');
+  const workflowStateMachine = coveredResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_state_machine');
+  assert.equal(workflowStateMachine.status, 'passed');
+  assert.match(workflowStateMachine.reason, /scenario clause/);
 });
 
 test('pr prepare requires Visual QA evidence when UI source changes', async () => {

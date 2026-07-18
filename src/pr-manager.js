@@ -12081,7 +12081,10 @@ function buildWorkflowHeavyGates({ repoRoot, changeClassification, inferredSpec,
   const flowEvidence = resolveWorkflowFlowEvidence({ repoRoot, flowVerification, e2eCoverage, verificationEvidence });
   const hasPassingFlowEvidence = flowEvidence.passed;
   const flowEvidenceActions = flowEvidence.required_actions ?? [];
-  const clauses = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [];
+  const clauses = [
+    ...(Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : []),
+    ...(Array.isArray(inferredSpec?.scenario_clauses) ? inferredSpec.scenario_clauses : [])
+  ];
   const scenarioCount = clauses.filter(isWorkflowStateScenarioClause).length;
   const blockerQuestions = (inferredSpec?.open_questions ?? []).filter((item) => item?.blocker === true);
   const stateMachineStatus = scenarioCount > 0 && blockerQuestions.length === 0 ? 'passed' : 'needs_evidence';
