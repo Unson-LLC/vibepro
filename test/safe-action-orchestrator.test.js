@@ -70,6 +70,33 @@ test('SAO-S-4 unknown action cannot claim repo_local_safe classification', async
   assert.equal(result.state.action_journal[0].status, 'forbidden');
 });
 
+test('SAO-S-4 canonical metadata spoofing is rejected before idempotency skip', async () => {
+  const canonicalKey = buildSafeActionPlan(state)[1].idempotency_key;
+  const completedState = {
+    ...state,
+    action_journal: [{
+      action_id: 'pr_autopilot_safe', node_id: 'pr_autopilot_safe', input_head_sha: 'aaa',
+      idempotency_key: canonicalKey, status: 'completed'
+    }]
+  };
+  const cases = [
+    { id: 'pr_autopilot_safe', classification: 'read_only', depends_on: ['pr_prepare'], idempotency_key: canonicalKey },
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: [], idempotency_key: canonicalKey },
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare', 'extra'], idempotency_key: canonicalKey }
+  ];
+  for (const action of cases) {
+    let calls = 0;
+    const result = await runSafeActionPlan(completedState, {
+      plan: [action],
+      runners: { pr_autopilot_safe: async () => { calls += 1; return { status: 'pr_ready' }; } }
+    });
+    assert.equal(calls, 0);
+    assert.equal(result.state.status, 'blocked');
+    assert.equal(result.state.stop_reason.code, 'action_forbidden');
+    assert.equal(result.state.action_journal.at(-1).status, 'forbidden');
+  }
+});
+
 test('SAO-S-5 typed verification and critical stops are preserved', async () => {
   for (const stop of ['verification_failed', 'gate:critical']) {
     const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => ({ status: 'blocked', stop_reason: stop }) } });
