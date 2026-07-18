@@ -774,6 +774,11 @@ export async function runCli(argv, io = {}) {
     }
 
     if (command === 'init') {
+      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        const language = getOption(rest, '--language');
+        write(stdout, renderHelp(language));
+        return { exitCode: 0, command: 'help' };
+      }
       const repoRoot = rest[0] ?? process.cwd();
       const language = getOption(rest, '--language');
       if (language) assertOutputLanguage(language);
