@@ -93,8 +93,10 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
-  assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
+  assert.match(workflow, /npm-release-lock\.mjs acquire/);
+  assert.match(workflow, /trap release_lock EXIT/);
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
+  assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm run docs:deploy/);
   assert.match(workflow, /for attempt in 1 2 3; do[\s\S]*git reset --hard origin\/main[\s\S]*post-merge-release\.mjs project[\s\S]*git push origin HEAD:main/);
   assert.doesNotMatch(workflow, /git pull --rebase origin main/);

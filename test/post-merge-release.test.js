@@ -3,6 +3,7 @@ import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { acquireLease } from '../scripts/npm-release-lock.mjs';
 
 import {
   extractReleaseSections,
@@ -107,6 +108,32 @@ test('PCR-CON-005 treats current dist-tags as a monotonic floor when versions is
   ]);
 });
 
+test('PCR-CON-005 serializes an interleaved older release with an atomic lease', async () => {
+  let remote = null;
+  let interleaved = false;
+  const sleeps = [];
+  const result = await acquireLease({
+    now: () => 100,
+    readRemote: async () => remote,
+    tryWrite: async (expected) => {
+      if (!interleaved) {
+        interleaved = true;
+        remote = { sha: 'newer-run', message: 'vibepro-npm-release-lock:{"state":"locked","owner":"newer","expires_at":200}' };
+        return null;
+      }
+      assert.equal(expected, 'free');
+      return 'older-run-lock';
+    },
+    sleep: async (milliseconds) => {
+      sleeps.push(milliseconds);
+      if (milliseconds === 10_000) remote = { sha: 'free', message: 'vibepro-npm-release-lock:{"state":"free","expires_at":0}' };
+    },
+    maxAttempts: 4
+  });
+  assert.equal(result.token, 'older-run-lock');
+  assert.deepEqual(sleeps, [1_000, 10_000]);
+});
+
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
@@ -120,15 +147,18 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /git checkout --detach/);
   assert.match(workflow, /git checkout --detach[\s\S]*npm ci[\s\S]*npm run typecheck/);
   assert.match(workflow, /gh release edit/);
+  assert.match(workflow, /npm-release-lock\.mjs acquire/);
+  assert.match(workflow, /trap release_lock EXIT/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
-  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
-  assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
+  assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
   assert.match(workflow, /for attempt in 1 2 3; do[\s\S]*git fetch origin main[\s\S]*git reset --hard origin\/main[\s\S]*post-merge-release\.mjs project[\s\S]*git push origin HEAD:main/);
   assert.doesNotMatch(workflow, /git pull --rebase origin main/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
+  assert.match(manualWorkflow, /npm-release-lock\.mjs acquire/);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
 });
 

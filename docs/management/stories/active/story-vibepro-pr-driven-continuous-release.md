@@ -52,6 +52,7 @@ reason: "ADR unnecessary: alternatives were a manual release PR, post-release ch
 - [ ] 失敗時に公開済みnpm versionを削除・上書きしない。
 - [ ] PR本文とtitleを含むPR由来の表示値はraw HTMLとVue interpolationを無効化してから公開面へ投影する。
 - [ ] 複数PRが短時間にマージされても別PRのpending workflowを置換せず、deploy直前に最新mainを取り込んで全PRのノートを公開する。
+- [ ] npm公開とGitHub Releaseの不可逆区間をpackage単位のatomic leaseで直列化し、古いrunが新しいdist-tagをread-write interleaveで巻き戻さない。
 
 ## Non-goals
 

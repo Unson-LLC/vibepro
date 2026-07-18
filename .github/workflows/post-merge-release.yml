@@ -46,22 +46,19 @@ jobs:
           npm run typecheck
           npm test
           npm run pack:dry-run
-      - name: Publish or reconcile npm
+      - name: Publish npm and reconcile GitHub Release under package lease
         if: ${{ steps.projection.outputs.release_required == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          VERSION: ${{ steps.projection.outputs.version }}
-          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-        run: |
-          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
-          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Create or reconcile GitHub Release after npm convergence
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
-        env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.projection.outputs.version }}
           RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
+          RELEASE_LOCK=$(node scripts/npm-release-lock.mjs acquire)
+          release_lock() { node scripts/npm-release-lock.mjs release "$RELEASE_LOCK"; }
+          trap release_lock EXIT
+          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
+          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
           node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output /tmp/vibepro-release.md
           if gh release view "v${VERSION}" >/dev/null 2>&1; then
             git fetch --tags --force
