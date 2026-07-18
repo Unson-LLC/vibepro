@@ -13,7 +13,11 @@ status: final
 
 - 新規 `judged_unsound` は `implementation_unsound` / `classifier_premise_unsound` の原因を必須にする。
 - schema/modelが未宣言または真正v1宣言のlegacyだけを移行し、原因なしunsoundは `implementation_unsound` へ正規化する。
-- v1移行eventは `legacy_origin` を保持する。v2宣言とpayloadが矛盾するartifactはlegacy扱いせず、全consumerでfail closedにする。
+- v1移行eventは `legacy_origin` を保持する。直接読み込むv1 artifactは既存互換を維持する一方、v2へ
+  materialize済みeventが自己申告するmarkerでprovenance欠落を許すのは従来の `implementation_unsound`
+  blockerだけとする。materialized markerはGate通過やpremise correction開始には使えない。
+  v2宣言とpayloadが矛盾するartifactはlegacy扱いせず、全consumerでfail closedにする。
+- recorderは既存artifactにformat errorまたはcurrent-HEADのinvalid historyを検出したら、追記・変換せず原文を保全する。
 - 元裁定、premise correction、再裁定を同じstory・item・HEADに紐づくappend-only eventとして残す。
 - correctionは誤前提、訂正後前提、理由、workspace相対の代替証拠とSHA-256を保持する。symlinkと
   `realpath` 後にworkspace外となるpathは受理しない。

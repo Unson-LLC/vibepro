@@ -387,8 +387,24 @@ function isMaterializedLegacyJudgmentEvent(event) {
     && event.event_id.startsWith('legacy-verdict-');
 }
 
+function isLegacyBlockingJudgmentEvent(event) {
+  if (event?._legacy_source !== true) return false;
+  // A directly-read v1 artifact retains the compatibility contract that
+  // existed before v2. Once an event is materialized into editable v2 JSON,
+  // its self-declared legacy_origin only grants permission to preserve a
+  // blocker; it can no longer discharge the Gate or start recovery.
+  if (event._legacy_materialized !== true) return true;
+  return event?.type === 'verdict'
+    && event?.verdict === 'judged_unsound'
+    && (event?.unsound_cause ?? 'implementation_unsound') === 'implementation_unsound';
+}
+
 function persistJudgmentEvent(event) {
-  const { _legacy_source: legacySource, ...persisted } = event;
+  const {
+    _legacy_source: legacySource,
+    _legacy_materialized: legacyMaterialized,
+    ...persisted
+  } = event;
   if (!legacySource) return persisted;
   return {
     ...persisted,
@@ -414,7 +430,8 @@ export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = 
     }
     events = source.events.map((event) => ({
       ...event,
-      _legacy_source: isMaterializedLegacyJudgmentEvent(event)
+      _legacy_source: isMaterializedLegacyJudgmentEvent(event),
+      _legacy_materialized: isMaterializedLegacyJudgmentEvent(event)
     }));
   } else if (hasLegacyVerdicts && isDeclaredLegacyJudgmentArtifact(source)) {
     events = source.verdicts.map((entry, index) => ({
@@ -423,14 +440,15 @@ export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = 
         item_id: entry.item_id,
         verdict: entry.verdict,
         unsound_cause: entry.verdict === 'judged_unsound'
-          ? (entry.unsound_cause ?? 'implementation_unsound')
+          ? 'implementation_unsound'
           : null,
         responds_to_correction_id: entry.responds_to_correction_id ?? null,
         reason: entry.reason,
         provenance: entry.provenance ?? null,
         head_commit: entry.head_commit ?? null,
         recorded_at: entry.recorded_at ?? null,
-        _legacy_source: true
+        _legacy_source: true,
+        _legacy_materialized: false
       }));
   } else if (hasLegacyVerdicts || source.schema_version != null || source.model != null) {
     formatErrors.push(
@@ -516,7 +534,11 @@ export function resolveCurrentJudgmentState({
     if (activeIds.size > 0 && !activeIds.has(event.item_id)) {
       invalid.push(`event ${event.event_id} targets inactive item ${event.item_id}`);
     }
-    if (!event._legacy_source) {
+    // A legacy marker may preserve an old implementation blocker, but it can
+    // never discharge the Gate or enter the premise-correction recovery path.
+    // Any other event must satisfy the v2 audit contract even if it claims a
+    // legacy_origin marker, because that marker is stored in editable JSON.
+    if (!isLegacyBlockingJudgmentEvent(event)) {
       if (typeof event.reason !== 'string' || !event.reason.trim()) {
         invalid.push(`event ${event.event_id} is missing reason`);
       }
@@ -641,6 +663,21 @@ export function resolveCurrentJudgmentState({
     invalid_reasons: invalid,
     items: resolvedItems
   };
+}
+
+function assertJudgmentArtifactWritable({ normalized, adjudication, storyId, headCommit }) {
+  if (normalized.format_errors.length > 0) {
+    throw new Error(`existing judgment adjudication artifact is invalid and was not modified: ${normalized.format_errors.join('; ')}`);
+  }
+  const state = resolveCurrentJudgmentState({
+    storyId,
+    itemIds: [],
+    adjudication,
+    headSha: headCommit
+  });
+  if (state.status === 'invalid_history') {
+    throw new Error(`existing judgment adjudication history is invalid and was not modified: ${state.invalid_reasons.join('; ')}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -896,6 +933,7 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
   if (normalized.story_id && normalized.story_id !== storyId) {
     throw new Error(`judgment adjudication artifact belongs to ${normalized.story_id}, not ${storyId}`);
   }
+  assertJudgmentArtifactWritable({ normalized, adjudication: existing, storyId, headCommit });
   const currentEvents = normalized.events.filter((event) => event.head_commit === headCommit);
   let correction = null;
   if (correctionId) {
@@ -1009,6 +1047,7 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
   if (normalized.story_id && normalized.story_id !== storyId) {
     throw new Error(`judgment adjudication artifact belongs to ${normalized.story_id}, not ${storyId}`);
   }
+  assertJudgmentArtifactWritable({ normalized, adjudication: existing, storyId, headCommit });
   const currentEvents = normalized.events.filter((event) => event.head_commit === headCommit);
   const original = currentEvents.find((event) => event.event_id === originalVerdictId && event.type === 'verdict') ?? null;
   if (!original) throw new Error(`--original-verdict-id ${originalVerdictId} does not reference a current-HEAD verdict`);
@@ -1161,7 +1200,7 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     headSha,
     decisions
   });
-  const current = state.items
+  const current = (state.status === 'invalid_history' ? [] : state.items)
     .map((item) => item.current_verdict)
     .filter(Boolean);
   return {
@@ -1170,7 +1209,9 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     judged_sound_count: current.filter((entry) => entry.verdict === 'judged_sound').length,
     judged_unsound_count: current.filter((entry) => entry.verdict === 'judged_unsound').length,
     needs_human_judgment_count: current.filter((entry) => entry.verdict === 'needs_human_judgment').length,
-    pending_correction_count: state.items.filter((item) => item.status === 'awaiting_re_adjudication').length,
+    pending_correction_count: state.status === 'invalid_history'
+      ? 0
+      : state.items.filter((item) => item.status === 'awaiting_re_adjudication').length,
     invalid_history_count: state.invalid_reasons.length
   };
 }

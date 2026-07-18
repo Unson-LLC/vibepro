@@ -75,7 +75,12 @@ classifier premiseの妥当性とimplementation validityを同じ `judged_unsoun
 内容hash由来の決定的event IDを付けて正規化し、cause欠落の旧 `judged_unsound` は安全側の
 `implementation_unsound` とする。次回writeでは全legacy eventをv2へmaterializeし、一件も削除しない。
 materializeしたeventには `legacy_origin` を残し、次回readでもprovenance欠落を真正v1由来としてのみ許容する。
-v2 schema/modelを宣言しながら `events` を欠くartifactはlegacyへdowngradeせず `invalid_history` とする。
+直接読み込むv1 artifactは既存の読込互換を維持する。ただしv2へmaterializeした後の互換例外は、causeを
+強制的に `implementation_unsound` としたblocking verdictだけに限定する。materialized eventの
+`judged_sound`、`needs_human_judgment`、`classifier_premise_unsound` はprovenance無しでは無効で、編集可能な
+`legacy_origin` を偽装してもGate通過や回復経路の開始には使えない。v2 schema/modelを宣言しながら
+`events` を欠くartifactはlegacyへdowngradeせず `invalid_history` とする。recorderは既存artifactのformat errorまたは
+current-HEADのinvalid historyを検出したら書き換えず、調査可能な原文を保全する。
 
 ## Resolverの不変条件
 
@@ -83,6 +88,8 @@ v2 schema/modelを宣言しながら `events` を欠くartifactはlegacyへdowng
 - duplicate ID、dangling/cross-item/cross-head参照、unknown cause、分岐した重複correction、invalid evidenceは
   `invalid_history` としてfail closedする。
 - schema/modelとpayload形状の矛盾はresolver、Gate、PR summary、adjudication prepareの全consumerでfail closedする。
+- materialized legacy markerは旧 `implementation_unsound` blockerの保持だけを許し、Gate dischargeやpremise correctionの根拠にはしない。
+- recorderは既存のformat error / invalid historyを正常化の名目で上書きせず、明示エラーで停止する。
 - 通常の `judged_sound` はresolved、通常の `needs_human_judgment` は既存accepted decision record経路を維持する。
 - cause欠落または `implementation_unsound` はfailedで、correctionやdecision recordでは解除できない。
 - `classifier_premise_unsound` は同じstory/item/HEADの当該verdictを直接参照するvalid correctionが無ければfailed。

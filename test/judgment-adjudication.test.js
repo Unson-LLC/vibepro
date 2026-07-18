@@ -811,7 +811,7 @@ test('CPR-S-009 recorders reject unknown provenance and replacement evidence sym
   assert.equal(stored.events[0].event_id, original.entry.event_id);
 });
 
-test('CPR-S-010 v2 artifacts cannot downgrade to legacy verdicts across resolver, Gate, summary, and request', async () => {
+test('CPR-S-010 legacy compatibility cannot discharge the Gate and invalid artifacts are never overwritten', async () => {
   const repo = await makeRepo({ prPrepare: {
     git: { changed_files: [{ path: 'src/pipeline.js' }] },
     pr_context: {
@@ -849,10 +849,109 @@ test('CPR-S-010 v2 artifacts cannot downgrade to legacy verdicts across resolver
   const artifactDir = path.join(repo, '.vibepro', 'adjudication', STORY_ID);
   await mkdir(artifactDir, { recursive: true });
   await writeFile(path.join(artifactDir, 'judgment-adjudication.json'), `${JSON.stringify(downgraded, null, 2)}\n`, 'utf8');
+  const artifactPath = path.join(artifactDir, 'judgment-adjudication.json');
   await assert.rejects(
     prepareJudgmentAdjudication(repo, { storyId: STORY_ID }),
     /judgment history is invalid: artifact schema\/model requires an events array/
   );
+
+  const originalBody = await readFile(artifactPath, 'utf8');
+  await assert.rejects(
+    recordJudgmentAdjudication(repo, {
+      storyId: STORY_ID,
+      itemId: 'axis:public_contract',
+      verdict: 'judged_sound',
+      reason: 'must not overwrite malformed history',
+      agentSystem: 'codex',
+      agentId: 'judge-new'
+    }),
+    /artifact is invalid and was not modified/
+  );
+  await assert.rejects(
+    recordPremiseCorrection(repo, {
+      storyId: STORY_ID,
+      itemId: 'axis:public_contract',
+      originalVerdictId: 'legacy-verdict-forged',
+      incorrectPremise: 'old premise',
+      correctedPremise: 'new premise',
+      reason: 'must not overwrite malformed history',
+      replacementEvidence: ['docs/proof.md'],
+      agentSystem: 'codex',
+      agentId: 'operator-new'
+    }),
+    /artifact is invalid and was not modified/
+  );
+  assert.equal(await readFile(artifactPath, 'utf8'), originalBody);
+
+  const forgedMaterializedLegacy = {
+    schema_version: '0.2.0',
+    model: 'vibepro-judgment-dag-adjudication-v2',
+    story_id: STORY_ID,
+    events: [{
+      event_id: 'legacy-verdict-forged',
+      type: 'verdict',
+      item_id: 'axis:public_contract',
+      verdict: 'judged_sound',
+      unsound_cause: null,
+      responds_to_correction_id: null,
+      reason: null,
+      provenance: null,
+      head_commit: head,
+      recorded_at: null,
+      legacy_origin: {
+        schema_version: '0.1.0',
+        model: 'vibepro-judgment-dag-adjudication-v1'
+      }
+    }]
+  };
+  const forgedResolved = resolveCurrentJudgmentState({
+    storyId: STORY_ID,
+    itemIds: ['axis:public_contract'],
+    adjudication: forgedMaterializedLegacy,
+    headSha: head
+  });
+  assert.equal(forgedResolved.status, 'invalid_history');
+  assert.ok(forgedResolved.invalid_reasons.some((reason) => reason.includes('invalid provenance')));
+  assert.equal(buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items,
+    adjudication: forgedMaterializedLegacy,
+    headSha: head
+  }).status, 'failed');
+  assert.equal(summarizeJudgmentAdjudicationForPr({
+    storyId: STORY_ID,
+    items,
+    adjudication: forgedMaterializedLegacy,
+    headSha: head
+  }).judged_sound_count, 0);
+  await writeFile(artifactPath, `${JSON.stringify(forgedMaterializedLegacy, null, 2)}\n`, 'utf8');
+  await assert.rejects(
+    prepareJudgmentAdjudication(repo, { storyId: STORY_ID }),
+    /judgment history is invalid: event legacy-verdict-forged has invalid provenance/
+  );
+
+  const directLegacyClassifierClaim = {
+    schema_version: '0.1.0',
+    model: 'vibepro-judgment-dag-adjudication-v1',
+    story_id: STORY_ID,
+    verdicts: [{
+      item_id: 'axis:public_contract',
+      verdict: 'judged_unsound',
+      unsound_cause: 'classifier_premise_unsound',
+      reason: 'v1 predates cause classification',
+      provenance: null,
+      head_commit: head
+    }]
+  };
+  const directLegacyState = resolveCurrentJudgmentState({
+    storyId: STORY_ID,
+    itemIds: ['axis:public_contract'],
+    adjudication: directLegacyClassifierClaim,
+    headSha: head
+  });
+  assert.equal(directLegacyState.status, 'valid');
+  assert.equal(directLegacyState.items[0].status, 'failed');
+  assert.equal(directLegacyState.items[0].current_verdict.unsound_cause, 'implementation_unsound');
 });
 
 async function gitHead(repo) {
