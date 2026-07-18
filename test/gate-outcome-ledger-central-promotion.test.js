@@ -10,6 +10,7 @@ import {
   computeCentralLedgerPromotion,
   getGateOutcomeLedgerPath,
   readCentralGateOutcomeLedger,
+  readPromotableGateOutcomeEntries,
   serializeCentralGateOutcomeLedger,
   summarizeGateRoi
 } from '../src/gate-outcome-ledger.js';
@@ -227,6 +228,39 @@ test('collectPromotableGateOutcomeEntries filters the local ledger by story_id',
   const entries = await collectPromotableGateOutcomeEntries(repo, 'story-mine');
   assert.equal(entries.length, 1);
   assert.equal(entries[0].entry_key, 'mine');
+});
+
+test('GDL-S-7 promotion source distinguishes absent, genuine empty, parse, schema, model, and shape states', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-source-state-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+
+  const absent = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(absent.status, 'absent');
+  assert.equal(absent.reason, 'local_gate_outcome_ledger_absent');
+
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    entries: []
+  }));
+  const empty = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(empty.status, 'empty');
+  assert.equal(empty.reason, 'no_local_decision_outcomes');
+
+  const invalidCases = [
+    ['{not-json', 'local_gate_outcome_ledger_parse_failed'],
+    [JSON.stringify({ schema_version: '9.9.9', model: 'vibepro-gate-outcome-ledger-v3', entries: [] }), 'local_gate_outcome_ledger_schema_invalid'],
+    [JSON.stringify({ schema_version: '0.1.0', model: 'wrong-model', entries: [] }), 'local_gate_outcome_ledger_model_invalid'],
+    [JSON.stringify({ schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v3', entries: {} }), 'local_gate_outcome_ledger_shape_invalid']
+  ];
+  for (const [contents, reason] of invalidCases) {
+    await writeFile(ledgerPath, contents);
+    const invalid = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+    assert.equal(invalid.status, 'failed');
+    assert.equal(invalid.reason, reason);
+    assert.deepEqual(invalid.entries, []);
+  }
 });
 
 test('RML-S-4: usage report --gate-roi reads the central ledger with explicit gaps', async () => {

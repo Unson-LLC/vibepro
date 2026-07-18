@@ -9,8 +9,8 @@ import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
 import { parseNumstat } from './evidence-cost-budget.js';
 import {
   CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
-  collectPromotableGateOutcomeEntries,
-  computeCentralLedgerPromotion
+  computeCentralLedgerPromotion,
+  readPromotableGateOutcomeEntries
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
@@ -590,17 +590,39 @@ async function executeMergeLocked(root, options = {}) {
     missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
   };
   await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
-  const roiLedgerLocalEntries = await collectPromotableGateOutcomeEntries(root, storyId);
+  const roiLedgerSource = await readPromotableGateOutcomeEntries(root, storyId);
+  const roiLedgerLocalEntries = roiLedgerSource.entries;
   const canonicalPersistence = await persistCanonicalAuditToBase(root, {
     storyId,
     canonicalAudit,
     baseBranch,
     merge,
     options,
-    roiLedgerPromotion: { localEntries: roiLedgerLocalEntries }
+    roiLedgerPromotion: roiLedgerSource.status === 'failed'
+      ? null
+      : { localEntries: roiLedgerLocalEntries }
   });
   merge.canonical_audit.persistence = canonicalPersistence.summary;
-  merge.roi_ledger_promotion = canonicalPersistence.roi_ledger_promotion ?? null;
+  merge.roi_ledger_promotion = roiLedgerSource.status === 'failed'
+    ? {
+        status: 'failed',
+        reason: roiLedgerSource.reason,
+        promoted_count: 0,
+        duplicate_count: 0,
+        source_ledger: roiLedgerSource.source_ledger,
+        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+      }
+    : canonicalPersistence.roi_ledger_promotion ?? null;
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: roiLedgerLocalEntries,
+    promotion: merge.roi_ledger_promotion,
+    localLedgerSource: roiLedgerSource
+  });
+  if (merge.decision_outcome_binding.status === 'failed') {
+    merge.warnings.push(
+      `Decision outcome binding failed: ${merge.decision_outcome_binding.reason ?? 'unknown'} (delivery remains immutable; reconciliation required)`
+    );
+  }
   if (merge.roi_ledger_promotion?.status === 'failed') {
     merge.warnings.push(
       `ROI ledger promotion failed: ${merge.roi_ledger_promotion.reason ?? 'unknown'} (central ledger left untouched)`
@@ -739,6 +761,90 @@ function collectDeliveryReconciliationReasons(merge) {
   if (merge.preconditions.checks_ready.status !== 'passed') reasons.push('checks_not_ready');
   if (merge.preconditions.review_policy.status !== 'passed') reasons.push('review_policy_not_satisfied');
   return reasons;
+}
+
+export function buildDecisionOutcomeBinding({ localEntries = [], promotion = null, merge = null, localLedgerSource = null } = {}) {
+  const sourceFailed = localLedgerSource?.status === 'failed';
+  const expectedEntryCount = sourceFailed
+    ? null
+    : Array.isArray(localEntries) ? localEntries.length : 0;
+  const promotedCount = Number.isFinite(promotion?.promoted_count) ? promotion.promoted_count : 0;
+  const duplicateCount = Number.isFinite(promotion?.duplicate_count) ? promotion.duplicate_count : 0;
+  const accountedEntryCount = promotedCount + duplicateCount;
+  const required = sourceFailed || expectedEntryCount > 0;
+  const delivery = {
+    status: merge?.delivery?.status ?? null,
+    pr_url: merge?.delivery?.pr_url ?? merge?.pr?.url ?? null,
+    merge_commit_sha: merge?.delivery?.merge_commit_sha ?? merge?.merge_commit_sha ?? null,
+    base: merge?.base ?? null
+  };
+
+  if (sourceFailed) {
+    return {
+      schema_version: '0.1.0',
+      status: 'failed',
+      required: true,
+      reason: localLedgerSource.reason ?? 'local_gate_outcome_ledger_invalid',
+      source_ledger: localLedgerSource.source_ledger ?? '.vibepro/gate-outcomes/ledger.json',
+      source_ledger_status: localLedgerSource.status,
+      canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+      expected_entry_count: null,
+      promoted_count: promotedCount,
+      duplicate_count: duplicateCount,
+      delivery
+    };
+  }
+
+  if (!required) {
+    return {
+      schema_version: '0.1.0',
+      status: 'not_applicable',
+      required: false,
+      reason: 'no_local_decision_outcomes',
+      source_ledger: '.vibepro/gate-outcomes/ledger.json',
+      canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+      expected_entry_count: 0,
+      promoted_count: promotedCount,
+      duplicate_count: duplicateCount,
+      delivery
+    };
+  }
+
+  const bound = promotion?.status === 'promoted' && accountedEntryCount === expectedEntryCount;
+  return {
+    schema_version: '0.1.0',
+    status: bound ? 'bound' : 'failed',
+    required: true,
+    reason: bound
+      ? 'all_local_decision_outcomes_bound_to_canonical_ledger'
+      : promotion?.status === 'promoted'
+        ? 'decision_outcome_binding_count_mismatch'
+        : promotion?.reason ?? `decision_outcome_promotion_${promotion?.status ?? 'missing'}`,
+    source_ledger: '.vibepro/gate-outcomes/ledger.json',
+    canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+    expected_entry_count: expectedEntryCount,
+    promoted_count: promotedCount,
+    duplicate_count: duplicateCount,
+    delivery
+  };
+}
+
+export function applyDecisionOutcomeBinding(merge, { localEntries = [], promotion = null, localLedgerSource = null } = {}) {
+  const binding = buildDecisionOutcomeBinding({ localEntries, promotion, merge, localLedgerSource });
+  merge.decision_outcome_binding = binding;
+  if (binding.status !== 'failed') return binding;
+
+  merge.reconciliation = {
+    ...merge.reconciliation,
+    status: 'reconciliation_required',
+    reasons: [...new Set([
+      ...(merge.reconciliation?.reasons ?? []),
+      'decision_outcome_binding_failed'
+    ])],
+    evaluated_at: new Date().toISOString()
+  };
+  merge.stop_reason = 'decision_outcome_binding_failed';
+  return binding;
 }
 
 function parseProviderJson(result, reason) {
