@@ -6,7 +6,8 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-import { runCli, TOP_LEVEL_COMMANDS } from '../src/cli.js';
+import { renderOutcomeCommandError, renderOutcomeCommandResult, runCli, serializeOutcomeCommandError, TOP_LEVEL_COMMANDS } from '../src/cli.js';
+import { OutcomeCommandError } from '../src/outcome-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -68,6 +69,7 @@ const SMOKE = {
   execute: { setup: 'story', args: (r) => ['execute', 'status', r, '--story-id', 'story-x', '--json'] },
   task: { setup: 'story', args: (r) => ['task', r] },
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
+  outcome: { setup: 'none', args: () => ['outcome', '--help'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },
   review: { setup: 'story', args: (r) => ['review', 'status', r, '--id', 'story-x'] },
   guard: { setup: 'story', args: (r) => ['guard', 'status', r] },
@@ -122,4 +124,99 @@ test('CLI smoke coverage: every TOP_LEVEL_COMMANDS entry has a smoke test', () =
   const known = new Set(TOP_LEVEL_COMMANDS);
   const stale = [...smoked].filter((c) => !known.has(c));
   assert.deepEqual(stale, [], `these smoke entries are not real commands: ${stale.join(', ')}`);
+});
+
+test('outcome promotion text exposes bounded recovery diagnostics without raw command output', () => {
+  const error = new OutcomeCommandError(
+    'outcome_promotion_failed',
+    'canonical outcome revision could not be persisted',
+    {
+      persistence: {
+        status: 'failed',
+        reason: 'canonical_audit_push_indeterminate; cleanup_failed',
+        pushed: false,
+        worktree_path: '/tmp/vibepro-canonical-audit-story-x-1',
+        primary: {
+          status: 'failed',
+          reason: 'canonical_audit_push_indeterminate',
+          failure: {
+            stage: 'canonical.push',
+            status: 'timed_out',
+            failure_kind: 'timeout',
+            stderr: 'SECRET_SHOULD_NOT_RENDER'
+          }
+        },
+        push_postcondition: { status: 'indeterminate', remote_sha: null },
+        cleanup: { attempted: true, removed: false, status: 'failed' }
+      }
+    }
+  );
+
+  const rendered = renderOutcomeCommandError(error);
+  assert.match(rendered, /persistence: status=failed reason=canonical_audit_push_indeterminate; cleanup_failed pushed=false/);
+  assert.match(rendered, /primary failure: status=failed reason=canonical_audit_push_indeterminate stage=canonical\.push command-status=timed_out kind=timeout/);
+  assert.match(rendered, /push postcondition: status=indeterminate remote-sha=unknown/);
+  assert.match(rendered, /cleanup: status=failed attempted=true removed=false/);
+  assert.match(rendered, /temporary worktree: path=\/tmp\/vibepro-canonical-audit-story-x-1 residual=possible/);
+  assert.match(rendered, /recovery: verify the remote branch before retrying; inspect and remove the temporary worktree if it remains/);
+  assert.doesNotMatch(rendered, /SECRET_SHOULD_NOT_RENDER/);
+
+  const json = JSON.stringify(serializeOutcomeCommandError(error));
+  assert.match(json, /outcome_promotion_failed/);
+  assert.match(json, /canonical_audit_push_indeterminate/);
+  assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER/);
+});
+
+test('outcome success text exposes the bounded record contract while JSON preserves the public result', () => {
+  const result = {
+    status: 'recorded',
+    story_id: 'story-x',
+    artifact_path: '.vibepro/observations/story-x/obs_123.json',
+    artifact_digest: 'digest-observation',
+    resolved_selector: { decision_trace_id: 'trace-123' },
+    parent_revision_fingerprint: 'revision-123',
+    producer: 'operator:test',
+    resolved_source: { ref: 'verification:command-1', kind: 'verification_evidence', digest: 'digest-source' }
+  };
+
+  const rendered = renderOutcomeCommandResult(result, { subcommand: 'record' });
+  assert.match(rendered, /^outcome record: recorded/m);
+  assert.match(rendered, /story: story-x/);
+  assert.match(rendered, /trace: trace-123/);
+  assert.match(rendered, /parent revision: revision-123/);
+  assert.match(rendered, /observation: .* digest=digest-observation/);
+  assert.match(rendered, /source: verification:command-1 kind=verification_evidence digest=digest-source/);
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), result);
+});
+
+test('outcome success text exposes the refresh persistence contract', () => {
+  const rendered = renderOutcomeCommandResult({
+    status: 'promoted',
+    story_id: 'story-x',
+    ledger_path: '.vibepro/pr/story-x/decision-outcome-ledger.json',
+    ledger_digest: 'digest-ledger',
+    observation_count: 2,
+    canonical_bundle: 'docs/management/audit-artifacts/story-x/audit-bundle.json',
+    persistence: { status: 'pushed', commit_sha: 'commit-123' }
+  }, { subcommand: 'refresh' });
+
+  assert.match(rendered, /^outcome refresh: promoted/m);
+  assert.match(rendered, /ledger: .* digest=digest-ledger/);
+  assert.match(rendered, /observations: 2/);
+  assert.match(rendered, /canonical bundle: docs\/management\/audit-artifacts\/story-x\/audit-bundle.json/);
+  assert.match(rendered, /persistence: status=pushed commit=commit-123/);
+});
+
+test('outcome help is scoped to the selected subcommand', async () => {
+  for (const [argv, expected, excluded] of [
+    [['outcome', '--help'], /VibePro Outcome/, /vibepro design-system/],
+    [['outcome', 'record', '--help'], /outcome record/, /outcome refresh \[repo\]/],
+    [['outcome', 'refresh', '--help'], /outcome refresh/, /--value-json/]
+  ]) {
+    let output = '';
+    const result = await runCli(argv, { stdout: { write: (chunk) => { output += chunk; } } });
+    assert.equal(result.exitCode, 0);
+    assert.match(output, expected);
+    assert.doesNotMatch(output, excluded);
+  }
 });

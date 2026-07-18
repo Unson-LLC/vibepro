@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-decision-outcome-ledger",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "description": "Local gate outcomes are promoted into the canonical ledger and bound to immutable delivery facts; incomplete promotion fails closed into reconciliation.",
+      "mermaid": "flowchart LR\n  L[Local gate outcomes] --> P[Canonical promotion]\n  P --> B[Decision outcome binding]\n  D[Immutable delivery] --> B\n  B -->|complete| C[Canonical audit revision]\n  B -->|incomplete| R[Reconciliation required]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "GDO-S-1",
+      "type": "scenario",
+      "statement": "Canonical promotion deterministically stores every local decision outcome in the central ledger revision.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-gate-decision-outcome-ledger.md", "section": "Delivery binding" }],
+        "code_refs": [{ "file": "src/gate-outcome-ledger.js", "anchor": "computeCentralLedgerPromotion" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:10" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:10" }] }
+    },
+    {
+      "id": "GDO-S-2",
+      "type": "invariant",
+      "statement": "A binding is bound only when promoted_count plus duplicate_count equals the expected local entry count.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "buildDecisionOutcomeBinding" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:11" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:11" }] }
+    },
+    {
+      "id": "GDO-S-3",
+      "type": "scenario",
+      "statement": "The delivery binding workflow transition preserves immutable delivery and records reconciliation_required with decision_outcome_binding_failed when promotion is incomplete.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "applyDecisionOutcomeBinding" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:12" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:12" }] }
+    },
+    {
+      "id": "GDO-S-4",
+      "type": "scenario",
+      "statement": "A story with zero local decision outcomes produces a not_applicable binding and never invents a missing-outcome failure.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "buildDecisionOutcomeBinding" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:13" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:13" }] }
+    },
+    {
+      "id": "GDO-S-5",
+      "type": "invariant",
+      "statement": "Best-effort decision_outcome_delivery and fail-closed decision_outcome_binding remain separate fields and failure contracts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 13 }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "decision_outcome_delivery" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:14" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:14" }] }
+    },
+    {
+      "id": "GDO-INHERITED-1",
+      "type": "contract",
+      "statement": "Outcome recording continues to require an authoritative delivery base.",
+      "origin": { "code_refs": [{ "file": "src/outcome-manager.js", "anchor": "authoritativeBase" }] },
+      "inherited_behavior": { "condition": "!authoritativeBase", "classification": "unchanged", "files": ["src/outcome-manager.js"] }
+    },
+    {
+      "id": "GDO-INHERITED-2",
+      "type": "contract",
+      "statement": "A caller-selected base continues to be rejected when it differs from the authoritative delivery base.",
+      "origin": { "code_refs": [{ "file": "src/outcome-manager.js", "anchor": "requestedBase" }] },
+      "inherited_behavior": { "condition": "requestedBase && requestedBase !== authoritativeBase", "classification": "unchanged", "files": ["src/outcome-manager.js"] }
+    },
+    {
+      "id": "GDO-INHERITED-3",
+      "type": "contract",
+      "statement": "Session-backed evidence reuse remains conditional on at least one explicitly attributed session.",
+      "origin": { "code_refs": [{ "file": "src/evidence-reuse.js", "anchor": "sessions.length > 0" }] },
+      "inherited_behavior": { "condition": "sessions.length > 0", "classification": "unchanged", "files": ["src/evidence-reuse.js"] }
+    }
+  ]
+}

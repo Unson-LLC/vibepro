@@ -17,6 +17,7 @@ export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artif
 
 const PR_AUDIT_FILES = [
   ['evidence-reuse.json', 'evidence_reuse'],
+  ['decision-outcome-ledger.json', 'decision_outcome_ledger'],
   ['pr-prepare.json', 'pr_prepare'],
   ['pr-create.json', 'pr_create'],
   ['gate-dag.json', 'gate_dag'],
@@ -563,6 +564,7 @@ async function writeCanonicalAuditArtifacts(root, {
   canonicalDir,
   onArtifactWritten
 }) {
+  await persistDecisionOutcomeRevisions(root, storyId, canonicalDir);
   const inventory = await collectAuditSourceInventory(root, storyId, canonicalDir);
   const costSummary = buildCanonicalEvidenceCostSummary({
     artifactLineCount: inventory.artifact_line_count,
@@ -691,6 +693,7 @@ async function writeCanonicalAuditArtifacts(root, {
       reconciliation: merge.reconciliation ?? null,
       reconciliation_action: resolveReconciliationAction(merge),
       execution_state_sync: merge.execution_state_sync ?? null,
+      decision_outcome_binding: merge.decision_outcome_binding ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
@@ -724,6 +727,98 @@ async function writeCanonicalAuditArtifacts(root, {
     bundle_path: bundlePath,
     bundle
   };
+}
+
+async function persistDecisionOutcomeRevisions(root, storyId, canonicalDir) {
+  const sourcePath = path.join(getWorkspaceDir(root), 'pr', storyId, 'decision-outcome-ledger.json');
+  const text = await readTextIfExists(sourcePath);
+  if (text === null) return;
+  let ledger;
+  try {
+    ledger = JSON.parse(text);
+  } catch (error) {
+    const malformed = new Error(`decision outcome ledger is malformed: ${toWorkspaceRelative(root, sourcePath)}`);
+    malformed.code = 'decision_outcome_ledger_malformed';
+    malformed.cause = error;
+    throw malformed;
+  }
+  const revisionRoot = path.resolve(canonicalDir, 'decision-outcomes');
+  const revisions = (ledger.traces ?? []).map((trace) => {
+    const decisionTraceId = trace?.decision_trace_id;
+    const collisionGroup = trace?.collision_group;
+    const traceSourceRef = trace?.trace_source_ref;
+    const revisionFingerprint = trace?.revision_fingerprint;
+    if (decisionTraceId != null && !/^dt_[a-f0-9]{64}$/.test(decisionTraceId)) {
+      throw invalidDecisionOutcomeRevision('decision_trace_id', decisionTraceId);
+    }
+    if (decisionTraceId == null && !/^cg_[a-f0-9]{64}$/.test(collisionGroup ?? '')) {
+      throw invalidDecisionOutcomeRevision('collision_group', collisionGroup);
+    }
+    if (!/^tsr_[a-f0-9]{64}$/.test(traceSourceRef ?? '')) {
+      throw invalidDecisionOutcomeRevision('trace_source_ref', traceSourceRef);
+    }
+    if (!/^[a-f0-9]{64}$/.test(revisionFingerprint)) {
+      throw invalidDecisionOutcomeRevision('revision_fingerprint', revisionFingerprint);
+    }
+    const selector = decisionTraceId
+      ? `trace-${decisionTraceId}`
+      : `collision-${collisionGroup}-${traceSourceRef}`;
+    const target = path.resolve(revisionRoot, selector, `${revisionFingerprint}.json`);
+    if (target !== revisionRoot && !target.startsWith(`${revisionRoot}${path.sep}`)) {
+      throw invalidDecisionOutcomeRevision('target', target);
+    }
+    const revision = {
+      schema_version: ledger.schema_version ?? '0.1.0',
+      story_id: storyId,
+      ledger_path: ledger.artifact_path ?? toWorkspaceRelative(root, sourcePath),
+      selector: trace.decision_trace_id
+        ? { decision_trace_id: trace.decision_trace_id }
+        : { collision_group: trace.collision_group ?? null, trace_source_ref: trace.trace_source_ref ?? null },
+      parent_revision_fingerprint: trace.parent_revision_fingerprint ?? null,
+      revision_fingerprint: trace.revision_fingerprint,
+      trace
+    };
+    return { target, revision };
+  });
+  for (const { target, revision } of revisions) {
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeImmutableDecisionOutcomeRevision(target, `${JSON.stringify(revision, null, 2)}\n`);
+  }
+}
+
+async function writeImmutableDecisionOutcomeRevision(target, bytes) {
+  try {
+    await writeFile(target, bytes, { flag: 'wx' });
+    return;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+  const existing = await readFile(target, 'utf8');
+  if (existing === bytes) return;
+  if (legacyDecisionOutcomeRevisionMatches(existing, bytes)) return;
+  const conflict = new Error(`decision outcome revision already exists with different bytes: ${target}`);
+  conflict.code = 'decision_outcome_revision_conflict';
+  conflict.target = target;
+  throw conflict;
+}
+
+function legacyDecisionOutcomeRevisionMatches(existingBytes, currentBytes) {
+  try {
+    const legacy = JSON.parse(existingBytes);
+    const current = JSON.parse(currentBytes);
+    if (!Object.hasOwn(legacy, 'ledger_digest') || Object.hasOwn(current, 'ledger_digest')) return false;
+    delete legacy.ledger_digest;
+    return JSON.stringify(legacy) === JSON.stringify(current);
+  } catch {
+    return false;
+  }
+}
+
+function invalidDecisionOutcomeRevision(field, value) {
+  const error = new Error(`decision outcome ledger contains an invalid ${field}: ${String(value)}`);
+  error.code = 'decision_outcome_revision_invalid';
+  error.field = field;
+  return error;
 }
 
 async function writeCompactCanonicalAuditArtifacts(root, {
@@ -1024,6 +1119,7 @@ async function writeCompressedReplayBundle(root, {
       reconciliation: merge.reconciliation ?? null,
       reconciliation_action: resolveReconciliationAction(merge),
       execution_state_sync: merge.execution_state_sync ?? null,
+      decision_outcome_binding: merge.decision_outcome_binding ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
@@ -1533,6 +1629,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         reconciliation: prMerge.reconciliation ?? null,
         reconciliation_action: resolveReconciliationAction(prMerge),
         execution_state_sync: prMerge.execution_state_sync ?? null,
+        decision_outcome_binding: prMerge.decision_outcome_binding ?? null,
         pr_url: prMerge.pr?.url ?? prMerge.pr?.selector ?? prMerge.pr_url ?? null,
         merge_commit_sha: prMerge.merge_commit_sha ?? null,
         merged_at: prMerge.merged_at ?? null,
@@ -1626,6 +1723,7 @@ function buildAutomationValueAuditContract(index) {
       merge_status: index.pr_merge?.summary?.status ?? null,
       delivery: index.pr_merge?.summary?.delivery ?? null,
       reconciliation: index.pr_merge?.summary?.reconciliation ?? null,
+      decision_outcome_binding: index.pr_merge?.summary?.decision_outcome_binding ?? null,
       merge_commit_sha: index.pr_merge?.summary?.merge_commit_sha ?? null,
       merged_at: index.pr_merge?.summary?.merged_at ?? null
     },
@@ -1940,6 +2038,7 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     reconciliation: data?.reconciliation,
     reconciliation_action: resolveReconciliationAction(data),
     execution_state_sync: data?.execution_state_sync,
+    decision_outcome_binding: data?.decision_outcome_binding,
     branch_cleanup: data?.branch_cleanup,
     delete_branch: data?.delete_branch,
     preconditions: data?.preconditions,

@@ -15,6 +15,7 @@ import { resolveHumanOutputLanguage } from './language.js';
 import { discoverPrArtifactStoryIds, resolveArtifactRoute, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
+import { projectDecisionOutcomeSummary } from './decision-outcome-ledger.js';
 
 const execFileAsync = promisify(execFile);
 const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -66,9 +67,13 @@ export async function createUsageReport(repoRoot, options = {}) {
       if (artifact.data?.evidence_reuse && !story.evidence_reuse.latest_status) {
         recordEvidenceReuse(story, artifact.data.evidence_reuse);
       }
+      story.decision_outcome_summary ??= artifact.data?.decision_outcome_summary ?? null;
     }
     if (artifact.kind === 'evidence_reuse') {
       recordEvidenceReuse(story, artifact.data);
+    }
+    if (artifact.kind === 'decision_outcome_ledger') {
+      story.decision_outcome_summary = projectDecisionOutcomeSummary(artifact.data);
     }
     if (artifact.kind === 'senior_gap_judgment') {
       recordSeniorGapJudgment(story, artifact.data, artifact.path);
@@ -225,6 +230,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     ...(subagent_roi ? { subagent_roi } : {}),
     evidence_cost,
     evidence_reuse,
+    decision_outcomes: stories
+      .filter((story) => story.decision_outcome_summary)
+      .map((story) => ({ story_id: story.story_id, ...story.decision_outcome_summary })),
     value_signals,
     log_signals: logs
   };
@@ -243,6 +251,7 @@ export function renderUsageReport(report) {
       )).join('\n')
     : '- none';
   const gateOutcomeRows = renderGateOutcomeRows(report);
+  const decisionOutcomeRows = renderDecisionOutcomeRows(report);
   const gateRoiRows = renderGateRoiRows(report);
   const gateRoiSectionEn = gateRoiRows ? `\n## Gate ROI (central ledger)\n\n${gateRoiRows}\n` : '';
   const gateRoiSectionJa = gateRoiRows ? `\n## Gate ROI（中央台帳）\n\n${gateRoiRows}\n` : '';
@@ -294,6 +303,10 @@ ${gateRows}
 
 ${gateOutcomeRows}
 ${gateRoiSectionEn}
+## Decision Outcomes
+
+${decisionOutcomeRows}
+
 ## Agent Review
 
 ${reviewRows}
@@ -349,6 +362,10 @@ ${gateRows}
 
 ${gateOutcomeRows}
 ${gateRoiSectionJa}
+## Decision Outcomes
+
+${decisionOutcomeRows}
+
 ## Agent Review
 
 ${reviewRows}
@@ -409,6 +426,30 @@ function formatReconciliationAction(story) {
   return `"vibepro pr prepare . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'} && vibepro execute merge . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'}${story.latest_pr_url ? ` --pr ${story.latest_pr_url}` : ''}"`;
 }
 
+function renderDecisionOutcomeRows(report) {
+  const rows = report.decision_outcomes ?? [];
+  if (rows.length === 0) return '- none';
+  return rows.map((item) => {
+    const entries = (item.entries ?? []).map((entry) => {
+      const selector = entry.decision_trace_id
+        ? `trace:${entry.decision_trace_id}`
+        : `collision:${entry.collision_group ?? 'missing'}:${entry.trace_source_ref ?? 'missing'}`;
+      const sources = entry.eligible_outcome_sources ?? { total_count: 0, entries: [] };
+      const sourceRefs = (sources.entries ?? []).map((source) => `${source.kind}:${source.ref}@${source.digest}`).join('|') || 'none';
+      const chain = JSON.stringify({
+        finding: entry.finding?.value ?? null,
+        disposition: entry.disposition?.value ?? null,
+        decision: entry.decision?.value ?? null,
+        behavior_delta: entry.behavior_delta ?? null,
+        delivery: entry.delivery ?? null,
+        downstream_outcome: entry.downstream_outcome ?? null
+      });
+      return `${selector}:${entry.trace_status ?? 'unknown'}:${entry.delivery_status ?? 'unknown'}:${entry.downstream_outcome_status ?? 'unknown'} parent=${entry.parent_revision_fingerprint ?? 'missing'} chain=${chain} sources=${sources.total_count ?? 0}/${sources.returned_count ?? 0}/${sources.omitted_count ?? 0}/${sources.truncated === true}[${sourceRefs}]`;
+    }).join(',');
+    return `- ${item.story_id}: total=${item.total_count ?? 0} returned=${item.returned_count ?? 0} omitted=${item.omitted_count ?? 0} truncated=${item.truncated === true} ledger=${item.ledger_path ?? 'unknown'} digest=${item.ledger_digest ?? 'unknown'} entries=${entries || 'none'}`;
+  }).join('\n');
+}
+
 function ensureStoryUsage(storyMap, storyId) {
   const key = storyId || 'unknown';
   if (!storyMap.has(key)) {
@@ -467,6 +508,7 @@ function ensureStoryUsage(storyMap, storyId) {
         same_key_full_evidence_generation_count: 0,
         cumulative_full_evidence_generation_count: 0
       },
+      decision_outcome_summary: null,
       senior_gap_judgment: {
         present: false,
         status: null,
@@ -525,7 +567,7 @@ async function collectPrArtifacts(root, workspaceDir, since, discoveredStoryIds 
   const artifacts = [];
   const seenPaths = new Set();
   for (const storyId of storyDirs) {
-    for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['senior-gap-judgment.json', 'senior_gap_judgment'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
+    for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['decision-outcome-ledger.json', 'decision_outcome_ledger'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['senior-gap-judgment.json', 'senior_gap_judgment'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
       const filePath = kind === 'gate_dag'
         ? await resolveGateArtifactFile(root, storyId)
         : await resolvePrArtifactFile(root, storyId, file);

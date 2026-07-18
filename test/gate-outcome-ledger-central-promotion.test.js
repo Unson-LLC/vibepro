@@ -14,6 +14,7 @@ import {
   summarizeGateRoi
 } from '../src/gate-outcome-ledger.js';
 import { createUsageReport } from '../src/usage-report.js';
+import { applyDecisionOutcomeBinding, buildDecisionOutcomeBinding } from '../src/merge-manager.js';
 
 function entry(overrides = {}) {
   return {
@@ -86,6 +87,78 @@ test('RML-S-3: empty/absent local ledger yields no_entries and writes nothing', 
   assert.equal(empty.serialized, null);
   const undef = computeCentralLedgerPromotion({});
   assert.equal(undef.status, 'no_entries');
+});
+
+test('GDO-S-2/GDO-S-3: delivery binding requires every local outcome to be promoted or deduplicated', () => {
+  const bound = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' }), entry({ entry_key: 'k2' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 1 },
+    merge: {
+      base: 'develop',
+      delivery: {
+        status: 'merged',
+        pr_url: 'https://github.com/example/repo/pull/2',
+        merge_commit_sha: 'immutable-delivery'
+      }
+    }
+  });
+  assert.equal(bound.status, 'bound');
+  assert.equal(bound.expected_entry_count, 2);
+  assert.equal(bound.promoted_count + bound.duplicate_count, 2);
+  assert.equal(bound.delivery.merge_commit_sha, 'immutable-delivery');
+
+  const missing = buildDecisionOutcomeBinding({
+    localEntries: [entry()],
+    promotion: null,
+    merge: {
+      base: 'develop',
+      delivery: {
+        status: 'merged',
+        pr_url: 'https://github.com/example/repo/pull/2',
+        merge_commit_sha: 'immutable-delivery'
+      }
+    }
+  });
+  assert.equal(missing.status, 'failed');
+  assert.equal(missing.reason, 'decision_outcome_promotion_missing');
+  assert.equal(missing.delivery.merge_commit_sha, 'immutable-delivery');
+
+  const partial = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' }), entry({ entry_key: 'k2' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 }
+  });
+  assert.equal(partial.status, 'failed');
+  assert.equal(partial.reason, 'decision_outcome_binding_count_mismatch');
+
+  const merge = {
+    status: 'merged',
+    stop_reason: null,
+    delivery: {
+      status: 'merged',
+      pr_url: 'https://github.com/example/repo/pull/2',
+      merge_commit_sha: 'immutable-delivery'
+    },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  };
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: [entry()],
+    promotion: { status: 'failed', reason: 'central_ledger_parse_failed' }
+  });
+  assert.equal(merge.status, 'merged', 'immutable delivery projection remains merged');
+  assert.equal(merge.delivery.merge_commit_sha, 'immutable-delivery');
+  assert.equal(merge.reconciliation.status, 'reconciliation_required');
+  assert.deepEqual(merge.reconciliation.reasons, ['decision_outcome_binding_failed']);
+  assert.equal(merge.stop_reason, 'decision_outcome_binding_failed');
+});
+
+test('GDO-S-4: stories without local decision outcomes do not invent a binding failure', () => {
+  const binding = buildDecisionOutcomeBinding({
+    localEntries: [],
+    promotion: { status: 'no_entries', promoted_count: 0, duplicate_count: 0 }
+  });
+  assert.equal(binding.status, 'not_applicable');
+  assert.equal(binding.required, false);
+  assert.equal(binding.reason, 'no_local_decision_outcomes');
 });
 
 test('RML-S-6: corrupt central ledger fails the promotion and is not overwritten', () => {
