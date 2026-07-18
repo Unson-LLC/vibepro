@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "focused-verification",
+  "story_id": "story-vibepro-cli-env-boundary",
+  "head_sha": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b",
+  "status": "pass",
+  "command": "node --test test/bin-entrypoint.test.js test/cli-status-honesty.test.js",
+  "tests": {
+    "passed": 6,
+    "failed": 0
+  },
+  "observations": {
+    "entrypoint_io": ["stdout", "stderr", "env"],
+    "env_reference": "process.env",
+    "missing_env_negative_contract": "covered_by_reference_identity",
+    "secret_serialization": "sentinel_not_enumerated_or_printed"
+  }
+}

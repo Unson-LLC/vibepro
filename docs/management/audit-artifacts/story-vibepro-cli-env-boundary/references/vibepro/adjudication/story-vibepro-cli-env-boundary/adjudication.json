@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-cli-env-boundary",
+  "updated_at": "2026-07-18T16:41:15.864Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "entrypoint境界でProxy ownKeysによるenv列挙検出とsentinel非出力をfresh確認し、実装にserialize・persist・log sinkがない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "test_plan_gate_security",
+        "session_ref": "80cdae35-final-fresh"
+      },
+      "head_commit": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b",
+      "recorded_at": "2026-07-18T16:41:15.863Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "実際のIO factoryのkeysとstdout・stderr・env全値の参照同一性をassertし、省略や差替えで失敗する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "test_plan_gate_security",
+        "session_ref": "80cdae35-final-fresh"
+      },
+      "head_commit": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b",
+      "recorded_at": "2026-07-18T16:41:15.606Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "既定runtimeのprocess.env同一参照が実際のIO contextを通じてrunCliへ渡され、fresh focused testで参照同一性を確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "test_plan_gate_security",
+        "session_ref": "80cdae35-final-fresh"
+      },
+      "head_commit": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b",
+      "recorded_at": "2026-07-18T16:41:15.381Z"
+    }
+  ]
+}
