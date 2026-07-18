@@ -1,7 +1,7 @@
 name: Post-merge continuous release
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - closed
 
@@ -21,6 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          # Run the trusted workflow and projection code from the default branch.
+          # The merged SHA is checked out only for the immutable package build below.
           ref: main
           fetch-depth: 0
       - uses: actions/setup-node@v7

@@ -137,7 +137,8 @@ test('PCR-CON-005 serializes an interleaved older release with an atomic lease',
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /pull_request:/);
+  assert.match(workflow, /pull_request_target:/);
+  assert.doesNotMatch(workflow, /^\s+pull_request:\s*$/m);
   assert.match(workflow, /pull_request\.merged == true/);
   assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
@@ -310,4 +311,12 @@ test('PCR-CON-004 projects a new published version without duplicating its index
 test('post-merge docs release is not gated by an approval environment', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
+});
+
+test('post-merge release uses the trusted default-branch workflow for fork merges', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /pull_request_target:[\s\S]*types:[\s\S]*- closed/);
+  assert.match(workflow, /ref: main[\s\S]*git checkout --detach "\$RELEASE_SHA"/);
+  assert.match(workflow, /pull_request\.merged == true/);
+  assert.match(workflow, /pull_request\.base\.ref == 'main'/);
 });

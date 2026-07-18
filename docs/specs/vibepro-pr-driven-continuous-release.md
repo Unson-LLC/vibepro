@@ -39,6 +39,7 @@ diagrams:
 
 - `PCR-CON-001`: Release Notesは `Change Summary`、`Compatibility`、`User Action` の3節を持ち、空節は `なし` になる。
 - `PCR-CON-001A`: VibeProはStoryの `Solution`、`Compatibility`、`User Action` を各安定節へ抽出し、post-merge jobはapproval environmentを使用しない。
+- `PCR-CON-001B`: post-merge triggerは `pull_request_target.closed` を使用し、`merged == true` かつbase=`main` に限定する。workflowとprojection codeはdefault branchから読み、package buildだけをmerge SHAへ固定することでfork由来PRでも自動公開契約を維持する。
 - `PCR-CON-002`: note identityはPR番号で、同じeventの再処理は既存markerを置換して重複しない。
 - `PCR-CON-003`: note metadataはnumber/title/author/merged_at/merge_commit_sha/html_urlをevent payloadから取得する。
 - `PCR-CON-004`: version gateはbaseとmergeのSemVerを比較し、厳密な増加時だけreleaseする。
