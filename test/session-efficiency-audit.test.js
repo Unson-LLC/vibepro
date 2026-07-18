@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -10,8 +10,10 @@ import { promisify } from 'node:util';
 import {
   collectSessionEfficiencyAudit,
   commitAuditAutomationMemory,
-  preflightAuditAutomationMemory
+  preflightAuditAutomationMemory,
+  renderSessionEfficiencyAudit
 } from '../src/session-efficiency-audit.js';
+import { buildSessionBoundaryAdvisory, preparePullRequest } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
@@ -716,7 +718,12 @@ test('SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed un
   assert.equal(result.session.token_accounting.status, 'unavailable');
   assert.equal(result.session.elapsed_time_accounting.status, 'unavailable');
   assert.match(result.session.elapsed_time_accounting.reason, /no events were found/);
+  assert.equal(result.attribution.status, 'unavailable');
+  assert.match(result.attribution.reason, /No events were found within the selected session window/);
   assert.equal(result.audit_readiness.blockers.includes('elapsed_time_unavailable'), true);
+  const rendered = renderSessionEfficiencyAudit(result);
+  assert.match(rendered, /attribution: unavailable/);
+  assert.match(rendered, /reason=No events were found within the selected session window/);
 });
 
 test('SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection', async () => {
@@ -1097,17 +1104,35 @@ test('audit memory preflight reports corrupt memory and CLI exits non-zero witho
   );
 });
 
-test('session efficiency audit adds advisory attribution without changing token accounting', async () => {
+test('session efficiency audit makes strict attribution primary and degrades mixed-parent readiness', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
-  const lines = [
-    ...sessionLines({ sessionId, cwd: root, storyId }),
+  const originalSession = await readFile(sessionPath, 'utf8');
+  const attributionEvents = [
+    {
+      timestamp: '2026-06-27T13:00:30.000Z',
+      type: 'response_item',
+      payload: { text: `implementation note for ${storyId}` }
+    },
     {
       timestamp: '2026-06-27T13:01:00.000Z',
       type: 'response_item',
       payload: { text: 'follow-up note for STR-999 from a parent session' }
+    },
+    {
+      timestamp: '2026-06-27T13:01:30.000Z',
+      type: 'response_item',
+      payload: { text: `active branch codex/${storyId.toLowerCase()} in the story worktree` }
+    },
+    {
+      timestamp: '2026-06-27T13:02:00.000Z',
+      type: 'response_item',
+      payload: { text: `review .vibepro/pr/${storyId}/pr-prepare.json` }
     }
   ];
-  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+  await writeFile(
+    sessionPath,
+    `${originalSession.trimEnd()}\n${attributionEvents.map((entry) => JSON.stringify(entry)).join('\n')}\n`
+  );
 
   const result = await collectSessionEfficiencyAudit(root, {
     storyId,
@@ -1119,8 +1144,249 @@ test('session efficiency audit adds advisory attribution without changing token 
 
   assert.equal(result.session.token_accounting.status, 'available');
   assert.equal(result.attribution.status, 'available');
-  assert.equal(result.attribution.categories.strict > 0, true);
+  assert.equal(result.attribution.target_story_id, storyId);
+  assert.deepEqual(result.attribution.detected_story_ids, ['STR-999']);
+  assert.equal(result.attribution.detected_story_refs.includes(storyId), true);
+  assert.equal(result.attribution.strict_over_associated > 0, true);
+  assert.equal(result.attribution.categories.strict >= 3, true);
   assert.equal(result.attribution.categories.other_story > 0, true);
+  assert.equal(result.attribution.events.strict_story, result.attribution.categories.strict);
+  assert.equal(result.attribution.events.worktree_associated, result.attribution.categories.worktree_associated);
+  assert.equal(result.attribution.events.other_story, result.attribution.categories.other_story);
+  assert.equal(result.attribution.estimated_tokens.other_story > 0, true);
   assert.equal(result.attribution.mixed_parent, true);
-  assert.equal(result.attribution.mode, 'advisory');
+  assert.equal(
+    Object.values(result.attribution.categories).reduce((sum, count) => sum + count, 0),
+    result.attribution.event_count
+  );
+  assert.equal(result.attribution.mode, 'strict_primary_with_worktree_upper_bound');
+  assert.equal(result.attribution.primary.event_count, result.attribution.categories.strict);
+  assert.equal(
+    result.attribution.upper_bound.event_count,
+    result.attribution.categories.strict + result.attribution.categories.worktree_associated
+  );
+  assert.equal(result.attribution.attribution_risk, 'low');
+  assert.equal(result.audit_readiness.status, 'partial');
+  assert.equal(result.audit_readiness.blockers.includes('mixed_parent_session_attribution'), true);
+  assert.equal(result.session.token_accounting.total_tokens, 250);
+  assert.equal(result.session.token_accounting.input_tokens, 200);
+  assert.equal(result.session.token_accounting.cached_input_tokens, 80);
+  assert.equal(result.session.token_accounting.output_tokens, 50);
+  assert.equal(result.session.token_accounting.reasoning_output_tokens, 10);
+  assert.equal(result.session.artifact_token_accounting.estimated_total_tokens > 0, true);
+  assert.equal(result.session.artifact_token_accounting.classified_estimated_tokens > 0, true);
+  assert.equal(result.session.artifact_token_accounting.buckets.audit_evidence.estimated_tokens > 0, true);
+  const rendered = renderSessionEfficiencyAudit(result);
+  assert.match(rendered, /attribution: available/);
+  assert.match(rendered, /mixed_parent=true/);
+  assert.match(rendered, /attribution_detected_story_ids: STR-999/);
+  assert.match(rendered, /mixed_parent_session_attribution/);
+
+  const cli = await execFileAsync(process.execPath, [
+    CLI_BIN,
+    'audit',
+    'session-cost',
+    root,
+    '--story-id',
+    storyId,
+    '--session-id',
+    sessionId,
+    '--codex-home',
+    codexHome,
+    '--base',
+    'base',
+    '--json'
+  ], { encoding: 'utf8' }).catch((error) => {
+    assert.equal(error.code, 2);
+    return { stdout: error.stdout };
+  });
+  const cliResult = JSON.parse(cli.stdout);
+  assert.equal(cliResult.attribution.status, 'available');
+  assert.equal(cliResult.attribution.mixed_parent, true);
+  assert.deepEqual(cliResult.attribution.detected_story_ids, ['STR-999']);
+  assert.equal(cliResult.attribution.categories.strict >= 3, true);
+  assert.equal(cliResult.audit_readiness.blockers.includes('mixed_parent_session_attribution'), true);
+});
+
+test('session efficiency audit applies high risk only to strict-over-associated threshold breach', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const baselineLines = sessionLines({ sessionId, cwd: root });
+  await writeFile(sessionPath, `${baselineLines.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
+  const baseline = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  const lines = sessionLines({ sessionId, cwd: root, storyId });
+  await writeFile(sessionPath, `${lines.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.mixed_parent, false);
+  assert.equal(result.attribution.risk_threshold, 0.5);
+  assert.equal(result.attribution.strict_over_associated < result.attribution.risk_threshold, true);
+  assert.equal(result.attribution.attribution_risk, 'high');
+  const rendered = renderSessionEfficiencyAudit(result);
+  assert.match(rendered, /risk=high/);
+  assert.equal(result.audit_readiness.blockers.includes('mixed_parent_session_attribution'), false);
+  assert.equal(result.session.token_accounting.total_tokens, 150);
+  assert.equal(result.session.token_accounting.input_tokens, 100);
+  assert.equal(result.session.token_accounting.cached_input_tokens, null);
+  assert.equal(result.session.token_accounting.output_tokens, 50);
+  assert.equal(result.session.token_accounting.reasoning_output_tokens, null);
+  assert.equal(result.session.artifact_token_accounting.estimated_total_tokens, 0);
+  assert.equal(result.session.artifact_token_accounting.classified_estimated_tokens, 0);
+  for (const field of [
+    'status',
+    'total_tokens',
+    'input_tokens',
+    'output_tokens',
+    'cached_input_tokens',
+    'reasoning_output_tokens',
+    'source',
+    'reason'
+  ]) {
+    assert.deepEqual(result.session.token_accounting[field], baseline.session.token_accounting[field]);
+  }
+  assert.deepEqual(
+    result.session.artifact_token_accounting.buckets,
+    baseline.session.artifact_token_accounting.buckets
+  );
+  assert.equal(
+    result.session.artifact_token_accounting.estimated_total_tokens,
+    baseline.session.artifact_token_accounting.estimated_total_tokens
+  );
+  assert.equal(
+    result.session.artifact_token_accounting.classified_estimated_tokens,
+    baseline.session.artifact_token_accounting.classified_estimated_tokens
+  );
+});
+
+test('session efficiency audit fails attribution closed when a selected JSONL row is malformed', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const original = await readFile(sessionPath, 'utf8');
+  await writeFile(sessionPath, `${original}{malformed-json\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.status, 'unavailable');
+  assert.match(result.attribution.reason, /session JSONL parse failed/);
+  assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.match(result.session.token_accounting.reason, /session JSONL parse failed/);
+  assert.equal(result.audit_readiness.blockers.includes('session_attribution_unavailable'), true);
+});
+
+test('session efficiency audit fails attribution closed when a selected JSONL file cannot be read', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await chmod(sessionPath, 0o000);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.status, 'unavailable');
+  assert.match(result.attribution.reason, /session JSONL read failed/);
+  assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.match(result.session.token_accounting.reason, /session JSONL read failed/);
+  await chmod(sessionPath, 0o600);
+});
+
+test('session efficiency audit keeps unavailable attribution explicit when inference selects no session', async () => {
+  const { root, storyId } = await createFixture();
+  const emptyCodexHome = await mkdtemp(path.join(os.tmpdir(), 'vibepro-empty-codex-'));
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    codexHome: emptyCodexHome,
+    inferSession: true,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, null);
+  assert.equal(result.attribution.status, 'unavailable');
+  assert.equal(result.attribution.mode, 'strict_primary_with_worktree_upper_bound');
+  assert.equal(result.attribution.attribution_risk, 'unknown');
+  assert.match(result.attribution.note, /No selected session JSONL files/);
+});
+
+test('SAB-S-6 session efficiency audit returns unavailable attribution when session selection is omitted', async () => {
+  const { root, storyId } = await createFixture();
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, null);
+  assert.equal(result.session_selection.status, 'not_requested');
+  assert.equal(result.attribution.status, 'unavailable');
+  assert.equal(result.attribution.attribution_risk, 'unknown');
+  assert.match(result.attribution.note, /No selected session JSONL files/);
+  assert.equal(result.audit_readiness.blockers.includes('session_attribution_unavailable'), true);
+});
+
+test('PR preparation session boundary is advisory and delegates mixed-session detection to session-cost', () => {
+  const observed = buildSessionBoundaryAdvisory({
+    storyId: 'STR-126',
+    env: { CODEX_SESSION_ID: 'session-126' },
+    git: { current_branch: 'codex/story-126', head_sha: 'a'.repeat(40) }
+  });
+  const unavailable = buildSessionBoundaryAdvisory({
+    storyId: 'STR-126',
+    env: {},
+    git: { current_branch: 'codex/story-126', head_sha: 'a'.repeat(40) }
+  });
+
+  assert.equal(observed.status, 'observed');
+  assert.equal(observed.blocking, false);
+  assert.equal(observed.session_id, 'session-126');
+  assert.match(observed.note, /audit session-cost/);
+  assert.equal(unavailable.status, 'not_observed');
+  assert.equal(unavailable.blocking, false);
+  assert.match(unavailable.note, /--infer-session/);
+});
+
+test('PR preparation persists the advisory boundary without claiming mixed-parent detection', async () => {
+  const { root, storyId } = await createFixture();
+  const observed = await preparePullRequest(root, {
+    storyId,
+    baseBranch: 'base',
+    env: { CODEX_SESSION_ID: 'session-126' },
+    progress: false
+  });
+  const absent = await preparePullRequest(root, {
+    storyId,
+    baseBranch: 'base',
+    env: {},
+    progress: false
+  });
+
+  assert.equal(observed.preparation.session_boundary.status, 'observed');
+  assert.equal(observed.preparation.session_boundary.blocking, false);
+  assert.equal(observed.preparation.session_boundary.session_id, 'session-126');
+  assert.equal('mixed_parent' in observed.preparation.session_boundary, false);
+  assert.match(observed.preparation.session_boundary.note, /audit session-cost/);
+  assert.deepEqual(observed.preparation.gate_status, absent.preparation.gate_status);
+  assert.deepEqual(observed.preparation.next_commands, absent.preparation.next_commands);
+  assert.deepEqual(observed.preparation.verdicts, absent.preparation.verdicts);
 });

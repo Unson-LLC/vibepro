@@ -3273,7 +3273,7 @@ function buildUsedForDecisionSummary({
   };
 }
 
-function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
+export function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
   const sessionId = env?.VIBEPRO_SESSION_ID ?? env?.CODEX_SESSION_ID ?? env?.CLAUDE_SESSION_ID ?? null;
   return {
     schema_version: '0.1.0',

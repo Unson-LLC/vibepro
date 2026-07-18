@@ -139,9 +139,6 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     windowStart: effectiveWindowStart,
     windowEnd: effectiveWindowEnd
   });
-  if (!sessionSelection.session_id && !inferSession && sessionId !== 'auto') {
-    throw new Error('audit session-cost requires --session-id <id> or --infer-session');
-  }
 
   const selectedSessionId = sessionSelection.session_id;
   const processMetadata = selectedSessionId
@@ -150,18 +147,32 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const sessionFiles = selectedSessionId
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
-  const session = selectedSessionId && sessionFiles.length > 0
-    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
-    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
-  const sessionAttribution = selectedSessionId && sessionFiles.length > 0
-    ? await buildSessionAttribution(sessionFiles, {
+  const sessionEntryLoad = selectedSessionId && sessionFiles.length > 0
+    ? await readCodexSessionEntries(sessionFiles)
+    : null;
+  const session = sessionEntryLoad?.status === 'available'
+    ? await parseCodexSessionJsonlFiles(sessionFiles, {
+      sessionId: selectedSessionId,
+      storyId,
+      windowStart: effectiveWindowStart,
+      windowEnd: effectiveWindowEnd,
+      entries: sessionEntryLoad.entries
+    })
+    : missingSessionAccounting(
+      selectedSessionId,
+      effectiveWindowStart,
+      effectiveWindowEnd,
+      sessionEntryLoad?.reason
+    );
+  const sessionAttribution = sessionEntryLoad?.status === 'available'
+    ? await buildSessionAttribution(sessionEntryLoad.entries, {
       repoRoot: root,
       storyId,
       windowStart: effectiveWindowStart,
       windowEnd: effectiveWindowEnd,
       sessionCwd: session.cwd
     })
-    : buildUnavailableSessionAttribution(selectedSessionId);
+    : buildUnavailableSessionAttribution(selectedSessionId, sessionEntryLoad?.reason, storyId);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
@@ -213,6 +224,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     cost_breakdown: costBreakdown,
     audit_readiness: buildAuditReadiness({
       session,
+      attribution: sessionAttribution,
       processMetadata,
       observedWorktreeMatchesRepo,
       artifactInventory,
@@ -327,6 +339,9 @@ export function renderSessionEfficiencyAudit(result) {
   const token = result.session.token_accounting;
   const exposure = result.session.artifact_token_accounting;
   const elapsed = result.session.elapsed_time_accounting;
+  const attribution = result.attribution ?? {};
+  const auditReadiness = result.audit_readiness ?? {};
+  const attributionReason = attribution.reason ? ` reason=${attribution.reason}` : '';
   const lines = [
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
@@ -334,6 +349,9 @@ export function renderSessionEfficiencyAudit(result) {
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
     `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
+    `- attribution: ${attribution.status ?? 'unavailable'} strict=${attribution.primary?.event_count ?? 0} associated=${attribution.upper_bound?.event_count ?? 0} strict_over_associated=${attribution.strict_over_associated ?? '未確認'} risk=${attribution.attribution_risk ?? 'unknown'} mixed_parent=${attribution.mixed_parent === true}${attributionReason}`,
+    `- attribution_detected_story_ids: ${(attribution.detected_story_ids ?? []).join(',') || '-'}`,
+    `- audit_readiness: ${auditReadiness.status ?? 'unknown'} blockers=${(auditReadiness.blockers ?? []).join(',') || '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
     `- story_artifact_lines: ${result.story_artifacts.total_lines} files=${result.story_artifacts.file_count}`,
     `- story_artifact_lineage: ${result.story_artifacts.lineage?.status ?? 'unknown'} source=${result.story_artifacts.lineage?.effective_source ?? '-'}`,
@@ -973,8 +991,7 @@ async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
   return toWorkspaceRelative(repoRoot, filePath);
 }
 
-async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+async function buildSessionAttribution(entries, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const buckets = {
@@ -995,11 +1012,13 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
     const text = JSON.stringify(entry);
     const refs = extractStoryRefs(text);
     for (const ref of refs) storyRefs.add(ref);
+    const transcriptText = extractSessionTranscriptText(entry).join('\n').trim();
     const item = {
       source_path: sourcePath,
       line,
       timestamp: entry.timestamp ?? null,
-      type: entry.type ?? null
+      type: entry.type ?? null,
+      estimated_tokens: transcriptText ? estimateTextTokens(transcriptText) : 0
     };
     if (currentStory && refs.includes(currentStory)) {
       buckets.strict.push(item);
@@ -1013,30 +1032,73 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
   }
 
   const counts = Object.fromEntries(Object.entries(buckets).map(([key, value]) => [key, value.length]));
+  const estimatedTokens = Object.fromEntries(Object.entries(buckets).map(([key, value]) => [
+    key,
+    value.reduce((sum, item) => sum + item.estimated_tokens, 0)
+  ]));
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
   const associated = counts.strict + counts.worktree_associated;
+  const strictOverAssociated = associated === 0
+    ? null
+    : Number((counts.strict / associated).toFixed(3));
   const divergence = total === 0 ? 0 : Number(((counts.other_story + counts.unclassified) / total).toFixed(3));
+  const mixedParent = [...storyRefs].some((ref) => ref !== currentStory);
+  const riskThreshold = 0.5;
+  const attributionRisk = strictOverAssociated !== null && strictOverAssociated < riskThreshold
+    ? 'high'
+    : 'low';
+  const detectedStoryRefs = [...storyRefs].sort();
+  const detectedOtherStoryIds = detectedStoryRefs.filter((ref) => ref !== currentStory);
   return {
     schema_version: '0.1.0',
     status: total > 0 ? 'available' : 'unavailable',
-    mode: 'advisory',
+    mode: 'strict_primary_with_worktree_upper_bound',
+    target_story_id: currentStory || null,
     event_count: total,
     categories: counts,
+    events: {
+      strict_story: counts.strict,
+      worktree_associated: counts.worktree_associated,
+      other_story: counts.other_story,
+      unclassified: counts.unclassified
+    },
+    estimated_tokens: {
+      strict_story: estimatedTokens.strict,
+      worktree_associated: estimatedTokens.worktree_associated,
+      other_story: estimatedTokens.other_story,
+      unclassified: estimatedTokens.unclassified
+    },
     associated_event_count: associated,
+    primary: {
+      basis: 'strict_story_cues',
+      event_count: counts.strict
+    },
+    upper_bound: {
+      basis: 'strict_plus_worktree_associated',
+      event_count: associated
+    },
+    strict_over_associated: strictOverAssociated,
+    risk_threshold: riskThreshold,
+    attribution_risk: attributionRisk,
     divergence_ratio: divergence,
-    mixed_parent: [...storyRefs].some((ref) => ref !== currentStory),
-    detected_story_refs: [...storyRefs].sort(),
+    mixed_parent: mixedParent,
+    detected_story_ids: detectedOtherStoryIds,
+    detected_story_refs: detectedStoryRefs,
     session_cwd_matches_repo: sessionCwdMatchesRepo,
-    note: 'Advisory attribution only; mixed sessions are surfaced but do not block audit readiness.'
+    reason: total > 0
+      ? null
+      : 'No events were found within the selected session window for attribution.',
+    note: 'Strict story attribution is primary; worktree-associated attribution is an upper bound. Mixed-parent attribution degrades audit readiness.'
   };
 }
 
-function buildUnavailableSessionAttribution(sessionId) {
+function buildUnavailableSessionAttribution(sessionId, reason = null, storyId = null) {
   return {
     schema_version: '0.1.0',
     status: 'unavailable',
-    mode: 'advisory',
+    mode: 'strict_primary_with_worktree_upper_bound',
     session_id: sessionId ?? null,
+    target_story_id: storyId,
     event_count: 0,
     categories: {
       strict: 0,
@@ -1044,18 +1106,38 @@ function buildUnavailableSessionAttribution(sessionId) {
       other_story: 0,
       unclassified: 0
     },
+    events: {
+      strict_story: 0,
+      worktree_associated: 0,
+      other_story: 0,
+      unclassified: 0
+    },
+    estimated_tokens: {
+      strict_story: 0,
+      worktree_associated: 0,
+      other_story: 0,
+      unclassified: 0
+    },
     associated_event_count: 0,
+    primary: { basis: 'strict_story_cues', event_count: 0 },
+    upper_bound: { basis: 'strict_plus_worktree_associated', event_count: 0 },
+    strict_over_associated: null,
+    risk_threshold: 0.5,
+    attribution_risk: 'unknown',
     divergence_ratio: 0,
     mixed_parent: false,
+    detected_story_ids: [],
     detected_story_refs: [],
-    note: 'No selected session JSONL files were available for attribution.'
+    reason: reason ?? 'No selected session JSONL files were available for attribution.',
+    note: reason ?? 'No selected session JSONL files were available for attribution.'
   };
 }
 
 function extractStoryRefs(text) {
   const refs = new Set();
   for (const match of String(text ?? '').matchAll(/\b(?:story-[a-z0-9][a-z0-9-]*|STR-\d+|BFD-\d+|TSK-\d+)\b/gi)) {
-    refs.add(match[0]);
+    const ref = match[0];
+    refs.add(/^story-/i.test(ref) ? ref.toLowerCase() : ref.toUpperCase());
   }
   return [...refs];
 }
@@ -1106,8 +1188,12 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, windowStart, windowEnd } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, windowStart, windowEnd, entries = null } = {}) {
+  const loaded = entries ? { status: 'available', entries } : await readCodexSessionEntries(filePaths);
+  if (loaded.status !== 'available') {
+    return missingSessionAccounting(sessionId, windowStart, windowEnd, loaded.reason);
+  }
+  const sessionEntries = loaded.entries;
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
@@ -1119,7 +1205,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
   let firstEventAt = null;
   let lastEventAt = null;
 
-  for (const { entry, sourcePath, line } of entries) {
+  for (const { entry, sourcePath, line } of sessionEntries) {
     const eventAt = normalizeTimeMs(entry.timestamp);
     if (eventAt !== null) {
       firstEventAt ??= eventAt;
@@ -1174,7 +1260,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
     source_path: filePaths[0] ?? null,
     source_paths: filePaths,
     cwd,
-    line_count: entries.length,
+    line_count: sessionEntries.length,
     window: {
       session_id: sessionId,
       requested_start: windowStart ?? null,
@@ -1243,8 +1329,18 @@ async function parseCodexSessionJsonl(filePath, options = {}) {
 
 async function readCodexSessionEntries(filePaths) {
   const entries = [];
+  const malformedRows = [];
   for (const sourcePath of filePaths) {
-    const text = await readFile(sourcePath, 'utf8');
+    let text;
+    try {
+      text = await readFile(sourcePath, 'utf8');
+    } catch (error) {
+      return {
+        status: 'unavailable',
+        entries: [],
+        reason: `session JSONL read failed for ${sourcePath}: ${error.message}`
+      };
+    }
     const lines = text.split('\n').filter(Boolean);
     for (let index = 0; index < lines.length; index += 1) {
       try {
@@ -1253,17 +1349,25 @@ async function readCodexSessionEntries(filePaths) {
           sourcePath,
           line: index + 1
         });
-      } catch {
-        // Ignore malformed JSONL rows; other rows in the session may still carry usable accounting.
+      } catch (error) {
+        malformedRows.push({ source_path: sourcePath, line: index + 1, error: error.message });
       }
     }
+  }
+  if (malformedRows.length > 0) {
+    const first = malformedRows[0];
+    return {
+      status: 'unavailable',
+      entries: [],
+      reason: `session JSONL parse failed at ${first.source_path}:${first.line}; ${malformedRows.length} malformed row(s) found`
+    };
   }
   entries.sort((a, b) => (
     (normalizeTimeMs(a.entry.timestamp) ?? 0) - (normalizeTimeMs(b.entry.timestamp) ?? 0)
     || a.sourcePath.localeCompare(b.sourcePath)
     || a.line - b.line
   ));
-  return entries;
+  return { status: 'available', entries, reason: null };
 }
 
 function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, timestampMs }) {
@@ -1494,7 +1598,8 @@ function formatRatio(value) {
   return value === null || value === undefined ? '未確認' : `${value}%`;
 }
 
-function missingSessionAccounting(sessionId, windowStart, windowEnd) {
+function missingSessionAccounting(sessionId, windowStart, windowEnd, reason = null) {
+  const unavailableReason = reason ?? 'codex session jsonl was not found';
   return {
     status: 'unavailable',
     source_path: null,
@@ -1515,7 +1620,7 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       reasoning_output_tokens: null,
       source: 'codex-session-jsonl',
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     },
     elapsed_time_accounting: {
       status: 'unavailable',
@@ -1524,7 +1629,7 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       finished_at: null,
       source: 'codex-session-jsonl',
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     },
     artifact_token_accounting: {
       status: 'unavailable',
@@ -1539,7 +1644,7 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       unmatched_event_count: 0,
       unmatched_estimated_tokens: 0,
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     }
   };
 }
@@ -1968,12 +2073,14 @@ function buildCostBreakdown({ changedLines, tokenAccounting }) {
   };
 }
 
-function buildAuditReadiness({ session, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
+function buildAuditReadiness({ session, attribution, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
   const blockers = [
     session.token_accounting.status !== 'available' ? 'token_count_unavailable' : null,
     session.elapsed_time_accounting.status === 'unavailable' ? 'elapsed_time_unavailable' : null,
     !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
     observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
+    attribution?.status !== 'available' ? 'session_attribution_unavailable' : null,
+    attribution?.mixed_parent === true ? 'mixed_parent_session_attribution' : null,
     !isUsableArtifactInventory(artifactInventory) ? artifactInventoryBlocker(artifactInventory) : null,
     git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
   ].filter(Boolean);
