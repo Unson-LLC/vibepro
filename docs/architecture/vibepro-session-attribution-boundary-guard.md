@@ -108,7 +108,11 @@ pr prepare
 - The detector reads session JSONL and repo state; it never writes to
   session logs and never reassigns tokens between stories — reallocation
   stays an audit-side judgment.
-- It never blocks or delays any command; all outputs are advisory.
+- It never changes or blocks `pr prepare` development gates. The audit-side
+  output is fail-closed: mixed or incomplete attribution lowers
+  `audit_readiness` to `partial`, and `audit session-cost` may return a nonzero
+  exit status so automation cannot consume the result as a complete
+  single-story cost.
 - Session inference (`--session-id auto` / `--infer-session`,
   `resolveSessionSelection`) remains an `audit session-cost` concern and is
   not duplicated inside `pr prepare`.
