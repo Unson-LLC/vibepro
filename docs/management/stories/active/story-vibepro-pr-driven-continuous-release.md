@@ -2,6 +2,7 @@
 story_id: story-vibepro-pr-driven-continuous-release
 title: PRマージからマニュアル・VitePress・npmまで完全自動でリリースする
 status: active
+parent_design: vibepro-pr-driven-continuous-release
 source:
   type: operator_request
   id: pr-driven-continuous-release-2026-07-18

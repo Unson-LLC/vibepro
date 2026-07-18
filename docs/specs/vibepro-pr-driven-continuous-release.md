@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-pr-driven-continuous-release
 title: PR-driven Continuous Release Spec
-parent_design: pr-driven-continuous-release
+parent_design: vibepro-pr-driven-continuous-release
 code_refs:
   - scripts/post-merge-release.mjs
   - src/pr-manager.js
