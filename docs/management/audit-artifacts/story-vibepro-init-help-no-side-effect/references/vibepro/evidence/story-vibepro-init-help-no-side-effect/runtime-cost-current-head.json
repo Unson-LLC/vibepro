@@ -1,0 +1,10 @@
+{
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "head": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+  "command": "node --test --test-name-pattern=\"execute merge dry-run keeps absent|execute merge dry-run preserves partial|AUTCOST-SCENARIO-002\" test/vibepro-cli.test.js",
+  "status": "pass",
+  "tests": 3,
+  "passed": 3,
+  "failed": 0,
+  "duration_ms": 4554.298042
+}

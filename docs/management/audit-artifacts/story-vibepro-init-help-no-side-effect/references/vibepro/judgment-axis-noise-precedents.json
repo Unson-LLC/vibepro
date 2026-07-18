@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-init-help-no-side-effect",
+      "decision_id": "decision-1784347603210-a5c4f182",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The implementation changes one command branch before path resolution; the test exercises the same CLI boundary; Design SSOT links all three design documents under one root. Splitting would separate the contract from its proof.",
+      "artifact": ".vibepro/pr/story-vibepro-init-help-no-side-effect/split-plan.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T04:06:55.796Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:817|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-init-help-no-side-effect",
+      "decision_id": "decision-1784347603210-a5c4f182",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The implementation changes one command branch before path resolution; the test exercises the same CLI boundary; Design SSOT links all three design documents under one root. Splitting would separate the contract from its proof.",
+      "artifact": ".vibepro/pr/story-vibepro-init-help-no-side-effect/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:817",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T04:17:07.532Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

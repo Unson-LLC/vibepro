@@ -1,0 +1,122 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Implementation is sound, but verification and PR gate artifacts are bound to the pre-rebase HEAD.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-stale-head-binding",
+      "detail": "Verification artifacts are strict-bound to 5c00238 while reviewed HEAD is ef921d0; rerun and rerecord at current HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-artifact-current-state-contradiction",
+      "detail": "PR and gate summaries still describe the pre-rebase state and must be regenerated."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current diff, init paths, focused init tests, typecheck, strict-head verification, bounded summaries, PR output, and origin/main ancestry.",
+    "evidence": ".vibepro/reviews/story-vibepro-init-help-no-side-effect/gate/review-plan.json",
+    "inputs": [
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-init-help-no-side-effect/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-init-help-no-side-effect/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "Implementation concern cleared by focused current-HEAD tests; evidence concern confirmed because all formal artifacts still bind the pre-rebase HEAD."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+    "actual_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+    "expected_root": null,
+    "expected_head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+    "current_head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+      "actual_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+      "expected_root": null,
+      "expected_head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+      "current_head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-18T03:36:37.530Z",
+  "git_context": {
+    "head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+    "current_branch": "codex/vibepro-init-help-no-side-effect",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T03:36:37.529Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ef921d0161c9b85fdbc635aef54252a8712a00da",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "afef930392427ef4162788c2ac94ec2e4b6e684bdf876ac1a362847d20ae46fb",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-init-help-no-side-effect/gate/gate-evidence-review-ef921d0.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-init-help-no-side-effect/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

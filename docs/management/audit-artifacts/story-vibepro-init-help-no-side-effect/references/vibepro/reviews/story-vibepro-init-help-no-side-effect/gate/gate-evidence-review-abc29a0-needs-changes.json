@@ -1,0 +1,32 @@
+{
+  "status": "needs_changes",
+  "summary": "Current-HEAD implementation and regression coverage are sound, and the previous stale-HEAD issue is remediated. However, two verification records name commands different from those recorded in their artifacts, so gate evidence provenance is not yet reliable.",
+  "inspection_summary": "Inspected current HEAD abc29a0, CLI dispatch and entrypoint, focused subprocess regression, Story/Architecture/Spec and Design SSOT, verification artifacts, bounded PR summaries, and current pr-prepare state; reran the focused init tests successfully.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-init-help-no-side-effect/verification-evidence.json",
+  "inspection_inputs": [
+    "src/cli.js",
+    "bin/vibepro.js",
+    "test/vibepro-cli.test.js",
+    "docs/management/stories/active/story-vibepro-init-help-no-side-effect.md",
+    "docs/architecture/vibepro-init-help-no-side-effect.md",
+    "docs/specs/vibepro-init-help-no-side-effect.md",
+    "docs/specs/story-vibepro-init-help-no-side-effect.vibepro.json",
+    "design-ssot.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/targeted-current-head.json",
+    ".vibepro/evidence/story-vibepro-init-help-no-side-effect/runtime-cost-current-head.json",
+    ".vibepro/pr/story-vibepro-init-help-no-side-effect/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-init-help-no-side-effect/pr-prepare.json"
+  ],
+  "judgment_delta": [
+    "The stale-HEAD concern is resolved by four strict-head records at abc29a0.",
+    "The implementation coverage concern is resolved by exact-output, read-only, negative-path, alias, and normal-init assertions.",
+    "The final status changed to needs_changes because two verification commands conflict with their supporting artifact commands."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-command-provenance-mismatch",
+      "detail": "The e2e and integration verification records do not use the exact commands stored in their supporting artifacts. Re-record both entries, regenerate PR artifacts, and re-dispatch review."
+    }
+  ]
+}

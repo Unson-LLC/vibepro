@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "updated_at": "2026-07-18T04:25:48.937Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "The pre-existing normal-init regression validates config, manifest, ignore-file behavior, and explicit repository initialization at current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/acceptance_adjudication_final",
+        "session_ref": ".vibepro/adjudication/story-vibepro-init-help-no-side-effect/acceptance-adjudication-abc29a0.json"
+      },
+      "head_commit": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+      "recorded_at": "2026-07-18T04:25:48.937Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "The regression iterates both flag names and directly asserts ENOENT for both literal paths; focused evidence passes 2/2 at current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/acceptance_adjudication_final",
+        "session_ref": ".vibepro/adjudication/story-vibepro-init-help-no-side-effect/acceptance-adjudication-abc29a0.json"
+      },
+      "head_commit": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+      "recorded_at": "2026-07-18T04:25:48.817Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The same current-HEAD assertions cover -h through the identical early-return branch.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/acceptance_adjudication_final",
+        "session_ref": ".vibepro/adjudication/story-vibepro-init-help-no-side-effect/acceptance-adjudication-abc29a0.json"
+      },
+      "head_commit": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+      "recorded_at": "2026-07-18T04:25:48.695Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Current-HEAD subprocess test proves canonical help equality, successful exit, unchanged cwd, and no literal flag path; implementation returns before repo resolution or initWorkspace.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/acceptance_adjudication_final",
+        "session_ref": ".vibepro/adjudication/story-vibepro-init-help-no-side-effect/acceptance-adjudication-abc29a0.json"
+      },
+      "head_commit": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+      "recorded_at": "2026-07-18T04:25:48.574Z"
+    }
+  ]
+}

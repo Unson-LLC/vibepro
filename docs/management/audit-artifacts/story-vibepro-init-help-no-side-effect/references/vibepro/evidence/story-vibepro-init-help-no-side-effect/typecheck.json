@@ -1,0 +1,10 @@
+{
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "head": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+  "command": "npm run typecheck",
+  "status": "pass",
+  "checks": [
+    "node --check bin/vibepro.js",
+    "node --check src/*.js"
+  ]
+}

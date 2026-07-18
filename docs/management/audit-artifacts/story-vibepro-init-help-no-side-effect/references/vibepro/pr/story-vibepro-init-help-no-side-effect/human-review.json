@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-init-help-no-side-effect",
+  "created_at": "2026-07-18T04:36:21.034Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-init-help-no-side-effect/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-init-help-no-side-effect/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-init-help-no-side-effect/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-init-help-no-side-effect/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-init-help-no-side-effect.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-init-help-no-side-effect.md, docs/specs/story-vibepro-init-help-no-side-effect.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 1,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1
+      },
+      "by_status": {
+        "accepted": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+          "actual_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+          "expected_root": null,
+          "expected_head_sha": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+          "current_head_sha": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784347603210-a5c4f182",
+        "story_id": "story-vibepro-init-help-no-side-effect",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Keep this as one PR owned by the CLI maintainer: one dispatch-order fix, its regression test, and its Story/Architecture/Spec lineage.",
+        "reason": "The implementation changes one command branch before path resolution; the test exercises the same CLI boundary; Design SSOT links all three design documents under one root. Splitting would separate the contract from its proof.",
+        "reviewer": "codex-primary",
+        "artifact": ".vibepro/pr/story-vibepro-init-help-no-side-effect/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/evidence/story-vibepro-init-help-no-side-effect/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-init-help-no-side-effect/targeted-current-head.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-init-help-no-side-effect/runtime-cost-current-head.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-init-help-no-side-effect/responsibility-authority-current-head.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+            "actual_root": "/Users/ksato/workspace/projects/vibepro_init_help_fix",
+            "expected_root": null,
+            "expected_head_sha": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+            "current_head_sha": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+          "current_branch": "codex/vibepro-init-help-no-side-effect",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-18T04:06:43.209Z"
+        },
+        "recorded_at": "2026-07-18T04:06:43.211Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-18T04:36:19.706Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.0",
+      "root": "/Users/ksato/workspace/projects/vibepro_init_help_fix"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/projects/vibepro_init_help_fix/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/projects/vibepro_init_help_fix/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "abc29a0daef9e475ee2baa65ccc1d44d5116bce4",
+      "branch": "codex/vibepro-init-help-no-side-effect",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "88151e730887cec29c3abdcb114ee5d26d210759",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
