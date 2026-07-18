@@ -11,7 +11,8 @@ import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
   createGuardedRunSession,
-  renderGuardedRunError
+  renderGuardedRunError,
+  renderGuardedRunSummary
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
@@ -1761,6 +1762,34 @@ test('SAO-S-2 action checkpoint survives a later action failure', async (t) => {
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
 });
 
+test('SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const failed = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(failed.state.status, 'failed');
+
+  await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const retried = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(retried.state.status, 'waiting_for_runtime');
+  assert.equal(retried.state.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(retried.state.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
+  assert.match(renderGuardedRunSummary(retried.state), /pr_autopilot_safe \(completed\): runtime_required/);
+});
+
 test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;
@@ -1807,6 +1836,8 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   assert.equal(bootstrapCalls, 0);
   assert.equal(actionCalls, 0);
   await assert.rejects(access(fixture.runFile(fixture.source, RUN_ID)));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'execution-state.json')));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json')));
 
   const stderr = capture();
   const invalid = await runCli([
