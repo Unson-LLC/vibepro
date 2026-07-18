@@ -1784,6 +1784,7 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
       message: 'human_judgment_required',
       details: {
         recovery: {
+          failed_kinds: ['integration'],
           judgments: [{ kind: 'scope', reason: 'choose a boundary' }],
           required_actions: ['record current evidence'],
           failure: 'autopilot interrupted',
@@ -1794,9 +1795,38 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
   });
 
   assert.match(summary, /judgment: scope - choose a boundary/);
+  assert.match(summary, /failed: integration/);
   assert.match(summary, /required_action: record current evidence/);
   assert.match(summary, /failure: autopilot interrupted/);
   assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+});
+
+test('SAO-S-5 verification block persists failed kinds for public JSON and human status', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({}),
+    safeAutopilotPullRequest: async () => ({
+      status: 'blocked',
+      stop_reason: 'verification_failed',
+      recovery: { failed_kinds: ['integration'] }
+    })
+  };
+  const json = capture();
+  await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: json, stderr: capture(), guardedRunDependencies: dependencies });
+  const state = JSON.parse(json.text()).state;
+  assert.equal(state.stop_reason.code, 'verification_failed');
+  assert.deepEqual(state.stop_reason.details.recovery.failed_kinds, ['integration']);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /failed: integration/);
+  assert.match(human.text(), /next_command: vibepro execute resume .*--until pr-ready/);
 });
 
 test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
@@ -1914,6 +1944,38 @@ test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', asy
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), [
     'pr_prepare', 'pr_autopilot_safe', 'rebind_head', 'pr_prepare_current_head'
   ]);
+});
+
+test('SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      if (prepareCalls === 2) throw new Error('Gate storage unavailable');
+      return {};
+    },
+    safeAutopilotPullRequest: async () => {
+      fixture.setHead(fixture.source, 'changed-head');
+      return { status: 'pr_ready' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'failed');
+  assert.equal(result.state.current_head_sha, 'changed-head');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_failed');
+  assert.equal(result.state.stop_reason.details.recovery.failure, 'Gate storage unavailable');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.action_journal.map((entry) => [entry.action_id, entry.status]), [
+    ['pr_prepare', 'completed'],
+    ['pr_autopilot_safe', 'completed'],
+    ['rebind_head', 'completed'],
+    ['pr_prepare_current_head', 'failed']
+  ]);
+  assert.deepEqual(persisted, result.state);
 });
 
 test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', async (t) => {

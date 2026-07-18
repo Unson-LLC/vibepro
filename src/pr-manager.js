@@ -1833,7 +1833,14 @@ export function createSafeAutopilotPullRequest(dependencies = {}) {
     .filter((item) => !isPassingVerificationStatus(item.status))
     .map((item) => item.kind));
   if (commands.some((item) => failed.has(item.kind))) {
-    return { status: 'blocked', stop_reason: 'verification_failed', artifact, preparation: prepareResult.preparation };
+    const failedKinds = commands.filter((item) => failed.has(item.kind)).map((item) => item.kind);
+    return {
+      status: 'blocked',
+      stop_reason: 'verification_failed',
+      artifact,
+      recovery: { failed_kinds: failedKinds },
+      preparation: prepareResult.preparation
+    };
   }
   if (commands.some((item) => !passing.has(item.kind))) {
     const missingKinds = commands.filter((item) => !passing.has(item.kind)).map((item) => item.kind);
@@ -1862,6 +1869,7 @@ export function createSafeAutopilotPullRequest(dependencies = {}) {
     status: 'blocked',
     stop_reason: critical?.id ?? gate.stop_reason ?? 'gate_blocked',
     artifact,
+    recovery: { required_actions: gate.next_required_actions ?? [] },
     preparation: prepareResult.preparation
   };
   };

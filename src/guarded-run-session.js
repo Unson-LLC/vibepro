@@ -149,21 +149,55 @@ async function orchestrateRun(deps, repoRoot, options) {
         buildSystemActionEntry(next, 'rebind_head', loaded.state.current_head_sha, currentIdentity.head_sha, reboundAt)
       ]
     };
-    const currentPrepare = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
-      storyId: loaded.state.story_id,
-      baseRef: options.baseRef
-    });
-    next = {
-      ...next,
-      action_journal: [...next.action_journal, buildSystemActionEntry(
-        next,
-        'pr_prepare_current_head',
-        currentIdentity.head_sha,
-        currentIdentity.head_sha,
-        toIso(deps.now())
-      )]
-    };
-    if (currentPrepare.preparation?.gate_status?.ready_for_pr_create !== true) {
+    await persistAuthorityThenMirror(
+      deps,
+      next,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'safe_action_head_rebind_checkpoint'
+    );
+    let currentPrepare = null;
+    try {
+      currentPrepare = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+        storyId: loaded.state.story_id,
+        baseRef: options.baseRef
+      });
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now())
+        )]
+      };
+    } catch (error) {
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now()),
+          'failed',
+          error.message
+        )]
+      };
+      outcomeStatus = 'failed';
+      outcomeStopReason = {
+        code: 'gate_recheck_failed',
+        message: 'Current HEAD Gate recheck failed before readiness could be established.',
+        details: {
+          recovery: {
+            failure: error.message,
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
+      };
+    }
+    if (currentPrepare && currentPrepare.preparation?.gate_status?.ready_for_pr_create !== true) {
       outcomeStatus = 'blocked';
       outcomeStopReason = {
         code: 'gate_recheck_required',
@@ -185,16 +219,16 @@ async function orchestrateRun(deps, repoRoot, options) {
   return { plan: result.plan, state: next };
 }
 
-function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp) {
+function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
   return {
     action_id: actionId,
     node_id: actionId,
     input_head_sha: inputHead,
     output_head_sha: outputHead,
     idempotency_key: createHash('sha256').update(`${state.run_id}:${actionId}:${inputHead}`).digest('hex'),
-    status: 'completed',
+    status,
     artifact: null,
-    result_summary: actionId,
+    result_summary: summary,
     started_at: timestamp,
     completed_at: timestamp
   };
@@ -227,6 +261,7 @@ export function renderGuardedRunSummary(value) {
   const recoveryLines = recovery
     ? [
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
+        ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
         ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
         ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
         recovery.failure ? `- failure: ${recovery.failure}` : null,

@@ -92,7 +92,9 @@ test('SAO-S-5 safe autopilot classifies missing and failed current evidence with
   });
   assert.equal((await make([])('.', {})).stop_reason, 'runtime_required');
   assert.deepEqual((await make([])('.', {})).recovery.missing_kinds, ['unit']);
-  assert.equal((await make([{ kind: 'unit', status: 'fail', binding: { status: 'current' } }])('.', {})).stop_reason, 'verification_failed');
+  const failed = await make([{ kind: 'unit', status: 'fail', binding: { status: 'current' } }])('.', {});
+  assert.equal(failed.stop_reason, 'verification_failed');
+  assert.deepEqual(failed.recovery.failed_kinds, ['unit']);
   assert.equal((await make([{ kind: 'unit', status: 'pass', binding: { status: 'current' } }])('.', {})).status, 'pr_ready');
   assert.equal(prepareCalls, 4);
 });
@@ -150,6 +152,14 @@ test('SAO-S-5 production safe adapter maps critical and human Gate outcomes', as
   });
   assert.equal(critical.status, 'blocked');
   assert.equal(critical.stop_reason, 'gate:critical');
+  assert.deepEqual(critical.recovery.required_actions, []);
+
+  const generic = await run({
+    ready_for_pr_create: false,
+    next_required_actions: ['record deploy evidence']
+  });
+  assert.equal(generic.status, 'blocked');
+  assert.deepEqual(generic.recovery.required_actions, ['record deploy evidence']);
 
   const human = await run({
     ready_for_pr_create: false,
