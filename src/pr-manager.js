@@ -1800,6 +1800,64 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
   });
 }
 
+export function createSafeAutopilotPullRequest(dependencies = {}) {
+  const prepare = dependencies.preparePullRequest ?? preparePullRequest;
+  const resolveCommands = dependencies.resolveCommands ?? resolveAutopilotVerificationCommands;
+  const readEvidence = dependencies.readEvidence ?? readVerificationEvidenceIfExists;
+  const bindEvidence = dependencies.bindEvidence ?? bindVerificationEvidenceToGit;
+  return async function safeAutopilot(repoRoot, options = {}) {
+  if (options.importCi === true || options.pr || options.ciChecks || options.env) {
+    return {
+      status: 'waiting_for_human',
+      stop_reason: 'approval_required',
+      reason: 'external autopilot options are not repo-local'
+    };
+  }
+  const root = path.resolve(repoRoot);
+  const prepareResult = await prepare(root, options);
+  const commands = await resolveCommands(root, {
+    rawVerifyCommands: options.verifyCommands,
+    preparation: prepareResult.preparation
+  });
+  const existing = await bindEvidence(
+    root,
+    await readEvidence(root, prepareResult.preparation.story.story_id),
+    prepareResult.preparation.git
+  );
+  const currentEvidence = (existing?.commands ?? []).filter((item) => item.binding?.status === 'current');
+  const passing = new Set(currentEvidence
+    .filter((item) => isPassingVerificationStatus(item.status) && item.binding?.status === 'current')
+    .map((item) => item.kind));
+  const failed = new Set(currentEvidence
+    .filter((item) => !isPassingVerificationStatus(item.status))
+    .map((item) => item.kind));
+  if (commands.some((item) => failed.has(item.kind))) {
+    return { status: 'blocked', stop_reason: 'verification_failed', preparation: prepareResult.preparation };
+  }
+  if (commands.some((item) => !passing.has(item.kind))) {
+    return {
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      preparation: prepareResult.preparation
+    };
+  }
+  const gate = prepareResult.preparation.gate_status
+    ?? buildPrPrepareGateStatus(prepareResult.preparation.pr_context?.gate_dag, prepareResult.preparation.pr_context?.completion_quality);
+  if (gate.ready_for_pr_create === true) return { status: 'pr_ready', preparation: prepareResult.preparation };
+  if ((gate.human_judgments_required ?? []).length > 0) {
+    return { status: 'waiting_for_human', stop_reason: 'human_judgment_required', preparation: prepareResult.preparation };
+  }
+  const critical = (gate.unresolved_gates ?? []).find((item) => item.severity === 'critical' || item.critical === true);
+  return {
+    status: 'blocked',
+    stop_reason: critical?.id ?? gate.stop_reason ?? 'gate_blocked',
+    preparation: prepareResult.preparation
+  };
+  };
+}
+
+export const safeAutopilotPullRequest = createSafeAutopilotPullRequest();
+
 export function renderPrAutopilotSummary(result) {
   const autopilot = result.autopilot;
   const gateStatus = autopilot.gate_status ?? {};
