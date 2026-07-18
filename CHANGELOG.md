@@ -10,6 +10,16 @@ All notable changes to VibePro will be documented in this file.
   one existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`;
   existing automation must add these arguments when upgrading.
 
+## 0.2.0-beta.1 - 2026-07-18
+
+- Add a deterministic post-merge release pipeline that projects PR release notes
+  into the bilingual VitePress manual and changelog, then deploys the manual for
+  every merged `main` pull request.
+- Publish GitHub Releases and npm packages only when `package.json` advances,
+  with retry-safe registry reconciliation and explicit SemVer dist-tags.
+- Standardize PR release-note sections so the authoring LLM writes the release
+  explanation once before merge and post-merge automation performs no LLM calls.
+
 ## 0.2.0-beta.0 - 2026-07-16
 
 - Document the complete guarded delivery loop: managed execution, independent

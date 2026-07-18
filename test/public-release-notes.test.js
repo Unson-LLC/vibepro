@@ -61,8 +61,8 @@ test('VRNH-AC-005/006 public navigation and build contract require release notes
   }
   assert.match(jaVersion, /\/ja\/releases\//);
   assert.match(enVersion, /\/releases\//);
-  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.0`/);
-  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.0`/);
-  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.0`/);
-  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.0`/);
+  assert.match(jaVersion, /npm `latest` \| `0\.2\.0-beta\.1`/);
+  assert.match(jaVersion, /npm `beta` \| `0\.2\.0-beta\.1`/);
+  assert.match(enVersion, /npm `latest` \| `0\.2\.0-beta\.1`/);
+  assert.match(enVersion, /npm `beta` \| `0\.2\.0-beta\.1`/);
 });

@@ -1,9 +1,6 @@
 name: Publish npm package
 
 on:
-  release:
-    types:
-      - published
   workflow_dispatch:
     inputs:
       dry_run:
@@ -37,12 +34,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
             npm publish --access public --dry-run
           else
-            npm publish --access public
             VERSION=$(node -p "require('./package.json').version")
-            npm dist-tag add "vibepro@${VERSION}" beta
-            test "$(npm view vibepro@beta version)" = "${VERSION}"
-            test "$(npm view vibepro@latest version)" = "${VERSION}"
+            node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$(git rev-parse HEAD)"
           fi

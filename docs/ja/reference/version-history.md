@@ -4,9 +4,9 @@ package versionの正本は `package.json` で、installed binaryは `vibepro ve
 
 | Channel | 現在値 | Authority |
 | --- | --- | --- |
-| npm `latest` | `0.2.0-beta.0` | release workflow完了後の公開registry state |
-| npm `beta` | `0.2.0-beta.0` | release workflow完了後の公開registry state |
-| Repository `main` | `0.2.0-beta.0` のrelease source | Git commitと `CHANGELOG.md` |
+| npm `latest` | `0.2.0-beta.1` | release workflow完了後の公開registry state |
+| npm `beta` | `0.2.0-beta.1` | release workflow完了後の公開registry state |
+| Repository `main` | `0.2.0-beta.1` のrelease source | Git commitと `CHANGELOG.md` |
 | Manual build | footer / metaのsource commit | deployed build artifact |
 
 ## Unreleasedのmanual-visible capability

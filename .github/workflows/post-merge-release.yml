@@ -1,0 +1,102 @@
+name: Post-merge continuous release
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency:
+  group: post-merge-release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - name: Project PR body into release history
+        id: projection
+        run: node scripts/post-merge-release.mjs project --event "$GITHUB_EVENT_PATH"
+      - name: Commit release history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md docs/releases docs/ja/releases docs/reference/version-history.md docs/ja/reference/version-history.md docs/guide/release-and-audit.md docs/ja/guide/release-and-audit.md
+          if git diff --cached --quiet; then
+            echo "docs_commit=unchanged" >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "docs: record release notes for PR #${{ github.event.pull_request.number }}"
+            pushed=false
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then
+                pushed=true
+                break
+              fi
+              echo "docs_push_retry=${attempt}" >> "$GITHUB_STEP_SUMMARY"
+            done
+            test "$pushed" = true
+            echo "docs_commit=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Deploy VitePress manual
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm run docs:deploy
+          echo "docs_deploy=passed" >> "$GITHUB_STEP_SUMMARY"
+      - name: Bind package release to the merged PR commit
+        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          git checkout --detach "$RELEASE_SHA"
+          test "$(node -p "require('./package.json').version")" = "${{ steps.projection.outputs.version }}"
+          echo "release_target=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Validate package
+        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        run: |
+          npm run typecheck
+          npm test
+          npm run pack:dry-run
+      - name: Create or reconcile GitHub Release
+        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.projection.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          node scripts/post-merge-release.mjs release-body --event "$GITHUB_EVENT_PATH" --output /tmp/vibepro-release.md
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            git fetch --tags --force
+            test "$(git rev-list -n 1 "v${VERSION}")" = "$RELEASE_SHA"
+          else
+            gh release create "v${VERSION}" --target "$RELEASE_SHA" --title "VibePro ${VERSION}" --notes-file /tmp/vibepro-release.md
+          fi
+          echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish or reconcile npm
+        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.projection.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
+          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Record version gate
+        if: ${{ steps.projection.outputs.release_required != 'true' }}
+        run: echo "npm=skipped (package version unchanged)" >> "$GITHUB_STEP_SUMMARY"

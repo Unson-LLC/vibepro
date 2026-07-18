@@ -1,5 +1,17 @@
 ## Summary
 
+## Release Notes
+
+### Change Summary
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
 ## Verification
 
 - [ ] `npm run typecheck`
