@@ -17,7 +17,7 @@ docsは最新main上のbot commitとして公開する。一方、GitHub Release
 - PR authoring: `src/pr-manager.js` とPR templateが `Change Summary`、`Compatibility`、`User Action` を一度だけ記述する。
 - Deterministic projection: `scripts/post-merge-release.mjs` がevent payloadを検証し、日英月次履歴、index到達性、CHANGELOG、Release bodyを生成する。
 - Delivery: `.github/workflows/post-merge-release.yml` が当該merge commitをdetached checkoutし、依存もそのSHAで再構築してnpm、GitHub Releaseの順に実行する。成功後に最新mainへ戻り、docs commitとCloudflare deployを行う。各段と再実行手順は成功・失敗を問わずActions summaryへ追記する。
-- Queueing: concurrency keyはPR番号単位とし、mergeが集中しても別PRのpending runを置換しない。docs pushはrebase/retryし、deploy直前にも最新mainへfast-forwardして全投影済みノートを含める。
+- Queueing: concurrency keyはPR番号単位とし、mergeが集中しても別PRのpending runを置換しない。docs pushが競合した場合は一時commitを破棄し、最新`origin/main`へresetして同じPR markerを決定的に再投影してから再pushする。deploy直前にも最新mainへfast-forwardして全投影済みノートを含める。
 - npm reconciliation: 公開済みversionは再publishせず `gitHead` とdist-tagを照合する。404だけを未公開と判定し、認証・通信・rate-limit・不正JSONは上限付きbackoff後にmutationなしで停止する。
 
 ## Compatibility and rollback

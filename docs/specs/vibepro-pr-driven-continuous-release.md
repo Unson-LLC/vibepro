@@ -47,3 +47,4 @@ diagrams:
 - `PCR-CON-008`: workflowはnpm/Releaseと依存をeventのmerge commitへ固定し、npm収束後にだけGitHub Releaseを公開・更新し、その成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
 - `PCR-CON-009`: PR body/titleを含むPR由来の表示値にあるraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。
 - `PCR-CON-010`: workflow runはPR番号単位で保持して別PRのpending eventを置換せず、docs deploy直前に最新mainへ同期してburst merge時も全PRの投影を公開する。
+- `PCR-CON-011`: docs push競合時は最新`origin/main`へfetch/resetし、対象PRを再投影して再試行する。生成commit同士のrebase conflictを回復経路にしない。

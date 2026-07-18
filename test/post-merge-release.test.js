@@ -91,6 +91,8 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
   assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
+  assert.match(workflow, /for attempt in 1 2 3; do[\s\S]*git fetch origin main[\s\S]*git reset --hard origin\/main[\s\S]*post-merge-release\.mjs project[\s\S]*git push origin HEAD:main/);
+  assert.doesNotMatch(workflow, /git pull --rebase origin main/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
