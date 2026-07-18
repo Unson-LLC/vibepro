@@ -253,12 +253,45 @@ test('CEF-S-3 review evidence uses inspected input content binding across docs-o
   assert.equal(role.binding_status, 'current');
   assert.deepEqual(role.content_binding.surface_files, ['src/content-binding-target.js']);
 
+  const docsPrepared = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
+  const docsFreshnessGate = findGate(docsPrepared, 'gate:pr_freshness');
+  const docsReviewBinding = docsFreshnessGate.content_binding_details.bindings.find((binding) => (
+    binding.artifact_type === 'agent_review_result'
+      && binding.stage === 'implementation'
+      && binding.role === 'runtime_contract'
+  ));
+  assert.equal(docsReviewBinding.status, 'current');
+  assert.equal(docsReviewBinding.binding_mode, 'content_surface');
+  assert.deepEqual(docsReviewBinding.surface_files, ['src/content-binding-target.js']);
+  assert.deepEqual(docsReviewBinding.changed_files, []);
+  assert.deepEqual(docsReviewBinding.missing_files, []);
+  assert.match(docsReviewBinding.recorded_surface_hash, /^[a-f0-9]{64}$/);
+  assert.equal(docsReviewBinding.current_surface_hash, docsReviewBinding.recorded_surface_hash);
+  assert.match(docsReviewBinding.recorded_head_sha, /^[a-f0-9]{40}$/);
+  assert.match(docsReviewBinding.current_head_sha, /^[a-f0-9]{40}$/);
+  assert.notEqual(docsReviewBinding.current_head_sha, docsReviewBinding.recorded_head_sha);
+
   await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 3;\n');
   const staleStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
   const staleRole = staleStatus.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
   assert.equal(staleRole.binding_status, 'stale');
   assert.match(staleRole.stale_reason, /content-bound evidence surface changed/);
   assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
+
+  const sourcePrepared = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
+  const sourceFreshnessGate = findGate(sourcePrepared, 'gate:pr_freshness');
+  const sourceReviewBinding = sourceFreshnessGate.content_binding_details.bindings.find((binding) => (
+    binding.artifact_type === 'agent_review_result'
+      && binding.stage === 'implementation'
+      && binding.role === 'runtime_contract'
+  ));
+  assert.equal(sourceReviewBinding.status, 'stale');
+  assert.match(sourceReviewBinding.reason, /content-bound evidence surface changed/);
+  assert.deepEqual(sourceReviewBinding.surface_files, ['src/content-binding-target.js']);
+  assert.deepEqual(sourceReviewBinding.changed_files, ['src/content-binding-target.js']);
+  assert.deepEqual(sourceReviewBinding.missing_files, []);
+  assert.notEqual(sourceReviewBinding.current_surface_hash, sourceReviewBinding.recorded_surface_hash);
+  assert.notEqual(sourceReviewBinding.current_head_sha, sourceReviewBinding.recorded_head_sha);
 });
 
 test('review freshness policy keeps every built-in high-risk gate role strict, preserves inspected files, and invalidates on HEAD movement', async () => {
@@ -478,11 +511,34 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
   assert.match(recoveryCommand, /--strict-head-binding/);
   assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
 
+  const executableRecovery = recoveryCommand
+    .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
+    .replace('<summary>', 'strict recovery review passed')
+    .replace('<inspection-summary>', 're-inspected the complete release candidate')
+    .replace('<inspection-evidence>', 'src/content-binding-target.js')
+    .replace('<inspection-input>', 'src/content-binding-target.js')
+    .replace('<initial judgment -> final judgment because evidence>', 'stale strict review -> accepted after complete candidate re-inspection')
+    .replace('<pass|needs_changes|block>', 'pass')
+    .replace('<agent-id>', 'agent-strict-recovery')
+    .replace('<agent-thread-id>', 'thread-strict-recovery')
+    .replaceAll('<artifact>', 'src/content-binding-target.js');
+  await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
+
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
-  const statusRecoveryCommand = status.result.blocking_summary.next_commands
-    .find((command) => command.startsWith('vibepro review record'));
-  assert.match(statusRecoveryCommand, /--strict-head-binding/);
-  assert.match(statusRecoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
+  const recoveredRole = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(recoveredRole.effective_status, 'pass');
+  assert.equal(recoveredRole.binding_status, 'current');
+  assert.equal(recoveredRole.content_binding.mode, 'strict_head');
+  const recoveredArtifact = JSON.parse(await readFile(path.join(
+    repo,
+    '.vibepro',
+    'reviews',
+    'story-content-binding',
+    'implementation',
+    'review-result-runtime_contract.json'
+  ), 'utf8'));
+  assert.equal(recoveredArtifact.freshness_policy.effective_mode, 'strict_head');
+  assert.equal(recoveredArtifact.freshness_policy.reason, 'preserve the recorded strict HEAD freshness policy during recovery');
 });
 
 test('custom strict HEAD role policy requires and persists its rationale', async () => {
