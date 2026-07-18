@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
+  "file_count": 12,
+  "roadmap_story_count": 10,
+  "remaining_story_count": 8,
+  "assertions": {
+    "all_11_roadmap_docs": true,
+    "all_12_changed_files": true,
+    "design_ssot_lineage": true,
+    "all_children_parent_bound": true,
+    "ten_story_order": true,
+    "ownership_boundaries": true,
+    "open_pr_boundaries": true,
+    "next_target": true,
+    "acceptance_clauses": true,
+    "selective_rollback": true,
+    "git_diff_check_origin_main_head": true,
+    "claude_md_agents_md_identical": true
+  },
+  "failed": []
+}

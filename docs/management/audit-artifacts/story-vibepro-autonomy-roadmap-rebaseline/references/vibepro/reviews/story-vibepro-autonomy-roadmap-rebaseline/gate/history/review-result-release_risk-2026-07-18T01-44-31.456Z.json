@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Design SSOT registration has no runtime or public-contract risk and preserves authority boundaries.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected HEAD 75a20df, 12-file diff, Design SSOT root and ten child links, parent_design metadata, current verification, and reconciliation.",
+    "evidence": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/design-ssot-reconciliation.json",
+    "inputs": [
+      "design-ssot.json",
+      ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Prior 11-file pass remains valid; the added registry and frontmatter are necessary lineage metadata only, with zero runtime files changed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+    "expected_root": null,
+    "expected_head_sha": "75a20df5c2984189af7689310695f67163a31021",
+    "current_head_sha": "75a20df5c2984189af7689310695f67163a31021",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline",
+      "expected_root": null,
+      "expected_head_sha": "75a20df5c2984189af7689310695f67163a31021",
+      "current_head_sha": "75a20df5c2984189af7689310695f67163a31021",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-18T01:44:31.456Z",
+  "git_context": {
+    "head_sha": "75a20df5c2984189af7689310695f67163a31021",
+    "current_branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T01:44:31.455Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "75a20df5c2984189af7689310695f67163a31021",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "87bc4a7d6cda4650d040ca585d7257df09c0508891043211ec747cd06d90341b",
+        "size": 169798
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0e179776ba68d036c9fd48c291e3518080163221832f455b64b38e1c7b311e39"
+  },
+  "source_fingerprint": "51acdaa89ed8a931cc882deed21d163906a4a4bc8c28a9c34a796386068ba792",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/release_risk_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-release_risk.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/design-ssot-reconciliation.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
