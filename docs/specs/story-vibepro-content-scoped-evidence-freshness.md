@@ -105,6 +105,9 @@ assertion-only invocation.
 - `CEF-S-5`: Given current or stale content-bound evidence, when
   `gate:pr_freshness` is emitted, then the gate details show the bound surface
   and freshness reason.
+- `CEF-S-6`: Given the content freshness implementation, when its focused
+  regression suite runs, then docs-only continuation, bound-surface staleness,
+  review evidence, and strict binding branches all execute as assertions.
 - `CEF-S-7`: Given a normal review role, when a pass is recorded without a
   freshness override, then the record uses content-surface freshness; a
   built-in high-risk role, a role policy carrying `freshness_reason`, or a

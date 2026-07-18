@@ -18898,6 +18898,11 @@ test('high-risk review pass requires inspection evidence in PR gate', async () =
   assert.equal(inspectionGate.status, 'needs_inspection');
   assert.equal(inspectionGate.high_risk, true);
   assert.equal(inspectionGate.missing_inspections[0].missing.includes('inspection_evidence'), true);
+  const inspectionRecovery = inspectionGate.required_actions.find((action) => action.startsWith('vibepro review record'));
+  assert.match(inspectionRecovery, /--status <pass\|needs_changes\|block>/);
+  assert.match(inspectionRecovery, /--inspection-summary "<inspection-summary>"/);
+  assert.match(inspectionRecovery, /--inspection-input <inspection-input>/);
+  assert.match(inspectionRecovery, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.equal(
     result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:review_inspection_required'),
     true

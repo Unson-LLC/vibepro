@@ -189,6 +189,7 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
   assert.match(recordCommand, /--inspection-evidence <inspection-evidence>/);
   assert.match(recordCommand, /--inspection-input <inspection-input>/);
   assert.match(recordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+  assert.match(recordCommand, /--status <pass\|needs_changes\|block>/);
 
   const executable = recordCommand
     .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
@@ -197,6 +198,7 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
     .replace('<inspection-evidence>', 'src/content-binding-target.js')
     .replace('<inspection-input>', 'src/content-binding-target.js')
     .replace('<initial judgment -> final judgment because evidence>', 'initial risk -> accepted after inspecting the runtime contract source')
+    .replace('<pass|needs_changes|block>', 'pass')
     .replace('<agent-id>', 'agent-minimal-recovery')
     .replace('<agent-thread-id>', 'thread-minimal-recovery');
   await execFileAsync('/bin/sh', ['-c', executable], { cwd: repo, encoding: 'utf8' });
@@ -299,6 +301,7 @@ test('review freshness policy keeps every built-in high-risk gate role strict, p
       recordResult.result.review.content_binding.surface_files.map((file) => file.path),
       ['src/content-binding-target.js']
     );
+    assert.match(recordResult.result.review.content_binding.surface_hash, /^[a-f0-9]{64}$/);
 
     await writeFile(path.join(repo, 'docs', 'notes.md'), `# Notes\n\n${role} must stale.\n`);
     await git(repo, ['add', 'docs/notes.md']);
@@ -462,6 +465,18 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
     recorded.result.review.freshness_policy.reason,
     'the complete release candidate head is the inspected contract'
   );
+  assert.match(recorded.result.review.content_binding.surface_hash, /^[a-f0-9]{64}$/);
+
+  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nAdvance the release head.\n');
+  await git(repo, ['add', 'docs/notes.md']);
+  await git(repo, ['commit', '-m', 'docs: advance strict review head']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
+  const artifactGate = findGate(prepared, 'gate:artifact_consistency');
+  const staleReview = artifactGate.stale_artifact_details.find((item) => item.role === 'runtime_contract');
+  const recoveryCommand = staleReview.remediation_commands.find((command) => command.startsWith('vibepro review record'));
+  assert.match(recoveryCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recoveryCommand, /--strict-head-binding/);
+  assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
 });
 
 test('custom strict HEAD role policy requires and persists its rationale', async () => {

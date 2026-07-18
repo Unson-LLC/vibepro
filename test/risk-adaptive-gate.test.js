@@ -905,6 +905,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.match(recoveryRecordCommand, /--inspection-evidence <inspection-evidence>/);
   assert.match(recoveryRecordCommand, /--inspection-input <inspection-input>/);
   assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
+  assert.match(recoveryRecordCommand, /--status <pass\|needs_changes\|block>/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
     'test_plan',
     'implementation',

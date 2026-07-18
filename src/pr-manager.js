@@ -2163,7 +2163,7 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
     shellQuote(stage),
     '--role',
     shellQuote(roleArg),
-    '--status pass',
+    '--status <pass|needs_changes|block>',
     '--summary "<summary>"',
     '--inspection-summary "<inspection-summary>"',
     '--inspection-evidence <inspection-evidence>',
@@ -11343,11 +11343,14 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
       artifact.stage ?? '<stage>',
       artifact.role ?? '<role>'
     );
+    const strictFreshnessArgs = artifact.content_binding?.mode === 'strict_head'
+      ? ' --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"'
+      : '';
     return [
       `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
       `vibepro review start . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-system codex --agent-id <agent-id>`,
       `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      `${recordCommand} --agent-transcript <artifact> --agent-close-evidence <artifact>`,
+      `${recordCommand}${strictFreshnessArgs} --agent-transcript <artifact> --agent-close-evidence <artifact>`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
@@ -12845,6 +12848,7 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
   });
   const missing = inspectedRoles.filter((role) => role.missing.length > 0);
   const status = missing.length === 0 ? 'passed' : 'needs_inspection';
+  const storyId = agentReviews?.story_id ?? '<story-id>';
   return {
     id: 'gate:review_inspection_required',
     type: 'review_inspection_required_gate',
@@ -12858,7 +12862,7 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
     missing_inspections: missing,
     required_actions: missing.length === 0 ? [] : [
       `Record inspection summary and evidence for high-risk review role(s): ${missing.map((role) => `${role.stage}:${role.role}`).join(', ')}`,
-      'Use `vibepro review record --inspection-summary "<summary>" --inspection-evidence <ref> ... --agent-closed` for each missing role',
+      ...missing.map((role) => buildReviewRecordCommandTemplate(storyId, role.stage, role.role)),
       'Rerun `vibepro pr prepare` after current-bound inspection evidence is recorded'
     ],
     reason: status === 'passed'
@@ -14138,9 +14142,9 @@ function formatCriticalGateEvidenceInstructions(gates) {
         return `${gate.label ?? gate.id} requires workflow-heavy evidence: explicit scenario clauses, production path matrix coverage, and passing flow replay evidence.`;
       }
       if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and using the generated review requests with permitted Codex/Claude Code subagents.`;
-      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for the current git head, dirty fingerprint, and closed subagent lifecycle.`;
+      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for its effective freshness policy (content surface by default; current HEAD only for strict roles), current dirty fingerprint, and closed subagent lifecycle.`;
       if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned review role.`;
-      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires `vibepro review prepare` plus passing `vibepro review record --execution-mode parallel_subagent --agent-closed` results from permitted Codex/Claude Code subagents for the current git head, dirty fingerprint, and closed subagent lifecycle.';
+      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires `vibepro review prepare` plus passing `vibepro review record --execution-mode parallel_subagent --agent-closed` results from permitted Codex/Claude Code subagents under each role\'s effective freshness policy (content surface by default; current HEAD only for strict roles), current dirty fingerprint, and closed subagent lifecycle.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })
