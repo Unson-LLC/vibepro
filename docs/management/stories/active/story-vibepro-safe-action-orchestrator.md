@@ -49,9 +49,10 @@ updated_at: 2026-07-15
 
 ## Scenarios
 
-- Given `execute run --until pr-ready` is started for a planned Run, when every allowlisted dependency succeeds, then the Run transitions `planned -> running -> pr_ready` and records each completed Action in dependency order.
+- Given `execute run --until pr-ready` creates a Run, when every allowlisted dependency succeeds, then the Run transitions `null -> running -> pr_ready` and records each completed Action in dependency order.
 - Given a safe Action requires human judgment, when the orchestrator reaches that Action, then the Run transitions `running -> waiting_for_human`, persists the typed decision contract, and executes no dependent Action.
-- Given an Action or verification fails, when the failure is recorded, then the Run transitions `running -> failed`, persists typed recovery and journal evidence, and resume retries only the failed Action.
+- Given an Action fails, when the failure is recorded, then the Run transitions `running -> failed` with `action_failed`, persists typed recovery and journal evidence, and resume retries only the failed Action.
+- Given verification fails, when the failure is recorded, then the Run transitions `running -> blocked` with `verification_failed`, persists failed evidence kinds, and executes no dependent Action.
 - Given repository HEAD changes after a mutating Action, when readiness is evaluated, then evidence is rebound to the current HEAD, `pr prepare` is replayed, and the Run reaches `pr_ready` only from a current passing Gate.
 - Given dry-run or a forbidden Action request, when the plan is evaluated, then dry-run returns the typed plan without mutation and forbidden execution fails closed without invoking shell or external runtime.
 
