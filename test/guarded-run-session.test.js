@@ -1757,6 +1757,13 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+  assert.deepEqual((await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(cancelled.action_journal, result.state.action_journal);
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const cancelledBytes = await readFile(artifact, 'utf8');
+  assert.deepEqual((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
 });
 
 test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
@@ -1769,7 +1776,11 @@ test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints an
     safeAutopilotPullRequest: async () => {
       autopilotCalls += 1;
       if (autopilotCalls === 1) throw new Error('transient interruption');
-      return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+      return {
+        status: 'waiting_for_runtime',
+        stop_reason: 'runtime_required',
+        recovery: { missing_kinds: ['unit'] }
+      };
     }
   };
   const runOut = capture();
@@ -1795,6 +1806,12 @@ test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints an
   assert.deepEqual(result.action_journal.map((entry) => entry.status), [
     'completed', 'failed', 'completed'
   ]);
+  const humanStatus = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: humanStatus, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(humanStatus.text(), /missing: unit/);
+  assert.match(humanStatus.text(), new RegExp(`execute resume ${fixture.source.replaceAll('/', '\\/')} .*--until pr-ready`));
 });
 
 test('SAO-S-2 action checkpoint survives a later action failure', async (t) => {
@@ -1859,6 +1876,8 @@ test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', asy
   assert.equal(result.state.current_head_sha, 'changed-head');
   assert.equal(result.state.status, 'blocked');
   assert.equal(result.state.stop_reason.code, 'gate_recheck_required');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.stop_reason.details.recovery.required_actions, []);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), [
     'pr_prepare', 'pr_autopilot_safe', 'rebind_head', 'pr_prepare_current_head'
   ]);

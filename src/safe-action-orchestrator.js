@@ -38,17 +38,16 @@ export async function runSafeActionPlan(state, options = {}) {
         break;
       }
       if (['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(result?.status)) {
-        const recovery = {
-          ...(result.recovery ?? {}),
-          next_command: `vibepro execute resume . --story-id ${current.story_id} --run-id ${current.run_id} --until pr-ready`
-        };
+        const recovery = buildRecovery(current, result.recovery);
         current = transition(journal, result.status, result.stop_reason ?? 'action_failed', { recovery });
         break;
       }
       current = journal;
       await options.onProgress?.(current);
     } catch (error) {
-      current = stop(current, action, key, 'failed', 'action_failed', 'failed', error.message);
+      current = stop(current, action, key, 'failed', 'action_failed', 'failed', error.message, {
+        recovery: buildRecovery(current, { failure: error.message })
+      });
       break;
     }
   }
@@ -82,6 +81,20 @@ function transition(state, status, code, details = {}) {
   };
 }
 
-function stop(state, action, key, status, code, journalStatus, summary = code) {
-  return transition(append(state, action, key, journalStatus, { summary }), status, code);
+function stop(state, action, key, status, code, journalStatus, summary = code, details = {}) {
+  return transition(append(state, action, key, journalStatus, { summary }), status, code, details);
+}
+
+function buildRecovery(state, details = {}) {
+  const repoRoot = state.execution_context?.root_realpath ?? '.';
+  return {
+    ...(details ?? {}),
+    next_command: `vibepro execute resume ${shellQuote(repoRoot)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+  };
+}
+
+function shellQuote(value) {
+  const text = String(value);
+  if (/^[a-zA-Z0-9_./:=@+-]+$/.test(text)) return text;
+  return `'${text.replaceAll("'", "'\\''")}'`;
 }

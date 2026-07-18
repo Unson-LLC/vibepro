@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import { buildSafeActionPlan, runSafeActionPlan } from '../src/safe-action-orchestrator.js';
@@ -38,6 +41,8 @@ test('SAO-S-3 action failure stops and records action_failed', async () => {
   const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => { throw new Error('boom'); } } });
   assert.equal(result.state.status, 'failed');
   assert.equal(result.state.stop_reason.code, 'action_failed');
+  assert.equal(result.state.stop_reason.details.recovery.failure, 'boom');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
   assert.equal(result.state.action_journal[0].status, 'failed');
 });
 
@@ -92,6 +97,32 @@ test('SAO-S-5 safe autopilot classifies missing and failed current evidence with
   assert.equal(prepareCalls, 4);
 });
 
+test('SAO-S-5 S-005 S-006 S-007 safe adapter resolves CLI, config, and pr_prepare verification inputs without execution', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-safe-adapter-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    pr_autopilot: { verification_commands: [{ kind: 'integration', command: 'touch config-forbidden' }] }
+  }));
+  const safe = createSafeAutopilotPullRequest({
+    preparePullRequest: async () => ({
+      preparation: {
+        story: { story_id: 'story-safe' },
+        git: { head_sha: 'aaa' },
+        gate_status: { ready_for_pr_create: true },
+        pr_context: { verification_commands: [{ kind: 'e2e', command: 'touch prepare-forbidden' }] }
+      }
+    }),
+    readEvidence: async () => ({ commands: [] }),
+    bindEvidence: async (_repoRoot, evidence) => evidence
+  });
+
+  const result = await safe(root, { verifyCommands: ['unit=touch cli-forbidden'] });
+  assert.equal(result.status, 'waiting_for_runtime');
+  assert.equal(result.stop_reason, 'runtime_required');
+  assert.deepEqual(result.recovery.missing_kinds.sort(), ['e2e', 'integration', 'unit']);
+});
+
 test('SAO-S-8 external safe autopilot options stop before preparation', async () => {
   let prepareCalls = 0;
   const safe = createSafeAutopilotPullRequest({ preparePullRequest: async () => { prepareCalls += 1; } });
@@ -101,4 +132,30 @@ test('SAO-S-8 external safe autopilot options stop before preparation', async ()
     assert.equal(result.stop_reason, 'approval_required');
   }
   assert.equal(prepareCalls, 0);
+});
+
+test('SAO-S-5 production safe adapter maps critical and human Gate outcomes', async () => {
+  const run = async (gateStatus) => createSafeAutopilotPullRequest({
+    preparePullRequest: async () => ({
+      preparation: { story: { story_id: 'story-safe' }, git: { head_sha: 'aaa' }, gate_status: gateStatus }
+    }),
+    resolveCommands: async () => [{ kind: 'unit', command: 'never execute this' }],
+    readEvidence: async () => ({ commands: [{ kind: 'unit', status: 'pass', binding: { status: 'current' } }] }),
+    bindEvidence: async (_root, evidence) => evidence
+  })('.', {});
+
+  const critical = await run({
+    ready_for_pr_create: false,
+    unresolved_gates: [{ id: 'gate:critical', severity: 'critical' }]
+  });
+  assert.equal(critical.status, 'blocked');
+  assert.equal(critical.stop_reason, 'gate:critical');
+
+  const human = await run({
+    ready_for_pr_create: false,
+    human_judgments_required: [{ kind: 'scope', reason: 'choose a boundary' }]
+  });
+  assert.equal(human.status, 'waiting_for_human');
+  assert.equal(human.stop_reason, 'human_judgment_required');
+  assert.deepEqual(human.recovery.judgments, [{ kind: 'scope', reason: 'choose a boundary' }]);
 });

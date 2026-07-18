@@ -168,7 +168,13 @@ async function orchestrateRun(deps, repoRoot, options) {
       outcomeStopReason = {
         code: 'gate_recheck_required',
         message: 'Current HEAD must satisfy the Gate DAG before pr_ready.',
-        details: { current_head_sha: currentIdentity.head_sha }
+        details: {
+          current_head_sha: currentIdentity.head_sha,
+          recovery: {
+            required_actions: currentPrepare.preparation?.gate_status?.next_required_actions ?? [],
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
       };
     }
   }
@@ -222,6 +228,8 @@ export function renderGuardedRunSummary(value) {
     ? [
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
         ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
+        ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
+        recovery.failure ? `- failure: ${recovery.failure}` : null,
         recovery.next_command ? `- next_command: ${recovery.next_command}` : null
       ].filter(Boolean).join('\n')
     : 'none';
