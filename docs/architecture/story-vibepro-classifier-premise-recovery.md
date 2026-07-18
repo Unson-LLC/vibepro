@@ -86,9 +86,10 @@ classifier premiseの妥当性とimplementation validityを同じ `judged_unsoun
 - correction後は `awaiting_re_adjudication` / `needs_evidence`。同じcorrection IDへ応答する裁定だけを候補にする。
 - 再裁定者の `agent_system + agent_id` は元unsound judgeと異ならなければならない。同一judge、stale HEAD、
   dangling correction linkは記録時に拒否する。
-- linked fresh re-adjudicationが `judged_sound` の場合だけ解決する。`judged_unsound` は新cause/reasonでfailedとなり、
+- linked fresh re-adjudicationが `judged_sound` なら自動解決する。`judged_unsound` は新cause/reasonでfailedとなり、
   classifier causeならその新verdictを起点に次のcorrection chainを作れる。
-- chain内の `needs_human_judgment` はpremise correctionの代替にせずneeds_evidenceのままにする。
+- chain内の `needs_human_judgment` は既存のaccepted decision record経路へ接続し、accepted decisionが無い間は
+  `needs_evidence`、受理後はresolvedとする。premise correction自体をhuman decisionで代替してはならない。
 - event配列の正順・逆順をresolverへ渡しても、明示参照が同じならcurrent stateは同一でなければならない。
 
 ## 状態遷移
@@ -102,7 +103,7 @@ missing
        -> valid premise_correction         -> awaiting_re_adjudication
             -> linked different-judge sound   -> resolved
             -> linked different-judge unsound -> failed (新しいchain起点)
-            -> linked needs_human             -> awaiting_re_adjudication
+            -> linked needs_human             -> awaiting_human_decision -> resolved
 ```
 
 ## CLI契約
@@ -139,7 +140,8 @@ vibepro adjudicate record . --id <story> --judgment --item <item> \
 
 - 全text/refはtrim後非空かつ次flagを値として受け取った形でないことをdomain層で検証する。
 - correction対象はcurrent HEADの `classifier_premise_unsound` verdictのみ。同一item、未補正、直接参照を要求する。
-- replacement evidenceはworkspace内のreadable regular fileのみ許可し、SHA-256を記録する。
+- replacement evidenceはworkspace内のreadable regular fileのみ許可し、SHA-256を記録する。v2 consumerも
+  workspace-relative path、reason、既知agent systemと非空agent idを再検証し、手書き・改ざんartifactをfail closedにする。
 - artifactのread-modify-write並行競合は既存制約として残るが、duplicate/branch chainはresolverがfail closedする。
 - `needs_human_judgment` のdecision record経路とcritical gate waiver拒否は変更しない。
 - clause adjudication artifact、classifier algorithm、base freshnessは変更しない。
@@ -150,7 +152,8 @@ vibepro adjudicate record . --id <story> --judgment --item <item> \
   request/gate/summary統合。
 - `src/cli.js`: `correct --judgment` route、unsound cause/correction ID/replacement evidenceのparse、日英help。
 - `test/judgment-adjudication.test.js`: schema、validation、state transition、legacy、order independence、summary、critical回帰。
-- `test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js`: real CLIのunsound→correct→別judge再裁定フロー。
+- `test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts`: canonical story discoveryに従うreal CLIの
+  unsound→correct→別judge再裁定フロー。
 - `README.md` / `README.ja.md` / generated CLI reference / gate-evidence Skill: 手順と禁止事項を同期する。
 
 ## 検証

@@ -65,7 +65,7 @@ reason: >-
 - [ ] `classifier_premise_unsound` はitem単位のcorrectionが無い限りfailedのままになる
 - [ ] correctionは同じstory・item・HEADの元裁定を参照し、誤premise・訂正premise・理由・replacement evidenceを必須にする
 - [ ] correctionが受理されてもfresh independent adjudicationが無ければneeds_evidenceになり、同一judgeまたはstale HEADの再裁定を拒否する
-- [ ] fresh再裁定が `judged_sound` のときだけ対象itemが解決し、`judged_unsound` なら新しい理由でfailedになる
+- [ ] fresh再裁定が `judged_sound` なら対象itemを自動解決し、`judged_unsound` なら新しい理由でfailedにし、`needs_human_judgment` なら既存のaccepted decision record経路を使う
 - [ ] 元裁定、correction、再裁定はappend-onlyで残り、current state resolverが最新の有効な系譜を選ぶ
 - [ ] 既存の裁定artifactを読み込め、cause未指定の既存 `judged_unsound` は安全側の `implementation_unsound` として扱う
 - [ ] `needs_human_judgment` のaccepted decision record経路とcritical waiver拒否は後方互換を保つ

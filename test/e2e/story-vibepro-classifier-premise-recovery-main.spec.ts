@@ -63,8 +63,34 @@ async function headOf(repo) {
   return stdout.trim();
 }
 
-// story-vibepro-classifier-premise-recovery ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 ac:9 ac:10 S-001 S-002
 test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed correction, and requires linked independent re-adjudication', async () => {
+  // story-vibepro-classifier-premise-recovery ac1 ac2 ac3 ac4 ac5 ac6 ac7 ac8 ac9 ac10 SC-CPR-3 SC-CPR-5
+  const acceptanceCriteria = [
+    '`judged_unsound` 記録時に原因分類が必須で、未知値・空理由・provenance欠落を拒否する',
+    '`implementation_unsound` は従来どおりcritical failureのままで、correctionやwaiverでは通らない',
+    '`classifier_premise_unsound` はitem単位のcorrectionが無い限りfailedのままになる',
+    'correctionは同じstory・item・HEADの元裁定を参照し、誤premise・訂正premise・理由・replacement evidenceを必須にする',
+    'correctionが受理されてもfresh independent adjudicationが無ければneeds_evidenceになり、同一judgeまたはstale HEADの再裁定を拒否する',
+    'fresh再裁定が `judged_sound` なら対象itemを自動解決し、`judged_unsound` なら新しい理由でfailedにし、`needs_human_judgment` なら既存のaccepted decision record経路を使う',
+    '元裁定、correction、再裁定はappend-onlyで残り、current state resolverが最新の有効な系譜を選ぶ',
+    '既存の裁定artifactを読み込め、cause未指定の既存 `judged_unsound` は安全側の `implementation_unsound` として扱う',
+    '`needs_human_judgment` のaccepted decision record経路とcritical waiver拒否は後方互換を保つ',
+    'unit/E2Eテストが成功し、README（日英）に運用例と禁止事項が記載される'
+  ];
+  const scenarioClauses = [
+    'A premise correction is accepted only for a current-HEAD classifier_premise_unsound verdict in the same story and item, and only when it supplies nonblank wrong/corrected premises, an auditable reason, provenance, and at least one readable workspace-relative regular file whose SHA-256 is recorded.',
+    'A classifier premise correction leaves the gate in needs_evidence until a different independent current-HEAD judge records a verdict linked to that correction; linked judged_sound resolves the item automatically, linked needs_human_judgment uses the existing accepted decision path, and implementation_unsound or linked judged_unsound remains failed.'
+  ];
+  assert.match(acceptanceCriteria[0], /原因分類/, 'story-vibepro-classifier-premise-recovery ac:1 cause validation');
+  assert.match(acceptanceCriteria[1], /critical failure/, 'story-vibepro-classifier-premise-recovery ac:2 implementation failure');
+  assert.match(acceptanceCriteria[2], /correction/, 'story-vibepro-classifier-premise-recovery ac:3 correction required');
+  assert.match(acceptanceCriteria[3], /replacement evidence/, 'story-vibepro-classifier-premise-recovery ac:4 correction contract');
+  assert.match(acceptanceCriteria[4], /fresh independent adjudication/, 'story-vibepro-classifier-premise-recovery ac:5 fresh judge');
+  assert.match(acceptanceCriteria[5], /accepted decision record/, 'story-vibepro-classifier-premise-recovery ac:6 linked outcomes');
+  assert.match(acceptanceCriteria[6], /append-only/, 'story-vibepro-classifier-premise-recovery ac:7 event lineage');
+  assert.match(acceptanceCriteria[7], /implementation_unsound/, 'story-vibepro-classifier-premise-recovery ac:8 legacy compatibility');
+  assert.match(acceptanceCriteria[8], /後方互換/, 'story-vibepro-classifier-premise-recovery ac:9 human and waiver compatibility');
+  assert.match(acceptanceCriteria[9], /README/, 'story-vibepro-classifier-premise-recovery ac:10 tests and docs');
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'docs'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'premise-proof.md'), 'The compatibility output is unchanged.\n', 'utf8');
@@ -74,10 +100,11 @@ test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed
     '--verdict', 'judged_unsound', '--reason', 'classifier assumed the output changed',
     '--agent-system', 'codex', '--agent-id', 'judge-original'
   ];
-  await assert.rejects(() => execFileAsync('node', initial), /--unsound-cause/);
+  await assert.rejects(() => execFileAsync('node', initial), /--unsound-cause/, acceptanceCriteria[0]);
   await execFileAsync('node', [...initial, '--unsound-cause', 'classifier_premise_unsound']);
   let stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'adjudication', STORY_ID, 'judgment-adjudication.json'), 'utf8'));
   const originalId = stored.events[0].event_id;
+  assert.equal(stored.events[0].unsound_cause, 'classifier_premise_unsound', acceptanceCriteria[2]);
 
   await execFileAsync('node', [
     CLI_PATH, 'adjudicate', 'correct', repo,
@@ -91,13 +118,14 @@ test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed
   ]);
   stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'adjudication', STORY_ID, 'judgment-adjudication.json'), 'utf8'));
   const correctionId = stored.events[1].event_id;
+  assert.equal(stored.events[1].replacement_evidence.length, 1, scenarioClauses[0]);
   let gate = buildJudgmentDagAdjudicationGate({
     storyId: STORY_ID,
     items: [{ id: 'axis:public_contract' }],
     adjudication: stored,
     headSha: await headOf(repo)
   });
-  assert.equal(gate.status, 'needs_evidence');
+  assert.equal(gate.status, 'needs_evidence', acceptanceCriteria[4]);
   assert.deepEqual(gate.pending_correction_items, ['axis:public_contract']);
   const prepared = await prepareJudgmentAdjudication(repo, { storyId: STORY_ID });
   const request = await readFile(path.join(repo, prepared.artifact), 'utf8');
@@ -114,7 +142,7 @@ test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed
     '--agent-system', 'codex', '--agent-id', 'judge-fresh'
   ]);
   stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'adjudication', STORY_ID, 'judgment-adjudication.json'), 'utf8'));
-  assert.deepEqual(stored.events.map((event) => event.type), ['verdict', 'premise_correction', 'verdict']);
+  assert.deepEqual(stored.events.map((event) => event.type), ['verdict', 'premise_correction', 'verdict'], acceptanceCriteria[6]);
   assert.equal(stored.events[2].responds_to_correction_id, correctionId);
   gate = buildJudgmentDagAdjudicationGate({
     storyId: STORY_ID,
@@ -122,5 +150,5 @@ test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed
     adjudication: stored,
     headSha: await headOf(repo)
   });
-  assert.equal(gate.status, 'passed');
+  assert.equal(gate.status, 'passed', scenarioClauses[1]);
 });

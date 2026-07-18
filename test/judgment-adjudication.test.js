@@ -628,6 +628,99 @@ test('CPR-S-006 malformed correction lineage fails closed instead of selecting a
   assert.match(malformedGate.reason, /history is invalid/);
 });
 
+test('CPR-S-007 v2 artifacts fail closed on traversal evidence and missing or unknown provenance', () => {
+  const base = {
+    story_id: STORY_ID,
+    events: [
+      {
+        event_id: 'v1', type: 'verdict', item_id: 'axis:x', verdict: 'judged_unsound',
+        unsound_cause: 'classifier_premise_unsound', reason: 'wrong premise',
+        provenance: { agent_system: 'codex', agent_id: 'judge-a' }, head_commit: 'h'
+      },
+      {
+        event_id: 'c1', type: 'premise_correction', item_id: 'axis:x', corrects_verdict_id: 'v1',
+        wrong_premise: 'x', corrected_premise: 'y', reason: 'proof',
+        replacement_evidence: [{ artifact: '../../outside-proof.md', sha256: 'a'.repeat(64) }],
+        provenance: { agent_system: 'codex', agent_id: 'operator' }, head_commit: 'h'
+      },
+      {
+        event_id: 'v2', type: 'verdict', item_id: 'axis:x', verdict: 'judged_sound',
+        responds_to_correction_id: 'c1', reason: 'looks sound',
+        provenance: { agent_system: 'codex', agent_id: 'judge-b' }, head_commit: 'h'
+      }
+    ]
+  };
+  const gateFor = (adjudication) => buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:x' }],
+    adjudication,
+    headSha: 'h'
+  });
+  const traversal = gateFor(base);
+  assert.equal(traversal.status, 'failed');
+  assert.match(traversal.reason, /history is invalid/);
+
+  const missingProvenance = structuredClone(base);
+  missingProvenance.events = [{
+    event_id: 'v-only', type: 'verdict', item_id: 'axis:x', verdict: 'judged_sound',
+    reason: 'sound', provenance: null, head_commit: 'h'
+  }];
+  assert.equal(gateFor(missingProvenance).status, 'failed');
+
+  const unknownSystem = structuredClone(missingProvenance);
+  unknownSystem.events[0].provenance = { agent_system: 'unknown', agent_id: 'judge' };
+  assert.equal(gateFor(unknownSystem).status, 'failed');
+
+  const missingReason = structuredClone(missingProvenance);
+  missingReason.events[0].provenance = { agent_system: 'codex', agent_id: 'judge' };
+  missingReason.events[0].reason = ' ';
+  assert.equal(gateFor(missingReason).status, 'failed');
+});
+
+test('CPR-S-008 correction-linked needs_human_judgment uses the existing accepted decision path', () => {
+  const events = [
+    {
+      event_id: 'v1', type: 'verdict', item_id: 'axis:x', verdict: 'judged_unsound',
+      unsound_cause: 'classifier_premise_unsound', reason: 'wrong premise',
+      provenance: { agent_system: 'codex', agent_id: 'judge-a' }, head_commit: 'h'
+    },
+    {
+      event_id: 'c1', type: 'premise_correction', item_id: 'axis:x', corrects_verdict_id: 'v1',
+      wrong_premise: 'x', corrected_premise: 'y', reason: 'proof',
+      replacement_evidence: [{ artifact: 'docs/proof.md', sha256: 'a'.repeat(64) }],
+      provenance: { agent_system: 'codex', agent_id: 'operator' }, head_commit: 'h'
+    },
+    {
+      event_id: 'v2', type: 'verdict', item_id: 'axis:x', verdict: 'needs_human_judgment',
+      responds_to_correction_id: 'c1', reason: 'production observation is required',
+      provenance: { agent_system: 'codex', agent_id: 'judge-b' }, head_commit: 'h'
+    }
+  ];
+  const open = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:x' }],
+    adjudication: { story_id: STORY_ID, events },
+    headSha: 'h'
+  });
+  assert.equal(open.status, 'needs_evidence');
+  assert.deepEqual(open.human_judgment_items.map((item) => item.item_id), ['axis:x']);
+  assert.deepEqual(open.pending_correction_items, []);
+
+  const closed = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:x' }],
+    adjudication: { story_id: STORY_ID, events },
+    headSha: 'h',
+    decisions: [{
+      source: 'gate:judgment_dag_adjudication:axis:x',
+      status: 'accepted',
+      reason: 'operator confirmed the production behavior',
+      artifact: 'docs/decision.md'
+    }]
+  });
+  assert.equal(closed.status, 'passed');
+});
+
 async function gitHead(repo) {
   const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
   return stdout.trim();

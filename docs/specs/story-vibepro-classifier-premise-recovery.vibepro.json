@@ -56,22 +56,27 @@
       "verifiable_by": {
         "test_pattern": [
           { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-003" },
-          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-006" }
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-006" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-007" }
         ]
       }
     },
     {
       "id": "SC-CPR-5",
       "type": "scenario",
-      "statement": "A classifier premise correction leaves the gate in needs_evidence until a different independent current-HEAD judge records a verdict linked to that correction; linked judged_sound resolves the item, while implementation_unsound and linked judged_unsound remain failed.",
+      "statement": "A classifier premise correction leaves the gate in needs_evidence until a different independent current-HEAD judge records a verdict linked to that correction; linked judged_sound resolves the item automatically, linked needs_human_judgment uses the existing accepted decision path, and implementation_unsound or linked judged_unsound remains failed.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "story_refs": [
+          { "kind": "acceptance_criteria", "index": 4 },
+          { "kind": "acceptance_criteria", "index": 8 }
+        ],
         "code_refs": [{ "file": "src/adjudication.js", "anchor": "buildJudgmentDagAdjudicationGate" }]
       },
       "verifiable_by": {
         "test_pattern": [
           { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-002" },
-          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-005" }
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-005" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-008" }
         ]
       }
     },
@@ -87,7 +92,7 @@
         ]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-classifier-premise-recovery-main.test.js", "must_contain": "CPR-E2E-001" }]
+        "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts", "must_contain": "CPR-E2E-001" }]
       }
     }
   ],
@@ -101,7 +106,7 @@
         { "id": "needs_evidence", "label": "needs_evidence" },
         { "id": "passed", "label": "passed" }
       ],
-      "mermaid": "stateDiagram-v2\n  [*] --> failed: judged_unsound\n  failed --> needs_evidence: classifier premise correction\n  needs_evidence --> passed: different judge + linked judged_sound\n  needs_evidence --> failed: linked judged_unsound\n  failed --> failed: implementation_unsound"
+      "mermaid": "stateDiagram-v2\n  [*] --> failed: judged_unsound\n  failed --> needs_evidence: classifier premise correction\n  needs_evidence --> passed: linked judged_sound\n  needs_evidence --> passed: linked needs-human + accepted decision\n  needs_evidence --> failed: linked judged_unsound\n  failed --> failed: implementation_unsound"
     },
     {
       "id": "DG-CPR-FLOW",

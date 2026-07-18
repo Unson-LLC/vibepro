@@ -373,7 +373,7 @@ function legacyJudgmentEventId(entry, index) {
 export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = null } = {}) {
   const source = adjudication && typeof adjudication === 'object' ? adjudication : {};
   const events = Array.isArray(source.events)
-    ? source.events.map((event) => ({ ...event }))
+    ? source.events.map((event) => ({ ...event, _legacy_source: false }))
     : (Array.isArray(source.verdicts) ? source.verdicts : []).map((entry, index) => ({
         event_id: entry.event_id ?? legacyJudgmentEventId(entry, index),
         type: 'verdict',
@@ -386,7 +386,8 @@ export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = 
         reason: entry.reason,
         provenance: entry.provenance ?? null,
         head_commit: entry.head_commit ?? null,
-        recorded_at: entry.recorded_at ?? null
+        recorded_at: entry.recorded_at ?? null,
+        _legacy_source: true
       }));
   return {
     schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
@@ -411,8 +412,23 @@ function validateReplacementEvidence(evidence) {
   return Array.isArray(evidence)
     && evidence.length > 0
     && evidence.every((item) => typeof item?.artifact === 'string'
-      && item.artifact.trim().length > 0
+      && isSafeWorkspaceRelativeArtifact(item.artifact)
       && /^[a-f0-9]{64}$/.test(item.sha256 ?? ''));
+}
+
+function isSafeWorkspaceRelativeArtifact(artifact) {
+  const value = typeof artifact === 'string' ? artifact.trim() : '';
+  if (!value || path.isAbsolute(value) || path.win32.isAbsolute(value)) return false;
+  const segments = value.replaceAll('\\', '/').split('/');
+  return !segments.some((segment) => segment === '..' || segment === '');
+}
+
+function validateEventProvenance(provenance) {
+  return provenance
+    && typeof provenance === 'object'
+    && ['codex', 'claude_code'].includes(provenance.agent_system)
+    && typeof provenance.agent_id === 'string'
+    && provenance.agent_id.trim().length > 0;
 }
 
 export function resolveCurrentJudgmentState({
@@ -450,6 +466,14 @@ export function resolveCurrentJudgmentState({
     }
     if (activeIds.size > 0 && !activeIds.has(event.item_id)) {
       invalid.push(`event ${event.event_id} targets inactive item ${event.item_id}`);
+    }
+    if (!event._legacy_source) {
+      if (typeof event.reason !== 'string' || !event.reason.trim()) {
+        invalid.push(`event ${event.event_id} is missing reason`);
+      }
+      if (!validateEventProvenance(event.provenance)) {
+        invalid.push(`event ${event.event_id} has invalid provenance`);
+      }
     }
     if (event.type === 'premise_correction') {
       if (!event.corrects_verdict_id) invalid.push(`correction ${event.event_id} is missing corrects_verdict_id`);
@@ -523,9 +547,6 @@ export function resolveCurrentJudgmentState({
         return { item_id: itemId, status: 'resolved', current_verdict: verdict, correction: lastCorrection };
       }
       if (verdict.verdict === 'needs_human_judgment') {
-        if (verdict.responds_to_correction_id) {
-          return { item_id: itemId, status: 'awaiting_re_adjudication', current_verdict: verdict, correction: lastCorrection };
-        }
         return {
           item_id: itemId,
           status: humanClosures.has(itemId) ? 'resolved' : 'needs_human_judgment',
@@ -861,7 +882,7 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
     model: 'vibepro-judgment-dag-adjudication-v2',
     story_id: storyId,
     updated_at: new Date().toISOString(),
-    events: [...normalized.events, entry]
+    events: [...normalized.events, entry].map(({ _legacy_source, ...event }) => event)
   };
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
@@ -956,7 +977,7 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
     model: 'vibepro-judgment-dag-adjudication-v2',
     story_id: storyId,
     updated_at: new Date().toISOString(),
-    events: [...normalized.events, entry]
+    events: [...normalized.events, entry].map(({ _legacy_source, ...event }) => event)
   };
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
