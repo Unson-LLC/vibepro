@@ -28,7 +28,11 @@ export async function runSafeActionPlan(state, options = {}) {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
-    const completed = current.action_journal.some((entry) => entry.idempotency_key === key && entry.status === 'completed');
+    const completed = current.action_journal.some((entry) => entry.idempotency_key === key
+      && entry.status === 'completed'
+      && entry.action_id === action.id
+      && entry.node_id === action.id
+      && entry.input_head_sha === state.current_head_sha);
     if (completed) continue;
     try {
       const result = await options.runners[action.id]({ state: current, action });

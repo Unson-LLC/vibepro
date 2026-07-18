@@ -146,6 +146,30 @@ test('SAO-S-2 forged execution identity cannot bypass a completed canonical chec
   }
 });
 
+test('SAO-S-2 forged journal identity cannot silently skip a canonical action', async () => {
+  const action = buildSafeActionPlan(state)[0];
+  const baseEntry = {
+    action_id: action.id, node_id: action.node_id, input_head_sha: action.input_head_sha,
+    idempotency_key: action.idempotency_key, status: 'completed'
+  };
+  const cases = [
+    { ...baseEntry, action_id: 'forged-action' },
+    { ...baseEntry, node_id: 'forged-node' },
+    { ...baseEntry, input_head_sha: 'forged-head' }
+  ];
+  for (const forgedEntry of cases) {
+    let calls = 0;
+    const result = await runSafeActionPlan({ ...state, action_journal: [forgedEntry] }, {
+      plan: [action],
+      runners: { pr_prepare: async () => { calls += 1; return { status: 'pr_ready' }; } }
+    });
+    assert.equal(calls, 1);
+    assert.equal(result.state.status, 'pr_ready');
+    assert.equal(result.state.action_journal.at(-1).action_id, 'pr_prepare');
+    assert.equal(result.state.action_journal.at(-1).status, 'completed');
+  }
+});
+
 test('SAO-S-5 typed verification and critical stops are preserved', async () => {
   for (const stop of ['verification_failed', 'gate:critical']) {
     const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => ({ status: 'blocked', stop_reason: stop }) } });
