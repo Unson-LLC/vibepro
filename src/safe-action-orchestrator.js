@@ -24,12 +24,12 @@ export async function runSafeActionPlan(state, options = {}) {
     const key = action.idempotency_key ?? createHash('sha256')
       .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
       .digest('hex');
-    const completed = current.action_journal.some((entry) => entry.idempotency_key === key && entry.status === 'completed');
-    if (completed) continue;
-    if (action.classification !== 'repo_local_safe' || typeof options.runners?.[action.id] !== 'function') {
+    if (!isCanonicalAction(action) || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
+    const completed = current.action_journal.some((entry) => entry.idempotency_key === key && entry.status === 'completed');
+    if (completed) continue;
     try {
       const result = await options.runners[action.id]({ state: current, action });
       const journal = append(current, action, key, result?.status === 'failed' ? 'failed' : 'completed', result);
@@ -52,6 +52,15 @@ export async function runSafeActionPlan(state, options = {}) {
     }
   }
   return { plan, state: current };
+}
+
+function isCanonicalAction(action) {
+  const canonical = REGISTRY.find((entry) => entry.id === action?.id);
+  return Boolean(canonical)
+    && action.classification === canonical.classification
+    && Array.isArray(action.depends_on)
+    && action.depends_on.length === canonical.depends_on.length
+    && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index]);
 }
 
 function append(state, action, key, status, result = {}) {

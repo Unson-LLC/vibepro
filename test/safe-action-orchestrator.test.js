@@ -57,6 +57,19 @@ test('SAO-S-4 forbidden action never invokes a runner', async () => {
   assert.equal(result.state.stop_reason.code, 'action_forbidden');
 });
 
+test('SAO-S-4 unknown action cannot claim repo_local_safe classification', async () => {
+  let calls = 0;
+  const result = await runSafeActionPlan(state, {
+    plan: [{ id: 'unknown_repo_action', classification: 'repo_local_safe', depends_on: [] }],
+    runners: { unknown_repo_action: async () => { calls += 1; return { status: 'pr_ready' }; } }
+  });
+  assert.equal(calls, 0);
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'action_forbidden');
+  assert.equal(result.state.action_journal[0].action_id, 'unknown_repo_action');
+  assert.equal(result.state.action_journal[0].status, 'forbidden');
+});
+
 test('SAO-S-5 typed verification and critical stops are preserved', async () => {
   for (const stop of ['verification_failed', 'gate:critical']) {
     const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => ({ status: 'blocked', stop_reason: stop }) } });
