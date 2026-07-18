@@ -21,10 +21,10 @@ export async function runSafeActionPlan(state, options = {}) {
   if (options.dryRun) return { plan, state };
   let current = state;
   for (const action of plan) {
-    const key = action.idempotency_key ?? createHash('sha256')
+    const key = createHash('sha256')
       .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
       .digest('hex');
-    if (!isCanonicalAction(action) || typeof options.runners?.[action.id] !== 'function') {
+    if (!isCanonicalAction(action, state, key) || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
@@ -54,13 +54,16 @@ export async function runSafeActionPlan(state, options = {}) {
   return { plan, state: current };
 }
 
-function isCanonicalAction(action) {
+function isCanonicalAction(action, state, expectedKey) {
   const canonical = REGISTRY.find((entry) => entry.id === action?.id);
   return Boolean(canonical)
     && action.classification === canonical.classification
     && Array.isArray(action.depends_on)
     && action.depends_on.length === canonical.depends_on.length
-    && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index]);
+    && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index])
+    && (action.node_id === undefined || action.node_id === canonical.id)
+    && (action.input_head_sha === undefined || action.input_head_sha === state.current_head_sha)
+    && (action.idempotency_key === undefined || action.idempotency_key === expectedKey);
 }
 
 function append(state, action, key, status, result = {}) {

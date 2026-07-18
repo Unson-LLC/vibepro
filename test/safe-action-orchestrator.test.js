@@ -119,6 +119,33 @@ test('SAO-S-4 canonical action without a registered runner is rejected before id
   assert.equal(result.state.action_journal.at(-1).result_summary, 'action_forbidden');
 });
 
+test('SAO-S-2 forged execution identity cannot bypass a completed canonical checkpoint', async () => {
+  const action = buildSafeActionPlan(state)[1];
+  const completedState = {
+    ...state,
+    action_journal: [{
+      action_id: action.id, node_id: action.node_id, input_head_sha: action.input_head_sha,
+      idempotency_key: action.idempotency_key, status: 'completed'
+    }]
+  };
+  const cases = [
+    { ...action, idempotency_key: 'forged-key' },
+    { ...action, node_id: 'forged-node' },
+    { ...action, input_head_sha: 'forged-head' }
+  ];
+  for (const forgedAction of cases) {
+    let calls = 0;
+    const result = await runSafeActionPlan(completedState, {
+      plan: [forgedAction],
+      runners: { pr_autopilot_safe: async () => { calls += 1; return { status: 'pr_ready' }; } }
+    });
+    assert.equal(calls, 0);
+    assert.equal(result.state.status, 'blocked');
+    assert.equal(result.state.stop_reason.code, 'action_forbidden');
+    assert.equal(result.state.action_journal.at(-1).status, 'forbidden');
+  }
+});
+
 test('SAO-S-5 typed verification and critical stops are preserved', async () => {
   for (const stop of ['verification_failed', 'gate:critical']) {
     const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => ({ status: 'blocked', stop_reason: stop }) } });
