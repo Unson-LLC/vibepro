@@ -130,6 +130,16 @@ test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and 
   assert.deepEqual(staleVerification.content_binding.changed_files, ['src/content-binding-target.js']);
   const staleDetail = staleGate.stale_artifact_details.find((detail) => detail.artifact_type === 'verification_command');
   assert.deepEqual(staleDetail.content_binding.changed_files, ['src/content-binding-target.js']);
+  const sourceFreshnessGate = findGate(sourceChanged, 'gate:pr_freshness');
+  const sourceFreshnessBinding = sourceFreshnessGate.content_binding_details.bindings.find((binding) => (
+    binding.artifact_type === 'verification_command'
+  ));
+  assert.equal(sourceFreshnessBinding.status, 'stale');
+  assert.match(sourceFreshnessBinding.reason, /content-bound evidence surface changed/);
+  assert.deepEqual(sourceFreshnessBinding.changed_files, ['src/content-binding-target.js']);
+  assert.deepEqual(sourceFreshnessBinding.missing_files, []);
+  assert.notEqual(sourceFreshnessBinding.current_surface_hash, sourceFreshnessBinding.recorded_surface_hash);
+  assert.notEqual(sourceFreshnessBinding.current_head_sha, sourceFreshnessBinding.recorded_head_sha);
 });
 
 test('CEF-S-2/5 deleted bound files stale evidence with an operator-visible missing-file reason', async () => {
@@ -510,6 +520,21 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
   assert.match(recoveryCommand, /--status <pass\|needs_changes\|block>/);
   assert.match(recoveryCommand, /--strict-head-binding/);
   assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
+  const freshnessGate = findGate(prepared, 'gate:pr_freshness');
+  const strictReviewBinding = freshnessGate.content_binding_details.bindings.find((binding) => (
+    binding.artifact_type === 'agent_review_result'
+      && binding.stage === 'implementation'
+      && binding.role === 'runtime_contract'
+  ));
+  assert.equal(strictReviewBinding.status, 'stale');
+  assert.equal(strictReviewBinding.binding_mode, 'strict_head');
+  assert.match(strictReviewBinding.reason, /recorded for .*current head/);
+  assert.deepEqual(strictReviewBinding.surface_files, ['src/content-binding-target.js']);
+  assert.deepEqual(strictReviewBinding.changed_files, []);
+  assert.deepEqual(strictReviewBinding.missing_files, []);
+  assert.match(strictReviewBinding.recorded_surface_hash, /^[a-f0-9]{64}$/);
+  assert.equal(strictReviewBinding.current_surface_hash, null);
+  assert.notEqual(strictReviewBinding.current_head_sha, strictReviewBinding.recorded_head_sha);
 
   const executableRecovery = recoveryCommand
     .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
