@@ -371,11 +371,53 @@ function legacyJudgmentEventId(entry, index) {
   return `legacy-verdict-${digest}`;
 }
 
+const JUDGMENT_ADJUDICATION_V1_MODEL = 'vibepro-judgment-dag-adjudication-v1';
+const JUDGMENT_ADJUDICATION_V2_MODEL = 'vibepro-judgment-dag-adjudication-v2';
+
+function isDeclaredLegacyJudgmentArtifact(source) {
+  const schemaCompatible = source.schema_version == null || source.schema_version === ADJUDICATION_SCHEMA_VERSION;
+  const modelCompatible = source.model == null || source.model === JUDGMENT_ADJUDICATION_V1_MODEL;
+  return schemaCompatible && modelCompatible;
+}
+
+function isMaterializedLegacyJudgmentEvent(event) {
+  return event?.legacy_origin?.schema_version === ADJUDICATION_SCHEMA_VERSION
+    && event?.legacy_origin?.model === JUDGMENT_ADJUDICATION_V1_MODEL
+    && typeof event?.event_id === 'string'
+    && event.event_id.startsWith('legacy-verdict-');
+}
+
+function persistJudgmentEvent(event) {
+  const { _legacy_source: legacySource, ...persisted } = event;
+  if (!legacySource) return persisted;
+  return {
+    ...persisted,
+    legacy_origin: {
+      schema_version: ADJUDICATION_SCHEMA_VERSION,
+      model: JUDGMENT_ADJUDICATION_V1_MODEL
+    }
+  };
+}
+
 export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = null } = {}) {
   const source = adjudication && typeof adjudication === 'object' ? adjudication : {};
-  const events = Array.isArray(source.events)
-    ? source.events.map((event) => ({ ...event, _legacy_source: false }))
-    : (Array.isArray(source.verdicts) ? source.verdicts : []).map((entry, index) => ({
+  const formatErrors = [];
+  const hasEvents = Array.isArray(source.events);
+  const hasLegacyVerdicts = Array.isArray(source.verdicts);
+  let events = [];
+  if (hasEvents) {
+    if (source.schema_version != null && source.schema_version !== JUDGMENT_ADJUDICATION_SCHEMA_VERSION) {
+      formatErrors.push(`events artifact has unsupported schema_version ${source.schema_version}`);
+    }
+    if (source.model != null && source.model !== JUDGMENT_ADJUDICATION_V2_MODEL) {
+      formatErrors.push(`events artifact has unsupported model ${source.model}`);
+    }
+    events = source.events.map((event) => ({
+      ...event,
+      _legacy_source: isMaterializedLegacyJudgmentEvent(event)
+    }));
+  } else if (hasLegacyVerdicts && isDeclaredLegacyJudgmentArtifact(source)) {
+    events = source.verdicts.map((entry, index) => ({
         event_id: entry.event_id ?? legacyJudgmentEventId(entry, index),
         type: 'verdict',
         item_id: entry.item_id,
@@ -390,12 +432,18 @@ export function normalizeJudgmentAdjudicationArtifact(adjudication, { storyId = 
         recorded_at: entry.recorded_at ?? null,
         _legacy_source: true
       }));
+  } else if (hasLegacyVerdicts || source.schema_version != null || source.model != null) {
+    formatErrors.push(
+      `artifact schema/model requires an events array; legacy verdicts are accepted only for ${ADJUDICATION_SCHEMA_VERSION}/${JUDGMENT_ADJUDICATION_V1_MODEL}`
+    );
+  }
   return {
     schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
-    model: 'vibepro-judgment-dag-adjudication-v2',
+    model: JUDGMENT_ADJUDICATION_V2_MODEL,
     story_id: source.story_id ?? storyId,
     updated_at: source.updated_at ?? null,
-    events
+    events,
+    format_errors: formatErrors
   };
 }
 
@@ -440,7 +488,7 @@ export function resolveCurrentJudgmentState({
   decisions = []
 } = {}) {
   const normalized = normalizeJudgmentAdjudicationArtifact(adjudication, { storyId });
-  const invalid = [];
+  const invalid = [...normalized.format_errors];
   if (storyId && normalized.story_id && normalized.story_id !== storyId) {
     invalid.push(`artifact story_id ${normalized.story_id} does not match ${storyId}`);
   }
@@ -883,10 +931,10 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
   };
   const next = {
     schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
-    model: 'vibepro-judgment-dag-adjudication-v2',
+    model: JUDGMENT_ADJUDICATION_V2_MODEL,
     story_id: storyId,
     updated_at: new Date().toISOString(),
-    events: [...normalized.events, entry].map(({ _legacy_source, ...event }) => event)
+    events: [...normalized.events, entry].map(persistJudgmentEvent)
   };
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
@@ -992,10 +1040,10 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
   };
   const next = {
     schema_version: JUDGMENT_ADJUDICATION_SCHEMA_VERSION,
-    model: 'vibepro-judgment-dag-adjudication-v2',
+    model: JUDGMENT_ADJUDICATION_V2_MODEL,
     story_id: storyId,
     updated_at: new Date().toISOString(),
-    events: [...normalized.events, entry].map(({ _legacy_source, ...event }) => event)
+    events: [...normalized.events, entry].map(persistJudgmentEvent)
   };
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);

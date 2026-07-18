@@ -455,7 +455,7 @@ test('CPR-S-002 correction validates lineage and evidence, then only a different
   assert.deepEqual(artifact.events.map((event) => event.type), ['verdict', 'premise_correction', 'verdict']);
 });
 
-test('CPR-S-003 resolver is reference-driven, order-independent, and legacy unsound remains implementation failure', () => {
+test('CPR-S-003 resolver is reference-driven, order-independent, and legacy migration round-trips safely', async () => {
   const original = {
     event_id: 'verdict-original', type: 'verdict', item_id: 'axis:public_contract',
     verdict: 'judged_unsound', unsound_cause: 'classifier_premise_unsound', responds_to_correction_id: null,
@@ -486,6 +486,42 @@ test('CPR-S-003 resolver is reference-driven, order-independent, and legacy unso
   });
   assert.equal(legacyGate.status, 'failed');
   assert.equal(legacyGate.judged_unsound_items[0].unsound_cause, 'implementation_unsound');
+
+  const repo = await makeRepo();
+  const head = await gitHead(repo);
+  const artifactDir = path.join(repo, '.vibepro', 'adjudication', STORY_ID);
+  await mkdir(artifactDir, { recursive: true });
+  await writeFile(path.join(artifactDir, 'judgment-adjudication.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-judgment-dag-adjudication-v1',
+    story_id: STORY_ID,
+    verdicts: [{
+      item_id: 'axis:public_contract',
+      verdict: 'judged_unsound',
+      reason: 'legacy gap without provenance',
+      head_commit: head
+    }]
+  }, null, 2)}\n`, 'utf8');
+  await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:new_contract',
+    verdict: 'judged_sound',
+    reason: 'new item is sound',
+    agentSystem: 'codex',
+    agentId: 'judge-new'
+  });
+  const migrated = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(migrated.schema_version, '0.2.0');
+  assert.equal(migrated.events[0].legacy_origin.model, 'vibepro-judgment-dag-adjudication-v1');
+  const migratedGate = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID,
+    items: [{ id: 'axis:public_contract' }, { id: 'axis:new_contract' }],
+    adjudication: migrated,
+    headSha: head
+  });
+  assert.equal(migratedGate.status, 'failed');
+  assert.equal(Object.hasOwn(migratedGate, 'invalid_history'), false);
+  assert.equal(migratedGate.judged_unsound_items[0].unsound_cause, 'implementation_unsound');
 });
 
 test('CPR-S-004 summary counts resolved current item state, not append-only history rows', () => {
@@ -773,6 +809,50 @@ test('CPR-S-009 recorders reject unknown provenance and replacement evidence sym
   const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
   assert.equal(stored.events.length, 1);
   assert.equal(stored.events[0].event_id, original.entry.event_id);
+});
+
+test('CPR-S-010 v2 artifacts cannot downgrade to legacy verdicts across resolver, Gate, summary, and request', async () => {
+  const repo = await makeRepo({ prPrepare: {
+    git: { changed_files: [{ path: 'src/pipeline.js' }] },
+    pr_context: {
+      gate_dag: FIXTURE_GATE_DAG,
+      engineering_judgment: { route_type: 'agent_workflow' },
+      change_classification: { profile: 'standard' }
+    }
+  } });
+  const head = await gitHead(repo);
+  const downgraded = {
+    schema_version: '0.2.0',
+    model: 'vibepro-judgment-dag-adjudication-v2',
+    story_id: STORY_ID,
+    verdicts: [{
+      item_id: 'axis:public_contract',
+      verdict: 'judged_sound',
+      reason: 'forged legacy downgrade',
+      provenance: null,
+      head_commit: head
+    }]
+  };
+  const items = [{ id: 'axis:public_contract' }];
+  const resolved = resolveCurrentJudgmentState({ storyId: STORY_ID, itemIds: ['axis:public_contract'], adjudication: downgraded, headSha: head });
+  assert.equal(resolved.status, 'invalid_history');
+  assert.match(resolved.invalid_reasons[0], /requires an events array/);
+
+  const gate = buildJudgmentDagAdjudicationGate({ storyId: STORY_ID, items, adjudication: downgraded, headSha: head });
+  assert.equal(gate.status, 'failed');
+  assert.equal(gate.invalid_history.length, 1);
+
+  const summary = summarizeJudgmentAdjudicationForPr({ storyId: STORY_ID, items, adjudication: downgraded, headSha: head });
+  assert.equal(summary.judged_sound_count, 0);
+  assert.equal(summary.invalid_history_count, 1);
+
+  const artifactDir = path.join(repo, '.vibepro', 'adjudication', STORY_ID);
+  await mkdir(artifactDir, { recursive: true });
+  await writeFile(path.join(artifactDir, 'judgment-adjudication.json'), `${JSON.stringify(downgraded, null, 2)}\n`, 'utf8');
+  await assert.rejects(
+    prepareJudgmentAdjudication(repo, { storyId: STORY_ID }),
+    /judgment history is invalid: artifact schema\/model requires an events array/
+  );
 });
 
 async function gitHead(repo) {

@@ -12,7 +12,8 @@ status: final
 ## 契約
 
 - 新規 `judged_unsound` は `implementation_unsound` / `classifier_premise_unsound` の原因を必須にする。
-- legacyの原因なしunsoundは `implementation_unsound` へ正規化する。
+- schema/modelが未宣言または真正v1宣言のlegacyだけを移行し、原因なしunsoundは `implementation_unsound` へ正規化する。
+- v1移行eventは `legacy_origin` を保持する。v2宣言とpayloadが矛盾するartifactはlegacy扱いせず、全consumerでfail closedにする。
 - 元裁定、premise correction、再裁定を同じstory・item・HEADに紐づくappend-only eventとして残す。
 - correctionは誤前提、訂正後前提、理由、workspace相対の代替証拠とSHA-256を保持する。symlinkと
   `realpath` 後にworkspace外となるpathは受理しない。
@@ -23,7 +24,7 @@ status: final
 
 ## 検証
 
-- Unit: `test/judgment-adjudication.test.js` の `CPR-S-001`〜`CPR-S-009`
+- Unit: `test/judgment-adjudication.test.js` の `CPR-S-001`〜`CPR-S-010`
 - CLI E2E: `test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts` の `CPR-E2E-001`
 - 互換回帰: 既存 `JADJ-S-*` / `JDA-E2E-*`
 

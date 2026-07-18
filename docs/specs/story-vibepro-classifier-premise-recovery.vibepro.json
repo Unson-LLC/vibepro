@@ -21,7 +21,7 @@
     {
       "id": "INV-CPR-2",
       "type": "invariant",
-      "statement": "Judgment adjudication writes schema 0.2.0 as an append-only event log with stable event ids and explicit correction references; recording a root verdict never removes or replaces an earlier event.",
+      "statement": "Judgment adjudication writes schema 0.2.0 as an append-only event log with stable event ids and explicit correction references; recording a root verdict never removes or replaces an earlier event, and migrated v1 events retain an explicit legacy_origin marker.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
         "code_refs": [
@@ -51,7 +51,7 @@
     {
       "id": "INV-CPR-4",
       "type": "invariant",
-      "statement": "Current judgment state is resolved from explicit same-item, same-HEAD event references rather than array order; duplicate, dangling, cross-item, cross-HEAD, branched, cyclic, unknown-cause, and invalid-evidence histories fail closed.",
+      "statement": "Current judgment state is resolved from explicit same-item, same-HEAD event references rather than array order; duplicate, dangling, cross-item, cross-HEAD, branched, cyclic, unknown-cause, invalid-evidence, and schema/model-payload mismatch histories fail closed instead of downgrading v2 to legacy.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
         "code_refs": [{ "file": "src/adjudication.js", "anchor": "resolveCurrentJudgmentState" }]
@@ -60,7 +60,8 @@
         "test_pattern": [
           { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-003" },
           { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-006" },
-          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-007" }
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-007" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-010" }
         ]
       }
     },

@@ -70,15 +70,19 @@ classifier premiseの妥当性とimplementation validityを同じ `judged_unsoun
 }
 ```
 
-新規eventは末尾appendし、IDと明示参照で順序を確定する。旧v1 `{ verdicts: [...] }` は読込時に
+新規eventは末尾appendし、IDと明示参照で順序を確定する。旧v1 `{ verdicts: [...] }` は、schema/modelが
+未宣言または `0.1.0` / `vibepro-judgment-dag-adjudication-v1` と整合する場合だけ読込互換に入れる。
 内容hash由来の決定的event IDを付けて正規化し、cause欠落の旧 `judged_unsound` は安全側の
 `implementation_unsound` とする。次回writeでは全legacy eventをv2へmaterializeし、一件も削除しない。
+materializeしたeventには `legacy_origin` を残し、次回readでもprovenance欠落を真正v1由来としてのみ許容する。
+v2 schema/modelを宣言しながら `events` を欠くartifactはlegacyへdowngradeせず `invalid_history` とする。
 
 ## Resolverの不変条件
 
 - story、item、current HEADが一致しないeventはcurrent stateに使わない。HEAD不明やbinding欠落はmissingとする。
 - duplicate ID、dangling/cross-item/cross-head参照、unknown cause、分岐した重複correction、invalid evidenceは
   `invalid_history` としてfail closedする。
+- schema/modelとpayload形状の矛盾はresolver、Gate、PR summary、adjudication prepareの全consumerでfail closedする。
 - 通常の `judged_sound` はresolved、通常の `needs_human_judgment` は既存accepted decision record経路を維持する。
 - cause欠落または `implementation_unsound` はfailedで、correctionやdecision recordでは解除できない。
 - `classifier_premise_unsound` は同じstory/item/HEADの当該verdictを直接参照するvalid correctionが無ければfailed。
@@ -154,7 +158,8 @@ vibepro adjudicate record . --id <story> --judgment --item <item> \
 - `src/adjudication.js`: v2 constants、legacy normalization、event recorder、premise correction recorder、shared resolver、
   request/gate/summary統合。
 - `src/cli.js`: `correct --judgment` route、unsound cause/correction ID/replacement evidenceのparse、日英help。
-- `test/judgment-adjudication.test.js`: schema、validation、state transition、legacy、order independence、summary、critical回帰。
+- `test/judgment-adjudication.test.js`: schema、validation、state transition、legacy、order independence、summary、critical回帰、
+  v1 migration provenance保持とv2 downgrade拒否。
 - `test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts`: canonical story discoveryに従うreal CLIの
   unsound→correct→別judge再裁定フロー。
 - `README.md` / `README.ja.md` / generated CLI reference / gate-evidence Skill: 手順と禁止事項を同期する。
