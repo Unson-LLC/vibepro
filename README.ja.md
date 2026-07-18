@@ -231,7 +231,27 @@ npx vibepro adjudicate record /path/to/repo \
   --agent-id judge-1
 ```
 
-裁定は `judged_sound` / `judged_unsound`（トークンは揃うが判断不成立）/ `needs_human_judgment`（accepted な decision record `--source gate:judgment_dag_adjudication:<item-id>` で閉じる）の3値です。先に `vibepro pr prepare` の実行が必要です（判断DAGが構成されてはじめて裁定対象が存在するため）。`.vibepro/config.json` の `judgment_adjudication.enabled: false` でオプトアウトできます。
+裁定は `judged_sound` / `judged_unsound`（トークンは揃うが判断不成立）/ `needs_human_judgment`（accepted な decision record `--source gate:judgment_dag_adjudication:<item-id>` で閉じる）の3値です。新しい `judged_unsound` の記録では、`--unsound-cause implementation_unsound|classifier_premise_unsound` による原因分類が必須です。原因がないlegacy成果物は安全側で `implementation_unsound` として扱います。
+
+前提訂正による復旧を使えるのは `classifier_premise_unsound` だけです。元の裁定は追記専用履歴に残し、誤った前提・訂正後の前提・workspace内の読み取り可能な代替証拠を記録したうえで、元のjudgeとは異なる fresh context のjudgeが紐づく再裁定を行います。
+
+```bash
+npx vibepro adjudicate correct /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --original-verdict-id <verdict-event-id> \
+  --incorrect-premise "公開出力が変わった" \
+  --corrected-premise "公開出力は変わっていない" \
+  --reason "互換性成果物が訂正後の前提を実証している" \
+  --replacement-evidence docs/compatibility-proof.md \
+  --agent-system codex --agent-id operator-1
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --correction-id <correction-event-id> --verdict judged_sound \
+  --reason "fresh reviewで訂正後の前提を確認した" \
+  --agent-system claude_code --agent-id judge-2
+```
+
+`implementation_unsound` は実装または証拠を直し、新しいHEADで裁定するまで失敗のままです。前提訂正はgeneric waiverではありません。先に `vibepro pr prepare` の実行が必要です（判断DAGが構成されてはじめて裁定対象が存在するため）。既存のゲート全体のオプトアウトは `.vibepro/config.json` の `judgment_adjudication.enabled: false` のままです。
 
 実装完了扱いにする前に checkpoint を通します。
 

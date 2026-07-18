@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-CPR-1",
+      "type": "invariant",
+      "statement": "Every newly recorded judged_unsound verdict declares exactly one supported cause, implementation_unsound or classifier_premise_unsound; a cause on another verdict is rejected, while legacy cause-less unsound verdicts normalize to implementation_unsound.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "JUDGMENT_UNSOUND_CAUSES" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-001" }]
+      }
+    },
+    {
+      "id": "INV-CPR-2",
+      "type": "invariant",
+      "statement": "Judgment adjudication writes schema 0.2.0 as an append-only event log with stable event ids and explicit correction references; recording never removes or replaces an earlier event, malformed or invalid existing history is left byte-for-byte untouched, and migrated v1 events retain an explicit legacy_origin marker whose materialized form can preserve only an implementation_unsound blocker without v2 provenance.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "code_refs": [
+          { "file": "src/adjudication.js", "anchor": "normalizeJudgmentAdjudicationArtifact" },
+          { "file": "src/adjudication.js", "anchor": "recordJudgmentAdjudication" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/judgment-adjudication.test.js", "must_contain": "append-only v2 events" }]
+      }
+    },
+    {
+      "id": "SC-CPR-3",
+      "type": "scenario",
+      "statement": "A premise correction is accepted only for a current-HEAD classifier_premise_unsound verdict in the same story and item, and only when it supplies nonblank wrong/corrected premises, an auditable reason, closed-set provenance, and at least one readable workspace-relative regular file whose SHA-256 is recorded; symlinks and realpath escapes are rejected before persistence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "recordPremiseCorrection" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-002" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-009" }
+        ]
+      }
+    },
+    {
+      "id": "INV-CPR-4",
+      "type": "invariant",
+      "statement": "Current judgment state is resolved from explicit same-item, same-HEAD event references rather than array order; duplicate, dangling, cross-item, cross-HEAD, branched, cyclic, unknown-cause, invalid-evidence, and schema/model-payload mismatch histories fail closed instead of downgrading v2 to legacy, and an editable materialized legacy_origin marker can preserve only an implementation_unsound blocker, never discharge the Gate or enter premise recovery.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "resolveCurrentJudgmentState" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-003" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-006" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-007" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-010" }
+        ]
+      }
+    },
+    {
+      "id": "SC-CPR-5",
+      "type": "scenario",
+      "statement": "A classifier premise correction leaves the gate in needs_evidence until a different independent current-HEAD judge records a verdict linked to that correction; linked judged_sound resolves the item automatically, linked needs_human_judgment uses the existing accepted decision path, and implementation_unsound or linked judged_unsound remains failed.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "index": 4 },
+          { "kind": "acceptance_criteria", "index": 8 }
+        ],
+        "code_refs": [{ "file": "src/adjudication.js", "anchor": "buildJudgmentDagAdjudicationGate" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-002" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-005" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-008" }
+        ]
+      }
+    },
+    {
+      "id": "CON-CPR-6",
+      "type": "contract",
+      "statement": "The CLI and generated judgment request expose unsound cause classification, adjudicate correct, correction-linked re-adjudication, and the prohibition on using premise correction as a generic waiver; English/Japanese README and gate-evidence skill document the same lifecycle.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }],
+        "code_refs": [
+          { "file": "src/cli.js", "anchor": "adjudicate correct" },
+          { "file": "src/adjudication.js", "anchor": "generic waiver" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts", "must_contain": "CPR-E2E-001" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-CPR-STATE",
+      "kind": "state",
+      "title": "Classifier premise recovery state transitions",
+      "entities": [
+        { "id": "failed", "label": "failed" },
+        { "id": "needs_evidence", "label": "needs_evidence" },
+        { "id": "passed", "label": "passed" }
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> failed: judged_unsound\n  failed --> needs_evidence: classifier premise correction\n  needs_evidence --> passed: linked judged_sound\n  needs_evidence --> passed: linked needs-human + accepted decision\n  needs_evidence --> failed: linked judged_unsound\n  failed --> failed: implementation_unsound"
+    },
+    {
+      "id": "DG-CPR-FLOW",
+      "kind": "flow",
+      "title": "Append-only correction lineage",
+      "mermaid": "flowchart LR\n  V[\"Original unsound verdict\"] --> C[\"Premise correction + evidence hash\"]\n  C --> R[\"Fresh linked re-adjudication\"]\n  R --> S{\"Resolver\"}\n  S -->|sound| P[\"passed\"]\n  S -->|unsound| F[\"failed\"]"
+    },
+    {
+      "id": "DG-CPR-THREAT",
+      "kind": "threat_model",
+      "title": "Adjudication lineage trust boundaries",
+      "mermaid": "flowchart LR\n  Judge[\"Independent judge\"] --> CLI[\"VibePro adjudicate CLI\"]\n  CLI --> Validate[\"Story / item / HEAD / provenance validation\"]\n  Evidence[\"Workspace-relative evidence file\"] --> Hash[\"Readable regular file + SHA-256\"]\n  Hash --> Validate\n  Tamper[\"Forged or stale lineage\"] --> Validate\n  Validate -->|reject| Closed[\"Fail closed\"]\n  Validate -->|accept| Log[\"Append-only adjudication log\"]\n  Log --> Gate[\"Current-state resolver and Gate\"]"
+    }
+  ]
+}

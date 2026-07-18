@@ -238,7 +238,27 @@ npx vibepro adjudicate record /path/to/repo \
   --agent-id judge-1
 ```
 
-Verdicts are `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold), or `needs_human_judgment` (closed by an accepted decision record with `--source gate:judgment_dag_adjudication:<item-id>`). Requires a prior `vibepro pr prepare` run (the judgment DAG must exist first). Opt out with `judgment_adjudication.enabled: false` in `.vibepro/config.json`.
+Verdicts are `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold), or `needs_human_judgment` (closed by an accepted decision record with `--source gate:judgment_dag_adjudication:<item-id>`). Every new `judged_unsound` record must classify its cause with `--unsound-cause implementation_unsound|classifier_premise_unsound`. Missing causes in legacy artifacts safely default to `implementation_unsound`.
+
+Only `classifier_premise_unsound` can use the premise-correction recovery path. The original verdict stays in the append-only history; the correction must name the wrong and corrected premises, attach readable workspace-relative replacement evidence, and then receive a linked verdict from a different fresh-context judge:
+
+```bash
+npx vibepro adjudicate correct /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --original-verdict-id <verdict-event-id> \
+  --incorrect-premise "the public output changed" \
+  --corrected-premise "the public output is unchanged" \
+  --reason "the compatibility artifact proves the corrected premise" \
+  --replacement-evidence docs/compatibility-proof.md \
+  --agent-system codex --agent-id operator-1
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --correction-id <correction-event-id> --verdict judged_sound \
+  --reason "fresh review confirms the corrected premise" \
+  --agent-system claude_code --agent-id judge-2
+```
+
+An `implementation_unsound` verdict stays failed until the implementation or evidence changes and a new HEAD is adjudicated. A premise correction is not a generic waiver. This flow requires a prior `vibepro pr prepare` run (the judgment DAG must exist first). The existing whole-gate opt-out remains `judgment_adjudication.enabled: false` in `.vibepro/config.json`.
 
 Run a checkpoint before treating implementation as ready:
 

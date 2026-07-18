@@ -167,10 +167,10 @@ test('JDA-E2E-004 story-vibepro-judgment-dag-adjudication ac:4 record --judgment
   await assert.rejects(() => execFileAsync('node', [...base, '--verdict', 'pass']), /--verdict must be one of/);
   await execFileAsync('node', [...base, '--verdict', 'judged_sound']);
   const stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'adjudication', STORY_ID, 'judgment-adjudication.json'), 'utf8'));
-  assert.equal(stored.verdicts.length, 1);
-  assert.equal(stored.verdicts[0].item_id, 'axis:public_contract');
-  assert.equal(stored.verdicts[0].head_commit, await headOf(repo));
-  assert.equal(stored.verdicts[0].provenance.agent_system, 'claude_code');
+  assert.equal(stored.events.length, 1);
+  assert.equal(stored.events[0].item_id, 'axis:public_contract');
+  assert.equal(stored.events[0].head_commit, await headOf(repo));
+  assert.equal(stored.events[0].provenance.agent_system, 'claude_code');
 
   const nonGit = await mkdtemp(path.join(os.tmpdir(), 'vibepro-jda-e2e-nogit-'));
   await mkdir(path.join(nonGit, '.vibepro'), { recursive: true });
