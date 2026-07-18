@@ -30,7 +30,7 @@ Action registry entryは`id`、`classification`、`depends_on`を持つ閉じた
 
 1. `pr_prepare`: `repo_local_safe`。current HEADのGate DAGを永続化・評価する。
 2. `pr_autopilot_safe`: `repo_local_safe`。Orchestrator専用optionでCLI/config/prepare由来のverification command実行を禁止し、既存passing evidenceの再利用、Gate評価、review preparationだけを既存API経由で進める。未解決verificationはruntime stopへする。`importCi`、PR番号、CI check、任意envを含む外部optionも拒否し、要求された場合は`approval_required`へ分類する。
-HEAD変更時の`rebind_head`と`pr_prepare_current_head`は、ユーザー選択可能なActionではなくGuarded Runのpostcondition checkpointとする。両者は同じjournal形式と決定的idempotency keyを持つが、registry runnerとして外部から選択・差替えできない。前者はcurrent HEADへの再bind、後者はcurrent HEADのGate DAG再評価だけを行い、失敗時は`gate_recheck_required`で停止する。
+HEAD変更時の`rebind_head`と`pr_prepare_current_head`は、ユーザー選択可能なActionではなくGuarded Runのpostcondition checkpointとする。両者は同じjournal形式と決定的idempotency keyを持つが、registry runnerとして外部から選択・差替えできない。前者はcurrent HEADへの再bindを行い、Gate再評価より前にauthority-firstで永続化する。後者はcurrent HEADのGate DAGだけを再評価し、評価結果がreadyでなければ`blocked/gate_recheck_required`、評価処理自体が例外終了した場合は失敗entryとrecoveryを永続化して`failed/gate_recheck_failed`で停止する。
 
 `execute start`はRun作成時の既存bootstrapとしてのみ再利用し、`reconcile`はlegacy state観測が必要な場合だけtyped runnerから呼ぶ。`next_commands`は観測・案内用データであり、Action選択にも実行にも使わない。registry外Action、`approval_required`、`forbidden`は実行前にtyped stopへ変換する。
 
