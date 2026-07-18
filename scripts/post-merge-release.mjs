@@ -33,7 +33,16 @@ function captureSection(markdown, level, names) {
 }
 
 function normalizeContent(value) {
-  return `${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n');
+  return sanitizeReleaseContent(`${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n'));
+}
+
+export function sanitizeReleaseContent(value) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('{{', '&#123;&#123;')
+    .replaceAll('}}', '&#125;&#125;');
 }
 
 function escapeRegExp(value) {
@@ -190,7 +199,7 @@ export async function reconcileNpmRelease({
   metadata = npmMetadata,
   execute = run
 }) {
-  const existing = metadata(version);
+  const existing = await readMetadataWithRetry(() => metadata(version), attempts, delay);
   if (existing) assertGitHead(existing, expectedSha, version);
   else execute('npm', ['publish', '--access', 'public', '--tag', npmDistTags(version)[0]], root);
 
@@ -206,8 +215,25 @@ export async function reconcileNpmRelease({
 
 function npmMetadata(version) {
   const result = spawnSync('npm', ['view', `vibepro@${version}`, 'version', 'gitHead', '--json'], { encoding: 'utf8' });
-  if (result.status !== 0) return null;
-  try { return JSON.parse(result.stdout); } catch { return null; }
+  if (result.status !== 0) {
+    const diagnostic = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
+    if (/E404|404 Not Found|is not in this registry/iu.test(diagnostic)) return null;
+    throw new Error(`npm metadata lookup failed for vibepro@${version}: ${diagnostic.trim() || `exit ${result.status}`}`);
+  }
+  try { return JSON.parse(result.stdout); } catch (error) {
+    throw new Error(`npm metadata lookup returned invalid JSON for vibepro@${version}: ${error.message}`);
+  }
+}
+
+async function readMetadataWithRetry(operation, attempts, delay) {
+  let lastError;
+  for (let index = 0; index < attempts; index += 1) {
+    try { return operation(); } catch (error) {
+      lastError = error;
+      if (index < attempts - 1) await delay(2 ** index * 1000);
+    }
+  }
+  throw lastError;
 }
 
 function assertGitHead(metadata, expectedSha, version) {
@@ -245,6 +271,14 @@ async function writeOutput(values) {
 async function main(args) {
   const [command, ...rest] = args;
   const option = (name) => rest[rest.indexOf(name) + 1];
+  if (command === 'plan') {
+    const event = JSON.parse(await readFile(option('--event'), 'utf8'));
+    const before = versionAt(rootDefault, event.pull_request.base.sha);
+    const after = versionAt(rootDefault, event.pull_request.merge_commit_sha);
+    validateMergedPullRequest(event);
+    await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after });
+    return;
+  }
   if (command === 'project') {
     const event = JSON.parse(await readFile(option('--event'), 'utf8'));
     const before = versionAt(rootDefault, event.pull_request.base.sha);
@@ -263,7 +297,7 @@ async function main(args) {
     await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <project|release-body|publish-npm>');
+  throw new Error('Usage: post-merge-release.mjs <plan|project|release-body|publish-npm>');
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {

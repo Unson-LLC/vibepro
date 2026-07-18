@@ -10,6 +10,7 @@ import {
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
+  sanitizeReleaseContent,
   shouldReleaseVersion
 } from '../scripts/post-merge-release.mjs';
 
@@ -20,6 +21,10 @@ test('PCR-CON-001 extracts stable release sections and normalizes blanks', () =>
     compatibility: 'なし',
     userAction: 'Run npm update.'
   });
+});
+
+test('PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose', () => {
+  assert.equal(sanitizeReleaseContent('<script>{{ dangerous }}</script>'), '&lt;script&gt;&#123;&#123; dangerous &#125;&#125;&lt;/script&gt;');
 });
 
 test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog', async () => {
@@ -75,6 +80,10 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /post-merge-release\.mjs publish-npm/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
   assert.match(workflow, /git checkout --detach/);
+  assert.match(workflow, /git checkout --detach[\s\S]*npm ci[\s\S]*npm run typecheck/);
+  assert.match(workflow, /gh release edit/);
+  assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
@@ -123,6 +132,19 @@ test('PCR-CON-007 publishes once and bounds registry convergence retries', async
   assert.equal(calls.filter((call) => call.includes('publish')).length, 1);
   assert.equal(reads, 4);
   assert.deepEqual(delays, [1000, 2000]);
+});
+
+test('PCR-CON-007 retries metadata read failures without publishing', async () => {
+  let reads = 0;
+  const calls = [];
+  await assert.rejects(reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
+    metadata: () => { reads += 1; throw new Error('registry unavailable'); },
+    execute: (command, args) => { calls.push([command, ...args]); return ''; },
+    delay: async () => {}
+  }), /registry unavailable/);
+  assert.equal(reads, 3);
+  assert.equal(calls.length, 0);
 });
 
 test('PCR-CON-004 projects a new published version without duplicating its index row', async () => {

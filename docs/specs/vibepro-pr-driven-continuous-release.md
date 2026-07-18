@@ -44,4 +44,5 @@ diagrams:
 - `PCR-CON-005`: alphaは `alpha`、betaは `beta` と `latest`、stableは `latest` を設定する。
 - `PCR-CON-006`: 公開済みnpm versionは期待SHAと `gitHead` が一致する場合だけ成功として再利用する。
 - `PCR-CON-007`: registry readは有限回の指数backoffを使い、timeout時は修復可能な不一致として失敗する。
-- `PCR-CON-008`: workflowはdocs commitとCloudflare deployを最新mainへ結び、Release/npmはeventのmerge commitへ固定し、version不変時は後二者をskipする。
+- `PCR-CON-008`: workflowはRelease/npmと依存をeventのmerge commitへ固定し、成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
+- `PCR-CON-009`: PR由来のraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。

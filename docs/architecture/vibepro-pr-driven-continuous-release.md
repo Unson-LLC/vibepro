@@ -10,14 +10,14 @@ parent_design: pr-driven-continuous-release
 
 `pull_request.closed`（`merged == true`、base=`main`）を単一の開始点とする。マージ後にLLMは呼ばず、VibeProがPR作成時に生成した `Release Notes` 契約を決定的なNode scriptで抽出する。抽出結果は同一PR番号のmarkerで月次リリース履歴と `CHANGELOG.md` にupsertし、bot commitを `main` へpushする。
 
-docsは最新main上のbot commitとして公開する。一方、GitHub Releaseとnpm packageの `gitHead` は必ずeventが示す当該PRのmerge commitへ固定する。これにより、後続PRが先にmainへ入っても別versionのpackageを誤って公開しない。version不変ならdocs deployで終了し、base SHAとmerge SHA間で `package.json` のSemVerが増加した場合だけRelease/npm段へ進む。
+docsは最新main上のbot commitとして公開する。一方、GitHub Releaseとnpm packageの `gitHead` は必ずeventが示す当該PRのmerge commitへ固定する。これにより、後続PRが先にmainへ入っても別versionのpackageを誤って公開しない。version増加時はRelease/npmを先に収束させてから公開済みversionをdocsへ投影し、version不変ならその段をskipしてdocs deployへ進む。
 
 ## Boundaries
 
 - PR authoring: `src/pr-manager.js` とPR templateが `Change Summary`、`Compatibility`、`User Action` を一度だけ記述する。
 - Deterministic projection: `scripts/post-merge-release.mjs` がevent payloadを検証し、日英月次履歴、index到達性、CHANGELOG、Release bodyを生成する。
-- Delivery: `.github/workflows/post-merge-release.yml` がdocs commitとCloudflare deployを最新mainで実行後、当該merge commitをdetached checkoutしてRelease/npmを実行する。各段はActions summaryへ状態を追記する。
-- npm reconciliation: 公開済みversionは再publishせず `gitHead` とdist-tagを照合する。未公開時のみpublishし、上限付きbackoffでregistry反映を待つ。
+- Delivery: `.github/workflows/post-merge-release.yml` が当該merge commitをdetached checkoutし、依存もそのSHAで再構築してRelease/npmを実行する。成功後に最新mainへ戻り、docs commitとCloudflare deployを行う。各段と再実行手順は成功・失敗を問わずActions summaryへ追記する。
+- npm reconciliation: 公開済みversionは再publishせず `gitHead` とdist-tagを照合する。404だけを未公開と判定し、認証・通信・rate-limit・不正JSONは上限付きbackoff後にmutationなしで停止する。
 
 ## Compatibility and rollback
 
@@ -25,4 +25,4 @@ docsは最新main上のbot commitとして公開する。一方、GitHub Release
 
 ## Security
 
-`NPM_TOKEN`、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` はGitHub environment secretからのみ注入する。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyはMarkdownとして扱い、workflow command/outputへ直接評価しない。
+`NPM_TOKEN`、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` はGitHub environment secretからのみ注入する。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyはuntrusted Markdownとして扱い、workflow command/outputへ直接評価せず、raw HTMLとVue interpolationをescapeしてからVitePressへ渡す。
