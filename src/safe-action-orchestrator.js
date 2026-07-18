@@ -20,19 +20,20 @@ export async function runSafeActionPlan(state, options = {}) {
   const plan = options.plan ?? buildSafeActionPlan(state);
   if (options.dryRun) return { plan, state };
   let current = state;
+  const seenActionIds = new Set();
   for (const action of plan) {
     const key = createHash('sha256')
       .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
       .digest('hex');
-    if (!isCanonicalAction(action, state, key) || typeof options.runners?.[action.id] !== 'function') {
+    if (!isCanonicalAction(action, state, key)
+      || seenActionIds.has(action.id)
+      || !dependenciesCompleted(current, action, state)
+      || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
-    const completed = current.action_journal.some((entry) => entry.idempotency_key === key
-      && entry.status === 'completed'
-      && entry.action_id === action.id
-      && entry.node_id === action.id
-      && entry.input_head_sha === state.current_head_sha);
+    seenActionIds.add(action.id);
+    const completed = hasCompletedCheckpoint(current, action.id, state);
     if (completed) continue;
     try {
       const result = await options.runners[action.id]({ state: current, action });
@@ -56,6 +57,21 @@ export async function runSafeActionPlan(state, options = {}) {
     }
   }
   return { plan, state: current };
+}
+
+function dependenciesCompleted(current, action, state) {
+  return action.depends_on.every((dependency) => hasCompletedCheckpoint(current, dependency, state));
+}
+
+function hasCompletedCheckpoint(current, actionId, state) {
+  const key = createHash('sha256')
+    .update(`${state.run_id}:${actionId}:${state.current_head_sha}`)
+    .digest('hex');
+  return current.action_journal.some((entry) => entry.idempotency_key === key
+    && entry.status === 'completed'
+    && entry.action_id === actionId
+    && entry.node_id === actionId
+    && entry.input_head_sha === state.current_head_sha);
 }
 
 function isCanonicalAction(action, state, expectedKey) {
