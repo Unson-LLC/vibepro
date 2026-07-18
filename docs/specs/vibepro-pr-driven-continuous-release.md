@@ -46,3 +46,4 @@ diagrams:
 - `PCR-CON-007`: registry readは有限回の指数backoffを使い、timeout時は修復可能な不一致として失敗する。
 - `PCR-CON-008`: workflowはnpm/Releaseと依存をeventのmerge commitへ固定し、npm収束後にだけGitHub Releaseを公開・更新し、その成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
 - `PCR-CON-009`: PR body/titleを含むPR由来の表示値にあるraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。
+- `PCR-CON-010`: workflow runはPR番号単位で保持して別PRのpending eventを置換せず、docs deploy直前に最新mainへ同期してburst merge時も全PRの投影を公開する。

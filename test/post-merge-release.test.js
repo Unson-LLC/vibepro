@@ -78,6 +78,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /pull_request\.merged == true/);
+  assert.match(workflow, /group: post-merge-release-pr-\$\{\{ github\.event\.pull_request\.number \}\}/);
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
   assert.match(workflow, /post-merge-release\.mjs publish-npm/);
@@ -89,6 +90,7 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
   assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
+  assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);
@@ -150,6 +152,47 @@ test('PCR-CON-007 retries metadata read failures without publishing', async () =
   }), /registry unavailable/);
   assert.equal(reads, 3);
   assert.equal(calls.length, 0);
+});
+
+test('PCR-CON-007 retries post-publish metadata exceptions with bounded backoff', async () => {
+  let reads = 0;
+  const delays = [];
+  const calls = [];
+  const result = await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
+    metadata: () => {
+      reads += 1;
+      if (reads === 1) return null;
+      if (reads < 4) throw new Error('registry rate limited');
+      return { version: '0.2.0-beta.1', gitHead: 'abc123' };
+    },
+    execute: (command, args) => {
+      calls.push([command, ...args]);
+      return args[0] === 'view' ? JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' }) : '';
+    },
+    delay: async (milliseconds) => { delays.push(milliseconds); }
+  });
+  assert.equal(result.gitHead, 'abc123');
+  assert.equal(calls.filter((call) => call.includes('publish')).length, 1);
+  assert.deepEqual(delays, [1000, 2000]);
+});
+
+test('PCR-CON-007 retries dist-tag verification exceptions', async () => {
+  let tagReads = 0;
+  const delays = [];
+  await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
+    metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'abc123' }),
+    execute: (command, args) => {
+      if (args[0] !== 'view') return '';
+      tagReads += 1;
+      if (tagReads < 3) throw new Error('invalid registry response');
+      return JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' });
+    },
+    delay: async (milliseconds) => { delays.push(milliseconds); }
+  });
+  assert.equal(tagReads, 3);
+  assert.deepEqual(delays, [1000, 2000]);
 });
 
 test('PCR-CON-004 projects a new published version without duplicating its index row', async () => {

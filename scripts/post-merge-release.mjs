@@ -245,11 +245,17 @@ function assertGitHead(metadata, expectedSha, version) {
 }
 
 async function retry(operation, attempts, delay) {
+  let lastError;
   for (let index = 0; index < attempts; index += 1) {
-    const value = operation();
-    if (value) return value;
+    try {
+      const value = operation();
+      if (value) return value;
+    } catch (error) {
+      lastError = error;
+    }
     if (index < attempts - 1) await delay(2 ** index * 1000);
   }
+  if (lastError) throw lastError;
   throw new Error(`npm registry did not converge after ${attempts} attempts`);
 }
 

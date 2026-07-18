@@ -6,7 +6,7 @@ on:
       - closed
 
 concurrency:
-  group: post-merge-release-main
+  group: post-merge-release-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 permissions:
@@ -103,6 +103,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          git pull --ff-only origin main
+          npm ci
           npm run docs:deploy
           echo "docs_deploy=passed" >> "$GITHUB_STEP_SUMMARY"
       - name: Record recovery state

@@ -51,6 +51,7 @@ reason: "ADR unnecessary: alternatives were a manual release PR, post-release ch
 - [ ] docs deploy、Release、npmの状態と修復操作をActions summaryへ記録し、secretを本文・ログ・生成物へ出さない。
 - [ ] 失敗時に公開済みnpm versionを削除・上書きしない。
 - [ ] PR本文とtitleを含むPR由来の表示値はraw HTMLとVue interpolationを無効化してから公開面へ投影する。
+- [ ] 複数PRが短時間にマージされても別PRのpending workflowを置換せず、deploy直前に最新mainを取り込んで全PRのノートを公開する。
 
 ## Non-goals
 
