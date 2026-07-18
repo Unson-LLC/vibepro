@@ -10,7 +10,7 @@ const REPO_ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const ORCHESTRATOR_TEST = 'test/safe-action-orchestrator.test.js';
 const RUN_CONTRACT_TEST = 'test/guarded-run-session.test.js';
 
-test('story-vibepro-safe-action-orchestrator acceptance and scenario replay', async () => {
+test('story-vibepro-safe-action-orchestrator ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 S-008 acceptance and scenario replay', async () => {
   const { NODE_TEST_CONTEXT: _nodeTestContext, ...childEnv } = process.env;
   const result = await execFileAsync(process.execPath, ['--test', ORCHESTRATOR_TEST, RUN_CONTRACT_TEST], {
     cwd: REPO_ROOT,
@@ -34,6 +34,8 @@ test('story-vibepro-safe-action-orchestrator acceptance and scenario replay', as
     'SAO-S-5 prevents failed Actions from advancing implicitly');
   assert.match(result.stdout, /SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG/,
     'SAO-S-6 rebinds changed repositories to current-HEAD Gate evaluation');
+  assert.match(result.stdout, /SAO-S-8 external safe autopilot options stop before preparation/,
+    'S-008 keeps CI, PR, import, and arbitrary environment operations behind human approval');
 
   for (const requiredScenario of [
     /SAO-S-1 dry-run returns a closed plan without invoking a runner/,
