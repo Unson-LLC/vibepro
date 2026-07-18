@@ -74,6 +74,7 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
       metadataReads += 1;
       return metadataReads < 3 ? null : { version: '0.2.0-beta.1', gitHead: 'merge-sha-73' };
     },
+    versions: () => ['0.2.0-beta.1'],
     execute: (command, args) => {
       calls.push([command, ...args]);
       return args[0] === 'view'

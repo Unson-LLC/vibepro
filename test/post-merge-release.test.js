@@ -10,6 +10,7 @@ import {
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
+  desiredDistTags,
   sanitizeReleaseContent,
   shouldReleaseVersion
 } from '../scripts/post-merge-release.mjs';
@@ -73,6 +74,15 @@ test('PCR-CON-005 maps prerelease channels to explicit dist tags', () => {
   assert.deepEqual(npmDistTags('0.2.0'), ['latest']);
 });
 
+test('PCR-CON-005 converges channels to the highest visible eligible SemVer', () => {
+  assert.deepEqual(desiredDistTags([
+    '0.2.0-beta.1', '0.2.0-beta.3', '0.2.0-alpha.9', '0.1.0'
+  ], ['beta', 'latest']), {
+    beta: '0.2.0-beta.3',
+    latest: '0.2.0-beta.3'
+  });
+});
+
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
@@ -103,6 +113,7 @@ test('PCR-CON-006 reconciles an existing immutable version and converges all tag
   const result = await reconcileNpmRelease({
     version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 2,
     metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'abc123' }),
+    versions: () => ['0.2.0-beta.1'],
     execute: (command, args) => {
       calls.push([command, ...args]);
       return args[0] === 'view' ? JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' }) : '';
@@ -119,10 +130,29 @@ test('PCR-CON-006 rejects an existing version with another gitHead', async () =>
     reconcileNpmRelease({
       version: '0.2.0-beta.1', expectedSha: 'expected',
       metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'other' }),
+      versions: () => ['0.2.0-beta.1'],
       execute: () => { throw new Error('must not execute npm mutation'); }
     }),
     /published versions are immutable/
   );
+});
+
+test('PCR-CON-006 an older completing run cannot regress tags after a newer version is visible', async () => {
+  const mutations = [];
+  await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'old-sha', attempts: 2,
+    metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'old-sha' }),
+    versions: () => ['0.2.0-beta.1', '0.2.0-beta.2'],
+    execute: (command, args) => {
+      if (args[0] === 'dist-tag') mutations.push(args.slice(2));
+      return args[0] === 'view' ? JSON.stringify({ beta: '0.2.0-beta.2', latest: '0.2.0-beta.2' }) : '';
+    },
+    delay: async () => {}
+  });
+  assert.deepEqual(mutations, [
+    ['vibepro@0.2.0-beta.2', 'beta'],
+    ['vibepro@0.2.0-beta.2', 'latest']
+  ]);
 });
 
 test('PCR-CON-007 publishes once and bounds registry convergence retries', async () => {
@@ -133,6 +163,7 @@ test('PCR-CON-007 publishes once and bounds registry convergence retries', async
     reconcileNpmRelease({
       version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
       metadata: () => { reads += 1; return null; },
+      versions: () => ['0.2.0-beta.1'],
       execute: (command, args) => { calls.push([command, ...args]); return ''; },
       delay: async (milliseconds) => { delays.push(milliseconds); }
     }),
@@ -149,6 +180,7 @@ test('PCR-CON-007 retries metadata read failures without publishing', async () =
   await assert.rejects(reconcileNpmRelease({
     version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
     metadata: () => { reads += 1; throw new Error('registry unavailable'); },
+    versions: () => ['0.2.0-beta.1'],
     execute: (command, args) => { calls.push([command, ...args]); return ''; },
     delay: async () => {}
   }), /registry unavailable/);
@@ -168,6 +200,7 @@ test('PCR-CON-007 retries post-publish metadata exceptions with bounded backoff'
       if (reads < 4) throw new Error('registry rate limited');
       return { version: '0.2.0-beta.1', gitHead: 'abc123' };
     },
+    versions: () => ['0.2.0-beta.1'],
     execute: (command, args) => {
       calls.push([command, ...args]);
       return args[0] === 'view' ? JSON.stringify({ beta: '0.2.0-beta.1', latest: '0.2.0-beta.1' }) : '';
@@ -185,6 +218,7 @@ test('PCR-CON-007 retries dist-tag verification exceptions', async () => {
   await reconcileNpmRelease({
     version: '0.2.0-beta.1', expectedSha: 'abc123', attempts: 3,
     metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'abc123' }),
+    versions: () => ['0.2.0-beta.1'],
     execute: (command, args) => {
       if (args[0] !== 'view') return '';
       tagReads += 1;

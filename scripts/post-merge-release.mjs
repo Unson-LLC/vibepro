@@ -199,6 +199,7 @@ export async function reconcileNpmRelease({
   attempts = 6,
   delay = wait,
   metadata = npmMetadata,
+  versions = npmVersions,
   execute = run
 }) {
   const existing = await readMetadataWithRetry(() => metadata(version), attempts, delay);
@@ -207,12 +208,26 @@ export async function reconcileNpmRelease({
 
   const published = await retry(() => metadata(version), attempts, delay);
   assertGitHead(published, expectedSha, version);
-  for (const tag of npmDistTags(version)) execute('npm', ['dist-tag', 'add', `vibepro@${version}`, tag], root);
-  await retry(() => {
+  await retry(async () => {
+    const visibleVersions = await versions();
+    const desired = desiredDistTags([...visibleVersions, version], npmDistTags(version));
+    for (const [tag, desiredVersion] of Object.entries(desired)) {
+      execute('npm', ['dist-tag', 'add', `vibepro@${desiredVersion}`, tag], root);
+    }
     const tags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
-    return npmDistTags(version).every((tag) => tags[tag] === version) ? tags : null;
+    return Object.entries(desired).every(([tag, desiredVersion]) => tags[tag] === desiredVersion) ? tags : null;
   }, attempts, delay);
   return published;
+}
+
+export function desiredDistTags(versions, tags) {
+  const uniqueVersions = [...new Set(versions)].filter(Boolean);
+  return Object.fromEntries(tags.map((tag) => {
+    const candidates = uniqueVersions.filter((candidate) => npmDistTags(candidate).includes(tag));
+    const desired = candidates.sort(compareSemver).at(-1);
+    if (!desired) throw new Error(`No published version is eligible for npm dist-tag ${tag}`);
+    return [tag, desired];
+  }));
 }
 
 function npmMetadata(version) {
@@ -224,6 +239,18 @@ function npmMetadata(version) {
   }
   try { return JSON.parse(result.stdout); } catch (error) {
     throw new Error(`npm metadata lookup returned invalid JSON for vibepro@${version}: ${error.message}`);
+  }
+}
+
+function npmVersions() {
+  const result = spawnSync('npm', ['view', 'vibepro', 'versions', '--json'], { encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`npm versions lookup failed: ${(result.stderr ?? '').trim() || `exit ${result.status}`}`);
+  try {
+    const versions = JSON.parse(result.stdout);
+    if (!Array.isArray(versions)) throw new Error('response is not an array');
+    return versions;
+  } catch (error) {
+    throw new Error(`npm versions lookup returned invalid JSON: ${error.message}`);
   }
 }
 
@@ -248,7 +275,7 @@ async function retry(operation, attempts, delay) {
   let lastError;
   for (let index = 0; index < attempts; index += 1) {
     try {
-      const value = operation();
+      const value = await operation();
       if (value) return value;
     } catch (error) {
       lastError = error;

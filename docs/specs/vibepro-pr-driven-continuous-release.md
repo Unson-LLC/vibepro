@@ -41,7 +41,7 @@ diagrams:
 - `PCR-CON-002`: note identityはPR番号で、同じeventの再処理は既存markerを置換して重複しない。
 - `PCR-CON-003`: note metadataはnumber/title/author/merged_at/merge_commit_sha/html_urlをevent payloadから取得する。
 - `PCR-CON-004`: version gateはbaseとmergeのSemVerを比較し、厳密な増加時だけreleaseする。
-- `PCR-CON-005`: alphaは `alpha`、betaは `beta` と `latest`、stableは `latest` を設定する。
+- `PCR-CON-005`: alphaは `alpha`、betaは `beta` と `latest`、stableは `latest` を設定し、各tagはregistryで可視な対象channelの最大SemVerへ単調に収束する。
 - `PCR-CON-006`: 公開済みnpm versionは期待SHAと `gitHead` が一致する場合だけ成功として再利用する。
 - `PCR-CON-007`: registry readは有限回の指数backoffを使い、timeout時は修復可能な不一致として失敗する。
 - `PCR-CON-008`: workflowはnpm/Releaseと依存をeventのmerge commitへ固定し、npm収束後にだけGitHub Releaseを公開・更新し、その成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
