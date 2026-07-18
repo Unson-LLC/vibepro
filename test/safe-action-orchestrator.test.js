@@ -160,7 +160,7 @@ test('SAO-S-2 forged journal identity cannot silently skip a canonical action', 
   for (const forgedEntry of cases) {
     let calls = 0;
     const result = await runSafeActionPlan({ ...state, action_journal: [forgedEntry] }, {
-      plan: [action],
+      plan: buildSafeActionPlan(state),
       runners: { pr_prepare: async () => { calls += 1; return { status: 'pr_ready' }; } }
     });
     assert.equal(calls, 1);
@@ -173,19 +173,22 @@ test('SAO-S-2 forged journal identity cannot silently skip a canonical action', 
 test('SAO-S-1 injected plan cannot omit, reorder, or duplicate canonical dependencies', async () => {
   const [prepare, autopilot] = buildSafeActionPlan(state);
   const cases = [
+    [prepare],
     [autopilot],
     [autopilot, prepare],
     [prepare, prepare, autopilot]
   ];
   for (const plan of cases) {
+    let prepareCalls = 0;
     let autopilotCalls = 0;
     const result = await runSafeActionPlan(state, {
       plan,
       runners: {
-        pr_prepare: async () => ({ status: 'continue' }),
+        pr_prepare: async () => { prepareCalls += 1; return { status: 'continue' }; },
         pr_autopilot_safe: async () => { autopilotCalls += 1; return { status: 'pr_ready' }; }
       }
     });
+    assert.equal(prepareCalls, 0);
     assert.equal(autopilotCalls, 0);
     assert.equal(result.state.status, 'blocked');
     assert.equal(result.state.stop_reason.code, 'action_forbidden');

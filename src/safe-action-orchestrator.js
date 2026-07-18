@@ -18,6 +18,20 @@ export function buildSafeActionPlan(state) {
 
 export async function runSafeActionPlan(state, options = {}) {
   const plan = options.plan ?? buildSafeActionPlan(state);
+  const canonicalPlan = buildSafeActionPlan(state);
+  if (!isCompleteCanonicalPlan(plan, canonicalPlan)) {
+    const providedPlan = Array.isArray(plan) ? plan : [];
+    const rejectedAction = providedPlan.find((action, index) => !isExactCanonicalAction(action, canonicalPlan[index]))
+      ?? canonicalPlan[providedPlan.length]
+      ?? canonicalPlan[0];
+    const key = rejectedAction.idempotency_key ?? createHash('sha256')
+      .update(`${state.run_id}:${rejectedAction.id}:${state.current_head_sha}`)
+      .digest('hex');
+    return {
+      plan,
+      state: stop(state, rejectedAction, key, 'blocked', 'action_forbidden', 'forbidden')
+    };
+  }
   if (options.dryRun) return { plan, state };
   let current = state;
   const seenActionIds = new Set();
@@ -57,6 +71,24 @@ export async function runSafeActionPlan(state, options = {}) {
     }
   }
   return { plan, state: current };
+}
+
+function isCompleteCanonicalPlan(plan, canonicalPlan) {
+  return Array.isArray(plan)
+    && plan.length === canonicalPlan.length
+    && plan.every((action, index) => isExactCanonicalAction(action, canonicalPlan[index]));
+}
+
+function isExactCanonicalAction(action, canonical) {
+  return Boolean(action && canonical)
+    && action.id === canonical.id
+    && action.classification === canonical.classification
+    && Array.isArray(action.depends_on)
+    && action.depends_on.length === canonical.depends_on.length
+    && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index])
+    && action.node_id === canonical.node_id
+    && action.input_head_sha === canonical.input_head_sha
+    && action.idempotency_key === canonical.idempotency_key;
 }
 
 function dependenciesCompleted(current, action, state) {
