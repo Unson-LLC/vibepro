@@ -11332,8 +11332,22 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
   if (artifact.artifact_type === 'verification_command') {
     const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
     const commandArg = artifact.command ? ` --command ${shellQuote(artifact.command)}` : '';
+    const summaryArg = artifact.summary ? ` --summary ${shellQuote(artifact.summary)}` : '';
+    const artifactArg = artifact.artifact ? ` --artifact ${shellQuote(artifact.artifact)}` : '';
+    const targetArgs = (artifact.observation?.targets ?? [])
+      .map((target) => ` --target ${shellQuote(target)}`)
+      .join('');
+    const scenarioArgs = (artifact.observation?.scenarios ?? [])
+      .map((scenario) => ` --scenario ${shellQuote(scenario)}`)
+      .join('');
+    const observedArgs = Object.entries(artifact.observation?.values ?? {})
+      .map(([key, value]) => ` --observed ${shellQuote(`${key}=${value}`)}`)
+      .join('');
+    const strictFreshnessArg = artifact.content_binding?.mode === 'strict_head'
+      ? ' --strict-head-binding'
+      : '';
     return [
-      `vibepro verify record . --id ${storyArg} --kind ${kindArg} --status pass${commandArg}`,
+      `vibepro verify record . --id ${storyArg} --kind ${kindArg} --status pass${commandArg}${summaryArg}${artifactArg}${targetArgs}${scenarioArgs}${observedArgs}${strictFreshnessArg}`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
@@ -11428,7 +11442,9 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       artifact_type: 'verification_command',
       kind: command.kind ?? null,
       command: command.command ?? null,
+      summary: command.summary ?? null,
       artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
+      observation: command.observation ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
       recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
       recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,

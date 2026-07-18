@@ -81,6 +81,9 @@ test('content binding fails closed on unreadable inspection inputs without expos
 
 test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and stales on bound surface changes', async () => {
   const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'docs', 'verification-result.json'), '{"status":"pass"}\n');
+  await git(repo, ['add', 'docs/verification-result.json']);
+  await git(repo, ['commit', '-m', 'test: add verification result artifact']);
   const recordResult = await runCli([
     'verify',
     'record',
@@ -95,8 +98,14 @@ test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and 
     'node --test test/content-binding.test.js',
     '--summary',
     'content binding unit coverage passed',
+    '--artifact',
+    'docs/verification-result.json',
     '--target',
-    'src/content-binding-target.js'
+    'src/content-binding-target.js',
+    '--scenario',
+    'content binding remains scoped',
+    '--observed',
+    'tests=1'
   ]);
   assert.equal(recordResult.exitCode, 0);
   assert.equal(recordResult.result.evidence.commands[0].content_binding.mode, 'content_surface');
@@ -110,11 +119,17 @@ test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and 
   const docsGate = findGate(docsOnly, 'gate:artifact_consistency');
   const docsVerification = docsGate.artifacts.find((artifact) => artifact.artifact_type === 'verification_command');
   assert.equal(docsVerification.status, 'current');
-  assert.deepEqual(docsVerification.content_binding.surface_files, ['src/content-binding-target.js']);
+  assert.deepEqual(docsVerification.content_binding.surface_files, [
+    'docs/verification-result.json',
+    'src/content-binding-target.js'
+  ]);
   const freshnessGate = findGate(docsOnly, 'gate:pr_freshness');
   const freshnessBinding = freshnessGate.content_binding_details.bindings.find((binding) => binding.artifact_type === 'verification_command');
   assert.equal(freshnessBinding.status, 'current');
-  assert.deepEqual(freshnessBinding.surface_files, ['src/content-binding-target.js']);
+  assert.deepEqual(freshnessBinding.surface_files, [
+    'docs/verification-result.json',
+    'src/content-binding-target.js'
+  ]);
   assert.deepEqual(freshnessBinding.changed_files, []);
 
   await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 2;\n');
@@ -140,6 +155,33 @@ test('CEF-S-1/2/5 verification evidence stays current for docs-only commits and 
   assert.deepEqual(sourceFreshnessBinding.missing_files, []);
   assert.notEqual(sourceFreshnessBinding.current_surface_hash, sourceFreshnessBinding.recorded_surface_hash);
   assert.notEqual(sourceFreshnessBinding.current_head_sha, sourceFreshnessBinding.recorded_head_sha);
+
+  const recoveryCommand = staleDetail.remediation_commands.find((command) => command.startsWith('vibepro verify record'));
+  assert.ok(recoveryCommand);
+  assert.match(recoveryCommand, /--summary 'content binding unit coverage passed'/);
+  assert.match(recoveryCommand, /--artifact docs\/verification-result\.json/);
+  assert.match(recoveryCommand, /--target src\/content-binding-target\.js/);
+  assert.match(recoveryCommand, /--scenario 'content binding remains scoped'/);
+  assert.match(recoveryCommand, /--observed tests=1/);
+  const executableRecovery = recoveryCommand.replace(
+    /^vibepro\b/,
+    `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`
+  );
+  await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
+
+  const recoveredEvidence = JSON.parse(await readFile(path.join(
+    repo,
+    '.vibepro',
+    'pr',
+    'story-content-binding',
+    'verification-evidence.json'
+  ), 'utf8'));
+  const recoveredCommand = recoveredEvidence.commands.find((command) => command.kind === 'unit');
+  assert.equal(recoveredCommand.artifact, 'docs/verification-result.json');
+  assert.deepEqual(recoveredCommand.observation.targets, ['src/content-binding-target.js']);
+  assert.deepEqual(recoveredCommand.observation.scenarios, ['content binding remains scoped']);
+  assert.equal(recoveredCommand.observation.values.tests, '1');
+  assert.equal(recoveredCommand.content_binding.mode, 'content_surface');
 });
 
 test('CEF-S-2/5 deleted bound files stale evidence with an operator-visible missing-file reason', async () => {
@@ -698,4 +740,24 @@ test('CEF-S-4 strict HEAD binding still invalidates docs-only commits', async ()
   const artifact = gate.inconsistent_artifacts.find((item) => item.artifact_type === 'verification_command');
   assert.equal(artifact.status, 'stale');
   assert.match(artifact.reason, /recorded for .*current head/);
+  const detail = gate.stale_artifact_details.find((item) => item.artifact_type === 'verification_command');
+  const recoveryCommand = detail.remediation_commands.find((command) => command.startsWith('vibepro verify record'));
+  assert.ok(recoveryCommand);
+  assert.match(recoveryCommand, /--target src\/content-binding-target\.js/);
+  assert.match(recoveryCommand, /--strict-head-binding/);
+  const executableRecovery = recoveryCommand.replace(
+    /^vibepro\b/,
+    `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`
+  );
+  await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
+  const recoveredEvidence = JSON.parse(await readFile(path.join(
+    repo,
+    '.vibepro',
+    'pr',
+    'story-content-binding',
+    'verification-evidence.json'
+  ), 'utf8'));
+  const recoveredCommand = recoveredEvidence.commands.find((command) => command.kind === 'unit');
+  assert.equal(recoveredCommand.content_binding.mode, 'strict_head');
+  assert.deepEqual(recoveredCommand.observation.targets, ['src/content-binding-target.js']);
 });
