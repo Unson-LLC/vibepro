@@ -1544,6 +1544,7 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
   assert.match(stdout.text(), /--until 未指定時は状態の永続化だけ/);
   assert.match(stdout.text(), /--until pr-ready 指定時はallowlist済みrepo-local Actionだけ/);
+  assert.match(stdout.text(), /resumeは--until pr-readyを受け付け.*未完了のallowlist済みActionだけを再試行/);
   assert.match(stdout.text(), /watchは現在値を1回返して終了するsnapshotです/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
   assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1564,6 +1565,7 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
   assert.match(englishStdout.text(), /Without --until this command only persists state/);
   assert.match(englishStdout.text(), /--until pr-ready executes only allowlisted repo-local Actions/);
+  assert.match(englishStdout.text(), /resume accepts --until pr-ready to retry only incomplete allowlisted Actions/);
   assert.match(englishStdout.text(), /watch returns one current snapshot and exits; it does not stream/);
   assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
   assert.match(englishStdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1747,6 +1749,44 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.equal(result.state.stop_reason.code, 'runtime_required');
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+});
+
+test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+    }
+  };
+  const runOut = capture();
+  const first = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: runOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(first.exitCode, 0);
+  assert.equal(JSON.parse(runOut.text()).state.status, 'failed');
+
+  const resumeOut = capture();
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: resumeOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const result = JSON.parse(resumeOut.text()).state;
+  assert.equal(result.status, 'waiting_for_runtime');
+  assert.equal(result.stop_reason.code, 'runtime_required');
+  assert.equal(result.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(result.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
 });
 
 test('SAO-S-2 action checkpoint survives a later action failure', async (t) => {
