@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "Executable Story markers and S-008 assertion pass",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed scanner-visible title and explicit S-008 output assertion",
+    "evidence": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/result-final-2d208451.md",
+    "inputs": [
+      "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "S-008 is now an executable assertion rather than an inferred claim"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_head_sha": "2d208451cb26b9852fb02809d554019ec6b77737",
+    "current_head_sha": "2d208451cb26b9852fb02809d554019ec6b77737",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+      "branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "actual_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "current_head_sha": "2d208451cb26b9852fb02809d554019ec6b77737",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T15:04:46.498Z",
+  "git_context": {
+    "head_sha": "2d208451cb26b9852fb02809d554019ec6b77737",
+    "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T15:04:46.496Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2d208451cb26b9852fb02809d554019ec6b77737",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "3ff51620004c765a21b9a253ec153b7fffd31c96b77a0f9f3318af6ecfed4eee",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "final_test_plan_review",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/result-final-2d208451.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

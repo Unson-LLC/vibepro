@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "pass",
+  "summary": "Journal identity and dependency guards are fully regression covered.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected full checkpoint identity, dependency binding, duplicate rejection and normal resume.",
+    "evidence": "71 focused tests pass",
+    "inputs": [
+      "test/safe-action-orchestrator.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Silent skip and dependency bypass -> resolved with adversarial matrices."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_head_sha": "860b3c0389d6e6d29f05dd9638608b9a83d6c312",
+    "current_head_sha": "860b3c0389d6e6d29f05dd9638608b9a83d6c312",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+      "branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "actual_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "current_head_sha": "860b3c0389d6e6d29f05dd9638608b9a83d6c312",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T12:01:24.845Z",
+  "git_context": {
+    "head_sha": "860b3c0389d6e6d29f05dd9638608b9a83d6c312",
+    "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T12:01:24.844Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "860b3c0389d6e6d29f05dd9638608b9a83d6c312",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "49f323cf5a0894ed9ca4640a29730d653241537c57c8b8bcc24a1c2c114547d7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f72cf-b857-77c1-ad6d-8ead16374279",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/result-unit_integration-860b3c0.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/review-request-unit_integration.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

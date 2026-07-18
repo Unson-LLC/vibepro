@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "updated_at": "2026-07-18T16:12:54.111Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Final implementation, test, usability, and gate reviews found no unresolved gaps.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:54.110Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Workflow state transitions are regression-tested across guarded run sessions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:53.876Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Provider, schema, parse, retry, and async failures remain explicit and recoverable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:53.619Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Execution outcomes and evidence lifecycle are persisted and replayable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:53.348Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Approval-required actions stop before execution and preserve resumable state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:53.078Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Risk classification and policy routing are covered by the acceptance suite and final agent review.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:52.836Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Safe action orchestration enters the planned workflow and preserves explicit intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_test_adjudication_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:52.594Z"
+    }
+  ]
+}

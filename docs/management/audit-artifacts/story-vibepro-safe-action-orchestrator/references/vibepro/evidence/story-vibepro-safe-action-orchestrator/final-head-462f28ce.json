@@ -1,0 +1,5 @@
+{
+  "status": "pass",
+  "head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+  "summary": "72 orchestrator and acceptance tests passed on exact HEAD; workflow regression, typecheck, skills lint, instruction parity, and diff check passed with docs-only delta"
+}

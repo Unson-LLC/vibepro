@@ -1,0 +1,192 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "updated_at": "2026-07-18T15:48:40.015Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784389720015-d90c83cc",
+      "story_id": "story-vibepro-safe-action-orchestrator",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Single coherent vertical contract reviewed as one PR",
+      "reason": "The Story, typed Action registry, guarded Run integration, Spec scenarios, and Gate traceability fix form one safety contract; splitting would separate execution behavior from its fail-closed evidence.",
+      "reviewer": "sao_final_gate_judgment",
+      "artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/gate/transcripts/d9044e50-gate.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "144fd5cea17d6fc6587bf97e950089621b04d9f6",
+        "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:48:40.013Z"
+      },
+      "recorded_at": "2026-07-18T15:48:40.015Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784387376618-18d95bd8",
+      "story_id": "story-vibepro-safe-action-orchestrator",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep one cohesive Story PR after rebasing onto current origin/main",
+      "reason": "The 10-file delta is one atomic safety contract: Architecture, typed Action registry, Run persistence, CLI and PR adapter behavior, and their regression/acceptance tests must be reviewed and head-bound together. Splitting the Architecture document from runtime would weaken traceability without isolating an independently shippable behavior.",
+      "reviewer": "codex-gate-review",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-safe-action-orchestrator/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-safe-action-orchestrator/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-safe-action-orchestrator/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-safe-action-orchestrator/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-safe-action-orchestrator/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "091b118f7aff89051be6579a28c8f33c6a4646f8",
+        "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:09:36.615Z"
+      },
+      "recorded_at": "2026-07-18T15:09:36.618Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784389720015-d90c83cc",
+      "story_id": "story-vibepro-safe-action-orchestrator",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Single coherent vertical contract reviewed as one PR",
+      "reason": "The Story, typed Action registry, guarded Run integration, Spec scenarios, and Gate traceability fix form one safety contract; splitting would separate execution behavior from its fail-closed evidence.",
+      "reviewer": "sao_final_gate_judgment",
+      "artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/gate/transcripts/d9044e50-gate.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-safe-action-orchestrator/final-head-144fd5ce.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "144fd5cea17d6fc6587bf97e950089621b04d9f6",
+        "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:48:40.013Z"
+      },
+      "recorded_at": "2026-07-18T15:48:40.015Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-safe-action-orchestrator/decision-records.json"
+}

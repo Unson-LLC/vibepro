@@ -1,0 +1,13 @@
+{
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "head_sha": "144fd5ce",
+  "status": "pass",
+  "tests": {
+    "safe_action_suite": "72 pass, 0 fail",
+    "scenario_traceability_regression": "1 pass, 0 fail",
+    "typecheck": "pass",
+    "skills_lint": "7 pass, 0 issues",
+    "agent_docs_cmp": "pass",
+    "git_diff_check": "pass"
+  }
+}
