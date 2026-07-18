@@ -83,6 +83,30 @@ test('PCR-CON-005 converges channels to the highest visible eligible SemVer', ()
   });
 });
 
+test('PCR-CON-005 treats current dist-tags as a monotonic floor when versions is stale', async () => {
+  const mutations = [];
+  let tagReads = 0;
+  await reconcileNpmRelease({
+    version: '0.2.0-beta.1', expectedSha: 'abc123',
+    metadata: () => ({ version: '0.2.0-beta.1', gitHead: 'abc123' }),
+    versions: () => ['0.2.0-beta.1'],
+    execute: (command, args) => {
+      if (args[0] === 'view') {
+        tagReads += 1;
+        return JSON.stringify({ beta: '0.2.0-beta.2', latest: '0.2.0-beta.2' });
+      }
+      if (args[0] === 'dist-tag') mutations.push(args.slice(2));
+      return '';
+    },
+    delay: async () => {}
+  });
+  assert.equal(tagReads, 2);
+  assert.deepEqual(mutations, [
+    ['vibepro@0.2.0-beta.2', 'beta'],
+    ['vibepro@0.2.0-beta.2', 'latest']
+  ]);
+});
+
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
@@ -227,7 +251,7 @@ test('PCR-CON-007 retries dist-tag verification exceptions', async () => {
     },
     delay: async (milliseconds) => { delays.push(milliseconds); }
   });
-  assert.equal(tagReads, 3);
+  assert.equal(tagReads, 4);
   assert.deepEqual(delays, [1000, 2000]);
 });
 

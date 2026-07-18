@@ -210,7 +210,11 @@ export async function reconcileNpmRelease({
   assertGitHead(published, expectedSha, version);
   await retry(async () => {
     const visibleVersions = await versions();
-    const desired = desiredDistTags([...visibleVersions, version], npmDistTags(version));
+    const currentTags = JSON.parse(execute('npm', ['view', 'vibepro', 'dist-tags', '--json'], root));
+    const desired = desiredDistTags(
+      [...visibleVersions, version, ...Object.values(currentTags)],
+      npmDistTags(version)
+    );
     for (const [tag, desiredVersion] of Object.entries(desired)) {
       execute('npm', ['dist-tag', 'add', `vibepro@${desiredVersion}`, tag], root);
     }
