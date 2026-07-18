@@ -82,7 +82,10 @@ test('SAO-S-4 canonical metadata spoofing is rejected before idempotency skip', 
   const cases = [
     { id: 'pr_autopilot_safe', classification: 'read_only', depends_on: ['pr_prepare'], idempotency_key: canonicalKey },
     { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: [], idempotency_key: canonicalKey },
-    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare', 'extra'], idempotency_key: canonicalKey }
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare', 'extra'], idempotency_key: canonicalKey },
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', idempotency_key: canonicalKey },
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: 'pr_prepare', idempotency_key: canonicalKey },
+    { id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['wrong_dependency'], idempotency_key: canonicalKey }
   ];
   for (const action of cases) {
     let calls = 0;
@@ -94,7 +97,26 @@ test('SAO-S-4 canonical metadata spoofing is rejected before idempotency skip', 
     assert.equal(result.state.status, 'blocked');
     assert.equal(result.state.stop_reason.code, 'action_forbidden');
     assert.equal(result.state.action_journal.at(-1).status, 'forbidden');
+    assert.equal(result.state.action_journal.at(-1).artifact, null);
+    assert.equal(result.state.action_journal.at(-1).result_summary, 'action_forbidden');
   }
+});
+
+test('SAO-S-4 canonical action without a registered runner is rejected before idempotency skip', async () => {
+  const action = buildSafeActionPlan(state)[1];
+  const completedState = {
+    ...state,
+    action_journal: [{
+      action_id: action.id, node_id: action.node_id, input_head_sha: 'aaa',
+      idempotency_key: action.idempotency_key, status: 'completed'
+    }]
+  };
+  const result = await runSafeActionPlan(completedState, { plan: [action], runners: {} });
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'action_forbidden');
+  assert.equal(result.state.action_journal.at(-1).status, 'forbidden');
+  assert.equal(result.state.action_journal.at(-1).artifact, null);
+  assert.equal(result.state.action_journal.at(-1).result_summary, 'action_forbidden');
 });
 
 test('SAO-S-5 typed verification and critical stops are preserved', async () => {
