@@ -38,7 +38,7 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
   await writeFile(path.join(root, 'CHANGELOG.md'), '# Changelog\n\n## Unreleased\n');
   const event = {
     pull_request: {
-      number: 42, title: 'Ship it', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
+      number: 42, title: 'Ship <script>{{ title }}</script>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
       merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/42',
       body: '## Release Notes\n### Change Summary\nAutomatic notes.\n### Compatibility\nなし\n### User Action\nなし'
     }
@@ -50,11 +50,14 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
     assert.equal(content.match(/vibepro-release-pr:42:start/g)?.length, 1, file);
     assert.match(content, /Automatic notes/);
     assert.match(content, /abc123/);
+    assert.doesNotMatch(content, /<script>|\{\{ title \}\}/);
+    assert.match(content, /&lt;script&gt;&#123;&#123; title &#125;&#125;&lt;\/script&gt;/);
   }
   for (const file of ['docs/releases/index.md', 'docs/ja/releases/index.md']) {
     const content = await readFile(path.join(root, file), 'utf8');
     assert.equal(content.match(/vibepro-release-index-pr:42:start/g)?.length, 1, file);
     assert.match(content, /\/releases\/2026-07/);
+    assert.doesNotMatch(content, /<script>|\{\{ title \}\}/);
   }
 });
 
@@ -84,6 +87,8 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.match(workflow, /gh release edit/);
   assert.match(workflow, /if: \$\{\{ always\(\) \}\}/);
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
+  assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.doesNotMatch(manualWorkflow, /^\s*release:/mu);
   assert.equal((workflow + manualWorkflow).match(/post-merge-release\.mjs publish-npm/g)?.length, 2);

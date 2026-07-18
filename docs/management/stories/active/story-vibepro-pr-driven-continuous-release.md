@@ -41,6 +41,7 @@ reason: "ADR unnecessary: alternatives were a manual release PR, post-release ch
 
 - [ ] マージ前後の `package.json` versionを比較し、SemVerが増加したPRだけGitHub Releaseとnpm公開へ進む。
 - [ ] Releaseのtag/title/body、npm version/gitHeadは同一の対象commitと生成済みノートへ結び付く。
+- [ ] npm versionとdist-tagの収束を確認してからGitHub Releaseを公開し、package公開失敗時にRelease/docsだけを先行させない。
 - [ ] prerelease/stableを判定して `alpha`、`beta`、`latest` を明示的に設定・検証し、version変更なしではRelease/npmを実行しない。
 
 ### 完全自動・回復可能なリリース
@@ -49,6 +50,7 @@ reason: "ADR unnecessary: alternatives were a manual release PR, post-release ch
 - [ ] 既に公開済みならversion、gitHead、dist-tagを照合して残処理を再開し、registry検証には上限付きretry/backoffを行う。
 - [ ] docs deploy、Release、npmの状態と修復操作をActions summaryへ記録し、secretを本文・ログ・生成物へ出さない。
 - [ ] 失敗時に公開済みnpm versionを削除・上書きしない。
+- [ ] PR本文とtitleを含むPR由来の表示値はraw HTMLとVue interpolationを無効化してから公開面へ投影する。
 
 ## Non-goals
 

@@ -20,7 +20,7 @@ diagrams:
         merged_pr --> docs_deploy: project notes and deploy VitePress
         merged_pr --> package_release: version increased
         merged_pr --> [*]: version unchanged
-        package_release --> [*]: reconcile Release and npm at merge SHA
+        package_release --> [*]: reconcile npm then Release at merge SHA
         docs_deploy --> [*]
   - kind: threat_model
     mermaid: |
@@ -44,5 +44,5 @@ diagrams:
 - `PCR-CON-005`: alphaは `alpha`、betaは `beta` と `latest`、stableは `latest` を設定する。
 - `PCR-CON-006`: 公開済みnpm versionは期待SHAと `gitHead` が一致する場合だけ成功として再利用する。
 - `PCR-CON-007`: registry readは有限回の指数backoffを使い、timeout時は修復可能な不一致として失敗する。
-- `PCR-CON-008`: workflowはRelease/npmと依存をeventのmerge commitへ固定し、成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
-- `PCR-CON-009`: PR由来のraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。
+- `PCR-CON-008`: workflowはnpm/Releaseと依存をeventのmerge commitへ固定し、npm収束後にだけGitHub Releaseを公開・更新し、その成功後にdocs commitとCloudflare deployを最新mainへ結ぶ。version不変時はpackage releaseをskipする。
+- `PCR-CON-009`: PR body/titleを含むPR由来の表示値にあるraw HTML/Vue interpolationをescapeし、npm metadataの404以外の障害ではpublishせず有限retry後に停止する。

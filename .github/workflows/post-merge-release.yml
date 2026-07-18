@@ -46,7 +46,16 @@ jobs:
           npm run typecheck
           npm test
           npm run pack:dry-run
-      - name: Create or reconcile GitHub Release
+      - name: Publish or reconcile npm
+        if: ${{ steps.projection.outputs.release_required == 'true' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.projection.outputs.version }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
+          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Create or reconcile GitHub Release after npm convergence
         if: ${{ steps.projection.outputs.release_required == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -62,15 +71,6 @@ jobs:
             gh release create "v${VERSION}" --target "$RELEASE_SHA" --title "VibePro ${VERSION}" --notes-file /tmp/vibepro-release.md
           fi
           echo "github_release=v${VERSION}@${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
-      - name: Publish or reconcile npm
-        if: ${{ steps.projection.outputs.release_required == 'true' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          VERSION: ${{ steps.projection.outputs.version }}
-          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-        run: |
-          node scripts/post-merge-release.mjs publish-npm --version "$VERSION" --sha "$RELEASE_SHA"
-          echo "npm=vibepro@${VERSION} gitHead=${RELEASE_SHA}" >> "$GITHUB_STEP_SUMMARY"
       - name: Record version gate
         if: ${{ steps.projection.outputs.release_required != 'true' }}
         run: echo "npm=skipped (package version unchanged)" >> "$GITHUB_STEP_SUMMARY"

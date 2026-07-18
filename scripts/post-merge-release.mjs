@@ -52,7 +52,8 @@ function escapeRegExp(value) {
 export function renderReleaseNote(event) {
   const pr = validateMergedPullRequest(event);
   const notes = extractReleaseSections(pr.body);
-  return `## [#${pr.number}](${pr.html_url}) ${pr.title}\n\n` +
+  const title = sanitizeReleaseContent(pr.title);
+  return `## [#${pr.number}](${pr.html_url}) ${title}\n\n` +
     `- Author: @${pr.user.login}\n- Merged: ${pr.merged_at}\n- Commit: \`${pr.merge_commit_sha}\`\n\n` +
     `### Change Summary\n\n${notes.changeSummary}\n\n` +
     `### Compatibility\n\n${notes.compatibility}\n\n` +
@@ -81,9 +82,10 @@ export async function projectReleaseNote(root, event) {
 }
 
 async function upsertIndexEntry(root, pr, month) {
+  const title = sanitizeReleaseContent(pr.title);
   const entries = [
-    ['docs/releases/index.md', `- [PR #${pr.number}](${pr.html_url}) — [${month}](/releases/${month}): ${pr.title}`],
-    ['docs/ja/releases/index.md', `- [PR #${pr.number}](${pr.html_url}) — [${month}](/ja/releases/${month}): ${pr.title}`]
+    ['docs/releases/index.md', `- [PR #${pr.number}](${pr.html_url}) — [${month}](/releases/${month}): ${title}`],
+    ['docs/ja/releases/index.md', `- [PR #${pr.number}](${pr.html_url}) — [${month}](/ja/releases/${month}): ${title}`]
   ];
   const start = `<!-- vibepro-release-index-pr:${pr.number}:start -->`;
   const end = `<!-- vibepro-release-index-pr:${pr.number}:end -->`;

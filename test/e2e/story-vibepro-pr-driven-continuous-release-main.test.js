@@ -91,4 +91,6 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   assert.match(workflow, /npm run docs:deploy/);
   assert.match(workflow, /release_required == 'true'/);
   assert.match(workflow, /github\.event\.pull_request\.merge_commit_sha/);
+  assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Create or reconcile GitHub Release after npm convergence'));
+  assert.ok(workflow.indexOf('Create or reconcile GitHub Release after npm convergence') < workflow.indexOf('Project PR body into release history'));
 });
