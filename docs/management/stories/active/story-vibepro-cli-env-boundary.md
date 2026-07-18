@@ -28,6 +28,10 @@ reason:
 - [ ] CEB-S-2: entrypoint契約テストがstdout、stderr、envの3入力を固定する。
 - [ ] CEB-S-3: secret値をログまたはartifactへ追加しない。
 
+## Impact Scope
+
+`bin/vibepro.js` のprocess IO依存注入境界と、その実行時契約テスト・設計系譜に限定する。
+
 ## Non Goals
 
 - 各subcommandの環境変数解決規則の変更。
