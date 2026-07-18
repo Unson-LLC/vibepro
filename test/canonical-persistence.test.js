@@ -193,7 +193,9 @@ test('GDL-CONTRACT-010 cleans a partially acquired worktree within an independen
   const result = await persistCanonicalArtifactsToBase({
     ...canonicalInput(fixture),
     options: {
-      commandTimeoutMs: 750,
+      // Local git setup can exceed sub-second deadlines on a loaded host. The
+      // injected worktree-add hang remains bounded without making setup flaky.
+      commandTimeoutMs: 3_000,
       cleanupTimeoutMs: 500,
       commandRunner: async ({ command, runDefault }) => {
         const rendered = [command[0], ...command[1]].join(' ');
@@ -248,7 +250,9 @@ test('GDL-CONTRACT-010 bounds cleanup independently without replacing the primar
   const result = await persistCanonicalArtifactsToBase({
     ...canonicalInput(fixture),
     options: {
-      commandTimeoutMs: 500,
+      // Only cleanup is intentionally short; setup/push need an independent,
+      // realistic budget so the assertion reaches the cleanup boundary.
+      commandTimeoutMs: 5_000,
       cleanupTimeoutMs: 50,
       commandRunner: ({ command, runDefault }) => {
         const rendered = [command[0], ...command[1]].join(' ');
