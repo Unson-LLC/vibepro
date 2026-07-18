@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -11,7 +11,8 @@ import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
   createGuardedRunSession,
-  renderGuardedRunError
+  renderGuardedRunError,
+  renderGuardedRunSummary
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
@@ -66,7 +67,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   const created = await session.run(fixture.source, { storyId: STORY_ID });
 
   assert.deepEqual(created, {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     run_id: RUN_ID,
     story_id: STORY_ID,
     target: 'pr_ready',
@@ -88,6 +89,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
       git_dir_realpath: fixture.identity(fixture.source).git_dir_realpath
     },
     managed_worktree: fixture.disabledBinding,
+    action_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -1165,6 +1167,7 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(created);
   delete predecessor.schema_version;
+  delete predecessor.action_journal;
   predecessor.attempt = 7;
   predecessor.budget = { max_attempts: 2, max_iterations: 8 };
   predecessor.deadline = '2026-08-01T00:00:00.000Z';
@@ -1182,7 +1185,8 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   });
   await writeFile(artifact, `${JSON.stringify(predecessor, null, 2)}\n`);
   const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
-  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.schema_version, '0.2.0');
+  assert.deepEqual(migrated.action_journal, []);
   assert.equal(migrated.attempt, 7);
   assert.deepEqual(migrated.budget, predecessor.budget);
   assert.equal(migrated.deadline, predecessor.deadline);
@@ -1209,11 +1213,13 @@ test('GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing f
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(canonicalCancelled);
   predecessor.schema_version = '0.0.0';
+  delete predecessor.action_journal;
   const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
   await writeFile(artifact, predecessorRaw);
 
   const migrated = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
-  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.schema_version, '0.2.0');
+  assert.deepEqual(migrated.action_journal, []);
   assert.equal(migrated.updated_at, predecessor.updated_at);
   assert.deepEqual(migrated.transitions, predecessor.transitions);
   const canonicalRaw = await readFile(artifact, 'utf8');
@@ -1238,6 +1244,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
   const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(created);
   delete predecessor.schema_version;
+  delete predecessor.action_journal;
   const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
   await Promise.all([writeFile(authorityFile, predecessorRaw), writeFile(mirrorFile, predecessorRaw)]);
 
@@ -1257,7 +1264,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
     failing.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
     errorWithCode('linked_copy_sync_failed')
   );
-  assert.equal(JSON.parse(await readFile(authorityFile, 'utf8')).schema_version, '0.1.0');
+  assert.equal(JSON.parse(await readFile(authorityFile, 'utf8')).schema_version, '0.2.0');
   assert.equal(await readFile(mirrorFile, 'utf8'), predecessorRaw);
 
   const session = fixture.session();
@@ -1270,7 +1277,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
     runId: RUN_ID,
     repairLinkedCopy: true
   });
-  assert.equal(repaired.schema_version, '0.1.0');
+  assert.equal(repaired.schema_version, '0.2.0');
   assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
   assert.deepEqual(repaired.transitions, created.transitions);
 });
@@ -1535,7 +1542,9 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
-  assert.match(stdout.text(), /このコマンドは状態を永続化するだけで、agentやactionを実行しません/);
+  assert.match(stdout.text(), /--until 未指定時は状態の永続化だけ/);
+  assert.match(stdout.text(), /--until pr-ready 指定時はallowlist済みrepo-local Actionだけ/);
+  assert.match(stdout.text(), /resumeは--until pr-readyを受け付け.*未完了のallowlist済みActionだけを再試行/);
   assert.match(stdout.text(), /watchは現在値を1回返して終了するsnapshotです/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
   assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1554,7 +1563,9 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(englishStdout.text(), /Without --run-id, execute status keeps the legacy status contract/);
   assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
-  assert.match(englishStdout.text(), /This command only persists state; it does not dispatch agents or execute actions/);
+  assert.match(englishStdout.text(), /Without --until this command only persists state/);
+  assert.match(englishStdout.text(), /--until pr-ready executes only allowlisted repo-local Actions/);
+  assert.match(englishStdout.text(), /resume accepts --until pr-ready to retry only incomplete allowlisted Actions/);
   assert.match(englishStdout.text(), /watch returns one current snapshot and exits; it does not stream/);
   assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
   assert.match(englishStdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1724,9 +1735,297 @@ test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes 
   assert.match(humanCancel.stdout, /status: cancelled/);
 });
 
-test('GRS-S-9 INV-004 guarded Run source surface excludes action/runtime/waiver/merge imports and service replacement', async () => {
+test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(prepareCalls, 1);
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.deepEqual(result.state.stop_reason.details.recovery.missing_kinds, ['unit']);
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+  assert.deepEqual((await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(cancelled.action_journal, result.state.action_journal);
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const cancelledBytes = await readFile(artifact, 'utf8');
+  assert.deepEqual((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+});
+
+test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
+  const summary = renderGuardedRunSummary({
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    status: 'waiting_for_human',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: 'a'.repeat(40),
+    execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
+    action_journal: [],
+    transitions: [],
+    stop_reason: {
+      code: 'human_judgment_required',
+      message: 'human_judgment_required',
+      details: {
+        recovery: {
+          failed_kinds: ['integration'],
+          judgments: [{ kind: 'scope', reason: 'choose a boundary' }],
+          required_actions: ['record current evidence'],
+          failure: 'autopilot interrupted',
+          next_command: `vibepro execute resume '/tmp/repo with space' --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
+        }
+      }
+    }
+  });
+
+  assert.match(summary, /judgment: scope - choose a boundary/);
+  assert.match(summary, /failed: integration/);
+  assert.match(summary, /required_action: record current evidence/);
+  assert.match(summary, /failure: autopilot interrupted/);
+  assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+});
+
+test('SAO-S-5 verification block persists failed kinds for public JSON and human status', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({}),
+    safeAutopilotPullRequest: async () => ({
+      status: 'blocked',
+      stop_reason: 'verification_failed',
+      recovery: { failed_kinds: ['integration'] }
+    })
+  };
+  const json = capture();
+  await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: json, stderr: capture(), guardedRunDependencies: dependencies });
+  const state = JSON.parse(json.text()).state;
+  assert.equal(state.stop_reason.code, 'verification_failed');
+  assert.deepEqual(state.stop_reason.details.recovery.failed_kinds, ['integration']);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /failed: integration/);
+  assert.match(human.text(), /next_command: vibepro execute resume .*--until pr-ready/);
+});
+
+test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return {
+        status: 'waiting_for_runtime',
+        stop_reason: 'runtime_required',
+        recovery: { missing_kinds: ['unit'] }
+      };
+    }
+  };
+  const runOut = capture();
+  const first = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: runOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(first.exitCode, 0);
+  assert.equal(JSON.parse(runOut.text()).state.status, 'failed');
+
+  const resumeOut = capture();
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: resumeOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const result = JSON.parse(resumeOut.text()).state;
+  assert.equal(result.status, 'waiting_for_runtime');
+  assert.equal(result.stop_reason.code, 'runtime_required');
+  assert.equal(result.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(result.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
+  const humanStatus = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: humanStatus, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(humanStatus.text(), /missing: unit/);
+  assert.match(humanStatus.text(), new RegExp(`execute resume ${fixture.source.replaceAll('/', '\\/')} .*--until pr-ready`));
+});
+
+test('SAO-S-2 action checkpoint survives a later action failure', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({}),
+    safeAutopilotPullRequest: async () => { throw new Error('autopilot interrupted'); }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'failed');
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.status), ['completed', 'failed']);
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+});
+
+test('SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const failed = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(failed.state.status, 'failed');
+
+  await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const retried = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(retried.state.status, 'waiting_for_runtime');
+  assert.equal(retried.state.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(retried.state.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
+  assert.match(renderGuardedRunSummary(retried.state), /pr_autopilot_safe \(completed\): runtime_required/);
+});
+
+test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      return prepareCalls === 1
+        ? {}
+        : { preparation: { gate_status: { ready_for_pr_create: false } } };
+    },
+    safeAutopilotPullRequest: async () => {
+      fixture.setHead(fixture.source, 'changed-head');
+      return { status: 'pr_ready' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(prepareCalls, 2);
+  assert.equal(result.state.current_head_sha, 'changed-head');
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_required');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.stop_reason.details.recovery.required_actions, []);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), [
+    'pr_prepare', 'pr_autopilot_safe', 'rebind_head', 'pr_prepare_current_head'
+  ]);
+});
+
+test('SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      if (prepareCalls === 2) throw new Error('Gate storage unavailable');
+      return {};
+    },
+    safeAutopilotPullRequest: async () => {
+      fixture.setHead(fixture.source, 'changed-head');
+      return { status: 'pr_ready' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'failed');
+  assert.equal(result.state.current_head_sha, 'changed-head');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_failed');
+  assert.equal(result.state.stop_reason.details.recovery.failure, 'Gate storage unavailable');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.action_journal.map((entry) => [entry.action_id, entry.status]), [
+    ['pr_prepare', 'completed'],
+    ['pr_autopilot_safe', 'completed'],
+    ['rebind_head', 'completed'],
+    ['pr_prepare_current_head', 'failed']
+  ]);
+  assert.deepEqual(persisted, result.state);
+});
+
+test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let bootstrapCalls = 0;
+  let actionCalls = 0;
+  const dependencies = {
+    ...fixture.dependencies(),
+    startExecution: async () => { bootstrapCalls += 1; },
+    preparePullRequest: async () => { actionCalls += 1; },
+    safeAutopilotPullRequest: async () => { actionCalls += 1; }
+  };
+  const stdout = capture();
+  const result = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--dry-run', '--json'
+  ], { stdout, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(JSON.parse(stdout.text()).plan.map((item) => item.id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.equal(bootstrapCalls, 0);
+  assert.equal(actionCalls, 0);
+  await assert.rejects(access(fixture.runFile(fixture.source, RUN_ID)));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'execution-state.json')));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json')));
+
+  const human = capture();
+  const humanError = capture();
+  const humanResult = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--dry-run'
+  ], { stdout: human, stderr: humanError, guardedRunDependencies: dependencies });
+  assert.equal(humanResult.exitCode, 0, humanError.text());
+  assert.match(human.text(), /Planned Actions/);
+  assert.match(human.text(), /pr_prepare \(repo_local_safe\)/);
+  assert.match(human.text(), /pr_autopilot_safe \(repo_local_safe\)/);
+
+  const stderr = capture();
+  const invalid = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'merge', '--json'
+  ], { stdout: capture(), stderr, guardedRunDependencies: dependencies });
+  assert.equal(invalid.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'invalid_until');
+  assert.equal(bootstrapCalls, 0);
+});
+
+test('GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
   const source = await readFile(new URL('../src/guarded-run-session.js', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager|action).*['"]/i);
+  assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager).*['"]/i);
+  assert.match(source, /from ['"].*safe-action-orchestrator\.js['"]/i);
   assert.doesNotMatch(source, /guardedRunSession|guardedRunService/);
   assert.match(source, /artifactIo/);
   assert.match(source, /readdir/);

@@ -156,12 +156,17 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
   }, null, 2)}\n`);
   await writeFile(stateFile, `${JSON.stringify(state, null, 2)}\n`);
 
+  const migratedState = {
+    ...state,
+    schema_version: '0.2.0',
+    action_journal: []
+  };
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
-  ]), state);
+  ]), migratedState);
   assert.deepEqual(await runJson(repo, [
     'execute', 'watch', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
-  ]), state);
+  ]), migratedState);
   const resumed = await runJson(repo, [
     'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
   ]);

@@ -351,6 +351,46 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.guarded_run.safe_action_orchestration",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-safe-action-orchestrator.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-safe-action-orchestrator.md",
+        "docs/architecture/vibepro-autonomy-roadmap-rebaseline.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/safe-action-orchestrator.js",
+          "src/guarded-run-session.js",
+          "src/pr-manager.js",
+          "src/cli.js",
+          "test/safe-action-orchestrator.test.js",
+          "test/guarded-run-session.test.js",
+          "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts"
+        ],
+        "symbols": [
+          "execute run --until pr-ready",
+          "SafeActionOrchestrator",
+          "action_journal",
+          "action_failed"
+        ],
+        "risk_surfaces": [
+          "service_orchestration",
+          "core_workflow_state",
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.diagnostics.scan_conclusiveness",
       "primary_authority": {
         "kind": "architecture",

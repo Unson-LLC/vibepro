@@ -4,11 +4,16 @@ import path from 'node:path';
 
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
-import { evaluateGateReadiness as defaultReadGateReadiness } from './pr-manager.js';
+import {
+  evaluateGateReadiness as defaultReadGateReadiness,
+  preparePullRequest as defaultPreparePullRequest,
+  safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
+} from './pr-manager.js';
+import { runSafeActionPlan } from './safe-action-orchestrator.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
-export const GUARDED_RUN_SCHEMA_VERSION = '0.1.0';
+export const GUARDED_RUN_SCHEMA_VERSION = '0.2.0';
 export const GUARDED_RUN_TARGET = 'pr_ready';
 export const GUARDED_AUTONOMY_MODE = 'guarded';
 
@@ -37,7 +42,9 @@ const DEPENDENCY_KEYS = new Set([
   'readGateReadiness',
   'refreshContextCapsule',
   'artifactIo',
-  'resolveGitIdentity'
+  'resolveGitIdentity',
+  'preparePullRequest',
+  'safeAutopilotPullRequest'
 ]);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
 
@@ -73,6 +80,8 @@ export function createGuardedRunSession(dependencies = {}) {
     readGateReadiness: dependencies.readGateReadiness ?? defaultReadGateReadiness,
     refreshContextCapsule: dependencies.refreshContextCapsule ?? defaultRefreshContextCapsule,
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
+    preparePullRequest: dependencies.preparePullRequest ?? defaultPreparePullRequest,
+    safeAutopilotPullRequest: dependencies.safeAutopilotPullRequest ?? defaultSafeAutopilotPullRequest,
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
 
@@ -82,7 +91,146 @@ export function createGuardedRunSession(dependencies = {}) {
     watch: (repoRoot, options = {}) => watchRun(deps, repoRoot, options),
     resume: (repoRoot, options = {}) => resumeRun(deps, repoRoot, options),
     cancel: (repoRoot, options = {}) => cancelRun(deps, repoRoot, options),
-    transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options)
+    transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options),
+    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options)
+  };
+}
+
+async function orchestrateRun(deps, repoRoot, options) {
+  if (options.dryRun) {
+    const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
+    const preview = {
+      run_id: 'dry-run',
+      story_id: requireStoryId(options.storyId),
+      current_head_sha: identity.head_sha,
+      status: 'running',
+      attempt: 1,
+      action_journal: []
+    };
+    return runSafeActionPlan(preview, { dryRun: true });
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
+  const result = await runSafeActionPlan(loaded.state, {
+    onProgress: async (progress) => {
+      const checkpoint = { ...loaded.state, action_journal: progress.action_journal };
+      await persistAuthorityThenMirror(
+        deps,
+        checkpoint,
+        loaded.authorityFile,
+        loaded.mirrorFile,
+        'safe_action_checkpoint'
+      );
+    },
+    runners: {
+      pr_prepare: async () => {
+        const prepared = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+          storyId: loaded.state.story_id,
+          baseRef: options.baseRef
+        });
+        return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
+      },
+      pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(
+        loaded.state.execution_context.root_realpath,
+        { storyId: loaded.state.story_id, baseRef: options.baseRef }
+      )
+    }
+  });
+  let next = { ...loaded.state, action_journal: result.state.action_journal };
+  let outcomeStatus = result.state.status;
+  let outcomeStopReason = result.state.stop_reason;
+  const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
+  if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
+    const reboundAt = toIso(deps.now());
+    next = {
+      ...next,
+      current_head_sha: currentIdentity.head_sha,
+      action_journal: [
+        ...next.action_journal,
+        buildSystemActionEntry(next, 'rebind_head', loaded.state.current_head_sha, currentIdentity.head_sha, reboundAt)
+      ]
+    };
+    await persistAuthorityThenMirror(
+      deps,
+      next,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'safe_action_head_rebind_checkpoint'
+    );
+    let currentPrepare = null;
+    try {
+      currentPrepare = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+        storyId: loaded.state.story_id,
+        baseRef: options.baseRef
+      });
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now())
+        )]
+      };
+    } catch (error) {
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now()),
+          'failed',
+          error.message
+        )]
+      };
+      outcomeStatus = 'failed';
+      outcomeStopReason = {
+        code: 'gate_recheck_failed',
+        message: 'Current HEAD Gate recheck failed before readiness could be established.',
+        details: {
+          recovery: {
+            failure: error.message,
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
+      };
+    }
+    if (currentPrepare && currentPrepare.preparation?.gate_status?.ready_for_pr_create !== true) {
+      outcomeStatus = 'blocked';
+      outcomeStopReason = {
+        code: 'gate_recheck_required',
+        message: 'Current HEAD must satisfy the Gate DAG before pr_ready.',
+        details: {
+          current_head_sha: currentIdentity.head_sha,
+          recovery: {
+            required_actions: currentPrepare.preparation?.gate_status?.next_required_actions ?? [],
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
+      };
+    }
+  }
+  if (outcomeStatus !== loaded.state.status) {
+    next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
+  }
+  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
+  return { plan: result.plan, state: next };
+}
+
+function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
+  return {
+    action_id: actionId,
+    node_id: actionId,
+    input_head_sha: inputHead,
+    output_head_sha: outputHead,
+    idempotency_key: createHash('sha256').update(`${state.run_id}:${actionId}:${inputHead}`).digest('hex'),
+    status,
+    artifact: null,
+    result_summary: summary,
+    started_at: timestamp,
+    completed_at: timestamp
   };
 }
 
@@ -90,17 +238,37 @@ export function isGuardedRunError(error) {
   return error instanceof GuardedRunError;
 }
 
-export function renderGuardedRunSummary(state) {
+export function renderGuardedRunSummary(value) {
+  const state = value?.state ?? value;
+  const plan = value?.state ? value.plan ?? [] : [];
   const stop = state.stop_reason
     ? `${state.stop_reason.code}: ${state.stop_reason.message}`
     : 'none';
   const binding = state.execution_context
     ? `${state.execution_context.authority_kind} ${state.execution_context.root_realpath} @ ${state.current_head_sha}`
     : 'unknown';
-  const transitions = state.transitions
+  const transitions = (state.transitions ?? [])
     .map((item) => `  ${item.sequence}. ${item.from ?? 'created'} -> ${item.to} (${item.reason}) at ${item.timestamp}`)
     .join('\n');
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  const latestAction = state.action_journal?.at(-1);
+  const latestActionSummary = latestAction
+    ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
+    : 'none';
+  const plannedActions = plan.length > 0
+    ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
+    : '  none';
+  const recovery = state.stop_reason?.details?.recovery;
+  const recoveryLines = recovery
+    ? [
+        ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
+        ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
+        ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
+        ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
+        recovery.failure ? `- failure: ${recovery.failure}` : null,
+        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
+      ].filter(Boolean).join('\n')
+    : 'none';
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 function shellQuoteCommandArg(value) {
@@ -634,6 +802,7 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
       git_dir_realpath: binding.authority.git_dir_realpath
     },
     managed_worktree: binding.managedWorktree,
+    action_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -761,13 +930,13 @@ function migrateRunState(state) {
     validateRunShape(state);
     return { changed: false, state };
   }
-  if (state.schema_version !== undefined && state.schema_version !== '0.0.0') {
+  if (state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
     throw contractError('unsupported_schema', `Unsupported guarded Run schema: ${state.schema_version}.`, {
       run_id: state.run_id ?? null,
       schema_version: state.schema_version ?? null
     });
   }
-  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION };
+  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION, action_journal: state.action_journal ?? [] };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
 }
@@ -779,7 +948,7 @@ function validateRunShape(state) {
   const required = [
     'schema_version', 'run_id', 'story_id', 'target', 'autonomy_mode', 'created_at', 'updated_at',
     'status', 'stop_reason', 'attempt', 'iteration', 'budget', 'deadline', 'last_progress_at',
-    'pending_decision', 'current_head_sha', 'execution_context', 'managed_worktree', 'transitions'
+    'pending_decision', 'current_head_sha', 'execution_context', 'managed_worktree', 'action_journal', 'transitions'
   ];
   const missing = required.filter((key) => !Object.prototype.hasOwnProperty.call(state, key));
   if (missing.length > 0) {
@@ -841,6 +1010,24 @@ function validateRunShape(state) {
   }
   if (!Array.isArray(state.transitions) || state.transitions.length === 0) {
     throw contractError('invalid_state', 'Guarded Run transition history is invalid.', { run_id: state.run_id });
+  }
+  if (!Array.isArray(state.action_journal)) {
+    throw contractError('invalid_state', 'Guarded Run action journal is invalid.', { run_id: state.run_id });
+  }
+  for (const entry of state.action_journal) {
+    if (!entry || typeof entry !== 'object'
+        || typeof entry.action_id !== 'string'
+        || typeof entry.node_id !== 'string'
+        || typeof entry.input_head_sha !== 'string'
+        || typeof entry.output_head_sha !== 'string'
+        || typeof entry.idempotency_key !== 'string'
+        || !['completed', 'failed', 'forbidden'].includes(entry.status)
+        || !isIsoTimestamp(entry.started_at)
+        || !isIsoTimestamp(entry.completed_at)) {
+      throw contractError('invalid_state', 'Guarded Run action journal contains an invalid entry.', {
+        run_id: state.run_id
+      });
+    }
   }
   for (let index = 0; index < state.transitions.length; index += 1) {
     const transition = state.transitions[index];

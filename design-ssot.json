@@ -5170,6 +5170,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "adr": [
+          {
+            "kind": "adr",
+            "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+            "required": true,
+            "relationship": "refines",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -5242,6 +5251,13 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "adr",
+          "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+          "required": true,
+          "relationship": "refines",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
@@ -5305,5 +5321,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-18T04:01:26.889Z"
+  "updated_at": "2026-07-18T15:12:15.879Z"
 }

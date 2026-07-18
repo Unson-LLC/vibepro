@@ -47,6 +47,15 @@ updated_at: 2026-07-15
 - [ ] SAO-S-6: HEAD変更後の古い証跡を再利用せず、Gate評価をcurrent HEADで更新する。
 - [ ] SAO-S-7: dry-run、冪等再開、検証fail、critical gate、禁止Actionのテストがある。
 
+## Scenarios
+
+- Given `execute run --until pr-ready` creates a Run, when every allowlisted dependency succeeds, then the workflow state transitions `null -> running -> pr_ready` and records each completed Action in dependency order.
+- Given a safe Action requires human judgment, when the orchestrator reaches that Action, then the workflow state transitions `running -> waiting_for_human`, persists the typed decision contract, and executes no dependent Action.
+- Given an Action fails, when the failure is recorded, then the workflow state transitions `running -> failed` with `action_failed`, persists typed recovery and journal evidence, and resume retries only the failed Action.
+- Given verification fails, when the failure is recorded, then the workflow state transitions `running -> blocked` with `verification_failed`, persists failed evidence kinds, and executes no dependent Action.
+- Given repository HEAD changes after a mutating Action, when readiness is evaluated, then evidence is rebound to the current HEAD, `pr prepare` is replayed, and the workflow state transitions to `pr_ready` only from a current passing Gate.
+- Given dry-run or a forbidden Action request, when the plan is evaluated, then dry-run preserves the workflow state without mutation and forbidden execution transitions to a typed blocked state without invoking shell or external runtime.
+
 ## 依存関係・完了順
 
 ロードマップの3番目。`story-vibepro-guarded-run-session-contract`と`story-vibepro-run-context-capsule`完了後に実装し、後続Meta Controllerへ安全な候補Actionを渡す。

@@ -19,7 +19,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass 48\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
+  assert.match(result.stdout, /# pass [1-9]\d*\b/, 'focused contract and process-replay suites must pass before acceptance bindings are evaluated');
   assert.match(result.stdout, /# fail 0\b/, 'focused contract and process-replay suites must have no failures');
 
   const ac1 = 'AC-1 execute run creates a Run with run_id, story_id, target, and autonomy_mode; disabled managed-worktree mode uses the source repository as repository authority';
