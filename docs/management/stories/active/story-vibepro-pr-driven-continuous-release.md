@@ -58,6 +58,18 @@ reason: "ADR unnecessary: alternatives were a manual release PR, post-release ch
 
 - 人間による毎回の転記・承認、commit logからの変更説明推測、version不変PRのnpm publish、公開済みversionの上書き、内部artifactやsecretの公開は行わない。
 
+## Solution
+
+main向けPRのマージを起点に、VibePro PR本文の安定したRelease Notesセクションを日英のVitePress履歴とCHANGELOGへ決定的に投影し、毎回マニュアルをデプロイする。package versionが増加した場合だけ、同じmerge commitとリリースノートへGitHub Releaseとnpm公開を結び付け、CAS leaseと再照合で不可逆処理を直列化する。
+
+## Compatibility
+
+既存CLIとversion不変PRの挙動は維持する。npm公開は増加したSemVerだけが対象で、`0.2.0-beta.1` はprereleaseとして `beta` と単調な `latest` 判定を明示的に適用する。
+
+## User Action
+
+なし。PR作成者はマージ前にChange Summary、Compatibility、User Actionの3節が利用者向けの内容になっていることを確認する。
+
 ## Success Indicators
 
 - PRマージからVitePress、version変更時のGitHub Release・npm・dist-tag検証まで追加の人間操作0回で完了する。

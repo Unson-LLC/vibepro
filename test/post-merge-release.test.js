@@ -306,3 +306,8 @@ test('PCR-CON-004 projects a new published version without duplicating its index
   assert.equal(index.match(/0\.2\.0-beta\.1/g)?.length, 2);
   assert.doesNotMatch(index, /0\.2\.0-beta\.0/);
 });
+
+test('post-merge docs release is not gated by an approval environment', async () => {
+  const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
+  assert.doesNotMatch(workflow, /^\s+environment:\s+npm\s*$/m);
+});

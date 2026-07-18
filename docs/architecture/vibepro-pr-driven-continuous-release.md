@@ -14,7 +14,7 @@ docsは最新main上のbot commitとして公開する。一方、GitHub Release
 
 ## Boundaries
 
-- PR authoring: `src/pr-manager.js` とPR templateが `Change Summary`、`Compatibility`、`User Action` を一度だけ記述する。
+- PR authoring: `src/pr-manager.js` がStoryの `Solution`、`Compatibility`、`User Action` を抽出し、PR templateの `Change Summary`、`Compatibility`、`User Action` へ一度だけ記述する。生成結果が利用者向け説明になっていることをマージ前のPRレビュー境界で確認する。
 - Deterministic projection: `scripts/post-merge-release.mjs` がevent payloadを検証し、日英月次履歴、index到達性、CHANGELOG、Release bodyを生成する。
 - Delivery: `.github/workflows/post-merge-release.yml` が当該merge commitをdetached checkoutし、依存もそのSHAで再構築してnpm、GitHub Releaseの順に実行する。成功後に最新mainへ戻り、docs commitとCloudflare deployを行う。各段と再実行手順は成功・失敗を問わずActions summaryへ追記する。
 - Queueing: concurrency keyはPR番号単位とし、mergeが集中しても別PRのpending runを置換しない。docs pushが競合した場合は一時commitを破棄し、最新`origin/main`へresetして同じPR markerを決定的に再投影してから再pushする。deploy直前にも最新mainへfast-forwardして全投影済みノートを含める。
@@ -26,4 +26,4 @@ docsは最新main上のbot commitとして公開する。一方、GitHub Release
 
 ## Security
 
-`NPM_TOKEN`、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` はGitHub environment secretからのみ注入する。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyとtitleを含むPR由来の表示値はuntrusted Markdownとして扱い、workflow command/outputへ直接評価せず、raw HTMLとVue interpolationをescapeしてからVitePressへ渡す。
+`NPM_TOKEN`、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID` は承認待ちを生まないGitHub Actions repository secretからのみ注入する。post-merge jobにはapproval environmentを設定しない。scriptはtokenを引数、生成物、summaryへ書かない。PR bodyとtitleを含むPR由来の表示値はuntrusted Markdownとして扱い、workflow command/outputへ直接評価せず、raw HTMLとVue interpolationをescapeしてからVitePressへ渡す。

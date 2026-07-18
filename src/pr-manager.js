@@ -6846,6 +6846,8 @@ function parseStoryDoc(file, content) {
     root_cause: extractSectionText(content, ['根本原因', '原因', 'Root Cause', 'Cause']),
     solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
+    compatibility: extractSectionText(content, ['互換性', 'Compatibility', 'Compatibility Impact']),
+    user_action: extractSectionText(content, ['利用者に必要な操作', '利用者操作', 'User Action', 'Migration']),
     impact_scope: extractImpactScopeStatement(content),
     acceptance_criteria: extractAcceptanceCriteria(content),
     related_stories: normalizeFrontmatterList(

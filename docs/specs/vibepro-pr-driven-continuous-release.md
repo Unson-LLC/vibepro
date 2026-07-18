@@ -27,7 +27,7 @@ diagrams:
       flowchart LR
         A[Untrusted PR markdown] --> B[Bounded parser without evaluation]
         B --> C[Generated documentation]
-        D[GitHub secrets] --> E[Workflow environment only]
+        D[GitHub repository secrets] --> E[Workflow process only]
         E --> F[npm and Cloudflare APIs]
         G[Later main commits] --> H[Exact event merge SHA binding]
         I[Existing npm version] --> J{gitHead matches?}
@@ -38,6 +38,7 @@ diagrams:
 # Spec
 
 - `PCR-CON-001`: Release Notesは `Change Summary`、`Compatibility`、`User Action` の3節を持ち、空節は `なし` になる。
+- `PCR-CON-001A`: VibeProはStoryの `Solution`、`Compatibility`、`User Action` を各安定節へ抽出し、post-merge jobはapproval environmentを使用しない。
 - `PCR-CON-002`: note identityはPR番号で、同じeventの再処理は既存markerを置換して重複しない。
 - `PCR-CON-003`: note metadataはnumber/title/author/merged_at/merge_commit_sha/html_urlをevent payloadから取得する。
 - `PCR-CON-004`: version gateはbaseとmergeのSemVerを比較し、厳密な増加時だけreleaseする。
