@@ -13210,6 +13210,8 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_token_accounting.status, 'available');
 
   const inferred = await runCli([
     'execute',

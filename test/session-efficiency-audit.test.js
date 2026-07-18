@@ -428,6 +428,21 @@ test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and dedup
       timestamp: '2026-06-27T13:01:00.000Z',
       type: 'response_item',
       payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `Preserve docs/specs/${storyId}.md as the session constraint` }] }
+    },
+    {
+      timestamp: '2026-06-27T13:01:10.000Z',
+      type: 'response_item',
+      payload: { type: 'function_call_output', output: 'Read src/semantic-session.js then run npm test' }
+    },
+    {
+      timestamp: '2026-06-27T13:01:15.000Z',
+      type: 'response_item',
+      payload: { type: 'function_call_output', output: 'Read src/session.test.js' }
+    },
+    {
+      timestamp: '2026-06-27T13:01:20.000Z',
+      type: 'response_item',
+      payload: { type: 'function_call_output', output: 'command completed without artifact paths or test signals' }
     }
   ];
   await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
@@ -442,10 +457,11 @@ test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and dedup
 
   const accounting = result.session.artifact_token_accounting;
   const mixed = accounting.provenance_buckets.mixed_tool_output;
-  assert.equal(mixed.event_count, 2);
-  assert.equal(mixed.unique_digest_count, 1);
+  assert.equal(mixed.event_count, 4);
+  assert.equal(mixed.unique_digest_count, 3);
   assert.equal(mixed.unique_estimated_tokens > 0, true);
-  assert.equal(mixed.duplicate_estimated_tokens, mixed.unique_estimated_tokens);
+  assert.equal(mixed.duplicate_estimated_tokens > 0, true);
+  assert.equal(mixed.unique_estimated_tokens > mixed.duplicate_estimated_tokens, true);
   assert.equal(accounting.provenance_buckets.replayed_context.event_count, 1);
   assert.equal(accounting.provenance_buckets.fresh_read.event_count, 1);
   assert.equal(accounting.provenance_buckets.generated_output.event_count, 1);
@@ -455,6 +471,68 @@ test('SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and dedup
     ['fresh_read', 'generated_output', 'mixed_tool_output', 'replayed_context', 'world_state']
   );
   assert.equal(accounting.unique_estimated_tokens + accounting.duplicate_estimated_tokens, accounting.classified_estimated_tokens);
+  assert.equal(
+    Object.values(accounting.buckets).reduce((sum, bucket) => sum + bucket.estimated_tokens, 0),
+    accounting.classified_estimated_tokens
+  );
+  assert.deepEqual(
+    accounting.top_exposures[0].semantic_segments.map((segment) => segment.bucket_id).sort(),
+    ['audit_evidence', 'src_code', 'test']
+  );
+  assert.equal(
+    accounting.top_exposures[0].semantic_segments.reduce((sum, segment) => sum + segment.estimated_tokens, 0),
+    accounting.top_exposures[0].estimated_tokens
+  );
+  assert.equal(accounting.buckets.audit_evidence.estimated_tokens > 0, true);
+  assert.equal(accounting.buckets.src_code.estimated_tokens > 0, true);
+  assert.equal(accounting.buckets.test.estimated_tokens > 0, true);
+  const semanticMixed = accounting.top_exposures.find((event) => event.sample.includes('semantic-session.js'));
+  assert.deepEqual(
+    semanticMixed.semantic_segments.map((segment) => segment.bucket_id).sort(),
+    ['src_code', 'test']
+  );
+  assert.equal(
+    semanticMixed.semantic_segments.reduce((sum, segment) => sum + segment.estimated_tokens, 0),
+    semanticMixed.estimated_tokens
+  );
+  const semanticMixedText = 'Read src/semantic-session.js then run npm test';
+  assert.equal(
+    semanticMixed.semantic_segments.reduce((sum, segment) => sum + segment.char_count, 0),
+    semanticMixedText.length
+  );
+  const semanticRanges = semanticMixed.semantic_segments
+    .flatMap((segment) => segment.ranges.map((range) => ({ ...range, bucket_id: segment.bucket_id })))
+    .sort((left, right) => left.start - right.start);
+  assert.equal(semanticRanges[0].start, 0);
+  assert.equal(semanticRanges.at(-1).end, semanticMixedText.length);
+  for (let index = 1; index < semanticRanges.length; index += 1) {
+    assert.equal(semanticRanges[index - 1].end, semanticRanges[index].start);
+  }
+  const srcRange = semanticRanges.find((range) => range.bucket_id === 'src_code');
+  const testRange = semanticRanges.find((range) => range.bucket_id === 'test');
+  assert.match(semanticMixedText.slice(srcRange.start, srcRange.end), /src\/semantic-session\.js/);
+  assert.match(semanticMixedText.slice(testRange.start, testRange.end), /npm test/);
+  const overlappingPathText = 'Read src/session.test.js';
+  const overlappingPath = accounting.top_exposures.find((event) => event.sample.includes(overlappingPathText));
+  assert.deepEqual(overlappingPath.semantic_segments.map((segment) => segment.bucket_id).sort(), ['src_code', 'test']);
+  const overlappingRanges = overlappingPath.semantic_segments
+    .flatMap((segment) => segment.ranges.map((range) => ({ ...range, bucket_id: segment.bucket_id })))
+    .sort((left, right) => left.start - right.start);
+  assert.equal(overlappingRanges[0].start, 0);
+  assert.equal(overlappingRanges.at(-1).end, overlappingPathText.length);
+  assert.equal(overlappingRanges[0].end, overlappingRanges[1].start);
+  const overlappingSrc = overlappingRanges.find((range) => range.bucket_id === 'src_code');
+  const overlappingTest = overlappingRanges.find((range) => range.bucket_id === 'test');
+  assert.match(overlappingPathText.slice(overlappingSrc.start, overlappingSrc.end), /src\//);
+  assert.match(overlappingPathText.slice(overlappingTest.start, overlappingTest.end), /session\.test\.js/);
+  assert.equal(
+    overlappingPath.semantic_segments.reduce((sum, segment) => sum + segment.estimated_tokens, 0),
+    overlappingPath.estimated_tokens
+  );
+  assert.equal(accounting.unmatched_event_count, 1);
+  assert.equal(accounting.unmatched_estimated_tokens > 0, true);
+  assert.equal(accounting.carryover_control.status, 'review_required');
+  assert.equal(accounting.carryover_control.replayed_context_estimated_tokens > 0, true);
   assert.equal(accounting.top_exposures[0].content_digest.length, 64);
 });
 
@@ -782,6 +860,12 @@ test('SAI-SCENARIO-003 session inference keeps low-confidence candidates unavail
   assert.equal(result.session_selection.confidence, 'low');
   assert.match(result.session_selection.reason, /confidence threshold/);
   assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.deepEqual(
+    Object.keys(result.session.artifact_token_accounting.provenance_buckets).sort(),
+    ['fresh_read', 'generated_output', 'mixed_tool_output', 'replayed_context', 'world_state']
+  );
+  assert.equal(result.session.artifact_token_accounting.carryover_control.status, 'unavailable');
+  assert.equal(result.session.artifact_token_accounting.unique_estimated_tokens, null);
   assert.equal(result.audit_readiness.status, 'partial');
 });
 
@@ -810,6 +894,15 @@ test('audit session-cost CLI exposes JSON contract for active session cost audit
   assert.equal(result.artifact_kind, 'vibepro_session_efficiency_audit');
   assert.equal(result.session.token_accounting.total_tokens, 250);
   assert.equal(result.cost_breakdown.buckets.some((bucket) => bucket.label === 'src/ コード本体'), true);
+
+  const rendered = await execFileAsync(
+    process.execPath,
+    [CLI_BIN, 'audit', 'session-cost', root, '--story-id', storyId, '--session-id', sessionId, '--codex-home', codexHome, '--base', 'base'],
+    { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }
+  );
+  assert.match(rendered.stdout, /exposure_dedup: unique=/);
+  assert.match(rendered.stdout, /carryover_control:/);
+  assert.match(rendered.stdout, /\| mixed_tool_output \|/);
 
   const help = await execFileAsync(process.execPath, [CLI_BIN, 'help', '--language', 'en'], { cwd: root, encoding: 'utf8' });
   assert.match(help.stdout, /vibepro audit session-cost/);

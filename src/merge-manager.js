@@ -609,6 +609,10 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
     ?? session?.elapsed_time_accounting
     ?? input?.elapsed_time_accounting
     ?? null;
+  const artifactToken = cost?.artifact_token_accounting
+    ?? session?.artifact_token_accounting
+    ?? input?.artifact_token_accounting
+    ?? null;
   const normalized = {
     schema_version: '0.1.0',
     status: hasUsableAccounting(token) || hasUsableAccounting(elapsed) ? 'available' : 'partial',
@@ -618,7 +622,8 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
     session_id: input?.session_id ?? session?.window?.session_id ?? token?.window?.session_id ?? elapsed?.window?.session_id ?? null,
     collected_at: collectedAt ?? null,
     token_accounting: token ?? unavailableTokenAccounting(source, storyId, 'token accounting was not present in execute merge cost input'),
-    elapsed_time_accounting: elapsed ?? unavailableElapsedTimeAccounting(source, storyId, 'elapsed-time accounting was not present in execute merge cost input')
+    elapsed_time_accounting: elapsed ?? unavailableElapsedTimeAccounting(source, storyId, 'elapsed-time accounting was not present in execute merge cost input'),
+    artifact_token_accounting: artifactToken
   };
   if (input?.artifact_kind === 'vibepro_session_efficiency_audit') {
     normalized.session_efficiency_audit = {
@@ -626,7 +631,8 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
       audit_readiness: input.audit_readiness ?? null,
       observed_worktree: input.observed_worktree ?? null,
       observed_worktree_source: input.observed_worktree_source ?? null,
-      cost_breakdown: input.cost_breakdown ?? null
+      cost_breakdown: input.cost_breakdown ?? null,
+      artifact_token_accounting: artifactToken
     };
   }
   return normalized;

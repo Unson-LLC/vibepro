@@ -15,11 +15,11 @@ Given repeated normalized transcript content, when accounting is aggregated, the
 
 ## SEXP-S-3 mixed tool output
 
-Given one tool output containing signals for multiple semantic buckets, when classified, then its provenance is `mixed_tool_output` and it is not represented as an unqualified fresh read.
+Given one tool output containing signals for multiple semantic buckets, when classified, then its provenance is `mixed_tool_output`, path-level segments allocate the event token estimate across every matched semantic bucket exactly once, and it is not represented as an unqualified fresh read.
 
 ## SEXP-S-4 compatibility and failure boundary
 
-Given an existing consumer that reads semantic `buckets`, when provenance accounting is added, then the existing bucket totals remain unchanged and malformed or unmatched transcript entries remain unattributed instead of being promoted to fresh evidence.
+Given an existing consumer that reads total accounting, when provenance accounting is added, then the classified total remains unchanged, mixed semantic buckets receive segment-weighted allocation, and malformed or unmatched transcript entries remain unattributed instead of being promoted to fresh evidence. `carryover_control` reports replayed context, duplicate-over-unique amplification, and a deterministic review threshold.
 
 ```yaml
 inherited_behavior:
