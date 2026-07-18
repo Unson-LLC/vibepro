@@ -1766,6 +1766,39 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
 });
 
+test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
+  const summary = renderGuardedRunSummary({
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    status: 'waiting_for_human',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: 'a'.repeat(40),
+    execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
+    action_journal: [],
+    transitions: [],
+    stop_reason: {
+      code: 'human_judgment_required',
+      message: 'human_judgment_required',
+      details: {
+        recovery: {
+          judgments: [{ kind: 'scope', reason: 'choose a boundary' }],
+          required_actions: ['record current evidence'],
+          failure: 'autopilot interrupted',
+          next_command: `vibepro execute resume '/tmp/repo with space' --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
+        }
+      }
+    }
+  });
+
+  assert.match(summary, /judgment: scope - choose a boundary/);
+  assert.match(summary, /required_action: record current evidence/);
+  assert.match(summary, /failure: autopilot interrupted/);
+  assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+});
+
 test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;
