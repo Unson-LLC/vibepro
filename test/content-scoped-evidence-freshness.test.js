@@ -760,4 +760,5 @@ test('CEF-S-4 strict HEAD binding still invalidates docs-only commits', async ()
   const recoveredCommand = recoveredEvidence.commands.find((command) => command.kind === 'unit');
   assert.equal(recoveredCommand.content_binding.mode, 'strict_head');
   assert.deepEqual(recoveredCommand.observation.targets, ['src/content-binding-target.js']);
+  assert.equal(recoveredCommand.artifact, null);
 });

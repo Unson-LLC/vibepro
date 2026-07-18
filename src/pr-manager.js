@@ -11443,7 +11443,7 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       kind: command.kind ?? null,
       command: command.command ?? null,
       summary: command.summary ?? null,
-      artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
+      artifact: command.artifact ?? null,
       observation: command.observation ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
       recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
