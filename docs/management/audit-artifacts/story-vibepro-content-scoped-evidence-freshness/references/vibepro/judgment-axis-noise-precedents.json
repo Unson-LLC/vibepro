@@ -1,0 +1,247 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784220293001-4a19d010",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "12ファイルはStory・Architecture・Spec、runtime契約、CLI、回帰テスト、利用者向け手順で1つの原子的な公開契約を構成する。分割すると既定freshness、pass必須入力、判定ロジック、運用手順が中間状態で不整合になる。独立reviewerは現HEADのscopeをpassと判定済みで、無関係な機能変更は含まれない。",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T16:45:06.579Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784220293001-4a19d010",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "12ファイルはStory・Architecture・Spec、runtime契約、CLI、回帰テスト、利用者向け手順で1つの原子的な公開契約を構成する。分割すると既定freshness、pass必須入力、判定ロジック、運用手順が中間状態で不整合になる。独立reviewerは現HEADのscopeをpassと判定済みで、無関係な機能変更は含まれない。",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T16:55:18.528Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784220293001-4a19d010",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "12ファイルはStory・Architecture・Spec、runtime契約、CLI、回帰テスト、利用者向け手順で1つの原子的な公開契約を構成する。分割すると既定freshness、pass必須入力、判定ロジック、運用手順が中間状態で不整合になる。独立reviewerは現HEADのscopeをpassと判定済みで、無関係な機能変更は含まれない。",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T17:11:29.636Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:19|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:19",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T17:43:26.825Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:22|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:22",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-16T18:07:31.350Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:23|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:23",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T09:36:45.611Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:874|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:874",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T10:10:00.237Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:24|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:24",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T11:02:36.593Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:27|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:27",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:01:33.132Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784376286563-2131ae32",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "CLI/APIの移行点は英日README・CLI reference・release guide・CHANGELOGに記載済み。service deploy、feature flag、monitoring変更はなく、releaseは次package version、rollbackはgit/package versionのrevertで行う。",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:06:27.286Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784376283717-d35cc3e0",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "DB/schema/deployはなく、content_bindingは加算フィールドで旧readerは無視でき、欠落時は互換fallbackする。rollbackは当該commit/package versionのrevertで、strict defaultを維持する高リスクroleも残る。",
+      "artifact": "docs/guide/release-and-audit.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:06:27.286Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784376286563-2131ae32",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "CLI/APIの移行点は英日README・CLI reference・release guide・CHANGELOGに記載済み。service deploy、feature flag、monitoring変更はなく、releaseは次package version、rollbackはgit/package versionのrevertで行う。",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:21:06.226Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784376283717-d35cc3e0",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "DB/schema/deployはなく、content_bindingは加算フィールドで旧readerは無視でき、欠落時は互換fallbackする。rollbackは当該commit/package versionのrevertで、strict defaultを維持する高リスクroleも残る。",
+      "artifact": "docs/guide/release-and-audit.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:21:06.226Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:875|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "decision_id": "decision-1784222070447-77e4c044",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:875",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T12:21:06.226Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

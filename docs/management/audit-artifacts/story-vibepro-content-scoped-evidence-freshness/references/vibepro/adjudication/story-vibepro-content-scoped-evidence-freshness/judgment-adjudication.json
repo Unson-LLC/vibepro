@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "updated_at": "2026-07-18T12:05:55.170Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Acceptance replay covers current-to-stale transitions, strict invalidation, review closure, and recovery behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:55.165Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Current/stale/unbound review and verification states plus recovery commands are executable and regression tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:54.248Z"
+    },
+    {
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "needs_human_judgment",
+      "reason": "Auth denial is a semantic false positive from review-role vocabulary; an accepted noise decision records non-applicability instead of fabricating an auth test.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:53.311Z"
+    },
+    {
+      "item_id": "axis:release_ops",
+      "verdict": "needs_human_judgment",
+      "reason": "Release and operator migration are documentation decisions; an accepted release-ops decision records the package release and rollback path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:51.923Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "The files implement one public evidence-freshness contract and remain below the configured file threshold.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:50.898Z"
+    },
+    {
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "reason": "Review lifecycle start/close/record and evidence recovery transitions retain explicit provenance and are regression tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:49.835Z"
+    },
+    {
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "needs_human_judgment",
+      "reason": "Rollback is operational rather than automated; the accepted rollback decision documents additive metadata compatibility and commit/package revert.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:48.561Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "CLI contract changes and migration requirements are documented in English and Japanese references and changelog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:47.691Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Focused tests, AC acceptance replay, Node 20/22 CI, analyze, and CodeQL are current and passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:46.388Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Changed/missing surfaces, artifact-only inspection, stale strict reviews, and recovery reconstruction are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:44.287Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "The change is bounded to verification/review evidence binding, CLI recording, gates, tests, and operator docs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:42.692Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Fail-closed passing-review inspection and strict high-risk roles remain invariant.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:41.621Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Current strict-HEAD invalidation and its serial re-review cost are documented and reproduced by tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:40.193Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "The Story intent is explicit: reduce false staleness without weakening high-risk review freshness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:38.002Z"
+    }
+  ]
+}

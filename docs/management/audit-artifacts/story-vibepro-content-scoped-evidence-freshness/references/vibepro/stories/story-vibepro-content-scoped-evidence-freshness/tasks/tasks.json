@@ -1,20 +1,20 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-07-05T02:45:01.880Z",
+  "generated_at": "2026-07-16T15:44:59.769Z",
   "story": {
     "story_id": "story-vibepro-content-scoped-evidence-freshness",
-    "title": "証跡の鮮度を HEAD 束縛からコンテンツ束縛に変え、無関係コミットでの失効をなくす",
+    "title": "証跡の鮮度をHEAD束縛からコンテンツ束縛に変える",
     "ssot": "local",
     "status": "active",
-    "horizon": "month",
-    "view": "dev",
-    "period": "2026-07",
-    "started_at": "2026-07-05",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
     "due_at": null,
-    "category": "quality"
+    "category": null
   },
   "source_run": {
-    "run_id": "2026-07-05T024500Z",
+    "run_id": "2026-07-16T154453Z",
     "gate_status": "needs_review"
   },
   "tasks": [
@@ -99,14 +99,14 @@
           "src/session-efficiency-audit.js"
         ],
         "unmatched_files": [],
-        "matched_node_count": 79,
+        "matched_node_count": 92,
         "affected_communities": [
           {
-            "id": 15,
+            "id": 16,
             "route_count": 0,
             "file_count": 1,
-            "node_count": 79,
-            "edge_count": 179
+            "node_count": 92,
+            "edge_count": 220
           }
         ],
         "hub_nodes": [
@@ -114,36 +114,36 @@
             "id": "src_session_efficiency_audit_js",
             "label": "session-efficiency-audit.js",
             "source_file": "src/session-efficiency-audit.js",
-            "community": 15,
-            "degree": 78
+            "community": 16,
+            "degree": 91
           },
           {
             "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
             "label": "collectSessionEfficiencyAudit()",
             "source_file": "src/session-efficiency-audit.js",
-            "community": 15,
-            "degree": 14
+            "community": 16,
+            "degree": 16
           },
           {
             "id": "src_session_efficiency_audit_collectstoryartifactinventory",
             "label": "collectStoryArtifactInventory()",
             "source_file": "src/session-efficiency-audit.js",
-            "community": 15,
+            "community": 16,
             "degree": 10
+          },
+          {
+            "id": "src_session_efficiency_audit_commitauditautomationmemory",
+            "label": "commitAuditAutomationMemory()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 16,
+            "degree": 9
           },
           {
             "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
             "label": "parseCodexSessionJsonlFiles()",
             "source_file": "src/session-efficiency-audit.js",
-            "community": 15,
+            "community": 16,
             "degree": 9
-          },
-          {
-            "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
-            "label": "collectDetachedArtifactCandidates()",
-            "source_file": "src/session-efficiency-audit.js",
-            "community": 15,
-            "degree": 8
           }
         ],
         "related_files": [
@@ -152,8 +152,8 @@
           "src/evidence-cost-budget.js",
           "src/merge-manager.js"
         ],
-        "related_edge_count": 179,
-        "impact_score": 0.022,
+        "related_edge_count": 220,
+        "impact_score": 0.0237,
         "community_span": 1,
         "cross_community": false
       },
@@ -184,7 +184,7 @@
           },
           "evidence_refs": {
             "file": "src/session-efficiency-audit.js",
-            "line_count": 1657,
+            "line_count": 2038,
             "signals": [
               "auth",
               "validation",
@@ -216,14 +216,14 @@
             "src/session-efficiency-audit.js"
           ],
           "unmatched_files": [],
-          "matched_node_count": 79,
+          "matched_node_count": 92,
           "affected_communities": [
             {
-              "id": 15,
+              "id": 16,
               "route_count": 0,
               "file_count": 1,
-              "node_count": 79,
-              "edge_count": 179
+              "node_count": 92,
+              "edge_count": 220
             }
           ],
           "hub_nodes": [
@@ -231,36 +231,36 @@
               "id": "src_session_efficiency_audit_js",
               "label": "session-efficiency-audit.js",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 78
+              "community": 16,
+              "degree": 91
             },
             {
               "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
               "label": "collectSessionEfficiencyAudit()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 14
+              "community": 16,
+              "degree": 16
             },
             {
               "id": "src_session_efficiency_audit_collectstoryartifactinventory",
               "label": "collectStoryArtifactInventory()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
+              "community": 16,
               "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_commitauditautomationmemory",
+              "label": "commitAuditAutomationMemory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 16,
+              "degree": 9
             },
             {
               "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
               "label": "parseCodexSessionJsonlFiles()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
+              "community": 16,
               "degree": 9
-            },
-            {
-              "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
-              "label": "collectDetachedArtifactCandidates()",
-              "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 8
             }
           ],
           "related_files": [
@@ -269,8 +269,8 @@
             "src/evidence-cost-budget.js",
             "src/merge-manager.js"
           ],
-          "related_edge_count": 179,
-          "impact_score": 0.022,
+          "related_edge_count": 220,
+          "impact_score": 0.0237,
           "community_span": 1,
           "cross_community": false
         },
@@ -300,45 +300,45 @@
               "id": "src_session_efficiency_audit_js",
               "label": "session-efficiency-audit.js",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 78
+              "community": 16,
+              "degree": 91
             },
             {
               "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
               "label": "collectSessionEfficiencyAudit()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 14
+              "community": 16,
+              "degree": 16
             },
             {
               "id": "src_session_efficiency_audit_collectstoryartifactinventory",
               "label": "collectStoryArtifactInventory()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
+              "community": 16,
               "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_commitauditautomationmemory",
+              "label": "commitAuditAutomationMemory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 16,
+              "degree": 9
             },
             {
               "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
               "label": "parseCodexSessionJsonlFiles()",
               "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
+              "community": 16,
               "degree": 9
-            },
-            {
-              "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
-              "label": "collectDetachedArtifactCandidates()",
-              "source_file": "src/session-efficiency-audit.js",
-              "community": 15,
-              "degree": 8
             }
           ],
           "affected_communities": [
             {
-              "id": 15,
+              "id": 16,
               "route_count": 0,
               "file_count": 1,
-              "node_count": 79,
-              "edge_count": 179
+              "node_count": 92,
+              "edge_count": 220
             }
           ],
           "community_span": 1,

@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "生成review contractはeffective freshness policyと整合し、前回2件の契約ずれは解消",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "regression-agent-review-generated-contract-drift",
+      "disposition": "accepted",
+      "resolved_by": [
+        "9566ced"
+      ],
+      "reason": "generated English and Japanese guidance corrected in 9566ced",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "regression-agent-review-guide-contract-drift",
+      "disposition": "accepted",
+      "resolved_by": [
+        "a5245f3"
+      ],
+      "reason": "Japanese guide corrected in a5245f3",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    "../../../../../../private/tmp/vibepro-review-arch-pass.json"
+  ],
+  "inspection": {
+    "summary": "a5245f3..9566cedのsrc/agent-review.jsと回帰テストをread-only確認し、英日ともcontent-surface既定・strict HEAD例外を確認",
+    "evidence": "/private/tmp/vibepro-review-arch-pass.json",
+    "inputs": [
+      "src/agent-review.js",
+      "test/review-inspection-first.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "旧HEAD前提の残存懸念から、effective policy明記と旧文言拒否テストを確認してpassへ更新"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "9566cede5e005050bbab84378838992380a713e0",
+    "current_head_sha": "9566cede5e005050bbab84378838992380a713e0",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "9566cede5e005050bbab84378838992380a713e0",
+      "current_head_sha": "9566cede5e005050bbab84378838992380a713e0",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-16T18:14:43.088Z",
+  "git_context": {
+    "head_sha": "9566cede5e005050bbab84378838992380a713e0",
+    "current_branch": "codex/review-surface-policy",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T18:14:43.062Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "9566cede5e005050bbab84378838992380a713e0",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "d2dc762dec3b148c45d65325bac41edbc6e28c3e417ecb8d27d398b3009f2b4d",
+        "size": 149868
+      },
+      {
+        "path": "test/review-inspection-first.test.js",
+        "sha256": "55060a1d9c859f509b4e3dd4c95964761f272ed348f5679211eb0f7b4261b3ad",
+        "size": 17806
+      }
+    ],
+    "missing_files": [
+      "../../../../../../private/tmp/vibepro-review-arch-pass.json"
+    ],
+    "surface_hash": "baf8bcb430089c143f8a616e22448b2989c5da67b0ab5c83bec0aca43745e12c"
+  },
+  "source_fingerprint": "ebda960bb314c4c070f42866c30af60f801bf3d797a29360e9bfed1d7447f6f5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f6c1d-fadd-7171-8314-861832bf1668",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../private/tmp/vibepro-review-arch-pass.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-content-scoped-evidence-freshness/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-review-arch-pass.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

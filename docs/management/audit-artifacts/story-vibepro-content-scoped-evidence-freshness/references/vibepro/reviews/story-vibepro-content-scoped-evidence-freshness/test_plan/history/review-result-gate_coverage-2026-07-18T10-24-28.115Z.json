@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "needs_changes",
+  "summary": "Gate output and strict recovery execution need direct regression coverage",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "gate-coverage-review-pr-freshness-details",
+      "detail": "Add direct assertions for review binding details emitted by gate:pr_freshness"
+    },
+    {
+      "severity": "low",
+      "id": "gate-coverage-strict-recovery-execution",
+      "detail": "Execute a generated strict recovery command and assert strict policy remains recordable"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Spec, architecture, current diff, gate sources, and focused tests",
+    "evidence": "/private/tmp/vibepro-review-test-plan-gate-coverage-3f7e360.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-content-scoped-evidence-freshness.md",
+      "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+      "src/pr-manager.js",
+      "test/content-scoped-evidence-freshness.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "broad coverage assumed -> two alternate-path regression gaps found"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+    "current_head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+      "current_head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-18T10:24:28.115Z",
+  "git_context": {
+    "head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+    "current_branch": "codex/review-surface-policy",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "6bbe66219b3949dc78e19327ff2f43488d43182f8df06cffce3db2d5608a7b2e",
+    "user_status_fingerprint_hash": "6bbe66219b3949dc78e19327ff2f43488d43182f8df06cffce3db2d5608a7b2e",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T10:24:28.085Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "3f7e3604f888bdc170ffd89ea6e5fd8d0868b961",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-content-scoped-evidence-freshness.md",
+        "sha256": "fb5583f6dfc5ca7bdd3721c9e81609154fd6a3b1919b59097cd9855e19520af9",
+        "size": 6774
+      },
+      {
+        "path": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+        "sha256": "cefd85b69a0a6a24dcce4cd647c848f220763e0851a0ec4e45d15876945e8a8d",
+        "size": 6778
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "6d005ef19ec05d004fbec1b56ce61502ef66ac181867496c22dfb683dcbf8553",
+        "size": 645160
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "5da0f818ddd5f3531e6a3cbf107bd96a3eee0c7c23f4e22392dca2ed6289fc01",
+        "size": 30361
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e8cf6b29fa08bada06ee88d69554fd4fa06dba92a50e94e50ff9e77f7b9c41c2"
+  },
+  "source_fingerprint": "1e6693fb3481f7790849e661d66c689ec7d97b4c3ac085d596ab66bfd4646e60",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f74b8-49db-7a23-ab90-33ceebf73d51",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../private/tmp/vibepro-review-test-plan-gate-coverage-3f7e360.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-content-scoped-evidence-freshness/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-review-test-plan-gate-coverage-3f7e360.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "updated_at": "2026-07-18T12:05:35.588Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "strict reviews retain inspected file hashes for later reconstruction.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:35.583Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "passing review records reject missing summaries, external inspection inputs, judgment delta, or artifact-only inspection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:33.859Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "ordinary roles default content_surface while built-in high-risk roles remain strict and global strict default is rejected.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:32.468Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "focused unit and acceptance E2E cover docs-only, in-surface, review, and strict branches.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:31.482Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "pr_freshness exposes surface files, hashes, changed files, and missing files.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:30.467Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "strict HEAD review invalidates on any HEAD change and preserves its explicit reason.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:27.794Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "review evidence remains current only while inspected input hashes remain unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:26.127Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "bound source change and deletion both produce stale evidence with changed/missing file details.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:25.139Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "docs-only continuation preserves current content-bound verification evidence in focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f750f-e587-7e12-b797-b9ee9ff30bee",
+        "session_ref": "subagent:019f750f-e587-7e12-b797-b9ee9ff30bee"
+      },
+      "head_commit": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "recorded_at": "2026-07-18T12:05:24.169Z"
+    }
+  ]
+}

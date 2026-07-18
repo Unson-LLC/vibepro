@@ -2,9 +2,9 @@
 
 | 項目 | 内容 |
 |------|------|
-| Story | 証跡の鮮度を HEAD 束縛からコンテンツ束縛に変え、無関係コミットでの失効をなくす |
+| Story | 証跡の鮮度をHEAD束縛からコンテンツ束縛に変える |
 | Story ID | story-vibepro-content-scoped-evidence-freshness |
-| Run ID | 2026-07-05T024500Z |
+| Run ID | 2026-07-16T154453Z |
 | Gate | needs_review |
 | タスク数 | 1 |
 

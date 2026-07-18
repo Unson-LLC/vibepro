@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+  "observed": {
+    "check": "test (20)",
+    "conclusion": "SUCCESS",
+    "run_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29643441200/job/88077602289",
+    "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17"
+  },
+  "ci_check": {
+    "name": "test (20)",
+    "status": "COMPLETED",
+    "conclusion": "SUCCESS",
+    "workflow_name": "CI",
+    "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29643441200/job/88077602289"
+  }
+}

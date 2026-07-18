@@ -2,33 +2,38 @@
   "schema_version": "0.1.0",
   "planner_version": "0.1.0",
   "story_id": "story-vibepro-content-scoped-evidence-freshness",
-  "created_at": "2026-07-05T04:32:16.375Z",
-  "evidence_depth": "standard",
-  "default_depth": "standard",
+  "created_at": "2026-07-18T12:22:11.206Z",
+  "evidence_depth": "summary",
+  "default_depth": "summary",
   "manual_override": {
     "status": "none",
     "depth": null,
     "reason": null,
-    "consumer": null
+    "consumer": null,
+    "targets": []
   },
   "planner_inputs": {
     "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "head_sha": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
-    "changed_file_count": 14,
-    "scope_status": "reviewable",
-    "risk_profile": "light",
+    "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+    "changed_file_count": 27,
+    "scope_status": "needs_clean_branch",
+    "risk_profile": "workflow_heavy",
     "risk_surfaces": [
       "gate_orchestration",
       "regression_blast_radius",
       "review_lifecycle",
-      "test_coverage",
-      "verification_evidence"
+      "test_coverage"
     ],
-    "pr_route": "runtime_change",
+    "pr_route": "config_or_agent_policy",
     "engineering_route": "agent_workflow"
   },
   "risk_signals": [
+    {
+      "kind": "risk_profile",
+      "value": "workflow_heavy",
+      "source": "change_classification"
+    },
     {
       "kind": "risk_surface",
       "value": "gate_orchestration",
@@ -47,11 +52,6 @@
     {
       "kind": "risk_surface",
       "value": "test_coverage",
-      "source": "change_classification"
-    },
-    {
-      "kind": "risk_surface",
-      "value": "verification_evidence",
       "source": "change_classification"
     },
     {
@@ -86,8 +86,8 @@
       "gate": null
     },
     {
-      "surface": "verification_evidence",
-      "reason": "risk surface detected",
+      "surface": "workflow_heavy",
+      "reason": "high-risk profile detected",
       "source": "change_classification",
       "gate": null
     },
@@ -95,6 +95,42 @@
       "surface": "agent_workflow",
       "reason": "high-risk engineering judgment route detected",
       "source": "engineering_judgment",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_release_ops",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_rollback_sensitive",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_scope_reviewability",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:pr_size",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:split_resolution",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:pr_scope_judgment",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
       "gate": null
     }
   ],
@@ -120,19 +156,53 @@
       "source": "change_classification"
     },
     {
-      "surface": "verification_evidence",
-      "reason": "risk surface detected",
+      "surface": "workflow_heavy",
+      "reason": "high-risk profile detected",
       "source": "change_classification"
     },
     {
       "surface": "agent_workflow",
       "reason": "high-risk engineering judgment route detected",
       "source": "engineering_judgment"
+    },
+    {
+      "surface": "gate:judgment_axis_release_ops",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:judgment_axis_rollback_sensitive",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:judgment_axis_scope_reviewability",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:pr_size",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:split_resolution",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:pr_scope_judgment",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
     }
   ],
   "artifact_policy": {
-    "write_html_reports": true,
-    "write_full_gate_dag_dump": true,
+    "write_html_reports": false,
+    "write_pr_prepare_html": false,
+    "write_review_cockpit_html": false,
+    "write_gate_dag_html": false,
+    "write_split_plan_html": false,
+    "write_full_gate_dag_dump": false,
     "write_full_review_lifecycle_dump": false,
     "write_raw_logs": false,
     "pr_body_token_policy": {
@@ -152,13 +222,15 @@
       "human-review.json",
       "architecture-review.json",
       "decision-records.json",
+      "ref-topology.json"
+    ],
+    "skipped_artifacts": [
       "pr-prepare.html",
       "review-cockpit.html",
       "gate-dag.html",
       "gate-dag.json",
       "split-plan.html"
-    ],
-    "skipped_artifacts": []
+    ]
   },
   "generated_artifacts": [
     "evidence-reuse.json",
@@ -172,49 +244,53 @@
     "human-review.json",
     "architecture-review.json",
     "decision-records.json",
+    "ref-topology.json"
+  ],
+  "skipped_artifacts": [
     "pr-prepare.html",
     "review-cockpit.html",
     "gate-dag.html",
     "gate-dag.json",
     "split-plan.html"
   ],
-  "skipped_artifacts": [],
   "consumers": [
     "evidence-reuse.json",
-    "review-cockpit.html",
-    "gate-dag.html",
-    "split-plan.html",
+    "evidence-plan.json",
     "decision-index.json",
-    "senior-gap-judgment.json"
+    "senior-gap-judgment.json",
+    "pr-prepare.json",
+    "pr-body.md",
+    "split-plan.json",
+    "traceability.json",
+    "human-review.json",
+    "architecture-review.json",
+    "decision-records.json",
+    "ref-topology.json"
   ],
   "evidence_reuse": {
     "schema_version": "0.1.0",
     "model": "vibepro-evidence-summary-reuse-v1",
     "story_id": "story-vibepro-content-scoped-evidence-freshness",
-    "evidence_key": "evk_a3adc5e7f14e81cc8e86d0ab3ad553d5",
-    "status": "stale",
-    "reason": "evidence_key_inputs_changed",
-    "stale_reasons": [
-      {
-        "field": "risk_surface_fingerprint",
-        "previous": "sha256:cccf3e00f059a72c00fa654694d387c7b3d11a37b845c5a5fdc83872afab4092",
-        "current": "sha256:be89ec055c63c2dd048545b9afffb2a6c194d393dd75fe73adf2d67f54f52958",
-        "reason": "risk_surface_fingerprint changed"
-      }
-    ],
-    "fresh_use_allowed": false,
+    "evidence_key": "evk_338d39931072a20901e14b987d35dc8e",
+    "status": "hit",
+    "reason": "evidence_key_match",
+    "stale_reasons": [],
+    "fresh_use_allowed": true,
     "used_as_fresh": false,
-    "gate_status": "needs_refresh",
+    "gate_status": "passed",
     "artifact_value_ledger": {
       "status": "present",
       "model": "vibepro-artifact-value-ledger-v1",
       "head_binding_status": "current_head_bound",
-      "artifact_count": 5,
-      "decision_bound_count": 5,
-      "linked_consumer_count": 5,
+      "artifact_count": 4,
+      "decision_bound_count": 4,
+      "decision_changed_count": 0,
+      "decision_change_unconfirmed_count": 4,
+      "unused_artifact_count": 0,
+      "linked_consumer_count": 4,
       "session_attribution_status": "not_collected_in_pr_prepare",
       "session_attribution_confidence": "none",
-      "total_token_estimate": 331
+      "total_token_estimate": 270
     },
     "session_attribution_ledger": {
       "status": "not_collected_in_pr_prepare",
@@ -224,42 +300,42 @@
       "session_count": 0,
       "unattributed_count": 0
     },
-    "verification_summary_fingerprint": "sha256:c321fe99d56c75b63c62383c9aa7f435e12476d388832f19be6c4f8e9d178662",
-    "verification_evidence_updated_at": "2026-07-05T04:32:02.248Z",
+    "verification_summary_fingerprint": "sha256:77c67d5ce15cf026af36d1dd902d284951f0b72b1a56945afd5b0a279c36edb7",
+    "verification_evidence_updated_at": "2026-07-18T12:15:24.098Z",
     "verification_command_timestamps": [
       {
-        "kind": "unit",
-        "executed_at": "2026-07-05T04:32:02.248Z",
-        "git_recorded_at": "2026-07-05T04:32:02.240Z"
+        "kind": "e2e",
+        "executed_at": "2026-07-18T12:15:24.098Z",
+        "git_recorded_at": "2026-07-18T12:15:24.086Z"
       },
       {
         "kind": "integration",
-        "executed_at": "2026-07-05T04:29:22.118Z",
-        "git_recorded_at": "2026-07-05T04:29:22.110Z"
+        "executed_at": "2026-07-18T12:06:52.915Z",
+        "git_recorded_at": "2026-07-18T12:06:52.795Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-18T12:04:08.509Z",
+        "git_recorded_at": "2026-07-18T12:04:08.432Z"
       },
       {
         "kind": "build",
-        "executed_at": "2026-07-05T04:28:54.065Z",
-        "git_recorded_at": "2026-07-05T04:28:54.064Z"
-      },
-      {
-        "kind": "e2e",
-        "executed_at": "2026-07-05T04:26:14.505Z",
-        "git_recorded_at": "2026-07-05T04:26:14.497Z"
+        "executed_at": "2026-07-18T12:00:42.330Z",
+        "git_recorded_at": "2026-07-18T12:00:42.328Z"
       },
       {
         "kind": "typecheck",
-        "executed_at": "2026-07-05T04:24:36.307Z",
-        "git_recorded_at": "2026-07-05T04:24:36.298Z"
+        "executed_at": "2026-07-18T11:18:32.561Z",
+        "git_recorded_at": "2026-07-18T11:18:32.501Z"
       }
     ],
     "full_evidence": {
-      "status": "generated",
+      "status": "reused",
       "generation_count": 1,
       "generation_count_scope": "same_evidence_key",
       "same_key_generation_count": 1,
-      "cumulative_generation_count": 28,
-      "digest": "sha256:1047e0bcdbef7d079cc096d0c8f9eba6a54ed9d4f636049cbb219de0701e01ca",
+      "cumulative_generation_count": 43,
+      "digest": "sha256:6bede86fa05612e953e7ff63f4dbf4565be5dac6db73a3d326f6e07f0f0d7208",
       "reference": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/decision-index.json"
     },
     "summary_artifacts": {
@@ -267,7 +343,7 @@
       "evidence_plan": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/evidence-plan.json",
       "decision_index": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/decision-index.json",
       "pr_prepare": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/pr-prepare.json",
-      "gate_dag": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/gate-dag.json"
+      "gate_dag": null
     }
   }
 }

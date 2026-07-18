@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "machine-readable evidenceとstory integration surfaceの不足",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "GE-CMD-002",
+      "detail": "unit・E2E・integration artifactがunrecognizedでpassをcross-checkできない"
+    },
+    {
+      "severity": "medium",
+      "id": "GE-COV-003",
+      "detail": "integration正本が本Storyのfreshness lifecycleを検証していない"
+    },
+    {
+      "severity": "medium",
+      "id": "GE-BIND-004",
+      "detail": "E2E bindingが実行時に読むStory実装とtest surfaceを含まない"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "HEAD 820af60の実装・Story・Architecture・Spec・verification artifactsをread-only検査し、unit 38件とstatic E2E 1件を再実行した",
+    "evidence": "subagent:019f6bb1-b698-7d01-945b-a756769089ef",
+    "inputs": [
+      "src/agent-review.js",
+      "src/content-binding.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "freshness同期問題は解消したが、JUnit artifactのmachine cross-checkとstory integration bindingは未解消と判定"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+    "current_head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+      "current_head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-16T16:23:19.334Z",
+  "git_context": {
+    "head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+    "current_branch": "codex/review-surface-policy",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-16T16:23:19.281Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "gate evidence review must bind to the exact release candidate HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1add9c6d2466bef122bbb6b802fa5b55c685ef36",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "9e6553f88c694689f0e9404f6bf963dd40fed131e11f20014df23181b47b9a2c",
+        "size": 149481
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "b32cd79977799ed59d3df8d8c2e791f31c9aadc24b5173890ab01ad8108980c9",
+        "size": 184806
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "b7bfd602c0b40d9b09d47b8821a19e8042b415410d5d84314e1f8a075cf67f77",
+        "size": 7453
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "ad6e363930d13cb0e1872b0f78f32b8fc4b8a675cb98f5217873d91881acc116",
+        "size": 644585
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "f3531d1710be7c0995035a2b821b02d91ef615a4e8f35c4cd38b706128ec0d49",
+        "size": 17680
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "cf70d602f54726ed881545664fa01b9b7e887dfd3a0009c81d05b677795f69fd",
+        "size": 1074879
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "314eedc617ae4ccdc51c556cf4efc9316d11bc2fbfe7545129588765cb850b9e"
+  },
+  "source_fingerprint": "676d48dd3ffe5ec61f47aab6b51ae49a38726ce146624aa16e6b1a2db4a41762",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f6bb1-b698-7d01-945b-a756769089ef",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-content-scoped-evidence-freshness/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f6bb1-b698-7d01-945b-a756769089ef",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

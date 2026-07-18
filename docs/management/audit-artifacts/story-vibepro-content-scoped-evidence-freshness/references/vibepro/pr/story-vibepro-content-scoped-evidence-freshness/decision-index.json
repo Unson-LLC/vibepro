@@ -3,8 +3,8 @@
   "model": "vibepro-evidence-decision-index-v1",
   "planner_version": "0.1.0",
   "story_id": "story-vibepro-content-scoped-evidence-freshness",
-  "created_at": "2026-07-05T04:32:16.375Z",
-  "evidence_depth": "standard",
+  "created_at": "2026-07-18T12:22:11.206Z",
+  "evidence_depth": "summary",
   "targeted_full_surfaces": [
     {
       "surface": "gate_orchestration",
@@ -31,8 +31,8 @@
       "gate": null
     },
     {
-      "surface": "verification_evidence",
-      "reason": "risk surface detected",
+      "surface": "workflow_heavy",
+      "reason": "high-risk profile detected",
       "source": "change_classification",
       "gate": null
     },
@@ -41,13 +41,49 @@
       "reason": "high-risk engineering judgment route detected",
       "source": "engineering_judgment",
       "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_release_ops",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_rollback_sensitive",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_scope_reviewability",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:pr_size",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:split_resolution",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:pr_scope_judgment",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
     }
   ],
   "git": {
     "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "head_sha": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
-    "changed_file_count": 14
+    "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+    "changed_file_count": 27
   },
   "file_groups": {
     "story_docs": 1,
@@ -57,15 +93,18 @@
     "responsibility_authority_metadata": 0,
     "contract_metadata": 0,
     "source": 5,
-    "tests": 5,
-    "repo_control": 0,
+    "tests": 7,
+    "repo_control": 2,
     "vibepro_artifacts": 0,
-    "other": 1
+    "other": 10
   },
   "scope": {
-    "status": "reviewable",
-    "recommended_strategy": "current_branch_pr",
-    "reasons": []
+    "status": "needs_clean_branch",
+    "recommended_strategy": "clean_branch_or_split_pr",
+    "reasons": [
+      "repo制御ファイルやagent設定が差分に含まれている",
+      "baseからのcommitが 19 件あり、Story外の変更混入を確認する必要がある"
+    ]
   },
   "gate_summary": {
     "overall_status": "ready_for_review",
@@ -81,24 +120,26 @@
     "confidence": 0.82,
     "signals": [
       "surface:agent_or_gate_workflow",
-      "risk_profile:light"
+      "risk_profile:workflow_heavy"
     ],
-    "active_axis_count": 3,
+    "active_axis_count": 5,
     "active_axes": [
       "public_contract",
+      "rollback_sensitive",
       "execution_topology",
-      "scope_reviewability"
+      "scope_reviewability",
+      "release_ops"
     ],
     "judgment_axes": [
       {
         "axis": "public_contract",
         "status": "active_passed",
-        "reason": "pr_route:runtime_change; file_group:contract_docs; text:public_contract"
+        "reason": "pr_route:config_or_agent_policy; file_group:contract_docs; text:public_contract"
       },
       {
         "axis": "rollback_sensitive",
-        "status": "inactive",
-        "reason": "No rollback_sensitive signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+        "status": "active_accepted_followup",
+        "reason": "changed_surface:rollback_or_rollout"
       },
       {
         "axis": "security_boundary",
@@ -127,17 +168,22 @@
       },
       {
         "axis": "scope_reviewability",
-        "status": "active_passed",
-        "reason": "graphify:related_files"
+        "status": "active_accepted_followup",
+        "reason": "scope:needs_clean_branch; changed_files:27; mixed_surface:repo_control_with_product_change; graphify:related_files"
       },
       {
         "axis": "release_ops",
-        "status": "inactive",
-        "reason": "No release_ops signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+        "status": "active_blocked",
+        "reason": "changed_path:release_ops"
       }
     ]
   },
   "risk_signals": [
+    {
+      "kind": "risk_profile",
+      "value": "workflow_heavy",
+      "source": "change_classification"
+    },
     {
       "kind": "risk_surface",
       "value": "gate_orchestration",
@@ -159,33 +205,30 @@
       "source": "change_classification"
     },
     {
-      "kind": "risk_surface",
-      "value": "verification_evidence",
-      "source": "change_classification"
-    },
-    {
       "kind": "engineering_route",
       "value": "agent_workflow",
       "source": "engineering_judgment"
     }
   ],
   "pr_route": {
-    "route_type": "runtime_change",
+    "route_type": "config_or_agent_policy",
     "required_gates": [
-      "story",
-      "spec",
-      "verification",
-      "pr_body_contract"
+      "repo_control_boundary",
+      "split_resolution",
+      "pr_body_contract",
+      "workflow_heavy"
     ],
     "signals": [
-      "file_group:source"
+      "file_group:repo_control",
+      "scope:needs_clean_branch",
+      "risk_profile:workflow_heavy"
     ]
   },
   "traceability_clause_coverage": {
-    "clause_count": 6,
-    "acceptance_criteria_count": 6,
+    "clause_count": 9,
+    "acceptance_criteria_count": 9,
     "scenario_clause_count": 0,
-    "mapped_count": 6,
+    "mapped_count": 9,
     "weakly_mapped_count": 0,
     "unmapped_count": 0,
     "examples": []
@@ -199,30 +242,26 @@
     "schema_version": "0.1.0",
     "model": "vibepro-evidence-summary-reuse-v1",
     "story_id": "story-vibepro-content-scoped-evidence-freshness",
-    "evidence_key": "evk_a3adc5e7f14e81cc8e86d0ab3ad553d5",
-    "status": "stale",
-    "reason": "evidence_key_inputs_changed",
-    "stale_reasons": [
-      {
-        "field": "risk_surface_fingerprint",
-        "previous": "sha256:cccf3e00f059a72c00fa654694d387c7b3d11a37b845c5a5fdc83872afab4092",
-        "current": "sha256:be89ec055c63c2dd048545b9afffb2a6c194d393dd75fe73adf2d67f54f52958",
-        "reason": "risk_surface_fingerprint changed"
-      }
-    ],
-    "fresh_use_allowed": false,
+    "evidence_key": "evk_338d39931072a20901e14b987d35dc8e",
+    "status": "hit",
+    "reason": "evidence_key_match",
+    "stale_reasons": [],
+    "fresh_use_allowed": true,
     "used_as_fresh": false,
-    "gate_status": "needs_refresh",
+    "gate_status": "passed",
     "artifact_value_ledger": {
       "status": "present",
       "model": "vibepro-artifact-value-ledger-v1",
       "head_binding_status": "current_head_bound",
-      "artifact_count": 5,
-      "decision_bound_count": 5,
-      "linked_consumer_count": 5,
+      "artifact_count": 4,
+      "decision_bound_count": 4,
+      "decision_changed_count": 0,
+      "decision_change_unconfirmed_count": 4,
+      "unused_artifact_count": 0,
+      "linked_consumer_count": 4,
       "session_attribution_status": "not_collected_in_pr_prepare",
       "session_attribution_confidence": "none",
-      "total_token_estimate": 331
+      "total_token_estimate": 270
     },
     "session_attribution_ledger": {
       "status": "not_collected_in_pr_prepare",
@@ -232,42 +271,42 @@
       "session_count": 0,
       "unattributed_count": 0
     },
-    "verification_summary_fingerprint": "sha256:c321fe99d56c75b63c62383c9aa7f435e12476d388832f19be6c4f8e9d178662",
-    "verification_evidence_updated_at": "2026-07-05T04:32:02.248Z",
+    "verification_summary_fingerprint": "sha256:77c67d5ce15cf026af36d1dd902d284951f0b72b1a56945afd5b0a279c36edb7",
+    "verification_evidence_updated_at": "2026-07-18T12:15:24.098Z",
     "verification_command_timestamps": [
       {
-        "kind": "unit",
-        "executed_at": "2026-07-05T04:32:02.248Z",
-        "git_recorded_at": "2026-07-05T04:32:02.240Z"
+        "kind": "e2e",
+        "executed_at": "2026-07-18T12:15:24.098Z",
+        "git_recorded_at": "2026-07-18T12:15:24.086Z"
       },
       {
         "kind": "integration",
-        "executed_at": "2026-07-05T04:29:22.118Z",
-        "git_recorded_at": "2026-07-05T04:29:22.110Z"
+        "executed_at": "2026-07-18T12:06:52.915Z",
+        "git_recorded_at": "2026-07-18T12:06:52.795Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-18T12:04:08.509Z",
+        "git_recorded_at": "2026-07-18T12:04:08.432Z"
       },
       {
         "kind": "build",
-        "executed_at": "2026-07-05T04:28:54.065Z",
-        "git_recorded_at": "2026-07-05T04:28:54.064Z"
-      },
-      {
-        "kind": "e2e",
-        "executed_at": "2026-07-05T04:26:14.505Z",
-        "git_recorded_at": "2026-07-05T04:26:14.497Z"
+        "executed_at": "2026-07-18T12:00:42.330Z",
+        "git_recorded_at": "2026-07-18T12:00:42.328Z"
       },
       {
         "kind": "typecheck",
-        "executed_at": "2026-07-05T04:24:36.307Z",
-        "git_recorded_at": "2026-07-05T04:24:36.298Z"
+        "executed_at": "2026-07-18T11:18:32.561Z",
+        "git_recorded_at": "2026-07-18T11:18:32.501Z"
       }
     ],
     "full_evidence": {
-      "status": "generated",
+      "status": "reused",
       "generation_count": 1,
       "generation_count_scope": "same_evidence_key",
       "same_key_generation_count": 1,
-      "cumulative_generation_count": 28,
-      "digest": "sha256:1047e0bcdbef7d079cc096d0c8f9eba6a54ed9d4f636049cbb219de0701e01ca",
+      "cumulative_generation_count": 43,
+      "digest": "sha256:6bede86fa05612e953e7ff63f4dbf4565be5dac6db73a3d326f6e07f0f0d7208",
       "reference": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/decision-index.json"
     },
     "summary_artifacts": {
@@ -275,14 +314,14 @@
       "evidence_plan": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/evidence-plan.json",
       "decision_index": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/decision-index.json",
       "pr_prepare": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/pr-prepare.json",
-      "gate_dag": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/gate-dag.json"
+      "gate_dag": null
     }
   },
   "senior_gap_judgment": {
     "status": "passed_with_residual_risk",
-    "gap_count": 2,
+    "gap_count": 4,
     "blocking_gap_count": 0,
-    "residual_risk_count": 2,
-    "followup_count": 2
+    "residual_risk_count": 4,
+    "followup_count": 4
   }
 }

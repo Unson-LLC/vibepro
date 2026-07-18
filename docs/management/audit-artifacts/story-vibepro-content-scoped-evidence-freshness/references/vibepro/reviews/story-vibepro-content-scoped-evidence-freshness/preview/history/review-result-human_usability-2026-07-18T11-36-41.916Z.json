@@ -1,0 +1,159 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "pass",
+  "summary": "Artifact消失時も既存pathを保持してfail-closedにするためblocking defectはない。自動実行や証跡の黙示的弱化は行わない。",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "human-usability-artifact-regeneration-guidance",
+      "detail": "Document that operators should rerun the original test/build to regenerate a missing artifact before verify record."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "human-usability-artifact-regeneration-guidance",
+      "disposition": "deferred",
+      "resolved_by": [],
+      "reason": "Non-blocking documentation clarification; current fail-closed behavior is correct and changing runtime semantics would weaken evidence or cross a safety boundary.",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected remediation serialization, artifact existence validation, focused recovery and artifact-check tests, and the architecture contract.",
+    "evidence": "/private/tmp/vibepro-review-human-usability-0d2e5d2.json",
+    "inputs": [
+      "src/pr-manager.js",
+      "src/verification-evidence.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/verification-evidence-artifact-check.test.js",
+      "docs/architecture/vibepro-content-scoped-evidence-freshness.md"
+    ]
+  },
+  "judgment_delta": [
+    "One-click recovery concern -> non-blocking because verify record is a recorder/cross-check; preserving the artifact path is fail-closed, while silently dropping it weakens provenance and auto-running stored commands crosses a safety boundary."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+    "current_head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+      "current_head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-18T11:36:41.916Z",
+  "git_context": {
+    "head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+    "current_branch": "codex/review-surface-policy",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T11:36:41.879Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "0d2e5d2307206dffbc90040e5be563a0b503dc74",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+        "sha256": "7470b4ae368416817fc7551ece60d866faa6e9c1cdb9380423063e2769c301f1",
+        "size": 4274
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "8c43782f0f3193984f03e8004ffe3603cc13e1603c28674455580418d988f2e8",
+        "size": 646072
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "adbb7a63acdc09e6477563be7cd6a1bed6eaab4ce912e00d55ea1e6abb10597c",
+        "size": 15492
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "acc860690d156397cfd31fe1c54f06d6d235606bcdc4bc649ad5b40f917b3947",
+        "size": 35147
+      },
+      {
+        "path": "test/verification-evidence-artifact-check.test.js",
+        "sha256": "da87edf380fb2b7444655a524b6ca8fcdcd84b3be1b6e917381eb17b0a6791a2",
+        "size": 8501
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4cc619f2d54f105cda93353d81fc69c38a362f12967c0efaf03f09a3719600dc"
+  },
+  "source_fingerprint": "d175319a5e972db333113d818b82c2cad3c4e0ee23565c90971553ba4916c276",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f74f9-3126-7b73-9eb7-e03bb84e698b",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../private/tmp/vibepro-review-human-usability-0d2e5d2.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-content-scoped-evidence-freshness/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-review-human-usability-0d2e5d2.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

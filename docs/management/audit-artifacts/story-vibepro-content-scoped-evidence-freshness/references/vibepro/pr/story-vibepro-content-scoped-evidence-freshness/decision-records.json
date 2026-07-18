@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "model": "vibepro-decision-records-v1",
   "story_id": "story-vibepro-content-scoped-evidence-freshness",
-  "updated_at": "2026-07-05T03:56:07.034Z",
+  "updated_at": "2026-07-18T12:06:15.508Z",
   "warnings": [
     {
       "id": "managed_worktree_locality",
@@ -12,27 +12,57 @@
       "command_name": "decision record",
       "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
       "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+      "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
       "expected_root": null,
-      "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-      "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+      "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+      "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
       "managed_worktree": null
     }
   ],
   "decisions": [
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223767033-d6773552",
+      "decision_id": "decision-1784376375506-aae5b76b",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "noise",
       "status": "accepted",
-      "source": "gap:design_ssot:2",
-      "source_status": "needs_review",
-      "summary": "Accepted senior gap for spec doc registration: docs/specs/story-vibepro-content-scoped-evidence-freshness.md is intentionally story-local and finalized via VibePro spec workflow.",
-      "reason": "The spec links to implemented behavior and has current spec drift evidence plus full regression coverage.",
+      "source": "gate:judgment_dag_adjudication:failure_mode:auth_denied",
+      "source_status": "needs_human_judgment",
+      "summary": "auth_denied judgment is not applicable",
+      "reason": "No auth, permission, secret, or security boundary is changed; candidate arose from review-role vocabulary.",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -47,35 +77,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:07.033Z"
+        "recorded_at": "2026-07-18T12:06:15.497Z"
       },
-      "recorded_at": "2026-07-05T03:56:07.034Z"
+      "recorded_at": "2026-07-18T12:06:15.508Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223766523-c21cba7a",
+      "decision_id": "decision-1784376370928-9f05185c",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
       "type": "needs_review",
       "status": "accepted",
-      "source": "gap:design_ssot:1",
-      "source_status": "needs_review",
-      "summary": "Accepted senior gap for architecture doc registration: docs/architecture/vibepro-content-scoped-evidence-freshness.md is intentionally story-local.",
-      "reason": "The doc is reviewed in final gate_evidence review and its claims are exercised by current tests and PR gate replay evidence.",
+      "source": "gate:judgment_dag_adjudication:axis:release_ops",
+      "source_status": "needs_human_judgment",
+      "summary": "release-ops judgment accepted",
+      "reason": "English/Japanese operator migration and release notes are current; no service deployment, feature flag, or monitoring migration is required.",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "CHANGELOG.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -90,35 +150,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:06.522Z"
+        "recorded_at": "2026-07-18T12:06:10.917Z"
       },
-      "recorded_at": "2026-07-05T03:56:06.524Z"
+      "recorded_at": "2026-07-18T12:06:10.932Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223765805-1c881617",
+      "decision_id": "decision-1784376366476-80f0eecd",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
       "type": "needs_review",
       "status": "accepted",
-      "source": "gap:gate:design_ssot_reconciliation",
-      "source_status": "needs_review",
-      "summary": "Accepted senior gap for Design SSOT reconciliation: remaining concern is limited to two new story-local design docs, both reviewed and accepted for this PR.",
-      "reason": "No stale child, missing required child, frontmatter gap, or contradiction is reported; only coverage review remains, and it is covered by explicit path decisions.",
+      "source": "gate:judgment_dag_adjudication:axis:rollback_sensitive",
+      "source_status": "needs_human_judgment",
+      "summary": "rollback-sensitive judgment accepted",
+      "reason": "Additive content_binding metadata tolerates absent legacy fields; rollback is commit/package revert and high-risk strict defaults remain.",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/guide/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -133,35 +223,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:05.803Z"
+        "recorded_at": "2026-07-18T12:06:06.466Z"
       },
-      "recorded_at": "2026-07-05T03:56:05.805Z"
+      "recorded_at": "2026-07-18T12:06:06.480Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223765011-05705758",
+      "decision_id": "decision-1784376286563-2131ae32",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "waiver",
       "status": "accepted",
-      "source": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
-      "source_status": "needs_review",
-      "summary": "Accepted unregistered spec doc: this is the story-local machine-readable/human spec for content-scoped evidence freshness and intentionally belongs to this PR scope.",
-      "reason": "The spec is finalized through VibePro spec write/drift workflow and aligns with implementation/tests; it does not contradict existing registered Design SSOT lineage.",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "operator migration and release path are documented",
+      "reason": "CLI/APIの移行点は英日README・CLI reference・release guide・CHANGELOGに記載済み。service deploy、feature flag、monitoring変更はなく、releaseは次package version、rollbackはgit/package versionのrevertで行う。",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "CHANGELOG.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -176,35 +296,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:05.010Z"
+        "recorded_at": "2026-07-18T12:04:46.487Z"
       },
-      "recorded_at": "2026-07-05T03:56:05.011Z"
+      "recorded_at": "2026-07-18T12:04:46.576Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223764175-0ae098a0",
+      "decision_id": "decision-1784376283717-d35cc3e0",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "waiver",
       "status": "accepted",
-      "source": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
-      "source_status": "needs_review",
-      "summary": "Accepted unregistered architecture doc: this is a story-local architecture artifact for content-scoped evidence freshness, not a replacement for an existing Design SSOT root.",
-      "reason": "The architecture doc only describes the new freshness binding model introduced in this PR and is covered by current spec drift, workflow replay, full CLI regression, and final gate_evidence review.",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "block",
+      "summary": "additive evidence metadata rollout and rollback are bounded",
+      "reason": "DB/schema/deployはなく、content_bindingは加算フィールドで旧readerは無視でき、欠落時は互換fallbackする。rollbackは当該commit/package versionのrevertで、strict defaultを維持する高リスクroleも残る。",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/guide/release-and-audit.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -219,35 +369,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:04.174Z"
+        "recorded_at": "2026-07-18T12:04:43.704Z"
       },
-      "recorded_at": "2026-07-05T03:56:04.175Z"
+      "recorded_at": "2026-07-18T12:04:43.719Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223716286-b0eb668b",
+      "decision_id": "decision-1784376281597-c365a5df",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "noise",
       "status": "accepted",
-      "source": "gate:senior_gap_judgment",
-      "source_status": "needs_review",
-      "summary": "Senior gap judgment accepted: current-bound typecheck, focused unit, full CLI regression, workflow replay, and final gate_evidence review cover the non-deferrable gaps for this PR.",
-      "reason": "Evidence includes strict-head stale negative path, content-bound review reuse/staleness, artifact consistency details, PR freshness binding diagnostics, and closed subagent review provenance.",
+      "source": "gate:failure_mode_coverage",
+      "source_status": "missing_coverage",
+      "summary": "auth_denied は語彙候補生成による非該当",
+      "reason": "本変更は認証・認可・secret・permission境界を読み書きせず、review roleという語から候補化された。auth拒否経路は存在しないため実行可能なauthテストを捏造しない。",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -262,78 +442,65 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:55:16.285Z"
+        "recorded_at": "2026-07-18T12:04:41.589Z"
       },
-      "recorded_at": "2026-07-05T03:55:16.286Z"
+      "recorded_at": "2026-07-18T12:04:41.600Z"
     },
     {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223715756-4a2d1438",
+      "decision_id": "decision-1784222070447-77e4c044",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
-      "status": "accepted",
-      "source": "gate:design_ssot_reconciliation",
-      "source_status": "needs_review",
-      "summary": "Design SSOT reconciliation accepted: the changed architecture/spec docs are new story-local design artifacts for content-scoped evidence freshness and do not contradict an existing registered design root.",
-      "reason": "The docs describe the same implementation introduced here; they are intentionally scoped to this story and are covered by spec drift and final review evidence.",
-      "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
-      "secret_exposure": null,
-      "redaction": {
-        "applied": false,
-        "hit_count": 0
-      },
-      "warnings": [
-        {
-          "id": "managed_worktree_locality",
-          "status": "needs_review",
-          "mode": "preferred",
-          "required": false,
-          "command_name": "decision record",
-          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
-          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "managed_worktree": null
-        }
-      ],
-      "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
-        "dirty": false,
-        "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:55:15.747Z"
-      },
-      "recorded_at": "2026-07-05T03:55:15.757Z"
-    },
-    {
-      "schema_version": "0.1.0",
-      "decision_id": "decision-1783223714880-7745f351",
-      "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "waiver",
       "status": "accepted",
       "source": "gate:judgment_axis_scope_reviewability",
       "source_status": "needs_evidence",
-      "summary": "Scope reviewability accepted: this PR is one coherent content-scoped evidence freshness change, with review ownership and blast radius limited to evidence record/review/PR freshness plumbing plus tests/docs.",
-      "reason": "All changed files serve the same freshness model; no unrelated cleanup or independent feature is bundled, and final gate_evidence review passed at current HEAD.",
+      "summary": "18-file contract migration remains one reviewable PR",
+      "reason": "The 18-file surface is four inseparable lanes of one public review contract: Story/Architecture/Spec, runtime policy and CLI, generated EN/JA references plus operator skill, and regression/E2E fixtures. Splitting would temporarily make pass requirements, freshness semantics, generated docs, and tests disagree. No unrelated product feature is included; rollback is the three focused commits together.",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_22_.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-syntax-ceea570.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -348,32 +515,306 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "ceea5709db085fab23bb04f13ef4c6f56beacf96",
+          "current_head_sha": "ceea5709db085fab23bb04f13ef4c6f56beacf96",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "ceea5709db085fab23bb04f13ef4c6f56beacf96",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:55:14.879Z"
+        "recorded_at": "2026-07-16T17:14:30.430Z"
       },
-      "recorded_at": "2026-07-05T03:55:14.880Z"
+      "recorded_at": "2026-07-16T17:14:30.452Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784220293001-4a19d010",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "content-scoped review policyを単一PRとしてreviewableと判断",
+      "reason": "12ファイルはStory・Architecture・Spec、runtime契約、CLI、回帰テスト、利用者向け手順で1つの原子的な公開契約を構成する。分割すると既定freshness、pass必須入力、判定ロジック、運用手順が中間状態で不整合になる。独立reviewerは現HEADのscopeをpassと判定済みで、無関係な機能変更は含まれない。",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-syntax.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+          "current_head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+        "current_branch": "codex/review-surface-policy",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:44:52.990Z"
+      },
+      "recorded_at": "2026-07-16T16:44:53.003Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784219461229-9c3e7314",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_size",
+      "source_status": "needs_review",
+      "summary": "single cohesive review contract change remains one PR",
+      "reason": "The 12-file surface is one atomic public contract: Story/Architecture/Spec define the policy, agent-review/content-binding/CLI implement it, and focused tests plus operator docs enforce it. Splitting creates intermediate states where defaults, required pass inputs, and freshness evaluation disagree. No unrelated product feature is included.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-syntax.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../private/tmp/vibepro-review-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+          "current_head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "23de717321e01e76e3a1ed74e0bdae47c521df4f",
+        "current_branch": "codex/review-surface-policy",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T16:31:01.218Z"
+      },
+      "recorded_at": "2026-07-16T16:31:01.232Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784217287045-a4db99d1",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "content-scoped review policyを分割せず原子的に出荷する",
+      "reason": "sourceだけ、またはinstructionsだけを先行するとreview record契約と利用手順が不一致になる。変更は単一機能境界で、rollbackもcommit revert 1回で完結する",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+          "current_head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+        "current_branch": "codex/review-surface-policy",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:54:47.025Z"
+      },
+      "recorded_at": "2026-07-16T15:54:47.048Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784217284394-4af73f1b",
+      "story_id": "story-vibepro-content-scoped-evidence-freshness",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "実装・テスト・利用者向け運用契約を1つのreviewable PRとして保持する",
+      "reason": "既定freshness変更とpass要件はCLI、runtime、tests、Story/Spec/Architecture、AGENTS/CLAUDE、gate-evidence skillが同時に整合して初めて安全に出荷できる。分割すると旧手順が新runtime契約と矛盾するため、12ファイルを単一intentとしてbundled scopeにする",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+          "current_head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "14a2c942d6c374485562f6265b723d937b3273b5",
+        "current_branch": "codex/review-surface-policy",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-16T15:54:44.381Z"
+      },
+      "recorded_at": "2026-07-16T15:54:44.397Z"
     }
   ],
   "summary": {
-    "total": 8,
+    "total": 11,
     "open": 0,
     "by_type": {
-      "needs_review": 8
+      "noise": 2,
+      "needs_review": 2,
+      "waiver": 7
     },
     "by_status": {
-      "accepted": 8
+      "accepted": 11
     },
     "warnings": [
       {
@@ -384,26 +825,56 @@
         "command_name": "decision record",
         "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
         "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+        "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
         "expected_root": null,
-        "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+        "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
         "managed_worktree": null
       }
     ],
     "latest": {
       "schema_version": "0.1.0",
-      "decision_id": "decision-1783223767033-d6773552",
+      "decision_id": "decision-1784376375506-aae5b76b",
       "story_id": "story-vibepro-content-scoped-evidence-freshness",
-      "type": "needs_review",
+      "type": "noise",
       "status": "accepted",
-      "source": "gap:design_ssot:2",
-      "source_status": "needs_review",
-      "summary": "Accepted senior gap for spec doc registration: docs/specs/story-vibepro-content-scoped-evidence-freshness.md is intentionally story-local and finalized via VibePro spec workflow.",
-      "reason": "The spec links to implemented behavior and has current spec drift evidence plus full regression coverage.",
+      "source": "gate:judgment_dag_adjudication:failure_mode:auth_denied",
+      "source_status": "needs_human_judgment",
+      "summary": "auth_denied judgment is not applicable",
+      "reason": "No auth, permission, secret, or security boundary is changed; candidate arose from review-role vocabulary.",
       "reviewer": "codex",
-      "artifact": ".vibepro/evidence/content-scoped-evidence-freshness/final-decisions-b69711b.json",
+      "artifact": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/CodeQL.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/ci-evidence/test_20_.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
       "secret_exposure": null,
       "redaction": {
         "applied": false,
@@ -418,22 +889,22 @@
           "command_name": "decision record",
           "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
           "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
-          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
-          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+          "repo_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4751/vibepro",
           "expected_root": null,
-          "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-          "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+          "expected_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+          "current_head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
           "managed_worktree": null
         }
       ],
       "git_context": {
-        "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
-        "current_branch": "codex/content-scoped-evidence-freshness",
+        "head_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
+        "current_branch": "codex/review-surface-policy",
         "dirty": false,
         "status_fingerprint": "",
-        "recorded_at": "2026-07-05T03:56:07.033Z"
+        "recorded_at": "2026-07-18T12:06:15.497Z"
       },
-      "recorded_at": "2026-07-05T03:56:07.034Z"
+      "recorded_at": "2026-07-18T12:06:15.508Z"
     }
   },
   "artifact": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/decision-records.json"
