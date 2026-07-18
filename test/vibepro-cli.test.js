@@ -15656,6 +15656,8 @@ test('story-pr-prepare S-001 checkout completion scenario', async () => {
   );
   assert.equal(coveredGate.acceptance_e2e_coverage.covered_scenario_clause_count, 1);
   assert.deepEqual(coveredGate.acceptance_e2e_coverage.missing_scenario_clauses, []);
+  assert.equal(coveredResult.result.preparation.pr_context.traceability_clause_coverage.scenario_clause_count, 1);
+  assert.equal(coveredResult.result.preparation.pr_context.gate_dag.summary.scenario_clauses[0].id, 'S-001');
 });
 
 test('pr prepare requires Visual QA evidence when UI source changes', async () => {

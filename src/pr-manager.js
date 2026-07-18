@@ -10917,6 +10917,7 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
+      scenario_clauses: extractScenarioCoverageClauses(inferredSpec),
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       journey_context_status: journeyContextGate?.status ?? null,
       design_ssot_reconciliation_status: designSsotGate.status,
