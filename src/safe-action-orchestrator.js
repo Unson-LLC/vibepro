@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { selectNextBestAction } from './next-best-action-controller.js';
 
 const REGISTRY = Object.freeze([
   Object.freeze({ id: 'pr_prepare', classification: 'repo_local_safe', depends_on: [] }),
@@ -14,6 +15,32 @@ export function buildSafeActionPlan(state) {
       .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
       .digest('hex')
   }));
+}
+
+export function selectSafeActionCandidate(state, options = {}) {
+  const candidates = buildSafeActionPlan(state)
+    .filter((action) => !hasCompletedCheckpoint(state, action.id, state))
+    .map((action) => ({
+      action_id: action.id,
+      classification: action.classification,
+      policy_allowed: true,
+      dependency_ready: dependenciesCompleted(state, action, state),
+      metrics: options.metrics?.[action.id] ?? {}
+    }));
+  return selectNextBestAction({
+    checkpoint_reason: options.checkpointReason ?? 'material_progress',
+    state_delta: options.stateDelta ?? {
+      current_head_sha: state.current_head_sha,
+      status: state.status,
+      completed_actions: state.action_journal
+        .filter((entry) => entry.status === 'completed')
+        .map((entry) => entry.action_id)
+    },
+    candidates: [...candidates, ...(options.escapeCandidates ?? [])],
+    previous_decision: options.previousDecision,
+    no_progress_count: options.noProgressCount,
+    policy_version: options.policyVersion
+  });
 }
 
 export async function runSafeActionPlan(state, options = {}) {
