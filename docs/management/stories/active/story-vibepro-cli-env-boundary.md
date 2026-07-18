@@ -2,6 +2,7 @@
 story_id: story-vibepro-cli-env-boundary
 title: "CLI entrypointでprocess.envを保持する"
 status: active
+parent_design: vibepro-cli-env-boundary
 spec_docs:
   - docs/specs/story-vibepro-cli-env-boundary.md
 reason:

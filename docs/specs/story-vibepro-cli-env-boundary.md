@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-cli-env-boundary
 status: final
+parent_design: vibepro-cli-env-boundary
 code_refs:
   - bin/vibepro.js:4
 test_refs:
