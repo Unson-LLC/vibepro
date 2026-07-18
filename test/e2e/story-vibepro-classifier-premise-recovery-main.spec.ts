@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -101,10 +101,28 @@ test('CPR-E2E-001 real CLI preserves an unsound verdict, records evidence-backed
     '--agent-system', 'codex', '--agent-id', 'judge-original'
   ];
   await assert.rejects(() => execFileAsync('node', initial), /--unsound-cause/, acceptanceCriteria[0]);
+  const unknownProvenance = [...initial, '--unsound-cause', 'classifier_premise_unsound'];
+  unknownProvenance[unknownProvenance.indexOf('codex')] = 'other';
+  await assert.rejects(() => execFileAsync('node', unknownProvenance), /--agent-system must be one of/, acceptanceCriteria[0]);
   await execFileAsync('node', [...initial, '--unsound-cause', 'classifier_premise_unsound']);
   let stored = JSON.parse(await readFile(path.join(repo, '.vibepro', 'adjudication', STORY_ID, 'judgment-adjudication.json'), 'utf8'));
   const originalId = stored.events[0].event_id;
   assert.equal(stored.events[0].unsound_cause, 'classifier_premise_unsound', acceptanceCriteria[2]);
+
+  const externalDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-cpr-e2e-external-'));
+  const externalProof = path.join(externalDir, 'proof.md');
+  await writeFile(externalProof, 'external proof must not be accepted\n', 'utf8');
+  await symlink(externalProof, path.join(repo, 'docs', 'external-proof.md'));
+  await assert.rejects(() => execFileAsync('node', [
+    CLI_PATH, 'adjudicate', 'correct', repo,
+    '--id', STORY_ID, '--judgment', '--item', 'axis:public_contract',
+    '--original-verdict-id', originalId,
+    '--incorrect-premise', 'public output changed',
+    '--corrected-premise', 'public output is unchanged',
+    '--reason', 'an external symlink must not establish the corrected premise',
+    '--replacement-evidence', 'docs/external-proof.md',
+    '--agent-system', 'codex', '--agent-id', 'operator'
+  ]), /symbolic links are not accepted/, scenarioClauses[0]);
 
   await execFileAsync('node', [
     CLI_PATH, 'adjudicate', 'correct', repo,

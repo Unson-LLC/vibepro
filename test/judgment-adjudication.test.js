@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -719,6 +719,60 @@ test('CPR-S-008 correction-linked needs_human_judgment uses the existing accepte
     }]
   });
   assert.equal(closed.status, 'passed');
+});
+
+test('CPR-S-009 recorders reject unknown provenance and replacement evidence symlink escapes before persistence', async () => {
+  const repo = await makeRepo();
+  const verdictOptions = {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_unsound',
+    unsoundCause: 'classifier_premise_unsound',
+    reason: 'classifier premise is wrong',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  };
+  await assert.rejects(
+    () => recordJudgmentAdjudication(repo, { ...verdictOptions, agentSystem: 'other' }),
+    /--agent-system must be one of: codex, claude_code/
+  );
+  assert.equal(await readJudgmentAdjudicationIfExists(repo, STORY_ID), null);
+
+  const original = await recordJudgmentAdjudication(repo, verdictOptions);
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'proof.md'), 'workspace proof\n', 'utf8');
+  const correctionOptions = {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'output changed',
+    correctedPremise: 'output is unchanged',
+    reason: 'replacement evidence corrects the premise',
+    replacementEvidence: ['docs/proof.md'],
+    agentSystem: 'codex',
+    agentId: 'operator'
+  };
+  await assert.rejects(
+    () => recordPremiseCorrection(repo, { ...correctionOptions, agentSystem: 'other' }),
+    /--agent-system must be one of: codex, claude_code/
+  );
+
+  const externalDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-cpr-external-'));
+  const externalProof = path.join(externalDir, 'proof.md');
+  await writeFile(externalProof, 'external proof must not be accepted\n', 'utf8');
+  await symlink(externalProof, path.join(repo, 'docs', 'external-proof.md'));
+  await assert.rejects(
+    () => recordPremiseCorrection(repo, { ...correctionOptions, replacementEvidence: ['docs/external-proof.md'] }),
+    /symbolic links are not accepted/
+  );
+  await symlink(externalDir, path.join(repo, 'docs', 'external-dir'));
+  await assert.rejects(
+    () => recordPremiseCorrection(repo, { ...correctionOptions, replacementEvidence: ['docs/external-dir/proof.md'] }),
+    /resolved path must stay inside the workspace/
+  );
+  const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.events.length, 1);
+  assert.equal(stored.events[0].event_id, original.entry.event_id);
 });
 
 async function gitHead(repo) {

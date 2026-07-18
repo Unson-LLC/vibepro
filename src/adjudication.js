@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -15,6 +15,7 @@ export const JUDGMENT_ADJUDICATION_SCHEMA_VERSION = '0.2.0';
 export const ADJUDICATION_VERDICTS = ['demonstrated', 'not_demonstrated', 'not_verifiable_by_automation'];
 export const JUDGMENT_ADJUDICATION_VERDICTS = ['judged_sound', 'judged_unsound', 'needs_human_judgment'];
 export const JUDGMENT_UNSOUND_CAUSES = ['implementation_unsound', 'classifier_premise_unsound'];
+const ADJUDICATION_AGENT_SYSTEMS = ['codex', 'claude_code'];
 
 const VERDICT_DEFINITIONS = {
   demonstrated: '紐づく証拠が、このclauseの成果が実際に起きたことを実証している。証拠の観測内容から成果へ推論の飛躍なしに到達できる場合のみ選ぶ。',
@@ -816,6 +817,9 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
   }
   const reason = requireCliValue(options.reason, 'adjudicate record --judgment requires --reason <text> so the judgment is auditable');
   const agentSystem = requireCliValue(options.agentSystem, 'adjudicate record --judgment requires --agent-system <codex|claude_code>');
+  if (!ADJUDICATION_AGENT_SYSTEMS.includes(agentSystem)) {
+    throw new Error(`adjudicate record --judgment --agent-system must be one of: ${ADJUDICATION_AGENT_SYSTEMS.join(', ')}`);
+  }
   const agentId = requireCliValue(options.agentId, 'adjudicate record --judgment requires --agent-id <id> so adjudicator provenance is auditable');
   const unsoundCause = options.unsoundCause == null ? null : requireCliValue(
     options.unsoundCause,
@@ -899,6 +903,7 @@ async function resolveReplacementEvidence(root, artifacts) {
     throw new Error('adjudicate correct requires at least one --replacement-evidence <workspace-relative-file>');
   }
   const resolved = [];
+  const realRoot = await realpath(root);
   for (const rawArtifact of artifacts) {
     const artifact = requireCliValue(rawArtifact, 'adjudicate correct --replacement-evidence requires a workspace-relative file');
     if (path.isAbsolute(artifact)) throw new Error(`replacement evidence must be workspace-relative: ${artifact}`);
@@ -908,10 +913,20 @@ async function resolveReplacementEvidence(root, artifacts) {
       throw new Error(`replacement evidence must stay inside the workspace: ${artifact}`);
     }
     let metadata;
+    let realAbsolute;
     let body;
     try {
-      metadata = await stat(absolute);
-      body = await readFile(absolute);
+      const lexicalMetadata = await lstat(absolute);
+      if (lexicalMetadata.isSymbolicLink()) {
+        throw new Error('symbolic links are not accepted');
+      }
+      realAbsolute = await realpath(absolute);
+      const realRelative = path.relative(realRoot, realAbsolute);
+      if (!realRelative || realRelative.startsWith('..') || path.isAbsolute(realRelative)) {
+        throw new Error('resolved path must stay inside the workspace');
+      }
+      metadata = await stat(realAbsolute);
+      body = await readFile(realAbsolute);
     } catch (error) {
       throw new Error(`replacement evidence is not readable: ${artifact} (${error.message})`);
     }
@@ -932,6 +947,9 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
   const correctedPremise = requireCliValue(options.correctedPremise, 'adjudicate correct requires --corrected-premise <text>');
   const reason = requireCliValue(options.reason, 'adjudicate correct requires --reason <text>');
   const agentSystem = requireCliValue(options.agentSystem, 'adjudicate correct requires --agent-system <codex|claude_code>');
+  if (!ADJUDICATION_AGENT_SYSTEMS.includes(agentSystem)) {
+    throw new Error(`adjudicate correct --agent-system must be one of: ${ADJUDICATION_AGENT_SYSTEMS.join(', ')}`);
+  }
   const agentId = requireCliValue(options.agentId, 'adjudicate correct requires --agent-id <id>');
   const root = path.resolve(repoRoot);
   const headCommit = await resolveHeadCommit(root);

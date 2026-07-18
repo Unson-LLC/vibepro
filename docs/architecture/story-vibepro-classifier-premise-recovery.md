@@ -140,8 +140,11 @@ vibepro adjudicate record . --id <story> --judgment --item <item> \
 
 - 全text/refはtrim後非空かつ次flagを値として受け取った形でないことをdomain層で検証する。
 - correction対象はcurrent HEADの `classifier_premise_unsound` verdictのみ。同一item、未補正、直接参照を要求する。
-- replacement evidenceはworkspace内のreadable regular fileのみ許可し、SHA-256を記録する。v2 consumerも
+- replacement evidenceはworkspace内のreadable regular fileのみ許可し、SHA-256を記録する。symlinkは拒否し、
+  `realpath` 後もworkspace内であることを検証して中間directory経由のescapeも防ぐ。v2 consumerも
   workspace-relative path、reason、既知agent systemと非空agent idを再検証し、手書き・改ざんartifactをfail closedにする。
+- verdict/correction recorderは `agent_system` を `codex|claude_code` のclosed setとして永続化前に検証し、
+  consumer自身が回復不能なartifactを作らない。
 - artifactのread-modify-write並行競合は既存制約として残るが、duplicate/branch chainはresolverがfail closedする。
 - `needs_human_judgment` のdecision record経路とcritical gate waiver拒否は変更しない。
 - clause adjudication artifact、classifier algorithm、base freshnessは変更しない。

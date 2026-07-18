@@ -36,13 +36,16 @@
     {
       "id": "SC-CPR-3",
       "type": "scenario",
-      "statement": "A premise correction is accepted only for a current-HEAD classifier_premise_unsound verdict in the same story and item, and only when it supplies nonblank wrong/corrected premises, an auditable reason, provenance, and at least one readable workspace-relative regular file whose SHA-256 is recorded.",
+      "statement": "A premise correction is accepted only for a current-HEAD classifier_premise_unsound verdict in the same story and item, and only when it supplies nonblank wrong/corrected premises, an auditable reason, closed-set provenance, and at least one readable workspace-relative regular file whose SHA-256 is recorded; symlinks and realpath escapes are rejected before persistence.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
         "code_refs": [{ "file": "src/adjudication.js", "anchor": "recordPremiseCorrection" }]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-002" }]
+        "test_pattern": [
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-002" },
+          { "file_glob": "test/judgment-adjudication.test.js", "must_contain": "CPR-S-009" }
+        ]
       }
     },
     {
