@@ -1815,6 +1815,7 @@ export function createSafeAutopilotPullRequest(dependencies = {}) {
   }
   const root = path.resolve(repoRoot);
   const prepareResult = await prepare(root, options);
+  const artifact = prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null;
   const commands = await resolveCommands(root, {
     rawVerifyCommands: options.verifyCommands,
     preparation: prepareResult.preparation
@@ -1832,25 +1833,35 @@ export function createSafeAutopilotPullRequest(dependencies = {}) {
     .filter((item) => !isPassingVerificationStatus(item.status))
     .map((item) => item.kind));
   if (commands.some((item) => failed.has(item.kind))) {
-    return { status: 'blocked', stop_reason: 'verification_failed', preparation: prepareResult.preparation };
+    return { status: 'blocked', stop_reason: 'verification_failed', artifact, preparation: prepareResult.preparation };
   }
   if (commands.some((item) => !passing.has(item.kind))) {
+    const missingKinds = commands.filter((item) => !passing.has(item.kind)).map((item) => item.kind);
     return {
       status: 'waiting_for_runtime',
       stop_reason: 'runtime_required',
+      artifact,
+      recovery: { missing_kinds: missingKinds },
       preparation: prepareResult.preparation
     };
   }
   const gate = prepareResult.preparation.gate_status
     ?? buildPrPrepareGateStatus(prepareResult.preparation.pr_context?.gate_dag, prepareResult.preparation.pr_context?.completion_quality);
-  if (gate.ready_for_pr_create === true) return { status: 'pr_ready', preparation: prepareResult.preparation };
+  if (gate.ready_for_pr_create === true) return { status: 'pr_ready', artifact, preparation: prepareResult.preparation };
   if ((gate.human_judgments_required ?? []).length > 0) {
-    return { status: 'waiting_for_human', stop_reason: 'human_judgment_required', preparation: prepareResult.preparation };
+    return {
+      status: 'waiting_for_human',
+      stop_reason: 'human_judgment_required',
+      artifact,
+      recovery: { judgments: gate.human_judgments_required },
+      preparation: prepareResult.preparation
+    };
   }
   const critical = (gate.unresolved_gates ?? []).find((item) => item.severity === 'critical' || item.critical === true);
   return {
     status: 'blocked',
     stop_reason: critical?.id ?? gate.stop_reason ?? 'gate_blocked',
+    artifact,
     preparation: prepareResult.preparation
   };
   };

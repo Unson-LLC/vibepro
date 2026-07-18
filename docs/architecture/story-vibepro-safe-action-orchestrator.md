@@ -30,8 +30,7 @@ Actionは`id`、`classification`、`depends_on`、`mutates_repository`、`execut
 
 1. `pr_prepare`: `repo_local_safe`。current HEADのGate DAGを永続化・評価する。
 2. `pr_autopilot_safe`: `repo_local_safe`。Orchestrator専用optionでCLI/config/prepare由来のverification command実行を禁止し、既存passing evidenceの再利用、Gate評価、review preparationだけを既存API経由で進める。未解決verificationはruntime stopへする。`importCi`、PR番号、CI check、任意envを含む外部optionも拒否し、要求された場合は`approval_required`へ分類する。
-3. `rebind_head`: `read_only`。Action前後のgit identityを比較し、変更時はRunをcurrent HEADへ再bindする。
-4. `pr_prepare_current_head`: `repo_local_safe`。HEAD変更後だけ再実行し、current HEADのGate DAGを評価する。
+HEAD変更時の`rebind_head`と`pr_prepare_current_head`は、ユーザー選択可能なActionではなくGuarded Runのpostcondition checkpointとする。両者は同じjournal形式と決定的idempotency keyを持つが、registry runnerとして外部から選択・差替えできない。前者はcurrent HEADへの再bind、後者はcurrent HEADのGate DAG再評価だけを行い、失敗時は`gate_recheck_required`で停止する。
 
 `execute start`はRun作成時の既存bootstrapとしてのみ再利用し、`reconcile`はlegacy state観測が必要な場合だけtyped runnerから呼ぶ。`next_commands`は観測・案内用データであり、Action選択にも実行にも使わない。registry外Action、`approval_required`、`forbidden`は実行前にtyped stopへ変換する。
 

@@ -123,11 +123,11 @@ async function orchestrateRun(deps, repoRoot, options) {
     },
     runners: {
       pr_prepare: async () => {
-        await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+        const prepared = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
           storyId: loaded.state.story_id,
           baseRef: options.baseRef
         });
-        return { status: 'continue' };
+        return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
       },
       pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(
         loaded.state.execution_context.root_realpath,
@@ -187,6 +187,7 @@ function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestam
     output_head_sha: outputHead,
     idempotency_key: createHash('sha256').update(`${state.run_id}:${actionId}:${inputHead}`).digest('hex'),
     status: 'completed',
+    artifact: null,
     result_summary: actionId,
     started_at: timestamp,
     completed_at: timestamp
@@ -197,21 +198,34 @@ export function isGuardedRunError(error) {
   return error instanceof GuardedRunError;
 }
 
-export function renderGuardedRunSummary(state) {
+export function renderGuardedRunSummary(value) {
+  const state = value?.state ?? value;
+  const plan = value?.state ? value.plan ?? [] : [];
   const stop = state.stop_reason
     ? `${state.stop_reason.code}: ${state.stop_reason.message}`
     : 'none';
   const binding = state.execution_context
     ? `${state.execution_context.authority_kind} ${state.execution_context.root_realpath} @ ${state.current_head_sha}`
     : 'unknown';
-  const transitions = state.transitions
+  const transitions = (state.transitions ?? [])
     .map((item) => `  ${item.sequence}. ${item.from ?? 'created'} -> ${item.to} (${item.reason}) at ${item.timestamp}`)
     .join('\n');
   const latestAction = state.action_journal?.at(-1);
   const latestActionSummary = latestAction
     ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  const plannedActions = plan.length > 0
+    ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
+    : '  none';
+  const recovery = state.stop_reason?.details?.recovery;
+  const recoveryLines = recovery
+    ? [
+        ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
+        ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
+        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
+      ].filter(Boolean).join('\n')
+    : 'none';
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 function shellQuoteCommandArg(value) {

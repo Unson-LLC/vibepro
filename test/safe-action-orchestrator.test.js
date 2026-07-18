@@ -86,9 +86,10 @@ test('SAO-S-5 safe autopilot classifies missing and failed current evidence with
     bindEvidence: async (_root, evidence) => evidence
   });
   assert.equal((await make([])('.', {})).stop_reason, 'runtime_required');
+  assert.deepEqual((await make([])('.', {})).recovery.missing_kinds, ['unit']);
   assert.equal((await make([{ kind: 'unit', status: 'fail', binding: { status: 'current' } }])('.', {})).stop_reason, 'verification_failed');
   assert.equal((await make([{ kind: 'unit', status: 'pass', binding: { status: 'current' } }])('.', {})).status, 'pr_ready');
-  assert.equal(prepareCalls, 3);
+  assert.equal(prepareCalls, 4);
 });
 
 test('SAO-S-8 external safe autopilot options stop before preparation', async () => {

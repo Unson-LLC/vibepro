@@ -1739,15 +1739,23 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;
   const session = fixture.session({
-    preparePullRequest: async () => { prepareCalls += 1; return {}; },
-    safeAutopilotPullRequest: async () => ({ status: 'waiting_for_runtime', stop_reason: 'runtime_required' })
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
   });
   await session.run(fixture.source, { storyId: STORY_ID });
   const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(prepareCalls, 1);
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.deepEqual(result.state.stop_reason.details.recovery.missing_kinds, ['unit']);
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
 });
 
@@ -1878,6 +1886,17 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   await assert.rejects(access(fixture.runFile(fixture.source, RUN_ID)));
   await assert.rejects(access(path.join(fixture.source, '.vibepro', 'execution-state.json')));
   await assert.rejects(access(path.join(fixture.source, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json')));
+
+  const human = capture();
+  const humanError = capture();
+  const humanResult = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--dry-run'
+  ], { stdout: human, stderr: humanError, guardedRunDependencies: dependencies });
+  assert.equal(humanResult.exitCode, 0, humanError.text());
+  assert.match(human.text(), /Planned Actions/);
+  assert.match(human.text(), /pr_prepare \(repo_local_safe\)/);
+  assert.match(human.text(), /pr_autopilot_safe \(repo_local_safe\)/);
 
   const stderr = capture();
   const invalid = await runCli([

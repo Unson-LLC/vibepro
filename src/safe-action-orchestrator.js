@@ -38,7 +38,11 @@ export async function runSafeActionPlan(state, options = {}) {
         break;
       }
       if (['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(result?.status)) {
-        current = transition(journal, result.status, result.stop_reason ?? 'action_failed');
+        const recovery = {
+          ...(result.recovery ?? {}),
+          next_command: `vibepro execute resume . --story-id ${current.story_id} --run-id ${current.run_id} --until pr-ready`
+        };
+        current = transition(journal, result.status, result.stop_reason ?? 'action_failed', { recovery });
         break;
       }
       current = journal;
@@ -62,6 +66,7 @@ function append(state, action, key, status, result = {}) {
       output_head_sha: result.output_head_sha ?? state.current_head_sha,
       idempotency_key: key,
       status,
+      artifact: result.artifact ?? null,
       result_summary: result.summary ?? result.stop_reason ?? result.status ?? null,
       started_at: now,
       completed_at: now
@@ -69,11 +74,11 @@ function append(state, action, key, status, result = {}) {
   };
 }
 
-function transition(state, status, code) {
+function transition(state, status, code, details = {}) {
   return {
     ...state,
     status,
-    stop_reason: code ? { code, message: code, details: {} } : null
+    stop_reason: code ? { code, message: code, details: details ?? {} } : null
   };
 }
 

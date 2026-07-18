@@ -2188,7 +2188,7 @@ export async function runCli(argv, io = {}) {
                   : await guardedRun.cancel(repoRoot, runOptions);
           write(stdout, jsonOutput
             ? `${JSON.stringify(result, null, 2)}\n`
-            : renderGuardedRunSummary(result.state ?? result));
+            : renderGuardedRunSummary(result));
           return { exitCode: 0, command, subcommand, result };
         } catch (error) {
           if (!isGuardedRunError(error)) throw error;
