@@ -6,7 +6,7 @@
 
 The output records all NBA-S-2 metrics. Unknown measurements use the literal `unknown`. The selection is deterministic for the same normalized input and policy. A previous decision with the same checkpoint, state fingerprint, and policy is returned with `reused=true`.
 
-`selectSafeActionCandidate(state, options)` is the Safe Action integration surface. It derives policy and dependency eligibility from the canonical registry and action journal; callers provide estimates and checkpoint context, not action authority.
+`selectSafeActionCandidate(state, options)` is the Safe Action integration surface. It derives policy and dependency eligibility from canonical action registries and the action journal; callers provide estimates, checkpoint context, and canonical escape IDs, not action objects or action authority. Guarded Run persists the bounded recommendation through its authority-first state path before canonical execution and exposes the same record on readback.
 
 ## Invariants
 
@@ -29,4 +29,4 @@ The output records all NBA-S-2 metrics. Unknown measurements use the literal `un
 
 ## Verification
 
-`test/next-best-action-controller.test.js` covers NBA-S-1 through NBA-S-8. `test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts` replays the registry-to-recommendation flow and checks the focused scenario suite as one acceptance boundary.
+`test/next-best-action-controller.test.js` covers NBA-S-1 through NBA-S-8, including rejection of non-canonical escape IDs. `test/guarded-run-session.test.js` verifies authority persistence and public readback. `test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts` replays both suites as one acceptance boundary.

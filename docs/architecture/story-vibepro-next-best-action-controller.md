@@ -4,7 +4,9 @@
 
 `src/next-best-action-controller.js` is a pure, provider-neutral ranking boundary between the Safe Action registry and execution. It receives only actions already marked policy-allowed and dependency-ready. It cannot grant authority, invoke a command, waive a gate, or mutate a repository.
 
-`selectSafeActionCandidate` in `src/safe-action-orchestrator.js` is the production adapter: it projects the canonical registry and completed action journal into eligible candidates, so callers cannot replace registry authority with arbitrary ranked actions.
+`selectSafeActionCandidate` in `src/safe-action-orchestrator.js` is the production adapter: it projects the canonical Safe Action and escape registries plus the completed action journal into eligible candidates. Callers may request canonical escape action IDs and supply metrics, but cannot inject action objects or replace registry authority.
+
+`orchestrateRun` in `src/guarded-run-session.js` is the production checkpoint. Before canonical Safe Action execution, it selects a recommendation, appends the bounded record to `next_best_action_decisions`, and commits that state through the existing authority-then-mirror persistence boundary. Status and watch read the same persisted record back. The recommendation remains advisory; `runSafeActionPlan` independently enforces the complete canonical execution plan.
 
 The controller evaluates candidates only at named material checkpoints. Its persisted decision projection contains the state fingerprint, policy version, selected and rejected candidates, normalized metrics, scores, and short reason codes. Reusing the same checkpoint, state fingerprint, and policy reuses the previous decision instead of producing reflection after every tool call.
 
@@ -15,6 +17,20 @@ The controller evaluates candidates only at named material checkpoints. Its pers
 - Two consecutive no-progress checkpoints remove ordinary retry actions from the candidate set.
 - Identical inputs produce identical scores and an action-id tie-break.
 - The record stores decision inputs and reason codes, never provider transcripts or hidden reasoning.
+- Unknown escape IDs fail closed before ranking, and persisted decision history is shape-validated on read.
+
+## Threat model
+
+```mermaid
+flowchart LR
+  Caller[Guarded Run] --> Adapter[Safe Action adapter]
+  Inject[Arbitrary action injection] -->|rejected| Registry[Canonical action registries]
+  Registry --> Adapter
+  Adapter --> Ranker[Pure next-action ranker]
+  Ranker --> Decision[Bounded decision record]
+  Decision --> Authority[Authority state commit]
+  Authority --> Executor[Canonical Safe Action executor]
+```
 
 ## Compatibility and rollback
 
