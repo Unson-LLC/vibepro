@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "created_at": "2026-07-19T00:32:31.118Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-pr-driven-continuous-release/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-pr-driven-continuous-release/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-pr-driven-continuous-release/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-pr-driven-continuous-release/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-pr-driven-continuous-release.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-pr-driven-continuous-release.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784373239704-00fc0bfd",
+        "story_id": "story-vibepro-pr-driven-continuous-release",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_release_ops",
+        "source_status": "block",
+        "summary": "Release operator path, observability, rollout and rollback are explicit",
+        "reason": "No normal operator action is required. PR Release Notes are projected automatically. GitHub Actions summary is the owner-visible observability surface for docs deploy, GitHub Release, npm version, dist-tags, retry and repair. Recovery reruns the serialized workflow or manual recovery entry; rollback disables automation, reverts docs, and restores Cloudflare without mutating published npm versions.",
+        "reviewer": "codex",
+        "artifact": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+          "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-18T11:13:59.702Z"
+        },
+        "recorded_at": "2026-07-18T11:13:59.705Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-19T00:32:26.385Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "4e5e0d07978021c68032906f3c5b5dfa56920a35",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

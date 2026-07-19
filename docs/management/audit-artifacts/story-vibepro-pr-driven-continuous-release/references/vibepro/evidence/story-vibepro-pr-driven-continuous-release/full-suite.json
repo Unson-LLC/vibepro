@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "head_commit": "48f610ddda234a876a1f6c7ff7ff02f0e418cec9",
+  "command": "env NPM_CONFIG_CACHE=/private/tmp/vibepro-npm-cache node --test --test-concurrency=2 --test-reporter=dot",
+  "observation": "The full repository suite completed successfully with test concurrency 2.",
+  "sandbox_blocked_test": "measure records command, HTTP, startup, and Prisma log metrics",
+  "sandbox_error": "listen EPERM: operation not permitted 0.0.0.0",
+  "rerun_command": "env NPM_CONFIG_CACHE=/private/tmp/vibepro-npm-cache node --test --test-name-pattern='measure records command, HTTP, startup, and Prisma log metrics' test/vibepro-cli.test.js",
+  "rerun_status": "pass",
+  "rerun_passed": 1,
+  "rerun_failed": 0
+}

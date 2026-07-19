@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current CAS lock closes the normal interleaving race, but lease expiry can admit a second live owner",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "npm-release-lease-expiry-with-live-owner",
+      "detail": "Two-hour lease can expire while the original workflow remains in the irreversible section because there is no renewal/fencing or shorter workflow timeout"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected strict HEAD diff, workflows, lock/release scripts, Story/Architecture/Spec, current evidence, and reran 21 focused tests",
+    "evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/release-surfaces-d6289eb0.json",
+    "inputs": [
+      "scripts/npm-release-lock.mjs",
+      ".github/workflows/post-merge-release.yml",
+      ".github/workflows/npm-publish.yml",
+      "test/post-merge-release.test.js",
+      "docs/specs/vibepro-pr-driven-continuous-release.md"
+    ]
+  },
+  "judgment_delta": [
+    "Interleaved read/write race closed by CAS lease; full irreversible serialization remains unproven because a live owner can outlast TTL"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_head_sha": "d6289eb04913d555039a2e9ea0a893ab3cc83f0d",
+    "current_head_sha": "d6289eb04913d555039a2e9ea0a893ab3cc83f0d",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "actual_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "current_head_sha": "d6289eb04913d555039a2e9ea0a893ab3cc83f0d",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T19:43:30.380Z",
+  "git_context": {
+    "head_sha": "d6289eb04913d555039a2e9ea0a893ab3cc83f0d",
+    "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T19:43:30.372Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "gate evidence inspects head-bound release and lease artifacts"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "d6289eb04913d555039a2e9ea0a893ab3cc83f0d",
+    "surface_files": [
+      {
+        "path": ".github/workflows/npm-publish.yml",
+        "sha256": "775775271848ead45e6947cf17035712fdf148869485558d4e3ac9f3d0c3b096",
+        "size": 1265
+      },
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "116d5ee46219a7bd932fab34b908662aac2225cee90c543975eb3faf5335c0bc",
+        "size": 5175
+      },
+      {
+        "path": "docs/specs/vibepro-pr-driven-continuous-release.md",
+        "sha256": "9a047c9d7fb9675bdbbd0d99df1d1ae2f45ec1afbf7e36ae51bb452fb468c9c0",
+        "size": 3243
+      },
+      {
+        "path": "scripts/npm-release-lock.mjs",
+        "sha256": "998d46f039b50fea9ad7cdf19c6df134c324f3ab72318d7c1df43bf08689f0c5",
+        "size": 3322
+      },
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "2f343abc6b110b409079770c8ab66a57c7786280da73f1e3d34f36742dba04c0",
+        "size": 13822
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ebcaa37ad7d7c8dff2482ba74b7953bad197c2a8b3ac682aaa0faf41352c47c2"
+  },
+  "source_fingerprint": "19fbf77010f6eb4c40eb8fd202f1160f51a1ab7d13a44d5817f91435a431e4b2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_d628",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-d6289eb0.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-driven-continuous-release/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-d6289eb0.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

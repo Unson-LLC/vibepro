@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Fork-origin main merges now preserve full automation without exposing secrets to unmerged PR code",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed trusted-trigger workflow, Architecture, Spec, npm lease and reconciliation, docs projection, diff check, and 24 focused tests",
+    "evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-ae0902f3-release-risk.md",
+    "inputs": [
+      "docs/architecture/vibepro-pr-driven-continuous-release.md"
+    ]
+  },
+  "judgment_delta": [
+    "Fork provenance previously broke write and secret access -> resolved by trusted default-branch pull_request_target flow and immutable accepted merge SHA"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "current_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "actual_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "current_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T20:05:27.718Z",
+  "git_context": {
+    "head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T20:05:27.716Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve exact HEAD freshness for release risk"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+        "sha256": "7833ed507f3725a69031a3902162c82cdcf5a18b8db21b377c9971d0e28c696b",
+        "size": 4365
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0ce3a22aa1b1719546a319231070e5d1b79d4ce046ee4c5b251a92ab3b261c0a"
+  },
+  "source_fingerprint": "522b98ed607dfd97a31ecb50da00f4bc4465d9e6618da3ef9dcfd41814f72bc3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/release_risk_8e86",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-ae0902f3-release-risk.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-driven-continuous-release/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-ae0902f3-release-risk.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
