@@ -1,8 +1,19 @@
 #!/usr/bin/env node
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runCli } from '../src/cli.js';
 import { createCodexSubagentHost } from '../src/codex-subagent-host.js';
+
+export function isDirectExecution(moduleUrl, argvEntry) {
+  if (!argvEntry) return false;
+
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argvEntry);
+  } catch {
+    return false;
+  }
+}
 
 export function createEntrypointIo(runtime = process) {
   return {
@@ -54,6 +65,6 @@ function resolveRuntimeRepoRoot(argv, cwd) {
   return cwd;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isDirectExecution(import.meta.url, process.argv[1])) {
   await main();
 }
