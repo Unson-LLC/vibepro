@@ -79,6 +79,26 @@ test('tracked routing is restored and resolved in a fresh checkout', async () =>
   assert.equal(resolved.canonical.relative_path, 'docs/features/fresh-checkout/story.md');
 });
 
+test('unconfigured fresh checkout preserves legacy artifact defaults', async () => {
+  const source = await repo();
+  await writeFile(path.join(source, 'README.md'), '# unconfigured repository\n');
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: source });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: source });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro Test'], { cwd: source });
+  await execFileAsync('git', ['add', 'README.md'], { cwd: source });
+  await execFileAsync('git', ['commit', '-m', 'test: create unconfigured repository'], { cwd: source });
+
+  const checkout = `${source}-checkout`;
+  await execFileAsync('git', ['clone', '--quiet', source, checkout]);
+  const resolved = await resolveArtifactRoutes(checkout, { storyId: 'story-fresh-defaults' });
+  assert.equal(resolved.configured, false);
+  assert.equal(resolved.routes.story.canonical.relative_path, 'docs/management/stories/active/story-fresh-defaults.md');
+  assert.equal(resolved.routes.architecture.canonical.relative_path, 'docs/architecture/story-fresh-defaults.md');
+  assert.equal(resolved.routes.accepted_spec.canonical.relative_path, '.vibepro/spec/story-fresh-defaults/spec.json');
+  assert.equal(resolved.routes.task_plan.canonical.relative_path, '.vibepro/stories/story-fresh-defaults/tasks/tasks.md');
+  assert.equal(resolved.routes.graphify.canonical.relative_path, '.vibepro/graphify');
+});
+
 test('routing fails closed for collisions, traversal, absolute paths, and unresolved variables', async (t) => {
   const cases = [
     ['path_collision', {
