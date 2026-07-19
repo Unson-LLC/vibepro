@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 
 import { resolveGitIdentity } from './git-identity.js';
 import { getWorkspaceDir } from './workspace.js';
@@ -161,7 +162,7 @@ async function refreshCapsule(deps, repoRoot, options, behavior = {}) {
     run_status: context.state.status,
     objective: extractObjective(storyRaw),
     invariants: extractInvariants(storyRaw),
-    bottleneck: extractBottleneck(context.state, prPrepare),
+    bottleneck: extractBottleneck(context.state, prPrepare, sourceByKind.get('pr_prepare')),
     evidence_refs: buildEvidenceRefs({ sources, verification, reviewSources }),
     open_decisions: extractOpenDecisions(context.state, decisions, sourceByKind.get('decisions')),
     budget_state: {
@@ -342,14 +343,15 @@ async function collectSources(deps, context) {
     await loadSource(deps.artifactIo, context.authorityRoot, 'run_state', context.authorityFile, true),
     await loadSource(deps.artifactIo, context.authorityRoot, 'story', storyPath, true)
   ];
-  const workspace = getWorkspaceDir(context.authorityRoot);
   const storyId = context.state.story_id;
+  const reviewRoute = await resolveArtifactRoute(context.authorityRoot, 'review', { storyId });
+  const reviewRoot = reviewRoute.canonical.absolute_path;
   const optionalPaths = [
-    ['pr_prepare', path.join(workspace, 'pr', storyId, 'pr-prepare.json')],
-    ['verification', path.join(workspace, 'pr', storyId, 'verification-evidence.json')],
-    ['decisions', path.join(workspace, 'pr', storyId, 'decision-records.json')],
-    ['review_test_plan', path.join(workspace, 'reviews', storyId, 'test_plan', 'review-summary.json')],
-    ['review_gate', path.join(workspace, 'reviews', storyId, 'gate', 'review-summary.json')]
+    ['pr_prepare', await resolvePrArtifactFile(context.authorityRoot, storyId)],
+    ['verification', await resolvePrArtifactFile(context.authorityRoot, storyId, 'verification-evidence.json')],
+    ['decisions', await resolvePrArtifactFile(context.authorityRoot, storyId, 'decision-records.json')],
+    ['review_test_plan', path.join(reviewRoot, 'test_plan', 'review-summary.json')],
+    ['review_gate', path.join(reviewRoot, 'gate', 'review-summary.json')]
   ];
   const optional = [];
   for (const [kind, sourcePath] of optionalPaths) {
@@ -369,11 +371,24 @@ function fingerprintSources(sources) {
 }
 
 async function findStoryPath(io, root, storyId) {
+  const canonical = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.absolute_path;
   const roots = [
     path.join(root, 'docs', 'management', 'stories', 'active'),
     path.join(root, 'docs', 'management', 'stories', 'completed'),
     path.join(root, 'docs', 'management', 'stories', 'done')
   ];
+  const configuredRaw = await readOptional(io, canonical);
+  if (configuredRaw !== null) {
+    const declaredStoryId = configuredRaw.match(/^story_id:\s*([^\s]+)\s*$/m)?.[1] ?? null;
+    if (declaredStoryId !== storyId) {
+      throw capsuleError('stale_binding', 'Story document identity does not match the Run Context Capsule binding.', {
+        expected_story_id: storyId,
+        actual_story_id: declaredStoryId,
+        source_ref: toRootRelative(root, canonical)
+      });
+    }
+    return canonical;
+  }
   for (const storyRoot of roots) {
     const direct = path.join(storyRoot, `${storyId}.md`);
     const raw = await readOptional(io, direct);
@@ -438,7 +453,7 @@ function summarizeReview(value) {
   return compactText(`status=${status}`, 256);
 }
 
-function extractBottleneck(state, prPrepare) {
+function extractBottleneck(state, prPrepare, prPrepareSource) {
   const blocking = prPrepare?.gate_status?.execution_gate?.blocking_gates;
   if (Array.isArray(blocking) && blocking.length > 0) {
     const first = blocking[0];
@@ -448,7 +463,7 @@ function extractBottleneck(state, prPrepare) {
       status: compactText(first.status ?? 'unknown', 80),
       label: compactText(first.label ?? first.id ?? 'Blocking gate', 240),
       reason: compactText(first.reason ?? 'Gate is unresolved.', 512),
-      source_ref: `.vibepro/pr/${state.story_id}/pr-prepare.json`
+      source_ref: prPrepareSource?.sourceRef ?? `.vibepro/pr/${state.story_id}/pr-prepare.json`
     };
   }
   if (state.stop_reason) {

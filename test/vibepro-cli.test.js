@@ -553,7 +553,8 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.equal((await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'))).latest_run, null);
   await assert.rejects(stat(path.join(repo, '.vibeproignore')), { code: 'ENOENT' });
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
@@ -570,6 +571,34 @@ test('init help aliases print help without creating a flag-named workspace', asy
     assert.deepEqual(await readdir(cwd), initialEntries);
     await assert.rejects(stat(path.join(cwd, flag)), { code: 'ENOENT' });
   }
+});
+
+test('artifacts resolve and migrate use tracked custom routing without editing files', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = {
+    schema_version: '0.1.0',
+    artifacts: {
+      story: { canonical: 'docs/features/{feature_slug}/01_behavior_spec.md' },
+      architecture: { canonical: 'docs/features/{feature_slug}/04_technical_delta.md' }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const source = path.join(repo, 'docs', 'management', 'stories', 'active', 'story-checkout-safe.md');
+  await mkdir(path.dirname(source), { recursive: true });
+  await writeFile(source, '---\nstory_id: story-checkout-safe\n---\n');
+
+  const resolved = await runCli(['artifacts', 'resolve', repo, '--id', 'story-checkout-safe', '--json']);
+  assert.equal(resolved.exitCode, 0);
+  assert.equal(resolved.result.routes.story.canonical.relative_path, 'docs/features/checkout-safe/01_behavior_spec.md');
+
+  const migration = await runCli(['artifacts', 'migrate', repo, '--id', 'story-checkout-safe', '--dry-run', '--json']);
+  assert.equal(migration.exitCode, 0);
+  assert.equal(migration.result.edits_performed, 0);
+  assert.equal(migration.result.items.find((item) => item.kind === 'story').action, 'move_required');
+  assert.equal(await readFile(source, 'utf8'), '---\nstory_id: story-checkout-safe\n---\n');
 });
 
 test('pr prepare reports preferred managed worktree gate without blocking', async () => {
@@ -2628,7 +2657,7 @@ test('status reports corrupt VibePro config as needs_repair', async () => {
   assert.match(result.status.issues[0].detail, /invalid/);
 });
 
-test('init ignores all VibePro workspace artifacts from git status', async () => {
+test('init tracks repository config and ignores generated VibePro workspace artifacts', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
 
@@ -2639,11 +2668,11 @@ test('init ignores all VibePro workspace artifacts from git status', async () =>
   assert.equal(result.exitCode, 0);
   const ignored = await git(repo, [
     'check-ignore',
-    '.vibepro/config.json',
     '.vibepro/pr/story-ignore-check/pr-prepare.html'
   ]);
-  assert.match(ignored.stdout, /^\.vibepro\/config\.json$/m);
   assert.match(ignored.stdout, /^\.vibepro\/pr\/story-ignore-check\/pr-prepare\.html$/m);
+  const status = await git(repo, ['status', '--short']);
+  assert.match(status.stdout, /^\?\? \.vibepro\/$/m);
 });
 
 test('help command prints discoverable usage', async () => {
@@ -2790,7 +2819,7 @@ test('check self-dogfood detects verify evidence without final gate artifacts', 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.check.status, 'needs_review');
   assert.equal(result.result.check.evidence.self_dogfood.findings.length, 1);
-  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate-dag artifacts are missing/);
+  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate artifacts are missing/);
   assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
 });
 
@@ -23061,7 +23090,8 @@ test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async 
   assert.equal(fixed.exitCode, 0);
   assert.equal(fixed.result.repairs.some((repair) => repair.id === 'ensure-gitignore-vibepro'), true);
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
   assert.match(gitignore, /node_modules\//);
 
   const after = await runCli(['doctor', repo, '--json']);
@@ -23079,7 +23109,8 @@ test('doctor --fix creates .gitignore when it is absent', async () => {
 
   await runCli(['doctor', repo, '--fix']);
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
 });
 
 test('story report writes index.html and links resolve to latest run artifacts', async () => {

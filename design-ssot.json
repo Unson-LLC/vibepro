@@ -5694,7 +5694,65 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-artifact-output-routing",
+      "title": "VibePro Artifact Output Routing",
+      "root_doc": "docs/architecture/story-vibepro-artifact-output-routing.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-artifact-output-routing.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-artifact-output-routing.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-artifact-output-routing.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-artifact-output-routing.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-19T01:37:25.526Z"
+  "updated_at": "2026-07-19T04:55:46.232Z"
 }

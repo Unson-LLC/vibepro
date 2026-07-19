@@ -86,6 +86,7 @@ import {
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
+import { assertArtifactWritePath, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -307,16 +308,21 @@ export async function preparePullRequest(repoRoot, options = {}) {
     storySource: prContext.story_source,
     decisionRecords
   });
-  const prRoot = workspace.initialized
-    ? getWorkspaceDir(root)
+  const prRoute = workspace.initialized
+    ? await resolveArtifactRoute(root, 'pr', { storyId: story.story_id })
+    : null;
+  const gateRoute = workspace.initialized
+    ? await resolveArtifactRoute(root, 'gate', { storyId: story.story_id })
+    : null;
+  const prDir = workspace.initialized
+    ? path.dirname(await assertArtifactWritePath(root, prRoute.canonical.relative_path))
     : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
-  const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
   const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
   const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
   const evidenceDrilldownLogPath = path.join(prDir, 'evidence-drilldown-log.json');
   const decisionIndexPath = path.join(prDir, 'decision-index.json');
-  const jsonPath = path.join(prDir, 'pr-prepare.json');
+  const jsonPath = prRoute?.canonical.absolute_path ?? path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
   const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
   const humanReviewPath = path.join(prDir, 'human-review.json');
@@ -326,7 +332,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const designSsotPath = path.join(prDir, 'design-ssot-reconciliation.json');
   const seniorGapJudgmentPath = path.join(prDir, 'senior-gap-judgment.json');
   const refTopologyPath = path.join(prDir, 'ref-topology.json');
-  const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
+  const gateDagJsonPath = gateRoute
+    ? await assertArtifactWritePath(root, gateRoute.canonical.relative_path)
+    : path.join(prDir, 'gate-dag.json');
+  await mkdir(path.dirname(gateDagJsonPath), { recursive: true });
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
@@ -883,11 +892,15 @@ export async function evaluateGateReadiness(repoRoot, options = {}) {
   }
 
   const workspaceDir = getWorkspaceDir(root);
-  const prDir = path.join(workspaceDir, 'pr', storyId);
+  const prRoute = await resolveArtifactRoute(root, 'pr', { storyId });
+  const gateRoute = await resolveArtifactRoute(root, 'gate', { storyId });
+  const prDir = path.dirname(prRoute.canonical.absolute_path);
+  const gateDir = path.dirname(gateRoute.canonical.absolute_path);
   const gateOutcomesDir = path.join(workspaceDir, 'gate-outcomes');
   const snapshotRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gate-check-snapshot-'));
   const snapshots = [
     { targetPath: prDir, snapshotPath: path.join(snapshotRoot, 'pr'), existedBefore: existsSync(prDir) },
+    ...(gateDir === prDir ? [] : [{ targetPath: gateDir, snapshotPath: path.join(snapshotRoot, 'gate'), existedBefore: existsSync(gateDir) }]),
     { targetPath: gateOutcomesDir, snapshotPath: path.join(snapshotRoot, 'gate-outcomes'), existedBefore: existsSync(gateOutcomesDir) }
   ];
 
@@ -4879,7 +4892,7 @@ function formatPrDeltaStatus(status) {
 
 async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prContext, suggestedBranch }) {
   const graphContext = prContext.graph_context
-    ?? await buildGraphImpactContext(repoRoot, git.changed_files);
+    ?? await buildGraphImpactContext(repoRoot, git.changed_files, story.story_id);
   const lanes = buildSplitLanes({
     fileGroups,
     scope,
@@ -4908,12 +4921,13 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
   };
 }
 
-async function buildGraphImpactContext(repoRoot, changedFiles) {
+async function buildGraphImpactContext(repoRoot, changedFiles, storyId = 'story-default') {
   return buildSplitGraphContext(
     repoRoot,
     changedFiles
       .map((file) => typeof file === 'string' ? file : file.path)
-      .filter((file) => file && !isWorkspaceArtifactPath(file))
+      .filter((file) => file && !isWorkspaceArtifactPath(file)),
+    storyId
   );
 }
 
@@ -5215,8 +5229,8 @@ function collectLaneGraphInvestigationFiles(files, graphContext) {
   return [...related].sort().slice(0, 12);
 }
 
-async function buildSplitGraphContext(repoRoot, changedFiles) {
-  const graphPath = path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json');
+async function buildSplitGraphContext(repoRoot, changedFiles, storyId) {
+  const graphPath = await resolveGraphifyArtifactFile(repoRoot, storyId);
   let graph = null;
   try {
     graph = JSON.parse(await readFile(graphPath, 'utf8'));
@@ -5396,7 +5410,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     verificationEvidence: boundVerificationEvidence
   });
   const specDrift = await readDrift(repoRoot, story.story_id);
-  const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity });
+  const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity, storyId: story.story_id });
   const changeClassification = classifyChangeRisk({
     fileGroups,
     storySource: primaryStory,
@@ -5410,7 +5424,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     scope,
     changeClassification
   });
-  const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
+  const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files, story.story_id);
   const codeTopologyContext = await buildCodeTopologyContext(repoRoot, {
     changedFiles: git.changed_files,
     headSha: git.head_sha,

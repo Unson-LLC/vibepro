@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { getIncompleteReviewRoleReason } from './usage-report.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { resolveArtifactRoute } from './artifact-routing.js';
 
 export const REPAIR_ACTIONS = [
   'run_review',
@@ -15,16 +16,22 @@ export const REPAIR_ACTIONS = [
 export async function buildReviewRepairPlan(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const dryRun = options.dryRun === true;
+  const configuredReviewDir = options.storyId
+    ? (await resolveArtifactRoute(root, 'review', { storyId: options.storyId })).canonical.absolute_path
+    : null;
   const reviewsDir = path.join(getWorkspaceDir(root), 'reviews');
   const candidates = [];
   const plans = [];
-  for (const storyDirName of await safeReaddir(reviewsDir)) {
-    if (options.storyId && storyDirName !== options.storyId) continue;
-    for (const stageDirName of await safeReaddir(path.join(reviewsDir, storyDirName))) {
-      const stageDir = path.join(reviewsDir, storyDirName, stageDirName);
+  const storyRoots = configuredReviewDir
+    ? [{ storyId: options.storyId, directory: configuredReviewDir }]
+    : (await safeReaddir(reviewsDir)).map((storyId) => ({ storyId, directory: path.join(reviewsDir, storyId) }));
+  for (const storyRoot of storyRoots) {
+    for (const stageDirName of await safeReaddir(storyRoot.directory)) {
+      const stageDir = path.join(storyRoot.directory, stageDirName);
       const summary = await readJsonIfExists(path.join(stageDir, 'review-summary.json'));
       if (!summary) continue;
-      const storyId = summary.story_id ?? storyDirName;
+      const storyId = summary.story_id ?? storyRoot.storyId;
+      if (options.storyId && storyId !== options.storyId) continue;
       const stage = summary.stage ?? stageDirName;
       const stageCandidates = [];
       for (const role of summary.roles ?? []) {

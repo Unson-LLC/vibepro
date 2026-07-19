@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "execution": {
+    "managed_worktree": "preferred"
+  },
+  "artifact_routing": {
+    "schema_version": "0.1.0",
+    "artifacts": {}
+  },
+  "budgets": {
+    "pr_artifact_bytes": 16384
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-vibepro-artifact-output-routing",
+        "title": "成果物の正本出力先をリポジトリ設定で一意に制御する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "dev"
+      }
+    ],
+    "current_story_id": "story-vibepro-artifact-output-routing"
+  }
+}

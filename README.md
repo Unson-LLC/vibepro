@@ -178,6 +178,8 @@ npx vibepro spec readiness /path/to/repo --id story-internal-beta --base <base-b
 npx vibepro spec write /path/to/repo --id story-internal-beta --final --input spec.json
 ```
 
+Repository-native Story, Architecture, accepted Spec, and Task paths can be declared without creating a second editable source of truth. See [Artifact output routing](docs/guide/artifact-output-routing.md).
+
 Use `spec write --draft` for exploratory Spec drafts that are not ready to drive implementation or PR gates.
 
 Prepare PR evidence:

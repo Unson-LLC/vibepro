@@ -68,7 +68,7 @@ const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
 ]);
 // The exemption is deliberately content-bound. Any source change, including an
 // indirect side effect through an alias or helper, fails closed until reviewed.
-const WORKSPACE_STATUS_READ_ONLY_SHA256 = '80876345051ef0ed3f51993361c6810305d6ab442f3d0119c7bf75e0d3e74add';
+const WORKSPACE_STATUS_READ_ONLY_SHA256 = 'c1e01c5e13e353129b36b7bea26484dc89fc38ed7b0e34b98b8ba34df921f3c9';
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);

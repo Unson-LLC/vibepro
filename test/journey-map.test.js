@@ -465,6 +465,12 @@ status: active
 test('journey derive binds spec clauses, graphify surfaces, and gate evidence to steps', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-bindings-'));
   await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.artifact_routing = {
+    artifacts: { graphify: { canonical: 'docs/features/{feature_slug}/graphify' } }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await writeStory(repo, 'story-product-auth-account-access.md', `---
 story_id: story-product-auth-account-access
 title: Account access
@@ -484,8 +490,9 @@ title: Account access Spec
 
 - \`INV-AUTH-1\`: Signup step keeps traceability to the auth route.
 `);
-  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
-  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+  const graphifyDir = path.join(repo, 'docs', 'features', 'product-auth-account-access', 'graphify');
+  await mkdir(graphifyDir, { recursive: true });
+  await writeFile(path.join(graphifyDir, 'graph.json'), JSON.stringify({
     stories: [
       {
         story_id: 'story-product-auth-account-access',

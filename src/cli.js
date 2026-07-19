@@ -19,6 +19,7 @@ import {
   renderExploreStatusSummary
 } from './explore-evidence.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { ArtifactRoutingError, buildArtifactMigrationPlan, resolveArtifactRoute, resolveArtifactRoutes } from './artifact-routing.js';
 import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import {
@@ -416,7 +417,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -482,6 +483,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
+  vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
@@ -671,7 +674,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -945,6 +948,7 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[0] ?? process.cwd();
       const sourceDir = getOption(rest, '--from');
       const result = await importGraphifyArtifacts(repoRoot, {
+        storyId: getOption(rest, '--id') ?? 'story-default',
         sourceDir,
         runGraphify: hasFlag(rest, '--run-graphify'),
         env: io.env
@@ -1165,6 +1169,7 @@ export async function runCli(argv, io = {}) {
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           graphifyOut: getOption(rest, '--from'),
+          storyId: getOption(rest, '--story-id'),
           language
         });
         write(stdout, hasFlag(rest, '--json')
@@ -2495,6 +2500,7 @@ export async function runCli(argv, io = {}) {
         const story = await selectStory(repoRoot, getOption(rest, '--id'));
         write(stdout, `Story selected: ${story.story_id}\n`);
         const graph = await importGraphifyArtifacts(repoRoot, {
+          storyId: story.story_id,
           sourceDir: getOption(rest, '--from'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           env: io.env
@@ -2514,7 +2520,19 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'derive') {
         let graph = null;
         if (hasFlag(rest, '--run-graphify') || getOption(rest, '--from')) {
+          const deriveStoryId = getOption(rest, '--id');
+          if (!deriveStoryId) {
+            const graphifyRoute = await resolveArtifactRoute(repoRoot, 'graphify', { storyId: 'story-default' });
+            if (/\{(?:story_id|feature_slug)\}/.test(graphifyRoute.canonical.template)) {
+              throw new ArtifactRoutingError(
+                'unstable_routing_context',
+                'story derive requires --id when the Graphify canonical uses {story_id} or {feature_slug}',
+                { kind: 'graphify', template: graphifyRoute.canonical.template }
+              );
+            }
+          }
           graph = await importGraphifyArtifacts(repoRoot, {
+            storyId: deriveStoryId ?? 'story-default',
             sourceDir: getOption(rest, '--from'),
             runGraphify: hasFlag(rest, '--run-graphify'),
             env: io.env
@@ -2947,6 +2965,33 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'artifacts') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id');
+      if (!storyId) throw new Error('--id <story-id> is required for artifacts commands');
+      const options = { storyId, featureSlug: getOption(rest, '--feature-slug') };
+      if (subcommand === 'resolve') {
+        const result = await resolveArtifactRoutes(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactRoutes(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'migrate') {
+        if (!hasFlag(rest, '--dry-run')) {
+          throw new Error('artifacts migrate currently requires --dry-run; tracked files are never moved implicitly');
+        }
+        const result = await buildArtifactMigrationPlan(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactMigrationPlan(result));
+        return { exitCode: result.status === 'blocked' ? 2 : 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown artifacts command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
+    }
+
     if (command === 'architecture') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -2987,7 +3032,7 @@ export async function runCli(argv, io = {}) {
         const readiness = final
           ? await assertArchitectureReadinessForFinal(repoRoot, storyId)
           : null;
-        const outputPath = getOption(rest, '--output') ?? defaultArchitectureFinalPath(storyId);
+        const outputPath = getOption(rest, '--output');
         const artifact = draft
           ? await writeDraftArchitecture(repoRoot, storyId, raw)
           : await writeFinalArchitecture(repoRoot, storyId, raw, { outputPath });
@@ -3230,6 +3275,31 @@ export async function runCli(argv, io = {}) {
     write(stderr, `${error.message}\n`);
     return { exitCode: 1, command };
   }
+}
+
+function renderArtifactRoutes(result) {
+  const lines = [`Artifact routes resolved for ${result.variables.story_id}:`];
+  for (const [kind, route] of Object.entries(result.routes ?? {})) {
+    lines.push(`- ${kind}: ${route.canonical.relative_path}`);
+    for (const projection of route.projections ?? []) {
+      lines.push(`  projection (generated): ${projection.relative_path}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function renderArtifactMigrationPlan(result) {
+  const lines = [
+    `Artifact migration plan for ${result.story_id}: ${result.status}`,
+    `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
+  ];
+  for (const item of result.items ?? []) {
+    lines.push(`- ${item.kind}: ${item.action} (${item.source ?? '-'} -> ${item.destination ?? '-'})`);
+  }
+  for (const unresolved of result.unresolved ?? []) {
+    lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 function resolveDiagnosisPhaseOption(args) {

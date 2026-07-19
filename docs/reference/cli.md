@@ -40,7 +40,7 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -106,6 +106,8 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
+  vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]

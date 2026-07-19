@@ -6,6 +6,7 @@ import { getStoryStatus } from './story-manager.js';
 import { readStoryTasks, renderStoryTasks } from './story-task-generator.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText } from './language.js';
+import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
 
 export async function listTasks(repoRoot, options = {}) {
   const context = await loadTaskContext(repoRoot, options.storyId);
@@ -40,11 +41,18 @@ export async function createTasksFromPlan(repoRoot, options = {}) {
     const story = resolvePlanStory(plan, storyId);
     const taskState = buildPlanTaskState({ story, plan, candidates, allowedPaths: options.allowedPaths });
     const tasksDir = path.join(getWorkspaceDir(root), 'stories', storyId, 'tasks');
-    await mkdir(tasksDir, { recursive: true });
     const jsonPath = path.join(tasksDir, 'tasks.json');
-    const markdownPath = path.join(tasksDir, 'tasks.md');
+    const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+    await preflightArtifactWrites(root, route, {
+      additionalPaths: [toWorkspaceRelative(root, jsonPath)]
+    });
+    await mkdir(tasksDir, { recursive: true });
+    const markdownPath = await assertArtifactWritePath(root, route.canonical.relative_path);
+    await mkdir(path.dirname(markdownPath), { recursive: true });
     await writeFile(jsonPath, `${JSON.stringify(taskState, null, 2)}\n`);
-    await writeFile(markdownPath, renderStoryTasks(taskState));
+    const markdown = renderStoryTasks(taskState);
+    await writeFile(markdownPath, markdown);
+    await writeArtifactProjections(root, route, markdown);
     manifest.stories = {
       ...(manifest.stories ?? {}),
       [storyId]: {

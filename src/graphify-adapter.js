@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
 
 const GRAPHIFY_FILES = ['graph.json', 'GRAPH_REPORT.md', 'graph.html'];
 
@@ -21,7 +22,8 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
       execution = await runGraphify(root, sourceArg, options.env);
     }
 
-    const graphifyDir = path.join(getWorkspaceDir(root), 'graphify');
+    const graphifyRoute = await resolveArtifactRoute(root, 'graphify', { storyId: options.storyId ?? 'story-default' });
+    const graphifyDir = await assertArtifactWritePath(root, graphifyRoute.canonical.relative_path);
     await mkdir(graphifyDir, { recursive: true });
 
     await ensureFile(path.join(sourceDir, 'graph.json'));
