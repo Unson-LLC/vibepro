@@ -3723,6 +3723,9 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     ?? source.policy
     ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。'));
   const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
+  const releaseSummary = solution || 'なし';
+  const compatibility = source.compatibility ?? source.compatibility_impact ?? 'なし';
+  const userAction = source.user_action ?? source.migration ?? 'なし';
   const decisionIndexHandoff = resolveHandoffArtifact(artifactBudget, 'decision-index.json', evidenceDir);
   const decisionIndexLine = decisionIndexHandoff.is_summary
     ? `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatRepoPathLink(decisionIndexHandoff.full_path)}）`
@@ -3754,6 +3757,17 @@ ${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 
 ## 解決
 - ${solution}
+
+## Release Notes
+
+### Change Summary
+${releaseSummary}
+
+### Compatibility
+${compatibility}
+
+### User Action
+${userAction}
 
 ## レビュー観点
 - Gate: ${gateNote}
@@ -6832,6 +6846,8 @@ function parseStoryDoc(file, content) {
     root_cause: extractSectionText(content, ['根本原因', '原因', 'Root Cause', 'Cause']),
     solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
+    compatibility: extractSectionText(content, ['互換性', 'Compatibility', 'Compatibility Impact']),
+    user_action: extractSectionText(content, ['利用者に必要な操作', '利用者操作', 'User Action', 'Migration']),
     impact_scope: extractImpactScopeStatement(content),
     acceptance_criteria: extractAcceptanceCriteria(content),
     related_stories: normalizeFrontmatterList(

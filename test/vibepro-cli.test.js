@@ -22973,7 +22973,7 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
-  assert.equal(packageJson.version, '0.2.0-beta.0');
+  assert.equal(packageJson.version, '0.2.0-beta.1');
   assert.match(packageJson.description, /Product-intent gates/);
   assert.equal(packageJson.keywords.includes('ai-agents'), true);
   assert.equal(packageJson.keywords.includes('developer-tools'), true);

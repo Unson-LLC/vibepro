@@ -4,7 +4,7 @@
 
 | Surface | Meaning | How to verify |
 | --- | --- | --- |
-| npm `latest` / `beta` | Release target: `0.2.0-beta.0` | `npm view vibepro dist-tags --json` and `vibepro version` |
+| npm `latest` / `beta` | Release target: `0.2.0-beta.1` | `npm view vibepro dist-tags --json` and `vibepro version` |
 | GitHub `main` | Current source, including unreleased changes | `git rev-parse HEAD` and `CHANGELOG.md` → Unreleased |
 | This manual build | The commit shown in the footer and `vibepro-source-commit` meta tag | Compare it with GitHub `main` |
 | Local artifacts | Evidence for a specific repository, Story, and head | Inspect `.vibepro/` plus the Git head |
