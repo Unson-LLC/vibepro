@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-artifact-output-routing
 title: Artifact output routing contract
+parent_design: vibepro-artifact-output-routing
 status: active
 ---
 

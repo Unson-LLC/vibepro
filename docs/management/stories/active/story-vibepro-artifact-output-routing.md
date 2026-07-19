@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-artifact-output-routing
 title: 成果物の正本出力先をリポジトリ設定で一意に制御する
+parent_design: vibepro-artifact-output-routing
 view: dev
 period: 2026-07
 source:
