@@ -1811,6 +1811,38 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   );
 });
 
+test('NBA persisted legacy decisions omit additive fields while malformed present fields fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const legacy = structuredClone(result.state);
+  delete legacy.next_best_action_decisions[0].state_delta;
+  delete legacy.next_best_action_decisions[0].reused;
+  await writeFile(artifact, `${JSON.stringify(legacy, null, 2)}\n`);
+
+  const readback = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(readback.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal('state_delta' in readback.next_best_action_decisions[0], false);
+  assert.equal('reused' in readback.next_best_action_decisions[0], false);
+
+  for (const mutate of [
+    (decision) => { decision.state_delta = { raw_transcript: 'forbidden' }; },
+    (decision) => { decision.reused = 'yes'; }
+  ]) {
+    const malformed = structuredClone(legacy);
+    mutate(malformed.next_best_action_decisions[0]);
+    const malformedBytes = `${JSON.stringify(malformed, null, 2)}\n`;
+    await writeFile(artifact, malformedBytes);
+    await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
+    assert.equal(await readFile(artifact, 'utf8'), malformedBytes);
+  }
+});
+
 test('NBA rollback switch ignores escape handling and restores the complete canonical plan', async (t) => {
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
   process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
