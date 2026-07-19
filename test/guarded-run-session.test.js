@@ -1817,6 +1817,11 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
     current_head_sha: 'a'.repeat(40),
     execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
     action_journal: [],
+    next_best_action_decisions: [{
+      selected_action_id: 'ask',
+      checkpoint_reason: 'no_progress',
+      no_progress_count: 2
+    }],
     transitions: [],
     stop_reason: {
       code: 'human_judgment_required',
@@ -1838,6 +1843,50 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
   assert.match(summary, /required_action: record current evidence/);
   assert.match(summary, /failure: autopilot interrupted/);
   assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+  assert.match(summary, /next_best_action: ask \(checkpoint=no_progress; no_progress=2\)/);
+});
+
+test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
+  };
+  const started = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(started.exitCode, 0);
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const escaped = capture();
+  const escapedError = capture();
+  const escapedResult = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: escaped, stderr: escapedError, guardedRunDependencies: dependencies });
+  assert.equal(escapedResult.exitCode, 0, escapedError.text());
+
+  const decision = JSON.parse(escaped.text()).state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /next_best_action: .*checkpoint=no_progress; no_progress=2/);
 });
 
 test('SAO-S-5 verification block persists failed kinds for public JSON and human status', async (t) => {

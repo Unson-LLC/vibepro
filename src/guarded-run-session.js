@@ -108,7 +108,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       action_journal: [],
       next_best_action_decisions: []
     };
-    const decision = selectSafeActionCandidate(preview, buildControllerCheckpointOptions(options));
+    const decision = selectControllerCheckpoint(preview, options);
     return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
@@ -116,10 +116,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     return { plan: [], state: loaded.state };
   }
   const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
-  const decision = selectSafeActionCandidate(loaded.state, {
-    ...buildControllerCheckpointOptions(options),
-    previousDecision
-  });
+  const decision = selectControllerCheckpoint(loaded.state, options, previousDecision);
   const decisionState = {
     ...loaded.state,
     next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
@@ -240,17 +237,39 @@ async function orchestrateRun(deps, repoRoot, options) {
   return { plan: result.plan, state: next };
 }
 
-function buildControllerCheckpointOptions(options = {}) {
-  const checkpointReason = options.checkpointReason ?? 'run_started';
-  const noProgressCount = Number.isInteger(options.noProgressCount) ? options.noProgressCount : 0;
-  return {
-    checkpointReason,
-    noProgressCount,
+function selectControllerCheckpoint(state, options = {}, previousDecision = null) {
+  const explicitNoProgress = Number.isInteger(options.noProgressCount);
+  const base = {
+    checkpointReason: options.checkpointReason ?? 'run_started',
+    noProgressCount: explicitNoProgress ? options.noProgressCount : 0,
     stateDelta: options.stateDelta,
     metrics: options.actionMetrics,
-    escapeActionIds: options.escapeActionIds
-      ?? (noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+    escapeActionIds: options.escapeActionIds ?? [],
+    previousDecision
   };
+  const probe = selectSafeActionCandidate(state, base);
+  if (explicitNoProgress) {
+    return selectSafeActionCandidate(state, {
+      ...base,
+      escapeActionIds: options.escapeActionIds
+        ?? (options.noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+    });
+  }
+  const unchangedCheckpoints = (state.next_best_action_decisions ?? [])
+    .slice()
+    .reverse()
+    .findIndex((item) => item.state_fingerprint !== probe.state_fingerprint);
+  const trailingMatches = unchangedCheckpoints === -1
+    ? (state.next_best_action_decisions ?? []).length
+    : unchangedCheckpoints;
+  const noProgressCount = trailingMatches > 0 ? trailingMatches + 1 : 0;
+  if (noProgressCount < 2) return probe;
+  return selectSafeActionCandidate(state, {
+    ...base,
+    checkpointReason: 'no_progress',
+    noProgressCount,
+    escapeActionIds: options.escapeActionIds ?? ['rediagnose', 'split', 'ask', 'stop']
+  });
 }
 
 function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
@@ -288,6 +307,15 @@ export function renderGuardedRunSummary(value) {
   const latestActionSummary = latestAction
     ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
     : 'none';
+  const latestDecision = state.next_best_action_decisions?.at(-1);
+  const latestDecisionSummary = latestDecision
+    ? `${latestDecision.selected_action_id ?? 'none'} (${[
+        latestDecision.outcome,
+        latestDecision.selection_reason,
+        `checkpoint=${latestDecision.checkpoint_reason}`,
+        `no_progress=${latestDecision.no_progress_count}`
+      ].filter(Boolean).join('; ')})`
+    : 'none';
   const plannedActions = plan.length > 0
     ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
     : '  none';
@@ -302,7 +330,7 @@ export function renderGuardedRunSummary(value) {
         recovery.next_command ? `- next_command: ${recovery.next_command}` : null
       ].filter(Boolean).join('\n')
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 function shellQuoteCommandArg(value) {
