@@ -51,8 +51,67 @@ export function normalizeReleaseDocumentationLinks(value) {
 
 function findProtectedCodeRanges(source) {
   const fenced = findFencedCodeRanges(source);
-  return [...fenced, ...findInlineCodeRanges(source, fenced)]
+  return [...fenced, ...findIndentedCodeRanges(source), ...findInlineCodeRanges(source, fenced)]
     .sort((left, right) => left.start - right.start);
+}
+
+function findIndentedCodeRanges(source) {
+  const ranges = [];
+  let offset = 0;
+  let quoteDepth = 0;
+  let listContentIndent = null;
+  let previousWasBlank = true;
+  let inIndentedCode = false;
+  for (const line of source.split('\n')) {
+    const lineEnd = offset + line.length + (offset + line.length < source.length ? 1 : 0);
+    const quote = consumeBlockquotePrefix(line);
+    const content = line.slice(quote.index);
+    const blank = content.trim() === '';
+    if (quote.depth !== quoteDepth) {
+      quoteDepth = quote.depth;
+      listContentIndent = null;
+      previousWasBlank = true;
+      inIndentedCode = false;
+    }
+    if (blank) {
+      previousWasBlank = true;
+      offset = lineEnd;
+      continue;
+    }
+
+    const indentation = consumeIndentation(content, Number.POSITIVE_INFINITY);
+    const listOpener = inspectListContentIndent(content, listContentIndent);
+    if (listOpener !== null) {
+      listContentIndent = listOpener;
+      inIndentedCode = false;
+    } else if (listContentIndent !== null && indentation.columns < listContentIndent) {
+      listContentIndent = null;
+      inIndentedCode = false;
+    }
+
+    const requiredIndent = (listContentIndent ?? 0) + 4;
+    if (indentation.columns >= requiredIndent && (previousWasBlank || inIndentedCode)) {
+      ranges.push({ start: offset, end: lineEnd });
+      inIndentedCode = true;
+    } else {
+      inIndentedCode = false;
+    }
+    previousWasBlank = false;
+    offset = lineEnd;
+  }
+  return ranges;
+}
+
+function inspectListContentIndent(content, parentIndent) {
+  const parent = parentIndent ?? 0;
+  const parentPrefix = consumeIndentation(content, parent);
+  if (parentPrefix.columns < parent) return null;
+  const candidate = content.slice(parentPrefix.index);
+  const marker = candidate.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])([ \t]+)/u);
+  if (!marker) return null;
+  const markerColumns = visualColumns(marker[0].slice(0, -marker[1].length), parent);
+  const contentColumns = visualColumns(marker[1], markerColumns);
+  return contentColumns - markerColumns > 4 ? markerColumns + 1 : contentColumns;
 }
 
 function findFencedCodeRanges(source) {
@@ -103,7 +162,7 @@ function inspectFenceOpener(line) {
     const list = line.slice(index).match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+/u);
     if (!list) break;
     index += list[0].length;
-    listIndent += list[0].length;
+    listIndent = visualColumns(list[0], listIndent);
   }
   const marker = line.slice(index).match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
   return marker ? { marker, quoteDepth: quote.depth, listIndent } : null;
@@ -117,9 +176,9 @@ function inspectFenceContainer(line, fence) {
   let content = line.slice(quote.index);
   if (fence.listIndent > 0) {
     if (content.trim() === '') return { continues: true, marker: null };
-    const indentation = content.match(/^[ \t]*/u)?.[0].length ?? 0;
-    if (indentation < fence.listIndent) return { continues: false, marker: null };
-    content = content.slice(fence.listIndent);
+    const indentation = consumeIndentation(content, fence.listIndent);
+    if (indentation.columns < fence.listIndent) return { continues: false, marker: null };
+    content = content.slice(indentation.index);
   }
   return { continues: true, marker: content.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u) };
 }
@@ -134,6 +193,26 @@ function consumeBlockquotePrefix(line, maxDepth = Number.POSITIVE_INFINITY) {
     depth += 1;
   }
   return { index, depth };
+}
+
+function consumeIndentation(value, requiredColumns) {
+  let index = 0;
+  let columns = 0;
+  while (index < value.length && columns < requiredColumns) {
+    if (value[index] === ' ') columns += 1;
+    else if (value[index] === '\t') columns += 4 - (columns % 4);
+    else break;
+    index += 1;
+  }
+  return { index, columns };
+}
+
+function visualColumns(value, initialColumns = 0) {
+  let columns = initialColumns;
+  for (const character of value) {
+    columns += character === '\t' ? 4 - (columns % 4) : 1;
+  }
+  return columns;
 }
 
 function findInlineCodeRanges(source, fencedRanges) {
@@ -155,8 +234,10 @@ function findInlineCodeRanges(source, fencedRanges) {
     for (let candidate = index; candidate < source.length;) {
       const protectedFence = rangeContaining(fencedRanges, candidate);
       if (protectedFence) {
-        candidate = protectedFence.end;
-        continue;
+        break;
+      }
+      if (candidate > index && isInlineBlockBoundary(source, candidate)) {
+        break;
       }
       // Backslashes are literal inside CommonMark code spans; they do not
       // escape a matching backtick delimiter.
@@ -177,6 +258,13 @@ function findInlineCodeRanges(source, fencedRanges) {
     }
   }
   return ranges;
+}
+
+function isInlineBlockBoundary(source, index) {
+  if (index > 0 && source[index - 1] !== '\n') return false;
+  const lineEnd = source.indexOf('\n', index);
+  const line = source.slice(index, lineEnd < 0 ? source.length : lineEnd);
+  return /^[ \t]*$/u.test(line) || /^ {0,3}#{1,6}(?:[ \t]+|$)/u.test(line);
 }
 
 function findMarkdownLinkReplacements(source, protectedRanges) {
@@ -250,7 +338,8 @@ function parseInlineDestination(source, openingIndex) {
   const start = index;
   let depth = 0;
   while (index < source.length) {
-    if (isEscaped(source, index)) {
+    if (source[index] === '\\') {
+      if (!isAsciiPunctuation(source[index + 1])) return null;
       index += 2;
       continue;
     }
@@ -276,6 +365,10 @@ function parseInlineDestination(source, openingIndex) {
     angleWrapped,
     linkEnd
   };
+}
+
+function isAsciiPunctuation(character) {
+  return typeof character === 'string' && /^[!-/:-@[-`{-~]$/u.test(character);
 }
 
 function findInlineLinkEnd(source, start) {

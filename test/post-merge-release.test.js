@@ -140,6 +140,43 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     normalizeReleaseDocumentationLinks(`${malformedAngle} [after](docs/after-malformed.md)`),
     `${malformedAngle} [after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-malformed.md)`
   );
+
+  assert.equal(
+    normalizeReleaseDocumentationLinks('`unclosed\n\n[prose](docs/prose.md) `'),
+    '`unclosed\n\n[prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md) `'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('`unclosed\n# heading\n[prose](docs/prose.md) `'),
+    '`unclosed\n# heading\n[prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md) `'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('`unclosed\n```md\n[fenced](docs/fenced.md)\n```\n[prose](docs/prose.md) `'),
+    '`unclosed\n```md\n[fenced](docs/fenced.md)\n```\n[prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md) `'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('-\t```md\n\t[inside](docs/inside.md)\n\t```\n[after](docs/after.md)'),
+    '-\t```md\n\t[inside](docs/inside.md)\n\t```\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('-\t```md\n  [candidate](docs/candidate.md)\n[out](docs/out.md)'),
+    '-\t```md\n  [candidate](https://github.com/Unson-LLC/vibepro/blob/main/docs/candidate.md)\n[out](https://github.com/Unson-LLC/vibepro/blob/main/docs/out.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('    [indented-code](docs/inside.md)\n[after](docs/after.md)'),
+    '    [indented-code](docs/inside.md)\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('- item\n    [continuation](docs/continuation.md)'),
+    '- item\n    [continuation](https://github.com/Unson-LLC/vibepro/blob/main/docs/continuation.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('- item\n\n      [list-code](docs/inside.md)\n\n    [list-prose](docs/prose.md)'),
+    '- item\n\n      [list-code](docs/inside.md)\n\n    [list-prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('[malformed](docs/a\\ b.md) [after](docs/after.md)'),
+    '[malformed](docs/a\\ b.md) [after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
 });
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
