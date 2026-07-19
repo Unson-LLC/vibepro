@@ -782,6 +782,12 @@ export function buildDecisionOutcomeBinding({
   const persistenceStatus = persistence?.status ?? null;
   const persistenceConfirmed = persistenceStatus == null
     || ['pushed', 'already_present'].includes(persistenceStatus);
+  // A successful persistence result is recorded in canonical_audit.persistence.
+  // Re-projecting it into the content being persisted would make the first
+  // canonical commit (null) differ from the post-push state (pushed), forcing a
+  // second push. Keep the binding stable across confirmed success while still
+  // retaining an actionable failed status.
+  const bindingPersistenceStatus = persistenceConfirmed ? null : persistenceStatus;
   const delivery = {
     status: merge?.delivery?.status ?? null,
     pr_url: merge?.delivery?.pr_url ?? merge?.pr?.url ?? null,
@@ -801,7 +807,7 @@ export function buildDecisionOutcomeBinding({
       expected_entry_count: null,
       promoted_count: promotedCount,
       duplicate_count: duplicateCount,
-      persistence_status: persistenceStatus,
+      persistence_status: bindingPersistenceStatus,
       delivery
     };
   }
@@ -817,7 +823,7 @@ export function buildDecisionOutcomeBinding({
       expected_entry_count: 0,
       promoted_count: promotedCount,
       duplicate_count: duplicateCount,
-      persistence_status: persistenceStatus,
+      persistence_status: bindingPersistenceStatus,
       delivery
     };
   }
@@ -841,7 +847,7 @@ export function buildDecisionOutcomeBinding({
     expected_entry_count: expectedEntryCount,
     promoted_count: promotedCount,
     duplicate_count: duplicateCount,
-    persistence_status: persistenceStatus,
+    persistence_status: bindingPersistenceStatus,
     delivery
   };
 }

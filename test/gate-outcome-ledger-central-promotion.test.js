@@ -110,6 +110,30 @@ test('GDO-S-2/GDO-S-3: delivery binding requires every local outcome to be promo
   assert.equal(bound.promoted_count + bound.duplicate_count, 2);
   assert.equal(bound.delivery.merge_commit_sha, 'immutable-delivery');
 
+  const pushed = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'pushed' }
+  });
+  const alreadyPresent = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'already_present' }
+  });
+  assert.equal(pushed.status, 'bound');
+  assert.equal(alreadyPresent.status, 'bound');
+  assert.equal(pushed.persistence_status, null, 'successful persistence does not perturb canonical bytes');
+  assert.equal(alreadyPresent.persistence_status, null, 'idempotent persistence has the same canonical projection');
+
+  const persistenceFailed = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'failed', reason: 'canonical_push_failed' }
+  });
+  assert.equal(persistenceFailed.status, 'failed');
+  assert.equal(persistenceFailed.persistence_status, 'failed');
+  assert.equal(persistenceFailed.reason, 'canonical_push_failed');
+
   const missing = buildDecisionOutcomeBinding({
     localEntries: [entry()],
     promotion: null,
