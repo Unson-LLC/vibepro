@@ -222,3 +222,17 @@ test('HDC-S-7 invalid type and cancelled Run are rejected', async () => {
     answer: 'split'
   }), { code: 'decision_answer_required' });
 });
+
+test('HDC-S-2 HDC-S-7 persisted unknown type is rejected without mutation', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-human-decision-'));
+  const decision = await createHumanDecision(repo, state, input);
+  const file = path.join(repo, '.vibepro/executions', state.story_id, 'runs', state.run_id, 'decisions', `${decision.decision_id}.json`);
+  const tampered = { ...decision, type: 'merge_approval' };
+  await writeFile(file, `${JSON.stringify(tampered, null, 2)}\n`, 'utf8');
+
+  await assert.rejects(resolveHumanDecision(repo, state, {
+    decisionId: decision.decision_id,
+    answer: 'approve merge'
+  }), { code: 'invalid_decision_type' });
+  assert.deepEqual(JSON.parse(await readFile(file, 'utf8')), tampered);
+});

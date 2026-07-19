@@ -16,6 +16,7 @@ import {
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
+import { createHumanDecision } from '../src/human-decision-checkpoint.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -1948,6 +1949,35 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   assert.equal(continued.plan[0].node_id, 'pr_prepare');
   assert.equal(continued.state.resume_from_node_id, null);
   assert.equal(prepareCalls, 1);
+});
+
+test('HDC-S-3 resume rejects a different pending decision without mutating the waiting Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const escaped = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+  const unrelated = await createHumanDecision(fixture.source, escaped.state, {
+    ...fixtureHumanDecision(),
+    type: 'external_side_effect',
+    material_reason: 'An unrelated external side effect requires separate approval.'
+  });
+
+  await assert.rejects(session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: unrelated.decision_id,
+    answer: 'approve unrelated decision'
+  }), { code: 'decision_pending_mismatch' });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.status, 'waiting_for_human');
+  assert.equal(persisted.pending_decision.decision_id, escaped.state.pending_decision.decision_id);
+  assert.deepEqual(persisted.human_decision_journal, []);
 });
 
 test('HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart', async (t) => {

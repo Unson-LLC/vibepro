@@ -81,6 +81,10 @@ export async function resolveHumanDecision(repoRoot, state, input, options = {})
   }
   if (artifact.run_id !== state.run_id || artifact.story_id !== state.story_id) throw error('decision_run_mismatch', 'Decision belongs to another Run.');
   if (artifact.head_sha !== state.current_head_sha) throw error('stale_decision_head', 'Decision was recorded for another HEAD.');
+  if (!HUMAN_DECISION_TYPES.has(artifact.type)) throw error('invalid_decision_type', `Unknown persisted human decision type: ${artifact.type ?? 'missing'}.`);
+  if (state.pending_decision?.decision_id && state.pending_decision.decision_id !== artifact.decision_id) {
+    throw error('decision_pending_mismatch', 'Decision does not match the decision currently blocking this Run.');
+  }
   if (artifact.status !== 'pending') {
     if (options.allowResolvedReplay === true
         && artifact.status === 'resolved'
