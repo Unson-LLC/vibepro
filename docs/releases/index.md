@@ -29,3 +29,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 | [January 2026](/releases/2026-01) | 1 | Public-site verification starting point |
 
 See [Version and Release Channels](/reference/version-history) to identify the version you are running. The complete source is the [merged pull-request list](https://github.com/Unson-LLC/vibepro/pulls?q=is%3Apr+is%3Amerged).
+
+<!-- vibepro-release-index-pr:349:start -->
+- [PR #349](https://github.com/Unson-LLC/vibepro/pull/349) — [2026-07](/releases/2026-07): story-vibepro-pr-driven-continuous-release - PRマージからマニュアル・VitePress・npmまで完全自動でリリースする
+<!-- vibepro-release-index-pr:349:end -->

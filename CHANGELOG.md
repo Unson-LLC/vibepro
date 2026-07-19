@@ -41,3 +41,24 @@ All notable changes to VibePro will be documented in this file.
 - Prepare the project for Apache-2.0 OSS publication.
 - Add phase checkpoints for Story, implementation start, test plan, implementation completion, verification, and PR readiness.
 - Add public-discovery live, built-output, and source target discovery with bounded scans, explicit omissions, and fail-closed coverage reporting.
+
+<!-- vibepro-release-pr:349:start -->
+## [#349](https://github.com/Unson-LLC/vibepro/pull/349) story-vibepro-pr-driven-continuous-release - PRマージからマニュアル・VitePress・npmまで完全自動でリリースする
+
+- Author: @sintariran
+- Merged: 2026-07-19T00:32:53Z
+- Commit: `5bbfb6e42933d626199eb2c6fa4a402f1ee05bcc`
+
+### Change Summary
+
+main向けPRのマージを起点に、VibePro PR本文の安定したRelease Notesセクションを日英のVitePress履歴とCHANGELOGへ決定的に投影し、毎回マニュアルをデプロイする。package versionが増加した場合だけ、同じmerge commitとリリースノートへGitHub Releaseとnpm公開を結び付け、CAS leaseと再照合で不可逆処理を直列化する。
+
+### Compatibility
+
+既存CLIとversion不変PRの挙動は維持する。npm公開は増加したSemVerだけが対象で、`0.2.0-beta.1` はprereleaseとして `beta` と単調な `latest` 判定を明示的に適用する。
+
+### User Action
+
+なし。PR作成者はマージ前にChange Summary、Compatibility、User Actionの3節が利用者向けの内容になっていることを確認する。
+
+<!-- vibepro-release-pr:349:end -->
