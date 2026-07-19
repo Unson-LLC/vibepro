@@ -36,22 +36,60 @@ test('story-vibepro-artifact-output-routing ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 a
     cli, 'artifacts', 'resolve', target, '--id', 'story-checkout', '--json'
   ], { cwd: repoRoot })).stdout);
   assert.equal(resolved.routes.story.canonical.relative_path, 'docs/features/checkout/story.md', 'AC-1 resolves the configured canonical path');
-  assert.equal(resolved.configured, true, 'AC-2 reports explicit repository routing configuration');
-  assert.equal(resolved.routes.story.configured, true, 'AC-3 resolves routing independently by artifact kind');
-  assert.equal(resolved.routes.architecture.configured, true, 'AC-4 expands stable story and feature variables for configured artifacts');
+  assert.equal(resolved.configured, true);
+  assert.deepEqual(
+    Object.keys(resolved.routes).sort(),
+    ['accepted_spec', 'architecture', 'gate', 'graphify', 'pr', 'review', 'story', 'task_plan'],
+    'AC-3 exposes one shared resolver result for every lifecycle artifact kind'
+  );
+  assert.equal(resolved.routes.architecture.projections[0].relative_path, 'docs/generated/story-checkout/architecture.md', 'AC-4 expands stable story_id and feature_slug variables');
   // ac:4 ac:5 ac:6 canonical authority and generated projections are distinguishable.
-  assert.equal(resolved.routes.architecture.projections[0].generated, true, 'AC-5 marks projections as generated output');
-  assert.notEqual(resolved.routes.architecture.canonical.relative_path, resolved.routes.architecture.projections[0].relative_path, 'AC-6 keeps canonical and projection authorities distinct');
+  assert.notEqual(resolved.routes.architecture.canonical.relative_path, resolved.routes.architecture.projections[0].relative_path, 'AC-5 keeps exactly one writable canonical authority');
+  assert.equal(resolved.routes.architecture.projections[0].generated, true, 'AC-6 enables only explicitly generated projections');
 
   const migration = JSON.parse((await execFileAsync(process.execPath, [
     cli, 'artifacts', 'migrate', target, '--id', 'story-checkout', '--dry-run', '--json'
   ], { cwd: repoRoot })).stdout);
-  assert.equal(migration.dry_run, true, 'AC-7 exposes migration only as a dry-run plan');
+  assert.equal(migration.dry_run, true);
   // ac:7 ac:8 ac:9 migration planning is observable, read-only, and deterministic.
-  assert.equal(migration.edits_performed, 0, 'AC-8 performs no edits while planning migration');
-  assert.equal(migration.items.find((item) => item.kind === 'story').action, 'move_required', 'AC-9 reports the deterministic migration action');
-  assert.equal(await readFile(source, 'utf8'), before, 'AC-10 preserves the source artifact during migration planning');
-  assert.equal(migration.items.find((item) => item.kind === 'story').source_exists, true, 'AC-11 reports the existing source used for the required move');
+  assert.equal(migration.edits_performed, 0);
+  assert.equal(migration.items.find((item) => item.kind === 'story').action, 'move_required', 'AC-9 reports migration source, destination, collision state, and required action');
+  assert.equal(await readFile(source, 'utf8'), before);
+
+  const legacyTarget = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routing-legacy-e2e-'));
+  const legacy = JSON.parse((await execFileAsync(process.execPath, [
+    cli, 'artifacts', 'resolve', legacyTarget, '--id', 'story-checkout', '--json'
+  ], { cwd: repoRoot })).stdout);
+  assert.equal(legacy.configured, false, 'AC-2 preserves legacy defaults when routing is unconfigured');
+  assert.equal(legacy.routes.story.canonical.relative_path, 'docs/management/stories/active/story-checkout.md', 'AC-10 verifies an unconfigured fresh checkout alongside the configured checkout');
+
+  const collisionTarget = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routing-collision-e2e-'));
+  await mkdir(path.join(collisionTarget, '.vibepro'), { recursive: true });
+  await writeFile(path.join(collisionTarget, '.vibepro/config.json'), JSON.stringify({ artifact_routing: { artifacts: {
+    story: { canonical: 'docs/shared.md' }, architecture: { canonical: 'docs/shared.md' }
+  } } }));
+  await assert.rejects(
+    execFileAsync(process.execPath, [cli, 'artifacts', 'resolve', collisionTarget, '--id', 'story-checkout', '--json'], { cwd: repoRoot }),
+    /Artifact path collision/,
+    'AC-7 rejects canonical collisions before any artifact write'
+  );
+
+  const unsafeTarget = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routing-unsafe-e2e-'));
+  await mkdir(path.join(unsafeTarget, '.vibepro'), { recursive: true });
+  await writeFile(path.join(unsafeTarget, '.vibepro/config.json'), JSON.stringify({ artifact_routing: { artifacts: {
+    story: { canonical: '../outside/{story_id}.md' }
+  } } }));
+  await assert.rejects(
+    execFileAsync(process.execPath, [cli, 'artifacts', 'resolve', unsafeTarget, '--id', 'story-checkout', '--json'], { cwd: repoRoot }),
+    /must stay inside the repository/,
+    'AC-8 rejects repository traversal, absolute paths, and unresolved variables fail closed'
+  );
+
+  const guide = await readFile(path.join(repoRoot, 'docs/guide/artifact-output-routing.md'), 'utf8');
+  assert.ok(
+    ['artifact_routing', 'backward-compatible', 'migration', 'roll back'].every((term) => guide.toLowerCase().includes(term)),
+    'AC-11 documents configuration, compatibility, migration, and rollback'
+  );
   // ac:10 ac:11 the production CLI preserves the source and reports the required move.
 });
 
