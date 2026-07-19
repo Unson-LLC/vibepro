@@ -100,6 +100,23 @@ test('routing fails closed for collisions, traversal, absolute paths, and unreso
   }
 });
 
+test('malformed routing config fails closed before changing repository files', async () => {
+  const root = await repo();
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const existingArtifact = path.join(root, 'docs', 'existing.md');
+  await mkdir(path.dirname(configPath), { recursive: true });
+  await mkdir(path.dirname(existingArtifact), { recursive: true });
+  await writeFile(configPath, '{"artifact_routing":');
+  await writeFile(existingArtifact, 'unchanged\n');
+
+  await assert.rejects(
+    resolveArtifactRoutes(root, { storyId: 'story-example' }),
+    (error) => error instanceof ArtifactRoutingError && error.code === 'invalid_config'
+  );
+  assert.equal(await readFile(existingArtifact, 'utf8'), 'unchanged\n');
+  assert.equal(await readFile(configPath, 'utf8'), '{"artifact_routing":');
+});
+
 test('projections must be explicitly machine generated', async () => {
   const root = await repo({
     artifact_routing: { artifacts: { architecture: { projections: [{ path: 'docs/generated/architecture.md' }] } } }
