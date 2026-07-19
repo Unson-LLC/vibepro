@@ -41,3 +41,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:351:start -->
 - [PR #351](https://github.com/Unson-LLC/vibepro/pull/351) — [2026-07](/releases/2026-07): story-vibepro-linux-rollup-ci-lock - Make the VitePress lockfile installable on Linux CI
 <!-- vibepro-release-index-pr:351:end -->
+
+<!-- vibepro-release-index-pr:352:start -->
+- [PR #352](https://github.com/Unson-LLC/vibepro/pull/352) — [2026-07](/releases/2026-07): story-vibepro-next-best-action-controller - トークン最小ではなくTrusted PR-readyまでの総コストで次のActionを選びたい
+<!-- vibepro-release-index-pr:352:end -->

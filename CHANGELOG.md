@@ -104,3 +104,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-linux-rollup
 なし
 
 <!-- vibepro-release-pr:351:end -->
+
+<!-- vibepro-release-pr:352:start -->
+## [#352](https://github.com/Unson-LLC/vibepro/pull/352) story-vibepro-next-best-action-controller - トークン最小ではなくTrusted PR-readyまでの総コストで次のActionを選びたい
+
+- Author: @sintariran
+- Merged: 2026-07-19T02:30:39Z
+- Commit: `b89bf7f3fc89f74395625db1278774ad0f2e3993`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-next-best-action-controller.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-next-best-action-controller.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:352:end -->
