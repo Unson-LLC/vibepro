@@ -1,23 +1,36 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createMarkdownRenderer } from 'vitepress';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
 const REPOSITORY_SOURCE_ROOT = 'https://github.com/Unson-LLC/vibepro/blob/main/';
 const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro/main/';
-const invokedCommand = process.argv[1] && path.resolve(process.argv[1]) === scriptPath
+const invokedCommand = isDirectInvocation()
   ? process.argv[2]
   : null;
-const releaseMarkdownParser = !invokedCommand || commandRequiresMarkdownRenderer(invokedCommand)
-  ? await createMarkdownRenderer(rootDefault)
-  : null;
+const releaseMarkdownParser = await initializeMarkdownRenderer(invokedCommand);
 
 export function commandRequiresMarkdownRenderer(command) {
-  return ['project', 'release-body'].includes(command);
+  return ['project', 'reproject', 'release-body'].includes(command);
+}
+
+async function initializeMarkdownRenderer(command) {
+  if (command && !commandRequiresMarkdownRenderer(command)) return null;
+  const { createMarkdownRenderer } = await import('vitepress');
+  return createMarkdownRenderer(rootDefault);
+}
+
+function isDirectInvocation() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(scriptPath);
+  } catch {
+    return path.resolve(process.argv[1]) === scriptPath;
+  }
 }
 
 export function extractReleaseSections(body = '') {
@@ -590,6 +603,13 @@ async function main(args) {
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after, month: result.month, pr_number: result.number });
     return;
   }
+  if (command === 'reproject') {
+    const event = JSON.parse(await readFile(option('--event'), 'utf8'));
+    validateMergedPullRequest(event);
+    const result = await projectReleaseNote(rootDefault, event);
+    await writeOutput({ month: result.month, pr_number: result.number });
+    return;
+  }
   if (command === 'release-body') {
     const event = JSON.parse(await readFile(option('--event'), 'utf8'));
     await writeFile(option('--output'), renderReleaseNote(event));
@@ -599,9 +619,9 @@ async function main(args) {
     await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|project|release-body|publish-npm>');
+  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm>');
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {
+if (isDirectInvocation()) {
   main(process.argv.slice(2)).catch((error) => { console.error(error.message); process.exitCode = 1; });
 }

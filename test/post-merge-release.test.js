@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { chmod, mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -208,13 +209,76 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
   );
 });
 
-test('RNLN-007 initializes the Markdown renderer only for projection commands', () => {
+test('RNLN-007 initializes the Markdown renderer only for projection commands', async () => {
   assert.equal(commandRequiresMarkdownRenderer('project'), true);
+  assert.equal(commandRequiresMarkdownRenderer('reproject'), true);
   assert.equal(commandRequiresMarkdownRenderer('release-body'), true);
   assert.equal(commandRequiresMarkdownRenderer('plan'), false);
   assert.equal(commandRequiresMarkdownRenderer('publish-npm'), false);
   assert.equal(commandRequiresMarkdownRenderer('unknown'), false);
+
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-renderer-boundary-'));
+  await mkdir(path.join(root, 'scripts'));
+  const isolatedScript = path.join(root, 'scripts', 'post-merge-release.mjs');
+  await writeFile(isolatedScript, await readFile(path.join(repositoryRoot, 'scripts/post-merge-release.mjs'), 'utf8'));
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vibepro', version: '1.0.0' }));
+  runGit(root, ['init']);
+  runGit(root, ['config', 'user.email', 'test@example.com']);
+  runGit(root, ['config', 'user.name', 'VibePro Test']);
+  runGit(root, ['add', 'package.json']);
+  runGit(root, ['commit', '-m', 'base']);
+  const baseSha = runGit(root, ['rev-parse', 'HEAD']);
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vibepro', version: '1.0.1' }));
+  runGit(root, ['add', 'package.json']);
+  runGit(root, ['commit', '-m', 'release']);
+  const mergeSha = runGit(root, ['rev-parse', 'HEAD']);
+  const eventPath = path.join(root, 'event.json');
+  await writeFile(eventPath, JSON.stringify({
+    pull_request: {
+      merged: true,
+      number: 1,
+      title: 'Release renderer boundary fixture',
+      body: '',
+      merged_at: '2026-07-19T00:00:00Z',
+      html_url: 'https://github.com/Unson-LLC/vibepro/pull/1',
+      user: { login: 'vibepro-test' },
+      base: { ref: 'main', sha: baseSha },
+      merge_commit_sha: mergeSha
+    }
+  }));
+
+  const plan = spawnSync(process.execPath, [isolatedScript, 'plan', '--event', eventPath], {
+    cwd: root,
+    encoding: 'utf8'
+  });
+  assert.equal(plan.status, 0, plan.stderr);
+  assert.match(plan.stdout, /release_required=true/);
+
+  const fakeBin = path.join(root, 'bin');
+  await mkdir(fakeBin);
+  const fakeNpm = path.join(fakeBin, 'npm');
+  await writeFile(fakeNpm, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'view' && args[1] === 'vibepro@1.0.1') console.log(JSON.stringify({ version: '1.0.1', gitHead: '${mergeSha}' }));
+else if (args[0] === 'view' && args[1] === 'vibepro' && args[2] === 'versions') console.log(JSON.stringify(['1.0.1']));
+else if (args[0] === 'view' && args[1] === 'vibepro' && args[2] === 'dist-tags') console.log(JSON.stringify({ latest: '1.0.1' }));
+else if (args[0] === 'dist-tag') process.exit(0);
+else process.exit(2);
+`);
+  await chmod(fakeNpm, 0o755);
+  const publish = spawnSync(process.execPath, [isolatedScript, 'publish-npm', '--version', '1.0.1', '--sha', mergeSha], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}` }
+  });
+  assert.equal(publish.status, 0, publish.stderr);
 });
+
+function runGit(root, args) {
+  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+}
 
 test('RNLN-001 preserves VitePress destination semantics across escape and entity normalization', () => {
   const fixtures = [
