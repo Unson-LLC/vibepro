@@ -167,3 +167,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-release-note
 なし
 
 <!-- vibepro-release-pr:355:end -->
+
+<!-- vibepro-release-pr:354:start -->
+## [#354](https://github.com/Unson-LLC/vibepro/pull/354) story-vibepro-artifact-output-routing - 成果物の正本出力先をリポジトリ設定で一意に制御する
+
+- Author: @sintariran
+- Merged: 2026-07-19T08:49:44Z
+- Commit: `ffeacc5097e5b90bfee256fb69cf4383a3fb388c`
+
+### Change Summary
+
+- `.vibepro/config.json` に成果物種別ごとの canonical path template と、中央 writer を持つ種別の任意の projection を宣言できるようにする。 - 共通 resolver が `{story_id}` と `{feature_slug}` を展開し、生成側と検出側の双方へ同じ結果を返す。 - 未設定時は既存の出力先を維持する。 - 絶対パス、repository traversal、未解決変数、canonical 同士の衝突は書き込み前に fail closed する。 - migration plan は dry-run で移動元、移動先、衝突、未解決項目を表示し、暗黙には移動しない。
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:354:end -->

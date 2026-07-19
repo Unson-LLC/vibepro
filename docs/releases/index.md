@@ -53,3 +53,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:355:start -->
 - [PR #355](https://github.com/Unson-LLC/vibepro/pull/355) — [2026-07](/releases/2026-07): story-vibepro-release-note-link-normalization - Release noteのrepo-root docsリンクをcanonical source URLへ正規化する
 <!-- vibepro-release-index-pr:355:end -->
+
+<!-- vibepro-release-index-pr:354:start -->
+- [PR #354](https://github.com/Unson-LLC/vibepro/pull/354) — [2026-07](/releases/2026-07): story-vibepro-artifact-output-routing - 成果物の正本出力先をリポジトリ設定で一意に制御する
+<!-- vibepro-release-index-pr:354:end -->
