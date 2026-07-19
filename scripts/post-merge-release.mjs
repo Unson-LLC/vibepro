@@ -44,11 +44,9 @@ export function normalizeReleaseDocumentationLinks(value) {
   let fence = null;
   return `${value ?? ''}`.split('\n').map((line) => {
     const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
-    if (marker) {
-      const run = marker[1];
-      if (!fence) {
-        fence = { character: run[0], length: run.length };
-      } else if (
+    if (fence) {
+      const run = marker?.[1] ?? '';
+      if (marker &&
         run[0] === fence.character
         && run.length >= fence.length
         && marker[2].trim() === ''
@@ -57,16 +55,68 @@ export function normalizeReleaseDocumentationLinks(value) {
       }
       return line;
     }
-    if (fence) return line;
-    return mapOutsideInlineCode(line, (segment) => (
-      segment.replace(
-        /(!?\[[^\]\n]*\]\()docs\/([^\s)]+)(?=(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^\)\n]*\)))?\))/gu,
-        (_match, prefix, target) => (
-          `${prefix}${prefix.startsWith('!') ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT}docs/${target}`
-        )
-      )
-    ));
+    if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) {
+      fence = { character: marker[1][0], length: marker[1].length };
+      return line;
+    }
+    return mapOutsideInlineCode(line, normalizeMarkdownLinkDestinations);
   }).join('\n');
+}
+
+function normalizeMarkdownLinkDestinations(segment) {
+  let output = '';
+  let cursor = 0;
+  let index = 0;
+
+  while (index < segment.length) {
+    if (segment[index] !== '[' || isEscaped(segment, index)) {
+      index += 1;
+      continue;
+    }
+
+    const labelEnd = findClosingLabel(segment, index);
+    const destinationStart = labelEnd + 2;
+    if (labelEnd < 0 || segment[labelEnd + 1] !== '(') {
+      index += 1;
+      continue;
+    }
+
+    const destination = segment.slice(destinationStart).match(
+      /^docs\/([^\s)]+)(?=(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^\)\n]*\)))?\))/u
+    );
+    if (!destination) {
+      index = destinationStart;
+      continue;
+    }
+
+    const imageMarker = index > 0 && segment[index - 1] === '!' && !isEscaped(segment, index - 1);
+    const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
+    output += segment.slice(cursor, destinationStart);
+    output += `${root}docs/${destination[1]}`;
+    cursor = destinationStart + destination[0].length;
+    index = cursor;
+  }
+
+  return output + segment.slice(cursor);
+}
+
+function findClosingLabel(segment, openingIndex) {
+  let depth = 1;
+  for (let index = openingIndex + 1; index < segment.length; index += 1) {
+    if (isEscaped(segment, index)) continue;
+    if (segment[index] === '[') depth += 1;
+    if (segment[index] === ']') depth -= 1;
+    if (depth === 0) return index;
+  }
+  return -1;
+}
+
+function isEscaped(value, index) {
+  let slashCount = 0;
+  for (let cursor = index - 1; cursor >= 0 && value[cursor] === '\\'; cursor -= 1) {
+    slashCount += 1;
+  }
+  return slashCount % 2 === 1;
 }
 
 function mapOutsideInlineCode(line, transform) {
@@ -76,14 +126,15 @@ function mapOutsideInlineCode(line, transform) {
 
   while (cursor < line.length) {
     backtickRun.lastIndex = cursor;
-    const opening = backtickRun.exec(line);
+    let opening = backtickRun.exec(line);
+    while (opening && isEscaped(line, opening.index)) opening = backtickRun.exec(line);
     if (!opening) return output + transform(line.slice(cursor));
 
     const delimiterLength = opening[0].length;
     let closing = null;
     backtickRun.lastIndex = opening.index + delimiterLength;
     for (let candidate = backtickRun.exec(line); candidate; candidate = backtickRun.exec(line)) {
-      if (candidate[0].length === delimiterLength) {
+      if (!isEscaped(line, candidate.index) && candidate[0].length === delimiterLength) {
         closing = candidate;
         break;
       }
