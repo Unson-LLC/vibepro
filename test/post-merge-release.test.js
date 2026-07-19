@@ -127,6 +127,30 @@ test('PCR-CON-001 extracts stable release sections and normalizes blanks', () =>
   });
 });
 
+test('RNLN-004/005 preserves protected code contexts through production extraction', () => {
+  const sections = extractReleaseSections([
+    '## Release Notes',
+    '### Change Summary',
+    '`[inline](docs/inline.md)`',
+    '```md',
+    '[fenced](docs/fenced.md)',
+    '```',
+    '[prose](docs/prose.md)',
+    '### Compatibility',
+    'なし',
+    '### User Action',
+    'なし'
+  ].join('\n'));
+
+  assert.equal(sections.changeSummary, [
+    '`[inline](docs/inline.md)`',
+    '```md',
+    '[fenced](docs/fenced.md)',
+    '```',
+    '[prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md)'
+  ].join('\n'));
+});
+
 test('PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose', () => {
   assert.equal(sanitizeReleaseContent('<script>{{ dangerous }}</script>'), '&lt;script&gt;&#123;&#123; dangerous &#125;&#125;&lt;/script&gt;');
 });
