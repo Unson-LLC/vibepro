@@ -6,6 +6,19 @@ code_refs:
   - scripts/post-merge-release.mjs
 test_refs:
   - test/post-merge-release.test.js
+diagrams:
+  - kind: threat_model
+    title: Release note projection trust boundaries
+    mermaid: |
+      flowchart LR
+        LivePR[GitHub live merged PR payload] --> Validate[merged PR and repository validation]
+        Validate --> Parse[Markdown parser and docs link normalization]
+        Parse --> Sanitize[HTML and Vue sanitization]
+        Sanitize --> Docs[English and Japanese release docs plus CHANGELOG]
+        Unknown[Malformed or unsupported Markdown] --> Preserve[Preserve input and continue projection]
+        Preserve --> Sanitize
+        Reproject[Docs-only reproject command] --> Validate
+        Reproject -. never invokes .-> Publish[npm publish or version history]
 ---
 
 # Spec
