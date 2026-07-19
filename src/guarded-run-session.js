@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
+import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
 import {
   evaluateGateReadiness as defaultReadGateReadiness,
   preparePullRequest as defaultPreparePullRequest,
@@ -112,18 +113,19 @@ async function orchestrateRun(deps, repoRoot, options) {
     return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready') {
+  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human') {
     return { plan: [], state: loaded.state };
   }
   const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
   const decision = selectControllerCheckpoint(loaded.state, options, previousDecision);
+  const resumePlan = buildResumeSafeActionPlan(loaded.state);
   const decisionState = {
     ...loaded.state,
     next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
   };
   const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
-  if (controllerEnabled && isEscapeDecision(decision)) {
-    const escaped = applyControllerEscape(decisionState, decision, toIso(deps.now()));
+  if (!resumePlan && controllerEnabled && isEscapeDecision(decision)) {
+    const escaped = await applyControllerEscape(deps, loaded.state.execution_context.root_realpath, decisionState, decision, toIso(deps.now()));
     await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
     return { plan: [decision.selected_action_id], decision, state: escaped };
   }
@@ -134,13 +136,17 @@ async function orchestrateRun(deps, repoRoot, options) {
     loaded.mirrorFile,
     'next_best_action_checkpoint'
   );
-  const selectedPlan = !controllerEnabled
+  const selectedPlan = resumePlan ?? (!controllerEnabled
     ? undefined
-    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id);
+    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
   const result = await runSafeActionPlan(decisionState, {
     plan: selectedPlan,
     onProgress: async (progress) => {
-      const checkpoint = { ...decisionState, action_journal: progress.action_journal };
+      const checkpoint = {
+        ...decisionState,
+        action_journal: progress.action_journal,
+        ...resumeCursorPatch(progress, decisionState)
+      };
       await persistAuthorityThenMirror(
         deps,
         checkpoint,
@@ -163,7 +169,11 @@ async function orchestrateRun(deps, repoRoot, options) {
       )
     }
   });
-  let next = { ...decisionState, action_journal: result.state.action_journal };
+  let next = {
+    ...decisionState,
+    action_journal: result.state.action_journal,
+    ...resumeCursorPatch(result.state, decisionState)
+  };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
@@ -247,6 +257,35 @@ async function orchestrateRun(deps, repoRoot, options) {
   return { plan: result.plan, state: next };
 }
 
+function hasCompletedResumeCheckpoint(state, resumeNodeId) {
+  if (resumeNodeId == null) return false;
+  return state.action_journal.some((entry) => entry.node_id === resumeNodeId
+    && entry.input_head_sha === state.current_head_sha
+    && entry.status === 'completed');
+}
+
+function resumeCursorPatch(progress, source) {
+  if (!Object.hasOwn(source, 'resume_from_node_id')) return {};
+  return {
+    resume_from_node_id: hasCompletedResumeCheckpoint(progress, source.resume_from_node_id)
+      ? null
+      : source.resume_from_node_id
+  };
+}
+
+function buildResumeSafeActionPlan(state) {
+  if (state.resume_from_node_id == null) return null;
+  const plan = buildSafeActionPlan(state);
+  const start = plan.findIndex((action) => action.node_id === state.resume_from_node_id);
+  if (start < 0) {
+    throw contractError('invalid_resume_node', `Run cannot resume from unknown node: ${state.resume_from_node_id}.`, {
+      run_id: state.run_id,
+      resume_from_node_id: state.resume_from_node_id
+    });
+  }
+  return plan.slice(start);
+}
+
 function isEscapeDecision(decision) {
   return ['ask', 'split', 'wait', 'stop', 'rediagnose'].includes(decision.selected_action_id);
 }
@@ -257,21 +296,39 @@ function buildSelectedSafeActionPlan(state, actionId) {
   return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
 }
 
-function applyControllerEscape(state, decision, timestamp) {
+async function applyControllerEscape(deps, repoRoot, state, decision, timestamp) {
   const actionId = decision.selected_action_id;
+  let humanDecision;
+  try {
+    humanDecision = await createHumanDecision(repoRoot, state, {
+      type: actionId === 'split' ? 'scope_split' : 'clarification',
+      question: `How should VibePro continue after the controller selected ${actionId}?`,
+      material_reason: `The autonomous controller stopped after repeated no progress and selected ${actionId}.`,
+      impact_scope: ['guarded_run', 'next_best_action'],
+      source_refs: [`run:${state.run_id}`, `controller_action:${actionId}`]
+    }, { now: deps.now });
+  } catch (error) {
+    if (!(error instanceof HumanDecisionError)) throw error;
+    throw contractError(error.code, error.message, error.details);
+  }
   const stopReason = {
     code: 'next_best_action_escape',
     message: `Controller selected ${actionId} after repeated no progress.`,
     details: {
       recovery: {
         required_actions: [`resolve controller escape action: ${actionId}`],
-        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --decision ${humanDecision.decision_id} --answer <answer> --until pr-ready`
       }
     }
   };
   return applyTransition(state, 'waiting_for_human', 'next_best_action_escape', timestamp, {
     stop_reason: stopReason,
-    pending_decision: { kind: 'next_best_action_escape', action_id: actionId }
+    pending_decision: {
+      decision_id: humanDecision.decision_id,
+      type: humanDecision.type,
+      artifact: path.join('.vibepro', 'executions', state.story_id, 'runs', state.run_id, 'decisions', `${humanDecision.decision_id}.json`),
+      stop_node_id: 'pr_prepare'
+    }
   });
 }
 
@@ -547,10 +604,37 @@ async function resumeRun(deps, repoRoot, options) {
       to: 'running'
     });
   }
+  let resolvedDecision = null;
+  if (loaded.state.status === 'waiting_for_human') {
+    try {
+      resolvedDecision = await resolveHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, {
+        decisionId: options.decisionId,
+        answer: options.answer,
+        answeredBy: options.answeredBy,
+        reflectedIn: options.reflectedIn
+      }, { now: deps.now, allowResolvedReplay: true });
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
   const next = applyTransition(loaded.state, 'running', 'operator_resume', toIso(deps.now()), {
     attempt: loaded.state.attempt + 1,
     stop_reason: null,
-    pending_decision: null
+    pending_decision: null,
+    resume_from_node_id: resolvedDecision
+      ? loaded.state.pending_decision?.stop_node_id ?? null
+      : loaded.state.resume_from_node_id ?? null,
+    human_decision_journal: resolvedDecision
+      ? [...(loaded.state.human_decision_journal ?? []), {
+          decision_id: resolvedDecision.decision_id,
+          answer: resolvedDecision.answer,
+          answered_by: resolvedDecision.answered_by,
+          answered_at: resolvedDecision.answered_at,
+          reflected_in: resolvedDecision.reflected_in,
+          stop_node_id: loaded.state.pending_decision?.stop_node_id ?? null
+        }]
+      : (loaded.state.human_decision_journal ?? [])
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'run_resumed');
   return next;
@@ -581,8 +665,8 @@ async function transitionRun(deps, repoRoot, options) {
   const to = options.to;
   if (!STATUS_VALUES.has(to)) throw contractError('unknown_status', `Unknown Run status: ${to}.`, { status: to });
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  if (loaded.state.status === 'failed' && to === 'running') {
-    throw contractError('invalid_transition', 'A failed Run can return to running only through execute resume.', {
+  if ((loaded.state.status === 'failed' || loaded.state.status === 'waiting_for_human') && to === 'running') {
+    throw contractError('invalid_transition', `A ${loaded.state.status} Run can return to running only through execute resume.`, {
       run_id: loaded.state.run_id,
       from: loaded.state.status,
       to
@@ -609,14 +693,36 @@ async function transitionRun(deps, repoRoot, options) {
       });
     }
   }
+  if (!isAllowedTransition(loaded.state.status, to, options.reason ?? 'run_transition')) {
+    throw contractError('invalid_transition', `Run cannot transition from ${loaded.state.status} to ${to}.`, {
+      run_id: loaded.state.run_id,
+      from: loaded.state.status,
+      to
+    });
+  }
   const timestamp = toIso(deps.now());
+  let pendingDecision = options.pendingDecision ?? loaded.state.pending_decision;
+  if (to === 'waiting_for_human') {
+    try {
+      const decision = await createHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, pendingDecision, { now: deps.now });
+      pendingDecision = {
+        decision_id: decision.decision_id,
+        type: decision.type,
+        artifact: path.join('.vibepro', 'executions', loaded.state.story_id, 'runs', loaded.state.run_id, 'decisions', `${decision.decision_id}.json`),
+        stop_node_id: pendingDecision.stop_node_id ?? null
+      };
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
   const next = applyTransition(loaded.state, to, options.reason ?? 'run_transition', timestamp, {
     stop_reason: RECOVERABLE_STATUSES.has(to)
       ? options.stopReason
       : (to === 'running' || to === 'pr_ready'
           ? null
           : (options.stopReason ?? loaded.state.stop_reason)),
-    pending_decision: options.pendingDecision ?? loaded.state.pending_decision
+    pending_decision: pendingDecision
   });
   if (next === loaded.state) return next;
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, classifyCapsuleReason(next, options.reason));
@@ -904,6 +1010,7 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
     managed_worktree: binding.managedWorktree,
     action_journal: [],
     next_best_action_decisions: [],
+    human_decision_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -1041,7 +1148,9 @@ function migrateRunState(state) {
     ...state,
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     action_journal: state.action_journal ?? [],
-    next_best_action_decisions: state.next_best_action_decisions ?? []
+    next_best_action_decisions: state.next_best_action_decisions ?? [],
+    human_decision_journal: state.human_decision_journal ?? [],
+    resume_from_node_id: state.resume_from_node_id ?? null
   };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
@@ -1128,6 +1237,16 @@ function validateRunShape(state) {
       });
     }
   }
+  if (state.human_decision_journal !== undefined
+      && (!Array.isArray(state.human_decision_journal)
+        || state.human_decision_journal.some((item) => !isPlainRecord(item)
+          || typeof item.decision_id !== 'string'
+          || typeof item.answer !== 'string'
+          || typeof item.answered_by !== 'string'
+          || !isIsoTimestamp(item.answered_at)
+          || !Array.isArray(item.reflected_in)))) {
+    throw contractError('invalid_state', 'Guarded Run human decision journal is invalid.', { run_id: state.run_id });
+  }
   for (const entry of state.action_journal) {
     if (!entry || typeof entry !== 'object'
         || typeof entry.action_id !== 'string'
@@ -1179,6 +1298,11 @@ function validateRunShape(state) {
   }
   if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
     throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
+  }
+  if (state.resume_from_node_id !== undefined
+      && state.resume_from_node_id !== null
+      && typeof state.resume_from_node_id !== 'string') {
+    throw contractError('invalid_state', 'Guarded Run resume_from_node_id is invalid.', { run_id: state.run_id });
   }
 }
 
