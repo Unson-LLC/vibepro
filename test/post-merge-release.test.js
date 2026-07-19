@@ -10,6 +10,7 @@ const repositoryRoot = path.resolve(import.meta.dirname, '..');
 import {
   extractReleaseSections,
   npmDistTags,
+  normalizeReleaseDocumentationLinks,
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
@@ -30,6 +31,28 @@ test('LRCL-001/002 locks the Linux Rollup binary as a root optional dependency',
   assert.deepEqual(locked?.cpu, ['x64']);
   assert.deepEqual(locked?.os, ['linux']);
   assert.match(locked?.resolved ?? '', /@rollup\/rollup-linux-x64-gnu/);
+});
+
+test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', () => {
+  const source = [
+    '[story](docs/management/stories/active/story-example.md)',
+    '![diagram](docs/architecture/diagram.png)',
+    '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
+    '`[inline](docs/inline.md)`',
+    '```md',
+    '[fenced](docs/fenced.md)',
+    '```'
+  ].join('\n');
+
+  assert.equal(normalizeReleaseDocumentationLinks(source), [
+    '[story](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-example.md)',
+    '![diagram](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/architecture/diagram.png)',
+    '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
+    '`[inline](docs/inline.md)`',
+    '```md',
+    '[fenced](docs/fenced.md)',
+    '```'
+  ].join('\n'));
 });
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
@@ -65,7 +88,7 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
     pull_request: {
       number: 42, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
       merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/42',
-      body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/example.md)\n### Compatibility\nなし\n### User Action\nなし'
+      body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/story-example.md)\n### Compatibility\nなし\n### User Action\nなし'
     }
   };
   await projectReleaseNote(root, event);
@@ -74,8 +97,8 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
     const content = await readFile(path.join(root, file), 'utf8');
     assert.equal(content.match(/vibepro-release-pr:42:start/g)?.length, 1, file);
     assert.match(content, /Automatic notes/);
-    assert.match(content, /https:\/\/github\.com\/Unson-LLC\/vibepro\/blob\/main\/docs\/management\/stories\/active\/example\.md/);
-    assert.doesNotMatch(content, /\]\(docs\/management\//);
+    assert.match(content, /\[Story\]\(https:\/\/github\.com\/Unson-LLC\/vibepro\/blob\/main\/docs\/management\/stories\/active\/story-example\.md\)/);
+    assert.doesNotMatch(content, /\]\(docs\/management/);
     assert.match(content, /abc123/);
     assert.doesNotMatch(content, /<script>|\{\{ title \}\}/i);
     assert.match(content, /&lt;script&gt;&#123;&#123; title &#125;&#125;&lt;\/script&gt;/i);

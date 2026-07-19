@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
+const REPOSITORY_SOURCE_ROOT = 'https://github.com/Unson-LLC/vibepro/blob/main/';
+const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro/main/';
 
 export function extractReleaseSections(body = '') {
   const release = section(body, ['Release Notes', 'リリースノート']) || body;
@@ -33,7 +35,29 @@ function captureSection(markdown, level, names) {
 }
 
 function normalizeContent(value) {
-  return sanitizeReleaseContent(`${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n'));
+  return normalizeReleaseDocumentationLinks(
+    sanitizeReleaseContent(`${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n'))
+  );
+}
+
+export function normalizeReleaseDocumentationLinks(value) {
+  let fence = null;
+  return `${value ?? ''}`.split('\n').map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/u)?.[1] ?? null;
+    if (marker) {
+      if (!fence) fence = marker[0];
+      else if (marker[0] === fence) fence = null;
+      return line;
+    }
+    if (fence) return line;
+    return line.split(/(`[^`\n]*`)/u).map((segment, index) => (
+      index % 2 === 1
+        ? segment
+        : segment.replace(/(!?\[[^\]\n]*\]\()docs\/([^\s)]+)(\))/gu, (_match, prefix, target, suffix) => (
+          `${prefix}${prefix.startsWith('!') ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT}docs/${target}${suffix}`
+        ))
+    )).join('');
+  }).join('\n');
 }
 
 export function sanitizeReleaseContent(value) {
