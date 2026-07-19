@@ -35,22 +35,23 @@ test('story-vibepro-artifact-output-routing ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 a
   const resolved = JSON.parse((await execFileAsync(process.execPath, [
     cli, 'artifacts', 'resolve', target, '--id', 'story-checkout', '--json'
   ], { cwd: repoRoot })).stdout);
-  assert.equal(resolved.routes.story.canonical.relative_path, 'docs/features/checkout/story.md');
-  assert.equal(resolved.configured, true);
-  assert.equal(resolved.routes.story.configured, true);
-  assert.equal(resolved.routes.architecture.configured, true);
+  assert.equal(resolved.routes.story.canonical.relative_path, 'docs/features/checkout/story.md', 'AC-1 resolves the configured canonical path');
+  assert.equal(resolved.configured, true, 'AC-2 reports explicit repository routing configuration');
+  assert.equal(resolved.routes.story.configured, true, 'AC-3 resolves routing independently by artifact kind');
+  assert.equal(resolved.routes.architecture.configured, true, 'AC-4 expands stable story and feature variables for configured artifacts');
   // ac:4 ac:5 ac:6 canonical authority and generated projections are distinguishable.
-  assert.equal(resolved.routes.architecture.projections[0].generated, true);
-  assert.notEqual(resolved.routes.architecture.canonical.relative_path, resolved.routes.architecture.projections[0].relative_path);
+  assert.equal(resolved.routes.architecture.projections[0].generated, true, 'AC-5 marks projections as generated output');
+  assert.notEqual(resolved.routes.architecture.canonical.relative_path, resolved.routes.architecture.projections[0].relative_path, 'AC-6 keeps canonical and projection authorities distinct');
 
   const migration = JSON.parse((await execFileAsync(process.execPath, [
     cli, 'artifacts', 'migrate', target, '--id', 'story-checkout', '--dry-run', '--json'
   ], { cwd: repoRoot })).stdout);
-  assert.equal(migration.dry_run, true);
+  assert.equal(migration.dry_run, true, 'AC-7 exposes migration only as a dry-run plan');
   // ac:7 ac:8 ac:9 migration planning is observable, read-only, and deterministic.
-  assert.equal(migration.edits_performed, 0);
-  assert.equal(migration.items.find((item) => item.kind === 'story').action, 'move_required');
-  assert.equal(await readFile(source, 'utf8'), before);
+  assert.equal(migration.edits_performed, 0, 'AC-8 performs no edits while planning migration');
+  assert.equal(migration.items.find((item) => item.kind === 'story').action, 'move_required', 'AC-9 reports the deterministic migration action');
+  assert.equal(await readFile(source, 'utf8'), before, 'AC-10 preserves the source artifact during migration planning');
+  assert.equal(migration.items.find((item) => item.kind === 'story').source_exists, true, 'AC-11 reports the existing source used for the required move');
   // ac:10 ac:11 the production CLI preserves the source and reports the required move.
 });
 
