@@ -1777,6 +1777,34 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
 });
 
+test('NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+
+  const decision = result.state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.deepEqual(
+    (await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }))
+      .next_best_action_decisions.at(-1),
+    decision
+  );
+});
+
 test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
   const summary = renderGuardedRunSummary({
     run_id: RUN_ID,

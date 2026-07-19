@@ -108,7 +108,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       action_journal: [],
       next_best_action_decisions: []
     };
-    const decision = selectSafeActionCandidate(preview, { checkpointReason: 'run_started' });
+    const decision = selectSafeActionCandidate(preview, buildControllerCheckpointOptions(options));
     return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
@@ -117,7 +117,7 @@ async function orchestrateRun(deps, repoRoot, options) {
   }
   const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
   const decision = selectSafeActionCandidate(loaded.state, {
-    checkpointReason: 'run_started',
+    ...buildControllerCheckpointOptions(options),
     previousDecision
   });
   const decisionState = {
@@ -238,6 +238,19 @@ async function orchestrateRun(deps, repoRoot, options) {
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };
+}
+
+function buildControllerCheckpointOptions(options = {}) {
+  const checkpointReason = options.checkpointReason ?? 'run_started';
+  const noProgressCount = Number.isInteger(options.noProgressCount) ? options.noProgressCount : 0;
+  return {
+    checkpointReason,
+    noProgressCount,
+    stateDelta: options.stateDelta,
+    metrics: options.actionMetrics,
+    escapeActionIds: options.escapeActionIds
+      ?? (noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+  };
 }
 
 function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
