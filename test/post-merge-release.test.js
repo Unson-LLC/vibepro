@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { chmod, mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, writeFile, mkdir, symlink } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -242,7 +242,7 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
       merged_at: '2026-07-19T00:00:00Z',
       html_url: 'https://github.com/Unson-LLC/vibepro/pull/1',
       user: { login: 'vibepro-test' },
-      base: { ref: 'main', sha: baseSha },
+      base: { ref: 'main', sha: baseSha, repo: { full_name: 'Unson-LLC/vibepro' } },
       merge_commit_sha: mergeSha
     }
   }));
@@ -273,6 +273,112 @@ else process.exit(2);
   });
   assert.equal(publish.status, 0, publish.stderr);
 });
+
+test('RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess', async () => {
+  const root = await createReprojectFixture();
+  const eventPath = path.join(root, 'event.json');
+  const event = livePullRequestEvent();
+  await writeFile(eventPath, JSON.stringify(event));
+  const protectedFiles = ['package.json', 'docs/version-history.md'];
+  const projectedFiles = [
+    'CHANGELOG.md',
+    'docs/releases/2026-07.md',
+    'docs/ja/releases/2026-07.md',
+    'docs/releases/index.md',
+    'docs/ja/releases/index.md'
+  ];
+  const protectedBefore = await readFiles(root, protectedFiles);
+
+  const first = runReleaseSubprocess(root, ['reproject', '--event', eventPath]);
+  assert.equal(first.status, 0, first.stderr);
+  assert.match(first.stdout, /month=2026-07/);
+  assert.match(first.stdout, /pr_number=350/);
+  assert.deepEqual(await readFiles(root, protectedFiles), protectedBefore);
+  const projectedOnce = await readFiles(root, projectedFiles);
+  for (const content of Object.values(projectedOnce)) {
+    assert.match(content, /vibepro-release-(?:index-)?pr:350:start/);
+  }
+
+  const second = runReleaseSubprocess(root, ['reproject', '--event', eventPath]);
+  assert.equal(second.status, 0, second.stderr);
+  assert.deepEqual(await readFiles(root, projectedFiles), projectedOnce);
+  assert.deepEqual(await readFiles(root, protectedFiles), protectedBefore);
+});
+
+test('RNLN-008 rejects untrusted reproject payloads before release docs mutation', async () => {
+  const variants = [
+    ['unmerged PR', { merged: false }, /pull_request\.merged must be true/],
+    ['foreign repository', { base: { ref: 'main', repo: { full_name: 'attacker/foreign' } } }, /base\.repo\.full_name must be Unson-LLC\/vibepro/],
+    ['non-default base', { base: { ref: 'release', repo: { full_name: 'Unson-LLC/vibepro' } } }, /base\.ref must be main/],
+    ['external PR URL', { html_url: 'https://example.com/pull/350' }, /html_url must be https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/350/]
+  ];
+
+  for (const [label, override, errorPattern] of variants) {
+    const root = await createReprojectFixture();
+    const eventPath = path.join(root, 'event.json');
+    const event = livePullRequestEvent(override);
+    await writeFile(eventPath, JSON.stringify(event));
+    const observedFiles = [
+      'CHANGELOG.md',
+      'docs/releases/2026-07.md',
+      'docs/ja/releases/2026-07.md',
+      'docs/releases/index.md',
+      'docs/ja/releases/index.md'
+    ];
+    const before = await readFiles(root, observedFiles);
+    const result = runReleaseSubprocess(root, ['reproject', '--event', eventPath]);
+    assert.notEqual(result.status, 0, label);
+    assert.match(result.stderr, errorPattern, label);
+    assert.deepEqual(await readFiles(root, observedFiles), before, label);
+  }
+});
+
+function livePullRequestEvent(override = {}) {
+  const pullRequest = {
+    merged: true,
+    number: 350,
+    title: 'Trusted live projection fixture',
+    body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/story-example.md)\n### Compatibility\nなし\n### User Action\nなし',
+    merged_at: '2026-07-18T09:00:00Z',
+    merge_commit_sha: 'abc123',
+    html_url: 'https://github.com/Unson-LLC/vibepro/pull/350',
+    user: { login: 'octocat' },
+    base: { ref: 'main', repo: { full_name: 'Unson-LLC/vibepro' } },
+    ...override
+  };
+  return { pull_request: pullRequest };
+}
+
+async function createReprojectFixture() {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-reproject-'));
+  await mkdir(path.join(root, 'scripts'));
+  await mkdir(path.join(root, 'docs/releases'), { recursive: true });
+  await mkdir(path.join(root, 'docs/ja/releases'), { recursive: true });
+  await symlink(path.join(repositoryRoot, 'node_modules'), path.join(root, 'node_modules'), 'dir');
+  await writeFile(path.join(root, 'scripts/post-merge-release.mjs'), await readFile(path.join(repositoryRoot, 'scripts/post-merge-release.mjs'), 'utf8'));
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'vibepro', version: '9.9.9' }));
+  await writeFile(path.join(root, 'docs/version-history.md'), '# Version history\n\nMust remain unchanged.\n');
+  await writeFile(path.join(root, 'docs/releases/2026-07.md'), '# July 2026\n');
+  await writeFile(path.join(root, 'docs/ja/releases/2026-07.md'), '# 2026年7月\n');
+  await writeFile(path.join(root, 'docs/releases/index.md'), '# Release Notes\n');
+  await writeFile(path.join(root, 'docs/ja/releases/index.md'), '# リリースノート\n');
+  await writeFile(path.join(root, 'CHANGELOG.md'), '# Changelog\n\n## Unreleased\n');
+  return root;
+}
+
+function runReleaseSubprocess(root, args) {
+  return spawnSync(process.execPath, [path.join(root, 'scripts/post-merge-release.mjs'), ...args], {
+    cwd: root,
+    encoding: 'utf8'
+  });
+}
+
+async function readFiles(root, relativePaths) {
+  return Object.fromEntries(await Promise.all(relativePaths.map(async (relative) => [
+    relative,
+    await readFile(path.join(root, relative), 'utf8')
+  ])));
+}
 
 function runGit(root, args) {
   const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
@@ -409,8 +515,9 @@ test('PCR-CON-002/003 projects a PR #350-shaped entry idempotently into docs and
   await writeFile(path.join(root, 'CHANGELOG.md'), '# Changelog\n\n## Unreleased\n');
   const event = {
     pull_request: {
-      number: 350, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
+      merged: true, number: 350, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
       merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/350',
+      base: { ref: 'main', repo: { full_name: 'Unson-LLC/vibepro' } },
       body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/story-example.md)\n### Compatibility\nなし\n### User Action\nなし'
     }
   };

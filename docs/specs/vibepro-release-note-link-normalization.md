@@ -30,4 +30,4 @@ diagrams:
 - `RNLN-005`: 日英release historyとCHANGELOGは同じ正規化済みnoteを受け取る。
 - `RNLN-006`: release sectionの開始・終了はcontainer外のtop-level headingだけで決まり、blockquote/list内の同名見出しはsectionを選択・切断しない。
 - `RNLN-007`: VitePress Markdown rendererは`project`、`reproject`、`release-body`でのみdynamic importして初期化し、`plan`と`publish-npm`はVitePress package解決にもparser初期化にも依存しない。隔離subprocessで両commandの実境界を検証する。
-- `RNLN-008`: `reproject --event <live-pr-payload>`はmerged PRを検証してrelease docsをPR番号markerで冪等更新するが、npm publishとversion history projectionは実行しない。rollback時はGitHub APIで修正後のPR本文を取得したpayloadだけを入力とする。
+- `RNLN-008`: `reproject --event <live-pr-payload>`は`merged=true`、正の整数PR番号、repository `Unson-LLC/vibepro`、base branch `main`、その番号から導くcanonical PR URLを検証してrelease docsをPR番号markerで冪等更新するが、npm publishとversion history projectionは実行しない。rollback時はGitHub APIで修正後のPR本文を取得したpayloadだけを入力とする。

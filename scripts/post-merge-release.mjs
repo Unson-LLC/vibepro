@@ -7,8 +7,11 @@ import { fileURLToPath } from 'node:url';
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
-const REPOSITORY_SOURCE_ROOT = 'https://github.com/Unson-LLC/vibepro/blob/main/';
-const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro/main/';
+const REPOSITORY = 'Unson-LLC/vibepro';
+const DEFAULT_BRANCH = 'main';
+const REPOSITORY_WEB_ROOT = `https://github.com/${REPOSITORY}`;
+const REPOSITORY_SOURCE_ROOT = `${REPOSITORY_WEB_ROOT}/blob/${DEFAULT_BRANCH}/`;
+const REPOSITORY_RAW_ROOT = `https://raw.githubusercontent.com/${REPOSITORY}/${DEFAULT_BRANCH}/`;
 const invokedCommand = isDirectInvocation()
   ? process.argv[2]
   : null;
@@ -422,10 +425,24 @@ async function upsertBlock(file, block, number, initial) {
 
 function validateMergedPullRequest(event) {
   const pr = event?.pull_request;
-  for (const key of ['number', 'title', 'merged_at', 'merge_commit_sha', 'html_url']) {
+  if (pr?.merged !== true) throw new Error('pull_request.merged must be true');
+  if (!Number.isInteger(pr.number) || pr.number <= 0) {
+    throw new Error('pull_request.number must be a positive integer');
+  }
+  for (const key of ['title', 'merged_at', 'merge_commit_sha', 'html_url']) {
     if (!pr?.[key]) throw new Error(`pull_request.${key} is required`);
   }
   if (!pr?.user?.login) throw new Error('pull_request.user.login is required');
+  if (pr?.base?.repo?.full_name !== REPOSITORY) {
+    throw new Error(`pull_request.base.repo.full_name must be ${REPOSITORY}`);
+  }
+  if (pr?.base?.ref !== DEFAULT_BRANCH) {
+    throw new Error(`pull_request.base.ref must be ${DEFAULT_BRANCH}`);
+  }
+  const canonicalUrl = `${REPOSITORY_WEB_ROOT}/pull/${pr.number}`;
+  if (pr.html_url !== canonicalUrl) {
+    throw new Error(`pull_request.html_url must be ${canonicalUrl}`);
+  }
   return { ...pr, body: pr.body ?? '' };
 }
 
