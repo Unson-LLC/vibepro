@@ -113,9 +113,12 @@ export async function persistCanonicalArtifactsToBase({
       });
     }
     try {
+      const preparedTargets = [];
       for (const [relativePath, bytes] of prepared.files) {
         assertAllowedPath(relativePath, allowedRoots);
-        const target = path.resolve(tempWorktree, relativePath);
+        preparedTargets.push({ relativePath, bytes, target: path.resolve(tempWorktree, relativePath) });
+      }
+      for (const { bytes, target } of preparedTargets) {
         await (options.mkdir ?? mkdir)(path.dirname(target), { recursive: true });
         await (options.writeFile ?? writeFile)(target, bytes);
       }

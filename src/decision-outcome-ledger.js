@@ -65,6 +65,15 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
   if (storyId && ledger.story_id !== storyId) {
     return invalid('story_id', 'decision outcome ledger story does not match the promotion target');
   }
+  if (typeof ledger.evidence_head_sha !== 'string' || ledger.evidence_head_sha.trim() === '') {
+    return invalid('evidence_head_sha', 'decision outcome ledger current-head binding is invalid');
+  }
+  if (!validObservedAt(ledger.created_at)) {
+    return invalid('created_at', 'decision outcome ledger creation timestamp is invalid');
+  }
+  if (ledger.artifact_path != null && typeof ledger.artifact_path !== 'string') {
+    return invalid('artifact_path', 'decision outcome ledger artifact path is invalid');
+  }
   if (!Array.isArray(ledger.traces)) {
     return invalid('traces', 'decision outcome ledger traces must be an array');
   }
@@ -74,6 +83,62 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
     if (!trace || typeof trace !== 'object' || Array.isArray(trace)) {
       return invalid('traces', 'decision outcome ledger trace must be an object');
     }
+    for (const field of [
+      'decision_trace_id', 'collision_group', 'trace_source_ref', 'normalized_subject_key',
+      'source_identity', 'evidence_head_sha', 'parent_revision_fingerprint',
+      'revision_fingerprint', 'observation_identity',
+      'trace_status', 'missing_reason', 'finding', 'gate', 'detector', 'disposition',
+      'decision', 'behavior_delta', 'delivery', 'downstream_outcome',
+      'eligible_outcome_sources', 'source_errors'
+    ]) {
+      if (!Object.hasOwn(trace, field)) {
+        return invalid(field, `decision outcome trace required field is missing: ${field}`);
+      }
+    }
+    if (trace.evidence_head_sha !== ledger.evidence_head_sha) {
+      return invalid('evidence_head_sha', 'decision outcome trace head does not match the ledger current-head binding');
+    }
+    if (!SUMMARY_STATUS_ORDER.has(trace.trace_status)) {
+      return invalid('trace_status', 'decision outcome trace status is unsupported');
+    }
+    if (trace.normalized_subject_key != null
+      && (typeof trace.normalized_subject_key !== 'string' || trace.normalized_subject_key.trim() === '')) {
+      return invalid('normalized_subject_key', 'decision outcome normalized subject key is invalid');
+    }
+    if (!isValidTraceSourceIdentity(trace.source_identity)) {
+      return invalid('source_identity', 'decision outcome trace source identity is invalid');
+    }
+    if (!isValidBehaviorDelta(trace.behavior_delta)) {
+      return invalid('behavior_delta', 'decision outcome trace behavior delta is invalid');
+    }
+    if (!isValidDelivery(trace.delivery)) {
+      return invalid('delivery', 'decision outcome trace delivery is invalid');
+    }
+    if (!isValidDownstreamOutcome(trace.downstream_outcome)) {
+      return invalid('downstream_outcome', 'decision outcome trace downstream outcome is invalid');
+    }
+    if (!isValidEligibleOutcomeSources(trace.eligible_outcome_sources)) {
+      return invalid('eligible_outcome_sources', 'decision outcome eligible sources are invalid');
+    }
+    if (!Array.isArray(trace.source_errors)) {
+      return invalid('source_errors', 'decision outcome trace source errors must be an array');
+    }
+    if (trace.observation_read_aliases != null && !Array.isArray(trace.observation_read_aliases)) {
+      return invalid('observation_read_aliases', 'decision outcome trace observation aliases must be an array');
+    }
+    for (const claimField of ['finding', 'gate', 'detector', 'disposition', 'decision']) {
+      if (!isValidClaim(trace[claimField])) {
+        return invalid(claimField, `decision outcome trace claim is invalid: ${claimField}`);
+      }
+    }
+    if (trace.observation_identity != null
+      && (!/^obs_[a-f0-9]{64}$/.test(trace.observation_identity.observation_id ?? '')
+        || !/^[a-f0-9]{64}$/.test(trace.observation_identity.source_digest ?? ''))) {
+      return invalid('observation_identity', 'decision outcome trace observation identity is invalid');
+    }
+    if (!isJsonSafeValue(trace)) {
+      return invalid('traces', 'decision outcome trace contains unsupported JSON values');
+    }
     if (!/^[a-f0-9]{64}$/.test(trace.revision_fingerprint ?? '')) {
       return invalid('revision_fingerprint', 'decision outcome trace revision fingerprint is invalid');
     }
@@ -81,6 +146,12 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
     const hasCollisionGroup = /^cg_[a-f0-9]{64}$/.test(trace.collision_group ?? '');
     const hasTraceSourceRef = /^tsr_[a-f0-9]{64}$/.test(trace.trace_source_ref ?? '');
     const hasCollisionTrace = trace.decision_trace_id == null && hasCollisionGroup && hasTraceSourceRef;
+    if (!hasTraceSourceRef) {
+      return invalid('trace_source_ref', 'decision outcome trace source reference is invalid');
+    }
+    if (hasDecisionTrace && trace.collision_group != null) {
+      return invalid('collision_group', 'identified decision outcome traces cannot carry a collision group');
+    }
     if (!hasDecisionTrace && !hasCollisionTrace) {
       if (trace.decision_trace_id == null && !hasCollisionGroup) {
         return invalid('collision_group', 'decision outcome collision group is invalid');
@@ -138,17 +209,75 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
   return { valid: true, field: null, reason: null };
 }
 
-export function reviseDecisionOutcomeLedger(ledger, { delivery = null, observations = [] } = {}) {
+function isValidTraceSourceIdentity(identity) {
+  return identity && typeof identity === 'object' && !Array.isArray(identity)
+    && typeof identity.source_kind === 'string' && identity.source_kind.trim() !== ''
+    && (identity.source_ref == null || typeof identity.source_ref === 'string')
+    && (identity.native_id == null || typeof identity.native_id === 'string')
+    && /^[a-f0-9]{64}$/.test(identity.digest ?? '')
+    && Number.isInteger(identity.multiplicity) && identity.multiplicity > 0;
+}
+
+function isValidBehaviorDelta(delta) {
+  return delta && typeof delta === 'object' && !Array.isArray(delta)
+    && ['observed', 'partial', 'not_observed', 'conflicting'].includes(delta.status)
+    && Array.isArray(delta.change_refs)
+    && Array.isArray(delta.verification_refs)
+    && Array.isArray(delta.verification_sources)
+    && Array.isArray(delta.excluded_sources);
+}
+
+function isValidDelivery(delivery) {
+  return delivery && typeof delivery === 'object' && !Array.isArray(delivery)
+    && ['not_delivered', 'pr_created', 'merged', 'conflicting'].includes(delivery.status)
+    && (delivery.pr == null || (typeof delivery.pr === 'object' && !Array.isArray(delivery.pr)))
+    && (delivery.merge == null || (typeof delivery.merge === 'object' && !Array.isArray(delivery.merge)));
+}
+
+function isValidDownstreamOutcome(outcome) {
+  if (!outcome || typeof outcome !== 'object' || Array.isArray(outcome)
+    || !['observed', 'not_observed', 'not_applicable'].includes(outcome.status)) return false;
+  for (const field of ['value', 'reason', 'source_ref', 'missing_reason']) {
+    if (!Object.hasOwn(outcome, field)) return false;
+  }
+  return true;
+}
+
+function isValidEligibleOutcomeSources(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value.entries)) return false;
+  if (![value.total_count, value.returned_count, value.omitted_count].every((count) => Number.isInteger(count) && count >= 0)) return false;
+  if (typeof value.truncated !== 'boolean'
+    || value.returned_count !== value.entries.length
+    || value.total_count !== value.returned_count + value.omitted_count) return false;
+  return value.entries.every((entry) => entry && typeof entry.kind === 'string'
+    && typeof entry.ref === 'string' && /^[a-f0-9]{64}$/.test(entry.digest ?? ''));
+}
+
+function isValidClaim(claim) {
+  return claim && typeof claim === 'object' && !Array.isArray(claim)
+    && ['observed', 'not_observed'].includes(claim.status)
+    && Object.hasOwn(claim, 'value')
+    && Array.isArray(claim.provenance);
+}
+
+export function reviseDecisionOutcomeLedger(ledger, {
+  delivery = null,
+  observations = [],
+  currentHeadSha = null
+} = {}) {
   if (!ledger?.story_id) throw new Error('decision outcome ledger requires story_id');
+  const evidenceHeadSha = currentHeadSha ?? ledger.evidence_head_sha ?? null;
   const traces = (ledger.traces ?? []).map((trace) => reviseTrace({
     trace,
     storyId: ledger.story_id,
     delivery,
-    observations
+    observations,
+    evidenceHeadSha
   })).sort(compareTraceSelectors);
   const core = {
     ...ledger,
     created_at: new Date().toISOString(),
+    evidence_head_sha: evidenceHeadSha,
     traces
   };
   delete core.artifact_digest;
@@ -473,7 +602,7 @@ function buildTrace({ storyId, source, subjectKey = null, collisionReason = null
   };
 }
 
-function reviseTrace({ trace, storyId, delivery, observations }) {
+function reviseTrace({ trace, storyId, delivery, observations, evidenceHeadSha }) {
   const normalizedDelivery = normalizeDelivery(delivery ?? trace.delivery, storyId, trace.delivery);
   const selector = trace.decision_trace_id
     ? { decision_trace_id: trace.decision_trace_id }
@@ -485,7 +614,7 @@ function reviseTrace({ trace, storyId, delivery, observations }) {
     trace_source_ref: trace.trace_source_ref,
     normalized_subject_key: trace.normalized_subject_key,
     source_identity: trace.source_identity ?? null,
-    evidence_head_sha: trace.evidence_head_sha ?? null,
+    evidence_head_sha: evidenceHeadSha,
     behavior_delta: trace.behavior_delta,
     delivery: normalizedDelivery.value
   };
@@ -506,6 +635,7 @@ function reviseTrace({ trace, storyId, delivery, observations }) {
   ];
   return {
     ...trace,
+    evidence_head_sha: evidenceHeadSha,
     parent_revision_fingerprint: parentRevision,
     revision_fingerprint: digestCanonical({
       parent_revision_fingerprint: parentRevision,
@@ -513,6 +643,7 @@ function reviseTrace({ trace, storyId, delivery, observations }) {
       observation_identity: observationResult.identity
     }),
     observation_identity: observationResult.identity,
+    observation_read_aliases: readAliases,
     trace_status: classifyTraceStatus({
       collisionReason: trace.decision_trace_id ? null : trace.missing_reason,
       sourceErrors,

@@ -121,6 +121,8 @@ Live merge authority first binds the PR URL to the configured `remote.origin.url
 Detached worktree ownership is not inferred only from the `worktree add` exit status. After any ordinary nonzero, timeout, or indeterminate add result, the service probes the repository worktree registry with a finite deadline. A registered path or an inconclusive probe is treated as possible partial acquisition and enters the independent cleanup lifecycle.
 
 - pure builder/read model: `src/decision-outcome-ledger.js`
+- authoritative local replacement: `src/atomic-file.js`
+- local-to-central gate outcome promotion and validation: `src/gate-outcome-ledger.js`
 - observation record/refresh CLI: `src/outcome-manager.js`、`src/cli.js`
 - PR lifecycle wiring: `src/pr-manager.js`
 - bounded review handoff: `src/evidence-reuse.js`はpreferred orderへledger path/digestを追加し、`src/agent-review.js`は同じ共通projectorの最大20件summaryをreview plan/requestへ投影する。evidence reuseがverification timestamp差分でstaleになっても、HEADが一致する現HEAD由来のdecision summaryは抑止しない。HEAD不一致時だけsummaryを隠す。review ownerはpath参照だけで済ませず、各entryのstatus、`decision_trace_id`、null-ID時の`collision_group + trace_source_ref`、parent revision、count/omission metadata、full ledger path/digestを保持する。full ledger本文は埋め込まない。full ledgerがartifact budgetを超える場合も、生成物inventoryへledgerを登録し、bounded siblingにdigest、HEAD、status countsと最大5 selectorを残す
@@ -130,11 +132,11 @@ Detached worktree ownership is not inferred only from the `worktree add` exit st
 
 ## Rollback
 
-builder、wiring、bounded view、canonical promotionを削除する。既存ledgerとhistorical canonical artifactsは書き換えない。
+builder、wiring、bounded view、canonical promotionを削除する。strict promotion validatorに問題がある場合はvalidator wiringをrevertしてoperator retryを停止し、既存ledgerとhistorical canonical artifactsは書き換えない。別ADRは作らない。この変更は新しいstorageやdeployment topologyを導入せず、既存canonical promotion trust boundaryをfail-closedへ強化するものであり、Storyの`reason`と本節がalternatives、compatibility、ownership、rollbackを完結して記録する。
 
 ## Release and Operations
 
-- Release note: additiveな`outcome record`/`outcome refresh` CLIとbounded decision-outcome summaryを追加する。既存command、既存ledger field、既存PR gate/merge判定は変更しない。
+- Release note: additiveな`outcome record`/`outcome refresh` CLIとbounded decision-outcome summaryを追加する。well-formedな既存ledger fieldと既存PR gate/merge判定は維持する。一方、model、story/head binding、trace required fields/enums、fingerprint、digestが不正なledgerをcanonical promotionが受理していた挙動は廃止し、永続化前に非zeroで拒否する互換性 tightening である。
 - Rollout plan: merge後から新しいbounded summaryを読み取り可能にする。downstream outcomeの追記はoperatorが明示的にcommandを実行したときだけ行い、自動migrationや一括backfillは行わない。
 - Operator action: リリース時の必須操作はない。後日観測を結びたいoperatorだけが下記runbookに従う。
 - Observability evidence: CLIのbounded JSONに`error_id`、selector、ledger path/digest、persistenceの`reason`/`commands`/`results`/`cleanup`、`promoted|already_present`を返し、summaryの`trace_status`、`delivery_status`、`downstream_outcome_status`を監視点とする。独立した`stage` fieldは公開契約にしない。

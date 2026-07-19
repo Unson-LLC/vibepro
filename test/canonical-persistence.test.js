@@ -58,6 +58,45 @@ test('GDL-CONTRACT-008 rejects prepared files outside canonical roots and cleans
   assert.equal(result.summary.cleanup.removed, true);
 });
 
+test('GDL-CONTRACT-008 prevalidates every target before I/O even when cleanup fails', async () => {
+  const fixture = await createRepository();
+  const relativeDir = 'docs/management/audit-artifacts/story-outcome';
+  const ioCalls = [];
+  const result = await persistCanonicalArtifactsToBase({
+    repoRoot: fixture.root,
+    storyId: 'story-outcome',
+    relativeDir,
+    allowedRoots: [relativeDir],
+    baseBranch: 'main',
+    mergeCommitSha: fixture.head,
+    prepare: async () => ({
+      files: new Map([
+        [`${relativeDir}/valid.json`, '{}\n'],
+        ['src/untrusted.js', 'nope\n']
+      ]),
+      metadata: null
+    }),
+    options: {
+      mkdir: async () => { ioCalls.push('mkdir'); },
+      writeFile: async () => { ioCalls.push('writeFile'); },
+      commandRunner: ({ command, runDefault }) => {
+        const rendered = [command[0], ...command[1]].join(' ');
+        if (rendered.includes('git worktree remove --force')) {
+          const now = new Date().toISOString();
+          return { command: rendered, started_at: now, finished_at: now, exit_code: 97, stdout: '', stderr: 'injected cleanup fault' };
+        }
+        return runDefault();
+      }
+    }
+  });
+
+  assert.deepEqual(ioCalls, []);
+  assert.equal(result.summary.primary.reason, 'canonical_path_not_allowed');
+  assert.equal(result.summary.cleanup.status, 'failed');
+  await git(fixture.root, ['worktree', 'remove', '--force', result.summary.worktree_path]);
+  await rm(result.summary.worktree_path, { recursive: true, force: true });
+});
+
 test('GDL-CONTRACT-008 rejects a concurrent canonical base advance and cleans the worktree', async () => {
   const fixture = await createRepository();
   const relativeDir = 'docs/management/audit-artifacts/story-outcome';

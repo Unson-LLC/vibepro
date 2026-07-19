@@ -5,6 +5,8 @@ status: active
 parent_design: vibepro-gate-decision-outcome-ledger
 code_refs:
   - src/decision-outcome-ledger.js
+  - src/atomic-file.js
+  - src/gate-outcome-ledger.js
   - src/outcome-manager.js
   - src/canonical-persistence.js
   - src/managed-command-executor.js

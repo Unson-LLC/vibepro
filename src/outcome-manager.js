@@ -143,7 +143,8 @@ export async function refreshOutcome(repoRoot, options = {}) {
   const observations = await readObservations(root, storyId, ledger);
   const revised = reviseDecisionOutcomeLedger(ledger, {
     delivery: deliveryFromMerge(storyId, merge),
-    observations
+    observations,
+    currentHeadSha: merge.current_head_sha
   });
   const ledgerPath = getDecisionOutcomeLedgerPath(root, storyId);
   const originalLedgerBytes = await readFile(ledgerPath);

@@ -13,6 +13,7 @@ import {
   matchesDecisionOutcomeObservation,
   projectDecisionOutcomeSummary,
   reviseDecisionOutcomeLedger,
+  validateDecisionOutcomeLedger,
   validateDecisionOutcomeObservation,
   writeDecisionOutcomeLedger
 } from '../src/decision-outcome-ledger.js';
@@ -261,6 +262,9 @@ test('GDL-S-1 outcome refresh preserves a managed observation recorded with the 
     persistenceService: async () => ({ summary: { status: 'pushed' } })
   });
   const revised = JSON.parse(await readFile(path.join(prDir, 'decision-outcome-ledger.json'), 'utf8'));
+  assert.equal(revised.evidence_head_sha, fixture.head);
+  assert.equal(revised.traces[0].evidence_head_sha, fixture.head);
+  assert.ok(Array.isArray(revised.traces[0].observation_read_aliases));
   assert.equal(revised.traces[0].downstream_outcome.status, 'observed');
   assert.deepEqual(revised.traces[0].downstream_outcome.value, { defect_recurred: false });
 });
@@ -1412,6 +1416,7 @@ test('GDL-S-9 outcome record rejects an accepted waiver for a different trace', 
   await writeFile(path.join(prDir, 'decision-records.json'), bytes);
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
     artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
     sources: [{
       source_kind: 'decision_record', source_ref: artifact, source_digest: createHash('sha256').update(bytes).digest('hex'),
@@ -1512,6 +1517,7 @@ test('GDL-S-1 canonical refresh preserves every null-id collision revision', asy
   await mkdir(prDir, { recursive: true });
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
     artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
     sources: [
       finding(null, { source_ref: 'review-a.json', role: 'runtime_contract' }),
@@ -2091,6 +2097,16 @@ test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledger
     ['wrong schema', (ledger) => ({ ...ledger, schema_version: '9.9.9' }), 'schema_version'],
     ['wrong model', (ledger) => ({ ...ledger, model: 'wrong-model' }), 'model'],
     ['wrong story', (ledger) => ({ ...ledger, story_id: 'story-other' }), 'story_id'],
+    ['missing current-head binding', (ledger) => ({ ...ledger, evidence_head_sha: null }), 'evidence_head_sha'],
+    ['unsupported trace status', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], trace_status: 'invented' }]
+    }), 'trace_status'],
+    ['missing required trace field', (ledger) => {
+      const trace = { ...ledger.traces[0] };
+      delete trace.behavior_delta;
+      return { ...ledger, traces: [trace] };
+    }, 'behavior_delta'],
     ['wrong artifact digest', (ledger) => ({ ...ledger, artifact_digest: 'f'.repeat(64) }), 'artifact_digest'],
     ['wrong parent fingerprint', (ledger) => ({
       ...ledger,
@@ -2109,8 +2125,14 @@ test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledger
       await mkdir(prDir, { recursive: true });
       const valid = buildDecisionOutcomeLedger({
         storyId: STORY_ID,
+        currentHeadSha: 'a'.repeat(40),
         artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
         sources: [finding('structural-validation')]
+      });
+      assert.deepEqual(validateDecisionOutcomeLedger(valid, { storyId: STORY_ID }), {
+        valid: true,
+        field: null,
+        reason: null
       });
       await writeFile(
         path.join(prDir, 'decision-outcome-ledger.json'),
@@ -2135,6 +2157,7 @@ test('GDL-S-7 canonical promotion rejects escaped revision identifiers before wr
   await mkdir(prDir, { recursive: true });
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
     artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
     sources: [finding('path-escape')]
   });
@@ -2163,6 +2186,7 @@ test('GDL-S-7 canonical promotion rejects a missing revision fingerprint before 
   await mkdir(prDir, { recursive: true });
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
     artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
     sources: [finding('valid-revision'), finding('missing-revision')]
   });
@@ -2254,7 +2278,12 @@ test('GDL-S-8 canonical promotion deduplicates identical revisions when unrelate
   const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
   await mkdir(prDir, { recursive: true });
   const artifactPath = `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`;
-  const initial = buildDecisionOutcomeLedger({ storyId: STORY_ID, artifactPath, sources: [finding('stable')] });
+  const initial = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
+    artifactPath,
+    sources: [finding('stable')]
+  });
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(initial, null, 2)}\n`);
   await promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID });
   const stableTrace = initial.traces[0];
@@ -2263,7 +2292,10 @@ test('GDL-S-8 canonical promotion deduplicates identical revisions when unrelate
   const before = await readFile(target, 'utf8');
 
   const expanded = buildDecisionOutcomeLedger({
-    storyId: STORY_ID, artifactPath, sources: [finding('stable'), finding('unrelated')]
+    storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
+    artifactPath,
+    sources: [finding('stable'), finding('unrelated')]
   });
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(expanded, null, 2)}\n`);
   await promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID });
@@ -2274,7 +2306,11 @@ test('GDL-S-8 canonical promotion rejects tampered bytes before immutable revisi
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-ledger-conflict-'));
   const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
   await mkdir(prDir, { recursive: true });
-  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('conflict')] });
+  const ledger = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
+    sources: [finding('conflict')]
+  });
   const ledgerPath = path.join(prDir, 'decision-outcome-ledger.json');
   await writeFile(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
   await promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID });
@@ -2292,7 +2328,11 @@ test('GDL-S-8 canonical promotion preserves a legacy revision whose only extra f
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-ledger-legacy-envelope-'));
   const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
   await mkdir(prDir, { recursive: true });
-  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('legacy-envelope')] });
+  const ledger = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
+    sources: [finding('legacy-envelope')]
+  });
   const ledgerPath = path.join(prDir, 'decision-outcome-ledger.json');
   await writeFile(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
   await promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID });
