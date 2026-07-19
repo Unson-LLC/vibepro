@@ -2819,7 +2819,7 @@ test('check self-dogfood detects verify evidence without final gate artifacts', 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.check.status, 'needs_review');
   assert.equal(result.result.check.evidence.self_dogfood.findings.length, 1);
-  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate-dag artifacts are missing/);
+  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate artifacts are missing/);
   assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
 });
 

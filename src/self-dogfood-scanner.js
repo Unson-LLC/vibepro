@@ -241,16 +241,49 @@ async function scanResolvedStoryGateArtifacts(repoRoot, storyId) {
       required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence.`
     });
   }
-  if (hasGateDag && !await readJson(gateDagPath)) {
-    findings.push({
-      id: `self_dogfood.invalid_gate_dag.${storyId}`,
-      severity: 'critical', gate_effect: 'block', story_id: storyId,
-      path: toWorkspaceRelative(repoRoot, gateDagPath),
-      detail: 'The configured gate artifact is not valid JSON.',
-      required_action: 'Regenerate the gate artifact with vibepro pr prepare.'
-    });
+  let gateDag = null;
+  if (hasGateDag) {
+    gateDag = await readJson(gateDagPath);
+    if (!gateDag) {
+      findings.push({
+        id: `self_dogfood.invalid_gate_dag.${storyId}`,
+        severity: 'critical', gate_effect: 'block', story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, gateDagPath),
+        detail: 'The configured gate artifact is not valid JSON.',
+        required_action: 'Regenerate the gate artifact with vibepro pr prepare.'
+      });
+    } else if (gateDag.overall_status !== 'ready_for_review') {
+      findings.push({
+        id: `self_dogfood.unresolved_gate_dag.${storyId}`,
+        severity: isCriticalGateDag(gateDag) ? 'critical' : 'medium',
+        gate_effect: isCriticalGateDag(gateDag) ? 'block' : 'review',
+        story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, gateDagPath),
+        detail: `Final configured gate artifact is ${gateDag.overall_status}; unresolved required gates remain.`,
+        required_action: 'Resolve required gates, split scope, or record an auditable non-critical waiver through vibepro pr create.'
+      });
+    }
   }
-  void hasCreate;
+  if (hasCreate) {
+    const prCreate = await readJson(createPath);
+    const gate = prCreate?.execution?.gate_dag?.overall_status
+      ?? prCreate?.gate_dag?.overall_status
+      ?? gateDag?.overall_status
+      ?? null;
+    const gateOverrideAllowed = isAuditableGateOverride(prCreate?.execution?.gate_override)
+      || isAuditableGateOverride(prCreate?.gate_override);
+    if (gate && gate !== 'ready_for_review' && !gateOverrideAllowed) {
+      findings.push({
+        id: `self_dogfood.pr_create_without_gate_override.${storyId}`,
+        severity: 'critical',
+        gate_effect: 'block',
+        story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, createPath),
+        detail: `PR create evidence exists while the configured gate artifact is ${gate} and no VibePro waiver was recorded.`,
+        required_action: 'Use vibepro pr create so unresolved gates and waiver reasons are captured.'
+      });
+    }
+  }
   return findings;
 }
 
