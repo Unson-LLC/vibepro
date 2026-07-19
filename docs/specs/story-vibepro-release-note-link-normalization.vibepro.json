@@ -99,7 +99,10 @@
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "validateMergedPullRequest" }]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess" }]
+        "test_pattern": [
+          { "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess" },
+          { "file_glob": "test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js", "must_contain": "replays merged-PR projection and immutable npm convergence" }
+        ]
       }
     }
   ],
