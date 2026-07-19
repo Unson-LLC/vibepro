@@ -38,11 +38,21 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[story](docs/management/stories/active/story-example.md)',
     '[nested [label]](docs/nested.md)',
     '[titled](docs/guide.md "Guide title")',
+    '[escaped-title](docs/escaped-title.md "A \\"quoted\\" title")',
+    '[paren-title](docs/paren-title.md (Parenthesized title))',
+    '[code `label ]`](docs/code-label.md)',
+    '[![nested image](docs/nested-image.png)](docs/nested-image-page.md)',
     '![diagram](docs/architecture/diagram.png)',
     '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
     '`[inline](docs/inline.md)`',
     '``[multi ` inline](docs/multi-inline.md)``',
     '\\`[escaped](docs/escaped.md)\\`',
+    '``multiline',
+    '[multiline-code](docs/multiline-code.md)',
+    'span``',
+    '> ```md',
+    '> [blockquote-fenced](docs/blockquote-fenced.md)',
+    '> ```',
     '```invalid`info',
     '[after-invalid-fence](docs/after-invalid.md)',
     '```md',
@@ -58,11 +68,21 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[story](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-example.md)',
     '[nested [label]](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested.md)',
     '[titled](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide.md "Guide title")',
+    '[escaped-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/escaped-title.md "A \\"quoted\\" title")',
+    '[paren-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/paren-title.md (Parenthesized title))',
+    '[code `label ]`](https://github.com/Unson-LLC/vibepro/blob/main/docs/code-label.md)',
+    '[![nested image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-image.png)](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-image-page.md)',
     '![diagram](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/architecture/diagram.png)',
     '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
     '`[inline](docs/inline.md)`',
     '``[multi ` inline](docs/multi-inline.md)``',
     '\\`[escaped](https://github.com/Unson-LLC/vibepro/blob/main/docs/escaped.md)\\`',
+    '``multiline',
+    '[multiline-code](docs/multiline-code.md)',
+    'span``',
+    '> ```md',
+    '> [blockquote-fenced](docs/blockquote-fenced.md)',
+    '> ```',
     '```invalid`info',
     '[after-invalid-fence](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-invalid.md)',
     '```md',
@@ -73,6 +93,11 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[long-fenced](docs/long-fenced.md)',
     '````'
   ].join('\n'));
+
+  assert.equal(
+    normalizeReleaseDocumentationLinks('` unmatched ``[double-span](docs/double-span.md)`` [after-unmatched](docs/after-unmatched.md)'),
+    '` unmatched ``[double-span](docs/double-span.md)`` [after-unmatched](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-unmatched.md)'
+  );
 });
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
@@ -88,14 +113,7 @@ test('PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose', () 
   assert.equal(sanitizeReleaseContent('<script>{{ dangerous }}</script>'), '&lt;script&gt;&#123;&#123; dangerous &#125;&#125;&lt;/script&gt;');
 });
 
-test('PCR-CON-001 makes repository docs links safe for the public VitePress build', () => {
-  assert.equal(
-    sanitizeReleaseContent('[Story](docs/management/stories/active/example.md)'),
-    '[Story](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/example.md)'
-  );
-});
-
-test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog', async () => {
+test('PCR-CON-002/003 projects a PR #350-shaped entry idempotently into docs and changelog', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-release-'));
   await mkdir(path.join(root, 'docs/releases'), { recursive: true });
   await mkdir(path.join(root, 'docs/ja/releases'), { recursive: true });
@@ -106,8 +124,8 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
   await writeFile(path.join(root, 'CHANGELOG.md'), '# Changelog\n\n## Unreleased\n');
   const event = {
     pull_request: {
-      number: 42, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
-      merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/42',
+      number: 350, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
+      merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/350',
       body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/story-example.md)\n### Compatibility\nなし\n### User Action\nなし'
     }
   };
@@ -115,7 +133,7 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
   await projectReleaseNote(root, event);
   for (const file of ['docs/releases/2026-07.md', 'docs/ja/releases/2026-07.md', 'CHANGELOG.md']) {
     const content = await readFile(path.join(root, file), 'utf8');
-    assert.equal(content.match(/vibepro-release-pr:42:start/g)?.length, 1, file);
+    assert.equal(content.match(/vibepro-release-pr:350:start/g)?.length, 1, file);
     assert.match(content, /Automatic notes/);
     assert.match(content, /\[Story\]\(https:\/\/github\.com\/Unson-LLC\/vibepro\/blob\/main\/docs\/management\/stories\/active\/story-example\.md\)/);
     assert.doesNotMatch(content, /\]\(docs\/management/);
@@ -125,7 +143,7 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
   }
   for (const file of ['docs/releases/index.md', 'docs/ja/releases/index.md']) {
     const content = await readFile(path.join(root, file), 'utf8');
-    assert.equal(content.match(/vibepro-release-index-pr:42:start/g)?.length, 1, file);
+    assert.equal(content.match(/vibepro-release-index-pr:350:start/g)?.length, 1, file);
     assert.match(content, /\/releases\/2026-07/);
     assert.doesNotMatch(content, /<script>|\{\{ title \}\}/i);
   }

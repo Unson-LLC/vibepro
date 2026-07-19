@@ -41,74 +41,179 @@ function normalizeContent(value) {
 }
 
 export function normalizeReleaseDocumentationLinks(value) {
+  const source = `${value ?? ''}`;
+  const protectedRanges = findProtectedCodeRanges(source);
+  const replacements = findMarkdownLinkReplacements(source, protectedRanges);
+  return replacements
+    .sort((left, right) => right.start - left.start)
+    .reduce((output, replacement) => (
+      output.slice(0, replacement.start) + replacement.value + output.slice(replacement.end)
+    ), source);
+}
+
+function findProtectedCodeRanges(source) {
+  const fenced = findFencedCodeRanges(source);
+  return [...fenced, ...findInlineCodeRanges(source, fenced)]
+    .sort((left, right) => left.start - right.start);
+}
+
+function findFencedCodeRanges(source) {
+  const ranges = [];
+  const lines = source.split('\n');
+  let offset = 0;
   let fence = null;
-  return `${value ?? ''}`.split('\n').map((line) => {
-    const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
+  for (const line of lines) {
+    const lineEnd = offset + line.length + (offset + line.length < source.length ? 1 : 0);
+    const marker = line.match(/^(?: {0,3}>[ \t]?)* {0,3}(`{3,}|~{3,})(.*)$/u);
     if (fence) {
       const run = marker?.[1] ?? '';
-      if (marker &&
-        run[0] === fence.character
-        && run.length >= fence.length
-        && marker[2].trim() === ''
-      ) {
+      if (marker && run[0] === fence.character && run.length >= fence.length && marker[2].trim() === '') {
+        ranges.push({ start: fence.start, end: lineEnd });
         fence = null;
       }
-      return line;
+    } else if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) {
+      fence = { start: offset, character: marker[1][0], length: marker[1].length };
     }
-    if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) {
-      fence = { character: marker[1][0], length: marker[1].length };
-      return line;
-    }
-    return mapOutsideInlineCode(line, normalizeMarkdownLinkDestinations);
-  }).join('\n');
-}
-
-function normalizeMarkdownLinkDestinations(segment) {
-  let output = '';
-  let cursor = 0;
-  let index = 0;
-
-  while (index < segment.length) {
-    if (segment[index] !== '[' || isEscaped(segment, index)) {
-      index += 1;
-      continue;
-    }
-
-    const labelEnd = findClosingLabel(segment, index);
-    const destinationStart = labelEnd + 2;
-    if (labelEnd < 0 || segment[labelEnd + 1] !== '(') {
-      index += 1;
-      continue;
-    }
-
-    const destination = segment.slice(destinationStart).match(
-      /^docs\/([^\s)]+)(?=(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^\)\n]*\)))?\))/u
-    );
-    if (!destination) {
-      index = destinationStart;
-      continue;
-    }
-
-    const imageMarker = index > 0 && segment[index - 1] === '!' && !isEscaped(segment, index - 1);
-    const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
-    output += segment.slice(cursor, destinationStart);
-    output += `${root}docs/${destination[1]}`;
-    cursor = destinationStart + destination[0].length;
-    index = cursor;
+    offset = lineEnd;
   }
-
-  return output + segment.slice(cursor);
+  if (fence) ranges.push({ start: fence.start, end: source.length });
+  return ranges;
 }
 
-function findClosingLabel(segment, openingIndex) {
+function findInlineCodeRanges(source, fencedRanges) {
+  const ranges = [];
+  for (let index = 0; index < source.length;) {
+    const fenced = rangeContaining(fencedRanges, index);
+    if (fenced) {
+      index = fenced.end;
+      continue;
+    }
+    if (source[index] !== '`' || isEscaped(source, index)) {
+      index += 1;
+      continue;
+    }
+    const openingStart = index;
+    while (source[index] === '`') index += 1;
+    const delimiterLength = index - openingStart;
+    let closingEnd = -1;
+    for (let candidate = index; candidate < source.length;) {
+      const protectedFence = rangeContaining(fencedRanges, candidate);
+      if (protectedFence) {
+        candidate = protectedFence.end;
+        continue;
+      }
+      if (source[candidate] !== '`' || isEscaped(source, candidate)) {
+        candidate += 1;
+        continue;
+      }
+      const runStart = candidate;
+      while (source[candidate] === '`') candidate += 1;
+      if (candidate - runStart === delimiterLength) {
+        closingEnd = candidate;
+        break;
+      }
+    }
+    if (closingEnd >= 0) {
+      ranges.push({ start: openingStart, end: closingEnd });
+      index = closingEnd;
+    }
+  }
+  return ranges;
+}
+
+function findMarkdownLinkReplacements(source, protectedRanges) {
+  const replacements = [];
+  for (let index = 0; index < source.length; index += 1) {
+    const protectedRange = rangeContaining(protectedRanges, index);
+    if (protectedRange) {
+      index = protectedRange.end - 1;
+      continue;
+    }
+    if (source[index] !== '[' || isEscaped(source, index)) continue;
+    const labelEnd = findClosingLabel(source, index, protectedRanges);
+    if (labelEnd < 0 || source[labelEnd + 1] !== '(') continue;
+    const destination = parseInlineDestination(source, labelEnd + 2);
+    if (!destination || !destination.value.startsWith('docs/')) continue;
+    const imageMarker = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
+    const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
+    replacements.push({
+      start: destination.start,
+      end: destination.end,
+      value: `${root}${destination.value}`
+    });
+  }
+  return replacements;
+}
+
+function findClosingLabel(source, openingIndex, protectedRanges) {
   let depth = 1;
-  for (let index = openingIndex + 1; index < segment.length; index += 1) {
-    if (isEscaped(segment, index)) continue;
-    if (segment[index] === '[') depth += 1;
-    if (segment[index] === ']') depth -= 1;
+  for (let index = openingIndex + 1; index < source.length; index += 1) {
+    const protectedRange = rangeContaining(protectedRanges, index);
+    if (protectedRange) {
+      index = protectedRange.end - 1;
+      continue;
+    }
+    if (isEscaped(source, index)) continue;
+    if (source[index] === '[') depth += 1;
+    if (source[index] === ']') depth -= 1;
     if (depth === 0) return index;
   }
   return -1;
+}
+
+function parseInlineDestination(source, openingIndex) {
+  let index = openingIndex;
+  while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+  const angleWrapped = source[index] === '<';
+  if (angleWrapped) index += 1;
+  const start = index;
+  let depth = 0;
+  while (index < source.length) {
+    if (isEscaped(source, index)) {
+      index += 2;
+      continue;
+    }
+    const character = source[index];
+    if (angleWrapped) {
+      if (character === '>' || character === '\n') break;
+    } else {
+      if (character === '(') depth += 1;
+      else if (character === ')' && depth > 0) depth -= 1;
+      else if ((character === ')' || /[ \t\n]/u.test(character)) && depth === 0) break;
+    }
+    index += 1;
+  }
+  if (index === start || (angleWrapped && source[index] !== '>')) return null;
+  const end = index;
+  if (angleWrapped) index += 1;
+  if (!hasValidInlineLinkTail(source, index)) return null;
+  return { start, end, value: source.slice(start, end) };
+}
+
+function hasValidInlineLinkTail(source, start) {
+  let index = start;
+  while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+  if (source[index] === ')') return true;
+  const delimiter = source[index];
+  if (!['"', "'", '('].includes(delimiter)) return false;
+  const closing = delimiter === '(' ? ')' : delimiter;
+  index += 1;
+  for (; index < source.length; index += 1) {
+    if (isEscaped(source, index)) {
+      index += 1;
+      continue;
+    }
+    if (source[index] === closing) {
+      index += 1;
+      while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+      return source[index] === ')';
+    }
+  }
+  return false;
+}
+
+function rangeContaining(ranges, index) {
+  return ranges.find((range) => index >= range.start && index < range.end) ?? null;
 }
 
 function isEscaped(value, index) {
@@ -117,36 +222,6 @@ function isEscaped(value, index) {
     slashCount += 1;
   }
   return slashCount % 2 === 1;
-}
-
-function mapOutsideInlineCode(line, transform) {
-  let output = '';
-  let cursor = 0;
-  const backtickRun = /`+/gu;
-
-  while (cursor < line.length) {
-    backtickRun.lastIndex = cursor;
-    let opening = backtickRun.exec(line);
-    while (opening && isEscaped(line, opening.index)) opening = backtickRun.exec(line);
-    if (!opening) return output + transform(line.slice(cursor));
-
-    const delimiterLength = opening[0].length;
-    let closing = null;
-    backtickRun.lastIndex = opening.index + delimiterLength;
-    for (let candidate = backtickRun.exec(line); candidate; candidate = backtickRun.exec(line)) {
-      if (!isEscaped(line, candidate.index) && candidate[0].length === delimiterLength) {
-        closing = candidate;
-        break;
-      }
-    }
-
-    if (!closing) return output + transform(line.slice(cursor));
-    output += transform(line.slice(cursor, opening.index));
-    output += line.slice(opening.index, closing.index + delimiterLength);
-    cursor = closing.index + delimiterLength;
-  }
-
-  return output;
 }
 
 export function sanitizeReleaseContent(value) {
