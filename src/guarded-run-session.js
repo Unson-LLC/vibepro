@@ -112,6 +112,9 @@ async function orchestrateRun(deps, repoRoot, options) {
     return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
+  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready') {
+    return { plan: [], state: loaded.state };
+  }
   const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
   const decision = selectSafeActionCandidate(loaded.state, {
     checkpointReason: 'run_started',

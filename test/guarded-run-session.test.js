@@ -1399,6 +1399,9 @@ test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', 
   const mirrorAfter = await readFile(mirrorFile, 'utf8');
   assert.equal(authorityAfter, mirrorAfter);
   assert.deepEqual(JSON.parse(authorityAfter), completed);
+  const terminalReplay = await ready.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(terminalReplay.state.status, 'pr_ready');
+  assert.deepEqual(terminalReplay.state.next_best_action_decisions, []);
 });
 
 test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON', async (t) => {
@@ -1767,6 +1770,10 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const cancelledBytes = await readFile(artifact, 'utf8');
   assert.deepEqual((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+  const cancelledReplay = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(cancelledReplay.state.status, 'cancelled');
+  assert.equal(prepareCalls, 1);
   assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
 });
 

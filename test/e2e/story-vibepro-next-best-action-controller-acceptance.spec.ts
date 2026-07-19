@@ -38,6 +38,10 @@ test('story-vibepro-next-best-action-controller acceptance flow replay', async (
     'ac7 S-007 transitions repeated no-progress to an explicit escape action');
   assert.match(result.stdout, /NBA-S-8 decision record contains bounded rationale, not raw transcript/,
     'ac8 S-008 persists bounded metrics and reason codes without raw transcripts');
+  assert.match(result.stdout, /GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition/,
+    'ac9 S-009 preserves pr_ready as a terminal state without another controller decision');
+  assert.match(result.stdout, /SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop/,
+    'ac9 S-010 preserves cancelled as an idempotent terminal state without re-execution');
   assert.match(result.stdout, /NBA-S-1 controller consumes only dependency-ready Safe Action registry candidates/,
     'registry -> eligibility -> ranking -> bounded decision integration remains executable');
   assert.match(result.stdout, /NBA-S-1 controller rejects non-canonical escape candidate injection/,
