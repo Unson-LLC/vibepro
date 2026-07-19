@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveArtifactRoute } from './artifact-routing.js';
 
 import { resolveGitIdentity } from './git-identity.js';
 import { getWorkspaceDir } from './workspace.js';
@@ -369,11 +370,24 @@ function fingerprintSources(sources) {
 }
 
 async function findStoryPath(io, root, storyId) {
+  const canonical = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.absolute_path;
   const roots = [
     path.join(root, 'docs', 'management', 'stories', 'active'),
     path.join(root, 'docs', 'management', 'stories', 'completed'),
     path.join(root, 'docs', 'management', 'stories', 'done')
   ];
+  const configuredRaw = await readOptional(io, canonical);
+  if (configuredRaw !== null) {
+    const declaredStoryId = configuredRaw.match(/^story_id:\s*([^\s]+)\s*$/m)?.[1] ?? null;
+    if (declaredStoryId !== storyId) {
+      throw capsuleError('stale_binding', 'Story document identity does not match the Run Context Capsule binding.', {
+        expected_story_id: storyId,
+        actual_story_id: declaredStoryId,
+        source_ref: toRootRelative(root, canonical)
+      });
+    }
+    return canonical;
+  }
   for (const storyRoot of roots) {
     const direct = path.join(storyRoot, `${storyId}.md`);
     const raw = await readOptional(io, direct);

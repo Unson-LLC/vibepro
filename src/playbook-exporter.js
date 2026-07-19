@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { defaultArchitectureFinalPath } from './architecture-store.js';
+import { resolveArtifactRoute, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { readInferredSpec } from './spec-store.js';
 import { getWorkspaceDir, initWorkspace, toWorkspaceRelative } from './workspace.js';
 import { resolveStoryContext } from './story-manager.js';
@@ -600,7 +601,9 @@ ${questions}
 }
 
 async function readStoryDocuments(root, storyId) {
+  const configured = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.relative_path;
   const candidates = [
+    configured,
     path.join('docs', 'management', 'stories', 'active', `${storyId}.md`),
     path.join('docs', 'management', 'stories', 'backlog', `${storyId}.md`),
     path.join('docs', 'management', 'stories', 'done', `${storyId}.md`),
@@ -615,6 +618,7 @@ async function readArchitectureDocuments(root, storyId, storyDocs) {
   const storylessSlug = slugifyStoryId(String(storyId).replace(/^story-/, ''));
   const candidates = [
     ...fromFrontmatter,
+    (await resolveArtifactRoute(root, 'architecture', { storyId })).canonical.relative_path,
     defaultArchitectureFinalPath(storyId),
     path.join('docs', 'architecture', `${storylessSlug}.md`),
     path.join('docs', 'architecture', `${slug}.md`)
@@ -623,10 +627,9 @@ async function readArchitectureDocuments(root, storyId, storyDocs) {
 }
 
 async function readPrArtifacts(root, storyId) {
-  const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   const [prPrepare, gateDag] = await Promise.all([
-    readJsonIfExists(path.join(prDir, 'pr-prepare.json')),
-    readJsonIfExists(path.join(prDir, 'gate-dag.json'))
+    resolvePrArtifactFile(root, storyId).then(readJsonIfExists),
+    resolveGateArtifactFile(root, storyId).then(readJsonIfExists)
   ]);
   return { prPrepare, gateDag };
 }

@@ -116,7 +116,8 @@ async function writeJsonIfMissing(filePath, value, label = 'VibePro JSON') {
 async function ensureGitIgnore(repoRoot) {
   const ignorePath = path.join(path.resolve(repoRoot), '.gitignore');
   const required = [
-    '.vibepro/',
+    '.vibepro/*',
+    '!.vibepro/config.json',
     '.worktrees/vibepro/'
   ];
 
@@ -127,7 +128,11 @@ async function ensureGitIgnore(repoRoot) {
     if (error.code !== 'ENOENT') throw error;
   }
 
-  const missing = required.filter((line) => !existing.includes(line));
+  existing = existing
+    .split('\n')
+    .filter((line) => line.trim() !== '.vibepro/')
+    .join('\n');
+  const missing = required.filter((line) => !existing.split('\n').includes(line));
   if (missing.length === 0) return;
 
   const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';

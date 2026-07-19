@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { findStorySource } from './requirement-consistency.js';
 import { extractAcceptanceCriteria } from './traceability.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -748,7 +749,7 @@ function summarizeMatchedEvidence(matched) {
 export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
   if (!storyId) throw new Error('adjudicate prepare --judgment requires --id <story-id>');
   const root = path.resolve(repoRoot);
-  const prPreparePath = path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json');
+  const prPreparePath = await resolvePrArtifactFile(root, storyId);
   let prPrepareRaw = null;
   try {
     prPrepareRaw = await readFile(prPreparePath, 'utf8');

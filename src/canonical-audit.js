@@ -10,6 +10,7 @@ import {
 } from './evidence-cost-budget.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { findBudgetSummaryPath } from './pr-artifact-budget.js';
+import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
@@ -566,7 +567,7 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
   for (const [fileName, kind] of PR_AUDIT_FILES) {
     await copyJsonArtifact({
       root,
-      sourcePath: path.join(getWorkspaceDir(root), 'pr', storyId, fileName),
+      sourcePath: await resolvePrArtifactFile(root, storyId, fileName),
       targetPath: path.join(canonicalDir, 'pr', fileName),
       kind,
       artifacts,
@@ -574,7 +575,7 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
     });
   }
 
-  const reviewRoot = path.join(getWorkspaceDir(root), 'reviews', storyId);
+  const reviewRoot = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
   for (const stage of await safeReaddir(reviewRoot)) {
     const stageDir = path.join(reviewRoot, stage);
     for (const entry of await safeReaddir(stageDir)) {
@@ -1146,7 +1147,7 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
   const missing_artifacts = [];
 
   for (const [fileName, kind] of PR_AUDIT_FILES) {
-    const sourcePath = path.join(getWorkspaceDir(root), 'pr', storyId, fileName);
+    const sourcePath = await resolvePrArtifactFile(root, storyId, fileName);
     const targetPath = path.join(canonicalDir, 'pr', fileName);
     const artifact = await readAuditSourceArtifact(root, { sourcePath, targetPath, kind, type: 'json' });
     if (artifact) {
@@ -1156,7 +1157,7 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
     }
   }
 
-  const reviewRoot = path.join(getWorkspaceDir(root), 'reviews', storyId);
+  const reviewRoot = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
   for (const stage of await safeReaddir(reviewRoot)) {
     const stageDir = path.join(reviewRoot, stage);
     for (const entry of await safeReaddir(stageDir)) {

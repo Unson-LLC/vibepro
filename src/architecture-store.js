@@ -2,6 +2,7 @@ import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
+import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
 
 export const ARCHITECTURE_SCHEMA_VERSION = '0.1.0';
 
@@ -53,13 +54,23 @@ export async function writeDraftArchitecture(repoRoot, storyId, markdown) {
 }
 
 export async function writeFinalArchitecture(repoRoot, storyId, markdown, options = {}) {
-  const relativePath = options.outputPath ?? defaultArchitectureFinalPath(storyId);
-  const { finalPath, rootRealPath } = await resolveArchitectureOutputPath(repoRoot, relativePath);
-  await assertExistingOutputTargetInsideRepo(finalPath, rootRealPath);
+  const route = await resolveArtifactRoute(repoRoot, 'architecture', { storyId });
+  const configuredPath = route.canonical.relative_path;
+  if (route.configured && options.outputPath && normalizeRepoPath(options.outputPath) !== configuredPath) {
+    throw new Error(`architecture write --output diverges from the canonical artifact route (${configuredPath})`);
+  }
+  const relativePath = options.outputPath ?? configuredPath;
+  await preflightArtifactWrites(repoRoot, route);
+  const finalPath = await assertArtifactWritePath(repoRoot, relativePath);
   await mkdir(path.dirname(finalPath), { recursive: true });
-  await assertPathInsideRepo(await realpath(path.dirname(finalPath)), rootRealPath);
-  await writeFile(finalPath, ensureTrailingNewline(markdown));
+  const content = ensureTrailingNewline(markdown);
+  await writeFile(finalPath, content);
+  await writeArtifactProjections(repoRoot, route, content);
   return finalPath;
+}
+
+function normalizeRepoPath(value) {
+  return String(value).split(path.sep).join('/').replace(/^\.\//, '');
 }
 
 async function resolveArchitectureOutputPath(repoRoot, relativePath) {

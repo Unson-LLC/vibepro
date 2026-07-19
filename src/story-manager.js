@@ -12,6 +12,7 @@ import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
+import { resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -165,7 +166,7 @@ export async function createStoryReport(repoRoot, storyId = null) {
   const reportPath = path.join(storyDir, 'story-report.md');
   await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState, journeyContext }));
   const htmlPath = path.join(storyDir, 'index.html');
-  const graphHtmlRel = path.join(WORKSPACE_DIR, 'graphify', 'graph.html');
+  const graphHtmlRel = toWorkspaceRelative(root, await resolveGraphifyArtifactFile(root, story.story_id, 'graph.html'));
   await writeFile(htmlPath, renderStoryReportHtml({
     story,
     latestRun,
@@ -253,7 +254,7 @@ async function writeStoryDeriveFailure(root, error, options = {}) {
   const runId = `story-derive-failure-${new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '')}`;
   const runDir = path.join(getWorkspaceDir(root), 'diagnostics', runId);
   await mkdir(runDir, { recursive: true });
-  const graphStats = await readGraphStatsForFailure(root);
+  const graphStats = await readGraphStatsForFailure(root, options.storyId ?? options.id ?? 'story-default');
   const failure = {
     schema_version: '0.1.0',
     run_id: runId,
@@ -274,9 +275,9 @@ async function writeStoryDeriveFailure(root, error, options = {}) {
   await writeFile(markdownPath, renderStoryDeriveFailure(failure));
 }
 
-async function readGraphStatsForFailure(root) {
+async function readGraphStatsForFailure(root, storyId) {
   try {
-    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const graph = JSON.parse(await readFile(await resolveGraphifyArtifactFile(root, storyId), 'utf8'));
     const edges = Array.isArray(graph?.edges) ? graph.edges : Array.isArray(graph?.links) ? graph.links : [];
     return {
       available: true,
@@ -325,9 +326,10 @@ export async function readStoryMap(repoRoot) {
 
 export async function createStoryPlan(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  const config = await readConfig(root);
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
-  const graphIndex = await readStoryPlanGraphIndex(root);
+  const graphIndex = await readStoryPlanGraphIndex(root, config.brainbase?.current_story_id ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
   const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
@@ -353,9 +355,9 @@ export async function createStoryPlan(repoRoot, options = {}) {
   return { plan, planPath, markdownPath };
 }
 
-async function readStoryPlanGraphIndex(root) {
+async function readStoryPlanGraphIndex(root, storyId) {
   try {
-    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const graph = JSON.parse(await readFile(await resolveGraphifyArtifactFile(root, storyId), 'utf8'));
     const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
     const { edges } = normalizeGraphEdges(graph);
     return buildGraphIndex({ nodes, edges });
@@ -641,7 +643,7 @@ async function detectStoryJourneyImpact(root, story) {
 }
 
 async function readStoryJourneyDocuments(root, story) {
-  const candidates = buildStoryDocumentCandidates(root, story.story_id);
+  const candidates = await buildStoryDocumentCandidates(root, story.story_id);
   const documents = [];
   for (const candidate of candidates) {
     try {
@@ -656,9 +658,13 @@ async function readStoryJourneyDocuments(root, story) {
   return documents;
 }
 
-function buildStoryDocumentCandidates(root, storyId) {
+async function buildStoryDocumentCandidates(root, storyId) {
   const names = storyId.startsWith('story-') ? [storyId] : [storyId, `story-${storyId}`];
-  return [...new Set(names.flatMap((name) => STORY_DOCUMENT_DIRS.map((dir) => path.join(root, dir, `${name}.md`))))];
+  const canonical = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.absolute_path;
+  return [...new Set([
+    canonical,
+    ...names.flatMap((name) => STORY_DOCUMENT_DIRS.map((dir) => path.join(root, dir, `${name}.md`)))
+  ])];
 }
 
 function buildStoryJourneyNextActions(status) {

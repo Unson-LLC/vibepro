@@ -3,6 +3,7 @@ import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -126,6 +127,9 @@ async function collectHumanArtifactFiles(dir) {
 }
 
 async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
+  if (options.storyId) {
+    return scanResolvedStoryGateArtifacts(repoRoot, options.storyId);
+  }
   const prDir = path.join(workspaceDir, 'pr');
   if (!(await exists(prDir))) return [];
   const entries = await readdir(prDir, { withFileTypes: true });
@@ -207,6 +211,46 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
       }
     }
   }
+  return findings;
+}
+
+async function scanResolvedStoryGateArtifacts(repoRoot, storyId) {
+  const verificationPath = await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json');
+  const preparePath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-prepare.json');
+  const gateDagPath = await resolveGateArtifactFile(repoRoot, storyId);
+  const createPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.json');
+  const storyPrDir = path.dirname(preparePath);
+  const hasVerification = await exists(verificationPath);
+  const hasPrepare = await exists(preparePath);
+  const hasGateDag = await exists(gateDagPath);
+  const hasCreate = await exists(createPath);
+  const findings = [];
+  const hasSummaryGateContract = hasPrepare && !hasGateDag
+    ? await hasSummaryDepthFinalGateContract(storyPrDir, storyId)
+    : false;
+  if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
+    findings.push({
+      id: `self_dogfood.final_gate_missing.${storyId}`,
+      severity: 'high',
+      gate_effect: 'review',
+      story_id: storyId,
+      path: toWorkspaceRelative(repoRoot, storyPrDir),
+      detail: hasPrepare
+        ? 'Verification evidence and pr-prepare.json exist, but neither the configured gate artifact nor the summary-depth decision-index contract is present. Do not treat verify record as completion.'
+        : 'Verification evidence exists, but final pr-prepare/gate artifacts are missing. Do not treat verify record as completion.',
+      required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence.`
+    });
+  }
+  if (hasGateDag && !await readJson(gateDagPath)) {
+    findings.push({
+      id: `self_dogfood.invalid_gate_dag.${storyId}`,
+      severity: 'critical', gate_effect: 'block', story_id: storyId,
+      path: toWorkspaceRelative(repoRoot, gateDagPath),
+      detail: 'The configured gate artifact is not valid JSON.',
+      required_action: 'Regenerate the gate artifact with vibepro pr prepare.'
+    });
+  }
+  void hasCreate;
   return findings;
 }
 

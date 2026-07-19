@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const JOURNEY_SCHEMA_VERSION = '0.1.0';
@@ -655,16 +656,18 @@ async function readSpecEvidence(root) {
 }
 
 async function readGraphifyEvidence(root) {
-  const graphPath = path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
-  let graph;
-  try {
-    graph = JSON.parse(await readFile(graphPath, 'utf8'));
-  } catch (error) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
-  }
-  const relativeGraphPath = toWorkspaceRelative(root, graphPath);
   const entries = [];
+  const storyIds = await readConfiguredStoryIds(root);
+  const candidates = storyIds.length > 0 ? storyIds : ['story-default'];
+  const seen = new Set();
+  for (const routedStoryId of candidates) {
+    const graphPath = await resolveGraphifyArtifactFile(root, routedStoryId);
+    if (seen.has(graphPath)) continue;
+    seen.add(graphPath);
+    let graph;
+    try { graph = JSON.parse(await readFile(graphPath, 'utf8')); }
+    catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+    const relativeGraphPath = toWorkspaceRelative(root, graphPath);
   for (const story of graph.stories ?? []) {
     const surfaces = normalizeSurfaceEvidence(story.surfaces ?? story.coverage ?? story.paths ?? [], relativeGraphPath, 'graphify');
     if (story.story_id && surfaces.length > 0) {
@@ -693,10 +696,22 @@ async function readGraphifyEvidence(root) {
       });
     }
   }
+  }
   return entries;
 }
 
 async function readGateEvidence(root) {
+  const configuredStoryIds = await readConfiguredStoryIds(root);
+  if (configuredStoryIds.length > 0) {
+    const evidence = [];
+    for (const storyId of configuredStoryIds) {
+      const verificationPath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
+      const gateDagPath = await resolveGateArtifactFile(root, storyId);
+      evidence.push(...await readVerificationEvidence(path.dirname(verificationPath), root, storyId));
+      evidence.push(...await readGateDagEvidence(path.dirname(gateDagPath), root, storyId));
+    }
+    return evidence;
+  }
   const prRoot = path.join(getWorkspaceDir(root), 'pr');
   let entries;
   try {
@@ -714,6 +729,16 @@ async function readGateEvidence(root) {
     evidence.push(...await readGateDagEvidence(prDir, root, storyId));
   }
   return evidence;
+}
+
+async function readConfiguredStoryIds(root) {
+  try {
+    const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+    return [...new Set((config.brainbase?.stories ?? []).map((story) => story.story_id ?? story.id).filter(Boolean))];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 async function readVerificationEvidence(prDir, root, storyId) {
