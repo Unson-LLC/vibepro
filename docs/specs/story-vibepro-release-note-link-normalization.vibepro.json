@@ -9,7 +9,7 @@
     {
       "id": "RNLN-001",
       "type": "scenario",
-      "statement": "A Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images.",
+      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; angle wrappers are removed and spaces are percent encoded.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "normalizeReleaseDocumentationLinks" }]
@@ -21,10 +21,10 @@
     {
       "id": "RNLN-002",
       "type": "invariant",
-      "statement": "A prose docs link is normalized while inline_code, fenced_code, and non-docs destinations remain unchanged.",
+      "statement": "A prose docs link is normalized while inline code, blockquote/list-contained fenced code, and non-docs destinations remain unchanged; an unclosed fence stops protecting content when its container ends.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
-        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "if (fence) return line" }]
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findFencedCodeRanges" }]
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "[fenced](docs/fenced.md)" }]
@@ -33,13 +33,37 @@
     {
       "id": "RNLN-003",
       "type": "scenario",
+      "statement": "HTTP(S), anchor, mailto, site-root relative, and non-docs relative destinations remain unchanged.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findMarkdownLinkReplacements" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "[external](https://example.com/docs/file.md)" }]
+      }
+    },
+    {
+      "id": "RNLN-004",
+      "type": "invariant",
+      "statement": "HTML and Vue interpolation sanitization and PR-number idempotent upsert remain intact.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "sanitizeReleaseContent" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "PCR-CON-002/003 projects a PR #350-shaped entry idempotently" }]
+      }
+    },
+    {
+      "id": "RNLN-005",
+      "type": "scenario",
       "statement": "English and Japanese release history and CHANGELOG receive the same normalized idempotent note.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "projectReleaseNote" }]
       },
       "verifiable_by": {
-        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "projects one idempotent PR entry" }]
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "PCR-CON-002/003 projects a PR #350-shaped entry idempotently" }]
       }
     }
   ],
@@ -47,7 +71,7 @@
     {
       "kind": "flow",
       "title": "Release note projection boundary",
-      "mermaid": "flowchart LR\n  PR[PR Release Notes] --> Escape[HTML and Vue escape]\n  Escape --> Normalize[docs link normalization]\n  Normalize --> EN[English release]\n  Normalize --> JA[Japanese release]\n  Normalize --> Changelog[CHANGELOG]"
+      "mermaid": "flowchart LR\n  PR[PR Release Notes] --> Normalize[docs link normalization]\n  Normalize --> Escape[HTML and Vue escape once]\n  Escape --> EN[English release]\n  Escape --> JA[Japanese release]\n  Escape --> Changelog[CHANGELOG]"
     },
     {
       "kind": "state",

@@ -12,9 +12,9 @@ const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro
 export function extractReleaseSections(body = '') {
   const release = section(body, ['Release Notes', 'リリースノート']) || body;
   return {
-    changeSummary: subsection(release, ['Change Summary', '変更概要', '解決']) || NONE,
-    compatibility: subsection(release, ['Compatibility', '互換性・破壊的変更', '互換性']) || NONE,
-    userAction: subsection(release, ['User Action', '利用者に必要な操作', '利用者操作']) || NONE
+    changeSummary: normalizeContent(subsection(release, ['Change Summary', '変更概要', '解決'])) || NONE,
+    compatibility: normalizeContent(subsection(release, ['Compatibility', '互換性・破壊的変更', '互換性'])) || NONE,
+    userAction: normalizeContent(subsection(release, ['User Action', '利用者に必要な操作', '利用者操作'])) || NONE
   };
 }
 
@@ -31,13 +31,11 @@ function captureSection(markdown, level, names) {
   const pattern = new RegExp(`^#{${level}}\\s+(?:${escaped})\\s*$([\\s\\S]*?)(?=^#{1,${level}}\\s)`, 'imu');
   const source = `${markdown ?? ''}`.replace(/\r\n/g, '\n') + '\n# __VIBEPRO_END__\n';
   const match = source.match(pattern);
-  return normalizeContent(match?.[1]);
+  return `${match?.[1] ?? ''}`.trim().replace(/\n{3,}/g, '\n\n');
 }
 
 function normalizeContent(value) {
-  return normalizeReleaseDocumentationLinks(
-    sanitizeReleaseContent(`${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n'))
-  );
+  return sanitizeReleaseContent(normalizeReleaseDocumentationLinks(`${value ?? ''}`));
 }
 
 export function normalizeReleaseDocumentationLinks(value) {
@@ -64,20 +62,76 @@ function findFencedCodeRanges(source) {
   let fence = null;
   for (const line of lines) {
     const lineEnd = offset + line.length + (offset + line.length < source.length ? 1 : 0);
-    const marker = line.match(/^(?: {0,3}>[ \t]?)* {0,3}(`{3,}|~{3,})(.*)$/u);
+    const container = fence ? inspectFenceContainer(line, fence) : null;
+    let closedFence = false;
     if (fence) {
-      const run = marker?.[1] ?? '';
-      if (marker && run[0] === fence.character && run.length >= fence.length && marker[2].trim() === '') {
-        ranges.push({ start: fence.start, end: lineEnd });
+      if (!container.continues) {
+        ranges.push({ start: fence.start, end: offset });
         fence = null;
+      } else if (container.marker) {
+        const run = container.marker[1];
+        if (run[0] === fence.character && run.length >= fence.length && container.marker[2].trim() === '') {
+          ranges.push({ start: fence.start, end: lineEnd });
+          fence = null;
+          closedFence = true;
+        }
       }
-    } else if (marker && (marker[1][0] === '~' || !marker[2].includes('`'))) {
-      fence = { start: offset, character: marker[1][0], length: marker[1].length };
+    }
+    if (!fence && !closedFence) {
+      const opener = inspectFenceOpener(line);
+      if (opener && (opener.marker[1][0] === '~' || !opener.marker[2].includes('`'))) {
+        fence = {
+          start: offset,
+          character: opener.marker[1][0],
+          length: opener.marker[1].length,
+          quoteDepth: opener.quoteDepth,
+          listIndent: opener.listIndent
+        };
+      }
     }
     offset = lineEnd;
   }
   if (fence) ranges.push({ start: fence.start, end: source.length });
   return ranges;
+}
+
+function inspectFenceOpener(line) {
+  const quote = consumeBlockquotePrefix(line);
+  let index = quote.index;
+  let listIndent = 0;
+  for (;;) {
+    const list = line.slice(index).match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+/u);
+    if (!list) break;
+    index += list[0].length;
+    listIndent += list[0].length;
+  }
+  const marker = line.slice(index).match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
+  return marker ? { marker, quoteDepth: quote.depth, listIndent } : null;
+}
+
+function inspectFenceContainer(line, fence) {
+  const quote = consumeBlockquotePrefix(line);
+  if (quote.depth < fence.quoteDepth) return { continues: false, marker: null };
+  let content = line.slice(quote.index);
+  if (fence.listIndent > 0) {
+    if (content.trim() === '') return { continues: true, marker: null };
+    const indentation = content.match(/^[ \t]*/u)?.[0].length ?? 0;
+    if (indentation < fence.listIndent) return { continues: false, marker: null };
+    content = content.slice(fence.listIndent);
+  }
+  return { continues: true, marker: content.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u) };
+}
+
+function consumeBlockquotePrefix(line) {
+  let index = 0;
+  let depth = 0;
+  for (;;) {
+    const marker = line.slice(index).match(/^ {0,3}>[ \t]?/u);
+    if (!marker) break;
+    index += marker[0].length;
+    depth += 1;
+  }
+  return { index, depth };
 }
 
 function findInlineCodeRanges(source, fencedRanges) {
@@ -139,7 +193,7 @@ function findMarkdownLinkReplacements(source, protectedRanges) {
     replacements.push({
       start: destination.start,
       end: destination.end,
-      value: `${root}${destination.value}`
+      value: destination.angleWrapped ? encodeURI(`${root}${destination.value}`) : `${root}${destination.value}`
     });
   }
   return replacements;
@@ -164,6 +218,7 @@ function findClosingLabel(source, openingIndex, protectedRanges) {
 function parseInlineDestination(source, openingIndex) {
   let index = openingIndex;
   while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+  const wrapperStart = index;
   const angleWrapped = source[index] === '<';
   if (angleWrapped) index += 1;
   const start = index;
@@ -184,10 +239,15 @@ function parseInlineDestination(source, openingIndex) {
     index += 1;
   }
   if (index === start || (angleWrapped && source[index] !== '>')) return null;
-  const end = index;
+  const valueEnd = index;
   if (angleWrapped) index += 1;
   if (!hasValidInlineLinkTail(source, index)) return null;
-  return { start, end, value: source.slice(start, end) };
+  return {
+    start: angleWrapped ? wrapperStart : start,
+    end: angleWrapped ? index : valueEnd,
+    value: source.slice(start, valueEnd),
+    angleWrapped
+  };
 }
 
 function hasValidInlineLinkTail(source, start) {

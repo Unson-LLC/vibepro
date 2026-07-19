@@ -40,6 +40,7 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[titled](docs/guide.md "Guide title")',
     '[escaped-title](docs/escaped-title.md "A \\"quoted\\" title")',
     '[paren-title](docs/paren-title.md (Parenthesized title))',
+    '[angle](<docs/guide/a b.md>)',
     '[code `label ]`](docs/code-label.md)',
     '[![nested image](docs/nested-image.png)](docs/nested-image-page.md)',
     '![diagram](docs/architecture/diagram.png)',
@@ -54,6 +55,13 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '> ```md',
     '> [blockquote-fenced](docs/blockquote-fenced.md)',
     '> ```',
+    '> ```md',
+    '> [unclosed-blockquote](docs/unclosed-blockquote.md)',
+    '[after-unclosed-blockquote](docs/after-unclosed-blockquote.md)',
+    '- ~~~md',
+    '  [list-fenced](docs/list-fenced.md)',
+    '  ~~~~',
+    '[after-list-fence](docs/after-list-fence.md)',
     '```invalid`info',
     '[after-invalid-fence](docs/after-invalid.md)',
     '```md',
@@ -71,6 +79,7 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[titled](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide.md "Guide title")',
     '[escaped-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/escaped-title.md "A \\"quoted\\" title")',
     '[paren-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/paren-title.md (Parenthesized title))',
+    '[angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
     '[code `label ]`](https://github.com/Unson-LLC/vibepro/blob/main/docs/code-label.md)',
     '[![nested image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-image.png)](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-image-page.md)',
     '![diagram](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/architecture/diagram.png)',
@@ -85,6 +94,13 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '> ```md',
     '> [blockquote-fenced](docs/blockquote-fenced.md)',
     '> ```',
+    '> ```md',
+    '> [unclosed-blockquote](docs/unclosed-blockquote.md)',
+    '[after-unclosed-blockquote](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-unclosed-blockquote.md)',
+    '- ~~~md',
+    '  [list-fenced](docs/list-fenced.md)',
+    '  ~~~~',
+    '[after-list-fence](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-list-fence.md)',
     '```invalid`info',
     '[after-invalid-fence](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-invalid.md)',
     '```md',
@@ -103,9 +119,9 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
 });
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
-  const sections = extractReleaseSections(`## Release Notes\n\n### Change Summary\nAdded deterministic publishing.\n\n### Compatibility\n\n### User Action\nRun npm update.`);
+  const sections = extractReleaseSections(`## Release Notes\n\n### Change Summary\nAdded deterministic publishing. [angle](<docs/guide/a b.md>) <script>{{ unsafe }}</script>\n\n### Compatibility\n\n### User Action\nRun npm update.`);
   assert.deepEqual(sections, {
-    changeSummary: 'Added deterministic publishing.',
+    changeSummary: 'Added deterministic publishing. [angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md) &lt;script&gt;&#123;&#123; unsafe &#125;&#125;&lt;/script&gt;',
     compatibility: 'なし',
     userAction: 'Run npm update.'
   });

@@ -20,13 +20,13 @@ PR #350のChange Summaryにある`docs/management/...md`リンクが、`docs/rel
 
 - 正規化対象はinline Markdownのリンク先が`docs/`で始まるrepo-root docs参照だけとする。
 - reference-style definitionはlink/image用途をdefinitionだけで判別できないため推測変換せず、VitePress buildへfail-closedする。
-- 外部URL、site-root相対、anchor、`mailto:`、inline code、fenced codeは変更しない。
+- 外部URL、site-root相対、anchor、`mailto:`、inline code、blockquote/list container内のfenced codeは変更しない。未閉鎖fenceはcontainer終了後のproseまで巻き込まない。
 - raw HTMLとVue interpolationを無害化する既存契約を維持する。
 - 日英release historyとCHANGELOGは同じ決定的なnote本文を保持する。
 
 ## Acceptance criteria
 
-- 通常の`docs/<path>`リンクはGitHub blob URLへ、画像はraw URLへ正規化される。
+- 通常の`docs/<path>`リンクはGitHub blob URLへ、画像はraw URLへ正規化される。angle-wrapped destinationも空白をpercent encodeして本番section抽出経路で正規化される。
 - code span/fence内の同じ文字列と、外部・anchor・既にroot-relativeなリンクは保持される。
 - 生成済みPR #350のrelease noteが正規化済みになり、`npm run docs:build`が成功する。
 - 同一eventの再投影は引き続きPR番号markerで冪等である。
