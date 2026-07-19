@@ -43,7 +43,11 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '``[multi ` inline](docs/multi-inline.md)``',
     '```md',
     '[fenced](docs/fenced.md)',
-    '```'
+    '```',
+    '````md',
+    '```',
+    '[long-fenced](docs/long-fenced.md)',
+    '````'
   ].join('\n');
 
   assert.equal(normalizeReleaseDocumentationLinks(source), [
@@ -55,7 +59,11 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '``[multi ` inline](docs/multi-inline.md)``',
     '```md',
     '[fenced](docs/fenced.md)',
-    '```'
+    '```',
+    '````md',
+    '```',
+    '[long-fenced](docs/long-fenced.md)',
+    '````'
   ].join('\n'));
 });
 

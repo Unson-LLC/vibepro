@@ -43,10 +43,18 @@ function normalizeContent(value) {
 export function normalizeReleaseDocumentationLinks(value) {
   let fence = null;
   return `${value ?? ''}`.split('\n').map((line) => {
-    const marker = line.match(/^\s*(`{3,}|~{3,})/u)?.[1] ?? null;
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
     if (marker) {
-      if (!fence) fence = marker[0];
-      else if (marker[0] === fence) fence = null;
+      const run = marker[1];
+      if (!fence) {
+        fence = { character: run[0], length: run.length };
+      } else if (
+        run[0] === fence.character
+        && run.length >= fence.length
+        && marker[2].trim() === ''
+      ) {
+        fence = null;
+      }
       return line;
     }
     if (fence) return line;
