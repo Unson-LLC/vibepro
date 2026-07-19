@@ -1,8 +1,16 @@
 import { createHash } from 'node:crypto';
+import { selectNextBestAction } from './next-best-action-controller.js';
 
 const REGISTRY = Object.freeze([
   Object.freeze({ id: 'pr_prepare', classification: 'repo_local_safe', depends_on: [] }),
   Object.freeze({ id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare'] })
+]);
+const ESCAPE_REGISTRY = Object.freeze([
+  Object.freeze({ id: 'ask', classification: 'approval_required' }),
+  Object.freeze({ id: 'split', classification: 'approval_required' }),
+  Object.freeze({ id: 'wait', classification: 'approval_required' }),
+  Object.freeze({ id: 'stop', classification: 'approval_required' }),
+  Object.freeze({ id: 'rediagnose', classification: 'approval_required' })
 ]);
 
 export function buildSafeActionPlan(state) {
@@ -16,10 +24,54 @@ export function buildSafeActionPlan(state) {
   }));
 }
 
+export function selectSafeActionCandidate(state, options = {}) {
+  const candidates = buildSafeActionPlan(state)
+    .filter((action) => !hasCompletedCheckpoint(state, action.id, state))
+    .map((action) => ({
+      action_id: action.id,
+      classification: action.classification,
+      policy_allowed: true,
+      dependency_ready: dependenciesCompleted(state, action, state),
+      metrics: options.metrics?.[action.id] ?? {}
+    }));
+  const escapeCandidates = buildEscapeCandidates(options.escapeActionIds, options.metrics);
+  return selectNextBestAction({
+    checkpoint_reason: options.checkpointReason ?? 'material_progress',
+    state_delta: options.stateDelta ?? {
+      current_head_sha: state.current_head_sha,
+      status: state.status,
+      completed_actions: state.action_journal
+        .filter((entry) => entry.status === 'completed')
+        .map((entry) => entry.action_id)
+    },
+    candidates: [...candidates, ...escapeCandidates],
+    previous_decision: options.previousDecision,
+    no_progress_count: options.noProgressCount,
+    policy_version: options.policyVersion
+  });
+}
+
+function buildEscapeCandidates(requestedIds = [], metrics = {}) {
+  if (!Array.isArray(requestedIds) || requestedIds.some((id) => typeof id !== 'string')) {
+    throw new TypeError('escapeActionIds must be an array of canonical action ids');
+  }
+  return requestedIds.map((id) => {
+    const action = ESCAPE_REGISTRY.find((entry) => entry.id === id);
+    if (!action) throw new Error(`Unknown canonical escape action: ${id}`);
+    return {
+      action_id: action.id,
+      classification: action.classification,
+      policy_allowed: true,
+      dependency_ready: true,
+      metrics: metrics[action.id] ?? {}
+    };
+  });
+}
+
 export async function runSafeActionPlan(state, options = {}) {
   const plan = options.plan ?? buildSafeActionPlan(state);
   const canonicalPlan = buildSafeActionPlan(state);
-  if (!isCompleteCanonicalPlan(plan, canonicalPlan)) {
+  if (!isAllowedCanonicalPlan(plan, canonicalPlan)) {
     const providedPlan = Array.isArray(plan) ? plan : [];
     const rejectedAction = providedPlan.find((action, index) => !isExactCanonicalAction(action, canonicalPlan[index]))
       ?? canonicalPlan[providedPlan.length]
@@ -71,6 +123,13 @@ export async function runSafeActionPlan(state, options = {}) {
     }
   }
   return { plan, state: current };
+}
+
+function isAllowedCanonicalPlan(plan, canonicalPlan) {
+  return isCompleteCanonicalPlan(plan, canonicalPlan)
+    || (Array.isArray(plan) && plan.length > 0
+      && canonicalPlan.some((_, start) => plan.length === canonicalPlan.length - start
+        && plan.every((action, index) => isExactCanonicalAction(action, canonicalPlan[start + index]))));
 }
 
 function isCompleteCanonicalPlan(plan, canonicalPlan) {

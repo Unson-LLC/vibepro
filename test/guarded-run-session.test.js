@@ -90,6 +90,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     },
     managed_worktree: fixture.disabledBinding,
     action_journal: [],
+    next_best_action_decisions: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -1398,6 +1399,9 @@ test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', 
   const mirrorAfter = await readFile(mirrorFile, 'utf8');
   assert.equal(authorityAfter, mirrorAfter);
   assert.deepEqual(JSON.parse(authorityAfter), completed);
+  const terminalReplay = await ready.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(terminalReplay.state.status, 'pr_ready');
+  assert.deepEqual(terminalReplay.state.next_best_action_decisions, []);
 });
 
 test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON', async (t) => {
@@ -1756,6 +1760,9 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
+  assert.equal(result.state.next_best_action_decisions.length, 1);
+  assert.equal(result.state.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal(JSON.stringify(result.state.next_best_action_decisions).includes('transcript'), false);
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
   assert.deepEqual((await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
   const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
@@ -1764,6 +1771,106 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   const cancelledBytes = await readFile(artifact, 'utf8');
   assert.deepEqual((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
   assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+  const cancelledReplay = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(cancelledReplay.state.status, 'cancelled');
+  assert.equal(prepareCalls, 1);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+});
+
+test('NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+
+  const decision = result.state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(result.state.status, 'waiting_for_human');
+  assert.equal(result.state.pending_decision.action_id, decision.selected_action_id);
+  assert.equal(result.state.stop_reason.code, 'next_best_action_escape');
+  assert.equal(result.state.action_journal.length, 0);
+  assert.equal(prepareCalls, 0);
+  assert.deepEqual(
+    (await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }))
+      .next_best_action_decisions.at(-1),
+    decision
+  );
+});
+
+test('NBA persisted legacy decisions omit additive fields while malformed present fields fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const legacy = structuredClone(result.state);
+  delete legacy.next_best_action_decisions[0].state_delta;
+  delete legacy.next_best_action_decisions[0].reused;
+  await writeFile(artifact, `${JSON.stringify(legacy, null, 2)}\n`);
+
+  const readback = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(readback.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal('state_delta' in readback.next_best_action_decisions[0], false);
+  assert.equal('reused' in readback.next_best_action_decisions[0], false);
+
+  for (const mutate of [
+    (decision) => { decision.state_delta = { raw_transcript: 'forbidden' }; },
+    (decision) => { decision.reused = 'yes'; }
+  ]) {
+    const malformed = structuredClone(legacy);
+    mutate(malformed.next_best_action_decisions[0]);
+    const malformedBytes = `${JSON.stringify(malformed, null, 2)}\n`;
+    await writeFile(artifact, malformedBytes);
+    await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
+    assert.equal(await readFile(artifact, 'utf8'), malformedBytes);
+  }
+});
+
+test('NBA rollback switch ignores escape handling and restores the complete canonical plan', async (t) => {
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => { autopilotCalls += 1; return { status: 'continue', artifact: 'prepare.json' }; }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2
+  });
+
+  assert.equal(result.state.next_best_action_decisions.at(-1).selection_reason, 'no_progress_escape');
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 1);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.notEqual(result.state.status, 'waiting_for_human');
 });
 
 test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
@@ -1778,6 +1885,11 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
     current_head_sha: 'a'.repeat(40),
     execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
     action_journal: [],
+    next_best_action_decisions: [{
+      selected_action_id: 'ask',
+      checkpoint_reason: 'no_progress',
+      no_progress_count: 2
+    }],
     transitions: [],
     stop_reason: {
       code: 'human_judgment_required',
@@ -1799,6 +1911,53 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
   assert.match(summary, /required_action: record current evidence/);
   assert.match(summary, /failure: autopilot interrupted/);
   assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+  assert.match(summary, /next_best_action: ask \(checkpoint=no_progress; no_progress=2\)/);
+});
+
+test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
+  };
+  const started = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(started.exitCode, 0);
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const escaped = capture();
+  const escapedError = capture();
+  const escapedResult = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: escaped, stderr: escapedError, guardedRunDependencies: dependencies });
+  assert.equal(escapedResult.exitCode, 0, escapedError.text());
+
+  const decision = JSON.parse(escaped.text()).state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /status: waiting_for_human/);
+  assert.match(human.text(), /required_action: resolve controller escape action:/);
+  assert.equal(human.text().includes(`next_command: vibepro execute resume ${fixture.source}`), true);
+  assert.match(human.text(), /next_best_action: .*checkpoint=no_progress; no_progress=2/);
 });
 
 test('SAO-S-5 verification block persists failed kinds for public JSON and human status', async (t) => {

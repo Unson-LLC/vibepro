@@ -2207,7 +2207,9 @@ export async function runCli(argv, io = {}) {
                   ? runOptions.until
                     ? await guardedRun.orchestrate(repoRoot, {
                         ...runOptions,
-                        runId: (await guardedRun.resume(repoRoot, runOptions)).run_id
+                        runId: (await guardedRun.status(repoRoot, runOptions)).status === 'running'
+                          ? runOptions.runId
+                          : (await guardedRun.resume(repoRoot, runOptions)).run_id
                       })
                     : await guardedRun.resume(repoRoot, runOptions)
                   : await guardedRun.cancel(repoRoot, runOptions);

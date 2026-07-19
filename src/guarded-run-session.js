@@ -9,7 +9,7 @@ import {
   preparePullRequest as defaultPreparePullRequest,
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
-import { runSafeActionPlan } from './safe-action-orchestrator.js';
+import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -105,14 +105,42 @@ async function orchestrateRun(deps, repoRoot, options) {
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
-      action_journal: []
+      action_journal: [],
+      next_best_action_decisions: []
     };
-    return runSafeActionPlan(preview, { dryRun: true });
+    const decision = selectControllerCheckpoint(preview, options);
+    return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  const result = await runSafeActionPlan(loaded.state, {
+  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready') {
+    return { plan: [], state: loaded.state };
+  }
+  const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
+  const decision = selectControllerCheckpoint(loaded.state, options, previousDecision);
+  const decisionState = {
+    ...loaded.state,
+    next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
+  };
+  const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
+  if (controllerEnabled && isEscapeDecision(decision)) {
+    const escaped = applyControllerEscape(decisionState, decision, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
+    return { plan: [decision.selected_action_id], decision, state: escaped };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    decisionState,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    'next_best_action_checkpoint'
+  );
+  const selectedPlan = !controllerEnabled
+    ? undefined
+    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id);
+  const result = await runSafeActionPlan(decisionState, {
+    plan: selectedPlan,
     onProgress: async (progress) => {
-      const checkpoint = { ...loaded.state, action_journal: progress.action_journal };
+      const checkpoint = { ...decisionState, action_journal: progress.action_journal };
       await persistAuthorityThenMirror(
         deps,
         checkpoint,
@@ -135,7 +163,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       )
     }
   });
-  let next = { ...loaded.state, action_journal: result.state.action_journal };
+  let next = { ...decisionState, action_journal: result.state.action_journal };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
@@ -219,6 +247,69 @@ async function orchestrateRun(deps, repoRoot, options) {
   return { plan: result.plan, state: next };
 }
 
+function isEscapeDecision(decision) {
+  return ['ask', 'split', 'wait', 'stop', 'rediagnose'].includes(decision.selected_action_id);
+}
+
+function buildSelectedSafeActionPlan(state, actionId) {
+  const plan = buildSafeActionPlan(state);
+  const selectedIndex = plan.findIndex((action) => action.id === actionId);
+  return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
+}
+
+function applyControllerEscape(state, decision, timestamp) {
+  const actionId = decision.selected_action_id;
+  const stopReason = {
+    code: 'next_best_action_escape',
+    message: `Controller selected ${actionId} after repeated no progress.`,
+    details: {
+      recovery: {
+        required_actions: [`resolve controller escape action: ${actionId}`],
+        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+      }
+    }
+  };
+  return applyTransition(state, 'waiting_for_human', 'next_best_action_escape', timestamp, {
+    stop_reason: stopReason,
+    pending_decision: { kind: 'next_best_action_escape', action_id: actionId }
+  });
+}
+
+function selectControllerCheckpoint(state, options = {}, previousDecision = null) {
+  const explicitNoProgress = Number.isInteger(options.noProgressCount);
+  const base = {
+    checkpointReason: options.checkpointReason ?? 'run_started',
+    noProgressCount: explicitNoProgress ? options.noProgressCount : 0,
+    stateDelta: options.stateDelta,
+    metrics: options.actionMetrics,
+    escapeActionIds: options.escapeActionIds ?? [],
+    previousDecision
+  };
+  const probe = selectSafeActionCandidate(state, base);
+  if (explicitNoProgress) {
+    return selectSafeActionCandidate(state, {
+      ...base,
+      escapeActionIds: options.escapeActionIds
+        ?? (options.noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+    });
+  }
+  const unchangedCheckpoints = (state.next_best_action_decisions ?? [])
+    .slice()
+    .reverse()
+    .findIndex((item) => item.state_fingerprint !== probe.state_fingerprint);
+  const trailingMatches = unchangedCheckpoints === -1
+    ? (state.next_best_action_decisions ?? []).length
+    : unchangedCheckpoints;
+  const noProgressCount = trailingMatches > 0 ? trailingMatches + 1 : 0;
+  if (noProgressCount < 2) return probe;
+  return selectSafeActionCandidate(state, {
+    ...base,
+    checkpointReason: 'no_progress',
+    noProgressCount,
+    escapeActionIds: options.escapeActionIds ?? ['rediagnose', 'split', 'ask', 'stop']
+  });
+}
+
 function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
   return {
     action_id: actionId,
@@ -254,6 +345,15 @@ export function renderGuardedRunSummary(value) {
   const latestActionSummary = latestAction
     ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
     : 'none';
+  const latestDecision = state.next_best_action_decisions?.at(-1);
+  const latestDecisionSummary = latestDecision
+    ? `${latestDecision.selected_action_id ?? 'none'} (${[
+        latestDecision.outcome,
+        latestDecision.selection_reason,
+        `checkpoint=${latestDecision.checkpoint_reason}`,
+        `no_progress=${latestDecision.no_progress_count}`
+      ].filter(Boolean).join('; ')})`
+    : 'none';
   const plannedActions = plan.length > 0
     ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
     : '  none';
@@ -268,7 +368,7 @@ export function renderGuardedRunSummary(value) {
         recovery.next_command ? `- next_command: ${recovery.next_command}` : null
       ].filter(Boolean).join('\n')
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 function shellQuoteCommandArg(value) {
@@ -803,6 +903,7 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
     },
     managed_worktree: binding.managedWorktree,
     action_journal: [],
+    next_best_action_decisions: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -936,7 +1037,12 @@ function migrateRunState(state) {
       schema_version: state.schema_version ?? null
     });
   }
-  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION, action_journal: state.action_journal ?? [] };
+  const migrated = {
+    ...state,
+    schema_version: GUARDED_RUN_SCHEMA_VERSION,
+    action_journal: state.action_journal ?? [],
+    next_best_action_decisions: state.next_best_action_decisions ?? []
+  };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
 }
@@ -1014,6 +1120,14 @@ function validateRunShape(state) {
   if (!Array.isArray(state.action_journal)) {
     throw contractError('invalid_state', 'Guarded Run action journal is invalid.', { run_id: state.run_id });
   }
+  if (state.next_best_action_decisions !== undefined) {
+    if (!Array.isArray(state.next_best_action_decisions)
+        || state.next_best_action_decisions.some((decision) => !isBoundedDecisionRecord(decision))) {
+      throw contractError('invalid_state', 'Guarded Run next-best-action decision history is invalid.', {
+        run_id: state.run_id
+      });
+    }
+  }
   for (const entry of state.action_journal) {
     if (!entry || typeof entry !== 'object'
         || typeof entry.action_id !== 'string'
@@ -1066,6 +1180,69 @@ function validateRunShape(state) {
   if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
     throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
   }
+}
+
+function isBoundedDecisionRecord(decision) {
+  const allowedKeys = new Set([
+    'schema_version', 'policy_version', 'checkpoint_reason', 'state_delta', 'state_fingerprint',
+    'no_progress_count', 'outcome', 'selected_action_id', 'selection_reason', 'selected_score',
+    'candidates', 'rejected', 'reused'
+  ]);
+  return Boolean(decision && typeof decision === 'object' && !Array.isArray(decision))
+    && Object.keys(decision).every((key) => allowedKeys.has(key))
+    && decision.schema_version === '0.1.0'
+    && typeof decision.policy_version === 'string'
+    && typeof decision.checkpoint_reason === 'string'
+    && typeof decision.state_fingerprint === 'string'
+    && Number.isInteger(decision.no_progress_count)
+    && typeof decision.outcome === 'string'
+    && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
+    && typeof decision.selection_reason === 'string'
+    && (decision.selected_score === null || (typeof decision.selected_score === 'number' && Number.isFinite(decision.selected_score)))
+    && (!Object.hasOwn(decision, 'state_delta') || isBoundedJson(decision.state_delta))
+    && Array.isArray(decision.candidates)
+    && decision.candidates.every(isBoundedCandidate)
+    && Array.isArray(decision.rejected)
+    && decision.rejected.every(isBoundedRejection)
+    && (!Object.hasOwn(decision, 'reused') || typeof decision.reused === 'boolean')
+    && Buffer.byteLength(JSON.stringify(decision)) <= 16384;
+}
+
+function isBoundedCandidate(candidate) {
+  const keys = new Set(['action_id', 'classification', 'metrics', 'score']);
+  const metricKeys = new Set([
+    'expected_progress', 'uncertainty_reduction', 'risk_reduction', 'evidence_reuse', 'estimated_time',
+    'estimated_tokens_or_cost', 'invalidation_risk', 'rework_risk', 'confidence'
+  ]);
+  return isPlainRecord(candidate)
+    && Object.keys(candidate).every((key) => keys.has(key))
+    && typeof candidate.action_id === 'string'
+    && typeof candidate.classification === 'string'
+    && typeof candidate.score === 'number' && Number.isFinite(candidate.score)
+    && isPlainRecord(candidate.metrics)
+    && Object.keys(candidate.metrics).length === metricKeys.size
+    && Object.keys(candidate.metrics).every((key) => metricKeys.has(key))
+    && Object.values(candidate.metrics).every((value) => value === 'unknown' || (typeof value === 'number' && Number.isFinite(value)));
+}
+
+function isBoundedRejection(rejection) {
+  return isPlainRecord(rejection)
+    && Object.keys(rejection).every((key) => ['action_id', 'score', 'reason_code'].includes(key))
+    && Object.keys(rejection).length === 3
+    && typeof rejection.action_id === 'string'
+    && typeof rejection.score === 'number' && Number.isFinite(rejection.score)
+    && rejection.reason_code === 'lower_rank';
+}
+
+function isBoundedJson(value, depth = 0) {
+  if (depth > 8) return false;
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.length <= 100 && value.every((item) => isBoundedJson(item, depth + 1));
+  if (!isPlainRecord(value)) return false;
+  const forbidden = /(transcript|chain[_-]?of[_-]?thought|hidden[_-]?reasoning|raw[_-]?(prompt|response|message))/i;
+  return Object.keys(value).length <= 100
+    && Object.entries(value).every(([key, item]) => !forbidden.test(key) && isBoundedJson(item, depth + 1));
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {
