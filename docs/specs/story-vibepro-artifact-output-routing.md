@@ -10,7 +10,7 @@ status: active
 
 - `artifact_routing.artifacts.<kind>.canonical` is the single writable canonical path template for that artifact kind.
 - Omitting `artifact_routing` preserves every legacy default path.
-- `{story_id}` and `{feature_slug}` are the only supported template variables and resolve deterministically.
+- `{story_id}` and `{feature_slug}` are the only supported template variables and resolve deterministically. Story IDs are normally normalized to lowercase kebab-case, while opaque tracker IDs matching an uppercase alphanumeric prefix plus numeric suffix (for example `STR-047` or `US-002`) preserve case so canonical paths remain compatible on case-sensitive filesystems; `feature_slug` remains lowercase.
 - Absolute paths, repository traversal, unresolved variables, canonical collisions, and ambiguous projections fail before a write.
 - Projections require an explicit `{ "path": "...", "generated": true }` declaration and never become a second editable canonical.
 - Story discovery, Architecture and accepted Spec read/write, Task plan generation, and Graphify/review/Gate/PR story binding consume the shared resolver contract.

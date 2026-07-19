@@ -55,10 +55,12 @@ test('custom nested feature routing expands stable variables', async () => {
   });
   const resolved = await resolveArtifactRoutes(root, { storyId: 'story-VibePro-Payments' });
   assert.equal(resolved.variables.feature_slug, 'vibepro-payments');
+  const trackerRoutes = await resolveArtifactRoutes(root, { storyId: 'STR-047' });
+  assert.equal(trackerRoutes.variables.story_id, 'STR-047');
   assert.equal(
-    (await resolveArtifactRoutes(root, { storyId: 'STR-047' })).variables.story_id,
-    'STR-047',
-    'story_id routing must preserve case on case-sensitive filesystems'
+    trackerRoutes.routes.architecture.projections[0].relative_path,
+    'docs/generated/STR-047/architecture.md',
+    'opaque tracker story IDs must preserve case in resolved paths on case-sensitive filesystems'
   );
   assert.equal(resolved.routes.story.canonical.relative_path, 'docs/features/vibepro-payments/01_behavior_spec.md');
   assert.equal(resolved.routes.architecture.projections[0].generated, true);

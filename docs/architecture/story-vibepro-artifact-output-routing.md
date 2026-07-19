@@ -40,7 +40,7 @@ VibePro の成果物パスは、生成、読み込み、検出、Gate、PR prepa
 - canonical / projection lineage の構造化出力
 - read/discovery と write/output へ同一 resolved path を提供
 
-`feature_slug` は `story-` prefix を除いた story ID を lowercase kebab-case 化する。`story_id` は path-safe な lowercase kebab-case 表現とする。
+`feature_slug` は `story-` prefix を除いた story ID を lowercase kebab-case 化する。`story_id` は通常 path-safe な lowercase kebab-case 表現とするが、`STR-047` や `US-002` のような既存 tracker の opaque ID（大文字英数字 prefix + 数字）は identity と filesystem 上の参照を壊さないよう大文字小文字を保持する。
 
 ### 3. Integration boundary
 
