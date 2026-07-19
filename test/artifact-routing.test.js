@@ -99,6 +99,16 @@ test('unconfigured fresh checkout preserves legacy artifact defaults', async () 
   assert.equal(resolved.routes.graphify.canonical.relative_path, '.vibepro/graphify');
 });
 
+test('artifact routing guides document configuration, migration, compatibility, and rollback', async () => {
+  for (const guide of ['docs/guide/artifact-output-routing.md', 'docs/ja/guide/artifact-output-routing.md']) {
+    const content = await readFile(path.resolve(guide), 'utf8');
+    assert.match(content, /artifact_routing/);
+    assert.match(content, /--dry-run/);
+    assert.match(content, /legacy|従来|既存/i);
+    assert.match(content, /roll(?:back| back)|ロールバック/i);
+  }
+});
+
 test('routing fails closed for collisions, traversal, absolute paths, and unresolved variables', async (t) => {
   const cases = [
     ['path_collision', {

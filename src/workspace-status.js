@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { readdir, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -59,6 +60,33 @@ function classifyArtifact(artifact, headSha) {
 }
 
 async function readStoryStatuses(worktree) {
+  try {
+    const config = JSON.parse(await readFile(path.join(worktree.path, '.vibepro', 'config.json'), 'utf8'));
+    const storyIds = [...new Set((config.brainbase?.stories ?? []).map((story) => story.story_id ?? story.id).filter(Boolean))];
+    if (storyIds.length > 0) {
+      const stories = [];
+      for (const storyId of storyIds.sort()) {
+        const artifactPath = await resolvePrArtifactFile(worktree.path, storyId, 'pr-prepare.json');
+        try {
+          const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
+          const recordedHead = artifactHead(artifact);
+          stories.push({
+            story_id: artifact?.story?.story_id ?? storyId,
+            title: artifact?.story?.title ?? null,
+            status: classifyArtifact(artifact, worktree.head_sha),
+            reason: !recordedHead ? 'artifact_head_missing' : recordedHead !== worktree.head_sha ? 'artifact_head_mismatch' : artifact?.gate_status?.ready_for_pr_create !== true ? 'gate_not_ready' : artifact?.gate_status?.overall_status !== 'ready_for_review' ? 'overall_status_not_ready' : null,
+            artifact_head_sha: recordedHead,
+            artifact_path: artifactPath
+          });
+        } catch (error) {
+          if (error.code !== 'ENOENT') throw error;
+        }
+      }
+      return stories.length > 0 ? stories : [{ story_id: null, status: 'unknown', reason: 'no_pr_prepare_artifact' }];
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const prRoot = path.join(worktree.path, '.vibepro', 'pr');
   let entries;
   try {
