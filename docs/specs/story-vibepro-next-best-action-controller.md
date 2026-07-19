@@ -16,6 +16,17 @@ The output records all NBA-S-2 metrics. Unknown measurements use the literal `un
 - `INV-NBA-4`: decision records contain bounded inputs and reason codes, not raw transcripts.
 - `INV-NBA-5`: the controller recommends among existing authorities and never executes or authorizes an action.
 
+## Scenarios
+
+- `NBA-S-1`: Given the Safe Action registry contains forbidden or dependency-blocked actions, when a checkpoint requests a recommendation, then only policy-allowed and dependency-ready actions enter the ranking.
+- `NBA-S-2`: Given a recommendation is produced, when its decision record is inspected, then every comparison metric is present and unavailable measurements remain `unknown`.
+- `NBA-S-3`: Given the normalized state, policy version, and candidates are unchanged, when selection is repeated, then the selected action and ordering are deterministic.
+- `NBA-S-4`: Given cost or risk measurements are unavailable, when candidates are ranked, then unknown values are not converted to zero or treated as free evidence.
+- `NBA-S-5`: Given the checkpoint, material state fingerprint, and policy version are unchanged, when the controller runs again, then it reuses the previous bounded decision.
+- `NBA-S-6`: Given an expensive validation and a cheaper uncertainty-reducing action are both eligible, when expected value is compared, then the cheaper uncertainty reduction is preferred.
+- `NBA-S-7`: Given two consecutive checkpoints report no progress, when another recommendation is requested, then only an explicit stop, ask, or re-plan escape action can be selected.
+- `NBA-S-8`: Given a recommendation is persisted, when its payload is inspected, then it contains bounded metrics and reason codes without raw transcripts and does not execute or authorize the action.
+
 ## Verification
 
-`test/next-best-action-controller.test.js` covers NBA-S-1 through NBA-S-8, including deterministic ranking, unknown preservation, material checkpoint reuse, cheaper uncertainty reduction, and no-progress escape.
+`test/next-best-action-controller.test.js` covers NBA-S-1 through NBA-S-8. `test/e2e/story-vibepro-next-best-action-controller-acceptance.spec.ts` replays the registry-to-recommendation flow and checks the focused scenario suite as one acceptance boundary.
