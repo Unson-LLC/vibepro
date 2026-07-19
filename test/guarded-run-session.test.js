@@ -1779,8 +1779,9 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
 
 test('NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
   const session = fixture.session({
-    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
     safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
   });
   await session.run(fixture.source, { storyId: STORY_ID });
@@ -1798,6 +1799,11 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   assert.equal(decision.no_progress_count, 2);
   assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
   assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(result.state.status, 'waiting_for_human');
+  assert.equal(result.state.pending_decision.action_id, decision.selected_action_id);
+  assert.equal(result.state.stop_reason.code, 'next_best_action_escape');
+  assert.equal(result.state.action_journal.length, 0);
+  assert.equal(prepareCalls, 0);
   assert.deepEqual(
     (await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }))
       .next_best_action_decisions.at(-1),

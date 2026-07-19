@@ -9,7 +9,7 @@ import {
   preparePullRequest as defaultPreparePullRequest,
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
-import { runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
+import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -128,7 +128,16 @@ async function orchestrateRun(deps, repoRoot, options) {
     loaded.mirrorFile,
     'next_best_action_checkpoint'
   );
+  if (isEscapeDecision(decision)) {
+    const escaped = applyControllerEscape(decisionState, decision, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
+    return { plan: [decision.selected_action_id], decision, state: escaped };
+  }
+  const selectedPlan = process.env.VIBEPRO_NEXT_BEST_ACTION === 'off'
+    ? undefined
+    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id);
   const result = await runSafeActionPlan(decisionState, {
+    plan: selectedPlan,
     onProgress: async (progress) => {
       const checkpoint = { ...decisionState, action_journal: progress.action_journal };
       await persistAuthorityThenMirror(
@@ -235,6 +244,34 @@ async function orchestrateRun(deps, repoRoot, options) {
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };
+}
+
+function isEscapeDecision(decision) {
+  return ['ask', 'split', 'wait', 'stop', 'rediagnose'].includes(decision.selected_action_id);
+}
+
+function buildSelectedSafeActionPlan(state, actionId) {
+  const plan = buildSafeActionPlan(state);
+  const selectedIndex = plan.findIndex((action) => action.id === actionId);
+  return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
+}
+
+function applyControllerEscape(state, decision, timestamp) {
+  const actionId = decision.selected_action_id;
+  const stopReason = {
+    code: 'next_best_action_escape',
+    message: `Controller selected ${actionId} after repeated no progress.`,
+    details: {
+      recovery: {
+        required_actions: [`resolve controller escape action: ${actionId}`],
+        next_command: `vibepro execute resume . --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+      }
+    }
+  };
+  return applyTransition(state, 'waiting_for_human', 'next_best_action_escape', timestamp, {
+    stop_reason: stopReason,
+    pending_decision: { kind: 'next_best_action_escape', action_id: actionId }
+  });
 }
 
 function selectControllerCheckpoint(state, options = {}, previousDecision = null) {
@@ -1145,7 +1182,13 @@ function validateRunShape(state) {
 }
 
 function isBoundedDecisionRecord(decision) {
+  const allowedKeys = new Set([
+    'schema_version', 'policy_version', 'checkpoint_reason', 'state_delta', 'state_fingerprint',
+    'no_progress_count', 'outcome', 'selected_action_id', 'selection_reason', 'selected_score',
+    'candidates', 'rejected', 'reused'
+  ]);
   return Boolean(decision && typeof decision === 'object' && !Array.isArray(decision))
+    && Object.keys(decision).every((key) => allowedKeys.has(key))
     && decision.schema_version === '0.1.0'
     && typeof decision.policy_version === 'string'
     && typeof decision.checkpoint_reason === 'string'
@@ -1154,9 +1197,51 @@ function isBoundedDecisionRecord(decision) {
     && typeof decision.outcome === 'string'
     && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
     && typeof decision.selection_reason === 'string'
+    && (decision.selected_score === null || (typeof decision.selected_score === 'number' && Number.isFinite(decision.selected_score)))
+    && isBoundedJson(decision.state_delta)
     && Array.isArray(decision.candidates)
+    && decision.candidates.every(isBoundedCandidate)
     && Array.isArray(decision.rejected)
-    && !Object.prototype.hasOwnProperty.call(decision, 'transcript');
+    && decision.rejected.every(isBoundedRejection)
+    && typeof decision.reused === 'boolean'
+    && Buffer.byteLength(JSON.stringify(decision)) <= 16384;
+}
+
+function isBoundedCandidate(candidate) {
+  const keys = new Set(['action_id', 'classification', 'metrics', 'score']);
+  const metricKeys = new Set([
+    'expected_progress', 'uncertainty_reduction', 'risk_reduction', 'evidence_reuse', 'estimated_time',
+    'estimated_tokens_or_cost', 'invalidation_risk', 'rework_risk', 'confidence'
+  ]);
+  return isPlainRecord(candidate)
+    && Object.keys(candidate).every((key) => keys.has(key))
+    && typeof candidate.action_id === 'string'
+    && typeof candidate.classification === 'string'
+    && typeof candidate.score === 'number' && Number.isFinite(candidate.score)
+    && isPlainRecord(candidate.metrics)
+    && Object.keys(candidate.metrics).length === metricKeys.size
+    && Object.keys(candidate.metrics).every((key) => metricKeys.has(key))
+    && Object.values(candidate.metrics).every((value) => value === 'unknown' || (typeof value === 'number' && Number.isFinite(value)));
+}
+
+function isBoundedRejection(rejection) {
+  return isPlainRecord(rejection)
+    && Object.keys(rejection).every((key) => ['action_id', 'score', 'reason_code'].includes(key))
+    && Object.keys(rejection).length === 3
+    && typeof rejection.action_id === 'string'
+    && typeof rejection.score === 'number' && Number.isFinite(rejection.score)
+    && rejection.reason_code === 'lower_rank';
+}
+
+function isBoundedJson(value, depth = 0) {
+  if (depth > 8) return false;
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.length <= 100 && value.every((item) => isBoundedJson(item, depth + 1));
+  if (!isPlainRecord(value)) return false;
+  const forbidden = /(transcript|chain[_-]?of[_-]?thought|hidden[_-]?reasoning|raw[_-]?(prompt|response|message))/i;
+  return Object.keys(value).length <= 100
+    && Object.entries(value).every(([key, item]) => !forbidden.test(key) && isBoundedJson(item, depth + 1));
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {

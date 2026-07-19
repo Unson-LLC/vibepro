@@ -5169,12 +5169,28 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-next-best-action-controller.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
           }
         ],
         "adr": [
           {
             "kind": "adr",
             "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+            "required": true,
+            "relationship": "refines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
             "required": true,
             "relationship": "refines",
             "last_reviewed_root_hash": null
@@ -5253,8 +5269,22 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-next-best-action-controller.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "adr",
           "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+          "required": true,
+          "relationship": "refines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
           "required": true,
           "relationship": "refines",
           "last_reviewed_root_hash": null

@@ -70,6 +70,17 @@ test('NBA-S-6 prefers a cheap uncertainty reduction before expensive validation'
   assert.equal(result.selected_action_id, 'targeted_test');
 });
 
+test('NBA-S-6 Pareto dominance prevents expected-progress weight from selecting a costlier equal-information action', () => {
+  const result = selectNextBestAction({
+    checkpoint_reason: 'before_expensive_action', state_delta: { gate: 'unknown' },
+    candidates: [
+      candidate('expensive', { expected_progress: 100, uncertainty_reduction: 3, estimated_time: 8, estimated_tokens_or_cost: 8 }),
+      candidate('cheap_probe', { expected_progress: 0, uncertainty_reduction: 3, estimated_time: 1, estimated_tokens_or_cost: 1 })
+    ]
+  });
+  assert.equal(result.selected_action_id, 'cheap_probe');
+});
+
 test('NBA-S-7 two no-progress checkpoints force an explicit escape action', () => {
   const result = selectNextBestAction({
     checkpoint_reason: 'no_progress', state_delta: { finding: 'same' }, no_progress_count: 2,
@@ -90,8 +101,22 @@ test('NBA-S-8 decision record contains bounded rationale, not raw transcript', (
     candidates: [candidate('wait', { estimated_time: 1 }, { classification: 'approval_required' })]
   });
   assert.equal(result.selection_reason, 'highest_expected_value');
+  assert.deepEqual(result.state_delta, { budget: 2 });
   assert.equal(JSON.stringify(result).includes('transcript'), false);
   assert.deepEqual(result.rejected, []);
+});
+
+test('NBA-S-8 rejects an unbounded state delta instead of persisting raw context', () => {
+  assert.throws(() => selectNextBestAction({
+    checkpoint_reason: 'budget_pressure',
+    state_delta: { diagnostic_payload: 'x'.repeat(5000) },
+    candidates: [candidate('wait', {}, { classification: 'approval_required' })]
+  }), /state_delta exceeds bounded decision record limit/);
+  assert.throws(() => selectNextBestAction({
+    checkpoint_reason: 'budget_pressure',
+    state_delta: { nested: { raw_transcript: 'private reasoning' } },
+    candidates: [candidate('wait', {}, { classification: 'approval_required' })]
+  }), /forbidden raw context key/);
 });
 
 test('NBA-S-1 controller consumes only dependency-ready Safe Action registry candidates', () => {

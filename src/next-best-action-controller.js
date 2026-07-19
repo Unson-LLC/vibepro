@@ -13,6 +13,7 @@ const METRICS = Object.freeze([
   'rework_risk',
   'confidence'
 ]);
+const MAX_STATE_DELTA_BYTES = 4096;
 
 export function selectNextBestAction(input = {}) {
   const checkpointReason = requireText(input.checkpoint_reason, 'checkpoint_reason');
@@ -45,9 +46,10 @@ export function selectNextBestAction(input = {}) {
     });
   }
 
-  const ranked = candidates
+  const scored = candidates
     .map((candidate) => ({ ...candidate, score: score(candidate) }))
-    .sort(compareRank);
+  const nonDominated = scored.filter((candidate) => !scored.some((other) => dominatesUncertaintyCost(other, candidate)));
+  const ranked = [...nonDominated.sort(compareRank), ...scored.filter((candidate) => !nonDominated.includes(candidate)).sort(compareRank)];
   return buildDecision({
     input,
     checkpointReason,
@@ -109,6 +111,19 @@ function compareRank(left, right) {
   return left.action_id.localeCompare(right.action_id);
 }
 
+function dominatesUncertaintyCost(left, right) {
+  const l = left.metrics;
+  const r = right.metrics;
+  if (![l.uncertainty_reduction, r.uncertainty_reduction, l.estimated_time, r.estimated_time,
+    l.estimated_tokens_or_cost, r.estimated_tokens_or_cost].every((value) => typeof value === 'number')) return false;
+  return l.uncertainty_reduction >= r.uncertainty_reduction
+    && l.estimated_time <= r.estimated_time
+    && l.estimated_tokens_or_cost <= r.estimated_tokens_or_cost
+    && (l.uncertainty_reduction > r.uncertainty_reduction
+      || l.estimated_time < r.estimated_time
+      || l.estimated_tokens_or_cost < r.estimated_tokens_or_cost);
+}
+
 function buildDecision({ input, checkpointReason, stateFingerprint, noProgressCount, candidates, selected, outcome }) {
   const rejected = candidates.slice(1).map((candidate) => ({
     action_id: candidate.action_id,
@@ -119,6 +134,7 @@ function buildDecision({ input, checkpointReason, stateFingerprint, noProgressCo
     schema_version: '0.1.0',
     policy_version: input.policy_version ?? '1',
     checkpoint_reason: checkpointReason,
+    state_delta: boundedStateDelta(input.state_delta ?? {}),
     state_fingerprint: stateFingerprint,
     no_progress_count: noProgressCount,
     outcome,
@@ -131,6 +147,27 @@ function buildDecision({ input, checkpointReason, stateFingerprint, noProgressCo
     rejected,
     reused: false
   };
+}
+
+function boundedStateDelta(value) {
+  assertSafeStateDelta(value);
+  const raw = stableStringify(value);
+  if (Buffer.byteLength(raw) > MAX_STATE_DELTA_BYTES) throw new Error('state_delta exceeds bounded decision record limit');
+  return JSON.parse(raw);
+}
+
+function assertSafeStateDelta(value, depth = 0) {
+  if (depth > 8) throw new Error('state_delta exceeds bounded decision record depth');
+  if (Array.isArray(value)) {
+    for (const item of value) assertSafeStateDelta(item, depth + 1);
+    return;
+  }
+  if (!value || typeof value !== 'object') return;
+  const forbidden = /(transcript|chain[_-]?of[_-]?thought|hidden[_-]?reasoning|raw[_-]?(prompt|response|message))/i;
+  for (const [key, item] of Object.entries(value)) {
+    if (forbidden.test(key)) throw new Error(`state_delta contains forbidden raw context key: ${key}`);
+    assertSafeStateDelta(item, depth + 1);
+  }
 }
 
 function fingerprint(value) {
@@ -149,4 +186,3 @@ function requireText(value, name) {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(`${name} is required`);
   return value.trim();
 }
-

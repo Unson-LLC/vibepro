@@ -71,7 +71,7 @@ function buildEscapeCandidates(requestedIds = [], metrics = {}) {
 export async function runSafeActionPlan(state, options = {}) {
   const plan = options.plan ?? buildSafeActionPlan(state);
   const canonicalPlan = buildSafeActionPlan(state);
-  if (!isCompleteCanonicalPlan(plan, canonicalPlan)) {
+  if (!isAllowedCanonicalPlan(plan, canonicalPlan)) {
     const providedPlan = Array.isArray(plan) ? plan : [];
     const rejectedAction = providedPlan.find((action, index) => !isExactCanonicalAction(action, canonicalPlan[index]))
       ?? canonicalPlan[providedPlan.length]
@@ -123,6 +123,13 @@ export async function runSafeActionPlan(state, options = {}) {
     }
   }
   return { plan, state: current };
+}
+
+function isAllowedCanonicalPlan(plan, canonicalPlan) {
+  return isCompleteCanonicalPlan(plan, canonicalPlan)
+    || (Array.isArray(plan) && plan.length > 0
+      && canonicalPlan.some((_, start) => plan.length === canonicalPlan.length - start
+        && plan.every((action, index) => isExactCanonicalAction(action, canonicalPlan[start + index]))));
 }
 
 function isCompleteCanonicalPlan(plan, canonicalPlan) {

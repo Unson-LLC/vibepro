@@ -34,4 +34,4 @@ flowchart LR
 
 ## Compatibility and rollback
 
-The module is additive. Safe Action dependency-order execution remains the fallback when the controller is disabled. Removing the module does not alter Gate DAG semantics, action classifications, or existing CLI commands.
+The module is additive. Setting `VIBEPRO_NEXT_BEST_ACTION=off` restores Safe Action dependency-order execution without removing the controller or changing persisted state. Removing the module does not alter Gate DAG semantics, action classifications, or existing CLI commands.
