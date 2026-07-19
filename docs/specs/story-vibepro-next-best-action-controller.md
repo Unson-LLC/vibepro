@@ -1,3 +1,14 @@
+---
+title: "Next Best Action Controller Spec"
+status: accepted
+created_at: 2026-07-19
+updated_at: 2026-07-19
+related_stories:
+  - story-vibepro-next-best-action-controller
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
+---
+
 # Next Best Action Controller Spec
 
 ## Contract
