@@ -39,7 +39,7 @@ Persisted records created before bounded `state_delta` and `reused` were introdu
 - `NBA-S-6`: Given an expensive validation and a cheaper uncertainty-reducing action are both eligible, when expected value is compared, then the cheaper uncertainty reduction is preferred.
 - `NBA-S-7`: Given two consecutive checkpoints report no progress, when another recommendation is requested, then only an explicit stop, ask, or re-plan escape action can be selected.
 - `NBA-S-8`: Given a recommendation is persisted, when its payload is inspected, then it contains bounded metrics and reason codes without raw transcripts and does not execute or authorize the action.
-- `NBA-S-9`: Given the Guarded Run workflow has transitioned to the terminal state `cancelled` or `pr_ready`, when orchestration or cancellation is requested again, then the existing terminal state is returned without another controller selection or action execution; repeated cancellation is idempotent.
+- `NBA-S-9`: Given the Guarded Run workflow has transitioned to the terminal state `cancelled` or `pr_ready`, when orchestration is requested again, then the existing terminal state is returned without another controller selection or action execution; repeated cancellation of `cancelled` is idempotent, while cancellation of `pr_ready` is rejected as `terminal_state`.
 
 ## Verification
 
