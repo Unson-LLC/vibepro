@@ -50,14 +50,44 @@ export function normalizeReleaseDocumentationLinks(value) {
       return line;
     }
     if (fence) return line;
-    return line.split(/(`[^`\n]*`)/u).map((segment, index) => (
-      index % 2 === 1
-        ? segment
-        : segment.replace(/(!?\[[^\]\n]*\]\()docs\/([^\s)]+)(\))/gu, (_match, prefix, target, suffix) => (
-          `${prefix}${prefix.startsWith('!') ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT}docs/${target}${suffix}`
-        ))
-    )).join('');
+    return mapOutsideInlineCode(line, (segment) => (
+      segment.replace(
+        /(!?\[[^\]\n]*\]\()docs\/([^\s)]+)(?=(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^\)\n]*\)))?\))/gu,
+        (_match, prefix, target) => (
+          `${prefix}${prefix.startsWith('!') ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT}docs/${target}`
+        )
+      )
+    ));
   }).join('\n');
+}
+
+function mapOutsideInlineCode(line, transform) {
+  let output = '';
+  let cursor = 0;
+  const backtickRun = /`+/gu;
+
+  while (cursor < line.length) {
+    backtickRun.lastIndex = cursor;
+    const opening = backtickRun.exec(line);
+    if (!opening) return output + transform(line.slice(cursor));
+
+    const delimiterLength = opening[0].length;
+    let closing = null;
+    backtickRun.lastIndex = opening.index + delimiterLength;
+    for (let candidate = backtickRun.exec(line); candidate; candidate = backtickRun.exec(line)) {
+      if (candidate[0].length === delimiterLength) {
+        closing = candidate;
+        break;
+      }
+    }
+
+    if (!closing) return output + transform(line.slice(cursor));
+    output += transform(line.slice(cursor, opening.index));
+    output += line.slice(opening.index, closing.index + delimiterLength);
+    cursor = closing.index + delimiterLength;
+  }
+
+  return output;
 }
 
 export function sanitizeReleaseContent(value) {

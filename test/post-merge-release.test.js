@@ -36,9 +36,11 @@ test('LRCL-001/002 locks the Linux Rollup binary as a root optional dependency',
 test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', () => {
   const source = [
     '[story](docs/management/stories/active/story-example.md)',
+    '[titled](docs/guide.md "Guide title")',
     '![diagram](docs/architecture/diagram.png)',
     '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
     '`[inline](docs/inline.md)`',
+    '``[multi ` inline](docs/multi-inline.md)``',
     '```md',
     '[fenced](docs/fenced.md)',
     '```'
@@ -46,9 +48,11 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
 
   assert.equal(normalizeReleaseDocumentationLinks(source), [
     '[story](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-example.md)',
+    '[titled](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide.md "Guide title")',
     '![diagram](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/architecture/diagram.png)',
     '[external](https://example.com/docs/file.md) [root](/guide/) [anchor](#done) [relative](guide/file.md)',
     '`[inline](docs/inline.md)`',
+    '``[multi ` inline](docs/multi-inline.md)``',
     '```md',
     '[fenced](docs/fenced.md)',
     '```'
