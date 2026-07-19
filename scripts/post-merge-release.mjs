@@ -110,7 +110,9 @@ function inspectFenceOpener(line) {
 }
 
 function inspectFenceContainer(line, fence) {
-  const quote = consumeBlockquotePrefix(line);
+  // Strip exactly the opener's blockquote containers. A deeper quote marker is
+  // code content inside the outer fence and must not be mistaken for its close.
+  const quote = consumeBlockquotePrefix(line, fence.quoteDepth);
   if (quote.depth < fence.quoteDepth) return { continues: false, marker: null };
   let content = line.slice(quote.index);
   if (fence.listIndent > 0) {
@@ -122,10 +124,10 @@ function inspectFenceContainer(line, fence) {
   return { continues: true, marker: content.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u) };
 }
 
-function consumeBlockquotePrefix(line) {
+function consumeBlockquotePrefix(line, maxDepth = Number.POSITIVE_INFINITY) {
   let index = 0;
   let depth = 0;
-  for (;;) {
+  while (depth < maxDepth) {
     const marker = line.slice(index).match(/^ {0,3}>[ \t]?/u);
     if (!marker) break;
     index += marker[0].length;
