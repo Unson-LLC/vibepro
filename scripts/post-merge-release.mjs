@@ -2,12 +2,14 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createMarkdownRenderer } from 'vitepress';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
 const REPOSITORY_SOURCE_ROOT = 'https://github.com/Unson-LLC/vibepro/blob/main/';
 const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro/main/';
+const releaseMarkdownParser = await createMarkdownRenderer(rootDefault);
 
 export function extractReleaseSections(body = '') {
   const release = section(body, ['Release Notes', 'リリースノート']) || body;
@@ -27,11 +29,34 @@ function subsection(markdown, names) {
 }
 
 function captureSection(markdown, level, names) {
-  const escaped = names.map(escapeRegExp).join('|');
-  const pattern = new RegExp(`^#{${level}}\\s+(?:${escaped})\\s*$([\\s\\S]*?)(?=^#{1,${level}}\\s)`, 'imu');
-  const source = `${markdown ?? ''}`.replace(/\r\n/g, '\n') + '\n# __VIBEPRO_END__\n';
-  const match = source.match(pattern);
-  return `${match?.[1] ?? ''}`.trim().replace(/\n{3,}/g, '\n\n');
+  const source = `${markdown ?? ''}`.replace(/\r\n/g, '\n');
+  const { tokens, lineOffsets } = parseMarkdownStructure(source);
+  const expectedNames = new Set(names.map((name) => name.trim().toLocaleLowerCase()));
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    const inline = tokens[index + 1];
+    if (
+      token.type !== 'heading_open'
+      || token.tag !== `h${level}`
+      || !token.map
+      || inline?.type !== 'inline'
+      || !expectedNames.has(inline.content.trim().toLocaleLowerCase())
+    ) continue;
+
+    const start = lineOffset(lineOffsets, token.map[1], source.length);
+    let end = source.length;
+    for (let candidate = index + 1; candidate < tokens.length; candidate += 1) {
+      const next = tokens[candidate];
+      if (next.type !== 'heading_open' || !next.map) continue;
+      const nextLevel = Number(next.tag.slice(1));
+      if (nextLevel <= level) {
+        end = lineOffset(lineOffsets, next.map[0], source.length);
+        break;
+      }
+    }
+    return source.slice(start, end).trim().replace(/\n{3,}/g, '\n\n');
+  }
+  return '';
 }
 
 function normalizeContent(value) {
@@ -50,221 +75,69 @@ export function normalizeReleaseDocumentationLinks(value) {
 }
 
 function findProtectedCodeRanges(source) {
-  const fenced = findFencedCodeRanges(source);
-  return [...fenced, ...findIndentedCodeRanges(source), ...findInlineCodeRanges(source, fenced)]
+  const { tokens, lineOffsets } = parseMarkdownStructure(source);
+  const blockCodeRanges = tokens
+    .filter((token) => ['fence', 'code_block'].includes(token.type) && token.map)
+    .map((token) => ({
+      start: lineOffset(lineOffsets, token.map[0], source.length),
+      end: lineOffset(lineOffsets, token.map[1], source.length)
+    }));
+  const inlineBlockRanges = tokens
+    .filter((token) => token.type === 'inline' && token.map)
+    .map((token) => ({
+      start: lineOffset(lineOffsets, token.map[0], source.length),
+      end: lineOffset(lineOffsets, token.map[1], source.length)
+    }));
+  return [...blockCodeRanges, ...findInlineCodeRanges(source, inlineBlockRanges)]
     .sort((left, right) => left.start - right.start);
 }
 
-function findIndentedCodeRanges(source) {
+function parseMarkdownStructure(source) {
+  const lineOffsets = [0];
+  for (let index = 0; index < source.length; index += 1) {
+    if (source[index] === '\n') lineOffsets.push(index + 1);
+  }
+  return { tokens: releaseMarkdownParser.parse(source, {}), lineOffsets };
+}
+
+function lineOffset(offsets, line, fallback) {
+  return offsets[line] ?? fallback;
+}
+
+function findInlineCodeRanges(source, inlineBlockRanges) {
   const ranges = [];
-  let offset = 0;
-  let quoteDepth = 0;
-  let listContentIndent = null;
-  let previousWasBlank = true;
-  let inIndentedCode = false;
-  for (const line of source.split('\n')) {
-    const lineEnd = offset + line.length + (offset + line.length < source.length ? 1 : 0);
-    const quote = consumeBlockquotePrefix(line);
-    const content = line.slice(quote.index);
-    const blank = content.trim() === '';
-    if (quote.depth !== quoteDepth) {
-      quoteDepth = quote.depth;
-      listContentIndent = null;
-      previousWasBlank = true;
-      inIndentedCode = false;
-    }
-    if (blank) {
-      previousWasBlank = true;
-      offset = lineEnd;
-      continue;
-    }
-
-    const indentation = consumeIndentation(content, Number.POSITIVE_INFINITY);
-    const listOpener = inspectListContentIndent(content, listContentIndent);
-    if (listOpener !== null) {
-      listContentIndent = listOpener;
-      inIndentedCode = false;
-    } else if (listContentIndent !== null && indentation.columns < listContentIndent) {
-      listContentIndent = null;
-      inIndentedCode = false;
-    }
-
-    const requiredIndent = (listContentIndent ?? 0) + 4;
-    if (indentation.columns >= requiredIndent && (previousWasBlank || inIndentedCode)) {
-      ranges.push({ start: offset, end: lineEnd });
-      inIndentedCode = true;
-    } else {
-      inIndentedCode = false;
-    }
-    previousWasBlank = false;
-    offset = lineEnd;
-  }
-  return ranges;
-}
-
-function inspectListContentIndent(content, parentIndent) {
-  const parent = parentIndent ?? 0;
-  const parentPrefix = consumeIndentation(content, parent);
-  if (parentPrefix.columns < parent) return null;
-  const candidate = content.slice(parentPrefix.index);
-  const marker = candidate.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])([ \t]+)/u);
-  if (!marker) return null;
-  const markerColumns = visualColumns(marker[0].slice(0, -marker[1].length), parent);
-  const contentColumns = visualColumns(marker[1], markerColumns);
-  return contentColumns - markerColumns > 4 ? markerColumns + 1 : contentColumns;
-}
-
-function findFencedCodeRanges(source) {
-  const ranges = [];
-  const lines = source.split('\n');
-  let offset = 0;
-  let fence = null;
-  for (const line of lines) {
-    const lineEnd = offset + line.length + (offset + line.length < source.length ? 1 : 0);
-    const container = fence ? inspectFenceContainer(line, fence) : null;
-    let closedFence = false;
-    if (fence) {
-      if (!container.continues) {
-        ranges.push({ start: fence.start, end: offset });
-        fence = null;
-      } else if (container.marker) {
-        const run = container.marker[1];
-        if (run[0] === fence.character && run.length >= fence.length && container.marker[2].trim() === '') {
-          ranges.push({ start: fence.start, end: lineEnd });
-          fence = null;
-          closedFence = true;
-        }
-      }
-    }
-    if (!fence && !closedFence) {
-      const opener = inspectFenceOpener(line);
-      if (opener && (opener.marker[1][0] === '~' || !opener.marker[2].includes('`'))) {
-        fence = {
-          start: offset,
-          character: opener.marker[1][0],
-          length: opener.marker[1].length,
-          quoteDepth: opener.quoteDepth,
-          listIndent: opener.listIndent
-        };
-      }
-    }
-    offset = lineEnd;
-  }
-  if (fence) ranges.push({ start: fence.start, end: source.length });
-  return ranges;
-}
-
-function inspectFenceOpener(line) {
-  const quote = consumeBlockquotePrefix(line);
-  let index = quote.index;
-  let listIndent = 0;
-  for (;;) {
-    const list = line.slice(index).match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+/u);
-    if (!list) break;
-    index += list[0].length;
-    listIndent = visualColumns(list[0], listIndent);
-  }
-  const marker = line.slice(index).match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
-  return marker ? { marker, quoteDepth: quote.depth, listIndent } : null;
-}
-
-function inspectFenceContainer(line, fence) {
-  // Strip exactly the opener's blockquote containers. A deeper quote marker is
-  // code content inside the outer fence and must not be mistaken for its close.
-  const quote = consumeBlockquotePrefix(line, fence.quoteDepth);
-  if (quote.depth < fence.quoteDepth) return { continues: false, marker: null };
-  let content = line.slice(quote.index);
-  if (fence.listIndent > 0) {
-    if (content.trim() === '') return { continues: true, marker: null };
-    const indentation = consumeIndentation(content, fence.listIndent);
-    if (indentation.columns < fence.listIndent) return { continues: false, marker: null };
-    content = content.slice(indentation.index);
-  }
-  return { continues: true, marker: content.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u) };
-}
-
-function consumeBlockquotePrefix(line, maxDepth = Number.POSITIVE_INFINITY) {
-  let index = 0;
-  let depth = 0;
-  while (depth < maxDepth) {
-    const marker = line.slice(index).match(/^ {0,3}>[ \t]?/u);
-    if (!marker) break;
-    index += marker[0].length;
-    depth += 1;
-  }
-  return { index, depth };
-}
-
-function consumeIndentation(value, requiredColumns) {
-  let index = 0;
-  let columns = 0;
-  while (index < value.length && columns < requiredColumns) {
-    if (value[index] === ' ') columns += 1;
-    else if (value[index] === '\t') columns += 4 - (columns % 4);
-    else break;
-    index += 1;
-  }
-  return { index, columns };
-}
-
-function visualColumns(value, initialColumns = 0) {
-  let columns = initialColumns;
-  for (const character of value) {
-    columns += character === '\t' ? 4 - (columns % 4) : 1;
-  }
-  return columns;
-}
-
-function findInlineCodeRanges(source, fencedRanges) {
-  const ranges = [];
-  for (let index = 0; index < source.length;) {
-    const fenced = rangeContaining(fencedRanges, index);
-    if (fenced) {
-      index = fenced.end;
-      continue;
-    }
-    if (source[index] !== '`' || isEscaped(source, index)) {
-      index += 1;
-      continue;
-    }
-    const openingStart = index;
-    while (source[index] === '`') index += 1;
-    const delimiterLength = index - openingStart;
-    let closingEnd = -1;
-    for (let candidate = index; candidate < source.length;) {
-      const protectedFence = rangeContaining(fencedRanges, candidate);
-      if (protectedFence) {
-        break;
-      }
-      if (candidate > index && isInlineBlockBoundary(source, candidate)) {
-        break;
-      }
-      // Backslashes are literal inside CommonMark code spans; they do not
-      // escape a matching backtick delimiter.
-      if (source[candidate] !== '`') {
-        candidate += 1;
+  const uniqueBlocks = [...new Map(inlineBlockRanges.map((range) => [`${range.start}:${range.end}`, range])).values()];
+  for (const block of uniqueBlocks) {
+    for (let index = block.start; index < block.end;) {
+      if (source[index] !== '`' || isEscaped(source, index)) {
+        index += 1;
         continue;
       }
-      const runStart = candidate;
-      while (source[candidate] === '`') candidate += 1;
-      if (candidate - runStart === delimiterLength) {
-        closingEnd = candidate;
-        break;
+      const openingStart = index;
+      while (source[index] === '`') index += 1;
+      const delimiterLength = index - openingStart;
+      let closingEnd = -1;
+      for (let candidate = index; candidate < block.end;) {
+        // Backslashes are literal inside CommonMark code spans; they do not
+        // escape a matching backtick delimiter.
+        if (source[candidate] !== '`') {
+          candidate += 1;
+          continue;
+        }
+        const runStart = candidate;
+        while (source[candidate] === '`') candidate += 1;
+        if (candidate - runStart === delimiterLength) {
+          closingEnd = candidate;
+          break;
+        }
       }
-    }
-    if (closingEnd >= 0) {
-      ranges.push({ start: openingStart, end: closingEnd });
-      index = closingEnd;
+      if (closingEnd >= 0) {
+        ranges.push({ start: openingStart, end: closingEnd });
+        index = closingEnd;
+      }
     }
   }
   return ranges;
-}
-
-function isInlineBlockBoundary(source, index) {
-  if (index > 0 && source[index - 1] !== '\n') return false;
-  const lineEnd = source.indexOf('\n', index);
-  const line = source.slice(index, lineEnd < 0 ? source.length : lineEnd);
-  return /^[ \t]*$/u.test(line) || /^ {0,3}#{1,6}(?:[ \t]+|$)/u.test(line);
 }
 
 function findMarkdownLinkReplacements(source, protectedRanges) {
@@ -345,6 +218,7 @@ function parseInlineDestination(source, openingIndex) {
     }
     const character = source[index];
     if (angleWrapped) {
+      if (character === '<') return null;
       if (character === '>' || character === '\n') break;
     } else {
       if (character === '(') depth += 1;

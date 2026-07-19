@@ -177,6 +177,22 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     normalizeReleaseDocumentationLinks('[malformed](docs/a\\ b.md) [after](docs/after.md)'),
     '[malformed](docs/a\\ b.md) [after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
   );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('- item\n  ```md\n  [inside](docs/inside.md)\n[after](docs/after.md)'),
+    '- item\n  ```md\n  [inside](docs/inside.md)\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('- > ```md\n  > [inside](docs/inside.md)\n  > ```\n[after](docs/after.md)'),
+    '- > ```md\n  > [inside](docs/inside.md)\n  > ```\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('[malformed](<docs/a<b.md>) [after](docs/after.md)'),
+    '[malformed](<docs/a<b.md>) [after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md)'
+  );
+  assert.equal(
+    normalizeReleaseDocumentationLinks('`unclosed\n- [list](docs/list.md)\n[after](docs/after.md) `'),
+    '`unclosed\n- [list](https://github.com/Unson-LLC/vibepro/blob/main/docs/list.md)\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md) `'
+  );
 });
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
@@ -210,6 +226,36 @@ test('RNLN-004/005 preserves protected code contexts through production extracti
     '```',
     '[prose](https://github.com/Unson-LLC/vibepro/blob/main/docs/prose.md)'
   ].join('\n'));
+});
+
+test('RNLN-004 derives release section boundaries from rendered Markdown blocks', () => {
+  const sections = extractReleaseSections([
+    '## Release Notes',
+    '### Change Summary',
+    'before',
+    '```md',
+    '### Compatibility',
+    '[inside](docs/inside.md)',
+    '```',
+    'after',
+    '### Compatibility',
+    'none',
+    '### User Action',
+    'none'
+  ].join('\n'));
+
+  assert.deepEqual(sections, {
+    changeSummary: [
+      'before',
+      '```md',
+      '### Compatibility',
+      '[inside](docs/inside.md)',
+      '```',
+      'after'
+    ].join('\n'),
+    compatibility: 'none',
+    userAction: 'none'
+  });
 });
 
 test('PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose', () => {
