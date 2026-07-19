@@ -1,0 +1,1464 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "updated_at": "2026-07-19T02:18:26.257Z",
+  "events": [
+    {
+      "event_id": "2fe54ce5-8515-4e3b-bf7a-bf2bb3c95539",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:43.838Z"
+    },
+    {
+      "event_id": "e4629c60-887f-4325-b035-65b93758900e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:44.094Z"
+    },
+    {
+      "event_id": "9273abdb-147d-4bcc-b839-b8b2b8fbc31e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:44.341Z"
+    },
+    {
+      "event_id": "a819edbe-de83-4872-83a8-96b02a683fa1",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:44.600Z"
+    },
+    {
+      "event_id": "449116b0-f7de-46e0-8e9b-519d21430506",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:44.861Z"
+    },
+    {
+      "event_id": "17056d9b-a6a4-4338-ae56-071ca2130801",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:45.171Z"
+    },
+    {
+      "event_id": "ebf6e15f-3752-47da-b0fc-1b029d08d4ab",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:45.394Z"
+    },
+    {
+      "event_id": "242b02b3-6c33-4624-bd67-bb626e49587e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:45.652Z"
+    },
+    {
+      "event_id": "89bc8182-956c-4313-a6e0-e8725bd14d4c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:45.894Z"
+    },
+    {
+      "event_id": "dba42686-0a01-42f9-b8f8-62bb3d57e052",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:46.134Z"
+    },
+    {
+      "event_id": "bb5b4a0c-5de1-416f-9545-629d293e0229",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:46.405Z"
+    },
+    {
+      "event_id": "e64a1b84-2cdc-48dd-869b-cf2f2ab43f54",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:46.648Z"
+    },
+    {
+      "event_id": "406c0830-b8b3-46da-8702-e007ddfd8856",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent exact-HEAD inspection found Story, architecture, implementation, persisted-state compatibility, atomic escape lifecycle, rollback, and current executable evidence aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "/root/nba_judgment_adjudication:ee5ec31c"
+      },
+      "head_commit": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "recorded_at": "2026-07-19T01:21:46.976Z"
+    },
+    {
+      "event_id": "759a8046-bd07-4e0f-bd4c-7cd8e4e75c86",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story criteria map directly to implemented eligibility ranking bounded records escape rollback and terminal behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:36.472Z"
+    },
+    {
+      "event_id": "2b188f6a-8eb2-414a-a0dd-ba9b34d6a4b1",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime selects a canonical starting action and executes its suffix; exact-head focused and acceptance evidence passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:36.723Z"
+    },
+    {
+      "event_id": "891c7e06-4bc5-43a7-9b80-8015171e65ae",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authority dependency determinism unknown metrics bounded state atomic escape and terminal immutability are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:36.966Z"
+    },
+    {
+      "event_id": "3cd54f01-9606-433f-92a9-dc1127d222b6",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Controller ranks without execution authority while Guarded Run and Safe Action enforce canonical execution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:37.213Z"
+    },
+    {
+      "event_id": "f55b10ab-78bb-429e-8549-b628d44decc7",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed state schema rejection no-progress terminal replay rollback and persistence failures are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:37.458Z"
+    },
+    {
+      "event_id": "af99031c-a613-4118-b960-2dcc45fb4687",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact-head evidence covers 85 focused tests and three acceptance flows including rollback and atomic escape.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:37.739Z"
+    },
+    {
+      "event_id": "f592fc4f-9cd6-4de5-96fd-4dd00ac2f29b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI and persisted changes are additive; legacy missing additive fields remains readable and present fields strict.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:37.966Z"
+    },
+    {
+      "event_id": "0855ca5f-e2b9-4583-89ff-247b99a246cc",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story Architecture Spec implementation and focused tests form one coherent traceable capability.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:38.208Z"
+    },
+    {
+      "event_id": "6f4b1fcd-9017-4c29-882f-0f670585914c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persisted JSON parsing fails closed and malformed artifacts cannot mutate run state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:38.463Z"
+    },
+    {
+      "event_id": "072944af-beaa-4fb5-976e-4fac3f92ad91",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Schema constrains keys metrics nested depth rejection shapes and total size with explicit legacy compatibility.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:38.707Z"
+    },
+    {
+      "event_id": "efad7793-10ea-45d6-a0e6-896f14ab5e41",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Repeated no-progress produces typed escape and one authority-then-mirror atomic state operation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:38.944Z"
+    },
+    {
+      "event_id": "7e7f0d87-d206-4dbc-ad20-c128c8a92a8a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Decisions persist before execution; escape decision and stop transition commit together and reconstruct consistently.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:39.173Z"
+    },
+    {
+      "event_id": "b2dc1cdf-a4b3-41fa-af1b-040ee5850fed",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Enabled escape enters waiting with zero actions; terminal states immutable; rollback restores full plan.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/nba_judgment_adjudication@8d92ea3c58dbadc7440b39cdef01739fe28381fb"
+      },
+      "head_commit": "8d92ea3c58dbadc7440b39cdef01739fe28381fb",
+      "recorded_at": "2026-07-19T01:28:39.415Z"
+    },
+    {
+      "event_id": "27ae8f94-55c2-4627-a662-9db7457d4049",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:50.945Z"
+    },
+    {
+      "event_id": "5841b64f-ba7c-424b-8273-bb58f9497181",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:51.191Z"
+    },
+    {
+      "event_id": "89e69a92-f5c4-46e9-8afa-90a1ab3a4e1d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:51.441Z"
+    },
+    {
+      "event_id": "b6d0cc36-7e38-4995-aa52-2668206370cd",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:51.690Z"
+    },
+    {
+      "event_id": "c059cfd0-a139-44a7-b2f3-a7bd522b8d5b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:51.931Z"
+    },
+    {
+      "event_id": "8a470aba-5c04-49bf-963c-2510f8411000",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:52.165Z"
+    },
+    {
+      "event_id": "dbdf9f02-52dd-4b87-8ba7-8cf878651e21",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:52.413Z"
+    },
+    {
+      "event_id": "0464c43b-20c6-4a8a-beb9-6b0828c2ef6b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:52.677Z"
+    },
+    {
+      "event_id": "143fe56f-4504-48b4-b377-9a8f51b510ef",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:52.909Z"
+    },
+    {
+      "event_id": "2a5e1815-e082-4847-8f8f-4757af38111e",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:53.153Z"
+    },
+    {
+      "event_id": "a56352d1-7ee4-49ab-9644-8ec80a3858a7",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:53.397Z"
+    },
+    {
+      "event_id": "da0756d4-18af-4816-8482-716f1cc9d389",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:53.633Z"
+    },
+    {
+      "event_id": "7ee7a07b-6a6e-442a-a470-6c69e941aef6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent review found the contract sound; persisted legacy readback and malformed present fields are now directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@726fbfce35285d10168737f04efafacb9ae04d8d"
+      },
+      "head_commit": "726fbfce35285d10168737f04efafacb9ae04d8d",
+      "recorded_at": "2026-07-19T01:37:53.879Z"
+    },
+    {
+      "event_id": "7fdf193d-adea-446e-b072-d2df39b44c44",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:52.827Z"
+    },
+    {
+      "event_id": "6606497f-a217-4555-8ca7-5828caab101a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:53.061Z"
+    },
+    {
+      "event_id": "a69ef96c-2721-4460-bbe9-9d305c3595bf",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:53.311Z"
+    },
+    {
+      "event_id": "9f288205-5142-49b2-b405-25c9a0b4f6d5",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:53.563Z"
+    },
+    {
+      "event_id": "1561ab70-3023-4fd3-abda-750872ccef93",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:53.815Z"
+    },
+    {
+      "event_id": "1bff675a-a75a-42aa-bdf0-ad80400c28e1",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:54.058Z"
+    },
+    {
+      "event_id": "04a67041-fc1c-4106-b202-2a033875caec",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:54.309Z"
+    },
+    {
+      "event_id": "cd65f647-ddc5-4d73-b21f-86340db0e4b3",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:54.528Z"
+    },
+    {
+      "event_id": "99110e3f-9e11-45ea-a4ad-3fcaf0502d9b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:54.767Z"
+    },
+    {
+      "event_id": "4feb1b0c-3f3f-4648-b44d-b8b541dc1e24",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:55.019Z"
+    },
+    {
+      "event_id": "817de130-87e5-406d-bb10-9bb71957f062",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:55.481Z"
+    },
+    {
+      "event_id": "cb32631d-4e9f-457e-98ca-e860c0266838",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:55.943Z"
+    },
+    {
+      "event_id": "098fb926-6fd1-4728-a157-80b4a48d9819",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head independent judgment remains sound; recovery now preserves the authoritative repo root.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f77c4-7970-7391-8213-6964afa5370e",
+        "session_ref": "/root/review_arch_regression_v3@3aee4c45577ba76500aba3f51b368a0603da5848"
+      },
+      "head_commit": "3aee4c45577ba76500aba3f51b368a0603da5848",
+      "recorded_at": "2026-07-19T01:49:56.287Z"
+    },
+    {
+      "event_id": "7babb98a-831f-4988-bbe0-ab596519aa6a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:intent",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:23.693Z"
+    },
+    {
+      "event_id": "bf506c4b-699e-434f-80e5-a8b9a204fae8",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:current_reality",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:23.829Z"
+    },
+    {
+      "event_id": "50574781-917d-433d-9395-11c1b4e167c4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:invariants",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:23.951Z"
+    },
+    {
+      "event_id": "bc250216-1582-4d25-83ea-cea385bd660b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:boundaries",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.075Z"
+    },
+    {
+      "event_id": "cc2d9246-736a-4382-8a7e-b96c16675c58",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:failure_modes",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.196Z"
+    },
+    {
+      "event_id": "d85746b6-080d-4f7c-91ab-baf888dcd223",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support spine:done_evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.329Z"
+    },
+    {
+      "event_id": "41e58283-4c2c-4853-952e-a60f730d1347",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support axis:public_contract",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.456Z"
+    },
+    {
+      "event_id": "7aad6f36-14f8-4246-a365-d21c297a7a3b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support axis:scope_reviewability",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.582Z"
+    },
+    {
+      "event_id": "b27cc151-0f67-48c2-98e9-b79c22b7f727",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support failure_mode:parse_failure",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.707Z"
+    },
+    {
+      "event_id": "b4c035b8-e7cb-43d9-8c2b-cc8742a8b8bc",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support failure_mode:schema_failure",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:24.863Z"
+    },
+    {
+      "event_id": "53b7d7bd-0516-4c11-ba2a-f6bf4698c01f",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support failure_mode:retry_or_async_failure",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:25.007Z"
+    },
+    {
+      "event_id": "f6f6df89-ba15-499a-9c56-411e4ba5803a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support failure_mode:evidence_lifecycle_regression",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:25.145Z"
+    },
+    {
+      "event_id": "68defa4f-8186-4276-bf48-6be338e86614",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, specification, verification, and independent review support failure_mode:workflow_state_regression",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-d53a7cc1"
+      },
+      "head_commit": "d53a7cc1ecfaddfacbc0548791e892a4ab649b59",
+      "recorded_at": "2026-07-19T02:06:25.273Z"
+    },
+    {
+      "event_id": "c9b3f737-1d95-4c81-ad38-80bf4fd01b5d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story and Spec define a bounded deterministic recommendation controller without transferring action authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:38.353Z"
+    },
+    {
+      "event_id": "ce87532e-43a9-4f13-acde-dc10ce94bf75",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The final docs correction matches existing implementation and all four exact-HEAD verification records pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:38.713Z"
+    },
+    {
+      "event_id": "5712b4b8-350e-4fb1-9baf-bf6698e3bde1",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Eligibility unknown-cost escape-only bounded-record and non-authorizing invariants align across docs code and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:39.689Z"
+    },
+    {
+      "event_id": "2aabc826-d4a0-4111-9771-dc238c213d4d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical registries retain policy authority while Guarded Run owns persistence execution constraints and transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:40.790Z"
+    },
+    {
+      "event_id": "7a929bfe-d941-4810-9851-8576240cf6b4",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed data fails closed legacy absence stays readable and terminal replay behavior is explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:41.460Z"
+    },
+    {
+      "event_id": "77782c08-ffb6-433b-a233-9cae6914dc9a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unit integration e2e and typecheck evidence pass on the exact clean HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:41.739Z"
+    },
+    {
+      "event_id": "cbce1fa2-20f2-45a2-890d-bce03d8bc8d5",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "NBA-S-9 matches terminal replay cancelled recancellation idempotency and pr_ready cancellation rejection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:42.011Z"
+    },
+    {
+      "event_id": "4c7861cf-0293-4a4d-a2ac-59d4b39aa194",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The focused one-sentence correction resolves the prior blocker with direct code and test correspondence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:42.275Z"
+    },
+    {
+      "event_id": "44e3d0bd-c43e-47cf-990b-029b7577eaca",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed persisted fields are rejected rather than silently normalized.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:42.535Z"
+    },
+    {
+      "event_id": "bb6c922e-13b9-4ddd-8897-76f766110655",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict validation covers bounded state and nested records while preserving documented legacy compatibility.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:42.783Z"
+    },
+    {
+      "event_id": "19e230cc-74b5-4d92-a857-bfa012b931fd",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Deterministic reuse terminal replay repeated resume and byte-stable cancellation avoid duplicate execution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:43.019Z"
+    },
+    {
+      "event_id": "ccd3e854-b039-48ef-b5e2-e7b773c709e3",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All verification commands have clean strict-HEAD bindings to c2536e99.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:43.258Z"
+    },
+    {
+      "event_id": "3a16fc1d-f9b5-4856-9beb-e2e9b70af974",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The corrected scenario distinguishes orchestration replay cancelled idempotency and pr_ready cancellation rejection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "final-head-c2536e99"
+      },
+      "head_commit": "c2536e99ce263ad8ed038170d98d594efdb74fd8",
+      "recorded_at": "2026-07-19T02:13:43.545Z"
+    },
+    {
+      "event_id": "89f61624-2a5e-47c8-bfa8-f2dd1893c2bd",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:intent sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:23.310Z"
+    },
+    {
+      "event_id": "f0d43a55-022f-452f-b950-797ea6ff9b43",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:current_reality sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:23.561Z"
+    },
+    {
+      "event_id": "9ea3fc05-fb42-4885-9e54-9c63171e1b17",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:invariants sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:23.797Z"
+    },
+    {
+      "event_id": "38353ea9-8aac-4352-800b-5f3f92ca50ce",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:boundaries sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:24.042Z"
+    },
+    {
+      "event_id": "a6fd70ea-fffa-4c39-bf98-9ebb2c02dd0d",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:failure_modes sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:24.279Z"
+    },
+    {
+      "event_id": "096da164-16e3-4a94-ba26-391a6ad0849f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged spine:done_evidence sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:24.529Z"
+    },
+    {
+      "event_id": "f9bdadd2-fe7c-439d-bbc2-23606ac402d0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged axis:public_contract sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:24.781Z"
+    },
+    {
+      "event_id": "2c8ac558-c3b8-407c-9f99-d7dad9d18bbf",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged axis:scope_reviewability sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:25.018Z"
+    },
+    {
+      "event_id": "b663c981-74bd-4b0b-a732-e371bcfeb424",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged failure_mode:parse_failure sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:25.265Z"
+    },
+    {
+      "event_id": "7fecda67-0e97-4eb1-b613-7db85ccd7911",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged failure_mode:schema_failure sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:25.520Z"
+    },
+    {
+      "event_id": "248b7ddf-cb32-4139-bf4f-adac05360983",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged failure_mode:retry_or_async_failure sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:25.770Z"
+    },
+    {
+      "event_id": "99e3158c-e6ab-433c-8342-162c0190823d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged failure_mode:evidence_lifecycle_regression sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:26.009Z"
+    },
+    {
+      "event_id": "96c3722d-71ee-4d4b-938d-15d8e4944ade",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent rebase review judged failure_mode:workflow_state_regression sound against exact-head docs code tests and evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_judgment_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:26.256Z"
+    }
+  ]
+}

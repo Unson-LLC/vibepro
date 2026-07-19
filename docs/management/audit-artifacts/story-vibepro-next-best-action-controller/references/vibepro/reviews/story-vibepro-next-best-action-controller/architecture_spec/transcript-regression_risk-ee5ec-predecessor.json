@@ -1,0 +1,1 @@
+{"reviewed_head":"f086fb7dfbb860cc9742af6749fdbd29385ab191","status":"needs_changes","summary":"Previous public-path findings were resolved; architecture execution wording and rollback escape handling required alignment.","findings":["nba-architecture-execution-contract-drift","nba-rollback-flag-does-not-disable-escape"]}

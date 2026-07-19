@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "created_at": "2026-07-19T02:30:20.862Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-next-best-action-controller/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-next-best-action-controller.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-next-best-action-controller.md)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784427648254-09be74e2",
+        "story_id": "story-vibepro-next-best-action-controller",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Focused single-reviewer scope confirmed after rebase",
+        "reason": "The 12-file diff is one coherent Story-to-Architecture-to-Spec-to-controller integration lane with direct focused and E2E coverage; splitting would sever the public contract from its runtime and tests.",
+        "reviewer": "/root/nba_judgment_adjudication",
+        "artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-judgment-c2536e99.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+          "current_branch": "codex/story-vibepro-next-best-action-controller",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-19T02:20:48.252Z"
+        },
+        "recorded_at": "2026-07-19T02:20:48.254Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-19T02:30:17.961Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "branch": "codex/story-vibepro-next-best-action-controller",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "83124fd9322af35e1ef2cb56cc6771c60f85c2c7",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
