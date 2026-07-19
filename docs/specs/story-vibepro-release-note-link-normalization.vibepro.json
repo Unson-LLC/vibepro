@@ -76,7 +76,7 @@
     {
       "kind": "state",
       "title": "Markdown segment handling",
-      "entities": ["prose", "inline_code", "fenced_code", "normalized"],
+      "entities": ["prose", "inline code", "fenced code", "normalized"],
       "mermaid": "stateDiagram-v2\n  [*] --> Prose\n  Prose --> Normalized: destination starts docs/\n  Prose --> Prose: other destination\n  Prose --> InlineCode: backtick\n  InlineCode --> Prose: backtick\n  Prose --> FencedCode: fence open\n  FencedCode --> Prose: fence close"
     }
   ]
