@@ -92,6 +92,24 @@ test('ARA-S-4 review requires separate identity and closed parallel provenance',
   assert.equal(result.dispatch.result.review_provenance.lifecycle, 'closed');
 });
 
+test('ARA-S-4 review requires review capability before provider start', async () => {
+  let starts = 0;
+  const adapter = fakeAdapter({
+    async probe() { return { available: true, capabilities: [], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { starts += 1; return { provider_run_id: 'unqualified-review' }; }
+  });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
+  await assert.rejects(coordinator.dispatch(state, {
+    ...request,
+    role: 'review',
+    requirements: { ...request.requirements, capabilities: [] },
+    implementation_identity: 'implementer-1',
+    implementation_session_id: 'implementation-session',
+    reviewer_identity: 'reviewer-2'
+  }), { code: 'review_capability_required' });
+  assert.equal(starts, 0);
+});
+
 test('ARA-S-4 review rejects a provider result that impersonates the implementer', async () => {
   const adapter = fakeAdapter({
     async start() { return { provider_run_id: 'review-identity', agent_identity: 'reviewer-2', session_id: 'review-identity-session' }; },

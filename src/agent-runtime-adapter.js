@@ -273,6 +273,9 @@ function normalizeRequest(state, input) {
   if (role === 'review' && capabilities.includes('workspace_write')) {
     throw new AgentRuntimeError('review_mutation_forbidden', 'review runtime cannot request workspace_write capability');
   }
+  if (role === 'review' && !capabilities.includes('review')) {
+    throw new AgentRuntimeError('review_capability_required', 'review runtime must request the review capability');
+  }
   return {
     dispatch_id: `dispatch-${createHash('sha256').update(`${runId}:${adapterId}:${taskId}:${role}:${headSha}:${reviewerIdentity ?? ''}:${input.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`,
     run_id: runId,
