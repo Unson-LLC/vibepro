@@ -28,6 +28,18 @@
         "started_at": "2026-07-19",
         "due_at": null,
         "category": "dev"
+      },
+      {
+        "story_id": "story-vibepro-human-decision-checkpoint",
+        "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "product"
       }
     ],
     "current_story_id": "story-vibepro-artifact-output-routing"
