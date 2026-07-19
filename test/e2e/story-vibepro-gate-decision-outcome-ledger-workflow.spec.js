@@ -106,8 +106,24 @@ test(`${STORY_ID} binds promoted gate outcomes to the immutable delivery revisio
   // story-vibepro-gate-decision-outcome-ledger S-002
   // story-vibepro-gate-decision-outcome-ledger S-003
   const localEntries = [
-    { entry_key: 'decision-1', story_id: STORY_ID, gate_id: 'gate:requirement', resolved_at: '2026-07-18T00:00:00.000Z' },
-    { entry_key: 'decision-2', story_id: STORY_ID, gate_id: 'gate:e2e', resolved_at: '2026-07-18T00:01:00.000Z' }
+    {
+      schema_version: '0.1.0',
+      entry_key: 'decision-1',
+      story_id: STORY_ID,
+      gate_id: 'gate:requirement',
+      outcome: 'source_fix',
+      classification: 'source contract corrected',
+      resolved_at: '2026-07-18T00:00:00.000Z'
+    },
+    {
+      schema_version: '0.1.0',
+      entry_key: 'decision-2',
+      story_id: STORY_ID,
+      gate_id: 'gate:e2e',
+      outcome: 'evidence_added',
+      classification: 'delivery binding verified',
+      resolved_at: '2026-07-18T00:01:00.000Z'
+    }
   ];
   const firstPromotion = computeCentralLedgerPromotion({ localEntries, centralText: null });
   assert.equal(JSON.parse(firstPromotion.serialized).entries.length, 2, `${STORY_ID} AC:10 canonical promotion persists every local decision outcome in one deterministic central ledger revision`);
