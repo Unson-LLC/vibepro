@@ -265,7 +265,7 @@ function applyControllerEscape(state, decision, timestamp) {
     details: {
       recovery: {
         required_actions: [`resolve controller escape action: ${actionId}`],
-        next_command: `vibepro execute resume . --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
       }
     }
   };

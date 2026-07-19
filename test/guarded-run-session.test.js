@@ -1954,6 +1954,9 @@ test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resum
   await runCli([
     'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
   ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /status: waiting_for_human/);
+  assert.match(human.text(), /required_action: resolve controller escape action:/);
+  assert.equal(human.text().includes(`next_command: vibepro execute resume ${fixture.source}`), true);
   assert.match(human.text(), /next_best_action: .*checkpoint=no_progress; no_progress=2/);
 });
 
