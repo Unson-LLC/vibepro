@@ -52,8 +52,20 @@
         "started_at": "2026-07-15",
         "due_at": null,
         "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-symlinked-bin-entrypoint",
+        "title": "symlink経由でもVibePro CLIを実行する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-20",
+        "due_at": null,
+        "category": "dev"
       }
     ],
-    "current_story_id": "story-vibepro-agent-runtime-adapters"
+    "current_story_id": "story-vibepro-symlinked-bin-entrypoint"
   }
 }
