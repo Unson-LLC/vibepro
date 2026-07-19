@@ -10,7 +10,11 @@ const REPO_ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)))
 
 test('story-vibepro-next-best-action-controller acceptance flow replay', async () => {
   const { NODE_TEST_CONTEXT: _nodeTestContext, ...childEnv } = process.env;
-  const result = await execFileAsync(process.execPath, ['--test', 'test/next-best-action-controller.test.js'], {
+  const result = await execFileAsync(process.execPath, [
+    '--test',
+    'test/next-best-action-controller.test.js',
+    'test/guarded-run-session.test.js'
+  ], {
     cwd: REPO_ROOT,
     encoding: 'utf8',
     env: childEnv,
@@ -36,4 +40,8 @@ test('story-vibepro-next-best-action-controller acceptance flow replay', async (
     'ac8 S-008 persists bounded metrics and reason codes without raw transcripts');
   assert.match(result.stdout, /NBA-S-1 controller consumes only dependency-ready Safe Action registry candidates/,
     'registry -> eligibility -> ranking -> bounded decision integration remains executable');
+  assert.match(result.stdout, /NBA-S-1 controller rejects non-canonical escape candidate injection/,
+    'escape actions remain closed over the canonical authority registry');
+  assert.match(result.stdout, /SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop/,
+    'Guarded Run persists and reads back the bounded next-best-action decision');
 });

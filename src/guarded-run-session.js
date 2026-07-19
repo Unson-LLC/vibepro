@@ -9,7 +9,7 @@ import {
   preparePullRequest as defaultPreparePullRequest,
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
-import { runSafeActionPlan } from './safe-action-orchestrator.js';
+import { runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -105,14 +105,32 @@ async function orchestrateRun(deps, repoRoot, options) {
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
-      action_journal: []
+      action_journal: [],
+      next_best_action_decisions: []
     };
-    return runSafeActionPlan(preview, { dryRun: true });
+    const decision = selectSafeActionCandidate(preview, { checkpointReason: 'run_started' });
+    return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  const result = await runSafeActionPlan(loaded.state, {
+  const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
+  const decision = selectSafeActionCandidate(loaded.state, {
+    checkpointReason: 'run_started',
+    previousDecision
+  });
+  const decisionState = {
+    ...loaded.state,
+    next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
+  };
+  await persistAuthorityThenMirror(
+    deps,
+    decisionState,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    'next_best_action_checkpoint'
+  );
+  const result = await runSafeActionPlan(decisionState, {
     onProgress: async (progress) => {
-      const checkpoint = { ...loaded.state, action_journal: progress.action_journal };
+      const checkpoint = { ...decisionState, action_journal: progress.action_journal };
       await persistAuthorityThenMirror(
         deps,
         checkpoint,
@@ -135,7 +153,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       )
     }
   });
-  let next = { ...loaded.state, action_journal: result.state.action_journal };
+  let next = { ...decisionState, action_journal: result.state.action_journal };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
@@ -803,6 +821,7 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
     },
     managed_worktree: binding.managedWorktree,
     action_journal: [],
+    next_best_action_decisions: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -936,7 +955,12 @@ function migrateRunState(state) {
       schema_version: state.schema_version ?? null
     });
   }
-  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION, action_journal: state.action_journal ?? [] };
+  const migrated = {
+    ...state,
+    schema_version: GUARDED_RUN_SCHEMA_VERSION,
+    action_journal: state.action_journal ?? [],
+    next_best_action_decisions: state.next_best_action_decisions ?? []
+  };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
 }
@@ -1014,6 +1038,14 @@ function validateRunShape(state) {
   if (!Array.isArray(state.action_journal)) {
     throw contractError('invalid_state', 'Guarded Run action journal is invalid.', { run_id: state.run_id });
   }
+  if (state.next_best_action_decisions !== undefined) {
+    if (!Array.isArray(state.next_best_action_decisions)
+        || state.next_best_action_decisions.some((decision) => !isBoundedDecisionRecord(decision))) {
+      throw contractError('invalid_state', 'Guarded Run next-best-action decision history is invalid.', {
+        run_id: state.run_id
+      });
+    }
+  }
   for (const entry of state.action_journal) {
     if (!entry || typeof entry !== 'object'
         || typeof entry.action_id !== 'string'
@@ -1066,6 +1098,21 @@ function validateRunShape(state) {
   if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
     throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
   }
+}
+
+function isBoundedDecisionRecord(decision) {
+  return Boolean(decision && typeof decision === 'object' && !Array.isArray(decision))
+    && decision.schema_version === '0.1.0'
+    && typeof decision.policy_version === 'string'
+    && typeof decision.checkpoint_reason === 'string'
+    && typeof decision.state_fingerprint === 'string'
+    && Number.isInteger(decision.no_progress_count)
+    && typeof decision.outcome === 'string'
+    && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
+    && typeof decision.selection_reason === 'string'
+    && Array.isArray(decision.candidates)
+    && Array.isArray(decision.rejected)
+    && !Object.prototype.hasOwnProperty.call(decision, 'transcript');
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {

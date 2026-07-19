@@ -90,6 +90,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     },
     managed_worktree: fixture.disabledBinding,
     action_journal: [],
+    next_best_action_decisions: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -1756,6 +1757,9 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
+  assert.equal(result.state.next_best_action_decisions.length, 1);
+  assert.equal(result.state.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal(JSON.stringify(result.state.next_best_action_decisions).includes('transcript'), false);
   assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
   assert.deepEqual((await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
   const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });

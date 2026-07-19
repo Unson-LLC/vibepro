@@ -5,6 +5,13 @@ const REGISTRY = Object.freeze([
   Object.freeze({ id: 'pr_prepare', classification: 'repo_local_safe', depends_on: [] }),
   Object.freeze({ id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare'] })
 ]);
+const ESCAPE_REGISTRY = Object.freeze([
+  Object.freeze({ id: 'ask', classification: 'approval_required' }),
+  Object.freeze({ id: 'split', classification: 'approval_required' }),
+  Object.freeze({ id: 'wait', classification: 'approval_required' }),
+  Object.freeze({ id: 'stop', classification: 'approval_required' }),
+  Object.freeze({ id: 'rediagnose', classification: 'approval_required' })
+]);
 
 export function buildSafeActionPlan(state) {
   return REGISTRY.map((action) => ({
@@ -27,6 +34,7 @@ export function selectSafeActionCandidate(state, options = {}) {
       dependency_ready: dependenciesCompleted(state, action, state),
       metrics: options.metrics?.[action.id] ?? {}
     }));
+  const escapeCandidates = buildEscapeCandidates(options.escapeActionIds, options.metrics);
   return selectNextBestAction({
     checkpoint_reason: options.checkpointReason ?? 'material_progress',
     state_delta: options.stateDelta ?? {
@@ -36,10 +44,27 @@ export function selectSafeActionCandidate(state, options = {}) {
         .filter((entry) => entry.status === 'completed')
         .map((entry) => entry.action_id)
     },
-    candidates: [...candidates, ...(options.escapeCandidates ?? [])],
+    candidates: [...candidates, ...escapeCandidates],
     previous_decision: options.previousDecision,
     no_progress_count: options.noProgressCount,
     policy_version: options.policyVersion
+  });
+}
+
+function buildEscapeCandidates(requestedIds = [], metrics = {}) {
+  if (!Array.isArray(requestedIds) || requestedIds.some((id) => typeof id !== 'string')) {
+    throw new TypeError('escapeActionIds must be an array of canonical action ids');
+  }
+  return requestedIds.map((id) => {
+    const action = ESCAPE_REGISTRY.find((entry) => entry.id === id);
+    if (!action) throw new Error(`Unknown canonical escape action: ${id}`);
+    return {
+      action_id: action.id,
+      classification: action.classification,
+      policy_allowed: true,
+      dependency_ready: true,
+      metrics: metrics[action.id] ?? {}
+    };
   });
 }
 

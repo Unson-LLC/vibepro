@@ -109,3 +109,21 @@ test('NBA-S-1 controller consumes only dependency-ready Safe Action registry can
   assert.equal(first.selected_action_id, 'pr_prepare');
   assert.deepEqual(first.candidates.map((item) => item.action_id), ['pr_prepare']);
 });
+
+test('NBA-S-1 controller rejects non-canonical escape candidate injection', () => {
+  const state = {
+    run_id: 'run-1', story_id: 'story-1', current_head_sha: 'abc',
+    status: 'running', action_journal: []
+  };
+  assert.throws(
+    () => selectSafeActionCandidate(state, { escapeActionIds: ['deploy_anywhere'] }),
+    /Unknown canonical escape action/
+  );
+  const decision = selectSafeActionCandidate(state, {
+    escapeActionIds: ['ask'],
+    noProgressCount: 2,
+    metrics: { ask: { uncertainty_reduction: 3 } }
+  });
+  assert.equal(decision.selected_action_id, 'ask');
+  assert.deepEqual(decision.candidates.map((item) => item.action_id), ['ask']);
+});
