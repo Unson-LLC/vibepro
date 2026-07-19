@@ -121,6 +121,12 @@ async function orchestrateRun(deps, repoRoot, options) {
     ...loaded.state,
     next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
   };
+  const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
+  if (controllerEnabled && isEscapeDecision(decision)) {
+    const escaped = applyControllerEscape(decisionState, decision, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
+    return { plan: [decision.selected_action_id], decision, state: escaped };
+  }
   await persistAuthorityThenMirror(
     deps,
     decisionState,
@@ -128,12 +134,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     loaded.mirrorFile,
     'next_best_action_checkpoint'
   );
-  if (isEscapeDecision(decision)) {
-    const escaped = applyControllerEscape(decisionState, decision, toIso(deps.now()));
-    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
-    return { plan: [decision.selected_action_id], decision, state: escaped };
-  }
-  const selectedPlan = process.env.VIBEPRO_NEXT_BEST_ACTION === 'off'
+  const selectedPlan = !controllerEnabled
     ? undefined
     : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id);
   const result = await runSafeActionPlan(decisionState, {
@@ -1198,12 +1199,12 @@ function isBoundedDecisionRecord(decision) {
     && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
     && typeof decision.selection_reason === 'string'
     && (decision.selected_score === null || (typeof decision.selected_score === 'number' && Number.isFinite(decision.selected_score)))
-    && isBoundedJson(decision.state_delta)
+    && (!Object.hasOwn(decision, 'state_delta') || isBoundedJson(decision.state_delta))
     && Array.isArray(decision.candidates)
     && decision.candidates.every(isBoundedCandidate)
     && Array.isArray(decision.rejected)
     && decision.rejected.every(isBoundedRejection)
-    && typeof decision.reused === 'boolean'
+    && (!Object.hasOwn(decision, 'reused') || typeof decision.reused === 'boolean')
     && Buffer.byteLength(JSON.stringify(decision)) <= 16384;
 }
 

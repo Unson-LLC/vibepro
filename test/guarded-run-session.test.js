@@ -1811,6 +1811,36 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   );
 });
 
+test('NBA rollback switch ignores escape handling and restores the complete canonical plan', async (t) => {
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => { autopilotCalls += 1; return { status: 'continue', artifact: 'prepare.json' }; }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2
+  });
+
+  assert.equal(result.state.next_best_action_decisions.at(-1).selection_reason, 'no_progress_escape');
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 1);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.notEqual(result.state.status, 'waiting_for_human');
+});
+
 test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
   const summary = renderGuardedRunSummary({
     run_id: RUN_ID,

@@ -19,13 +19,15 @@ The output records all NBA-S-2 metrics. Unknown measurements use the literal `un
 
 `selectSafeActionCandidate(state, options)` is the Safe Action integration surface. It derives policy and dependency eligibility from canonical action registries and the action journal; callers provide estimates, checkpoint context, and canonical escape IDs, not action objects or action authority. Guarded Run persists the bounded recommendation through its authority-first state path before canonical execution and exposes the same record on readback.
 
+Persisted records created before bounded `state_delta` and `reused` were introduced remain readable when those two additive fields are absent. New records always write both fields, while all present values and nested candidate/rejection shapes remain strictly validated.
+
 ## Invariants
 
 - `INV-NBA-1`: forbidden or dependency-blocked actions are never ranked.
 - `INV-NBA-2`: unknown cost is never normalized to numeric zero.
 - `INV-NBA-3`: no-progress count of two or more permits only explicit escape actions.
 - `INV-NBA-4`: decision records contain bounded inputs and reason codes, not raw transcripts.
-- `INV-NBA-5`: the controller recommends among existing authorities and never executes or authorizes an action.
+- `INV-NBA-5`: the controller never executes or authorizes an action; Guarded Run may consume its selected canonical Action to constrain an already-authorized plan or apply a typed escape transition.
 
 ## Scenarios
 

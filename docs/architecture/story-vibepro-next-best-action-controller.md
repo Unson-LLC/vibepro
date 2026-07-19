@@ -17,7 +17,7 @@ parent_design:
 
 `selectSafeActionCandidate` in `src/safe-action-orchestrator.js` is the production adapter: it projects the canonical Safe Action and escape registries plus the completed action journal into eligible candidates. Callers may request canonical escape action IDs and supply metrics, but cannot inject action objects or replace registry authority.
 
-`orchestrateRun` in `src/guarded-run-session.js` is the production checkpoint. Before canonical Safe Action execution, it selects a recommendation, appends the bounded record to `next_best_action_decisions`, and commits that state through the existing authority-then-mirror persistence boundary. Status and watch read the same persisted record back. The recommendation remains advisory; `runSafeActionPlan` independently enforces the complete canonical execution plan.
+`orchestrateRun` in `src/guarded-run-session.js` is the production checkpoint. Before canonical Safe Action execution, it selects a recommendation and appends the bounded record to `next_best_action_decisions`. A normal recommendation is committed through the authority-then-mirror boundary before it constrains execution to the canonical dependency-ordered suffix beginning at the selected Action. An escape recommendation executes no Safe Action; its decision and `waiting_for_human` transition are committed atomically as one authoritative state. Status and watch read the same persisted record back. `runSafeActionPlan` still enforces registry authority and canonical ordering for every selected suffix.
 
 The controller evaluates candidates only at named material checkpoints. Its persisted decision projection contains the state fingerprint, policy version, selected and rejected candidates, normalized metrics, scores, and short reason codes. Reusing the same checkpoint, state fingerprint, and policy reuses the previous decision instead of producing reflection after every tool call.
 
@@ -45,4 +45,4 @@ flowchart LR
 
 ## Compatibility and rollback
 
-The module is additive. Setting `VIBEPRO_NEXT_BEST_ACTION=off` restores Safe Action dependency-order execution without removing the controller or changing persisted state. Removing the module does not alter Gate DAG semantics, action classifications, or existing CLI commands.
+The module is additive. Setting `VIBEPRO_NEXT_BEST_ACTION=off` disables both selected-suffix enforcement and escape handling, restoring the complete Safe Action dependency-order plan. The bounded decision may still be recorded for observability, but it cannot alter execution or Run status while disabled. Removing the module does not alter Gate DAG semantics, action classifications, or existing CLI commands.
