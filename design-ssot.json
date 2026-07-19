@@ -5176,6 +5176,13 @@
             "required": true,
             "relationship": "specifies",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-agent-runtime-adapters.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "adr": [
@@ -5193,6 +5200,13 @@
             "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
             "required": true,
             "relationship": "refines",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
+            "required": true,
+            "relationship": "implements",
             "last_reviewed_root_hash": null
           }
         ]
@@ -5276,6 +5290,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-agent-runtime-adapters.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "adr",
           "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
           "required": true,
@@ -5287,6 +5308,13 @@
           "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
           "required": true,
           "relationship": "refines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
+          "required": true,
+          "relationship": "implements",
           "last_reviewed_root_hash": null
         }
       ],
@@ -5815,5 +5843,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-19T09:19:54.555Z"
+  "updated_at": "2026-07-19T11:15:33.690Z"
 }

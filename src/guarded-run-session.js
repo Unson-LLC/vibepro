@@ -45,7 +45,9 @@ const DEPENDENCY_KEYS = new Set([
   'artifactIo',
   'resolveGitIdentity',
   'preparePullRequest',
-  'safeAutopilotPullRequest'
+  'safeAutopilotPullRequest',
+  'agentRuntimeCoordinator',
+  'recordAgentReview'
 ]);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
 
@@ -83,6 +85,8 @@ export function createGuardedRunSession(dependencies = {}) {
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
     preparePullRequest: dependencies.preparePullRequest ?? defaultPreparePullRequest,
     safeAutopilotPullRequest: dependencies.safeAutopilotPullRequest ?? defaultSafeAutopilotPullRequest,
+    agentRuntimeCoordinator: dependencies.agentRuntimeCoordinator ?? null,
+    recordAgentReview: dependencies.recordAgentReview ?? null,
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
 
@@ -93,8 +97,114 @@ export function createGuardedRunSession(dependencies = {}) {
     resume: (repoRoot, options = {}) => resumeRun(deps, repoRoot, options),
     cancel: (repoRoot, options = {}) => cancelRun(deps, repoRoot, options),
     transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options),
-    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options)
+    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options),
+    dispatchRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'dispatch'),
+    pollRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'poll'),
+    cancelRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'cancel'),
+    recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
   };
+}
+
+async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
+  if (!deps.agentRuntimeCoordinator) {
+    throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
+  const managedRoot = loaded.state.execution_context?.root_realpath;
+  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== managedRoot) {
+    throw new GuardedRunError('worktree_mismatch', 'runtime dispatch must target the Guarded Run managed worktree', {
+      expected: managedRoot,
+      actual: options.request?.requirements?.managed_worktree ?? null
+    });
+  }
+  const currentDispatch = operation === 'dispatch'
+    ? null
+    : (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
+  if (operation !== 'dispatch' && !currentDispatch) {
+    throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
+  }
+  const identityBefore = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+  if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
+      expected_head_sha: loaded.state.current_head_sha,
+      actual_head_sha: identityBefore.head_sha
+    });
+  }
+  let result = operation === 'dispatch'
+    ? await deps.agentRuntimeCoordinator.dispatch(loaded.state, options.request)
+    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId);
+  if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
+    const actualIdentity = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+    if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
+      throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
+        reported_head_sha: result.dispatch.result?.head_sha ?? null,
+        actual_head_sha: actualIdentity.head_sha
+      });
+    }
+    result = { ...result, state: { ...result.state, current_head_sha: actualIdentity.head_sha } };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    result.state,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    `agent_runtime_${operation}`
+  );
+  return result;
+}
+
+async function recordRuntimeReview(deps, repoRoot, options) {
+  if (!deps.recordAgentReview) {
+    throw new GuardedRunError('review_runtime_unavailable', 'Guarded Run has no Agent Review recording boundary');
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
+  const dispatch = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
+  const provenance = validateRuntimeReviewDispatch(dispatch, loaded.state.current_head_sha);
+  const review = await deps.recordAgentReview(loaded.state.execution_context.root_realpath, {
+    ...(options.review ?? {}),
+    storyId: loaded.state.story_id,
+    agentSystem: options.review?.agentSystem ?? 'codex',
+    executionMode: 'parallel_subagent',
+    agentId: provenance.agent_identity,
+    agentThreadId: provenance.thread_id,
+    agentSessionId: provenance.session_id,
+    agentClosed: true,
+    reviewerIdentity: 'separate_session',
+    implementationSessionId: dispatch.implementation_session_id
+  });
+  return { dispatch, review };
+}
+
+function validateRuntimeReviewDispatch(dispatch, currentHeadSha) {
+  const result = dispatch?.result;
+  const provenance = result?.review_provenance;
+  const expectedDispatchId = dispatch && `dispatch-${createHash('sha256').update(`${dispatch.run_id}:${dispatch.adapter_id}:${dispatch.task_id}:${dispatch.role}:${dispatch.input_head_sha}:${dispatch.reviewer_identity ?? ''}:${dispatch.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
+  const correlatedRuntime = Boolean(dispatch?.session_id || dispatch?.thread_id)
+    && provenance?.session_id === dispatch?.session_id
+    && provenance?.thread_id === dispatch?.thread_id;
+  const separateRuntime = correlatedRuntime
+    && ![provenance?.session_id, provenance?.thread_id].includes(dispatch?.implementation_session_id);
+  const valid = dispatch?.role === 'review'
+    && dispatch.dispatch_id === expectedDispatchId
+    && dispatch.status === 'completed'
+    && dispatch.sandbox === 'read-only'
+    && Array.isArray(dispatch.requirements?.capabilities)
+    && dispatch.requirements.capabilities.includes('review')
+    && !dispatch.requirements.capabilities.includes('workspace_write')
+    && Array.isArray(result?.changed_files)
+    && result.changed_files.length === 0
+    && dispatch.input_head_sha === currentHeadSha
+    && result.head_sha === currentHeadSha
+    && provenance?.execution_mode === 'parallel_subagent'
+    && provenance.agent_identity === dispatch.reviewer_identity
+    && provenance.agent_identity === dispatch.agent_identity
+    && provenance.agent_identity !== dispatch.implementation_identity
+    && provenance.lifecycle === 'closed'
+    && separateRuntime;
+  if (!valid) {
+    throw new GuardedRunError('invalid_runtime_review', 'only a current-HEAD, read-only, separately identified closed review dispatch can enter the Agent Review Gate');
+  }
+  return provenance;
 }
 
 async function orchestrateRun(deps, repoRoot, options) {
