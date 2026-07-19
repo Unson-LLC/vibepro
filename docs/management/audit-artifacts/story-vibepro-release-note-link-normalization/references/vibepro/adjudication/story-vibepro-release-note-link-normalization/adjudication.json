@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "updated_at": "2026-07-19T06:13:11.614Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Repeated projection preserves byte-identical five-surface output and one PR marker pair per surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f78ff-b1f4-79b3-9627-bfb1ed2988b1",
+        "session_ref": ".vibepro/adjudication/story-vibepro-release-note-link-normalization/transcripts/019f78ff-b1f4-79b3-9627-bfb1ed2988b1.md"
+      },
+      "head_commit": "cd21e65ae408191fbe58082c28bd6f6eb78593f3",
+      "recorded_at": "2026-07-19T06:13:11.613Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "PR 350 content is normalized on all three release surfaces and the current-head 192-file public manual build passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f78ff-b1f4-79b3-9627-bfb1ed2988b1",
+        "session_ref": ".vibepro/adjudication/story-vibepro-release-note-link-normalization/transcripts/019f78ff-b1f4-79b3-9627-bfb1ed2988b1.md"
+      },
+      "head_commit": "cd21e65ae408191fbe58082c28bd6f6eb78593f3",
+      "recorded_at": "2026-07-19T06:13:11.369Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Protected code, title, external, anchor, root-relative, and malformed destinations remain unchanged while later valid links still project.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f78ff-b1f4-79b3-9627-bfb1ed2988b1",
+        "session_ref": ".vibepro/adjudication/story-vibepro-release-note-link-normalization/transcripts/019f78ff-b1f4-79b3-9627-bfb1ed2988b1.md"
+      },
+      "head_commit": "cd21e65ae408191fbe58082c28bd6f6eb78593f3",
+      "recorded_at": "2026-07-19T06:13:11.124Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Normal and image docs destinations project to canonical blob/raw URLs while angle, space, escape, entity, and backslash semantics remain intact.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f78ff-b1f4-79b3-9627-bfb1ed2988b1",
+        "session_ref": ".vibepro/adjudication/story-vibepro-release-note-link-normalization/transcripts/019f78ff-b1f4-79b3-9627-bfb1ed2988b1.md"
+      },
+      "head_commit": "cd21e65ae408191fbe58082c28bd6f6eb78593f3",
+      "recorded_at": "2026-07-19T06:13:10.885Z"
+    }
+  ]
+}

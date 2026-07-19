@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "主要契約は通るがMarkdown destinationの意味変換が2件残る",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "markdown-destination-semantic-drift",
+      "detail": "angle destinationのescape用backslashが正規化URLのfilenameへ混入する"
+    },
+    {
+      "severity": "medium",
+      "id": "markdown-entity-destination-double-escape",
+      "detail": "HTML entity destinationがdecode境界を越えて別参照先へ変わる"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "current HEAD、Story/Architecture/Spec、実装、focused/E2E tests、strict-head artifacts、VitePress parser differential fixturesを独立確認",
+    "evidence": "VitePress parser differential reproduction and current-head focused tests",
+    "inputs": [
+      "scripts/post-merge-release.mjs",
+      "test/post-merge-release.test.js",
+      "docs/management/stories/active/story-vibepro-release-note-link-normalization.md"
+    ]
+  },
+  "judgment_delta": [
+    "container heading等の旧findingは解消したがescape/entity destinationで新たなsemantic driftを再現したためpassではなくneeds_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+    "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+    "expected_root": null,
+    "expected_head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+    "current_head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+      "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+      "expected_root": null,
+      "expected_head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "current_head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T04:27:59.753Z",
+  "git_context": {
+    "head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+    "current_branch": "codex/fix-release-note-story-links",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T04:27:59.746Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-head parser-boundary review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "129f72252cf7e4372196b20215bb94b82cd7118c",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-release-note-link-normalization.md",
+        "sha256": "31c218a9bae272c82327562908e8f3b608bf944336ab82211b462daff9bdc2d7",
+        "size": 3100
+      },
+      {
+        "path": "scripts/post-merge-release.mjs",
+        "sha256": "529e78c03cf3810debf8c8c9d5b3649f0bb3ed9dff53fa95d1a09aee053b97c4",
+        "size": 23354
+      },
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "b344463b979f57ecf90723b532944a748cb8d675db3c17bdfa38825482f064a1",
+        "size": 27427
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "afa1a9e1116e214509d67eda020cdf5f7962fe11532eda0f872d821f160eaeb1"
+  },
+  "source_fingerprint": "e5868013b44602823e3b277d478172dcb6da2a45db40e1bf6ca9112ebcb7b2d0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f789e-2366-7800-bc4b-1e631bb03504",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": "019f789e-2366-7800-bc4b-1e631bb03504",
+    "session_id": "019f789e-2366-7800-bc4b-1e631bb03504",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-release-note-link-normalization/gate/transcript-019f789e-2366-7800-bc4b-1e631bb03504.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-note-link-normalization/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-release-note-link-normalization/gate/transcript-019f789e-2366-7800-bc4b-1e631bb03504.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f789e-2366-7800-bc4b-1e631bb03504",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

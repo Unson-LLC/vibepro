@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js test/post-merge-release.test.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js",
+  "observed": {
+    "release_surfaces": 3,
+    "index_surfaces": 2,
+    "total_targets": 5,
+    "tests": 32,
+    "failed": 0,
+    "head": "cd21e65a",
+    "fixture": "PR #350-shaped project, reproject, and release-body subprocesses with GitHub Actions output isolation plus the existing continuous-release merged/main event contract"
+  }
+}
