@@ -18,7 +18,8 @@ PR #350のChange Summaryにある`docs/management/...md`リンクが、`docs/rel
 
 ## Invariants and boundaries
 
-- 正規化対象はMarkdownのリンク先が`docs/`で始まるrepo-root docs参照だけとする。
+- 正規化対象はinline Markdownのリンク先が`docs/`で始まるrepo-root docs参照だけとする。
+- reference-style definitionはlink/image用途をdefinitionだけで判別できないため推測変換せず、VitePress buildへfail-closedする。
 - 外部URL、site-root相対、anchor、`mailto:`、inline code、fenced codeは変更しない。
 - raw HTMLとVue interpolationを無害化する既存契約を維持する。
 - 日英release historyとCHANGELOGは同じ決定的なnote本文を保持する。
@@ -32,7 +33,7 @@ PR #350のChange Summaryにある`docs/management/...md`リンクが、`docs/rel
 
 ## Failure modes and rollback
 
-- Markdown destinationが正規化対象外の形なら変更せず、VitePress buildが最終検査として止める。
+- reference-styleを含め、Markdown destinationが正規化対象外の形なら変更せず、VitePress buildが最終検査として止める。
 - 正規化が誤った場合は関数と生成済みリンクをrevertし、PR本文を絶対URLへ修正して再投影できる。
 
 ## Done evidence
