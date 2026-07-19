@@ -49,3 +49,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:353:start -->
 - [PR #353](https://github.com/Unson-LLC/vibepro/pull/353) — [2026-07](/releases/2026-07): story-vibepro-autonomy-roadmap-rebaseline - 直近追加Storyと衝突しない実装順へ再編したい
 <!-- vibepro-release-index-pr:353:end -->
+
+<!-- vibepro-release-index-pr:355:start -->
+- [PR #355](https://github.com/Unson-LLC/vibepro/pull/355) — [2026-07](/releases/2026-07): story-vibepro-release-note-link-normalization - Release noteのrepo-root docsリンクをcanonical source URLへ正規化する
+<!-- vibepro-release-index-pr:355:end -->
