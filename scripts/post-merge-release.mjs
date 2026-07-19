@@ -1,18 +1,47 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
+const REPOSITORY = 'Unson-LLC/vibepro';
+const DEFAULT_BRANCH = 'main';
+const REPOSITORY_WEB_ROOT = `https://github.com/${REPOSITORY}`;
+const REPOSITORY_SOURCE_ROOT = `${REPOSITORY_WEB_ROOT}/blob/${DEFAULT_BRANCH}/`;
+const REPOSITORY_RAW_ROOT = `https://raw.githubusercontent.com/${REPOSITORY}/${DEFAULT_BRANCH}/`;
+const invokedCommand = isDirectInvocation()
+  ? process.argv[2]
+  : null;
+const releaseMarkdownParser = await initializeMarkdownRenderer(invokedCommand);
+
+export function commandRequiresMarkdownRenderer(command) {
+  return ['project', 'reproject', 'release-body'].includes(command);
+}
+
+async function initializeMarkdownRenderer(command) {
+  if (command && !commandRequiresMarkdownRenderer(command)) return null;
+  const { createMarkdownRenderer } = await import('vitepress');
+  return createMarkdownRenderer(rootDefault);
+}
+
+function isDirectInvocation() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(scriptPath);
+  } catch {
+    return path.resolve(process.argv[1]) === scriptPath;
+  }
+}
 
 export function extractReleaseSections(body = '') {
   const release = section(body, ['Release Notes', 'リリースノート']) || body;
   return {
-    changeSummary: subsection(release, ['Change Summary', '変更概要', '解決']) || NONE,
-    compatibility: subsection(release, ['Compatibility', '互換性・破壊的変更', '互換性']) || NONE,
-    userAction: subsection(release, ['User Action', '利用者に必要な操作', '利用者操作']) || NONE
+    changeSummary: normalizeContent(subsection(release, ['Change Summary', '変更概要', '解決'])) || NONE,
+    compatibility: normalizeContent(subsection(release, ['Compatibility', '互換性・破壊的変更', '互換性'])) || NONE,
+    userAction: normalizeContent(subsection(release, ['User Action', '利用者に必要な操作', '利用者操作'])) || NONE
   };
 }
 
@@ -25,20 +54,269 @@ function subsection(markdown, names) {
 }
 
 function captureSection(markdown, level, names) {
-  const escaped = names.map(escapeRegExp).join('|');
-  const pattern = new RegExp(`^#{${level}}\\s+(?:${escaped})\\s*$([\\s\\S]*?)(?=^#{1,${level}}\\s)`, 'imu');
-  const source = `${markdown ?? ''}`.replace(/\r\n/g, '\n') + '\n# __VIBEPRO_END__\n';
-  const match = source.match(pattern);
-  return normalizeContent(match?.[1]);
+  const source = `${markdown ?? ''}`.replace(/\r\n/g, '\n');
+  const { tokens, lineOffsets } = parseMarkdownStructure(source);
+  const expectedNames = new Set(names.map((name) => name.trim().toLocaleLowerCase()));
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    const inline = tokens[index + 1];
+    if (
+      token.type !== 'heading_open'
+      || token.tag !== `h${level}`
+      || token.level !== 0
+      || !token.map
+      || inline?.type !== 'inline'
+      || !expectedNames.has(inline.content.trim().toLocaleLowerCase())
+    ) continue;
+
+    const start = lineOffset(lineOffsets, token.map[1], source.length);
+    let end = source.length;
+    for (let candidate = index + 1; candidate < tokens.length; candidate += 1) {
+      const next = tokens[candidate];
+      if (next.type !== 'heading_open' || next.level !== 0 || !next.map) continue;
+      const nextLevel = Number(next.tag.slice(1));
+      if (nextLevel <= level) {
+        end = lineOffset(lineOffsets, next.map[0], source.length);
+        break;
+      }
+    }
+    return source.slice(start, end).trim().replace(/\n{3,}/g, '\n\n');
+  }
+  return '';
 }
 
 function normalizeContent(value) {
-  return sanitizeReleaseContent(`${value ?? ''}`.trim().replace(/\n{3,}/g, '\n\n'));
+  return sanitizeReleaseContent(normalizeReleaseDocumentationLinks(`${value ?? ''}`));
+}
+
+export function normalizeReleaseDocumentationLinks(value) {
+  const source = `${value ?? ''}`;
+  const protectedRanges = findProtectedCodeRanges(source);
+  const replacements = findMarkdownLinkReplacements(source, protectedRanges);
+  return replacements
+    .sort((left, right) => right.start - left.start)
+    .reduce((output, replacement) => (
+      output.slice(0, replacement.start) + replacement.value + output.slice(replacement.end)
+    ), source);
+}
+
+function findProtectedCodeRanges(source) {
+  const { tokens, lineOffsets } = parseMarkdownStructure(source);
+  const blockCodeRanges = tokens
+    .filter((token) => ['fence', 'code_block'].includes(token.type) && token.map)
+    .map((token) => ({
+      start: lineOffset(lineOffsets, token.map[0], source.length),
+      end: lineOffset(lineOffsets, token.map[1], source.length)
+    }));
+  const inlineBlockRanges = tokens
+    .filter((token) => token.type === 'inline' && token.map)
+    .map((token) => ({
+      start: lineOffset(lineOffsets, token.map[0], source.length),
+      end: lineOffset(lineOffsets, token.map[1], source.length)
+    }));
+  return [...blockCodeRanges, ...findInlineCodeRanges(source, inlineBlockRanges)]
+    .sort((left, right) => left.start - right.start);
+}
+
+function parseMarkdownStructure(source) {
+  const lineOffsets = [0];
+  for (let index = 0; index < source.length; index += 1) {
+    if (source[index] === '\n') lineOffsets.push(index + 1);
+  }
+  return { tokens: releaseMarkdownParser.parse(source, {}), lineOffsets };
+}
+
+function lineOffset(offsets, line, fallback) {
+  return offsets[line] ?? fallback;
+}
+
+function findInlineCodeRanges(source, inlineBlockRanges) {
+  const ranges = [];
+  const uniqueBlocks = [...new Map(inlineBlockRanges.map((range) => [`${range.start}:${range.end}`, range])).values()];
+  for (const block of uniqueBlocks) {
+    for (let index = block.start; index < block.end;) {
+      if (source[index] !== '`' || isEscaped(source, index)) {
+        index += 1;
+        continue;
+      }
+      const openingStart = index;
+      while (source[index] === '`') index += 1;
+      const delimiterLength = index - openingStart;
+      let closingEnd = -1;
+      for (let candidate = index; candidate < block.end;) {
+        // Backslashes are literal inside CommonMark code spans; they do not
+        // escape a matching backtick delimiter.
+        if (source[candidate] !== '`') {
+          candidate += 1;
+          continue;
+        }
+        const runStart = candidate;
+        while (source[candidate] === '`') candidate += 1;
+        if (candidate - runStart === delimiterLength) {
+          closingEnd = candidate;
+          break;
+        }
+      }
+      if (closingEnd >= 0) {
+        ranges.push({ start: openingStart, end: closingEnd });
+        index = closingEnd;
+      }
+    }
+  }
+  return ranges;
+}
+
+function findMarkdownLinkReplacements(source, protectedRanges) {
+  const replacements = [];
+  const nonLabelRanges = [...protectedRanges];
+  for (let index = 0; index < source.length; index += 1) {
+    const protectedRange = rangeContaining(nonLabelRanges, index);
+    if (protectedRange) {
+      index = protectedRange.end - 1;
+      continue;
+    }
+    if (source[index] !== '[' || isEscaped(source, index)) continue;
+    const labelEnd = findClosingLabel(source, index, protectedRanges);
+    if (labelEnd < 0 || source[labelEnd + 1] !== '(') continue;
+    const destination = parseInlineDestination(source, labelEnd + 2);
+    if (!destination) continue;
+    nonLabelRanges.push({ start: labelEnd + 1, end: destination.linkEnd });
+    const parsedDestination = normalizeParsedDestination(destination.value);
+    if (!parsedDestination?.startsWith('docs/')) continue;
+    const imageMarker = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
+    const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
+    const normalizedValue = serializeBareMarkdownDestination(`${root}${parsedDestination}`);
+    replacements.push({
+      start: destination.start,
+      end: destination.end,
+      value: normalizedValue
+    });
+  }
+  return replacements;
+}
+
+function normalizeParsedDestination(value) {
+  try {
+    // markdown-it replaces lone surrogates with U+FFFD while normalizing URLs.
+    // Reject them first so malformed input stays byte-for-byte untouched.
+    encodeURI(value);
+    return releaseMarkdownParser.normalizeLink(releaseMarkdownParser.utils.unescapeAll(value));
+  } catch (error) {
+    if (error instanceof URIError) return null;
+    throw error;
+  }
+}
+
+export function serializeBareMarkdownDestination(value) {
+  return value.replace(/\\/gu, '\\\\').replace(/[()]/gu, '\\$&');
+}
+
+function findClosingLabel(source, openingIndex, protectedRanges) {
+  let depth = 1;
+  for (let index = openingIndex + 1; index < source.length; index += 1) {
+    const protectedRange = rangeContaining(protectedRanges, index);
+    if (protectedRange) {
+      index = protectedRange.end - 1;
+      continue;
+    }
+    if (isEscaped(source, index)) continue;
+    if (source[index] === '[') {
+      const nestedLabelEnd = findClosingLabel(source, index, protectedRanges);
+      if (nestedLabelEnd >= 0 && source[nestedLabelEnd + 1] === '(') {
+        const nestedDestination = parseInlineDestination(source, nestedLabelEnd + 2);
+        if (nestedDestination) {
+          const isNestedImage = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
+          if (!isNestedImage) return -1;
+          index = nestedDestination.linkEnd - 1;
+          continue;
+        }
+      }
+      depth += 1;
+    }
+    if (source[index] === ']') depth -= 1;
+    if (depth === 0) return index;
+  }
+  return -1;
+}
+
+function parseInlineDestination(source, openingIndex) {
+  let index = openingIndex;
+  while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+  const wrapperStart = index;
+  const angleWrapped = source[index] === '<';
+  if (angleWrapped) index += 1;
+  const start = index;
+  let depth = 0;
+  while (index < source.length) {
+    if (source[index] === '\\') {
+      if (!isAsciiPunctuation(source[index + 1])) return null;
+      index += 2;
+      continue;
+    }
+    const character = source[index];
+    if (angleWrapped) {
+      if (character === '<') return null;
+      if (character === '>' || character === '\n') break;
+    } else {
+      if (character === '(') depth += 1;
+      else if (character === ')' && depth > 0) depth -= 1;
+      else if ((character === ')' || /[ \t\n]/u.test(character)) && depth === 0) break;
+    }
+    index += 1;
+  }
+  if (index === start || (angleWrapped && source[index] !== '>')) return null;
+  const valueEnd = index;
+  if (angleWrapped) index += 1;
+  const linkEnd = findInlineLinkEnd(source, index);
+  if (linkEnd < 0) return null;
+  return {
+    start: angleWrapped ? wrapperStart : start,
+    end: angleWrapped ? index : valueEnd,
+    value: source.slice(start, valueEnd),
+    angleWrapped,
+    linkEnd
+  };
+}
+
+function isAsciiPunctuation(character) {
+  return typeof character === 'string' && /^[!-/:-@[-`{-~]$/u.test(character);
+}
+
+function findInlineLinkEnd(source, start) {
+  let index = start;
+  while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+  if (source[index] === ')') return index + 1;
+  const delimiter = source[index];
+  if (!['"', "'", '('].includes(delimiter)) return -1;
+  const closing = delimiter === '(' ? ')' : delimiter;
+  index += 1;
+  for (; index < source.length; index += 1) {
+    if (isEscaped(source, index)) {
+      continue;
+    }
+    if (source[index] === closing) {
+      index += 1;
+      while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
+      return source[index] === ')' ? index + 1 : -1;
+    }
+  }
+  return -1;
+}
+
+function rangeContaining(ranges, index) {
+  return ranges.find((range) => index >= range.start && index < range.end) ?? null;
+}
+
+function isEscaped(value, index) {
+  let slashCount = 0;
+  for (let cursor = index - 1; cursor >= 0 && value[cursor] === '\\'; cursor -= 1) {
+    slashCount += 1;
+  }
+  return slashCount % 2 === 1;
 }
 
 export function sanitizeReleaseContent(value) {
   return value
-    .replaceAll('](docs/', '](https://github.com/Unson-LLC/vibepro/blob/main/docs/')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -147,10 +425,24 @@ async function upsertBlock(file, block, number, initial) {
 
 function validateMergedPullRequest(event) {
   const pr = event?.pull_request;
-  for (const key of ['number', 'title', 'merged_at', 'merge_commit_sha', 'html_url']) {
+  if (pr?.merged !== true) throw new Error('pull_request.merged must be true');
+  if (!Number.isInteger(pr.number) || pr.number <= 0) {
+    throw new Error('pull_request.number must be a positive integer');
+  }
+  for (const key of ['title', 'merged_at', 'merge_commit_sha', 'html_url']) {
     if (!pr?.[key]) throw new Error(`pull_request.${key} is required`);
   }
   if (!pr?.user?.login) throw new Error('pull_request.user.login is required');
+  if (pr?.base?.repo?.full_name !== REPOSITORY) {
+    throw new Error(`pull_request.base.repo.full_name must be ${REPOSITORY}`);
+  }
+  if (pr?.base?.ref !== DEFAULT_BRANCH) {
+    throw new Error(`pull_request.base.ref must be ${DEFAULT_BRANCH}`);
+  }
+  const canonicalUrl = `${REPOSITORY_WEB_ROOT}/pull/${pr.number}`;
+  if (pr.html_url !== canonicalUrl) {
+    throw new Error(`pull_request.html_url must be ${canonicalUrl}`);
+  }
   return { ...pr, body: pr.body ?? '' };
 }
 
@@ -328,6 +620,13 @@ async function main(args) {
     await writeOutput({ release_required: shouldReleaseVersion(before, after), version: after, month: result.month, pr_number: result.number });
     return;
   }
+  if (command === 'reproject') {
+    const event = JSON.parse(await readFile(option('--event'), 'utf8'));
+    validateMergedPullRequest(event);
+    const result = await projectReleaseNote(rootDefault, event);
+    await writeOutput({ month: result.month, pr_number: result.number });
+    return;
+  }
   if (command === 'release-body') {
     const event = JSON.parse(await readFile(option('--event'), 'utf8'));
     await writeFile(option('--output'), renderReleaseNote(event));
@@ -337,9 +636,9 @@ async function main(args) {
     await reconcileNpmRelease({ version: option('--version'), expectedSha: option('--sha') });
     return;
   }
-  throw new Error('Usage: post-merge-release.mjs <plan|project|release-body|publish-npm>');
+  throw new Error('Usage: post-merge-release.mjs <plan|project|reproject|release-body|publish-npm>');
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {
+if (isDirectInvocation()) {
   main(process.argv.slice(2)).catch((error) => { console.error(error.message); process.exitCode = 1; });
 }

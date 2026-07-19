@@ -1,0 +1,17 @@
+---
+story_id: story-vibepro-release-note-link-normalization
+status: final
+parent_design: vibepro-release-note-link-normalization
+---
+
+# Release note link normalization architecture
+
+`extractReleaseSections`の最終subsection表示値正規化境界に、repo-root docs link専用の純粋変換を置く。section見出し境界とblock code範囲は、公開manualと同じVitePress Markdown rendererのtoken mapを正本として求め、section境界にはcontainer外のtop-level headingだけを採用する。これによりblockquote/list container、混在container fence、未閉鎖fence、fenced code内の見出しを独自scannerで再解釈しない。inline tokenのblock範囲内だけcode spanを保護した後、codeを含み得るnested labelとinline destinationを別々に解析し、`docs/` prefixだけをcanonical GitHub URLへ変換する。解析済みlinkのdestination/title領域は再走査せず、label内のnested imageだけは独立したinline構文として処理する。Markdown rendererが外側linkと認識しないnested-link形式は外側を原文保持し、rendererが認識した内側だけを変換する。通常リンクはblob URL、画像はraw URLにする。
+
+この境界はprojection先より前なので、英語release page、日本語release page、CHANGELOGが同一本文を受け取る。公開siteに含まれない`docs/management`も参照可能になり、外部URLや一般の相対リンクは推測変換しない。reference-style definitionは同じdestinationをlinkとimageが共有でき、blob/rawの選択をdefinition単体では決定できないため対象外とする。VitePress buildを未知形式と対象外形式に対するfail-closed検査として残す。
+
+destinationはVitePress rendererと同じ`unescapeAll`と`normalizeLink`を通し、既存percent escape、Markdown punctuation escape、HTML entityをrendererが解釈するhrefへ揃えてからcanonical URL化する。bare destinationへ戻す際はparenthesisを再escapeする。内部に未escapeの`<`を含むmalformed destinationと、percent encode不能な不正Unicodeはそのdestinationを原文保持して処理を継続する。これにより有効なMarkdown destinationの参照先を変えず、raw HTML/Vue interpolationの無害化を維持する。
+
+VitePress rendererはCLI command判定後、Markdown投影を行う`project`、docs-only復旧用`reproject`、`release-body`でだけdynamic importして初期化する。`plan`と`publish-npm`はVitePress package解決にもparser初期化にも依存せず、PR番号markerによるupsertとnpm公開ロジックにも変更を持ち込まない。canonical URLはGitHub providerと既定branchの可用性に依存するが、projector自身はnetwork fetchを行わない。VitePress buildは構文/dead-link gateであり外部provider到達性の保証ではないため、provider障害はpost-merge workflowを停止し、既定branch変更はroot定数とworkflowのbase/ref設定を同時に修正してから再投影する運用riskとして明示する。
+
+運用上の観測点はpost-merge workflowのproject stepとVitePress buildで、失敗時はrelease note commit/deployが停止する。rollbackは正規化commitをrevertし、対象PR本文をabsolute URLへ直し、GitHub APIから取得したlive PR payloadを`reproject`へ渡す。`reproject`はrelease docsだけをPR番号markerで冪等更新し、npm publishとversion history projectionを再実行しない。生成済みrelease pageをbranch差分へ含めることはrollback前提にしない。永続schema migrationやversion skewはない。

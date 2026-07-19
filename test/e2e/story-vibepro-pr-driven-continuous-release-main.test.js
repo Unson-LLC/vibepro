@@ -39,13 +39,18 @@ test(`${STORY_ID} replays merged-PR projection and immutable npm convergence`, a
   const root = await releaseFixture();
   const event = {
     pull_request: {
+      merged: true,
       number: 73,
       title: 'Automate continuous release',
       body: '## Release Notes\n### Change Summary\nPR-authored release note.\n### Compatibility\nなし\n### User Action\nなし',
       user: { login: 'release-agent' },
       merged_at: '2026-07-18T09:00:00Z',
       merge_commit_sha: 'merge-sha-73',
-      html_url: 'https://github.com/Unson-LLC/vibepro/pull/73'
+      html_url: 'https://github.com/Unson-LLC/vibepro/pull/73',
+      base: {
+        ref: 'main',
+        repo: { full_name: 'Unson-LLC/vibepro' }
+      }
     }
   };
 
