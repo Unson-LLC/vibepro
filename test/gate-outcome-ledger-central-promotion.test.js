@@ -23,6 +23,8 @@ function entry(overrides = {}) {
     entry_key: 'story-x|gate:requirement|needs_review|passed|prev|curr',
     story_id: 'story-x',
     gate_id: 'gate:requirement',
+    previous_status: 'needs_review',
+    resolved_status: 'passed',
     outcome: 'source_fix',
     classification: 'resolving_diff_contains_source_changes',
     resolved_at: '2026-07-07T00:00:00.000Z',
@@ -178,6 +180,59 @@ test('RML-S-6: corrupt central ledger fails the promotion and is not overwritten
   assert.equal(invalidShape.status, 'failed');
   assert.equal(invalidShape.reason, 'central_ledger_shape_invalid');
   assert.equal(invalidShape.serialized, null);
+});
+
+test('RML-S-6: central promotion rejects incompatible envelopes and malformed entries', () => {
+  const cases = [
+    [
+      JSON.stringify({ schema_version: '9.9.9', model: 'vibepro-gate-outcome-ledger-v3', entries: [] }),
+      'central_ledger_schema_invalid'
+    ],
+    [
+      JSON.stringify({ schema_version: '0.1.0', model: 'wrong-model', entries: [] }),
+      'central_ledger_model_invalid'
+    ],
+    [centralText([entry({ entry_key: '' })]), 'central_ledger_entry_invalid'],
+    [centralText([entry({ entry_key: 'duplicate' }), entry({ entry_key: 'duplicate' })]), 'central_ledger_entry_duplicate']
+  ];
+  for (const [centralTextValue, reason] of cases) {
+    const result = computeCentralLedgerPromotion({ localEntries: [entry()], centralText: centralTextValue });
+    assert.equal(result.status, 'failed');
+    assert.equal(result.reason, reason);
+    assert.equal(result.serialized, null);
+  }
+});
+
+test('GDL-S-7 promotion source rejects malformed entries across the complete local ledger', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-entry-validation-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  const invalidEntries = [
+    entry({ entry_key: '' }),
+    entry({ entry_key: 'wrong-schema', schema_version: '9.9.9' }),
+    entry({ entry_key: 'missing-story', story_id: '' }),
+    entry({ entry_key: 'bad-outcome', outcome: 'invented' })
+  ];
+  await writeFile(ledgerPath, JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    entries: [entry({ entry_key: 'mine', story_id: 'story-mine' }), ...invalidEntries]
+  }));
+
+  const result = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(result.status, 'failed');
+  assert.equal(result.reason, 'local_gate_outcome_ledger_entry_invalid');
+  assert.deepEqual(result.entries, []);
+});
+
+test('GDO-S-2 malformed local entries fail promotion instead of producing a bound count', () => {
+  const result = computeCentralLedgerPromotion({
+    localEntries: [entry({ entry_key: '' })],
+    centralText: null
+  });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.reason, 'local_gate_outcome_ledger_entry_invalid');
+  assert.equal(result.serialized, null);
 });
 
 test('RML-S-5: serialization is deterministic regardless of input order', () => {

@@ -12,6 +12,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { findBudgetSummaryPath } from './pr-artifact-budget.js';
 import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
+import { validateDecisionOutcomeLedger } from './decision-outcome-ledger.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
@@ -741,6 +742,13 @@ async function persistDecisionOutcomeRevisions(root, storyId, canonicalDir) {
     malformed.code = 'decision_outcome_ledger_malformed';
     malformed.cause = error;
     throw malformed;
+  }
+  const validation = validateDecisionOutcomeLedger(ledger, { storyId });
+  if (!validation.valid) {
+    const invalid = new Error(`decision outcome ledger is structurally invalid: ${validation.reason}`);
+    invalid.code = 'decision_outcome_ledger_invalid';
+    invalid.field = validation.field;
+    throw invalid;
   }
   const revisionRoot = path.resolve(canonicalDir, 'decision-outcomes');
   const revisions = (ledger.traces ?? []).map((trace) => {

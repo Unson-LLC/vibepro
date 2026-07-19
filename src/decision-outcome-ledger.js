@@ -51,6 +51,93 @@ export function digestDecisionOutcomeBytes(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
+export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
+  const invalid = (field, reason) => ({ valid: false, field, reason });
+  if (ledger?.schema_version !== DECISION_OUTCOME_LEDGER_VERSION) {
+    return invalid('schema_version', 'decision outcome ledger schema is unsupported');
+  }
+  if (ledger?.model !== DECISION_OUTCOME_LEDGER_MODEL) {
+    return invalid('model', 'decision outcome ledger model is unsupported');
+  }
+  if (typeof ledger.story_id !== 'string' || ledger.story_id.trim() === '') {
+    return invalid('story_id', 'decision outcome ledger story is missing');
+  }
+  if (storyId && ledger.story_id !== storyId) {
+    return invalid('story_id', 'decision outcome ledger story does not match the promotion target');
+  }
+  if (!Array.isArray(ledger.traces)) {
+    return invalid('traces', 'decision outcome ledger traces must be an array');
+  }
+
+  const selectors = new Set();
+  for (const trace of ledger.traces) {
+    if (!trace || typeof trace !== 'object' || Array.isArray(trace)) {
+      return invalid('traces', 'decision outcome ledger trace must be an object');
+    }
+    if (!/^[a-f0-9]{64}$/.test(trace.revision_fingerprint ?? '')) {
+      return invalid('revision_fingerprint', 'decision outcome trace revision fingerprint is invalid');
+    }
+    const hasDecisionTrace = /^dt_[a-f0-9]{64}$/.test(trace.decision_trace_id ?? '');
+    const hasCollisionGroup = /^cg_[a-f0-9]{64}$/.test(trace.collision_group ?? '');
+    const hasTraceSourceRef = /^tsr_[a-f0-9]{64}$/.test(trace.trace_source_ref ?? '');
+    const hasCollisionTrace = trace.decision_trace_id == null && hasCollisionGroup && hasTraceSourceRef;
+    if (!hasDecisionTrace && !hasCollisionTrace) {
+      if (trace.decision_trace_id == null && !hasCollisionGroup) {
+        return invalid('collision_group', 'decision outcome collision group is invalid');
+      }
+      if (trace.decision_trace_id == null && !hasTraceSourceRef) {
+        return invalid('trace_source_ref', 'decision outcome trace source reference is invalid');
+      }
+      return invalid('decision_trace_id', 'decision outcome trace identifier is invalid');
+    }
+    const selector = hasDecisionTrace
+      ? trace.decision_trace_id
+      : `${trace.collision_group}|${trace.trace_source_ref}`;
+    if (selectors.has(selector)) {
+      return invalid('trace_selector', 'decision outcome trace selector is duplicated');
+    }
+    selectors.add(selector);
+
+    const parentCore = {
+      story_id: ledger.story_id,
+      decision_trace_id: trace.decision_trace_id,
+      collision_group: trace.collision_group,
+      trace_source_ref: trace.trace_source_ref,
+      normalized_subject_key: trace.normalized_subject_key,
+      source_identity: trace.source_identity ?? null,
+      evidence_head_sha: trace.evidence_head_sha ?? null,
+      behavior_delta: trace.behavior_delta,
+      delivery: trace.delivery
+    };
+    const expectedParent = digestCanonical(stripVolatile(parentCore));
+    if (trace.parent_revision_fingerprint !== expectedParent) {
+      return invalid('parent_revision_fingerprint', 'decision outcome trace parent fingerprint does not match its content');
+    }
+    if (!Object.hasOwn(trace, 'observation_identity')) {
+      return invalid('observation_identity', 'decision outcome trace observation identity is missing');
+    }
+    const expectedRevision = digestCanonical({
+      parent_revision_fingerprint: expectedParent,
+      downstream_outcome: trace.downstream_outcome,
+      observation_identity: trace.observation_identity
+    });
+    if (trace.revision_fingerprint !== expectedRevision) {
+      return invalid('revision_fingerprint', 'decision outcome trace revision fingerprint does not match its content');
+    }
+  }
+
+  if (!/^[a-f0-9]{64}$/.test(ledger.artifact_digest ?? '')) {
+    return invalid('artifact_digest', 'decision outcome ledger digest is invalid');
+  }
+  const ledgerCore = { ...ledger };
+  delete ledgerCore.artifact_digest;
+  const expectedDigest = digestCanonical(stripVolatile({ ...ledgerCore, created_at: null }));
+  if (ledger.artifact_digest !== expectedDigest) {
+    return invalid('artifact_digest', 'decision outcome ledger digest does not match its content');
+  }
+  return { valid: true, field: null, reason: null };
+}
+
 export function reviseDecisionOutcomeLedger(ledger, { delivery = null, observations = [] } = {}) {
   if (!ledger?.story_id) throw new Error('decision outcome ledger requires story_id');
   const traces = (ledger.traces ?? []).map((trace) => reviseTrace({
@@ -369,6 +456,7 @@ function buildTrace({ storyId, source, subjectKey = null, collisionReason = null
     evidence_head_sha: currentHeadSha,
     parent_revision_fingerprint: parentRevision,
     revision_fingerprint: revisionFingerprint,
+    observation_identity: observationResult.identity,
     observation_read_aliases: observationReadAliases,
     trace_status: traceStatus,
     missing_reason: collisionReason ?? observationResult.outcome.missing_reason ?? null,
@@ -424,6 +512,7 @@ function reviseTrace({ trace, storyId, delivery, observations }) {
       downstream_outcome: observationResult.outcome,
       observation_identity: observationResult.identity
     }),
+    observation_identity: observationResult.identity,
     trace_status: classifyTraceStatus({
       collisionReason: trace.decision_trace_id ? null : trace.missing_reason,
       sourceErrors,

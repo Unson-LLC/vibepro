@@ -2085,6 +2085,50 @@ test('GDL-S-7 canonical promotion rejects a malformed decision ledger instead of
   );
 });
 
+test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledgers', async (t) => {
+  const cases = [
+    ['empty object', () => ({}), 'schema_version'],
+    ['wrong schema', (ledger) => ({ ...ledger, schema_version: '9.9.9' }), 'schema_version'],
+    ['wrong model', (ledger) => ({ ...ledger, model: 'wrong-model' }), 'model'],
+    ['wrong story', (ledger) => ({ ...ledger, story_id: 'story-other' }), 'story_id'],
+    ['wrong artifact digest', (ledger) => ({ ...ledger, artifact_digest: 'f'.repeat(64) }), 'artifact_digest'],
+    ['wrong parent fingerprint', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], parent_revision_fingerprint: 'e'.repeat(64) }]
+    }), 'parent_revision_fingerprint'],
+    ['wrong revision fingerprint', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], revision_fingerprint: 'd'.repeat(64) }]
+    }), 'revision_fingerprint']
+  ];
+
+  for (const [label, mutate, field] of cases) {
+    await t.test(label, async () => {
+      const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-ledger-structural-'));
+      const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+      await mkdir(prDir, { recursive: true });
+      const valid = buildDecisionOutcomeLedger({
+        storyId: STORY_ID,
+        artifactPath: `.vibepro/pr/${STORY_ID}/decision-outcome-ledger.json`,
+        sources: [finding('structural-validation')]
+      });
+      await writeFile(
+        path.join(prDir, 'decision-outcome-ledger.json'),
+        `${JSON.stringify(mutate(valid), null, 2)}\n`
+      );
+
+      await assert.rejects(
+        promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID }),
+        (error) => error.code === 'decision_outcome_ledger_invalid' && error.field === field
+      );
+      await assert.rejects(
+        stat(path.join(getCanonicalAuditDir(root, STORY_ID), 'decision-outcomes')),
+        (error) => error.code === 'ENOENT'
+      );
+    });
+  }
+});
+
 test('GDL-S-7 canonical promotion rejects escaped revision identifiers before writing any revision', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-ledger-path-escape-'));
   const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
@@ -2104,7 +2148,7 @@ test('GDL-S-7 canonical promotion rejects escaped revision identifiers before wr
 
   await assert.rejects(
     promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID }),
-    (error) => error.code === 'decision_outcome_revision_invalid'
+    (error) => error.code === 'decision_outcome_ledger_invalid'
       && error.field === 'revision_fingerprint'
   );
   await assert.rejects(
@@ -2127,7 +2171,7 @@ test('GDL-S-7 canonical promotion rejects a missing revision fingerprint before 
 
   await assert.rejects(
     promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID }),
-    (error) => error.code === 'decision_outcome_revision_invalid'
+    (error) => error.code === 'decision_outcome_ledger_invalid'
       && error.field === 'revision_fingerprint'
   );
   await assert.rejects(
@@ -2226,7 +2270,7 @@ test('GDL-S-8 canonical promotion deduplicates identical revisions when unrelate
   assert.equal(await readFile(target, 'utf8'), before);
 });
 
-test('GDL-S-8 canonical promotion rejects different bytes for an existing revision fingerprint', async () => {
+test('GDL-S-8 canonical promotion rejects tampered bytes before immutable revision comparison', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-ledger-conflict-'));
   const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
   await mkdir(prDir, { recursive: true });
@@ -2239,7 +2283,8 @@ test('GDL-S-8 canonical promotion rejects different bytes for an existing revisi
 
   await assert.rejects(
     promoteCanonicalAuditArtifacts(root, { storyId: STORY_ID }),
-    (error) => error.code === 'decision_outcome_revision_conflict'
+    (error) => error.code === 'decision_outcome_ledger_invalid'
+      && error.field === 'artifact_digest'
   );
 });
 
