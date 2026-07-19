@@ -61,3 +61,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:357:start -->
 - [PR #357](https://github.com/Unson-LLC/vibepro/pull/357) — [2026-07](/releases/2026-07): story-vibepro-human-decision-checkpoint - 自律実行中に本当に必要な質問だけを受け、回答後に同じRunを再開したい
 <!-- vibepro-release-index-pr:357:end -->
+
+<!-- vibepro-release-index-pr:360:start -->
+- [PR #360](https://github.com/Unson-LLC/vibepro/pull/360) — [2026-07](/releases/2026-07): story-vibepro-agent-runtime-adapters - handoffとreview dispatch文書を作るだけでなく、利用可能なagent runtimeへ実行委譲したい
+<!-- vibepro-release-index-pr:360:end -->
