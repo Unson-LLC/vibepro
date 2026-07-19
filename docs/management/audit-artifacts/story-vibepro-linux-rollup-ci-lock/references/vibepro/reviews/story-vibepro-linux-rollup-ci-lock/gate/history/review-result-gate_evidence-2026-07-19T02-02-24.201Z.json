@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head gate evidence is machine-readable, artifact-verified, and independently reproducible",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "gate-evidence-artifact-binding",
+      "detail": "Resolved by artifact-bound verification records"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-artifact-binding",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json"
+      ],
+      "reason": "resolved by current verified artifacts",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story/Spec, diff, lock and projector contracts, verification bindings, and artifacts; independently reproduced 26 tests, typecheck, and 192-file docs build",
+    "evidence": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+    "inputs": [
+      ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+      ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+      "test/post-merge-release.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Previously commands lacked attached artifacts; now every required command has a verified machine-readable artifact and independent reproduction at the clean current HEAD"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "expected_root": null,
+    "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "expected_root": null,
+      "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T02:02:24.201Z",
+  "git_context": {
+    "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T02:02:24.200Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind PR-final gate review to the final clean recovery HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "surface_files": [
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "d97ca76e72e3cf1afef0e3ead8a50525106def3a7f180c9d760ded113679aecf",
+        "size": 16422
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1378cca62a9bff5d7470ea1ef9f6a3e8456dd79c1adde289a665bf51c5bd05e0"
+  },
+  "source_fingerprint": "2dc655f68e3fff6ce8638a6ef9e4ae1972e5e05a000c242e9b2b47b0560f2ba9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/head4_gate_review2",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/transcript-head4-gate-review2.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
