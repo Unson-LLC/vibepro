@@ -308,6 +308,7 @@ Guarded Run sessions:
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
       resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
       watch returns one current snapshot and exits; it does not stream.
@@ -557,6 +558,7 @@ Guarded Runセッション:
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
       resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
       watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
@@ -2157,7 +2159,11 @@ export async function runCli(argv, io = {}) {
         runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
         repairLinkedCopy: hasFlag(rest, '--repair-linked-copy'),
         until: getOption(rest, '--until'),
-        dryRun: hasFlag(rest, '--dry-run')
+        dryRun: hasFlag(rest, '--dry-run'),
+        decisionId: getOption(rest, '--decision'),
+        answer: getOption(rest, '--answer'),
+        answeredBy: getOption(rest, '--answered-by'),
+        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? []
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',

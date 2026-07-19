@@ -16,6 +16,7 @@ import {
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
+import { createHumanDecision } from '../src/human-decision-checkpoint.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -25,6 +26,15 @@ const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
 function stopReason(label) {
   return { code: label, message: `${label} message`, details: {} };
+}
+
+function fixtureHumanDecision() {
+  return {
+    type: 'clarification',
+    question: 'Choose the fixture boundary?',
+    material_reason: 'The answer changes the fixture execution boundary.',
+    impact_scope: ['fixture']
+  };
 }
 
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
@@ -52,13 +62,123 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
     to: 'waiting_for_human',
     reason: 'decision_required',
     stopReason: stopReason('decision_required'),
-    pendingDecision: { id: 'decision-1', prompt: 'Continue?' }
+    pendingDecision: {
+      type: 'clarification',
+      question: 'Continue?',
+      material_reason: 'The answer changes the selected implementation boundary.',
+      impact_scope: ['implementation'],
+      stop_node_id: 'spec_boundary'
+    }
   });
 
   assert.deepEqual(events, [
     { reason: 'run_started', run_id: RUN_ID, status: 'running', authority_exists: true },
     { reason: 'human_decision', run_id: RUN_ID, status: 'waiting_for_human', authority_exists: true }
   ]);
+});
+
+test('HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: { ...fixtureHumanDecision(), stop_node_id: 'pr_prepare' }
+  });
+  await assert.rejects(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('decision_answer_required'));
+  const unchanged = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(unchanged.status, 'waiting_for_human');
+  const resumed = await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: waiting.pending_decision.decision_id,
+    answer: 'keep the boundary',
+    answeredBy: 'operator',
+    reflectedIn: ['docs/specs/example.md']
+  });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).decision_id, waiting.pending_decision.decision_id);
+  assert.equal(resumed.human_decision_journal.at(-1).stop_node_id, 'pr_prepare');
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+  assert.deepEqual(resumed.human_decision_journal.at(-1).reflected_in, ['docs/specs/example.md']);
+});
+
+test('HDC-S-3 waiting Run is side-effect free until the human decision is answered', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => { autopilotCalls += 1; return {}; }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: fixtureHumanDecision()
+  });
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.deepEqual(result.plan, []);
+  assert.deepEqual(result.state, waiting);
+  assert.equal(prepareCalls, 0);
+  assert.equal(autopilotCalls, 0);
+});
+
+test('HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = fixture.dependencies();
+  const session = createGuardedRunSession(dependencies);
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: fixtureHumanDecision()
+  });
+  const stdout = capture();
+
+  const result = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--decision', waiting.pending_decision.decision_id,
+    '--answer', 'keep the current boundary', '--answered-by', 'operator',
+    '--reflected-in', 'docs/specs/example.md,docs/architecture/example.md', '--json'
+  ], { stdout, stderr: capture(), guardedRunDependencies: dependencies });
+
+  assert.equal(result.exitCode, 0);
+  const resumed = JSON.parse(stdout.text());
+  assert.equal(resumed.run_id, RUN_ID);
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).decision_id, waiting.pending_decision.decision_id);
+  assert.deepEqual(resumed.human_decision_journal.at(-1).reflected_in, [
+    'docs/specs/example.md',
+    'docs/architecture/example.md'
+  ]);
+
+  const restarted = createGuardedRunSession(dependencies);
+  const persistedRun = await restarted.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const decisionsDir = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, 'runs', RUN_ID, 'decisions');
+  const index = JSON.parse(await readFile(path.join(decisionsDir, 'index.json'), 'utf8'));
+  const indexed = index.decisions.find((item) => item.decision_id === waiting.pending_decision.decision_id);
+  const persistedDecision = JSON.parse(await readFile(path.join(decisionsDir, `${indexed.decision_id}.json`), 'utf8'));
+  const journalEntry = persistedRun.human_decision_journal.find((item) => item.decision_id === indexed.decision_id);
+
+  assert.equal(indexed.status, 'resolved');
+  assert.equal(persistedDecision.question, fixtureHumanDecision().question);
+  assert.equal(persistedDecision.answer, 'keep the current boundary');
+  assert.equal(journalEntry.answered_by, 'operator');
+  assert.equal(journalEntry.answered_at, persistedDecision.answered_at);
+  assert.deepEqual(journalEntry.reflected_in, persistedDecision.reflected_in);
 });
 
 test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
@@ -91,6 +211,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     managed_worktree: fixture.disabledBinding,
     action_journal: [],
     next_best_action_decisions: [],
+    human_decision_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -905,7 +1026,7 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
   const allows = (from, to) => {
     if (from === 'pr_ready') return to === 'pr_ready';
     if (from === 'cancelled') return false;
-    if (from === 'failed' && to === 'running') return false;
+    if ((from === 'failed' || from === 'waiting_for_human') && to === 'running') return false;
     if (from === 'running') return recoverable.has(to) || to === 'cancelled' || to === 'pr_ready';
     return to === 'running'
       || (recoverable.has(to) && to !== from)
@@ -925,7 +1046,8 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
           runId: RUN_ID,
           to: from,
           reason: `fixture_to_${from}`,
-          ...(setupStopReason ? { stopReason: setupStopReason } : {})
+          ...(setupStopReason ? { stopReason: setupStopReason } : {}),
+          ...(from === 'waiting_for_human' ? { pendingDecision: fixtureHumanDecision() } : {})
         });
       }
       const artifact = fixture.runFile(fixture.source, RUN_ID);
@@ -937,7 +1059,8 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
           runId: RUN_ID,
           to,
           reason: 'fixture_matrix',
-          ...(recoverable.has(to) ? { stopReason: expectedStopReason } : {})
+          ...(recoverable.has(to) ? { stopReason: expectedStopReason } : {}),
+          ...(to === 'waiting_for_human' ? { pendingDecision: fixtureHumanDecision() } : {})
         });
         assert.equal(result.status, to, `${from} -> ${to}`);
         if (recoverable.has(to) || to === 'running' || to === 'pr_ready') {
@@ -1800,8 +1923,11 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
   assert.equal(decision.selection_reason, 'no_progress_escape');
   assert.equal(result.state.status, 'waiting_for_human');
-  assert.equal(result.state.pending_decision.action_id, decision.selected_action_id);
+  assert.match(result.state.pending_decision.decision_id, /^decision-[0-9a-f]{16}$/);
+  assert.equal(result.state.pending_decision.stop_node_id, 'pr_prepare');
+  assert.equal(result.state.pending_decision.type, decision.selected_action_id === 'split' ? 'scope_split' : 'clarification');
   assert.equal(result.state.stop_reason.code, 'next_best_action_escape');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /--decision decision-[0-9a-f]{16} --answer <answer>/);
   assert.equal(result.state.action_journal.length, 0);
   assert.equal(prepareCalls, 0);
   assert.deepEqual(
@@ -1809,6 +1935,110 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
       .next_best_action_decisions.at(-1),
     decision
   );
+  const resumed = await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: result.state.pending_decision.decision_id,
+    answer: 'continue with the selected recovery action'
+  });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).stop_node_id, 'pr_prepare');
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+
+  const continued = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.plan[0].node_id, 'pr_prepare');
+  assert.equal(continued.state.resume_from_node_id, null);
+  assert.equal(prepareCalls, 1);
+});
+
+test('HDC-S-3 resume rejects a different pending decision without mutating the waiting Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const escaped = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+  const unrelated = await createHumanDecision(fixture.source, escaped.state, {
+    ...fixtureHumanDecision(),
+    type: 'external_side_effect',
+    material_reason: 'An unrelated external side effect requires separate approval.'
+  });
+
+  await assert.rejects(session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: unrelated.decision_id,
+    answer: 'approve unrelated decision'
+  }), { code: 'decision_pending_mismatch' });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.status, 'waiting_for_human');
+  assert.equal(persisted.pending_decision.decision_id, escaped.state.pending_decision.decision_id);
+  assert.deepEqual(persisted.human_decision_journal, []);
+});
+
+test('HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const failing = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      throw new Error('simulated crash before action checkpoint');
+    }
+  });
+  await failing.run(fixture.source, { storyId: STORY_ID });
+  const escaped = await failing.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+  const resumed = await failing.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: escaped.state.pending_decision.decision_id,
+    answer: 'retry the canonical action'
+  });
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const withHistoricalCheckpoint = JSON.parse(await readFile(artifact, 'utf8'));
+  withHistoricalCheckpoint.action_journal.push({
+    action_id: 'pr_prepare',
+    node_id: 'pr_prepare',
+    input_head_sha: 'historical-head',
+    output_head_sha: 'historical-head',
+    idempotency_key: 'historical-checkpoint',
+    status: 'completed',
+    artifact: 'historical-prepare.json',
+    result_summary: 'completed on an older HEAD',
+    started_at: FIRST_TIME,
+    completed_at: FIRST_TIME
+  });
+  await writeFile(artifact, `${JSON.stringify(withHistoricalCheckpoint, null, 2)}\n`);
+
+  const failed = await failing.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(failed.state.status, 'failed');
+  assert.equal(failed.state.resume_from_node_id, 'pr_prepare');
+  assert.equal(prepareCalls, 1);
+
+  const restarted = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      return { artifacts: { json: 'prepare.json' } };
+    },
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  const retry = await restarted.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(retry.resume_from_node_id, 'pr_prepare');
+  const continued = await restarted.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.plan[0].node_id, 'pr_prepare');
+  assert.equal(continued.state.resume_from_node_id, null);
+  assert.equal(prepareCalls, 2);
 });
 
 test('NBA persisted legacy decisions omit additive fields while malformed present fields fail closed', async (t) => {

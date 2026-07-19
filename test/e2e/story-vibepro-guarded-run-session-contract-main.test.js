@@ -160,7 +160,9 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
     ...state,
     schema_version: '0.2.0',
     action_journal: [],
-    next_best_action_decisions: []
+    next_best_action_decisions: [],
+    human_decision_journal: [],
+    resume_from_node_id: null
   };
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
