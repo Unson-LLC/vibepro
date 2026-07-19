@@ -45,3 +45,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:352:start -->
 - [PR #352](https://github.com/Unson-LLC/vibepro/pull/352) — [2026-07](/releases/2026-07): story-vibepro-next-best-action-controller - トークン最小ではなくTrusted PR-readyまでの総コストで次のActionを選びたい
 <!-- vibepro-release-index-pr:352:end -->
+
+<!-- vibepro-release-index-pr:353:start -->
+- [PR #353](https://github.com/Unson-LLC/vibepro/pull/353) — [2026-07](/releases/2026-07): story-vibepro-autonomy-roadmap-rebaseline - 直近追加Storyと衝突しない実装順へ再編したい
+<!-- vibepro-release-index-pr:353:end -->
