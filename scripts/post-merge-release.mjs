@@ -207,8 +207,8 @@ function normalizeParsedDestination(value) {
   }
 }
 
-function serializeBareMarkdownDestination(value) {
-  return value.replace(/[()]/gu, '\\$&');
+export function serializeBareMarkdownDestination(value) {
+  return value.replace(/\\/gu, '\\\\').replace(/[()]/gu, '\\$&');
 }
 
 function findClosingLabel(source, openingIndex, protectedRanges) {

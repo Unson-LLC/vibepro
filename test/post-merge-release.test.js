@@ -18,10 +18,18 @@ import {
   projectPublishedVersion,
   projectReleaseNote,
   reconcileNpmRelease,
+  serializeBareMarkdownDestination,
   desiredDistTags,
   sanitizeReleaseContent,
   shouldReleaseVersion
 } from '../scripts/post-merge-release.mjs';
+
+test('RNLN-SEC-001 escapes backslashes before serializing a bare Markdown destination', () => {
+  assert.equal(
+    serializeBareMarkdownDestination('https://example.com/docs/a\\b(c).md'),
+    'https://example.com/docs/a\\\\b\\(c\\).md'
+  );
+});
 
 test('LRCL-001/002 locks the Linux Rollup binary as a root optional dependency', async () => {
   const packageJson = JSON.parse(await readFile(path.join(repositoryRoot, 'package.json'), 'utf8'));
@@ -249,7 +257,8 @@ test('RNLN-007 initializes the Markdown renderer only for projection commands', 
 
   const plan = spawnSync(process.execPath, [isolatedScript, 'plan', '--event', eventPath], {
     cwd: root,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_OUTPUT: '' }
   });
   assert.equal(plan.status, 0, plan.stderr);
   assert.match(plan.stdout, /release_required=true/);
@@ -404,7 +413,8 @@ async function createReprojectFixture() {
 function runReleaseSubprocess(root, args) {
   return spawnSync(process.execPath, [path.join(root, 'scripts/post-merge-release.mjs'), ...args], {
     cwd: root,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_OUTPUT: '' }
   });
 }
 
