@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+  "head_sha": "8d9acc3e",
+  "status": "pass",
+  "observations": {
+    "version_stamp": "running verification session reads expected artifact version 8d9acc3e",
+    "workflow_contract": "final main pull -> lockfile-bound npm ci -> docs:deploy",
+    "clean_source": "versioned .gitignore excludes exact node_modules/ install output",
+    "design_ssot": "Story, Architecture, and Spec are registered under vibepro-post-merge-docs-clean-worktree",
+    "tests": "19 focused tests pass; typecheck passes; VitePress build passes for 192 files"
+  },
+  "rollout": "After merge, observe the post-merge GitHub Actions run and VitePress deployment.",
+  "rollback": "Revert the single recovery commit if the ignore or registry boundary causes regression.",
+  "external_runtime_precondition": "Cloudflare deployment requires configured repository credentials."
+}
