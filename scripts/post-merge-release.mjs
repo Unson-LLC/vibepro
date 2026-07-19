@@ -9,7 +9,16 @@ const rootDefault = path.resolve(path.dirname(scriptPath), '..');
 const NONE = 'なし';
 const REPOSITORY_SOURCE_ROOT = 'https://github.com/Unson-LLC/vibepro/blob/main/';
 const REPOSITORY_RAW_ROOT = 'https://raw.githubusercontent.com/Unson-LLC/vibepro/main/';
-const releaseMarkdownParser = await createMarkdownRenderer(rootDefault);
+const invokedCommand = process.argv[1] && path.resolve(process.argv[1]) === scriptPath
+  ? process.argv[2]
+  : null;
+const releaseMarkdownParser = !invokedCommand || commandRequiresMarkdownRenderer(invokedCommand)
+  ? await createMarkdownRenderer(rootDefault)
+  : null;
+
+export function commandRequiresMarkdownRenderer(command) {
+  return ['project', 'release-body'].includes(command);
+}
 
 export function extractReleaseSections(body = '') {
   const release = section(body, ['Release Notes', 'リリースノート']) || body;
@@ -156,18 +165,11 @@ function findMarkdownLinkReplacements(source, protectedRanges) {
     const destination = parseInlineDestination(source, labelEnd + 2);
     if (!destination) continue;
     nonLabelRanges.push({ start: labelEnd + 1, end: destination.linkEnd });
-    if (!destination.value.startsWith('docs/')) continue;
+    const parsedDestination = normalizeParsedDestination(destination.value);
+    if (!parsedDestination?.startsWith('docs/')) continue;
     const imageMarker = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
     const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
-    let normalizedValue = `${root}${destination.value}`;
-    if (destination.angleWrapped) {
-      try {
-        normalizedValue = encodeURI(normalizedValue).replace(/%25([\da-f]{2})/giu, '%$1');
-      } catch (error) {
-        if (error instanceof URIError) continue;
-        throw error;
-      }
-    }
+    const normalizedValue = serializeBareMarkdownDestination(`${root}${parsedDestination}`);
     replacements.push({
       start: destination.start,
       end: destination.end,
@@ -175,6 +177,22 @@ function findMarkdownLinkReplacements(source, protectedRanges) {
     });
   }
   return replacements;
+}
+
+function normalizeParsedDestination(value) {
+  try {
+    // markdown-it replaces lone surrogates with U+FFFD while normalizing URLs.
+    // Reject them first so malformed input stays byte-for-byte untouched.
+    encodeURI(value);
+    return releaseMarkdownParser.normalizeLink(releaseMarkdownParser.utils.unescapeAll(value));
+  } catch (error) {
+    if (error instanceof URIError) return null;
+    throw error;
+  }
+}
+
+function serializeBareMarkdownDestination(value) {
+  return value.replace(/[()]/gu, '\\$&');
 }
 
 function findClosingLabel(source, openingIndex, protectedRanges) {

@@ -3,12 +3,15 @@ import { mkdtemp, readFile, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { createMarkdownRenderer } from 'vitepress';
 import { acquireLease } from '../scripts/npm-release-lock.mjs';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
+const releaseTestParser = await createMarkdownRenderer(repositoryRoot);
 
 import {
   extractReleaseSections,
+  commandRequiresMarkdownRenderer,
   npmDistTags,
   normalizeReleaseDocumentationLinks,
   projectPublishedVersion,
@@ -45,6 +48,9 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[paren-escaped-terminal](docs/paren-escaped-terminal.md (Title\\)))',
     '[angle](<docs/guide/a b.md>)',
     '[encoded-angle](<docs/guide/a%20b.md>)',
+    '[escaped-angle](<docs/guide/a\\>b.md>)',
+    '[entity](docs/guide/a&amp;b.md)',
+    '[escaped-parens](docs/guide/a\\(b\\).md)',
     '[outer [inner](docs/inner.md)](docs/outer.md)',
     '[code `label ]`](docs/code-label.md)',
     '[![nested image](docs/nested-image.png)](docs/nested-image-page.md)',
@@ -95,6 +101,9 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[paren-escaped-terminal](https://github.com/Unson-LLC/vibepro/blob/main/docs/paren-escaped-terminal.md (Title\\)))',
     '[angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
     '[encoded-angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
+    '[escaped-angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%3Eb.md)',
+    '[entity](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a&b.md)',
+    '[escaped-parens](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a\\(b\\).md)',
     '[outer [inner](https://github.com/Unson-LLC/vibepro/blob/main/docs/inner.md)](docs/outer.md)',
     '[code `label ]`](https://github.com/Unson-LLC/vibepro/blob/main/docs/code-label.md)',
     '[![nested image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-image.png)](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-image-page.md)',
@@ -198,6 +207,33 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '`unclosed\n- [list](https://github.com/Unson-LLC/vibepro/blob/main/docs/list.md)\n[after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after.md) `'
   );
 });
+
+test('RNLN-007 initializes the Markdown renderer only for projection commands', () => {
+  assert.equal(commandRequiresMarkdownRenderer('project'), true);
+  assert.equal(commandRequiresMarkdownRenderer('release-body'), true);
+  assert.equal(commandRequiresMarkdownRenderer('plan'), false);
+  assert.equal(commandRequiresMarkdownRenderer('publish-npm'), false);
+  assert.equal(commandRequiresMarkdownRenderer('unknown'), false);
+});
+
+test('RNLN-001 preserves VitePress destination semantics across escape and entity normalization', () => {
+  const fixtures = [
+    '[x](<docs/a\\>b.md>)',
+    '[x](docs/a&amp;b.md)',
+    '[x](docs/a\\(b\\).md)'
+  ];
+  for (const fixture of fixtures) {
+    const before = firstRenderedHref(fixture);
+    const after = firstRenderedHref(normalizeReleaseDocumentationLinks(fixture));
+    assert.equal(after, `https://github.com/Unson-LLC/vibepro/blob/main/${before}`);
+  }
+});
+
+function firstRenderedHref(markdown) {
+  const inline = releaseTestParser.parse(markdown, {}).find((token) => token.type === 'inline');
+  const link = inline?.children?.find((token) => token.type === 'link_open');
+  return link?.attrGet('href');
+}
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
   const sections = extractReleaseSections(`## Release Notes\n\n### Change Summary\nAdded deterministic publishing. [angle](<docs/guide/a b.md>) <script>{{ unsafe }}</script>\n\n### Compatibility\n\n### User Action\nRun npm update.`);

@@ -9,7 +9,7 @@
     {
       "id": "RNLN-001",
       "type": "scenario",
-      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; angle wrappers are removed, existing valid percent escapes are preserved, and spaces are percent encoded.",
+      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; VitePress destination semantics are preserved across angle wrappers, existing percent escapes, Markdown punctuation escapes, HTML entities, and spaces.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "normalizeReleaseDocumentationLinks" }]
@@ -76,6 +76,18 @@
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-006 ignores container headings" }]
+      }
+    },
+    {
+      "id": "RNLN-007",
+      "type": "invariant",
+      "statement": "The VitePress Markdown renderer is initialized only for project and release-body; plan and publish-npm remain outside the parser initialization boundary.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "commandRequiresMarkdownRenderer" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-007 initializes the Markdown renderer only for projection commands" }]
       }
     }
   ],
