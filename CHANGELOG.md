@@ -72,7 +72,7 @@ main向けPRのマージを起点に、VibePro PR本文の安定したRelease No
 
 ### Change Summary
 
-Story文書を更新: [docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md](docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md)
+Story文書を更新: [docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md)
 
 ### Compatibility
 

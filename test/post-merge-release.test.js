@@ -5,6 +5,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { acquireLease } from '../scripts/npm-release-lock.mjs';
 
+const repositoryRoot = path.resolve(import.meta.dirname, '..');
+
 import {
   extractReleaseSections,
   npmDistTags,
@@ -15,6 +17,20 @@ import {
   sanitizeReleaseContent,
   shouldReleaseVersion
 } from '../scripts/post-merge-release.mjs';
+
+test('LRCL-001/002 locks the Linux Rollup binary as a root optional dependency', async () => {
+  const packageJson = JSON.parse(await readFile(path.join(repositoryRoot, 'package.json'), 'utf8'));
+  const packageLock = JSON.parse(await readFile(path.join(repositoryRoot, 'package-lock.json'), 'utf8'));
+  const version = packageJson.optionalDependencies?.['@rollup/rollup-linux-x64-gnu'];
+  const locked = packageLock.packages?.['node_modules/@rollup/rollup-linux-x64-gnu'];
+
+  assert.equal(version, '4.62.2');
+  assert.equal(packageLock.packages?.['']?.optionalDependencies?.['@rollup/rollup-linux-x64-gnu'], version);
+  assert.equal(locked?.version, version);
+  assert.deepEqual(locked?.cpu, ['x64']);
+  assert.deepEqual(locked?.os, ['linux']);
+  assert.match(locked?.resolved ?? '', /@rollup\/rollup-linux-x64-gnu/);
+});
 
 test('PCR-CON-001 extracts stable release sections and normalizes blanks', () => {
   const sections = extractReleaseSections(`## Release Notes\n\n### Change Summary\nAdded deterministic publishing.\n\n### Compatibility\n\n### User Action\nRun npm update.`);
@@ -27,6 +43,13 @@ test('PCR-CON-001 extracts stable release sections and normalizes blanks', () =>
 
 test('PCR-CON-001 neutralizes raw HTML and Vue interpolation from PR prose', () => {
   assert.equal(sanitizeReleaseContent('<script>{{ dangerous }}</script>'), '&lt;script&gt;&#123;&#123; dangerous &#125;&#125;&lt;/script&gt;');
+});
+
+test('PCR-CON-001 makes repository docs links safe for the public VitePress build', () => {
+  assert.equal(
+    sanitizeReleaseContent('[Story](docs/management/stories/active/example.md)'),
+    '[Story](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/example.md)'
+  );
 });
 
 test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog', async () => {
@@ -42,7 +65,7 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
     pull_request: {
       number: 42, title: 'Ship <SCRIPT>{{ title }}</SCRIPT>', user: { login: 'octocat' }, merged_at: '2026-07-18T09:00:00Z',
       merge_commit_sha: 'abc123', html_url: 'https://github.com/Unson-LLC/vibepro/pull/42',
-      body: '## Release Notes\n### Change Summary\nAutomatic notes.\n### Compatibility\nなし\n### User Action\nなし'
+      body: '## Release Notes\n### Change Summary\nAutomatic notes. [Story](docs/management/stories/active/example.md)\n### Compatibility\nなし\n### User Action\nなし'
     }
   };
   await projectReleaseNote(root, event);
@@ -51,6 +74,8 @@ test('PCR-CON-002/003 projects one idempotent PR entry into docs and changelog',
     const content = await readFile(path.join(root, file), 'utf8');
     assert.equal(content.match(/vibepro-release-pr:42:start/g)?.length, 1, file);
     assert.match(content, /Automatic notes/);
+    assert.match(content, /https:\/\/github\.com\/Unson-LLC\/vibepro\/blob\/main\/docs\/management\/stories\/active\/example\.md/);
+    assert.doesNotMatch(content, /\]\(docs\/management\//);
     assert.match(content, /abc123/);
     assert.doesNotMatch(content, /<script>|\{\{ title \}\}/i);
     assert.match(content, /&lt;script&gt;&#123;&#123; title &#125;&#125;&lt;\/script&gt;/i);
