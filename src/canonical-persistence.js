@@ -60,9 +60,13 @@ export async function persistCanonicalArtifactsToBase({
     results.push(result);
     return result;
   };
-  const gitOptional = async (cwd, args, stage) => {
+  const gitRequiredIdentity = async (cwd, args, stage) => {
     const result = await run(['git', args], { cwd, stage });
-    return result.exit_code === 0 ? result.stdout.trim() || null : null;
+    const value = result.exit_code === 0 ? result.stdout.trim() : '';
+    return {
+      value: /^[0-9a-f]{40,64}$/i.test(value) ? value : null,
+      result
+    };
   };
   const gitIsAncestor = async (cwd, ancestor, descendant, stage) => {
     if (!ancestor || !descendant) return false;
@@ -72,7 +76,11 @@ export async function persistCanonicalArtifactsToBase({
 
   const fetchResult = await run(['git', ['fetch', 'origin', baseBranch]], { stage: 'canonical.post_merge_fetch' });
   if (fetchResult.exit_code !== 0) return failed('canonical_audit_post_merge_base_fetch_failed', null, fetchResult);
-  summary.base_head_sha = await gitOptional(root, ['rev-parse', `origin/${baseBranch}`], 'canonical.base_head');
+  const baseIdentity = await gitRequiredIdentity(root, ['rev-parse', `origin/${baseBranch}`], 'canonical.base_head');
+  if (!baseIdentity.value) {
+    return failed('canonical_audit_base_head_identity_unavailable', null, baseIdentity.result);
+  }
+  summary.base_head_sha = baseIdentity.value;
   summary.merge_commit_on_base = await gitIsAncestor(root, mergeCommitSha, `origin/${baseBranch}`, 'canonical.merge_on_base');
   if (!summary.merge_commit_on_base) return failed('canonical_audit_post_merge_base_missing_merge_commit');
 
@@ -140,11 +148,19 @@ export async function persistCanonicalArtifactsToBase({
     if (diffResult.exit_code !== 1) return failed('canonical_audit_diff_check_failed', prepared.metadata, diffResult);
     const commitResult = await run(['git', ['commit', '-m', commitMessage]], { cwd: tempWorktree, stage: 'canonical.commit' });
     if (commitResult.exit_code !== 0) return failed('canonical_audit_commit_failed', prepared.metadata, commitResult);
-    summary.commit_sha = await gitOptional(tempWorktree, ['rev-parse', 'HEAD'], 'canonical.commit_head');
+    const commitIdentity = await gitRequiredIdentity(tempWorktree, ['rev-parse', 'HEAD'], 'canonical.commit_head');
+    if (!commitIdentity.value) {
+      return failed('canonical_audit_commit_identity_unavailable', prepared.metadata, commitIdentity.result);
+    }
+    summary.commit_sha = commitIdentity.value;
     await options.beforePush?.({ repoRoot: root, worktreeRoot: tempWorktree, summary });
     const refetchResult = await run(['git', ['fetch', 'origin', baseBranch]], { stage: 'canonical.pre_push_fetch' });
     if (refetchResult.exit_code !== 0) return failed('canonical_audit_pre_push_base_fetch_failed', prepared.metadata, refetchResult);
-    const latestBaseHead = await gitOptional(root, ['rev-parse', `origin/${baseBranch}`], 'canonical.latest_base_head');
+    const latestBaseIdentity = await gitRequiredIdentity(root, ['rev-parse', `origin/${baseBranch}`], 'canonical.latest_base_head');
+    if (!latestBaseIdentity.value) {
+      return failed('canonical_audit_latest_base_head_identity_unavailable', prepared.metadata, latestBaseIdentity.result);
+    }
+    const latestBaseHead = latestBaseIdentity.value;
     if (latestBaseHead !== summary.base_head_sha) {
       return failed('canonical_audit_concurrent_base_update', { ...prepared.metadata, latest_base_head_sha: latestBaseHead });
     }

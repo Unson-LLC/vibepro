@@ -151,13 +151,14 @@ export async function refreshOutcome(repoRoot, options = {}) {
   const canonicalDir = path.join(root, 'docs', 'management', 'audit-artifacts', storyId);
   const canonicalSnapshot = await snapshotDirectory(canonicalDir);
   const atomicWrite = options.atomicWrite ?? atomicReplaceFile;
+  const revisedBytes = `${JSON.stringify(revised, null, 2)}\n`;
   let canonical;
   let revisedExposed = false;
   try {
     // Canonical promotion currently reads the workspace ledger. Expose the revised
     // bytes only while building the staged canonical bundle, then restore the
     // authoritative local state until persistence has succeeded.
-    await atomicWrite(ledgerPath, `${JSON.stringify(revised, null, 2)}\n`);
+    await atomicWrite(ledgerPath, revisedBytes);
     revisedExposed = true;
     canonical = await promoteCanonicalAuditArtifacts(root, {
       storyId,
@@ -200,7 +201,75 @@ export async function refreshOutcome(repoRoot, options = {}) {
   } finally {
     await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
   }
-  await atomicWrite(ledgerPath, `${JSON.stringify(revised, null, 2)}\n`);
+  const reconciliationPath = path.join(
+    getWorkspaceDir(root),
+    'pr',
+    storyId,
+    'outcome-refresh-reconciliation.json'
+  );
+  try {
+    await atomicWrite(ledgerPath, revisedBytes);
+  } catch {
+    const ledgerPostcondition = await inspectOutcomeLedgerPostcondition(ledgerPath, revisedBytes);
+    if (ledgerPostcondition.status !== 'applied') {
+      const boundedPersistence = projectOutcomePersistence(persistence.summary);
+      const reconciliation = {
+        schema_version: '0.1.0',
+        model: 'vibepro-outcome-refresh-reconciliation-v1',
+        story_id: storyId,
+        status: 'reconciliation_required',
+        reason: 'outcome_local_finalization_failed',
+        recorded_at: new Date().toISOString(),
+        ledger_path: toWorkspaceRelative(root, ledgerPath),
+        expected_ledger_digest: revised.artifact_digest,
+        ledger_postcondition: ledgerPostcondition,
+        persistence: boundedPersistence,
+        recovery: {
+          command: `vibepro outcome refresh . --id ${storyId}`,
+          instruction: 'Verify the canonical revision, then retry local outcome refresh finalization.'
+        }
+      };
+      let reconciliationStatus = 'recorded';
+      try {
+        await mkdir(path.dirname(reconciliationPath), { recursive: true });
+        const reconciliationWrite = options.reconciliationWrite ?? atomicReplaceFile;
+        await reconciliationWrite(reconciliationPath, `${JSON.stringify(reconciliation, null, 2)}\n`);
+      } catch {
+        reconciliationStatus = 'unavailable';
+      }
+      throw new OutcomeCommandError(
+        'outcome_local_finalization_failed',
+        'canonical outcome revision was persisted but the local ledger finalization requires reconciliation',
+        {
+          persistence: boundedPersistence,
+          ledger_postcondition: ledgerPostcondition,
+          reconciliation: {
+            status: 'required',
+            artifact_status: reconciliationStatus,
+            artifact_path: toWorkspaceRelative(root, reconciliationPath)
+          },
+          recovery: `Verify the canonical revision, then run vibepro outcome refresh . --id ${storyId}`
+        }
+      );
+    }
+  }
+  try {
+    await unlink(reconciliationPath);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw new OutcomeCommandError(
+        'outcome_reconciliation_cleanup_failed',
+        'the local outcome ledger was finalized but stale reconciliation evidence could not be removed',
+        {
+          reconciliation: {
+            status: 'stale',
+            artifact_path: toWorkspaceRelative(root, reconciliationPath)
+          },
+          recovery: `Remove ${toWorkspaceRelative(root, reconciliationPath)} after verifying the local outcome ledger digest ${revised.artifact_digest}`
+        }
+      );
+    }
+  }
   return {
     status: persistence.summary.status === 'already_present' ? 'already_present' : 'promoted',
     story_id: storyId,
@@ -209,6 +278,37 @@ export async function refreshOutcome(repoRoot, options = {}) {
     observation_count: observations.length,
     canonical_bundle: toWorkspaceRelative(root, canonical.bundle_path),
     persistence: persistence.summary
+  };
+}
+
+async function inspectOutcomeLedgerPostcondition(ledgerPath, expectedBytes) {
+  const expectedDigest = digestDecisionOutcomeBytes(expectedBytes);
+  try {
+    const observedBytes = await readFile(ledgerPath);
+    const observedDigest = digestDecisionOutcomeBytes(observedBytes);
+    return {
+      status: observedDigest === expectedDigest ? 'applied' : 'not_applied',
+      expected_digest: expectedDigest,
+      observed_digest: observedDigest
+    };
+  } catch {
+    return {
+      status: 'indeterminate',
+      expected_digest: expectedDigest,
+      observed_digest: null
+    };
+  }
+}
+
+function projectOutcomePersistence(summary = {}) {
+  return {
+    status: summary.status ?? 'unknown',
+    reason: summary.reason ?? null,
+    commit_sha: summary.commit_sha ?? null,
+    pushed: summary.pushed === true,
+    push_postcondition: summary.push_postcondition ?? null,
+    cleanup: summary.cleanup ?? null,
+    primary: summary.primary ?? null
   };
 }
 

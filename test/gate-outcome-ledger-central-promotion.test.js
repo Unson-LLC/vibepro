@@ -318,6 +318,24 @@ test('GDL-S-7 promotion source distinguishes absent, genuine empty, parse, schem
   }
 });
 
+test('GDL-S-7 known v1 and v2 ledgers remain readable as legacy empty promotion sources', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-legacy-promotion-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+
+  for (const model of ['vibepro-gate-outcome-ledger-v1', 'vibepro-gate-outcome-ledger-v2']) {
+    await writeFile(ledgerPath, JSON.stringify({
+      schema_version: '0.1.0',
+      model,
+      entries: [entry({ entry_key: `${model}-entry`, story_id: 'story-mine' })]
+    }));
+    const result = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+    assert.equal(result.status, 'empty', model);
+    assert.equal(result.reason, 'legacy_gate_outcome_ledger_not_promotable', model);
+    assert.deepEqual(result.entries, [], model);
+  }
+});
+
 test('RML-S-4: usage report --gate-roi reads the central ledger with explicit gaps', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-central-'));
   const centralPath = path.join(repo, CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);

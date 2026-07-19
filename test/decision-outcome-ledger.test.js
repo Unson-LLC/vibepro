@@ -615,7 +615,7 @@ test('GDL-S-2 direct waiver authority is story-bound and survives an explicit fi
   assert.equal(buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: wrongStory }).traces[0].eligible_outcome_sources.total_count, 0);
 });
 
-test('GDL-S-10 build-time waiver authority fails closed across story and artifact boundaries', () => {
+test('GDL-S-9 build-time waiver authority fails closed across story and artifact boundaries', () => {
   const artifact = `.vibepro/pr/${STORY_ID}/decision-records.json`;
   const decision = {
     decision_id: 'waiver-boundary', story_id: STORY_ID, type: 'waiver', status: 'accepted',
@@ -1382,6 +1382,8 @@ test('GDL-S-9 outcome record resolves one eligible managed source and refreshes 
   });
   assert.equal(recorded.resolved_source.kind, 'verification_evidence');
   assert.match(recorded.artifact_digest, /^[a-f0-9]{64}$/);
+  const reconciliationPath = path.join(prDir, 'outcome-refresh-reconciliation.json');
+  await writeFile(reconciliationPath, '{"status":"reconciliation_required"}\n');
 
   let preparedFiles = null;
   const refreshed = await refreshOutcome(root, {
@@ -1394,6 +1396,7 @@ test('GDL-S-9 outcome record resolves one eligible managed source and refreshes 
     }
   });
   assert.equal(refreshed.status, 'promoted');
+  await assert.rejects(readFile(reconciliationPath), { code: 'ENOENT' });
   assert.ok([...preparedFiles.keys()].some((entry) => entry.includes('/decision-outcomes/') && entry.endsWith('.json')));
   const updated = JSON.parse(await readFile(path.join(prDir, 'decision-outcome-ledger.json'), 'utf8'));
   assert.equal(updated.traces[0].downstream_outcome.status, 'observed');
@@ -1546,9 +1549,29 @@ test('GDL-S-9 refresh finalization preserves prior ledger bytes when atomic repl
       if (writeCount === 3) throw new Error('injected refresh finalization failure');
       return atomicReplaceFile(target, data);
     }
-  }), /injected refresh finalization failure/);
+  }), (error) => {
+    assert.equal(error.error_id, 'outcome_local_finalization_failed');
+    assert.equal(error.details.persistence.status, 'pushed');
+    assert.equal(error.details.ledger_postcondition.status, 'not_applied');
+    assert.equal(error.details.reconciliation.status, 'required');
+    assert.equal(
+      error.details.reconciliation.artifact_path,
+      `.vibepro/pr/${STORY_ID}/outcome-refresh-reconciliation.json`
+    );
+    assert.match(error.details.recovery, /vibepro outcome refresh/);
+    return true;
+  });
   assert.equal(writeCount, 3);
   assert.equal(await readFile(ledgerPath, 'utf8'), original);
+  const reconciliation = JSON.parse(await readFile(
+    path.join(prDir, 'outcome-refresh-reconciliation.json'),
+    'utf8'
+  ));
+  assert.equal(reconciliation.status, 'reconciliation_required');
+  assert.equal(reconciliation.reason, 'outcome_local_finalization_failed');
+  assert.equal(reconciliation.persistence.status, 'pushed');
+  assert.equal(reconciliation.ledger_postcondition.status, 'not_applied');
+  assert.match(reconciliation.recovery.command, /vibepro outcome refresh/);
 });
 
 test('GDL-S-1 canonical refresh preserves every null-id collision revision', async () => {

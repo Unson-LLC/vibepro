@@ -13,6 +13,10 @@ export const GATE_OUTCOMES = new Set([
 
 const LEDGER_SCHEMA_VERSION = '0.1.0';
 const LEDGER_MODEL = 'vibepro-gate-outcome-ledger-v3';
+const LEGACY_LEDGER_MODELS = new Set([
+  'vibepro-gate-outcome-ledger-v1',
+  'vibepro-gate-outcome-ledger-v2'
+]);
 export const UNRESOLVED_STATUSES = new Set([
   'block',
   'blocked',
@@ -68,6 +72,9 @@ export async function readPromotableGateOutcomeEntries(repoRoot, storyId) {
   }
   if (data.schema_version !== LEDGER_SCHEMA_VERSION) {
     return promotionSourceResult('failed', 'local_gate_outcome_ledger_schema_invalid', []);
+  }
+  if (LEGACY_LEDGER_MODELS.has(data.model)) {
+    return promotionSourceResult('empty', 'legacy_gate_outcome_ledger_not_promotable', []);
   }
   if (data.model !== LEDGER_MODEL) {
     return promotionSourceResult('failed', 'local_gate_outcome_ledger_model_invalid', []);

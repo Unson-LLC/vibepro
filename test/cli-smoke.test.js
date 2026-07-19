@@ -167,6 +167,31 @@ test('outcome promotion text exposes bounded recovery diagnostics without raw co
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER/);
 });
 
+test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
+  const error = new OutcomeCommandError(
+    'outcome_local_finalization_failed',
+    'canonical outcome revision was persisted but the local ledger finalization requires reconciliation',
+    {
+      ledger_postcondition: {
+        status: 'not_applied',
+        expected_digest: 'digest-expected',
+        observed_digest: 'digest-observed'
+      },
+      reconciliation: {
+        status: 'required',
+        artifact_status: 'recorded',
+        artifact_path: '.vibepro/pr/story-x/outcome-refresh-reconciliation.json'
+      },
+      recovery: 'Verify the canonical revision, then retry outcome refresh.'
+    }
+  );
+
+  const rendered = renderOutcomeCommandError(error);
+  assert.match(rendered, /ledger postcondition: status=not_applied expected-digest=digest-expected observed-digest=digest-observed/);
+  assert.match(rendered, /reconciliation: status=required artifact-status=recorded artifact=.vibepro\/pr\/story-x\/outcome-refresh-reconciliation.json/);
+  assert.match(rendered, /recovery: Verify the canonical revision, then retry outcome refresh/);
+});
+
 test('outcome success text exposes the bounded record contract while JSON preserves the public result', () => {
   const result = {
     status: 'recorded',

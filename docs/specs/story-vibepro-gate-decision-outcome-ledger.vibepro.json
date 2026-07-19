@@ -10,6 +10,109 @@
   ],
   "clauses": [
     {
+      "id": "GDL-S-1",
+      "type": "invariant",
+      "statement": "Stable source keys produce deterministic trace identities; ambiguous or keyless sources retain null identities with deterministic collision selectors and are never deduplicated away.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-gate-decision-outcome-ledger.md", "section": "Decision trace identity" }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "buildDecisionOutcomeLedger" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-1 stable trace identity is source/order independent and missing keys stay explicit" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-1" }] }
+    },
+    {
+      "id": "GDL-S-2",
+      "type": "invariant",
+      "statement": "Finding, gate, detector, disposition, and decision claims retain per-value provenance and conflicting authoritative claims remain explicit.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "collectDecisionOutcomeSources" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-2 every decision-chain value retains its own source provenance" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-2" }] }
+    },
+    {
+      "id": "GDL-S-3",
+      "type": "invariant",
+      "statement": "Behavior deltas retain before/after references and accept current behavior only from verification bound to the current content authority.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "buildBehaviorDelta" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-3 behavior delta only accepts explicit values from a matching current command" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-3" }] }
+    },
+    {
+      "id": "GDL-S-4",
+      "type": "scenario",
+      "statement": "PR and merge authority update the same trace revision while mismatched delivery identities remain explicit conflicts.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "reviseDecisionOutcomeLedger" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-4 matching delivery identity is refreshed from current authority instead of stale ledger fields" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-4" }] }
+    },
+    {
+      "id": "GDL-S-5",
+      "type": "invariant",
+      "statement": "Downstream outcome remains tri-state and unreadable, untrusted, or mismatched sources stay explicit instead of becoming success, failure, or zero value.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "resolveObservation" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-5 observation resolution selects the exact parent revision and preserves tri-state trust errors" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-5" }] }
+    },
+    {
+      "id": "GDL-S-6",
+      "type": "scenario",
+      "statement": "Review, PR preparation, and usage reporting expose the same deterministic bounded decision chain with counts, selectors, and a path and digest back to the full ledger.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "code_refs": [{ "file": "src/decision-outcome-ledger.js", "anchor": "projectDecisionOutcomeSummary" }],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-6 common summary is bounded, deterministic, and reconstructs a redacted decision chain" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-6" }] }
+    },
+    {
+      "id": "GDL-S-7",
+      "type": "invariant",
+      "statement": "Legacy ledgers remain readable, known legacy promotion sources become explicit empty sources, and malformed or unknown sources fail closed without breaking existing consumers.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "code_refs": [{ "file": "src/gate-outcome-ledger.js", "anchor": "readPromotableGateOutcomeEntries" }],
+        "test_refs": [{ "file": "test/gate-outcome-ledger-central-promotion.test.js", "case": "GDL-S-7 known v1 and v2 ledgers remain readable as legacy empty promotion sources" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/gate-outcome-ledger-central-promotion.test.js", "must_cover": "GDL-S-7" }] }
+    },
+    {
+      "id": "GDL-S-8",
+      "type": "scenario",
+      "statement": "Canonical revisions deduplicate identical bytes, preserve distinct revisions, validate all target paths, bound external commands, and fail closed when required Git identities or push postconditions are unavailable.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }],
+        "code_refs": [{ "file": "src/canonical-persistence.js", "anchor": "persistCanonicalArtifactsToBase" }],
+        "test_refs": [{ "file": "test/canonical-persistence.test.js", "case": "GDL-CONTRACT-008 fails closed when required Git identity probes are unavailable" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/canonical-persistence.test.js", "must_cover": "required Git identity probes" }] }
+    },
+    {
+      "id": "GDL-S-9",
+      "type": "scenario",
+      "statement": "Outcome record and refresh validate story-scoped selectors, parent revision, producer, managed authority, live delivery, canonical base, atomic local writes, and explicit reconciliation after remote application but local finalization failure.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],
+        "code_refs": [
+          { "file": "src/outcome-manager.js", "anchor": "recordOutcome" },
+          { "file": "src/outcome-manager.js", "anchor": "refreshOutcome" }
+        ],
+        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-9 refresh finalization preserves prior ledger bytes when atomic replacement fails" }]
+      },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-9" }] }
+    },
+    {
       "id": "GDO-S-1",
       "type": "scenario",
       "statement": "Canonical promotion deterministically stores every local decision outcome in the central ledger revision.",

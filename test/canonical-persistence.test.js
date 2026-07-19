@@ -122,6 +122,45 @@ test('GDL-CONTRACT-008 rejects a concurrent canonical base advance and cleans th
   assert.equal(result.summary.cleanup.removed, true);
 });
 
+test('GDL-CONTRACT-008 fails closed when required Git identity probes are unavailable', async () => {
+  const scenarios = [
+    {
+      fragment: 'git rev-parse origin/main',
+      occurrence: 1,
+      reason: 'canonical_audit_base_head_identity_unavailable',
+      cleanupAttempted: false
+    },
+    {
+      fragment: 'git rev-parse HEAD',
+      occurrence: 1,
+      reason: 'canonical_audit_commit_identity_unavailable',
+      cleanupAttempted: true
+    },
+    {
+      fragment: 'git rev-parse origin/main',
+      occurrence: 2,
+      reason: 'canonical_audit_latest_base_head_identity_unavailable',
+      cleanupAttempted: true
+    }
+  ];
+
+  for (const scenario of scenarios) {
+    const fixture = await createRepository();
+    const before = await remoteHead(fixture.root);
+    const result = await persistCanonicalArtifactsToBase({
+      ...canonicalInput(fixture),
+      options: { commandRunner: failCommand(scenario.fragment, scenario.occurrence) }
+    });
+
+    assert.equal(result.summary.status, 'failed', scenario.reason);
+    assert.equal(result.summary.reason, scenario.reason);
+    assert.equal(result.summary.pushed, false);
+    assert.equal(result.summary.cleanup.attempted, scenario.cleanupAttempted);
+    if (scenario.cleanupAttempted) assert.equal(result.summary.cleanup.removed, true);
+    assert.equal(await remoteHead(fixture.root), before);
+  }
+});
+
 test('GDL-CONTRACT-008 reports prepare and write failures without changing the remote base', async () => {
   for (const scenario of [
     {

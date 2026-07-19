@@ -4028,6 +4028,12 @@ export function renderOutcomeCommandError(error) {
   }
   if (details.verification_failure) lines.push(`authority verification: ${details.verification_failure}`);
   if (details.persistence) lines.push(...renderPersistenceFailure(details.persistence));
+  if (details.ledger_postcondition) {
+    lines.push(`ledger postcondition: status=${details.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.ledger_postcondition.observed_digest ?? 'unknown'}`);
+  }
+  if (details.reconciliation) {
+    lines.push(`reconciliation: status=${details.reconciliation.status ?? 'unknown'} artifact-status=${details.reconciliation.artifact_status ?? 'unknown'} artifact=${details.reconciliation.artifact_path ?? 'unknown'}`);
+  }
   if (details.recovery) lines.push(`recovery: ${details.recovery}`);
   return `${lines.join('\n')}\n`;
 }
