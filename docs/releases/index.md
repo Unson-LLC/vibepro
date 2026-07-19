@@ -33,3 +33,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:349:start -->
 - [PR #349](https://github.com/Unson-LLC/vibepro/pull/349) — [2026-07](/releases/2026-07): story-vibepro-pr-driven-continuous-release - PRマージからマニュアル・VitePress・npmまで完全自動でリリースする
 <!-- vibepro-release-index-pr:349:end -->
+
+<!-- vibepro-release-index-pr:350:start -->
+- [PR #350](https://github.com/Unson-LLC/vibepro/pull/350) — [2026-07](/releases/2026-07): story-vibepro-post-merge-docs-clean-worktree - Keep the post-merge docs deployment worktree clean
+<!-- vibepro-release-index-pr:350:end -->

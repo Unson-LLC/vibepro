@@ -62,3 +62,24 @@ main向けPRのマージを起点に、VibePro PR本文の安定したRelease No
 なし。PR作成者はマージ前にChange Summary、Compatibility、User Actionの3節が利用者向けの内容になっていることを確認する。
 
 <!-- vibepro-release-pr:349:end -->
+
+<!-- vibepro-release-pr:350:start -->
+## [#350](https://github.com/Unson-LLC/vibepro/pull/350) story-vibepro-post-merge-docs-clean-worktree - Keep the post-merge docs deployment worktree clean
+
+- Author: @sintariran
+- Merged: 2026-07-19T01:18:06Z
+- Commit: `1846cff28afd89d23368e29e05f12019dd1a77d6`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md](docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:350:end -->
