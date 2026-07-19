@@ -38,6 +38,7 @@ function normalizeContent(value) {
 
 export function sanitizeReleaseContent(value) {
   return value
+    .replaceAll('](docs/', '](https://github.com/Unson-LLC/vibepro/blob/main/docs/')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
