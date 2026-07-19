@@ -274,7 +274,6 @@ function findInlineLinkEnd(source, start) {
   index += 1;
   for (; index < source.length; index += 1) {
     if (isEscaped(source, index)) {
-      index += 1;
       continue;
     }
     if (source[index] === closing) {
