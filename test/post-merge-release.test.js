@@ -305,9 +305,44 @@ test('RNLN-008 reprojects a trusted live PR payload through the real docs-only s
   assert.deepEqual(await readFiles(root, protectedFiles), protectedBefore);
 });
 
+test('RNLN-007 projects and renders a release body through their real CLI subprocesses', async () => {
+  const root = await createReprojectFixture();
+  runGit(root, ['init']);
+  runGit(root, ['config', 'user.email', 'test@example.com']);
+  runGit(root, ['config', 'user.name', 'VibePro Test']);
+  runGit(root, ['add', '.']);
+  runGit(root, ['commit', '-m', 'fixture']);
+  const fixtureSha = runGit(root, ['rev-parse', 'HEAD']);
+  const eventPath = path.join(root, 'event.json');
+  const event = livePullRequestEvent({
+    merge_commit_sha: fixtureSha,
+    base: {
+      ref: 'main',
+      sha: fixtureSha,
+      repo: { full_name: 'Unson-LLC/vibepro' }
+    }
+  });
+  await writeFile(eventPath, JSON.stringify(event));
+
+  const project = runReleaseSubprocess(root, ['project', '--event', eventPath]);
+  assert.equal(project.status, 0, project.stderr);
+  assert.match(project.stdout, /release_required=false/);
+  assert.match(project.stdout, /pr_number=350/);
+  assert.match(await readFile(path.join(root, 'CHANGELOG.md'), 'utf8'), /vibepro-release-pr:350:start/);
+
+  const outputPath = path.join(root, 'release-body.md');
+  const releaseBody = runReleaseSubprocess(root, ['release-body', '--event', eventPath, '--output', outputPath]);
+  assert.equal(releaseBody.status, 0, releaseBody.stderr);
+  const rendered = await readFile(outputPath, 'utf8');
+  assert.match(rendered, /^## \[#350\]\(https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/350\)/);
+  assert.match(rendered, /Automatic notes\. \[Story\]\(https:\/\/github\.com\/Unson-LLC\/vibepro\/blob\/main\/docs\/management\/stories\/active\/story-example\.md\)/);
+});
+
 test('RNLN-008 rejects untrusted reproject payloads before release docs mutation', async () => {
   const variants = [
     ['unmerged PR', { merged: false }, /pull_request\.merged must be true/],
+    ['zero PR number', { number: 0 }, /pull_request\.number must be a positive integer/],
+    ['non-integer PR number', { number: 350.5 }, /pull_request\.number must be a positive integer/],
     ['foreign repository', { base: { ref: 'main', repo: { full_name: 'attacker/foreign' } } }, /base\.repo\.full_name must be Unson-LLC\/vibepro/],
     ['non-default base', { base: { ref: 'release', repo: { full_name: 'Unson-LLC/vibepro' } } }, /base\.ref must be main/],
     ['external PR URL', { html_url: 'https://example.com/pull/350' }, /html_url must be https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/350/]
