@@ -44,6 +44,8 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[escaped-terminal-title](https://example.com "[title](docs/not-a-link.md)\\"")',
     '[paren-escaped-terminal](docs/paren-escaped-terminal.md (Title\\)))',
     '[angle](<docs/guide/a b.md>)',
+    '[encoded-angle](<docs/guide/a%20b.md>)',
+    '[outer [inner](docs/inner.md)](docs/outer.md)',
     '[code `label ]`](docs/code-label.md)',
     '[![nested image](docs/nested-image.png)](docs/nested-image-page.md)',
     '[![nested titled image](docs/nested-titled-image.png "title ] tail")](docs/nested-titled-image-page.md)',
@@ -92,6 +94,8 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[escaped-terminal-title](https://example.com "[title](docs/not-a-link.md)\\"")',
     '[paren-escaped-terminal](https://github.com/Unson-LLC/vibepro/blob/main/docs/paren-escaped-terminal.md (Title\\)))',
     '[angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
+    '[encoded-angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
+    '[outer [inner](https://github.com/Unson-LLC/vibepro/blob/main/docs/inner.md)](docs/outer.md)',
     '[code `label ]`](https://github.com/Unson-LLC/vibepro/blob/main/docs/code-label.md)',
     '[![nested image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-image.png)](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-image-page.md)',
     '[![nested titled image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-titled-image.png "title ] tail")](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-titled-image-page.md)',
@@ -251,6 +255,38 @@ test('RNLN-004 derives release section boundaries from rendered Markdown blocks'
       '### Compatibility',
       '[inside](docs/inside.md)',
       '```',
+      'after'
+    ].join('\n'),
+    compatibility: 'none',
+    userAction: 'none'
+  });
+});
+
+test('RNLN-006 ignores container headings when extracting top-level release sections', () => {
+  const sections = extractReleaseSections([
+    '> ## Release Notes',
+    '> quoted release heading',
+    '## Release Notes',
+    '### Change Summary',
+    'before',
+    '> ### Compatibility',
+    '> quoted compatibility heading',
+    '- ### User Action',
+    '  listed user-action heading',
+    'after',
+    '### Compatibility',
+    'none',
+    '### User Action',
+    'none'
+  ].join('\n'));
+
+  assert.deepEqual(sections, {
+    changeSummary: [
+      'before',
+      '&gt; ### Compatibility',
+      '&gt; quoted compatibility heading',
+      '- ### User Action',
+      '  listed user-action heading',
       'after'
     ].join('\n'),
     compatibility: 'none',

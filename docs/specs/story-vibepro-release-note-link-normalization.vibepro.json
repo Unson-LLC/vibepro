@@ -9,7 +9,7 @@
     {
       "id": "RNLN-001",
       "type": "scenario",
-      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; angle wrappers are removed and spaces are percent encoded.",
+      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; angle wrappers are removed, existing valid percent escapes are preserved, and spaces are percent encoded.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "normalizeReleaseDocumentationLinks" }]
@@ -21,7 +21,7 @@
     {
       "id": "RNLN-002",
       "type": "invariant",
-      "statement": "A prose docs link is normalized while VitePress block-code tokens, inline code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, container and malformed fence boundaries follow the production renderer, and fenced headings do not terminate release sections.",
+      "statement": "A prose docs link is normalized while VitePress block-code tokens, inline code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, parser-rejected outer nested links remain unchanged, container and malformed fence boundaries follow the production renderer, and only top-level headings terminate release sections.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findProtectedCodeRanges" }]
@@ -64,6 +64,18 @@
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "PCR-CON-002/003 projects a PR #350-shaped entry idempotently" }]
+      }
+    },
+    {
+      "id": "RNLN-006",
+      "type": "invariant",
+      "statement": "Blockquote and list container headings cannot select or terminate top-level release sections.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "captureSection" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-006 ignores container headings" }]
       }
     }
   ],

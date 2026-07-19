@@ -38,6 +38,7 @@ function captureSection(markdown, level, names) {
     if (
       token.type !== 'heading_open'
       || token.tag !== `h${level}`
+      || token.level !== 0
       || !token.map
       || inline?.type !== 'inline'
       || !expectedNames.has(inline.content.trim().toLocaleLowerCase())
@@ -47,7 +48,7 @@ function captureSection(markdown, level, names) {
     let end = source.length;
     for (let candidate = index + 1; candidate < tokens.length; candidate += 1) {
       const next = tokens[candidate];
-      if (next.type !== 'heading_open' || !next.map) continue;
+      if (next.type !== 'heading_open' || next.level !== 0 || !next.map) continue;
       const nextLevel = Number(next.tag.slice(1));
       if (nextLevel <= level) {
         end = lineOffset(lineOffsets, next.map[0], source.length);
@@ -161,7 +162,7 @@ function findMarkdownLinkReplacements(source, protectedRanges) {
     let normalizedValue = `${root}${destination.value}`;
     if (destination.angleWrapped) {
       try {
-        normalizedValue = encodeURI(normalizedValue);
+        normalizedValue = encodeURI(normalizedValue).replace(/%25([\da-f]{2})/giu, '%$1');
       } catch (error) {
         if (error instanceof URIError) continue;
         throw error;
@@ -190,6 +191,8 @@ function findClosingLabel(source, openingIndex, protectedRanges) {
       if (nestedLabelEnd >= 0 && source[nestedLabelEnd + 1] === '(') {
         const nestedDestination = parseInlineDestination(source, nestedLabelEnd + 2);
         if (nestedDestination) {
+          const isNestedImage = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
+          if (!isNestedImage) return -1;
           index = nestedDestination.linkEnd - 1;
           continue;
         }
