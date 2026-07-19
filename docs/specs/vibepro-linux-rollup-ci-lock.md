@@ -35,8 +35,8 @@ Release-note projection must convert repository-relative `docs/...` markdown tar
 ```mermaid
 flowchart LR
   A[PR merged to main] --> B[npm ci on Linux]
-  B --> C[VitePress build]
-  C --> D[Release-note projection]
+  B --> C[Release-note projection]
+  C --> D[VitePress build]
   D --> E[Public manual deploy]
 ```
 
