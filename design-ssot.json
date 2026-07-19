@@ -5479,7 +5479,68 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-post-merge-docs-clean-worktree",
+      "title": "Post-merge Docs Clean Worktree",
+      "root_doc": "docs/architecture/story-vibepro-post-merge-docs-clean-worktree.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Clean-source boundary for deterministic post-merge VitePress deployment",
+      "owned_surfaces": [
+        "post-merge VitePress deploy dependency installation",
+        "repository clean-source ignore policy"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-post-merge-docs-clean-worktree.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-post-merge-docs-clean-worktree.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-18T16:03:45.332Z"
+  "updated_at": "2026-07-19T01:04:00.000Z"
 }

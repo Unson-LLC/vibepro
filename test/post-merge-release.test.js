@@ -137,6 +137,7 @@ test('PCR-CON-005 serializes an interleaved older release with an atomic lease',
 test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional release', async () => {
   const workflow = await readFile(new URL('../.github/workflows/post-merge-release.yml', import.meta.url), 'utf8');
   const manualWorkflow = await readFile(new URL('../.github/workflows/npm-publish.yml', import.meta.url), 'utf8');
+  const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf8');
   assert.match(workflow, /pull_request_target:/);
   assert.doesNotMatch(workflow, /^\s+pull_request:\s*$/m);
   assert.match(workflow, /pull_request\.merged == true/);
@@ -155,7 +156,9 @@ test('PCR-CON-008 workflow binds merged main PRs to docs deploy and conditional 
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('Project PR body into release history'));
   assert.ok(workflow.indexOf('publish-npm') < workflow.indexOf('gh release'));
   assert.ok(workflow.indexOf('gh release') < workflow.indexOf('Project PR body into release history'));
-  assert.match(workflow, /Deploy VitePress manual[\s\S]*git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
+  const deployStep = workflow.match(/- name: Deploy VitePress manual[\s\S]*?(?=\n      - name:|$)/)?.[0] ?? '';
+  assert.match(deployStep, /git pull --ff-only origin main[\s\S]*npm ci[\s\S]*npm run docs:deploy/);
+  assert.match(gitignore, /^node_modules\/$/m);
   assert.match(workflow, /for attempt in 1 2 3; do[\s\S]*git fetch origin main[\s\S]*git reset --hard origin\/main[\s\S]*post-merge-release\.mjs project[\s\S]*git push origin HEAD:main/);
   assert.doesNotMatch(workflow, /git pull --rebase origin main/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
