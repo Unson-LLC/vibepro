@@ -4,7 +4,7 @@
 |------|------|
 | Story | Guarded Autonomyロードマップを最新契約へ再編する |
 | Story ID | story-vibepro-autonomy-roadmap-rebaseline |
-| Run ID | 2026-07-18T012313Z |
+| Run ID | 2026-07-19T032804Z |
 | Gate | needs_review |
 | タスク数 | 1 |
 

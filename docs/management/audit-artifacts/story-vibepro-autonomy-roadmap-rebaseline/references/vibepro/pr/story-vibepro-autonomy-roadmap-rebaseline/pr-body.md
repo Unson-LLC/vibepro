@@ -1,9 +1,10 @@
 ## 判断
-- このPRで判断すること: 直近追加Storyと衝突しない実装順へ再編したい を満たすための Contract Docs 変更として、このPRを受け入れてよいか。
+- このPRで判断すること: 直近追加Storyと衝突しない実装順へ再編したい を満たすための Contract Docs / Tests 変更として、このPRを受け入れてよいか。
 - Story: story-vibepro-autonomy-roadmap-rebaseline - 直近追加Storyと衝突しない実装順へ再編したい
 - 正本: [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md)
-- 変更範囲: 12 files / Contract Docs
-- 設計/Story: [docs/management/stories/active/story-vibepro-agent-runtime-adapters.md](docs/management/stories/active/story-vibepro-agent-runtime-adapters.md), [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md), [docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md](docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md), ...and 8 more
+- 変更範囲: 4 files / Contract Docs / Tests
+- 設計/Story: [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md), [docs/architecture/vibepro-autonomy-roadmap-rebaseline.md](docs/architecture/vibepro-autonomy-roadmap-rebaseline.md), [docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md](docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md)
+- テスト: [test/autonomy-roadmap-rebaseline.test.js](test/autonomy-roadmap-rebaseline.test.js)
 
 ## 経緯
 - 要求: 直近追加Storyと衝突しない実装順へ再編したい
@@ -14,18 +15,31 @@
 - 最新診断gateが needs_review
 
 ## 解決
-- Story文書を更新: [docs/management/stories/active/story-vibepro-agent-runtime-adapters.md](docs/management/stories/active/story-vibepro-agent-runtime-adapters.md), [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md), [docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md](docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md), [docs/management/stories/active/story-vibepro-human-decision-checkpoint.md](docs/management/stories/active/story-vibepro-human-decision-checkpoint.md), ...
+- Story文書を更新: [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md)
+
+## Release Notes
+
+### Change Summary
+Story文書を更新: [docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md](docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md)
+
+### Compatibility
+なし
+
+### User Action
+なし
 
 ## レビュー観点
-- Gate: 未解決の必須Gateはありません。ただしリリース判断Warning: Design Input Judgment Gate, Managed Worktree Gate。 詳細はVibePro証跡の Gate DAG / Gate Enforcement を確認してください。
-- Scope: 差分範囲の説明または分割判断が必要。理由: baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある / split=split_by_lane_then_prepare
-- 管理worktree: needs_review
+- Gate: 未解決の必須Gateはありません。ただしリリース判断Warning: Design Input Judgment Gate。 詳細はVibePro証跡の Gate DAG / Gate Enforcement を確認してください。
+- Scope: 差分範囲の説明または分割判断が必要。理由: baseからのcommitが 3 件あり、Story外の変更混入を確認する必要がある / split=split_by_lane_then_prepare
+- 管理worktree: passed
 - Storyの受け入れ基準と実装差分が対応しているか
+- テスト差分: [test/autonomy-roadmap-rebaseline.test.js](test/autonomy-roadmap-rebaseline.test.js)
 - Risk: 最新診断gateが needs_review
 
 ## 確認
-- [ ] 手動確認または対象テストを追記する
-- 最終E2E: pass: Roadmap order, ownership, PR boundaries, sequential gates, residual Hardening scope, and unchanged runtime authority are verified at current HEAD（[.vibepro/qa/roadmap-rebaseline-current-head.json](.vibepro/qa/roadmap-rebaseline-current-head.json)）
+- [x] Unit Gate - 変更に対応する対象テスト / gate: passed / evidence: [.vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json](.vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json)
+- [x] Unit Gate - Imported CI evidence for test (22) (SUCCESS) at HEAD be8236faf7be; evidence: [.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_22_.json](.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_22_.json) / gate: passed / evidence: [.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_22_.json](.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_22_.json)
+- 最終E2E: not_required: UI/E2E対象の差分ではないため、Unit / Integration証跡で完了判定する
 
 ## 詳細
 - 証跡: [.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/](.vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/)
@@ -34,4 +48,4 @@
 - Gate: ready_for_review
 - 実行状態: ready
 - Scope: needs_clean_branch / clean_branch_or_split_pr
-- Runtime: vibepro@0.2.0-beta.0 e096fdb300a6 codex/story-vibepro-autonomy-roadmap-rebaseline clean (story=story-vibepro-autonomy-roadmap-rebaseline)
+- Runtime: vibepro@0.2.0-beta.1 be8236faf7be vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj clean (story=story-vibepro-autonomy-roadmap-rebaseline)

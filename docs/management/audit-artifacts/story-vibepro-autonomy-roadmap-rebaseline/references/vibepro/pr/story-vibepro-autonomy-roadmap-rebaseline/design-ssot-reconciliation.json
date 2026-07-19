@@ -3,29 +3,21 @@
   "model": "vibepro-design-ssot-reconciliation-v1",
   "workflow": "design-ssot-reconcile",
   "status": "passed",
-  "generated_at": "2026-07-18T03:18:13.558Z",
+  "generated_at": "2026-07-19T03:39:54.161Z",
   "registry_sources": [
     "design-ssot.json"
   ],
   "changed_paths": [
-    "design-ssot.json",
     "docs/architecture/vibepro-autonomy-roadmap-rebaseline.md",
-    "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
     "docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md",
-    "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
-    "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
-    "docs/management/stories/active/story-vibepro-next-best-action-controller.md",
-    "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
-    "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
-    "docs/management/stories/active/story-vibepro-safe-action-orchestrator.md",
-    "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
-    "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md"
+    "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md",
+    "test/autonomy-roadmap-rebaseline.test.js"
   ],
   "summary": {
     "registry_source_count": 1,
-    "design_root_count": 80,
+    "design_root_count": 86,
     "changed_design_root_count": 1,
-    "changed_child_count": 10,
+    "changed_child_count": 2,
     "missing_required_child_count": 0,
     "stale_child_count": 0,
     "frontmatter_gap_count": 0,
@@ -38,37 +30,59 @@
     "model": "vibepro-design-ssot-coverage-v1",
     "workflow": "design-ssot-coverage",
     "status": "passed",
-    "generated_at": "2026-07-18T03:18:13.539Z",
+    "generated_at": "2026-07-19T03:39:54.142Z",
     "registry_sources": [
       "design-ssot.json"
     ],
     "changed_paths": [
-      "design-ssot.json",
       "docs/architecture/vibepro-autonomy-roadmap-rebaseline.md",
-      "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
       "docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md",
-      "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
-      "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
-      "docs/management/stories/active/story-vibepro-next-best-action-controller.md",
-      "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
-      "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
-      "docs/management/stories/active/story-vibepro-safe-action-orchestrator.md",
-      "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
-      "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md"
+      "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md",
+      "test/autonomy-roadmap-rebaseline.test.js"
     ],
     "summary": {
       "registry_source_count": 1,
-      "design_root_count": 80,
-      "total_design_doc_count": 642,
-      "registered_root_count": 79,
-      "registered_child_count": 207,
-      "registered_doc_count": 286,
+      "design_root_count": 86,
+      "total_design_doc_count": 663,
+      "registered_root_count": 85,
+      "registered_child_count": 222,
+      "registered_doc_count": 307,
       "unregistered_doc_count": 356,
-      "changed_design_doc_count": 11,
+      "changed_design_doc_count": 3,
       "changed_unregistered_design_doc_count": 0,
-      "parent_design_declared_count": 238
+      "parent_design_declared_count": 256
     },
     "registered_docs": [
+      {
+        "path": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+        "kind": "architecture",
+        "title": "Classifier Premise Recovery Architecture",
+        "status": "final",
+        "parent_design": [
+          "vibepro-classifier-premise-recovery"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-classifier-premise-recovery",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-cli-env-boundary.md",
+        "kind": "architecture",
+        "title": "",
+        "status": null,
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-cli-env-boundary",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
       {
         "path": "docs/architecture/story-vibepro-evidence-adjudication-gate.md",
         "kind": "architecture",
@@ -134,6 +148,52 @@
         }
       },
       {
+        "path": "docs/architecture/story-vibepro-linux-rollup-ci-lock.md",
+        "kind": "architecture",
+        "title": "",
+        "status": null,
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-linux-rollup-ci-lock",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
+        "kind": "adr",
+        "title": "Next Best Action Controller Architecture",
+        "status": "accepted",
+        "parent_design": [
+          "vibepro-autonomy-roadmap-rebaseline"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-autonomy-roadmap-rebaseline",
+          "kind": "architecture",
+          "relationship": "refines",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-post-merge-docs-clean-worktree.md",
+        "kind": "architecture",
+        "title": "",
+        "status": null,
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-post-merge-docs-clean-worktree",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/architecture/story-vibepro-release-surface-guard.md",
         "kind": "architecture",
         "title": "Release Surface Guard Architecture",
@@ -162,6 +222,24 @@
           "role": "root",
           "root_id": "story-vibepro-run-context-capsule",
           "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+        "kind": "adr",
+        "title": "VibePro Safe Action Orchestrator Architecture",
+        "status": "accepted",
+        "parent_design": [
+          "vibepro-autonomy-roadmap-rebaseline"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-autonomy-roadmap-rebaseline",
+          "kind": "adr",
+          "relationship": "refines",
+          "required": true,
           "source": "design-ssot.json"
         }
       },
@@ -876,6 +954,22 @@
         }
       },
       {
+        "path": "docs/architecture/vibepro-init-help-no-side-effect.md",
+        "kind": "architecture",
+        "title": "Read-only init help architecture",
+        "status": null,
+        "parent_design": [
+          "vibepro-init-help-no-side-effect"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-init-help-no-side-effect",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/architecture/vibepro-judgment-axis-activation-preconditions.md",
         "kind": "architecture",
         "title": "VibePro Judgment Axis Activation Preconditions Architecture",
@@ -1025,6 +1119,22 @@
         "registration": {
           "role": "root",
           "root_id": "vibepro-pr-body-path-links",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+        "kind": "architecture",
+        "title": "PR-driven Continuous Release Architecture",
+        "status": null,
+        "parent_design": [
+          "pr-driven-continuous-release"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-pr-driven-continuous-release",
           "kind": "architecture",
           "source": "design-ssot.json"
         }
@@ -1910,6 +2020,42 @@
         }
       },
       {
+        "path": "docs/management/stories/active/story-vibepro-classifier-premise-recovery.md",
+        "kind": "story",
+        "title": "誤ったclassifier premiseを訂正して再裁定できるようにする",
+        "status": "active",
+        "parent_design": [
+          "vibepro-classifier-premise-recovery"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-classifier-premise-recovery",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-cli-env-boundary.md",
+        "kind": "story",
+        "title": "CLI entrypointでprocess.envを保持する",
+        "status": "active",
+        "parent_design": [
+          "vibepro-cli-env-boundary"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-cli-env-boundary",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/management/stories/active/story-vibepro-cli-help-missing-commands.md",
         "kind": "story",
         "title": "CLI --help Usage must list runtime commands story map, task brief/plan/handoff, and check list",
@@ -2342,6 +2488,24 @@
         }
       },
       {
+        "path": "docs/management/stories/active/story-vibepro-init-help-no-side-effect.md",
+        "kind": "story",
+        "title": "init help is read-only",
+        "status": "active",
+        "parent_design": [
+          "vibepro-init-help-no-side-effect"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-init-help-no-side-effect",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/management/stories/active/story-vibepro-judgment-axis-activation-preconditions.md",
         "kind": "story",
         "title": "judgment axis の発火に diff 組成の事前条件を入れ、noise 判定の先例を再発火時に提示する",
@@ -2403,6 +2567,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-layer-aware-e2e-gate",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-linux-rollup-ci-lock.md",
+        "kind": "story",
+        "title": "Make the VitePress lockfile installable on Linux CI",
+        "status": "active",
+        "parent_design": [
+          "vibepro-linux-rollup-ci-lock"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-linux-rollup-ci-lock",
           "kind": "story",
           "relationship": "implements",
           "required": true,
@@ -2482,6 +2664,24 @@
         }
       },
       {
+        "path": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+        "kind": "story",
+        "title": "Keep the post-merge docs deployment worktree clean",
+        "status": "active",
+        "parent_design": [
+          "vibepro-post-merge-docs-clean-worktree"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-post-merge-docs-clean-worktree",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/management/stories/active/story-vibepro-pr-artifact-size-budget.md",
         "kind": "story",
         "title": "pr prepare artifact に per-file サイズ予算を課し、LLM handoff は bounded summary を既定にする",
@@ -2529,6 +2729,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-pr-body-path-links",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-pr-driven-continuous-release.md",
+        "kind": "story",
+        "title": "PRマージからマニュアル・VitePress・npmまで完全自動でリリースする",
+        "status": "active",
+        "parent_design": [
+          "vibepro-pr-driven-continuous-release"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-pr-driven-continuous-release",
           "kind": "story",
           "relationship": "implements",
           "required": true,
@@ -3356,6 +3574,42 @@
         }
       },
       {
+        "path": "docs/specs/story-vibepro-classifier-premise-recovery.md",
+        "kind": "spec",
+        "title": "Classifier Premise Recovery Spec",
+        "status": "final",
+        "parent_design": [
+          "vibepro-classifier-premise-recovery"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-classifier-premise-recovery",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/story-vibepro-cli-env-boundary.md",
+        "kind": "spec",
+        "title": "",
+        "status": "final",
+        "parent_design": [
+          "vibepro-cli-env-boundary"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-cli-env-boundary",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
         "kind": "spec",
         "title": "Content Scoped Evidence Freshness Spec",
@@ -3549,6 +3803,24 @@
           "root_id": "vibepro-keyword-gate-structured-migration",
           "kind": "spec",
           "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/story-vibepro-next-best-action-controller.md",
+        "kind": "spec",
+        "title": "Next Best Action Controller Spec",
+        "status": "accepted",
+        "parent_design": [
+          "vibepro-autonomy-roadmap-rebaseline"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-autonomy-roadmap-rebaseline",
+          "kind": "spec",
+          "relationship": "specifies",
           "required": true,
           "source": "design-ssot.json"
         }
@@ -4508,6 +4780,24 @@
         }
       },
       {
+        "path": "docs/specs/vibepro-init-help-no-side-effect.md",
+        "kind": "spec",
+        "title": "Read-only init help spec",
+        "status": null,
+        "parent_design": [
+          "vibepro-init-help-no-side-effect"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-init-help-no-side-effect",
+          "kind": "spec",
+          "relationship": "specifies",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/specs/vibepro-judgment-dag-adjudication.md",
         "kind": "spec",
         "title": "Judgment DAG Adjudication Spec",
@@ -4537,6 +4827,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-layer-aware-e2e-gate",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+        "kind": "spec",
+        "title": "",
+        "status": "final",
+        "parent_design": [
+          "vibepro-linux-rollup-ci-lock"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-linux-rollup-ci-lock",
           "kind": "spec",
           "relationship": "implements",
           "required": true,
@@ -4580,6 +4888,24 @@
         }
       },
       {
+        "path": "docs/specs/vibepro-post-merge-docs-clean-worktree.md",
+        "kind": "spec",
+        "title": "",
+        "status": "final",
+        "parent_design": [
+          "vibepro-post-merge-docs-clean-worktree"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-post-merge-docs-clean-worktree",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/specs/vibepro-pr-body-path-links.md",
         "kind": "spec",
         "title": "GitHub PR body repository path links spec",
@@ -4591,6 +4917,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-pr-body-path-links",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/vibepro-pr-driven-continuous-release.md",
+        "kind": "spec",
+        "title": "PR-driven Continuous Release Spec",
+        "status": null,
+        "parent_design": [
+          "vibepro-pr-driven-continuous-release"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-pr-driven-continuous-release",
           "kind": "spec",
           "relationship": "implements",
           "required": true,
@@ -8186,153 +8530,9 @@
         }
       },
       {
-        "path": "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
-        "kind": "story",
-        "title": "実装・Reviewを委譲するProvider-neutral Agent Runtime Adapter",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
         "path": "docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md",
         "kind": "story",
         "title": "Guarded Autonomyロードマップを最新契約へ再編する",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
-        "kind": "story",
-        "title": "PR-ready自律走行を安全に運用するGuarded Autonomy Hardening",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
-        "kind": "story",
-        "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-next-best-action-controller.md",
-        "kind": "story",
-        "title": "期待価値で次の一手を選ぶMeta Controller",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
-        "kind": "story",
-        "title": "Review findingを実装修正へ戻すBounded Repair Loop",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
-        "kind": "story",
-        "title": "高シグナル確認を先行するRisk-adaptive Validation Sequencing",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-safe-action-orchestrator.md",
-        "kind": "story",
-        "title": "既存VibePro操作を安全に進めるRun Orchestrator",
-        "status": "active",
-        "parent_design": [
-          "vibepro-autonomy-roadmap-rebaseline"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-autonomy-roadmap-rebaseline",
-          "kind": "story",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
-        "kind": "story",
-        "title": "複数Storyを混載しないStory Run Portfolio Controller",
         "status": "active",
         "parent_design": [
           "vibepro-autonomy-roadmap-rebaseline"
@@ -11165,7 +11365,7 @@
       "source": "design-ssot.json",
       "root_doc": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
       "root_exists": true,
-      "root_hash": "8a77c5e8f73fcbfe17bf58c8d09cbcbdbeead796845cce22f7484f338f1bf29f",
+      "root_hash": "7470b4ae368416817fc7551ece60d866faa6e9c1cdb9380423063e2769c301f1",
       "status": "passed",
       "changed": {
         "root_changed": false,
@@ -13817,25 +14017,17 @@
       "source": "design-ssot.json",
       "root_doc": "docs/architecture/vibepro-autonomy-roadmap-rebaseline.md",
       "root_exists": true,
-      "root_hash": "0f57670d8956f5b99b74dd03325868becd0b4da829960d634eae1889bdcdedf6",
+      "root_hash": "cbe07549a65e4e465581b9c9be2c7e6556bfec2b8553e3b9883e8e618fb3d83c",
       "status": "passed",
       "changed": {
         "root_changed": true,
         "changed_children": [
-          "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
           "docs/management/stories/active/story-vibepro-autonomy-roadmap-rebaseline.md",
-          "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
-          "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
-          "docs/management/stories/active/story-vibepro-next-best-action-controller.md",
-          "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
-          "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
-          "docs/management/stories/active/story-vibepro-safe-action-orchestrator.md",
-          "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
           "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md"
         ]
       },
       "summary": {
-        "child_count": 10,
+        "child_count": 13,
         "action_item_count": 0,
         "missing_required_child_count": 0,
         "frontmatter_gap_count": 0,
@@ -13867,7 +14059,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13885,7 +14077,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13903,7 +14095,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13921,7 +14113,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13939,7 +14131,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13957,7 +14149,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13975,7 +14167,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -13993,7 +14185,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -14018,6 +14210,420 @@
               "vibepro-autonomy-roadmap-rebaseline"
             ],
             "status": null,
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-next-best-action-controller.md",
+          "required": true,
+          "relationship": "specifies",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-autonomy-roadmap-rebaseline"
+            ],
+            "status": "accepted",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "adr",
+          "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
+          "required": true,
+          "relationship": "refines",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-autonomy-roadmap-rebaseline"
+            ],
+            "status": "accepted",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
+          "required": true,
+          "relationship": "refines",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-autonomy-roadmap-rebaseline"
+            ],
+            "status": "accepted",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-init-help-no-side-effect",
+      "title": "VibePro init help read-only contract",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/vibepro-init-help-no-side-effect.md",
+      "root_exists": true,
+      "root_hash": "4eb7d1bb2a4e2a05def7dfe4eb63ec4081aec2129b14eeb900fd6d2564b90155",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-init-help-no-side-effect.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-init-help-no-side-effect"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-init-help-no-side-effect.md",
+          "required": true,
+          "relationship": "specifies",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-init-help-no-side-effect"
+            ],
+            "status": null,
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-cli-env-boundary",
+      "title": "VibePro CLI Environment Boundary",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-cli-env-boundary.md",
+      "root_exists": true,
+      "root_hash": "bea05ee5db7d9f914a20ae93782cd120a1dfca0a78fc5629b670f1e99a8c06f5",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-cli-env-boundary.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-cli-env-boundary"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-cli-env-boundary.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-cli-env-boundary"
+            ],
+            "status": "final",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-classifier-premise-recovery",
+      "title": "Classifier Premise Recovery",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "root_exists": true,
+      "root_hash": "ea6a42c4abba16b334c947d7cce76eb416338e5a85d3b40ec7282198c3519091",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-classifier-premise-recovery.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-classifier-premise-recovery"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-classifier-premise-recovery.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-classifier-premise-recovery"
+            ],
+            "status": "final",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-pr-driven-continuous-release",
+      "title": "Vibepro Pr Driven Continuous Release",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+      "root_exists": true,
+      "root_hash": "7833ed507f3725a69031a3902162c82cdcf5a18b8db21b377c9971d0e28c696b",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-pr-driven-continuous-release.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-pr-driven-continuous-release"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-pr-driven-continuous-release.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-pr-driven-continuous-release"
+            ],
+            "status": null,
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-post-merge-docs-clean-worktree",
+      "title": "Post-merge Docs Clean Worktree",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-post-merge-docs-clean-worktree.md",
+      "root_exists": true,
+      "root_hash": "2079693026d0563c0fec1b06f68b1dc7adc89130810a1d04d38dbcbd0c7f4b3d",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-post-merge-docs-clean-worktree"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-post-merge-docs-clean-worktree.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-post-merge-docs-clean-worktree"
+            ],
+            "status": "final",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-linux-rollup-ci-lock",
+      "title": "Linux Rollup CI lock",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-linux-rollup-ci-lock.md",
+      "root_exists": true,
+      "root_hash": "d1f1095d8b83e730d67ceabc60485e57db0c2f554c39dd9585bd90418c515866",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-linux-rollup-ci-lock.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-linux-rollup-ci-lock"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-linux-rollup-ci-lock"
+            ],
+            "status": "final",
             "superseded_by": [],
             "has_hash_binding": false
           },
