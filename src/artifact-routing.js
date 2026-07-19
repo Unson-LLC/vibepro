@@ -218,7 +218,7 @@ function normalizeVariables(options) {
   if (!options.storyId) {
     throw new ArtifactRoutingError('missing_variable', 'storyId is required to resolve artifact routes');
   }
-  const storyId = slugify(options.storyId, 'story');
+  const storyId = normalizeStoryId(options.storyId);
   const explicitFeature = options.featureSlug === undefined || options.featureSlug === null
     ? null
     : slugify(options.featureSlug, 'feature');
@@ -226,6 +226,11 @@ function normalizeVariables(options) {
     story_id: storyId,
     feature_slug: explicitFeature ?? slugify(storyId.replace(/^story-/, ''), 'feature')
   };
+}
+
+function normalizeStoryId(value) {
+  const raw = String(value).trim();
+  return /^[A-Z][A-Z0-9]*-\d+$/.test(raw) ? raw : slugify(raw, 'story');
 }
 
 function validateRoutingShape(routing) {
