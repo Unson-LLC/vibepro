@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-human-decision-checkpoint",
   "source": "execute_merge",
-  "promoted_at": "2026-07-19T11:09:41.516Z",
+  "promoted_at": "2026-07-19T11:09:47.907Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-index.json",
@@ -12,7 +12,9 @@
     "evidence_depth": "standard",
     "compacted": true,
     "persisted_for_main_audit": true,
-    "why_compacted": [],
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded"
+    ],
     "excludes": [
       "duplicated decision index body",
       "duplicated cost summary body",
@@ -38,11 +40,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ed7ced7300af9263d98f0a8a6caa0ffadf17008945f25bc809b20cc8a2660477",
-    "compressed_hash": "sha256:5262f578805d5938168cd0212eeeb22d13785c4406025512572650a59aafc54a",
-    "expanded_bytes": 16664,
-    "compressed_bytes": 3675,
-    "expanded_line_count": 429,
+    "content_hash": "sha256:14a1ea62ddc5efb77ba4f67b00605086628300d603f73588c07b6c9f67d15a05",
+    "compressed_hash": "sha256:ca55bce443b2b8fa6ea19489cc785bea985d6b04dfc49ac10179422ce58ec14b",
+    "expanded_bytes": 16703,
+    "compressed_bytes": 3685,
+    "expanded_line_count": 430,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "evidence_reuse",
@@ -59,14 +61,14 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-human-decision-checkpoint",
     "cost": {
-      "compressed_bytes": 3675,
-      "expanded_bytes": 16664,
-      "expanded_line_count": 429,
+      "compressed_bytes": 3685,
+      "expanded_bytes": 16703,
+      "expanded_line_count": 430,
       "persisted_line_count": 1
     }
   },
   "merge": {
-    "status": "merged",
+    "status": "failed",
     "pr_url": "https://github.com/Unson-LLC/vibepro/pull/357",
     "merge_commit_sha": "006d5fb5abe9889f91ad282001bd0095133bc957",
     "merged_at": "2026-07-19T11:09:40Z",
@@ -96,7 +98,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:ed7ced7300af9263d98f0a8a6caa0ffadf17008945f25bc809b20cc8a2660477"
+      "content_hash": "sha256:14a1ea62ddc5efb77ba4f67b00605086628300d603f73588c07b6c9f67d15a05"
     }
   ],
   "raw_artifact_manifest": [
@@ -174,10 +176,10 @@
       "source": ".vibepro/pr/story-vibepro-human-decision-checkpoint/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-replay-bundle.json.gz",
-      "digest": "sha256:1d0b6b083b3cf21d247cc37bd51e0100c1e43f6b0e423c6c5ba8ab3d650a6057",
-      "audit_digest": "sha256:2574111ffd954ffd8515daea9f474daec79ff9b9bceb95535d514c7c2c8d0508",
-      "line_count": 1581,
-      "raw_line_count": 3805,
+      "digest": "sha256:0bfdaa9cc390dbeb099aa6c0f2c0f3b44606df6b9648cd337e4db83028fa6c97",
+      "audit_digest": "sha256:782af6b03d75755d5905e51aa25200ed0e409ef497c1410c7becb86f39e21924",
+      "line_count": 2970,
+      "raw_line_count": 5142,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -192,8 +194,8 @@
       "source": ".vibepro/pr/story-vibepro-human-decision-checkpoint/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-replay-bundle.json.gz",
-      "digest": "sha256:fab79178d18cbd65799087d17434a8528a6a6d097128a0cbefa6cabc241c9791",
-      "audit_digest": "sha256:fab79178d18cbd65799087d17434a8528a6a6d097128a0cbefa6cabc241c9791",
+      "digest": "sha256:75edf64424ccbb99e869529832fa8f27d37bf7e11bf3e63188a6b7547721d88c",
+      "audit_digest": "sha256:75edf64424ccbb99e869529832fa8f27d37bf7e11bf3e63188a6b7547721d88c",
       "line_count": 390,
       "raw_line_count": 390,
       "audit_scope": "judgment_evidence_v1",
