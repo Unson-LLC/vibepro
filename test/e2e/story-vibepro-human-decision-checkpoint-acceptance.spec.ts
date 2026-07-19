@@ -42,4 +42,13 @@ test('story-vibepro-human-decision-checkpoint AC-1 through AC-7 and S-001 accept
   for (const [binding, pattern] of acceptanceBindings) {
     assert.match(result.stdout, pattern, `${binding} must remain executable from the Story acceptance replay`);
   }
+
+  assert.match(result.stdout, /duplicate material questions reuse one typed pending artifact/, 'story-vibepro-human-decision-checkpoint ac:1 deduplication and material reason remain executable');
+  assert.match(result.stdout, /every supported material decision type persists and resolves through one contract/, 'story-vibepro-human-decision-checkpoint ac:2 typed decision contract remains executable');
+  assert.match(result.stdout, /waiting Run is side-effect free until the human decision is answered/, 'story-vibepro-human-decision-checkpoint ac:3 waiting and resume cursor remain executable');
+  assert.match(result.stdout, /critical gate waiver is rejected without resolving the artifact/, 'story-vibepro-human-decision-checkpoint ac:4 critical waiver rejection remains executable');
+  assert.match(result.stdout, /Brainbase handoff reference is preserved as an opaque value/, 'story-vibepro-human-decision-checkpoint ac:5 upstream handoff boundary remains executable');
+  assert.match(result.stdout, /resolved replay repairs the decision index before Run resume continues/, 'story-vibepro-human-decision-checkpoint ac:6 journal replay and index repair remain executable');
+  assert.match(result.stdout, /invalid type and cancelled Run are rejected/, 'story-vibepro-human-decision-checkpoint ac:7 negative paths remain executable');
+  assert.match(result.stdout, /waiting Run resumes only after its typed decision is resolved/, 'story-vibepro-human-decision-checkpoint S-001: A persisted waiting Run resumes from the same typed decision after a fresh process restart.');
 });
