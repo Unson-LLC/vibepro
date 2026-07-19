@@ -156,7 +156,9 @@ function findInlineCodeRanges(source, fencedRanges) {
         candidate = protectedFence.end;
         continue;
       }
-      if (source[candidate] !== '`' || isEscaped(source, candidate)) {
+      // Backslashes are literal inside CommonMark code spans; they do not
+      // escape a matching backtick delimiter.
+      if (source[candidate] !== '`') {
         candidate += 1;
         continue;
       }
@@ -220,7 +222,17 @@ function findClosingLabel(source, openingIndex, protectedRanges) {
       continue;
     }
     if (isEscaped(source, index)) continue;
-    if (source[index] === '[') depth += 1;
+    if (source[index] === '[') {
+      const nestedLabelEnd = findClosingLabel(source, index, protectedRanges);
+      if (nestedLabelEnd >= 0 && source[nestedLabelEnd + 1] === '(') {
+        const nestedDestination = parseInlineDestination(source, nestedLabelEnd + 2);
+        if (nestedDestination) {
+          index = nestedDestination.linkEnd - 1;
+          continue;
+        }
+      }
+      depth += 1;
+    }
     if (source[index] === ']') depth -= 1;
     if (depth === 0) return index;
   }
