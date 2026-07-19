@@ -188,3 +188,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-release-note
 なし
 
 <!-- vibepro-release-pr:354:end -->
+
+<!-- vibepro-release-pr:357:start -->
+## [#357](https://github.com/Unson-LLC/vibepro/pull/357) story-vibepro-human-decision-checkpoint - 自律実行中に本当に必要な質問だけを受け、回答後に同じRunを再開したい
+
+- Author: @sintariran
+- Merged: 2026-07-19T11:09:40Z
+- Commit: `006d5fb5abe9889f91ad282001bd0095133bc957`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-human-decision-checkpoint.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-human-decision-checkpoint.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:357:end -->

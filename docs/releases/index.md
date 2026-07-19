@@ -57,3 +57,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:354:start -->
 - [PR #354](https://github.com/Unson-LLC/vibepro/pull/354) — [2026-07](/releases/2026-07): story-vibepro-artifact-output-routing - 成果物の正本出力先をリポジトリ設定で一意に制御する
 <!-- vibepro-release-index-pr:354:end -->
+
+<!-- vibepro-release-index-pr:357:start -->
+- [PR #357](https://github.com/Unson-LLC/vibepro/pull/357) — [2026-07](/releases/2026-07): story-vibepro-human-decision-checkpoint - 自律実行中に本当に必要な質問だけを受け、回答後に同じRunを再開したい
+<!-- vibepro-release-index-pr:357:end -->
