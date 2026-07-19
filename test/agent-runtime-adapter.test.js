@@ -35,7 +35,7 @@ const request = {
   requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: '/repo' }
 };
 
-test('ARA-S-1 ARA-S-2 provider-neutral contract probes capability before start', async () => {
+test('ARA-S-1 ARA-S-2 provider-neutral contract reports quota wait before start', async () => {
   const adapter = fakeAdapter({ async probe() { return { available: true, capabilities: [], reason: 'quota_exceeded' }; } });
   const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
   const result = await coordinator.dispatch(state, request);

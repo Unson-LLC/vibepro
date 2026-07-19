@@ -25,7 +25,7 @@ test('story-vibepro-agent-runtime-adapters AC-1 through AC-7 and S-002 acceptanc
   assert.match(result.stdout, /# fail 0\b/);
 
   const acceptanceBindings = [
-    ['AC-1', /provider-neutral contract probes capability before start/],
+    ['AC-1', /provider-neutral contract reports quota wait before start/],
     ['AC-2', /waiting runtime dispatch re-probes after capability recovery/],
     ['AC-3', /successful implementation result is structured and HEAD-bearing/],
     ['AC-4', /review requires review capability before provider start/],
@@ -33,7 +33,7 @@ test('story-vibepro-agent-runtime-adapters AC-1 through AC-7 and S-002 acceptanc
     ['AC-6', /timeout and malformed success never become completion/],
     ['AC-7', /adapter definition rejects incomplete provider contracts/],
     ['S-002 success', /successful implementation result is structured and HEAD-bearing/],
-    ['S-002 quota', /auth denial remains a typed resumable stop/],
+    ['S-002 quota', /provider-neutral contract reports quota wait before start/],
     ['S-002 timeout', /start timeout invokes dispatch-scoped force containment/],
     ['S-002 cancel', /cancel escalates to force before declaring an orphan/],
     ['S-002 orphan', /nonterminal cancel fails closed as orphaned agent/],
