@@ -177,8 +177,9 @@ function findInlineCodeRanges(source, fencedRanges) {
 
 function findMarkdownLinkReplacements(source, protectedRanges) {
   const replacements = [];
+  const nonLabelRanges = [...protectedRanges];
   for (let index = 0; index < source.length; index += 1) {
-    const protectedRange = rangeContaining(protectedRanges, index);
+    const protectedRange = rangeContaining(nonLabelRanges, index);
     if (protectedRange) {
       index = protectedRange.end - 1;
       continue;
@@ -187,13 +188,24 @@ function findMarkdownLinkReplacements(source, protectedRanges) {
     const labelEnd = findClosingLabel(source, index, protectedRanges);
     if (labelEnd < 0 || source[labelEnd + 1] !== '(') continue;
     const destination = parseInlineDestination(source, labelEnd + 2);
-    if (!destination || !destination.value.startsWith('docs/')) continue;
+    if (!destination) continue;
+    nonLabelRanges.push({ start: labelEnd + 1, end: destination.linkEnd });
+    if (!destination.value.startsWith('docs/')) continue;
     const imageMarker = index > 0 && source[index - 1] === '!' && !isEscaped(source, index - 1);
     const root = imageMarker ? REPOSITORY_RAW_ROOT : REPOSITORY_SOURCE_ROOT;
+    let normalizedValue = `${root}${destination.value}`;
+    if (destination.angleWrapped) {
+      try {
+        normalizedValue = encodeURI(normalizedValue);
+      } catch (error) {
+        if (error instanceof URIError) continue;
+        throw error;
+      }
+    }
     replacements.push({
       start: destination.start,
       end: destination.end,
-      value: destination.angleWrapped ? encodeURI(`${root}${destination.value}`) : `${root}${destination.value}`
+      value: normalizedValue
     });
   }
   return replacements;
@@ -241,21 +253,23 @@ function parseInlineDestination(source, openingIndex) {
   if (index === start || (angleWrapped && source[index] !== '>')) return null;
   const valueEnd = index;
   if (angleWrapped) index += 1;
-  if (!hasValidInlineLinkTail(source, index)) return null;
+  const linkEnd = findInlineLinkEnd(source, index);
+  if (linkEnd < 0) return null;
   return {
     start: angleWrapped ? wrapperStart : start,
     end: angleWrapped ? index : valueEnd,
     value: source.slice(start, valueEnd),
-    angleWrapped
+    angleWrapped,
+    linkEnd
   };
 }
 
-function hasValidInlineLinkTail(source, start) {
+function findInlineLinkEnd(source, start) {
   let index = start;
   while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
-  if (source[index] === ')') return true;
+  if (source[index] === ')') return index + 1;
   const delimiter = source[index];
-  if (!['"', "'", '('].includes(delimiter)) return false;
+  if (!['"', "'", '('].includes(delimiter)) return -1;
   const closing = delimiter === '(' ? ')' : delimiter;
   index += 1;
   for (; index < source.length; index += 1) {
@@ -266,10 +280,10 @@ function hasValidInlineLinkTail(source, start) {
     if (source[index] === closing) {
       index += 1;
       while (/[ \t\n]/u.test(source[index] ?? '')) index += 1;
-      return source[index] === ')';
+      return source[index] === ')' ? index + 1 : -1;
     }
   }
-  return false;
+  return -1;
 }
 
 function rangeContaining(ranges, index) {

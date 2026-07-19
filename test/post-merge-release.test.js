@@ -40,6 +40,7 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[titled](docs/guide.md "Guide title")',
     '[escaped-title](docs/escaped-title.md "A \\"quoted\\" title")',
     '[paren-title](docs/paren-title.md (Parenthesized title))',
+    '[outer](https://example.com "[title](docs/not-a-link.md)")',
     '[angle](<docs/guide/a b.md>)',
     '[code `label ]`](docs/code-label.md)',
     '[![nested image](docs/nested-image.png)](docs/nested-image-page.md)',
@@ -79,6 +80,7 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
     '[titled](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide.md "Guide title")',
     '[escaped-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/escaped-title.md "A \\"quoted\\" title")',
     '[paren-title](https://github.com/Unson-LLC/vibepro/blob/main/docs/paren-title.md (Parenthesized title))',
+    '[outer](https://example.com "[title](docs/not-a-link.md)")',
     '[angle](https://github.com/Unson-LLC/vibepro/blob/main/docs/guide/a%20b.md)',
     '[code `label ]`](https://github.com/Unson-LLC/vibepro/blob/main/docs/code-label.md)',
     '[![nested image](https://raw.githubusercontent.com/Unson-LLC/vibepro/main/docs/nested-image.png)](https://github.com/Unson-LLC/vibepro/blob/main/docs/nested-image-page.md)',
@@ -115,6 +117,12 @@ test('RNLN-001/002/003 normalizes only repo-root docs markdown destinations', ()
   assert.equal(
     normalizeReleaseDocumentationLinks('` unmatched ``[double-span](docs/double-span.md)`` [after-unmatched](docs/after-unmatched.md)'),
     '` unmatched ``[double-span](docs/double-span.md)`` [after-unmatched](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-unmatched.md)'
+  );
+
+  const malformedAngle = `[malformed](<docs/${String.fromCharCode(0xd800)}.md>)`;
+  assert.equal(
+    normalizeReleaseDocumentationLinks(`${malformedAngle} [after](docs/after-malformed.md)`),
+    `${malformedAngle} [after](https://github.com/Unson-LLC/vibepro/blob/main/docs/after-malformed.md)`
   );
 });
 

@@ -21,7 +21,7 @@
     {
       "id": "RNLN-002",
       "type": "invariant",
-      "statement": "A prose docs link is normalized while inline code, blockquote/list-contained fenced code, and non-docs destinations remain unchanged; an unclosed fence stops protecting content when its container ends.",
+      "statement": "A prose docs link is normalized while inline code, blockquote/list-contained fenced code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, and an unclosed fence stops protecting content when its container ends.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findFencedCodeRanges" }]
@@ -33,7 +33,7 @@
     {
       "id": "RNLN-003",
       "type": "scenario",
-      "statement": "HTTP(S), anchor, mailto, site-root relative, and non-docs relative destinations remain unchanged.",
+      "statement": "HTTP(S), anchor, mailto, site-root relative, non-docs relative, and malformed-Unicode angle destinations remain unchanged without aborting later projection.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findMarkdownLinkReplacements" }]
