@@ -21,10 +21,10 @@
     {
       "id": "RNLN-002",
       "type": "invariant",
-      "statement": "A prose docs link is normalized while inline code, blockquote/list-contained fenced code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, and an unclosed fence stops protecting content when its container ends.",
+      "statement": "A prose docs link is normalized while VitePress block-code tokens, inline code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, container and malformed fence boundaries follow the production renderer, and fenced headings do not terminate release sections.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
-        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findFencedCodeRanges" }]
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findProtectedCodeRanges" }]
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "[fenced](docs/fenced.md)" }]
@@ -33,7 +33,7 @@
     {
       "id": "RNLN-003",
       "type": "scenario",
-      "statement": "HTTP(S), anchor, mailto, site-root relative, non-docs relative, and malformed-Unicode angle destinations remain unchanged without aborting later projection.",
+      "statement": "HTTP(S), anchor, mailto, site-root relative, non-docs relative, and malformed angle destinations with unescaped less-than signs or invalid Unicode remain unchanged without aborting later projection.",
       "origin": {
         "story_refs": [{ "kind": "other" }],
         "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findMarkdownLinkReplacements" }]
@@ -77,7 +77,7 @@
       "kind": "state",
       "title": "Markdown segment handling",
       "entities": ["prose", "inline code", "fenced code", "normalized"],
-      "mermaid": "stateDiagram-v2\n  [*] --> Prose\n  Prose --> Normalized: destination starts docs/\n  Prose --> Prose: other destination\n  Prose --> InlineCode: backtick\n  InlineCode --> Prose: backtick\n  Prose --> FencedCode: fence open\n  FencedCode --> Prose: fence close"
+      "mermaid": "stateDiagram-v2\n  [*] --> ParseBlocks\n  ParseBlocks --> ProtectedCode: VitePress code token\n  ParseBlocks --> Prose: inline token\n  Prose --> Normalized: destination starts docs/\n  Prose --> Prose: other or malformed destination\n  Prose --> InlineCode: code span\n  InlineCode --> Prose: span closes"
     }
   ]
 }
