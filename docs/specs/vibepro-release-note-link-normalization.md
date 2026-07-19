@@ -6,6 +6,7 @@ code_refs:
   - scripts/post-merge-release.mjs
 test_refs:
   - test/post-merge-release.test.js
+  - test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js
 diagrams:
   - kind: threat_model
     title: Release note projection trust boundaries

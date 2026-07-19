@@ -26,7 +26,7 @@ PR #350のChange Summaryにある`docs/management/...md`リンクが、`docs/rel
 - raw HTMLとVue interpolationを無害化する既存契約を維持する。
 - 日英release historyとCHANGELOGは同じ決定的なnote本文を保持する。
 
-## Acceptance criteria
+## Acceptance Criteria
 
 - 通常の`docs/<path>`リンクはGitHub blob URLへ、画像はraw URLへ正規化される。angle-wrapped destinationの空白、Markdown escape、HTML entityもVitePressが解釈する参照先を保って正規化される。
 - code span/fence・link title内の同じ文字列と、外部・anchor・既にroot-relativeなリンク、不正なangle destinationは保持される。
