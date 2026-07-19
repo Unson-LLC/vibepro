@@ -1,0 +1,396 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "source": "execute_merge",
+  "generated_at": "2026-07-19T11:09:41.516Z",
+  "evidence_depth": "standard",
+  "budget_status": "within_budget",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "missing_artifact",
+      "gate:gate:design_input_judgment:needs_review",
+      "gate:gate:managed_worktree:needs_review",
+      "gate:gate:traceability_clause_coverage:needs_evidence"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...7f791922d25841dccb741e9bcd66d84f618a669c",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "base_sha": "661b06b78b6c4f46c3a16637fa8bed76196c8a96",
+      "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "merge_commit_sha": "006d5fb5abe9889f91ad282001bd0095133bc957"
+    },
+    "diff_stats_collected_at": "2026-07-19T11:09:38.648Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 1488,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 1132,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 3,
+          "changed_lines": 333,
+          "unknown_files": 0,
+          "paths": [
+            "src/cli.js",
+            "src/guarded-run-session.js",
+            "src/human-decision-checkpoint.js"
+          ]
+        },
+        "test": {
+          "files": 4,
+          "changed_lines": 536,
+          "unknown_files": 0,
+          "paths": [
+            "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+            "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+            "test/guarded-run-session.test.js",
+            "test/human-decision-checkpoint.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 4,
+          "changed_lines": 186,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/story-vibepro-human-decision-checkpoint.md",
+            "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+            "docs/specs/story-vibepro-human-decision-checkpoint.vibepro.json",
+            "docs/specs/vibepro-human-decision-checkpoint.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 2,
+          "changed_lines": 77,
+          "unknown_files": 0,
+          "paths": [
+            ".vibepro/config.json",
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...7f791922d25841dccb741e9bcd66d84f618a669c",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "base_sha": "661b06b78b6c4f46c3a16637fa8bed76196c8a96",
+        "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "merge_commit_sha": "006d5fb5abe9889f91ad282001bd0095133bc957"
+      },
+      "collected_at": "2026-07-19T11:09:38.648Z",
+      "reason": null
+    },
+    "product_changed_lines": 1132,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 1.314,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "effective_canonical_artifact_lines": 3396,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "within_budget",
+    "budget_exceeded_reasons": [],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cached_input_tokens": null,
+      "source": null,
+      "window": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "started_at": null,
+      "finished_at": null,
+      "source": null,
+      "window": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 3675,
+      "expanded_bytes": 16664,
+      "expanded_line_count": 429,
+      "persisted_line_count": 1
+    },
+    "raw_source_artifact_lines": 10452,
+    "raw_source_artifact_code_ratio": 9.233,
+    "artifact_lines_source": "persisted_canonical_compact"
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-07-19T11:02:10.351Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-07-19T11:02:10.351Z",
+    "status": "hit",
+    "evidence_key": "evk_f24dce3e42f89198ba3b10a44866c373",
+    "verification_summary_fingerprint": "sha256:b3d5f73adfeba16faac595412de7d7afe3bcd3cfa2c7b0d6582861a7e15fa4b3",
+    "verification_evidence_updated_at": "2026-07-19T11:01:38.787Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-19T11:01:38.787Z",
+        "git_recorded_at": "2026-07-19T11:01:38.787Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-19T10:56:53.170Z",
+        "git_recorded_at": "2026-07-19T10:56:53.162Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-19T10:48:24.757Z",
+        "git_recorded_at": "2026-07-19T10:48:24.745Z"
+      }
+    ],
+    "stale_reason_count": 0,
+    "full_evidence_status": "reused",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 22
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-07-19T11:02:10.371Z",
+    "status": "updated_existing_pr",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/357",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/357",
+      "merge_commit_sha": "006d5fb5abe9889f91ad282001bd0095133bc957",
+      "merged_at": "2026-07-19T11:09:40Z",
+      "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...7f791922d25841dccb741e9bcd66d84f618a669c"
+    }
+  },
+  "gate_dag": {
+    "present": false,
+    "overall_status": null,
+    "node_count": 0,
+    "blocking_count": 0
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": null,
+    "gap_count": 3,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 8,
+      "acceptance_criteria_count": 7,
+      "scenario_clause_count": 1,
+      "mapped_count": 6,
+      "weakly_mapped_count": 2,
+      "unmapped_count": 0,
+      "examples": [
+        {
+          "id": "AC-1",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "HDC-S-1: 同じ根拠から派生した質問は重複排除され、material reasonと影響範囲を伴う。",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        },
+        {
+          "id": "AC-4",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "HDC-S-4: critical gateのwaiver回答は受理せず、evidence、split、blockを要求する。",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        }
+      ]
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 3,
+    "pass_count": 3,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 3,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 2
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay_unresolved_reference_count": 8,
+  "missing_artifacts": [
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-human-decision-checkpoint/gate-dag.json"
+    }
+  ],
+  "raw_artifact_count": 15,
+  "automation_value_audit": {
+    "schema_version": "0.1.0",
+    "artifact_kind": "vibepro_automation_value_audit",
+    "story_id": "story-vibepro-human-decision-checkpoint",
+    "generated_at": "2026-07-19T11:09:41.516Z",
+    "status": "needs_evidence",
+    "purpose": "daily_automation_input",
+    "sources": {
+      "canonical_audit": true,
+      "cost_summary": true,
+      "pr_lifecycle": true,
+      "verification": true,
+      "review": true,
+      "senior_gap_judgment": true
+    },
+    "merge_context": {
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/357",
+      "merge_status": "merged",
+      "merge_commit_sha": "006d5fb5abe9889f91ad282001bd0095133bc957",
+      "merged_at": "2026-07-19T11:09:40Z"
+    },
+    "allocation": {
+      "changed_lines_status": "available",
+      "total_changed_lines": 1132,
+      "implementation_changed_lines": 333,
+      "verification_and_docs_changed_lines": 722,
+      "audit_evidence_changed_lines": 722,
+      "buckets": {
+        "src": 333,
+        "test": 536,
+        "story_spec_architecture_docs": 186,
+        "audit_artifacts": 0,
+        "other": 77
+      }
+    },
+    "ratios": {
+      "test_to_src": 1.61,
+      "story_spec_architecture_to_src": 0.559,
+      "audit_artifacts_to_src": 0,
+      "automation_evidence_to_src": 2.168,
+      "artifact_lines_to_product_changed_lines": 1.314
+    },
+    "session_cost": {
+      "token_status": "unavailable",
+      "total_tokens": null,
+      "token_source": null,
+      "token_window": null,
+      "elapsed_status": "unavailable",
+      "elapsed_ms": null,
+      "elapsed_source": null,
+      "elapsed_window": null
+    },
+    "value_signal_inputs": {
+      "budget_status": "within_budget",
+      "budget_exceeded_reasons": [],
+      "evidence_depth": "standard",
+      "verification_pass_count": 3,
+      "verification_fail_count": 0,
+      "review_result_count": 3,
+      "review_pass_count": 1,
+      "review_block_count": 0,
+      "senior_gap_status": null,
+      "senior_gap_residual_risk_count": 0,
+      "evidence_reuse_status": "hit",
+      "evidence_reuse_stale_reason_count": 0,
+      "traceability_lifecycle": "merged",
+      "handoff_replay_status": "blocked",
+      "handoff_replay_unresolved_reference_count": 8,
+      "missing_artifact_count": 1
+    },
+    "cost_controls": {
+      "status": "action_required",
+      "budget_status": "within_budget",
+      "artifact_code_ratio": 1.314,
+      "automation_evidence_to_src": 2.168,
+      "budget_exceeded_reasons": [],
+      "canonical_artifact_lines": 1488,
+      "product_changed_lines": 1132,
+      "evidence_depth": "standard",
+      "recommended_evidence_depth": "standard",
+      "recommendations": [
+        {
+          "id": "collect_runtime_cost_before_merge",
+          "action": "run execute merge with --session-id <id>|auto and --automation-memory <path>, or set VIBEPRO_SESSION_ID/CODEX_SESSION_ID and VIBEPRO_AUTOMATION_MEMORY",
+          "reason": "daily automation cannot judge time/token efficiency without measured session cost"
+        }
+      ]
+    },
+    "findings": [
+      {
+        "id": "session_cost_unavailable",
+        "severity": "needs_context",
+        "reason": "token or elapsed-time accounting is not available in canonical audit summary",
+        "token_status": "unavailable",
+        "elapsed_status": "unavailable"
+      },
+      {
+        "id": "canonical_handoff_replay_blocked",
+        "severity": "review_needed",
+        "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
+        "unresolved_reference_count": 8
+      }
+    ]
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-human-decision-checkpoint/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:ed7ced7300af9263d98f0a8a6caa0ffadf17008945f25bc809b20cc8a2660477",
+    "compressed_hash": "sha256:5262f578805d5938168cd0212eeeb22d13785c4406025512572650a59aafc54a",
+    "expanded_bytes": 16664,
+    "compressed_bytes": 3675,
+    "expanded_line_count": 429,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-human-decision-checkpoint",
+    "cost": {
+      "compressed_bytes": 3675,
+      "expanded_bytes": 16664,
+      "expanded_line_count": 429,
+      "persisted_line_count": 1
+    }
+  }
+}

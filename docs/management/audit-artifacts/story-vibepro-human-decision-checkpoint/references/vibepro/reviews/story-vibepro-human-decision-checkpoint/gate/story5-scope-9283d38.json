@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "summary": "The persistence, Guarded Run integration, CLI transport, design registration, and tests form one cohesive Story-sized change.",
+  "head_sha": "9283d38bd32175edff830a94f869ecc400160d44",
+  "findings": []
+}
