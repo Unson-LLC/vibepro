@@ -616,7 +616,8 @@ async function executeMergeLocked(root, options = {}) {
   applyDecisionOutcomeBinding(merge, {
     localEntries: roiLedgerLocalEntries,
     promotion: merge.roi_ledger_promotion,
-    localLedgerSource: roiLedgerSource
+    localLedgerSource: roiLedgerSource,
+    persistence: canonicalPersistence.summary
   });
   if (merge.decision_outcome_binding.status === 'failed') {
     merge.warnings.push(
@@ -763,7 +764,13 @@ function collectDeliveryReconciliationReasons(merge) {
   return reasons;
 }
 
-export function buildDecisionOutcomeBinding({ localEntries = [], promotion = null, merge = null, localLedgerSource = null } = {}) {
+export function buildDecisionOutcomeBinding({
+  localEntries = [],
+  promotion = null,
+  merge = null,
+  localLedgerSource = null,
+  persistence = null
+} = {}) {
   const sourceFailed = localLedgerSource?.status === 'failed';
   const expectedEntryCount = sourceFailed
     ? null
@@ -772,6 +779,9 @@ export function buildDecisionOutcomeBinding({ localEntries = [], promotion = nul
   const duplicateCount = Number.isFinite(promotion?.duplicate_count) ? promotion.duplicate_count : 0;
   const accountedEntryCount = promotedCount + duplicateCount;
   const required = sourceFailed || expectedEntryCount > 0;
+  const persistenceStatus = persistence?.status ?? null;
+  const persistenceConfirmed = persistenceStatus == null
+    || ['pushed', 'already_present'].includes(persistenceStatus);
   const delivery = {
     status: merge?.delivery?.status ?? null,
     pr_url: merge?.delivery?.pr_url ?? merge?.pr?.url ?? null,
@@ -791,6 +801,7 @@ export function buildDecisionOutcomeBinding({ localEntries = [], promotion = nul
       expected_entry_count: null,
       promoted_count: promotedCount,
       duplicate_count: duplicateCount,
+      persistence_status: persistenceStatus,
       delivery
     };
   }
@@ -806,17 +817,22 @@ export function buildDecisionOutcomeBinding({ localEntries = [], promotion = nul
       expected_entry_count: 0,
       promoted_count: promotedCount,
       duplicate_count: duplicateCount,
+      persistence_status: persistenceStatus,
       delivery
     };
   }
 
-  const bound = promotion?.status === 'promoted' && accountedEntryCount === expectedEntryCount;
+  const bound = promotion?.status === 'promoted'
+    && accountedEntryCount === expectedEntryCount
+    && persistenceConfirmed;
   return {
     schema_version: '0.1.0',
     status: bound ? 'bound' : 'failed',
     required: true,
     reason: bound
       ? 'all_local_decision_outcomes_bound_to_canonical_ledger'
+      : !persistenceConfirmed
+        ? persistence?.reason ?? `canonical_persistence_${persistenceStatus ?? 'unconfirmed'}`
       : promotion?.status === 'promoted'
         ? 'decision_outcome_binding_count_mismatch'
         : promotion?.reason ?? `decision_outcome_promotion_${promotion?.status ?? 'missing'}`,
@@ -825,12 +841,18 @@ export function buildDecisionOutcomeBinding({ localEntries = [], promotion = nul
     expected_entry_count: expectedEntryCount,
     promoted_count: promotedCount,
     duplicate_count: duplicateCount,
+    persistence_status: persistenceStatus,
     delivery
   };
 }
 
-export function applyDecisionOutcomeBinding(merge, { localEntries = [], promotion = null, localLedgerSource = null } = {}) {
-  const binding = buildDecisionOutcomeBinding({ localEntries, promotion, merge, localLedgerSource });
+export function applyDecisionOutcomeBinding(merge, {
+  localEntries = [],
+  promotion = null,
+  localLedgerSource = null,
+  persistence = null
+} = {}) {
+  const binding = buildDecisionOutcomeBinding({ localEntries, promotion, merge, localLedgerSource, persistence });
   merge.decision_outcome_binding = binding;
   if (binding.status !== 'failed') return binding;
 

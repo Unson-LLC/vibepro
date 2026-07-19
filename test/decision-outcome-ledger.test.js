@@ -117,6 +117,47 @@ test('GDL-S-1 stable trace identity is source/order independent and missing keys
   assert.equal(missingA.trace_source_ref, missingB.trace_source_ref);
 });
 
+test('GDL-S-1 a pre-alias stable-ID ledger reconstructs its legacy parent binding', () => {
+  const source = finding('stable-parent-alias');
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [source] });
+  const trace = ledger.traces[0];
+  const alias = trace.observation_read_aliases[0];
+  assert.ok(alias, 'new ledgers persist the deterministic legacy parent alias');
+  assert.deepEqual(alias.trace_selector, { decision_trace_id: trace.decision_trace_id });
+
+  const observation = observationFor(trace, {
+    trace_selector: alias.trace_selector,
+    parent_revision_fingerprint: alias.parent_revision_fingerprint,
+    source_ref: 'legacy-stable-observation.json'
+  });
+  delete trace.observation_read_aliases;
+
+  assert.equal(matchesDecisionOutcomeObservation(trace, observation), true);
+  const revised = reviseDecisionOutcomeLedger(ledger, { observations: [observation] });
+  assert.equal(revised.traces[0].downstream_outcome.status, 'observed');
+  assert.deepEqual(revised.traces[0].observation_read_aliases, [alias]);
+});
+
+test('GDL-S-1 malformed observation aliases fail closed at ledger validation', () => {
+  const ledger = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    currentHeadSha: 'a'.repeat(40),
+    sources: [finding('strict-alias')]
+  });
+  for (const malformed of [
+    null,
+    { trace_selector: { decision_trace_id: 'not-a-trace' }, parent_revision_fingerprint: 'a'.repeat(64) },
+    { trace_selector: { decision_trace_id: ledger.traces[0].decision_trace_id, extra: true }, parent_revision_fingerprint: 'a'.repeat(64) },
+    { trace_selector: { decision_trace_id: ledger.traces[0].decision_trace_id }, parent_revision_fingerprint: 'not-a-digest' }
+  ]) {
+    const candidate = structuredClone(ledger);
+    candidate.traces[0].observation_read_aliases = [malformed];
+    const validation = validateDecisionOutcomeLedger(candidate, { storyId: STORY_ID });
+    assert.equal(validation.valid, false);
+    assert.equal(validation.field, 'observation_read_aliases');
+  }
+});
+
 test('GDL-S-1 duplicate subjects without an explicit link remain distinct addressable traces', () => {
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,

@@ -142,6 +142,16 @@ test(`${STORY_ID} binds promoted gate outcomes to the immutable delivery revisio
   assert.equal(binding.status, 'bound', `${STORY_ID} AC:11 promoted and duplicate counts bind every local outcome to the same immutable delivery revision`);
   assert.equal(binding.delivery.merge_commit_sha, 'immutable-delivery');
 
+  const unpersistedBinding = buildDecisionOutcomeBinding({
+    localEntries,
+    promotion: firstPromotion,
+    merge,
+    persistence: { status: 'failed', reason: 'canonical_audit_push_failed' }
+  });
+  assert.equal(unpersistedBinding.status, 'failed', `${STORY_ID} AC:11 a calculated promotion is not bound when canonical persistence fails`);
+  assert.equal(unpersistedBinding.reason, 'canonical_audit_push_failed');
+  assert.equal(unpersistedBinding.persistence_status, 'failed');
+
   const failedMerge = structuredClone(merge);
   applyDecisionOutcomeBinding(failedMerge, {
     localEntries,

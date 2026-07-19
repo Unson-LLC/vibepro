@@ -15093,6 +15093,21 @@ test('DRS-SCENARIO-007 execute merge fails closed at the real canonical persiste
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
   const { headSha } = await prepareExecuteMergeDryRunFixture(repo);
+  await mkdir(path.join(repo, '.vibepro', 'gate-outcomes'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'gate-outcomes', 'ledger.json'), {
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    updated_at: '2026-06-07T00:01:00.000Z',
+    entries: [{
+      schema_version: '0.1.0',
+      entry_key: 'story-pr-prepare|gate:requirement|needs_review|passed|prev|curr',
+      story_id: 'story-pr-prepare',
+      gate_id: 'gate:requirement',
+      outcome: 'source_fix',
+      classification: 'resolving_diff_contains_source_changes',
+      resolved_at: '2026-06-07T00:01:00.000Z'
+    }]
+  });
 
   await writeFile(path.join(remote, 'hooks', 'pre-receive'), `#!/bin/sh
 while read old new ref
@@ -15135,10 +15150,14 @@ exit 0
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
   assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_push_failed');
+  assert.equal(result.result.merge.decision_outcome_binding.status, 'failed');
+  assert.equal(result.result.merge.decision_outcome_binding.persistence_status, 'failed');
+  assert.equal(result.result.merge.decision_outcome_binding.reason, 'canonical_audit_push_failed');
   const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
   assert.equal(artifact.status, 'failed');
   assert.equal(artifact.stop_reason, 'canonical_audit_persistence_failed');
   assert.equal(artifact.delivery.status, 'merged');
+  assert.equal(artifact.decision_outcome_binding.status, 'failed');
   assert.equal((await git(remote, ['rev-parse', 'main'])).stdout.trim(), headSha);
 });
 

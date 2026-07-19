@@ -126,6 +126,10 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
     if (trace.observation_read_aliases != null && !Array.isArray(trace.observation_read_aliases)) {
       return invalid('observation_read_aliases', 'decision outcome trace observation aliases must be an array');
     }
+    if (Array.isArray(trace.observation_read_aliases)
+      && !trace.observation_read_aliases.every(isValidObservationReadAlias)) {
+      return invalid('observation_read_aliases', 'decision outcome trace observation alias is invalid');
+    }
     for (const claimField of ['finding', 'gate', 'detector', 'disposition', 'decision']) {
       if (!isValidClaim(trace[claimField])) {
         return invalid(claimField, `decision outcome trace claim is invalid: ${claimField}`);
@@ -674,7 +678,11 @@ export function matchesDecisionOutcomeObservation(trace, observation) {
 function observationReadAliasesForTrace(trace, storyId) {
   const persisted = normalizeObservationReadAliases(trace.observation_read_aliases);
   if (persisted.length > 0 || Object.hasOwn(trace, 'observation_read_aliases')) return persisted;
-  if (!storyId || trace.decision_trace_id || !trace.collision_group || !trace.source_identity) return [];
+  const hasStableSelector = /^dt_[a-f0-9]{64}$/.test(trace.decision_trace_id ?? '');
+  const hasCollisionSelector = trace.decision_trace_id == null
+    && /^cg_[a-f0-9]{64}$/.test(trace.collision_group ?? '')
+    && /^tsr_[a-f0-9]{64}$/.test(trace.trace_source_ref ?? '');
+  if (!storyId || (!hasStableSelector && !hasCollisionSelector) || !trace.source_identity) return [];
 
   const reconstructedSource = {
     normalized_subject_key: trace.normalized_subject_key ?? null,
@@ -703,16 +711,32 @@ function observationReadAliasesForTrace(trace, storyId) {
     delivery: trace.delivery
   };
   return [{
-    trace_selector: { collision_group: trace.collision_group, trace_source_ref: legacySourceRef },
+    trace_selector: hasStableSelector
+      ? { decision_trace_id: trace.decision_trace_id }
+      : { collision_group: trace.collision_group, trace_source_ref: legacySourceRef },
     parent_revision_fingerprint: digestCanonical(stripVolatile(legacyParentCore))
   }];
 }
 
 function normalizeObservationReadAliases(value) {
   if (!Array.isArray(value)) return [];
-  return value.filter((alias) => alias
-    && alias.trace_selector
-    && typeof alias.parent_revision_fingerprint === 'string');
+  return value.filter(isValidObservationReadAlias);
+}
+
+function isValidObservationReadAlias(alias) {
+  if (!alias || typeof alias !== 'object' || Array.isArray(alias)
+    || !/^[a-f0-9]{64}$/.test(alias.parent_revision_fingerprint ?? '')) return false;
+  const selector = alias.trace_selector;
+  if (!selector || typeof selector !== 'object' || Array.isArray(selector)) return false;
+  const keys = Object.keys(selector).sort();
+  if (keys.length === 1 && keys[0] === 'decision_trace_id') {
+    return /^dt_[a-f0-9]{64}$/.test(selector.decision_trace_id ?? '');
+  }
+  return keys.length === 2
+    && keys[0] === 'collision_group'
+    && keys[1] === 'trace_source_ref'
+    && /^cg_[a-f0-9]{64}$/.test(selector.collision_group ?? '')
+    && /^tsr_[a-f0-9]{64}$/.test(selector.trace_source_ref ?? '');
 }
 
 function normalizeSource(storyId, source = {}) {
