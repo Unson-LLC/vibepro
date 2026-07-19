@@ -40,8 +40,20 @@
         "started_at": "2026-07-15",
         "due_at": null,
         "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-agent-runtime-adapters",
+        "title": "実装・Reviewを委譲するProvider-neutral Agent Runtime Adapter",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "platform"
       }
     ],
-    "current_story_id": "story-vibepro-artifact-output-routing"
+    "current_story_id": "story-vibepro-agent-runtime-adapters"
   }
 }

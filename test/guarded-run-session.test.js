@@ -17,6 +17,7 @@ import {
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
 import { createHumanDecision } from '../src/human-decision-checkpoint.js';
+import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -75,6 +76,157 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
     { reason: 'run_started', run_id: RUN_ID, status: 'running', authority_exists: true },
     { reason: 'human_decision', run_id: RUN_ID, status: 'waiting_for_human', authority_exists: true }
   ]);
+});
+
+test('ARA-S-1 ARA-S-3 ARA-S-4 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const reviews = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { return { provider_run_id: 'provider-review', agent_identity: 'reviewer-2', session_id: 'review-session', thread_id: 'review-thread' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { runtimeStatus = 'cancelled'; },
+    async collect_result() {
+      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'review pass', agent_identity: 'reviewer-2', lifecycle: 'closed' };
+    }
+  }] });
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: 'pass' }; }
+  });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const managedWorktree = run.execution_context.root_realpath;
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'fixture-runtime', task_id: 'review-runtime', role: 'review',
+      reviewer_identity: 'reviewer-2', implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session',
+      requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: managedWorktree }
+    }
+  });
+  assert.equal(started.state.runtime_dispatches[0].status, 'running');
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.result.review_provenance.lifecycle, 'closed');
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.runtime_dispatches[0].status, 'completed');
+  const gated = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'runtime review' }
+  });
+  assert.equal(gated.review.status, 'pass');
+  assert.equal(reviews[0].repo, managedWorktree);
+  assert.equal(reviews[0].review.executionMode, 'parallel_subagent');
+  assert.equal(reviews[0].review.agentId, 'reviewer-2');
+  assert.equal(reviews[0].review.agentClosed, true);
+  assert.equal(reviews[0].review.implementationSessionId, 'implementation-session');
+  assert.equal(run.current_head_sha, persisted.current_head_sha);
+});
+
+test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const nextHead = 'b'.repeat(40);
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+    async start() { return { provider_run_id: 'provider-implementation', agent_identity: 'implementer-1', session_id: 'implementation-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: ['src/change.js'], head_sha: nextHead, test_suggestions: ['node --test'], summary: 'implemented' }; }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  fixture.setHead(fixture.source, nextHead);
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.result.head_sha, nextHead);
+  assert.equal(completed.state.current_head_sha, nextHead);
+  assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).current_head_sha, nextHead);
+});
+
+test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+    async start() { return { provider_run_id: 'provider-implementation', agent_identity: 'implementer-1' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: ['src/change.js'], head_sha: 'c'.repeat(40), test_suggestions: [], summary: 'implemented' }; }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+  });
+  fixture.setHead(fixture.source, 'b'.repeat(40));
+  runtimeStatus = 'completed';
+  await assert.rejects(session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id }), errorWithCode('runtime_head_mismatch'));
+});
+
+test('ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only' }; },
+    async start() { return { provider_run_id: 'provider-review', agent_identity: 'reviewer-2', session_id: 'review-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', lifecycle: 'closed' }; }
+  }] });
+  let recordCalls = 0;
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator, recordAgentReview: async () => { recordCalls += 1; return { status: 'pass' }; } });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: { adapter_id: 'fixture-runtime', task_id: 'review-runtime', role: 'review', reviewer_identity: 'reviewer-2', implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+  });
+  runtimeStatus = 'completed';
+  await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  const stateFile = fixture.runFile(fixture.source, RUN_ID);
+  const validState = JSON.parse(await readFile(stateFile, 'utf8'));
+  const corruptions = [
+    (dispatch) => { dispatch.sandbox = 'workspace-write'; },
+    (dispatch) => { dispatch.requirements.capabilities.push('workspace_write'); },
+    (dispatch) => { dispatch.result.changed_files = ['src/forged.js']; },
+    (dispatch) => { dispatch.result.head_sha = 'f'.repeat(40); },
+    (dispatch) => { dispatch.result.review_provenance.execution_mode = 'manual_review'; },
+    (dispatch) => { dispatch.result.review_provenance.agent_identity = 'implementer-1'; },
+    (dispatch) => { dispatch.result.review_provenance.session_id = 'implementation-session'; },
+    (dispatch) => {
+      dispatch.reviewer_identity = 'forged-reviewer';
+      dispatch.agent_identity = 'forged-reviewer';
+      dispatch.result.review_provenance.agent_identity = 'forged-reviewer';
+    },
+    (dispatch) => {
+      dispatch.result.review_provenance.session_id = 'substituted-review-session';
+      dispatch.result.review_provenance.thread_id = 'substituted-review-thread';
+    }
+  ];
+  for (const corrupt of corruptions) {
+    const forged = structuredClone(validState);
+    corrupt(forged.runtime_dispatches[0]);
+    await writeFile(stateFile, `${JSON.stringify(forged, null, 2)}\n`);
+    await assert.rejects(session.recordRuntimeReview(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id, review: { status: 'pass' } }), errorWithCode('invalid_runtime_review'));
+  }
+  assert.equal(recordCalls, 0);
 });
 
 test('HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved', async (t) => {
