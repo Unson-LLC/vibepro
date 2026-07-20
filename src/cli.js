@@ -125,6 +125,7 @@ import {
   renderAgentReviewStatusSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
+import { getFindingRepairStatus, planFindingRepair, recordFindingRepair } from './review-finding-repair-loop.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
   getExecutionNext,
@@ -471,6 +472,7 @@ Usage:
   vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro review finding-repair <plan|record|status> [repo] --id <story-id> --stage <stage> --role <role> [--review <file> --acceptance-clause <id> --code-scope <path> --test-scope <path>] [--result <file>] [--max-attempts <n>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
@@ -1770,6 +1772,30 @@ export async function runCli(argv, io = {}) {
       if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'finding-repair') {
+        const action = rest[1];
+        const repairRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        const options = {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'), role: getOption(rest, '--role')
+        };
+        await assertManagedWorktreeCommandAllowed(repairRepoRoot, {
+          storyId: options.storyId, commandName: `review finding-repair ${action ?? ''}`
+        });
+        let result;
+        if (action === 'plan') result = await planFindingRepair(repairRepoRoot, {
+          ...options, reviewPath: getOption(rest, '--review'), maxAttempts: parseNumberOption(rest, '--max-attempts') ?? 3,
+          acceptanceClause: getOption(rest, '--acceptance-clause'), codeScope: getOptions(rest, '--code-scope'),
+          testScope: getOptions(rest, '--test-scope')
+        });
+        else if (action === 'record') result = await recordFindingRepair(repairRepoRoot, {
+          ...options, resultPath: getOption(rest, '--result')
+        });
+        else if (action === 'status') result = await getFindingRepairStatus(repairRepoRoot, options);
+        else throw new Error(`Unknown review finding-repair command: ${action ?? ''}`);
+        write(stdout, `${JSON.stringify(hasFlag(rest, '--json') ? result : result.summary, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, action, result };
       }
       if (subcommand === 'prepare') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');

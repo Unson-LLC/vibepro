@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "generated_by": { "caller": "codex", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "C-RFR-1", "type": "contract",
+      "statement": "A needs_changes or block review remains immutable while each finding is classified and appended as an attempt with a concrete disposition and fingerprint.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/review-finding-repair-loop.js", "anchor": "createFindingRepairPlan" }],
+        "test_refs": [{ "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-1 RFR-S-2 one-fix plan preserves verdict and creates a bounded task" }]
+      }
+    },
+    {
+      "id": "C-RFR-2", "type": "contract",
+      "statement": "Only repairable findings create tasks with acceptance clause, code scope, and test scope, and those tasks delegate through the Agent Runtime coordinator; boundary-sensitive blocks stop at a Human Checkpoint.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/review-finding-repair-loop.js", "anchor": "dispatchFindingRepair" }],
+        "test_refs": [{ "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-2 repair task delegates only through the Agent Runtime coordinator" }, { "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-3 unrepairable block creates a Human Checkpoint" }]
+      }
+    },
+    {
+      "id": "INV-RFR-3", "type": "invariant",
+      "statement": "A repair converges only when verification, pr prepare, and a closed independent same-role re-review all bind to the repaired current HEAD; stale or implementation-session review evidence fails closed.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }, { "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/review-finding-repair-loop.js", "anchor": "recordFindingRepairAttempt" }],
+        "test_refs": [{ "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-4 RFR-S-5 repaired attempt requires current-head verification and independent fresh re-review" }, { "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-7 stale evidence cannot converge" }]
+      }
+    },
+    {
+      "id": "S-RFR-4", "type": "scenario",
+      "statement": "The repair state machine covers one-fix convergence, multi-attempt repair, unrepairable block, stale evidence, repeated-finding no-progress, and maximum-attempt stop.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Persistence" }],
+        "code_refs": [{ "file": "src/review-finding-repair-loop.js", "anchor": "stopNoProgress" }],
+        "test_refs": [{ "file": "test/review-finding-repair-loop.test.js", "case": "RFR-S-6 multi-attempt repeated fingerprint without HEAD progress stops no_progress" }]
+      }
+    }
+  ]
+}
