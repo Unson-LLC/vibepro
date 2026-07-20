@@ -4,6 +4,13 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Add risk-adaptive validation sequencing for workflow-heavy and boundary-sensitive
+  changes. High-risk PR preparation now requires targeted validation, advisory
+  preflight disposition, an exact freeze binding, reusable expensive verification,
+  and a passing closed independent Agent Review on the frozen HEAD. Roll back the
+  feature merge or release to disable it; deleting `.vibepro` sequence state alone
+  does not disable the gate.
+
 - Bind ordinary reviews to their inspected content surface while keeping
   `gate_evidence` and `release_risk` reviews strictly bound to the full commit.
   Passing `review record` calls must now include `--inspection-summary`, at least

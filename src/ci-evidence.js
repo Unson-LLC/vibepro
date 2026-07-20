@@ -5,8 +5,14 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { recordVerificationEvidence } from './verification-evidence.js';
+import {
+  readValidationSequence,
+  recordValidationPhase,
+  writeValidationSequence
+} from './validation-sequencing.js';
 
 const execFileAsync = promisify(execFile);
+const CI_IMPORT_RECEIPT = Symbol('validated-ci-import');
 
 const DEFAULT_CHECK_KIND_MATCHERS = [
   { pattern: /^test\b|^test\s*\(|^unit\b/i, kind: 'integration' }
@@ -34,6 +40,8 @@ export async function importCiEvidence(repoRoot, options = {}) {
   }
 
   const mappings = parseCheckMappings(options.checks);
+  const requestedCoverage = parseCoverageMappings(options.coverage);
+  const coverageMappings = await validateCoverageMappingsAtHead(root, currentHead, requestedCoverage);
   const checks = normalizeChecks(view.statusCheckRollup);
   const imported = [];
   const skipped = [];
@@ -55,11 +63,12 @@ export async function importCiEvidence(repoRoot, options = {}) {
       continue;
     }
     const artifactPath = await writeCiArtifact(root, storyId, check, currentHead, view.url);
+    const importedCommand = `CI ${check.workflow_name || check.name}: ${check.details_url || view.url || 'gh statusCheckRollup'}`;
     await recordVerificationEvidence(root, {
       storyId,
       kind,
       status: 'pass',
-      command: `CI ${check.workflow_name || check.name}: ${check.details_url || view.url || 'gh statusCheckRollup'}`,
+      command: importedCommand,
       summary: `Imported CI evidence for ${check.name} (${check.conclusion}) at HEAD ${shortSha(currentHead)}`,
       artifact: toWorkspaceRelative(root, artifactPath),
       targets: [check.workflow_name || check.name],
@@ -73,8 +82,24 @@ export async function importCiEvidence(repoRoot, options = {}) {
       managedWorktreeContext: options.managedWorktreeContext ?? null,
       managedWorktreeWarning: options.managedWorktreeWarning ?? null
     });
-    imported.push({ check: check.name, kind, status: 'pass', conclusion: check.conclusion, run_url: check.details_url || view.url || null });
+    imported.push({
+      check: check.name,
+      workflow: check.workflow_name || null,
+      command: importedCommand,
+      kind,
+      status: 'pass',
+      conclusion: check.conclusion,
+      run_url: check.details_url || view.url || null,
+      artifact: toWorkspaceRelative(root, artifactPath),
+      ...resolveCheckCoverage(check.name, check.workflow_name, coverageMappings)
+    });
   }
+
+  const validationSequence = await recordImportedCiVerification(root, storyId, currentHead, {
+    imported,
+    pending,
+    failures
+  }, CI_IMPORT_RECEIPT);
 
   return {
     schema_version: '0.1.0',
@@ -84,8 +109,71 @@ export async function importCiEvidence(repoRoot, options = {}) {
     imported,
     skipped,
     pending,
-    failures
+    failures,
+    validation_sequence: validationSequence
   };
+}
+
+export async function recordImportedCiVerification(repoRoot, storyId, currentHead, ciResult = [], receipt = null) {
+  if (receipt !== CI_IMPORT_RECEIPT) {
+    return { recorded: false, reason: 'CI sequence recording requires a validated receipt from verify import-ci' };
+  }
+  const imported = Array.isArray(ciResult) ? ciResult : (ciResult.imported ?? []);
+  const pending = Array.isArray(ciResult) ? [] : (ciResult.pending ?? []);
+  const failures = Array.isArray(ciResult) ? [] : (ciResult.failures ?? []);
+  if (imported.length === 0) return { recorded: false, reason: 'no successful mapped CI checks were imported' };
+  if (pending.length > 0 || failures.length > 0) {
+    return { recorded: false, reason: 'mapped CI checks are incomplete or failing' };
+  }
+  const state = await readValidationSequence(repoRoot, storyId);
+  if (!state) return { recorded: false, reason: 'validation sequence is not planned' };
+  const binding = state.frozen_binding;
+  if (!binding || binding.head_sha !== currentHead) {
+    return { recorded: false, reason: 'CI evidence does not match a frozen current-HEAD binding' };
+  }
+  const expectedCommand = normalizeCiBinding(binding.verification_command);
+  const matchingCheck = imported.find((item) => (
+    normalizeCiBinding(item.covered_command) === expectedCommand
+    && item.covered_test_fingerprint === binding.test_fingerprint
+  ));
+  if (!matchingCheck) {
+    return {
+      recorded: false,
+      reason: `no successful mapped CI check proves frozen verification command: ${binding.verification_command}`
+    };
+  }
+  if (state.phases?.expensive_verification?.status === 'passed') {
+    const existing = state.phases.expensive_verification;
+    if (existing.binding?.head_sha === binding.head_sha
+      && existing.binding?.test_fingerprint === binding.test_fingerprint
+      && existing.binding?.verification_command === binding.verification_command) {
+      const next = structuredClone(state);
+      next.phases.expensive_verification.evidence = [
+        ...(existing.evidence ?? []),
+        ...imported.map((item) => item.artifact).filter(Boolean)
+      ];
+      next.phases.expensive_verification.ci_import_augmented = true;
+      await writeValidationSequence(repoRoot, next);
+      return { recorded: false, reused: true, augmented: true, source: 'ci_import', imported_checks: imported.length };
+    }
+  }
+  const next = recordValidationPhase(state, {
+    phase: 'expensive_verification',
+    status: 'passed',
+    headSha: binding.head_sha,
+    testFingerprint: binding.test_fingerprint,
+    verificationCommand: binding.verification_command,
+    evidence: imported.map((item) => item.artifact).filter(Boolean).join(','),
+    evidenceValidation: { status: 'verified', source: 'ci_import' },
+    source: 'ci_import',
+    reason: `Imported ${imported.length} successful mapped CI check(s) at the frozen HEAD`
+  });
+  await writeValidationSequence(repoRoot, next);
+  return { recorded: true, source: 'ci_import', imported_checks: imported.length };
+}
+
+function normalizeCiBinding(value) {
+  return String(value ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 export function renderCiImportSummary(result) {
@@ -139,6 +227,54 @@ function parseCheckMappings(raw) {
     mappings.push({ name, kind });
   }
   return mappings;
+}
+
+function parseCoverageMappings(raw) {
+  return (Array.isArray(raw) ? raw : []).map((entry) => {
+    const text = String(entry);
+    const equals = text.indexOf('=');
+    const fingerprintSeparator = text.lastIndexOf('::');
+    const check = equals > 0 ? text.slice(0, equals).trim() : '';
+    const command = equals > 0 && fingerprintSeparator > equals ? text.slice(equals + 1, fingerprintSeparator).trim() : '';
+    const testFingerprint = fingerprintSeparator > equals ? text.slice(fingerprintSeparator + 2).trim() : '';
+    if (!check || !command || !testFingerprint) {
+      throw new Error(`verify import-ci --coverage must be check=command::test-fingerprint, got: ${text}`);
+    }
+    return { check, command, test_fingerprint: testFingerprint };
+  });
+}
+
+async function validateCoverageMappingsAtHead(root, headSha, requested) {
+  if (requested.length === 0) return [];
+  const contractPath = '.github/vibepro-ci-coverage.json';
+  let contract;
+  try {
+    const { stdout } = await execFileAsync('git', ['show', `${headSha}:${contractPath}`], { cwd: root, encoding: 'utf8' });
+    contract = JSON.parse(stdout);
+  } catch (error) {
+    throw new Error(`verify import-ci --coverage requires a valid ${contractPath} committed at the current HEAD: ${error.message}`);
+  }
+  const entries = Array.isArray(contract.coverage) ? contract.coverage : [];
+  for (const mapping of requested) {
+    const approved = entries.some((item) => item.check === mapping.check
+      && typeof item.workflow === 'string' && item.workflow.length > 0
+      && item.command === mapping.command
+      && item.test_fingerprint === mapping.test_fingerprint);
+    if (!approved) {
+      throw new Error(`verify import-ci rejected untrusted coverage mapping for ${mapping.check}; commit the exact mapping to ${contractPath}`);
+    }
+  }
+  return requested.map((mapping) => {
+    const approved = entries.find((item) => item.check === mapping.check
+      && item.command === mapping.command
+      && item.test_fingerprint === mapping.test_fingerprint);
+    return { ...mapping, workflow: approved.workflow };
+  });
+}
+
+function resolveCheckCoverage(checkName, workflowName, mappings) {
+  const mapping = mappings.find((item) => item.check === checkName && item.workflow === workflowName);
+  return mapping ? { covered_command: mapping.command, covered_test_fingerprint: mapping.test_fingerprint } : {};
 }
 
 function resolveCheckKind(checkName, mappings) {

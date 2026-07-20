@@ -481,11 +481,16 @@ After the PR exists, keep the lifecycle evidence current before merge:
 
 ```bash
 gh pr checks <pr-number> --watch
-npx vibepro verify import-ci /path/to/repo --id <story-id> --pr <pr-number>
+npx vibepro verify import-ci /path/to/repo --id <story-id> --pr <pr-number> \
+  --coverage 'test (20)=npm test::full-suite-node20'
 npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
 npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
 npx vibepro execute merge /path/to/repo --story-id <story-id> --pr <pr-number> --strategy squash
 ```
+
+`--coverage` is required to advance a frozen validation sequence from CI. It selects an exact mapping committed at the same HEAD in `.github/vibepro-ci-coverage.json`; caller input alone is never coverage proof. The successful workflow, check, frozen command, and test fingerprint must all match that repository-controlled contract. Check kind or a same-name check from another workflow is not treated as command coverage. Local sequence phases accept only the Story's canonical `.vibepro/pr/<story-id>/verification-evidence.json`, not an arbitrary repository-local assertion JSON.
+
+For high-risk changes, `vibepro sequence` makes the required order explicit: `targeted_validation` -> `preflight_review` -> `code_frozen` -> `expensive_verification` -> `final_review`. Passing validation phases require readable, repository-contained JSON evidence bound to the Story, HEAD, command, and test fingerprint. Final review accepts only a current passing result resolved through VibePro's canonical Agent Review lifecycle. Run `vibepro sequence --help` for plan/record/status/invalidate usage and terminal preflight dispositions. Changing the frozen HEAD, test fingerprint, or command invalidates downstream evidence.
 
 The second `pr create` call refreshes an existing open PR instead of creating a duplicate when base/head match. `execute merge` is the VibePro merge boundary: it verifies readiness, merges through GitHub, writes `pr-merge.json`, and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
 

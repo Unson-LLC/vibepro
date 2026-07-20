@@ -5,6 +5,19 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import {
+  buildValidationSequencePlan,
+  createValidationSequenceState,
+  evaluateValidationSequence,
+  fingerprintValidationCommand,
+  invalidateValidationSequence,
+  readValidationSequence,
+  readFinalReviewProvenance,
+  recordValidationPhase,
+  validatePreflightReviewEvidence,
+  validateValidationPhaseEvidence,
+  writeValidationSequence
+} from './validation-sequencing.js';
 import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
@@ -443,7 +456,8 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
@@ -701,7 +715,8 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
@@ -1646,6 +1661,7 @@ export async function runCli(argv, io = {}) {
           storyId,
           pr: getOption(rest, '--pr'),
           checks: getOptions(rest, '--check'),
+          coverage: getOptions(rest, '--coverage'),
           env: io.env,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
@@ -1661,6 +1677,91 @@ export async function runCli(argv, io = {}) {
       }
       write(stderr, `Unknown verify command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
+    }
+
+    if (command === 'sequence') {
+      const subcommand = rest[0];
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderSequenceHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+      if (!storyId) throw new Error('sequence requires --id <story-id>');
+      const headSha = getOption(rest, '--head') ?? await resolveGitHead(repoRoot);
+      let state;
+      if (subcommand === 'plan') {
+        const commandValue = getOption(rest, '--command');
+        const targets = getOptions(rest, '--target');
+        const plan = buildValidationSequencePlan({
+          storyId,
+          riskProfile: getOption(rest, '--risk-profile') ?? 'light',
+          riskSurfaces: getOptions(rest, '--surface')
+        });
+        state = createValidationSequenceState({
+          plan,
+          headSha,
+          testFingerprint: getOption(rest, '--test-fingerprint') ?? (commandValue ? fingerprintValidationCommand(commandValue, targets) : null),
+          verificationCommand: commandValue
+        });
+      } else {
+        state = await readValidationSequence(repoRoot, storyId);
+        if (!state) throw new Error(`validation sequence not planned for ${storyId}; run vibepro sequence plan first`);
+        if (subcommand === 'record') {
+          const proposed = state.proposed_binding ?? {};
+          const phase = getOption(rest, '--phase');
+          const evidence = getOption(rest, '--evidence');
+          let reviewProvenance = phase === 'final_review'
+            ? await readFinalReviewProvenance(repoRoot, evidence)
+            : null;
+          const status = getOption(rest, '--status') ?? 'passed';
+          const preflightEvidence = phase === 'preflight_review' && ['passed', 'dispositioned'].includes(status)
+            ? await validatePreflightReviewEvidence(repoRoot, evidence, {
+              storyId,
+              headSha,
+              roles: state.plan?.preflight_roles ?? [],
+              reviews: state.plan?.preflight_reviews ?? []
+            })
+            : null;
+          if (preflightEvidence) reviewProvenance = preflightEvidence.reviewProvenance;
+          const evidenceValidation = preflightEvidence?.evidenceValidation ?? (status === 'passed' && ['targeted_validation', 'expensive_verification'].includes(phase)
+            ? await validateValidationPhaseEvidence(repoRoot, evidence, {
+                storyId,
+                phase,
+                headSha,
+                verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+                testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+                notBefore: phase === 'expensive_verification' ? state.phases?.code_frozen?.recorded_at : null
+              })
+            : null);
+          state = recordValidationPhase(state, {
+            phase,
+            status,
+            headSha,
+            testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+            verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+            evidence,
+            evidenceValidation,
+            reviewProvenance,
+            findings: getOptions(rest, '--finding').map((id) => ({ id })),
+            dispositions: getOptions(rest, '--disposition').map(parseValidationDisposition),
+            reason: getOption(rest, '--reason'),
+            source: getOption(rest, '--source') ?? 'local'
+          });
+        } else if (subcommand === 'invalidate') {
+          state = invalidateValidationSequence(state, {
+            changedSurfaces: getOptions(rest, '--surface'),
+            changedFiles: getOptions(rest, '--file'),
+            reason: getOption(rest, '--reason') ?? 'working tree mutated'
+          });
+        } else if (subcommand !== 'status') {
+          throw new Error(`Unknown sequence command: ${subcommand ?? ''}`);
+        }
+      }
+      if (subcommand !== 'status') await writeValidationSequence(repoRoot, state);
+      const result = { state, evaluation: evaluateValidationSequence(state, { currentHeadSha: headSha }) };
+      write(stdout, `${JSON.stringify(result, null, 2)}\n`);
+      return { exitCode: 0, command, subcommand, result };
     }
 
     if (command === 'review') {
@@ -2848,6 +2949,7 @@ export async function runCli(argv, io = {}) {
           pr: getOption(rest, '--pr'),
           importCi: hasFlag(rest, '--import-ci'),
           ciChecks: getOptions(rest, '--check'),
+          ciCoverage: getOptions(rest, '--coverage'),
           dryRun: hasFlag(rest, '--dry-run'),
           env: io.env
         });
@@ -3283,6 +3385,22 @@ export async function runCli(argv, io = {}) {
   }
 }
 
+function parseValidationDisposition(value) {
+  const separator = String(value).indexOf(':');
+  if (separator <= 0 || separator === String(value).length - 1) {
+    throw new Error(`sequence record --disposition must be finding-id:status, got: ${value}`);
+  }
+  const status = String(value).slice(separator + 1);
+  const terminalStatuses = new Set(['accepted', 'rejected', 'duplicate', 'deferred', 'false_positive', 'resolved']);
+  if (!terminalStatuses.has(status)) {
+    throw new Error(`sequence record --disposition status must be terminal (${[...terminalStatuses].join('|')}), got: ${status}`);
+  }
+  return {
+    finding_id: String(value).slice(0, separator),
+    status
+  };
+}
+
 function renderArtifactRoutes(result) {
   const lines = [`Artifact routes resolved for ${result.variables.story_id}:`];
   for (const [kind, route] of Object.entries(result.routes ?? {})) {
@@ -3339,6 +3457,11 @@ function renderAuditMemoryResult(result) {
 
 function renderHelp(language = null) {
   return normalizeOutputLanguage(language) === 'en' ? HELP_EN : HELP_JA;
+}
+
+function renderSequenceHelp(language = null) {
+  if (normalizeOutputLanguage(language) === 'en') return `VibePro validation sequence\n\nUsage:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\nPhase order:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\nFor targeted_validation and post-freeze expensive_verification, run vibepro verify record with --artifact, --target, --scenario, --observed test_fingerprint=<sha>, --observed validation_phase=<phase>, and --strict-head-binding; then pass .vibepro/pr/<story-id>/verification-evidence.json to sequence record. Preflight requires a closed, passing canonical Agent Review for a planned role, not self-observed review metadata. final_review requires --source agent_review and a canonical current-head review result. sequence status returns the producer command first and follow_up_command second.\n`;
+  return `VibePro validation sequence\n\n使い方:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\n実行順:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\ntargeted_validationとfreeze後のexpensive_verificationでは、vibepro verify recordへ--artifact・--target・--scenario・--observed test_fingerprint=<sha>・--observed validation_phase=<phase>・--strict-head-bindingを渡し、その後に正規verification-evidenceをsequence recordへ渡します。preflightには自己申告metadataではなく、計画済みroleのclose済みpassing Agent Reviewが必要です。sequence statusは証拠生成commandを先に、follow_up_commandを次に返します。\n`;
 }
 
 function renderCheckpointList(result) {
@@ -3545,6 +3668,11 @@ function buildStartupOptions(args) {
 
 function write(stream, text) {
   if (stream) stream.write(text);
+}
+
+async function resolveGitHead(repoRoot) {
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' });
+  return stdout.trim();
 }
 
 async function readStdin(stream) {
