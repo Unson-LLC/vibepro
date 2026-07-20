@@ -4102,8 +4102,8 @@ function renderOutcomeHelp(subcommand = null, language = null) {
   const english = normalizeOutputLanguage(language) === 'en';
   if (subcommand === 'record') {
     return english
-      ? `VibePro outcome record\n\nUsage:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n`
-      : `VibePro outcome record\n\n使い方:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n`;
+      ? `VibePro outcome record\n\nUsage:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nStatus inputs:\n  observed requires --value-json <json>.\n  not_applicable requires --reason <text>.\n\nFlow:\n  vibepro usage report . --json -> choose trace/collision, parent revision, and one eligible source -> vibepro outcome record -> vibepro outcome refresh\n`
+      : `VibePro outcome record\n\n使い方:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nstatusごとの必須入力:\n  observed には --value-json <json> が必要です。\n  not_applicable には --reason <text> が必要です。\n\n操作フロー:\n  vibepro usage report . --json -> trace/collision、parent revision、eligible sourceを1つ選択 -> vibepro outcome record -> vibepro outcome refresh\n`;
   }
   if (subcommand === 'refresh') {
     return english

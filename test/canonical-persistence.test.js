@@ -349,6 +349,32 @@ test('GDL-CONTRACT-010 bounds cleanup independently without replacing the primar
   await rm(result.summary.worktree_path, { recursive: true, force: true });
 });
 
+test('GDL-CONTRACT-010 cleanup failure preserves an existing primary failure', async () => {
+  const fixture = await createRepository();
+  const runner = failCommand('git worktree remove --force', 1);
+  let failedPrimary = false;
+  const result = await persistCanonicalArtifactsToBase({
+    ...canonicalInput(fixture),
+    options: {
+      commandRunner: async (input) => {
+        const rendered = [input.command[0], ...input.command[1]].join(' ');
+        if (!failedPrimary && rendered.includes('git add --')) {
+          failedPrimary = true;
+          return { status: 'failed', exit_code: 96, stdout: '', stderr: 'primary add failure' };
+        }
+        return runner(input);
+      }
+    }
+  });
+
+  assert.equal(result.summary.primary.reason, 'canonical_audit_git_add_failed');
+  assert.equal(result.summary.failure.stage, 'canonical.git_add');
+  assert.equal(result.summary.cleanup.status, 'failed');
+  assert.equal(result.summary.cleanup.failure.stage, 'canonical.worktree_cleanup');
+  await git(fixture.root, ['worktree', 'remove', '--force', result.summary.worktree_path]);
+  await rm(result.summary.worktree_path, { recursive: true, force: true });
+});
+
 test('GDL-CONTRACT-011 resolves timed-out push postconditions as applied not_applied or indeterminate', async () => {
   for (const expected of ['applied', 'not_applied', 'indeterminate']) {
     const fixture = await createRepository();

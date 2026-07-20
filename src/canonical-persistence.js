@@ -216,7 +216,10 @@ export async function persistCanonicalArtifactsToBase({
       if (removeResult.exit_code !== 0) {
         summary.reason = `${summary.reason ?? 'canonical_audit_persistence'}; cleanup_failed`;
         summary.status = 'failed';
-        summary.failure = summary.cleanup.failure;
+        // Cleanup is a secondary resource-lifecycle result. Preserve an
+        // existing primary failure at the public summary boundary; callers
+        // can inspect cleanup.failure independently.
+        if (!summary.failure) summary.failure = summary.cleanup.failure;
       }
     }
   }

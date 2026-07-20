@@ -462,6 +462,11 @@ test(`${STORY_ID} runs the public outcome CLI from record through canonical refr
 
   const help = await execFileAsync(process.execPath, [CLI_PATH, '--help'], { encoding: 'utf8' });
   assert.match(help.stdout, /usage report --json -> choose trace\/collision, parent revision, and one eligible source -> outcome record -> outcome refresh/);
+  const recordHelp = await runCli(['outcome', 'record', '--help']);
+  assert.equal(recordHelp.code, 0);
+  assert.match(recordHelp.stdout, /observed requires --value-json/);
+  assert.match(recordHelp.stdout, /not_applicable requires --reason/);
+  assert.match(recordHelp.stdout, /usage report \. --json -> choose trace\/collision, parent revision, and one eligible source -> vibepro outcome record -> vibepro outcome refresh/);
   assert.match(help.stdout, /Zero sources require current trace-specific verification evidence or an accepted waiver/);
   assert.match(help.stdout, /multiple sources require an explicit --source from the bounded report/);
 });
