@@ -367,6 +367,9 @@ export async function writeValidationSequence(repoRoot, state) {
 }
 
 export function getValidationSequencePath(repoRoot, storyId) {
+  if (typeof storyId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(storyId)) {
+    throw new Error('validation sequence story id must be a single safe path segment');
+  }
   return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'validation-sequencing', storyId, 'state.json');
 }
 
@@ -428,11 +431,26 @@ function buildNextRequiredAction(state, blocking) {
         ]
       };
     }
-    const extra = phase === 'final_review'
-      ? ' --source agent_review --evidence <passing-current-head-review-result.json>'
-      : ['targeted_validation', 'preflight_review', 'expensive_verification'].includes(phase)
-        ? ` --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
-        : '';
+    if (phase === 'final_review') {
+      const review = { stage: 'implementation', role: 'runtime_contract' };
+      const result = `.vibepro/reviews/${state.story_id}/${review.stage}/review-result-${review.role}.json`;
+      return {
+        phase,
+        required_review: review,
+        instruction: 'Complete a current-HEAD final Agent Review and record the sequence phase only after its canonical lifecycle is closed with a passing result.',
+        command: `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
+        ordered_actions: [
+          `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id>`,
+          `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path> --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
+          `vibepro sequence record . --id ${state.story_id} --phase final_review --source agent_review --evidence ${result}`
+        ]
+      };
+    }
+    const extra = ['targeted_validation', 'preflight_review', 'expensive_verification'].includes(phase)
+      ? ` --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
+      : '';
     return {
       phase,
       command: `vibepro sequence record . --id ${state.story_id} --phase ${phase}${extra}`

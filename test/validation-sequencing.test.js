@@ -15,7 +15,7 @@ import {
   validateValidationPhaseEvidence
 } from '../src/validation-sequencing.js';
 import { recordImportedCiVerification } from '../src/ci-evidence.js';
-import { readValidationSequence, writeValidationSequence } from '../src/validation-sequencing.js';
+import { getValidationSequencePath, readValidationSequence, writeValidationSequence } from '../src/validation-sequencing.js';
 import { runCli } from '../src/cli.js';
 
 const binding = { headSha: 'abc123', testFingerprint: 'tests-v1', verificationCommand: 'node --test', evidence: '.vibepro/qa/phase.json', evidenceValidation: { status: 'verified' } };
@@ -344,7 +344,12 @@ test('pending final review at the frozen current HEAD recommends final review wi
   const evaluation = evaluateValidationSequence(state, { currentHeadSha: binding.headSha });
   assert.deepEqual(evaluation.blocking_phases, ['final_review', 'final_review_binding']);
   assert.equal(evaluation.next_required_action.phase, 'final_review');
-  assert.match(evaluation.next_required_action.command, /sequence record .*--phase final_review/);
+  assert.match(evaluation.next_required_action.command, /review prepare .*--stage implementation --role runtime_contract/);
+  assert.equal(evaluation.next_required_action.ordered_actions.length, 5);
+  assert.match(evaluation.next_required_action.ordered_actions[1], /review start/);
+  assert.match(evaluation.next_required_action.ordered_actions[2], /review close/);
+  assert.match(evaluation.next_required_action.ordered_actions[3], /review record .*--strict-head-binding/);
+  assert.match(evaluation.next_required_action.ordered_actions[4], /sequence record .*--phase final_review .*--source agent_review/);
   assert.doesNotMatch(evaluation.next_required_action.command, /sequence invalidate/);
 });
 
@@ -484,4 +489,11 @@ test('sequence CLI persists the planned and recorded workflow through the public
   assert.equal(status.exitCode, 0);
   assert.equal(status.result.state.story_id, 'story-cli-sequence');
   assert.equal(status.result.state.phases.targeted_validation.status, 'passed');
+});
+
+test('validation sequence story ids cannot escape the canonical workspace namespace', () => {
+  assert.match(getValidationSequencePath('/tmp/repo', 'story-safe_1.2'), /validation-sequencing\/story-safe_1\.2\/state\.json$/);
+  for (const storyId of ['../escape', '../../outside', '/absolute', 'nested/story', '', '.']) {
+    assert.throws(() => getValidationSequencePath('/tmp/repo', storyId), /single safe path segment/);
+  }
 });

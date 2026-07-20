@@ -142,7 +142,12 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   const awaitingFinalReview = await runCli(['sequence', 'status', root, '--id', 'story-sequence-e2e', '--json']);
   assert.deepEqual(awaitingFinalReview.result.evaluation.blocking_phases, ['final_review', 'final_review_binding']);
   assert.equal(awaitingFinalReview.result.evaluation.next_required_action.phase, 'final_review');
-  assert.match(awaitingFinalReview.result.evaluation.next_required_action.command, /sequence record .*--phase final_review/);
+  assert.match(awaitingFinalReview.result.evaluation.next_required_action.command, /review prepare .*--stage implementation --role runtime_contract/);
+  assert.deepEqual(
+    awaitingFinalReview.result.evaluation.next_required_action.ordered_actions.map((command) => command.match(/vibepro (review prepare|review start|review close|review record|sequence record)/)?.[1]),
+    ['review prepare', 'review start', 'review close', 'review record', 'sequence record']
+  );
+  assert.match(awaitingFinalReview.result.evaluation.next_required_action.ordered_actions.at(-1), /--phase final_review .*--source agent_review/);
   assert.doesNotMatch(awaitingFinalReview.result.evaluation.next_required_action.command, /sequence invalidate/);
   stderr = '';
   const duplicateExpensive = await runCli(['sequence', 'record', ...common, '--phase', 'expensive_verification', '--evidence', evidenceRef], {
