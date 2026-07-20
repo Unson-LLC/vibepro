@@ -5183,6 +5183,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "adr": [
@@ -5221,6 +5228,13 @@
             "path": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
             "required": true,
             "relationship": "refines",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+            "required": true,
+            "relationship": "implements",
             "last_reviewed_root_hash": null
           }
         ]
@@ -5311,6 +5325,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "adr",
           "path": "docs/architecture/story-vibepro-safe-action-orchestrator.md",
           "required": true,
@@ -5343,6 +5364,13 @@
           "path": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
           "required": true,
           "relationship": "refines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+          "required": true,
+          "relationship": "implements",
           "last_reviewed_root_hash": null
         }
       ],
@@ -5871,5 +5899,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-20T02:54:44.135Z"
+  "updated_at": "2026-07-20T14:55:45.082Z"
 }

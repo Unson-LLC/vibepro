@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "generated_by": { "caller": "codex", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "SRP-S-1", "type": "contract", "statement": "Every portfolio entry carries Story, order, Run, status, worktree, HEAD, cost attribution, and stop reason fields.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Decision" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "createPortfolio" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-1 SRP-S-2 creates closed one-Story entries with explicit attribution fields" }] },
+      "verifiable_by": { "code_pattern": [{ "file_glob": "src/story-run-portfolio.js", "must_contain": "cost_attribution" }], "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "SRP-S-1" }] }
+    },
+    {
+      "id": "SRP-S-2", "type": "invariant", "statement": "A child Run belongs to exactly one Story and cannot mix another Story's mutation, evidence, review, token, or time attribution.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Decision" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "assertRunOwnership" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode" }] },
+      "verifiable_by": { "code_pattern": [{ "file_glob": "src/story-run-portfolio.js", "must_contain": "scope_contamination" }], "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "scope contamination" }] }
+    },
+    {
+      "id": "SRP-S-3", "type": "invariant", "statement": "Sequential mode starts no mutating action for a later entry until every earlier entry is pr_ready or explicitly skipped.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Decision" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "advancePortfolio" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-3 six-Story sequential run never starts the next Story before pr_ready" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "six-Story sequential" }] }
+    },
+    {
+      "id": "SRP-S-4", "type": "contract", "statement": "Blocked, waiting, failed, and cancelled states are not success; continue, retry, and skip require a typed policy and reason.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Failure and recovery" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "decidePortfolio" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-4 blocker is not success and explicit typed skip survives restart" }] },
+      "verifiable_by": { "code_pattern": [{ "file_glob": "src/story-run-portfolio.js", "must_contain": "typed_policy_required" }] }
+    },
+    {
+      "id": "SRP-S-5", "type": "contract", "statement": "Cross-Story context promotion records source, artifact path, SHA-256 digest, consumer, and reason while rejecting raw transcripts.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Boundaries" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "promoteContext" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-5 promotes digest-bound artifact context and rejects raw transcripts" }] },
+      "verifiable_by": { "code_pattern": [{ "file_glob": "src/story-run-portfolio.js", "must_contain": "raw_transcript_forbidden" }] }
+    },
+    {
+      "id": "SRP-S-6", "type": "contract", "statement": "Human and JSON summaries preserve per-Story Trusted PR-ready, active/wait, token/cost, Full Suite, evidence reuse, and human interruption accounting.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Boundaries" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "renderStoryRunPortfolioSummary" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-6 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "trusted_pr_ready_ms=unknown" }] }
+    },
+    {
+      "id": "SRP-S-7", "type": "invariant", "statement": "Mixed Story, Run, worktree, branch, review artifact, or session attribution stops advancement as scope_contamination.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Decision" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "assertRunOwnership" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode" }] },
+      "verifiable_by": { "code_pattern": [{ "file_glob": "src/story-run-portfolio.js", "must_contain": "mixed_sessions" }], "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "scope contamination" }] }
+    },
+    {
+      "id": "SRP-S-8", "type": "scenario", "statement": "The acceptance matrix covers six-Story sequencing, blocker, restart, explicit skip, safe context promotion, and parallel rejection.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Failure and recovery" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "Story Run Portfolio acceptance suite" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "parallel_isolation_unproven" }] }
+    }
+  ]
+}

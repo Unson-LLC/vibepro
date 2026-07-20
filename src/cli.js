@@ -153,6 +153,11 @@ import {
   renderGuardedRunError,
   renderGuardedRunSummary
 } from './guarded-run-session.js';
+import {
+  StoryRunPortfolioError,
+  createStoryRunPortfolioController,
+  renderStoryRunPortfolioSummary
+} from './story-run-portfolio.js';
 import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
@@ -331,6 +336,11 @@ Guarded Run sessions:
   vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
       resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      Coordinate isolated one-Story Runs sequentially; stopped entries require an explicit typed decision.
       watch returns one current snapshot and exits; it does not stream.
       Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -583,6 +593,11 @@ Guarded Runセッション:
   vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
       resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      1 Run = 1 Storyを保ったまま逐次実行し、停止したStoryの継続・skip・retryには型付き判断を要求します。
       watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
       guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -2314,7 +2329,8 @@ export async function runCli(argv, io = {}) {
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',
-        'start', 'next', 'reconcile', 'merge'
+        'start', 'next', 'reconcile', 'merge',
+        'portfolio-create', 'portfolio-status', 'portfolio-advance', 'portfolio-decide', 'portfolio-promote'
       ]);
       if (runOptions.repairLinkedCopy
           && knownExecuteSubcommands.has(subcommand)
@@ -2381,6 +2397,50 @@ export async function runCli(argv, io = {}) {
             ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
             : renderGuardedRunError(error, { repoRoot }));
           return { exitCode: 2, command, subcommand, result: error.toJSON() };
+        }
+      }
+      if (subcommand?.startsWith('portfolio-')) {
+        const jsonOutput = hasFlag(rest, '--json');
+        const controller = createStoryRunPortfolioController(io.storyRunPortfolioDependencies ?? {});
+        const portfolioOptions = {
+          portfolioId: getOption(rest, '--portfolio-id'),
+          storyIds: getOption(rest, '--stories')?.split(',').map((item) => item.trim()).filter(Boolean),
+          mode: getOption(rest, '--mode'),
+          storyId: getOption(rest, '--story-id'),
+          decision: getOption(rest, '--decision'),
+          policyType: getOption(rest, '--policy-type'),
+          reason: getOption(rest, '--reason'),
+          decisionId: getOption(rest, '--human-decision-id'),
+          answer: getOption(rest, '--answer'),
+          answeredBy: getOption(rest, '--answered-by'),
+          reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean),
+          sourceStoryId: getOption(rest, '--source-story-id'),
+          consumerStoryId: getOption(rest, '--consumer-story-id'),
+          artifactPath: getOption(rest, '--artifact'),
+          digest: getOption(rest, '--digest'),
+          rawTranscript: hasFlag(rest, '--raw-transcript')
+        };
+        try {
+          const operation = subcommand.slice('portfolio-'.length);
+          const result = operation === 'create'
+            ? await controller.create(repoRoot, portfolioOptions)
+            : operation === 'status'
+              ? await controller.status(repoRoot, portfolioOptions)
+              : operation === 'advance'
+                ? await controller.advance(repoRoot, portfolioOptions)
+                : operation === 'decide'
+                  ? await controller.decide(repoRoot, portfolioOptions)
+                  : operation === 'promote'
+                    ? await controller.promote(repoRoot, portfolioOptions)
+                    : null;
+          if (!result) throw new StoryRunPortfolioError('unknown_portfolio_command', `Unknown Portfolio command: ${subcommand}.`);
+          write(stdout, jsonOutput ? `${JSON.stringify(result, null, 2)}\n` : renderStoryRunPortfolioSummary(result));
+          return { exitCode: 0, command, subcommand, result };
+        } catch (error) {
+          if (!(error instanceof StoryRunPortfolioError)) throw error;
+          const payload = error.toJSON();
+          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : `${error.code}: ${error.message}\n`);
+          return { exitCode: 2, command, subcommand, result: payload };
         }
       }
       if (subcommand === 'start') {
