@@ -64,8 +64,20 @@
         "started_at": "2026-07-16",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-review-finding-repair-loop",
+        "title": "Review findingを実装修正へ戻すBounded Repair Loop",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-risk-adaptive-validation-sequencing"
+    "current_story_id": "story-vibepro-review-finding-repair-loop"
   }
 }
