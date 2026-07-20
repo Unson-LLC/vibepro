@@ -104,8 +104,8 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
       const creationRequestId = state.scope_bindings[active.story_id]?.creation_request_id;
       if (!creationRequestId) throw error('starting_identity_missing', `Starting Portfolio entry has no creation request identity: ${active.story_id}.`);
       run = await deps.guardedRun.run(repoRoot, { storyId: active.story_id, creationRequestId });
-      if (run.story_id !== active.story_id) {
-        await assertAndPersistRunOwnership(deps, repoRoot, state, active, run);
+      if (run.story_id !== active.story_id || run.creation_request_id !== creationRequestId || !run.run_id) {
+        await persistInitialRunContamination(deps, repoRoot, state, active, run, creationRequestId);
       }
       active.run_id = run.run_id;
       state.scope_bindings[active.story_id] = buildScopeBinding(run);
@@ -277,8 +277,8 @@ function assertRunOwnership(entry, run, binding = {}) {
   const branch = run.execution_context?.branch ?? run.execution_context?.branch_name ?? null;
   const mixedMutations = hasMixedAttribution(run.mutation_artifacts, entry);
   const mixedEvidence = hasMixedAttribution(run.evidence_artifacts, entry);
-  const mixedReviews = (run.review_artifacts ?? []).some((artifact) => artifact.story_id !== entry.story_id || artifact.run_id && artifact.run_id !== entry.run_id);
-  const mixedSessions = (run.session_attribution ?? []).some((session) => session.story_id !== entry.story_id || session.run_id && session.run_id !== entry.run_id);
+  const mixedReviews = hasMixedAttribution(run.review_artifacts, entry);
+  const mixedSessions = hasMixedAttribution(run.session_attribution, entry);
   const contaminated = run.story_id !== entry.story_id
     || run.run_id !== entry.run_id
     || (entry.worktree && run.execution_context?.root_realpath !== entry.worktree)
@@ -297,7 +297,7 @@ function assertRunOwnership(entry, run, binding = {}) {
 }
 
 function hasMixedAttribution(artifacts = [], entry) {
-  return artifacts.some((artifact) => artifact.story_id !== entry.story_id || artifact.run_id && artifact.run_id !== entry.run_id);
+  return artifacts.some((artifact) => artifact.story_id !== entry.story_id || artifact.run_id !== entry.run_id);
 }
 
 async function assertAndPersistRunOwnership(deps, repoRoot, state, entry, run) {

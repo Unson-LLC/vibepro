@@ -183,7 +183,9 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
     ['evidence-run', { evidence_artifacts: [{ story_id: STORIES[0], run_id: 'foreign-run' }] }],
     ['evidence-missing', { evidence_artifacts: [{}] }],
     ['review', { review_artifacts: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }],
-    ['session', { session_attribution: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }]
+    ['review-missing-run', { review_artifacts: [{ story_id: STORIES[0] }] }],
+    ['session', { session_attribution: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }],
+    ['session-missing-run', { session_attribution: [{ story_id: STORIES[0] }] }]
   ];
   for (const [kind, contamination] of cases) {
     const portfolioId = `portfolio-contamination-${kind}`;
@@ -308,6 +310,40 @@ test('Portfolio restart reconciles a child Run created before Portfolio publish'
   const recovered = await fixture.restart().advance(fixture.root, { portfolioId: 'portfolio-publish-gap' });
   assert.equal(recovered.entries[0].run_id, `run-20260720T000000Z-${STORIES[0].slice(-1).padStart(8, '0')}`);
   assert.equal(fixture.started.filter((storyId) => storyId === STORIES[0]).length, 1);
+});
+
+test('SRP-S-2 SRP-S-7 restart never adopts a Run outside the persisted creation request', async (t) => {
+  const cases = [
+    ['foreign-request', { creation_request_id: 'portfolio-foreign-request' }],
+    ['missing-request', { creation_request_id: null }],
+    ['missing-run', { run_id: null }]
+  ];
+  for (const [kind, patch] of cases) {
+    const fixture = await createFixture(t);
+    const portfolioId = `portfolio-publish-gap-${kind}`;
+    await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 2) });
+    let stateWrites = 0;
+    const failing = createStoryRunPortfolioController({
+      ...fixture.dependencies,
+      async writeFile(file, content, options) {
+        if (String(file).includes('state.json.tmp-') && (stateWrites += 1) === 2) {
+          const failure = new Error('injected Portfolio publish failure');
+          failure.code = 'EIO';
+          throw failure;
+        }
+        return writeFile(file, content, options);
+      }
+    });
+    await assert.rejects(failing.advance(fixture.root, { portfolioId }), /injected Portfolio publish failure/);
+    fixture.contaminate(STORIES[0], patch);
+    await assert.rejects(fixture.restart().advance(fixture.root, { portfolioId }), errorCode('scope_contamination'));
+    const stopped = await fixture.controller.status(fixture.root, { portfolioId });
+    assert.equal(stopped.status, 'blocked');
+    assert.equal(stopped.entries[0].run_id, null);
+    assert.equal(stopped.entries[0].stop_reason.code, 'scope_contamination');
+    assert.equal(stopped.entries[1].status, 'queued');
+    assert.equal(fixture.started.filter((storyId) => storyId === STORIES[0]).length, 1);
+  }
 });
 
 test('Portfolio restart never adopts a historical Run when creation did not begin', async (t) => {
