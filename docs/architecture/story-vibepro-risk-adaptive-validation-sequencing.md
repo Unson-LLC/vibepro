@@ -3,6 +3,8 @@ title: "Risk-adaptive Validation Sequencing Architecture"
 status: accepted
 created_at: 2026-07-20
 updated_at: 2026-07-20
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 related_stories:
   - story-vibepro-risk-adaptive-validation-sequencing
   - story-vibepro-risk-adaptive-gate-dag
