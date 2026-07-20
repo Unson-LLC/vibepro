@@ -9,7 +9,7 @@ parent_design: vibepro-artifact-value-ledger
 
 ## Decision
 
-findingからdownstream outcomeまでを追うledgerは、新しい判断正本ではなく、既存正本を結合する**head-bound derived read model**とする。`.vibepro/pr/<story-id>/decision-outcome-ledger.json`へ生成し、merge時にcanonical audit bundleへ追加する。既存ledgerのfield、entry key、promotion動作は変更しない。
+findingからdownstream outcomeまでを追うledgerは、新しい判断正本ではなく、既存正本を結合する**head-bound derived read model**とする。`.vibepro/pr/<story-id>/decision-outcome-ledger.json`へ生成し、merge時にcanonical audit bundleへ追加する。well-formedな既存ledgerのfield、entry key、promotion動作は維持し、schema・binding・digestが不正なledgerだけをcanonical promotion前にfail-closedで拒否する。
 
 ## Source Matrix and Precedence
 

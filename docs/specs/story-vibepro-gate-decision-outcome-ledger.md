@@ -100,7 +100,7 @@ summaryは各traceの`finding → decision → behavior_delta → delivery → d
 
 ### GDL-CONTRACT-007: Compatibility and failure
 
-既存artifact value ledger、gate outcome ledger、decision records、canonical decision index、usage reportの既存fieldを削除・改名しない。legacy、missing、malformed、unreadableをentry消失や空の成功へ変換しない。authoritative local ledgerはsame-directory fsync済みtempからatomic renameし、base write、refresh一時露出/復元/最終確定、delivery bindingのreplacement失敗で旧bytesを保持する。PR作成またはmergeの外部side effect成功後にderived delivery bindingが失敗しても既存lifecycleを失敗へ変換せず、binding statusを`unavailable`、安全なbounded codeと固定message/recoveryをPR/merge artifactへ保存する。parser本文、入力断片、credential-like値、stackを保存しない。binding対象がない場合は`not_available`、成功時は`bound`を返す。
+既存artifact value ledger、gate outcome ledger、decision records、canonical decision index、usage reportの既存fieldを削除・改名しない。legacy、missing、malformed、unreadableをentry消失や空の成功へ変換しない。authoritative local ledgerはsame-directory fsync済みtempからatomic renameし、base write、refresh一時露出/復元/最終確定、delivery bindingのreplacement失敗で旧bytesを保持する。PR作成またはmergeの外部side effect成功後にderived delivery bindingが失敗しても既存lifecycleを失敗へ変換せず、binding statusを`unavailable`、安全なbounded codeと固定message/recoveryをPR/merge artifactへ保存する。parser本文、入力断片、credential-like値、stackを保存しない。derived PR/merge接続でledger自体が存在しない場合は`decision_outcome_delivery.status = not_available`、接続成功時は同fieldを`bound`とする。これとは別に、repo-local gate outcome entryが0件の場合は`decision_outcome_binding.status = not_applicable`とし、両statusを相互変換しない。
 
 ### GDL-CONTRACT-008: Canonical revision persistence
 
