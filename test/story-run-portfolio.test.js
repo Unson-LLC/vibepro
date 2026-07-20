@@ -61,6 +61,34 @@ test('SRP-S-4 blocker is not success and explicit typed skip survives restart', 
   assert.equal(state.entries[1].status, 'running');
 });
 
+test('SRP-S-4 every stopped status requires a typed decision and continue or retry resumes only that Run', async (t) => {
+  for (const status of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed', 'cancelled']) {
+    const fixture = await createFixture(t);
+    const portfolioId = `portfolio-stop-${status.replaceAll('_', '-')}`;
+    await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 2) });
+    await fixture.controller.advance(fixture.root, { portfolioId });
+    fixture.setStatus(STORIES[0], status, { code: `${status}_reason`, message: status });
+    let state = await fixture.controller.advance(fixture.root, { portfolioId });
+    assert.equal(state.status, status);
+    assert.deepEqual(fixture.started, [STORIES[0]]);
+    const decision = status === 'failed' ? 'retry' : 'continue';
+    await assert.rejects(
+      fixture.controller.decide(fixture.root, { portfolioId, storyId: STORIES[0], decision }),
+      errorCode('typed_policy_required')
+    );
+    state = await fixture.controller.decide(fixture.root, {
+      portfolioId, storyId: STORIES[0], decision, policyType: 'human_decision', reason: `operator accepted ${decision}`,
+      decisionId: `decision-${status}`, answer: decision, answeredBy: 'operator'
+    });
+    assert.equal(state.entries[0].status, 'running');
+    assert.equal(state.entries[1].status, 'queued');
+    assert.deepEqual(fixture.resumed.at(-1), {
+      storyId: STORIES[0], runId: state.entries[0].run_id, decisionId: `decision-${status}`,
+      answer: decision, answeredBy: 'operator', reflectedIn: []
+    });
+  }
+});
+
 test('SRP-S-5 promotes digest-bound artifact context and rejects raw transcripts', async (t) => {
   const fixture = await createFixture(t);
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-context', storyIds: STORIES.slice(0, 2) });
@@ -110,11 +138,23 @@ test('SRP-S-6 summary reports per-Story time cost suite reuse and interruptions 
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-cost', storyIds: STORIES.slice(0, 1) });
   await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });
   const state = await fixture.controller.advance(fixture.root, {
-    portfolioId: 'portfolio-cost', costAttribution: { active_ms: 1200, wait_ms: 300, total_tokens: 42, full_suite_count: 1, evidence_reuse_count: 2, human_interruption_count: 1 }
+    portfolioId: 'portfolio-cost', costAttribution: {
+      story_id: STORIES[0], run_id: fixture.runs.get(STORIES[0]).run_id,
+      active_ms: 1200, wait_ms: 300, total_tokens: 42, full_suite_count: 1, evidence_reuse_count: 2, human_interruption_count: 1
+    }
   });
   const output = renderStoryRunPortfolioSummary(state);
   assert.match(output, /trusted_pr_ready_ms=unknown active_ms=1200 wait_ms=300 tokens=42/);
   assert.match(output, /full_suite=1 evidence_reuse=2 human_interruptions=1/);
+  await assert.rejects(fixture.controller.advance(fixture.root, {
+    portfolioId: 'portfolio-cost', costAttribution: {
+      story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id, total_tokens: 999
+    }
+  }), errorCode('scope_contamination'));
+  const unchanged = await fixture.controller.status(fixture.root, { portfolioId: 'portfolio-cost' });
+  assert.equal(unchanged.entries[0].cost_attribution.total_tokens, 42);
+  assert.equal(unchanged.status, 'blocked');
+  assert.equal(unchanged.entries[0].stop_reason.code, 'scope_contamination');
 });
 
 test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode', async (t) => {
@@ -133,6 +173,8 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
   assert.match(renderStoryRunPortfolioSummary(stopped), /next_action=vibepro execute portfolio-decide/);
 
   const cases = [
+    ['run', { run_id: 'foreign-run' }],
+    ['worktree', { execution_context: { root_realpath: '/worktrees/foreign-story', branch_name: `codex/${STORIES[0]}` } }],
     ['branch', { execution_context: { root_realpath: `/worktrees/${STORIES[0]}`, branch_name: 'foreign-branch' } }],
     ['review', { review_artifacts: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }],
     ['session', { session_attribution: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }]
@@ -313,6 +355,7 @@ async function createFixture(t, options = {}) {
   const runs = new Map();
   const requestRuns = new Map();
   const started = [];
+  const resumed = [];
   let runStarted;
   const runStart = new Promise((resolve) => { runStarted = resolve; });
   const guardedRun = {
@@ -340,7 +383,9 @@ async function createFixture(t, options = {}) {
       }
       return structuredClone(run);
     },
-    async resume(_root, { storyId }) {
+    async resume(_root, options) {
+      const { storyId } = options;
+      resumed.push(structuredClone(options));
       const run = runs.get(storyId);
       run.status = 'running';
       run.stop_reason = null;
@@ -349,7 +394,7 @@ async function createFixture(t, options = {}) {
   };
   const dependencies = { guardedRun, now: () => new Date('2026-07-20T00:00:00.000Z'), randomBytes: () => Buffer.from('01020304', 'hex') };
   return {
-    root, runs, started, dependencies,
+    root, runs, started, resumed, dependencies,
     waitForRunStart: () => runStart,
     controller: createStoryRunPortfolioController(dependencies),
     restart: () => createStoryRunPortfolioController(dependencies),

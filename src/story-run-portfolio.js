@@ -117,7 +117,17 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
     active.worktree = run.execution_context?.root_realpath ?? null;
     active.head_sha = run.current_head_sha ?? null;
     active.stop_reason = run.stop_reason ?? null;
-    active.cost_attribution = mergeCostAttribution(active.cost_attribution, options.costAttribution);
+    try {
+      active.cost_attribution = mergeCostAttribution(active.cost_attribution, options.costAttribution, active);
+    } catch (cause) {
+      if (cause.code !== 'scope_contamination') throw cause;
+      active.status = 'blocked';
+      active.stop_reason = { code: cause.code, message: cause.message, details: cause.details };
+      state.status = 'blocked';
+      state.updated_at = iso(deps.now());
+      await persist(deps, repoRoot, state);
+      throw cause;
+    }
     if (STOPPED.has(active.status)) {
       state.status = active.status;
       state.updated_at = iso(deps.now());
@@ -305,11 +315,21 @@ function emptyCostAttribution() {
   };
 }
 
-function mergeCostAttribution(current, next) {
+function mergeCostAttribution(current, next, entry) {
   if (!next) return current;
   const allowed = Object.keys(emptyCostAttribution());
-  if (Object.keys(next).some((key) => !allowed.includes(key))) throw error('invalid_cost_attribution', 'Unknown cost attribution field.');
-  return { ...current, ...next };
+  const identity = ['story_id', 'run_id'];
+  if (Object.keys(next).some((key) => !allowed.includes(key) && !identity.includes(key))) {
+    throw error('invalid_cost_attribution', 'Unknown cost attribution field.');
+  }
+  if (next.story_id !== entry.story_id || next.run_id !== entry.run_id) {
+    throw error('scope_contamination', 'Cost attribution identity does not match its Portfolio entry.', {
+      expected: { story_id: entry.story_id, run_id: entry.run_id },
+      actual: { story_id: next.story_id ?? null, run_id: next.run_id ?? null }
+    });
+  }
+  const measurements = Object.fromEntries(Object.entries(next).filter(([key]) => allowed.includes(key)));
+  return { ...current, ...measurements };
 }
 
 async function readPortfolio(deps, repoRoot, options = {}) {

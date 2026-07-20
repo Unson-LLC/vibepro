@@ -15,7 +15,7 @@ parent_design:
 
 `createStoryRunPortfolioController(dependencies)` exposes `create`, `status`, `advance`, `decide`, and `promote`. A portfolio id is a safe `portfolio-*` path segment and Story ids are safe `story-*` values. Creation rejects duplicates and all modes except `sequential`.
 
-An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`, `head_sha`, `cost_attribution`, and `stop_reason`. Cost attribution separately represents Trusted PR-ready milliseconds, active/wait milliseconds, tokens/cost, Full Suite count, evidence reuse count, and human interruption count. Unknown measurements are `null` in JSON and `unknown` in human output.
+An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`, `head_sha`, `cost_attribution`, and `stop_reason`. Cost attribution input must identify the same `story_id` and `run_id` before its measurements can be merged; a mismatch is persisted as `scope_contamination`. Attribution separately represents Trusted PR-ready milliseconds, active/wait milliseconds, tokens/cost, Full Suite count, evidence reuse count, and human interruption count. Unknown measurements are `null` in JSON and `unknown` in human output.
 
 `advance` starts at most one child. If a child is active, it observes and verifies that child first. A running or stopped child returns without starting another child. A `pr_ready` child permits the next child. A cancelled child leaves the portfolio stopped unless the operator records an explicit typed decision.
 
@@ -58,4 +58,4 @@ human are allowlisted and exclude owner tokens.
 
 ## Verification
 
-`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion including internal transcript symlinks, persisted contamination stop and next action, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, every stopped status with typed continue/retry/skip, digest/realpath-safe context promotion including internal transcript symlinks, Story/Run/worktree/branch/review/session and attribution contamination, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
