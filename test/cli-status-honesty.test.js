@@ -248,7 +248,7 @@ test('GDO-S-3 execute merge fails closed on a corrupt local gate outcome ledger 
       name: 'wrong model',
       contents: JSON.stringify({
         schema_version: '0.1.0',
-        model: 'vibepro-gate-outcome-ledger-v2',
+        model: 'vibepro-gate-outcome-ledger-v999',
         entries: []
       }),
       reason: 'local_gate_outcome_ledger_model_invalid'
