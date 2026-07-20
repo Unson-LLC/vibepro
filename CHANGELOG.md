@@ -258,3 +258,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-risk-adaptiv
 なし
 
 <!-- vibepro-release-pr:362:end -->
+
+<!-- vibepro-release-pr:363:start -->
+## [#363](https://github.com/Unson-LLC/vibepro/pull/363) story-vibepro-review-finding-repair-loop - needs_changesを停止報告で終わらせず、修正・再検証・再Reviewへ閉ループ化したい
+
+- Author: @sintariran
+- Merged: 2026-07-20T14:48:04Z
+- Commit: `16d609b00eb186b568081c1972fdd4a8df85f73c`
+
+### Change Summary
+
+アーキテクチャ判断を追加: [docs/architecture/story-vibepro-review-finding-repair-loop.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/architecture/story-vibepro-review-finding-repair-loop.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:363:end -->

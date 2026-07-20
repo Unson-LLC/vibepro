@@ -69,3 +69,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:362:start -->
 - [PR #362](https://github.com/Unson-LLC/vibepro/pull/362) — [2026-07](/releases/2026-07): story-vibepro-risk-adaptive-validation-sequencing - 高コストFull Suite後に境界欠陥が見つかり、修正で証跡を全て取り直す順序を改善したい
 <!-- vibepro-release-index-pr:362:end -->
+
+<!-- vibepro-release-index-pr:363:start -->
+- [PR #363](https://github.com/Unson-LLC/vibepro/pull/363) — [2026-07](/releases/2026-07): story-vibepro-review-finding-repair-loop - needs_changesを停止報告で終わらせず、修正・再検証・再Reviewへ閉ループ化したい
+<!-- vibepro-release-index-pr:363:end -->
