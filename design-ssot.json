@@ -5208,6 +5208,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md",
+            "required": true,
+            "relationship": "refines",
+            "last_reviewed_root_hash": null
           }
         ]
       },
@@ -5315,6 +5322,13 @@
           "path": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
           "required": true,
           "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md",
+          "required": true,
+          "relationship": "refines",
           "last_reviewed_root_hash": null
         }
       ],
@@ -5843,5 +5857,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-19T11:15:33.690Z"
+  "updated_at": "2026-07-20T02:54:44.135Z"
 }

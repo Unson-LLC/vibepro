@@ -602,6 +602,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'validation_sequencing_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
       'agent_review_dispatch_batch_gate',

@@ -1,0 +1,86 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "generated_by": { "caller": "codex", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "C-RVS-1",
+      "type": "contract",
+      "statement": "High-risk and boundary-sensitive changes plan targeted validation and surface-specific advisory preflight before expensive verification.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/validation-sequencing.js", "anchor": "buildValidationSequencePlan" }],
+        "test_refs": [{ "file": "test/validation-sequencing.test.js", "case": "high-risk plan schedules boundary-specific preflight before expensive verification" }]
+      }
+    },
+    {
+      "id": "INV-RVS-2",
+      "type": "invariant",
+      "statement": "Preflight records are advisory_preflight and never satisfy final review; freeze requires targeted validation plus passed or fully dispositioned preflight.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/validation-sequencing.js", "anchor": "recordValidationPhase" }],
+        "test_refs": [
+          { "file": "test/validation-sequencing.test.js", "case": "advisory preflight never satisfies final review and freeze waits for its disposition" },
+          { "file": "test/validation-sequencing.test.js", "case": "freeze rejects nonterminal or unknown preflight dispositions" }
+        ]
+      }
+    },
+    {
+      "id": "C-RVS-3",
+      "type": "contract",
+      "statement": "Expensive verification is reusable only for the exact frozen HEAD, test fingerprint, and command, including evidence imported from CI.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }, { "kind": "acceptance_criteria", "index": 7 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Decision" }],
+        "code_refs": [
+          { "file": "src/validation-sequencing.js", "anchor": "evaluateExpensiveVerificationReuse" },
+          { "file": "src/ci-evidence.js", "anchor": "recordImportedCiVerification" }
+        ],
+        "test_refs": [
+          { "file": "test/validation-sequencing.test.js", "case": "expensive verification is reused only at the exact frozen binding" },
+          { "file": "test/validation-sequencing.test.js", "case": "current-head CI import records reusable expensive verification against the frozen binding" },
+          { "file": "test/ci-evidence-import.test.js", "case": "import-ci public path records frozen node test coverage from realistic CI checks" }
+        ]
+      }
+    },
+    {
+      "id": "INV-RVS-4",
+      "type": "invariant",
+      "statement": "Mutation invalidates only affected phases when the surface is known, while source, test, repository-control, other, and unknown surfaces invalidate all phases with a recorded reason.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }, { "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/validation-sequencing.js", "anchor": "invalidateValidationSequence" }],
+        "test_refs": [{ "file": "test/validation-sequencing.test.js", "case": "mutation invalidates scoped phases and unknown surfaces fail closed" }]
+      }
+    },
+    {
+      "id": "S-RVS-5",
+      "type": "scenario",
+      "statement": "The workflow state transition matrix covers early boundary finding, repair and freeze, exact reuse, scoped invalidation, unknown fallback, CI-imported expensive evidence, and current-head final review.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }, { "kind": "acceptance_criteria", "index": 8 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Verification" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "gate:validation_sequencing" }],
+        "test_refs": [{ "file": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts", "case": "AC-9 S-001 acceptance matrix executes without failures" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "state",
+      "entities": ["targeted_validation", "preflight_review", "code_frozen", "expensive_verification", "final_review"],
+      "rationale": "Defines the guarded order from targeted_validation through preflight_review and code_frozen to expensive_verification and final_review, including mutation rollback and the current-head boundary.",
+      "mermaid": "stateDiagram-v2\n  targeted_validation --> preflight_review\n  preflight_review --> code_frozen: pass or dispositioned\n  code_frozen --> expensive_verification\n  expensive_verification --> final_review\n  final_review --> [*]: current HEAD\n  code_frozen --> targeted_validation: source test repo-control unknown mutation\n  final_review --> preflight_review: contract mutation"
+    },
+    {
+      "kind": "threat_model",
+      "entities": ["current_change_risk", "persisted_validation_plan", "reconciled_validation_state", "validation_sequencing_gate"],
+      "rationale": "A persisted light plan is untrusted when current classification changes. Reconciliation replaces drifted risk inputs and invalidates prior phases before the Gate evaluates readiness.",
+      "mermaid": "flowchart LR\n  C[current_change_risk] --> R[reconciled_validation_state]\n  P[persisted_validation_plan] --> R\n  R -->|risk drift invalidates all phases| G[validation_sequencing_gate]\n  P -. cannot bypass current risk .-> G"
+    }
+  ]
+}

@@ -14,6 +14,12 @@ import {
 } from './requirement-consistency.js';
 import { renderGateDagHtml, renderPrCreateHtml, renderPrMergeHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { classifyChangeRisk } from './change-risk-classifier.js';
+import {
+  evaluateValidationSequence,
+  reconcileValidationSequenceState,
+  readValidationSequence,
+  writeValidationSequence
+} from './validation-sequencing.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
@@ -1685,6 +1691,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       storyId: preparation.story.story_id,
       pr: options.pr,
       checks: options.ciChecks,
+      coverage: options.ciCoverage,
       env: options.env
     });
     operations.push({
@@ -2064,6 +2071,7 @@ function buildAutopilotImportCiCommand(storyId, options = {}) {
   const args = ['vibepro verify import-ci .', '--id', shellQuote(storyId)];
   if (options.pr) args.push('--pr', shellQuote(options.pr));
   for (const check of options.ciChecks ?? []) args.push('--check', shellQuote(check));
+  for (const coverage of options.ciCoverage ?? []) args.push('--coverage', shellQuote(coverage));
   return args.join(' ');
 }
 
@@ -5418,6 +5426,17 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     regressionRisk,
     diffStats: git.diff_line_stats ?? null
   });
+  const persistedValidationSequence = await readValidationSequence(repoRoot, story.story_id);
+  const validationSequence = reconcileValidationSequenceState(persistedValidationSequence, {
+    storyId: story.story_id,
+    riskProfile: changeClassification.profile,
+    riskSurfaces: changeClassification.risk_surfaces,
+    headSha: git.head_sha
+  });
+  if (validationSequence.plan.required && validationSequence !== persistedValidationSequence) {
+    await writeValidationSequence(repoRoot, validationSequence);
+  }
+  const validationSequenceEvaluation = evaluateValidationSequence(validationSequence, { currentHeadSha: git.head_sha });
   const prRoute = buildPrRouteClassification({
     git,
     fileGroups,
@@ -5532,6 +5551,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
     change_classification: changeClassification,
+    validation_sequencing: {
+      state: validationSequence,
+      evaluation: validationSequenceEvaluation,
+      artifact: `.vibepro/validation-sequencing/${story.story_id}/state.json`
+    },
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
     change_summary: buildChangeSummary(fileGroups),
@@ -5604,7 +5628,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     designSsotReconciliation: context.design_ssot_reconciliation,
     journeyMap,
     managedWorktreeContext,
-    managedWorktreeGate
+    managedWorktreeGate,
+    validationSequenceEvaluation
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -10448,7 +10473,8 @@ function buildGateDag({
   codeTopologyContext = null,
   journeyMap = null,
   managedWorktreeContext = null,
-  managedWorktreeGate = null
+  managedWorktreeGate = null,
+  validationSequenceEvaluation = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -10671,6 +10697,17 @@ function buildGateDag({
     required: true,
     reason: 'DAG connectivity has not been evaluated yet'
   };
+  const validationSequenceGate = {
+    id: 'gate:validation_sequencing',
+    type: 'validation_sequencing_gate',
+    label: 'Risk-adaptive Validation Sequencing Gate',
+    status: validationSequenceEvaluation?.status ?? 'not_applicable',
+    required: validationSequenceEvaluation?.status !== 'not_applicable',
+    reason: validationSequenceEvaluation?.ready_for_final_gate
+      ? 'Targeted validation, advisory preflight, frozen expensive verification, and final current-head review are complete'
+      : `Validation sequence is incomplete: ${(validationSequenceEvaluation?.blocking_phases ?? []).join(', ')}`,
+    blocking_phases: validationSequenceEvaluation?.blocking_phases ?? []
+  };
   const nodes = [
     storyGate,
     storySourceIntegrityGate,
@@ -10718,6 +10755,7 @@ function buildGateDag({
     ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
     ...workflowHeavyGates,
+    validationSequenceGate,
     ...(fastLaneGate ? [fastLaneGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
@@ -10868,7 +10906,8 @@ function buildGateDag({
     { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
     { from: 'gate:review_inspection_required', to: 'gate:definition_of_done' },
     { from: 'gate:definition_of_done', to: 'gate:artifact_consistency' },
-    { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
+    { from: 'gate:artifact_consistency', to: 'gate:validation_sequencing' },
+    { from: 'gate:validation_sequencing', to: 'gate:dag_connectivity' },
     { from: 'gate:dag_connectivity', to: 'pr' }
   ];
 
@@ -10916,6 +10955,7 @@ function buildGateDag({
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
+    validationSequenceGate,
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
@@ -14158,6 +14198,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'validation_sequencing_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
       'agent_review_dispatch_batch_gate',
