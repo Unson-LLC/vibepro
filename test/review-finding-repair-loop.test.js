@@ -10,6 +10,7 @@ import {
   dispatchFindingRepair,
   dispatchFindingRepairFromRepo,
   getFindingRepairStatus,
+  pollFindingRepairFromRepo,
   recordFindingRepair,
   recordFindingRepairAttempt,
   summarizeFindingRepairState
@@ -147,6 +148,69 @@ test('CLI dispatch reaches the injected Agent Runtime coordinator', async () => 
   });
   assert.equal(result.exitCode, 0);
   assert.equal(called, true);
+});
+
+test('CLI poll persists completed runtime output and exposes the rereview command', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-cli-poll-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() });
+  state.status = 'repairing';
+  state.runtime_dispatch = { dispatch_id: 'd1', status: 'running' };
+  state.runtime_state = { story_id: 'story-1' };
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(state));
+  let output = '';
+  const result = await runCli(['review', 'finding-repair', 'poll', root, '--id', 'story-1', '--stage', 'runtime', '--role', 'runtime', '--json'], {
+    stdout: { write(value) { output += value; } }, stderr: { write() {} },
+    findingRepairRuntimeCoordinator: { poll: async (runtimeState, dispatchId) => ({
+      state: { ...runtimeState, observed_dispatch: dispatchId }, dispatch: { dispatch_id: dispatchId, status: 'completed' }
+    }) }
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.status, 'awaiting_rereview');
+  assert.match(result.result.state.next_action.command, /finding-repair record/);
+  assert.match(output, /awaiting_rereview/);
+  assert.equal(JSON.parse(await readFile(path.join(dir, 'state.json'))).runtime_state.observed_dispatch, 'd1');
+});
+
+test('poll terminal failures stop with visible human recovery actions', async () => {
+  for (const terminalStatus of ['failed', 'cancelled', 'timed_out']) {
+    const root = await mkdtemp(path.join(os.tmpdir(), `vibepro-repair-${terminalStatus}-`));
+    const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+    await mkdir(dir, { recursive: true });
+    const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() });
+    state.status = 'repairing';
+    state.runtime_dispatch = { dispatch_id: 'd1', status: 'running' };
+    state.runtime_state = { story_id: 'story-1' };
+    await writeFile(path.join(dir, 'state.json'), JSON.stringify(state));
+    const result = await pollFindingRepairFromRepo(root, {
+      storyId: 'story-1', stage: 'runtime', role: 'runtime',
+      runtimeCoordinator: { poll: async (runtimeState, dispatchId) => ({
+        state: runtimeState, dispatch: { dispatch_id: dispatchId, status: terminalStatus }
+      }) }
+    });
+    assert.equal(result.state.status, 'no_progress');
+    assert.equal(result.state.stop_reason, `runtime_${terminalStatus}`);
+    assert.equal(result.state.next_action.authority, 'human_owner');
+    assert.match(result.state.next_action.decision_required, /retry|split|stop/);
+    assert.ok(result.state.next_action.next_commands.some((command) => command.includes('finding-repair dispatch')));
+  }
+});
+
+test('CLI status returns persisted state and its next action', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-cli-status-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(state));
+  let output = '';
+  const result = await runCli(['review', 'finding-repair', 'status', root, '--id', 'story-1', '--stage', 'runtime', '--role', 'runtime'], {
+    stdout: { write(value) { output += value; } }, stderr: { write() {} }
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.summary.status, 'planned');
+  assert.equal(result.result.summary.next_action.type, 'dispatch_implementation');
+  assert.match(output, /dispatch_implementation/);
 });
 
 test('artifact path traversal is rejected and missing status gives the plan command', async () => {

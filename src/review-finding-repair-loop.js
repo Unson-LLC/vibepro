@@ -283,7 +283,23 @@ function safeSegment(value, label) { const text = required(value, label); if (!/
 function statePath(repoRoot, storyId, stage, role) { return path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', safeSegment(storyId, 'storyId'), safeSegment(stage, 'stage'), safeSegment(role, 'role'), 'state.json'); }
 function planCommand(input) { return `vibepro review finding-repair plan . --id ${input.storyId} --stage ${input.stage} --role ${input.role} --review <review.json>`; }
 function recordCommand(state) { return `vibepro review finding-repair record . --id ${state.story_id} --stage ${state.stage} --role ${state.role} --result <result.json>`; }
-async function persistStoppedRuntime(artifact, state, reason) { state.status = 'no_progress'; state.stop_reason = reason; state.next_action = { type: 'stop', reason, authority: 'human_owner' }; await writeJsonAtomic(artifact, state); return { artifact, state, summary: summarizeFindingRepairState(state) }; }
+async function persistStoppedRuntime(artifact, state, reason) {
+  state.status = 'no_progress';
+  state.stop_reason = reason;
+  state.next_action = {
+    type: 'stop',
+    reason,
+    authority: 'human_owner',
+    decision_required: 'Inspect the runtime failure and either retry with corrected runtime inputs, split a Story, or stop as non-actionable.',
+    next_commands: [
+      `vibepro review finding-repair status . --id ${state.story_id} --stage ${state.stage} --role ${state.role}`,
+      `vibepro review finding-repair dispatch . --id ${state.story_id} --stage ${state.stage} --role ${state.role} --adapter <adapter-id>`,
+      'vibepro story add <repo> --id <new-story-id>'
+    ]
+  };
+  await writeJsonAtomic(artifact, state);
+  return { artifact, state, summary: summarizeFindingRepairState(state) };
+}
 async function readCanonicalEvidence(repoRoot, storyId, headSha) {
   const root = path.join(getWorkspaceDir(repoRoot), 'pr', safeSegment(storyId, 'storyId'));
   const verificationArtifact = path.join(root, 'verification-evidence.json');
