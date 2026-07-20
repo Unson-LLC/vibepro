@@ -26,6 +26,11 @@
     {
       "id": "INV-RFR-3", "type": "invariant",
       "statement": "A repair converges only when canonical verification and pr prepare artifacts plus a closed independent same-stage same-role re-review all bind to the repaired current HEAD, include reviewer provenance, and every repairable finding is resolved.",
+      "inherited_behavior": {
+        "condition": "rereview.agent_identity === implementationIdentity || [rereview.session_id, rereview.thread_id].filter(Boolean)",
+        "classification": "unchanged",
+        "files": ["src/review-finding-repair-loop.js"]
+      },
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }, { "kind": "acceptance_criteria", "index": 4 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Boundary" }],
@@ -36,6 +41,11 @@
     {
       "id": "S-RFR-4", "type": "scenario",
       "statement": "The repair state machine covers one-fix convergence, multi-attempt repair, unrepairable block, stale evidence, repeated-finding no-progress, and maximum-attempt stop.",
+      "inherited_behavior": {
+        "condition": "['failed', 'cancelled', 'timed_out'].includes(observed.dispatch.status)",
+        "classification": "unchanged",
+        "files": ["src/review-finding-repair-loop.js"]
+      },
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }, { "kind": "acceptance_criteria", "index": 6 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-review-finding-repair-loop.md", "section": "Persistence" }],
