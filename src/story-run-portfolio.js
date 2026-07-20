@@ -12,7 +12,8 @@ const STORY_ID = /^story-[a-z0-9][a-z0-9._-]*$/;
 const TERMINAL = new Set(['pr_ready']);
 const STOPPED = new Set(['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed', 'cancelled']);
 const DECISIONS = new Set(['continue', 'skip', 'retry']);
-const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm']);
+const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm', 'isProcessAlive']);
+let lockNonce = 0;
 
 export class StoryRunPortfolioError extends Error {
   constructor(code, message, details = {}) {
@@ -39,10 +40,15 @@ export function createStoryRunPortfolioController(dependencies = {}) {
     rename: dependencies.rename ?? rename,
     mkdir: dependencies.mkdir ?? mkdir,
     realpath: dependencies.realpath ?? realpath,
-    rm: dependencies.rm ?? rm
+    rm: dependencies.rm ?? rm,
+    isProcessAlive: dependencies.isProcessAlive ?? isProcessAlive
   };
   return {
-    create: (repoRoot, options) => createPortfolio(deps, repoRoot, options),
+    create: async (repoRoot, options = {}) => {
+      const portfolioId = options.portfolioId ?? generatedId(iso(deps.now()), deps.randomBytes);
+      const lockedOptions = { ...options, portfolioId };
+      return withPortfolioLock(deps, repoRoot, lockedOptions, () => createPortfolio(deps, repoRoot, lockedOptions));
+    },
     status: (repoRoot, options) => readPortfolio(deps, repoRoot, options),
     advance: (repoRoot, options) => withPortfolioLock(deps, repoRoot, options, () => advancePortfolio(deps, repoRoot, options)),
     decide: (repoRoot, options) => withPortfolioLock(deps, repoRoot, options, () => decidePortfolio(deps, repoRoot, options)),
@@ -62,7 +68,7 @@ async function createPortfolio(deps, repoRoot, options = {}) {
     throw error('parallel_isolation_unproven', 'Parallel Portfolio execution is rejected without an isolation proof.');
   }
   const now = iso(deps.now());
-  const portfolioId = options.portfolioId ?? generatedId(now, deps.randomBytes);
+  const portfolioId = options.portfolioId;
   requirePortfolioId(portfolioId);
   const state = {
     schema_version: STORY_RUN_PORTFOLIO_SCHEMA_VERSION,
@@ -200,6 +206,9 @@ async function promoteContext(deps, repoRoot, options = {}) {
   if (relativeArtifact.startsWith('..') || path.isAbsolute(relativeArtifact)) {
     throw error('artifact_outside_repository', 'Promoted context artifact must stay inside the repository.');
   }
+  if (/(?:^|\/)(?:transcript|session)(?:[./-]|$)/i.test(relativeArtifact)) {
+    throw error('raw_transcript_forbidden', 'Raw transcripts cannot be promoted between Story Runs.');
+  }
   let artifactContent;
   try {
     artifactContent = await deps.readFile(realArtifact);
@@ -321,7 +330,7 @@ async function persist(deps, repoRoot, state, options = {}) {
       if (cause.code !== 'ENOENT') throw cause;
     }
   }
-  const temporary = `${file}.tmp-${process.pid}`;
+  const temporary = `${file}.tmp-${process.pid}-${deps.randomBytes(8).toString('hex')}`;
   await deps.writeFile(temporary, `${JSON.stringify(state, null, 2)}\n`);
   await deps.rename(temporary, file);
 }
@@ -330,16 +339,61 @@ async function withPortfolioLock(deps, repoRoot, options, operation) {
   const portfolioId = requirePortfolioId(options?.portfolioId);
   const lock = `${statePath(repoRoot, portfolioId)}.lock`;
   await deps.mkdir(path.dirname(lock), { recursive: true });
-  try {
-    await deps.mkdir(lock);
-  } catch (cause) {
-    if (cause.code === 'EEXIST') throw error('portfolio_busy', `Portfolio is already being mutated: ${portfolioId}.`);
-    throw cause;
-  }
+  const token = `${deps.randomBytes(12).toString('hex')}-${process.pid}-${lockNonce += 1}`;
+  await acquirePortfolioLock(deps, lock, portfolioId, token);
   try {
     return await operation();
   } finally {
-    await deps.rm(lock, { recursive: true, force: true });
+    try {
+      await deps.rm(lock, { recursive: true, force: true });
+    } catch (cause) {
+      throw error('portfolio_lock_cleanup_failed', `Portfolio lock cleanup failed: ${portfolioId}.`, { cause: cause.code ?? cause.message });
+    }
+  }
+}
+
+async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = false) {
+  const candidate = `${lock}.candidate-${process.pid}-${token}`;
+  await deps.mkdir(candidate);
+  await deps.writeFile(path.join(candidate, 'owner.json'), `${JSON.stringify({ schema_version: 1, pid: process.pid, token, acquired_at: iso(deps.now()) }, null, 2)}\n`);
+  try {
+    await deps.rename(candidate, lock);
+    return;
+  } catch (cause) {
+    await deps.rm(candidate, { recursive: true, force: true });
+    if (!['EEXIST', 'ENOTEMPTY'].includes(cause.code)) throw cause;
+  }
+
+  let owner;
+  try {
+    owner = JSON.parse(await deps.readFile(path.join(lock, 'owner.json'), 'utf8'));
+  } catch (cause) {
+    throw error('portfolio_lock_recovery_required', `Portfolio lock ownership cannot be verified: ${portfolioId}.`, { lock, cause: cause.code ?? cause.message });
+  }
+  if (!Number.isInteger(owner.pid) || !owner.token || deps.isProcessAlive(owner.pid)) {
+    throw error('portfolio_busy', `Portfolio is already being mutated: ${portfolioId}.`, { owner });
+  }
+  if (recovered) throw error('portfolio_lock_recovery_failed', `Orphaned Portfolio lock could not be recovered: ${portfolioId}.`, { owner });
+
+  const orphan = `${lock}.orphan-${process.pid}-${token}`;
+  try {
+    await deps.rename(lock, orphan);
+  } catch (cause) {
+    if (['ENOENT', 'EEXIST', 'ENOTEMPTY'].includes(cause.code)) {
+      throw error('portfolio_busy', `Portfolio lock changed during recovery: ${portfolioId}.`);
+    }
+    throw cause;
+  }
+  await deps.rm(orphan, { recursive: true, force: true });
+  return acquirePortfolioLock(deps, lock, portfolioId, token, true);
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (cause) {
+    return cause.code === 'EPERM';
   }
 }
 
@@ -370,7 +424,10 @@ export function renderStoryRunPortfolioSummary(state) {
     const cost = entry.cost_attribution;
     lines.push(`${entry.order + 1}. ${entry.story_id}: ${entry.status} run=${entry.run_id ?? '-'} worktree=${entry.worktree ?? '-'} head=${entry.head_sha ?? '-'}`);
     lines.push(`   trusted_pr_ready_ms=${cost.trusted_pr_ready_ms ?? 'unknown'} active_ms=${cost.active_ms ?? 'unknown'} wait_ms=${cost.wait_ms ?? 'unknown'} tokens=${cost.total_tokens ?? 'unknown'} cost_usd=${cost.cost_usd ?? 'unknown'} full_suite=${cost.full_suite_count} evidence_reuse=${cost.evidence_reuse_count} human_interruptions=${cost.human_interruption_count}`);
-    if (entry.stop_reason) lines.push(`   stop_reason=${entry.stop_reason.code}: ${entry.stop_reason.message}`);
+    if (entry.stop_reason) {
+      lines.push(`   stop_reason=${entry.stop_reason.code}: ${entry.stop_reason.message}`);
+      lines.push(`   next_action=vibepro execute portfolio-decide . --portfolio-id ${state.portfolio_id} --story-id ${entry.story_id} --decision <continue|retry|skip> --policy-type <type> --reason <reason>`);
+    }
   }
   return `${lines.join('\n')}\n`;
 }

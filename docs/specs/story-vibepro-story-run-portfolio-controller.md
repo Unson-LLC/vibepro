@@ -29,7 +29,10 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 - `INV-SRP-4`: Story, Run, worktree, branch, review, or session mismatch fails as `scope_contamination`.
 - `INV-SRP-5`: no raw transcript crosses a Story boundary.
 - `INV-SRP-6`: unavailable cost and time remain unknown.
+- `INV-SRP-7`: every mutation, including create, owns the Portfolio lock; dead-owner locks recover atomically and unverifiable owners fail closed.
+
+Stopped human summaries expose the typed `portfolio-decide` continuation shape so the persisted stop is actionable after restart.
 
 ## Verification
 
-`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation rejection, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion, persisted contamination stop, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, dead-owner lock recovery, exception cleanup, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion including internal transcript symlinks, persisted contamination stop and next action, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.

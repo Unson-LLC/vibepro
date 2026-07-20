@@ -96,6 +96,13 @@ test('SRP-S-5 promotes digest-bound artifact context and rejects raw transcripts
     portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
     artifactPath: '.codex/session-transcript.jsonl', reason: 'copy session'
   }), errorCode('raw_transcript_forbidden'));
+  await mkdir(path.join(fixture.root, '.codex'), { recursive: true });
+  await writeFile(path.join(fixture.root, '.codex/session-transcript.jsonl'), '{"secret":true}\n');
+  await symlink(path.join(fixture.root, '.codex/session-transcript.jsonl'), path.join(fixture.root, 'docs/decisions/context.md'));
+  await assert.rejects(fixture.controller.promote(fixture.root, {
+    portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
+    artifactPath: 'docs/decisions/context.md', reason: 'Internal transcript symlink'
+  }), errorCode('raw_transcript_forbidden'));
 });
 
 test('SRP-S-6 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero', async (t) => {
@@ -123,6 +130,7 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
   assert.equal(stopped.status, 'blocked');
   assert.equal(stopped.entries[0].stop_reason.code, 'scope_contamination');
   assert.match(renderStoryRunPortfolioSummary(stopped), /stop_reason=scope_contamination/);
+  assert.match(renderStoryRunPortfolioSummary(stopped), /next_action=vibepro execute portfolio-decide/);
 
   const cases = [
     ['branch', { execution_context: { root_realpath: `/worktrees/${STORIES[0]}`, branch_name: 'foreign-branch' } }],
@@ -149,6 +157,27 @@ test('SRP-S-3 concurrent mutation is rejected before a duplicate child Run start
   release();
   await first;
   assert.deepEqual(fixture.started, [STORIES[0]]);
+});
+
+test('Portfolio lock serializes create, recovers a dead owner, and releases after operation failure', async (t) => {
+  const fixture = await createFixture(t, { runErrorOnce: true });
+  const creates = await Promise.allSettled([
+    fixture.controller.create(fixture.root, { portfolioId: 'portfolio-create-lock', storyIds: STORIES.slice(0, 2) }),
+    fixture.controller.create(fixture.root, { portfolioId: 'portfolio-create-lock', storyIds: STORIES.slice(0, 2) })
+  ]);
+  assert.equal(creates.filter((result) => result.status === 'fulfilled').length, 1);
+  assert.equal(creates.filter((result) => result.status === 'rejected').length, 1);
+  assert.match(creates.find((result) => result.status === 'rejected').reason.code, /portfolio_(?:busy|exists)/);
+
+  const lock = path.join(fixture.root, '.vibepro/portfolios/portfolio-create-lock/state.json.lock');
+  await mkdir(lock);
+  await writeFile(path.join(lock, 'owner.json'), JSON.stringify({ schema_version: 1, pid: 99999999, token: 'dead', acquired_at: '2026-07-19T00:00:00.000Z' }));
+  await assert.rejects(
+    fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-create-lock' }),
+    /injected run failure/
+  );
+  const state = await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-create-lock' });
+  assert.equal(state.entries[0].status, 'running');
 });
 
 test('Portfolio CLI creates and reads a JSON portfolio', async (t) => {
@@ -206,6 +235,10 @@ async function createFixture(t, options = {}) {
       started.push(storyId);
       runStarted();
       if (options.runEntered) await options.runEntered;
+      if (options.runErrorOnce) {
+        options.runErrorOnce = false;
+        throw new Error('injected run failure');
+      }
       const run = runState(storyId);
       runs.set(storyId, run);
       return structuredClone(run);
