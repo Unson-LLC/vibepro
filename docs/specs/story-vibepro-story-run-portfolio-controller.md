@@ -30,9 +30,10 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 - `INV-SRP-5`: no raw transcript crosses a Story boundary.
 - `INV-SRP-6`: unavailable cost and time remain unknown.
 - `INV-SRP-7`: every mutation, including create, owns the Portfolio lock; dead-owner locks recover atomically and unverifiable owners fail closed.
+- `INV-SRP-8`: child creation persists `starting` before the external Run side effect and restart reconciles that Story's existing Run before retrying creation.
 
 Stopped human summaries expose the typed `portfolio-decide` continuation shape so the persisted stop is actionable after restart.
 
 ## Verification
 
-`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, dead-owner lock recovery, exception cleanup, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion including internal transcript symlinks, persisted contamination stop and next action, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, dead-owner lock recovery, token-safe release, exception cleanup, post-Run publish failure reconciliation, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion including internal transcript symlinks, persisted contamination stop and next action, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.

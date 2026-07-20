@@ -97,9 +97,24 @@ async function createPortfolio(deps, repoRoot, options = {}) {
 
 async function advancePortfolio(deps, repoRoot, options = {}) {
   let state = await readPortfolio(deps, repoRoot, options);
-  const active = state.entries.find((entry) => entry.status === 'running' || STOPPED.has(entry.status));
+  const active = state.entries.find((entry) => entry.status === 'starting' || entry.status === 'running' || STOPPED.has(entry.status));
   if (active) {
-    const run = await deps.guardedRun.status(repoRoot, { storyId: active.story_id, runId: active.run_id });
+    let run;
+    if (active.status === 'starting') {
+      try {
+        run = await deps.guardedRun.status(repoRoot, { storyId: active.story_id });
+      } catch (cause) {
+        if (cause.code !== 'run_not_found') throw cause;
+        run = await deps.guardedRun.run(repoRoot, { storyId: active.story_id });
+      }
+      if (run.story_id !== active.story_id) {
+        await assertAndPersistRunOwnership(deps, repoRoot, state, active, run);
+      }
+      active.run_id = run.run_id;
+      state.scope_bindings[active.story_id] = buildScopeBinding(run);
+    } else {
+      run = await deps.guardedRun.status(repoRoot, { storyId: active.story_id, runId: active.run_id });
+    }
     await assertAndPersistRunOwnership(deps, repoRoot, state, active, run);
     active.status = run.status;
     active.worktree = run.execution_context?.root_realpath ?? null;
@@ -134,6 +149,10 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   if (state.entries.some((entry) => entry.order < next.order && !['pr_ready', 'skipped'].includes(entry.status))) {
     throw error('sequential_order_violation', 'The previous Story must reach an accepted terminal state before the next Story mutates.');
   }
+  next.status = 'starting';
+  state.status = 'starting';
+  state.updated_at = iso(deps.now());
+  await persist(deps, repoRoot, state);
   const run = await deps.guardedRun.run(repoRoot, { storyId: next.story_id });
   next.run_id = run.run_id;
   next.status = run.status;
@@ -345,8 +364,13 @@ async function withPortfolioLock(deps, repoRoot, options, operation) {
     return await operation();
   } finally {
     try {
+      const owner = JSON.parse(await deps.readFile(path.join(lock, 'owner.json'), 'utf8'));
+      if (owner.token !== token) {
+        throw error('portfolio_lock_ownership_lost', `Portfolio lock owner changed before release: ${portfolioId}.`, { expected_token: token, actual_token: owner.token });
+      }
       await deps.rm(lock, { recursive: true, force: true });
     } catch (cause) {
+      if (cause instanceof StoryRunPortfolioError) throw cause;
       throw error('portfolio_lock_cleanup_failed', `Portfolio lock cleanup failed: ${portfolioId}.`, { cause: cause.code ?? cause.message });
     }
   }
@@ -383,6 +407,20 @@ async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = 
       throw error('portfolio_busy', `Portfolio lock changed during recovery: ${portfolioId}.`);
     }
     throw cause;
+  }
+  let movedOwner;
+  try {
+    movedOwner = JSON.parse(await deps.readFile(path.join(orphan, 'owner.json'), 'utf8'));
+  } catch (cause) {
+    throw error('portfolio_lock_recovery_failed', `Recovered Portfolio lock ownership is unreadable: ${portfolioId}.`, { cause: cause.code ?? cause.message });
+  }
+  if (movedOwner.token !== owner.token) {
+    try {
+      await deps.rename(orphan, lock);
+    } catch (cause) {
+      throw error('portfolio_lock_recovery_failed', `Portfolio lock changed during owner verification: ${portfolioId}.`, { expected_token: owner.token, actual_token: movedOwner.token, cause: cause.code ?? cause.message });
+    }
+    throw error('portfolio_busy', `Portfolio lock owner changed during recovery: ${portfolioId}.`, { owner: movedOwner });
   }
   await deps.rm(orphan, { recursive: true, force: true });
   return acquirePortfolioLock(deps, lock, portfolioId, token, true);

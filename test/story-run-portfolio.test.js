@@ -180,6 +180,44 @@ test('Portfolio lock serializes create, recovers a dead owner, and releases afte
   assert.equal(state.entries[0].status, 'running');
 });
 
+test('Portfolio restart reconciles a child Run created before Portfolio publish', async (t) => {
+  const fixture = await createFixture(t);
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-publish-gap', storyIds: STORIES.slice(0, 2) });
+  let stateWrites = 0;
+  const failing = createStoryRunPortfolioController({
+    ...fixture.dependencies,
+    async writeFile(file, content, options) {
+      if (String(file).includes('state.json.tmp-') && (stateWrites += 1) === 2) {
+        const failure = new Error('injected Portfolio publish failure');
+        failure.code = 'EIO';
+        throw failure;
+      }
+      return writeFile(file, content, options);
+    }
+  });
+  await assert.rejects(failing.advance(fixture.root, { portfolioId: 'portfolio-publish-gap' }), /injected Portfolio publish failure/);
+  const interrupted = await fixture.controller.status(fixture.root, { portfolioId: 'portfolio-publish-gap' });
+  assert.equal(interrupted.entries[0].status, 'starting');
+  assert.equal(interrupted.entries[0].run_id, null);
+  const recovered = await fixture.restart().advance(fixture.root, { portfolioId: 'portfolio-publish-gap' });
+  assert.equal(recovered.entries[0].run_id, `run-20260720T000000Z-${STORIES[0].slice(-1).padStart(8, '0')}`);
+  assert.equal(fixture.started.filter((storyId) => storyId === STORIES[0]).length, 1);
+});
+
+test('Portfolio release refuses to delete a lock whose owner token changed', async (t) => {
+  let release;
+  const entered = new Promise((resolve) => { release = resolve; });
+  const fixture = await createFixture(t, { runEntered: entered });
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-owner-token', storyIds: STORIES.slice(0, 1) });
+  const advancing = fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-owner-token' });
+  await fixture.waitForRunStart();
+  const lock = path.join(fixture.root, '.vibepro/portfolios/portfolio-owner-token/state.json.lock');
+  await writeFile(path.join(lock, 'owner.json'), JSON.stringify({ schema_version: 1, pid: process.pid, token: 'foreign-owner', acquired_at: '2026-07-20T00:00:00.000Z' }));
+  release();
+  await assert.rejects(advancing, errorCode('portfolio_lock_ownership_lost'));
+  assert.equal(JSON.parse(await readFile(path.join(lock, 'owner.json'), 'utf8')).token, 'foreign-owner');
+});
+
 test('Portfolio CLI creates and reads a JSON portfolio', async (t) => {
   const fixture = await createFixture(t);
   const stdout = capture();
@@ -243,7 +281,15 @@ async function createFixture(t, options = {}) {
       runs.set(storyId, run);
       return structuredClone(run);
     },
-    async status(_root, { storyId }) { return structuredClone(runs.get(storyId)); },
+    async status(_root, { storyId }) {
+      const run = runs.get(storyId);
+      if (!run) {
+        const failure = new Error('No guarded Runs exist for this Story.');
+        failure.code = 'run_not_found';
+        throw failure;
+      }
+      return structuredClone(run);
+    },
     async resume(_root, { storyId }) {
       const run = runs.get(storyId);
       run.status = 'running';
