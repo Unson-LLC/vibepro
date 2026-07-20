@@ -49,6 +49,12 @@ export function recordFindingRepairAttempt(current, input = {}) {
   assertCurrentEvidence(input.verification, headSha, 'verification');
   assertCurrentEvidence(input.prPrepare, headSha, 'pr prepare');
   const rereview = normalizeReview(input.rereview);
+  if (rereview.stage !== state.stage || rereview.role !== state.role) {
+    throw new Error('fresh re-review must use the same stage and role');
+  }
+  if (!rereview.agent_identity || (!rereview.session_id && !rereview.thread_id)) {
+    throw new Error('fresh re-review requires reviewer identity and session or thread provenance');
+  }
   if (rereview.head_commit !== headSha) throw new Error('fresh re-review must bind to current HEAD');
   if (rereview.agent_identity === implementationIdentity ||
       [rereview.session_id, rereview.thread_id].filter(Boolean).includes(implementationSessionId)) {
@@ -64,9 +70,10 @@ export function recordFindingRepairAttempt(current, input = {}) {
     fresh_independent: true };
 
   if (rereview.status === 'pass') {
-    state.status = 'converged';
+    const remaining = state.attempts.find((item) => item.disposition === 'repairable' && !item.outcome);
+    state.status = remaining ? 'planned' : 'converged';
     state.stop_reason = null;
-    state.next_action = { type: 'complete', head_sha: headSha };
+    state.next_action = remaining ? dispatchAction(remaining) : { type: 'complete', head_sha: headSha };
     return state;
   }
   if (!['needs_changes', 'block'].includes(rereview.status)) throw new Error(`unsupported re-review status: ${rereview.status}`);
@@ -120,6 +127,35 @@ export async function dispatchFindingRepair(state, input = {}) {
   };
 }
 
+export async function dispatchFindingRepairFromRepo(repoRoot, input = {}) {
+  const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
+  const state = JSON.parse(await readFile(artifact, 'utf8'));
+  const next = await dispatchFindingRepair(state, input);
+  await writeJsonAtomic(artifact, next);
+  return { artifact, state: next, summary: summarizeFindingRepairState(next) };
+}
+
+export async function pollFindingRepairFromRepo(repoRoot, input = {}) {
+  const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
+  const state = JSON.parse(await readFile(artifact, 'utf8'));
+  if (state.status !== 'repairing' || !state.runtime_dispatch?.dispatch_id) throw new Error('finding repair has no running implementation dispatch');
+  if (!input.runtimeCoordinator || typeof input.runtimeCoordinator.poll !== 'function') throw new Error('runtimeCoordinator.poll is required');
+  const observed = await input.runtimeCoordinator.poll(state.runtime_state, state.runtime_dispatch.dispatch_id);
+  const next = { ...state, runtime_dispatch: structuredClone(observed.dispatch), runtime_state: structuredClone(observed.state) };
+  if (observed.dispatch.status === 'completed') {
+    next.status = 'awaiting_rereview';
+    next.next_action = {
+      type: 'record_rereview',
+      command: recordCommand(next),
+      result_schema: 'headSha, implementationIdentity, implementationSessionId, rereview'
+    };
+  } else if (['failed', 'cancelled', 'timed_out'].includes(observed.dispatch.status)) {
+    return persistStoppedRuntime(artifact, next, `runtime_${observed.dispatch.status}`);
+  }
+  await writeJsonAtomic(artifact, next);
+  return { artifact, state: next, summary: summarizeFindingRepairState(next) };
+}
+
 export async function planFindingRepair(repoRoot, input = {}) {
   const reviewPath = path.resolve(repoRoot, required(input.reviewPath, 'reviewPath'));
   const source = JSON.parse(await readFile(reviewPath, 'utf8'));
@@ -142,14 +178,20 @@ export async function recordFindingRepair(repoRoot, input = {}) {
   const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
   const current = JSON.parse(await readFile(artifact, 'utf8'));
   const result = JSON.parse(await readFile(path.resolve(repoRoot, required(input.resultPath, 'resultPath')), 'utf8'));
-  const state = recordFindingRepairAttempt(current, result);
+  const canonical = await readCanonicalEvidence(repoRoot, current.story_id, required(result.headSha, 'headSha'));
+  const state = recordFindingRepairAttempt(current, { ...result, ...canonical });
   await writeJsonAtomic(artifact, state);
   return { artifact, state, summary: summarizeFindingRepairState(state) };
 }
 
 export async function getFindingRepairStatus(repoRoot, input = {}) {
   const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
-  const state = JSON.parse(await readFile(artifact, 'utf8'));
+  let state;
+  try { state = JSON.parse(await readFile(artifact, 'utf8')); }
+  catch (error) {
+    if (error?.code === 'ENOENT') throw new Error(`no finding repair plan exists; run: ${planCommand(input)}`);
+    throw error;
+  }
   return { artifact, state, summary: summarizeFindingRepairState(state) };
 }
 
@@ -198,6 +240,8 @@ function normalizeReview(value) {
     session_id: value.session_id ?? value.agent_provenance?.session_id ?? value.agent_provenance?.agent_session_id ?? null,
     thread_id: value.thread_id ?? value.agent_provenance?.thread_id ?? value.agent_provenance?.agent_thread_id ?? null,
     lifecycle: value.lifecycle ?? (value.agent_provenance?.lifecycle?.agent_closed ? 'closed' : null),
+    stage: value.stage ?? null,
+    role: value.role ?? null,
     findings: Array.isArray(value.findings) ? value.findings.map((finding) => ({ ...finding,
       id: required(finding.id, 'finding.id'), detail: required(finding.detail, `finding ${finding.id ?? ''} detail`) })) : []
   };
@@ -219,14 +263,42 @@ function assertCurrentEvidence(evidence, headSha, label) {
 }
 
 function dispatchAction(attempt) { return { type: 'dispatch_implementation', task: attempt.task }; }
-function checkpointAction(attempt) { return { type: 'human_checkpoint', reason: attempt.disposition, finding: attempt.finding }; }
+function checkpointAction(attempt) { return {
+  type: 'human_checkpoint', reason: attempt.disposition, finding: attempt.finding,
+  decision_required: attempt.disposition === 'split_required' ? 'Approve a separate Story or mark this finding non-actionable.' : 'Choose the authorized owner decision before repair resumes.',
+  authority: 'human_owner',
+  next_commands: ['vibepro review finding-repair plan --review <updated-review.json> ...', 'vibepro story add <repo> --id <new-story-id>']
+}; }
 function stopNoProgress(state, reason) {
-  state.status = 'no_progress'; state.stop_reason = reason; state.next_action = { type: 'stop', reason }; return state;
+  state.status = 'no_progress'; state.stop_reason = reason; state.next_action = {
+    type: 'stop', reason, authority: 'human_owner',
+    decision_required: 'Inspect the unchanged finding and either narrow the repair, split a Story, or stop as non-actionable.',
+    next_commands: [`vibepro review finding-repair status . --id ${state.story_id} --stage ${state.stage} --role ${state.role}`, 'vibepro story add <repo> --id <new-story-id>']
+  }; return state;
 }
 function required(value, label) { if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} is required`); return value.trim(); }
 function nonEmptyList(value, label) { if (!Array.isArray(value) || value.length === 0) throw new Error(`${label} is required`); return value.map((item) => required(item, label)); }
 function positiveInteger(value, label) { const number = Number(value); if (!Number.isInteger(number) || number < 1) throw new Error(`${label} must be a positive integer`); return number; }
-function statePath(repoRoot, storyId, stage, role) { return path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', storyId, stage, role, 'state.json'); }
+function safeSegment(value, label) { const text = required(value, label); if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(text) || text.includes('..')) throw new Error(`${label} must be a path-safe segment`); return text; }
+function statePath(repoRoot, storyId, stage, role) { return path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', safeSegment(storyId, 'storyId'), safeSegment(stage, 'stage'), safeSegment(role, 'role'), 'state.json'); }
+function planCommand(input) { return `vibepro review finding-repair plan . --id ${input.storyId} --stage ${input.stage} --role ${input.role} --review <review.json>`; }
+function recordCommand(state) { return `vibepro review finding-repair record . --id ${state.story_id} --stage ${state.stage} --role ${state.role} --result <result.json>`; }
+async function persistStoppedRuntime(artifact, state, reason) { state.status = 'no_progress'; state.stop_reason = reason; state.next_action = { type: 'stop', reason, authority: 'human_owner' }; await writeJsonAtomic(artifact, state); return { artifact, state, summary: summarizeFindingRepairState(state) }; }
+async function readCanonicalEvidence(repoRoot, storyId, headSha) {
+  const root = path.join(getWorkspaceDir(repoRoot), 'pr', safeSegment(storyId, 'storyId'));
+  const verificationArtifact = path.join(root, 'verification-evidence.json');
+  const prepareArtifact = path.join(root, 'pr-prepare.json');
+  const verificationSource = JSON.parse(await readFile(verificationArtifact, 'utf8'));
+  const commands = verificationSource.commands ?? [];
+  const current = commands.filter((item) => item.status === 'pass' && item.git_context?.head_sha === headSha && item.content_binding?.recorded_head_sha === headSha);
+  if (current.length === 0) throw new Error('canonical verification evidence must contain a current-HEAD content-bound pass');
+  const prepareSource = JSON.parse(await readFile(prepareArtifact, 'utf8'));
+  if (prepareSource.story?.id !== storyId || prepareSource.git?.head_sha !== headSha) throw new Error('canonical pr prepare artifact must bind to the Story and current HEAD');
+  return {
+    verification: { status: 'pass', head_sha: headSha, artifact: path.relative(repoRoot, verificationArtifact), command_count: current.length },
+    prPrepare: { status: prepareSource.gate_status?.ready_for_pr_create ? 'ready' : 'ready_for_review', head_sha: headSha, artifact: path.relative(repoRoot, prepareArtifact) }
+  };
+}
 async function writeJsonAtomic(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   const temporary = `${filePath}.${process.pid}.${Date.now()}.tmp`;

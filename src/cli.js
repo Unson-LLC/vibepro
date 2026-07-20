@@ -125,7 +125,13 @@ import {
   renderAgentReviewStatusSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
-import { getFindingRepairStatus, planFindingRepair, recordFindingRepair } from './review-finding-repair-loop.js';
+import {
+  dispatchFindingRepairFromRepo,
+  getFindingRepairStatus,
+  planFindingRepair,
+  pollFindingRepairFromRepo,
+  recordFindingRepair
+} from './review-finding-repair-loop.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
   getExecutionNext,
@@ -472,7 +478,7 @@ Usage:
   vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
-  vibepro review finding-repair <plan|record|status> [repo] --id <story-id> --stage <stage> --role <role> [--review <file> --acceptance-clause <id> --code-scope <path> --test-scope <path>] [--result <file>] [--max-attempts <n>] [--json]
+  vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role> [--review <file> --acceptance-clause <id> --code-scope <path> --test-scope <path>] [--result <file>] [--adapter <id> --capability <name> --timeout-ms <n> --managed-worktree <path>] [--max-attempts <n>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
@@ -1769,7 +1775,7 @@ export async function runCli(argv, io = {}) {
     if (command === 'review') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || (subcommand !== 'finding-repair' && (hasFlag(rest, '--help') || hasFlag(rest, '-h')))) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
@@ -1783,11 +1789,25 @@ export async function runCli(argv, io = {}) {
         await assertManagedWorktreeCommandAllowed(repairRepoRoot, {
           storyId: options.storyId, commandName: `review finding-repair ${action ?? ''}`
         });
+        if (!action || action === '--help' || action === '-h' || hasFlag(rest.slice(2), '--help') || hasFlag(rest.slice(2), '-h')) {
+          write(stdout, 'Usage: vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role>\n\nplan: create a bounded plan from --review. dispatch/poll: run via the injected Agent Runtime coordinator. record: consume --result plus canonical verification/pr-prepare artifacts. status: show state and next action.\n');
+          return { exitCode: 0, command, subcommand, action: 'help' };
+        }
         let result;
         if (action === 'plan') result = await planFindingRepair(repairRepoRoot, {
           ...options, reviewPath: getOption(rest, '--review'), maxAttempts: parseNumberOption(rest, '--max-attempts') ?? 3,
           acceptanceClause: getOption(rest, '--acceptance-clause'), codeScope: getOptions(rest, '--code-scope'),
           testScope: getOptions(rest, '--test-scope')
+        });
+        else if (action === 'dispatch') result = await dispatchFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator,
+          runState: io.findingRepairRunState ?? { story_id: options.storyId, runtime_dispatches: [] },
+          adapterId: getOption(rest, '--adapter'), implementationIdentity: getOption(rest, '--implementation-identity'),
+          requirements: { capabilities: getOptions(rest, '--capability'), timeout_ms: parseNumberOption(rest, '--timeout-ms') ?? 600000,
+            managed_worktree: getOption(rest, '--managed-worktree') ?? repairRepoRoot }
+        });
+        else if (action === 'poll') result = await pollFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator
         });
         else if (action === 'record') result = await recordFindingRepair(repairRepoRoot, {
           ...options, resultPath: getOption(rest, '--result')

@@ -1,9 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { runCli } from '../src/cli.js';
 
 import {
   createFindingRepairPlan,
   dispatchFindingRepair,
+  dispatchFindingRepairFromRepo,
+  getFindingRepairStatus,
+  recordFindingRepair,
   recordFindingRepairAttempt,
   summarizeFindingRepairState
 } from '../src/review-finding-repair-loop.js';
@@ -11,7 +18,10 @@ import {
 const review = (status = 'needs_changes', findings = [{
   id: 'missing-regression', severity: 'high', detail: 'src/api.js lacks a regression test',
   acceptance_clause: 'RFR-S-4', code_scope: ['src/api.js'], test_scope: ['test/api.test.js']
-}]) => ({ status, head_commit: 'head-1', recorded_at: '2026-07-20T00:00:00Z', findings });
+}]) => ({ status, head_commit: 'head-1', stage: 'runtime', role: 'runtime', recorded_at: '2026-07-20T00:00:00Z', findings });
+
+const rereview = (overrides = {}) => ({ status: 'pass', head_sha: 'head-2', stage: 'runtime', role: 'runtime',
+  agent_identity: 'reviewer', session_id: 'review-session', lifecycle: 'closed', findings: [], ...overrides });
 
 test('RFR-S-1 RFR-S-2 one-fix plan preserves verdict and creates a bounded task', () => {
   const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review(), maxAttempts: 3 });
@@ -51,7 +61,7 @@ test('RFR-S-4 RFR-S-5 repaired attempt requires current-head verification and in
   const next = recordFindingRepairAttempt(state, {
     headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
     verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' },
-    rereview: { status: 'pass', head_sha: 'head-2', agent_identity: 'reviewer', session_id: 'review-session', lifecycle: 'closed', findings: [] }
+    rereview: rereview()
   });
   assert.equal(next.status, 'converged');
   assert.equal(next.original_review.status, 'needs_changes');
@@ -63,7 +73,7 @@ test('RFR-S-7 stale evidence cannot converge', () => {
   assert.throws(() => recordFindingRepairAttempt(state, {
     headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'same',
     verification: { status: 'pass', head_sha: 'head-1' }, prPrepare: { status: 'ready', head_sha: 'head-2' },
-    rereview: { status: 'pass', head_sha: 'head-2', agent_identity: 'reviewer', session_id: 'same', lifecycle: 'closed', findings: [] }
+    rereview: rereview({ session_id: 'same' })
   }), /current HEAD|independent/);
 });
 
@@ -72,7 +82,7 @@ test('RFR-S-6 multi-attempt repeated fingerprint without HEAD progress stops no_
   state = recordFindingRepairAttempt(state, {
     headSha: 'head-1', implementationIdentity: 'impl', implementationSessionId: 'impl-1',
     verification: { status: 'pass', head_sha: 'head-1' }, prPrepare: { status: 'ready', head_sha: 'head-1' },
-    rereview: { status: 'needs_changes', head_sha: 'head-1', agent_identity: 'reviewer', session_id: 'review-1', lifecycle: 'closed', findings: review().findings }
+    rereview: rereview({ status: 'needs_changes', head_sha: 'head-1', session_id: 'review-1', findings: review().findings })
   });
   assert.equal(state.status, 'no_progress');
   assert.equal(summarizeFindingRepairState(state).stop_reason, 'repeated_finding_without_head_progress');
@@ -83,11 +93,75 @@ test('RFR-S-6 maximum attempt budget stops a changing finding loop', () => {
   state = recordFindingRepairAttempt(state, {
     headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-1',
     verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' },
-    rereview: { status: 'needs_changes', head_sha: 'head-2', agent_identity: 'reviewer', session_id: 'review-1', lifecycle: 'closed', findings: [{
+    rereview: rereview({ status: 'needs_changes', session_id: 'review-1', findings: [{
       id: 'new-finding', severity: 'high', detail: 'src/next.js lacks coverage', acceptance_clause: 'RFR-S-4',
       code_scope: ['src/next.js'], test_scope: ['test/next.test.js']
-    }] }
+    }] })
   });
   assert.equal(state.status, 'no_progress');
   assert.equal(state.stop_reason, 'max_attempts_reached');
+});
+
+test('RFR-S-5 rejects missing provenance and a different review role', () => {
+  const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() });
+  const base = { headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
+    verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' } };
+  assert.throws(() => recordFindingRepairAttempt(state, { ...base, rereview: rereview({ agent_identity: null, session_id: null }) }), /provenance/);
+  assert.throws(() => recordFindingRepairAttempt(state, { ...base, rereview: rereview({ role: 'security' }) }), /same stage and role/);
+});
+
+test('RFR-S-5 multiple repairable findings do not converge before all attempts pass', () => {
+  let state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review('needs_changes', [
+    review().findings[0], { ...review().findings[0], id: 'second', detail: 'second repair' }
+  ]) });
+  const evidence = { headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
+    verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' }, rereview: rereview() };
+  state = recordFindingRepairAttempt(state, evidence);
+  assert.equal(state.status, 'planned');
+  assert.equal(state.next_action.task.task_id, state.attempts[1].task.task_id);
+  state = recordFindingRepairAttempt(state, { ...evidence, implementationSessionId: 'impl-session-2', rereview: rereview({ session_id: 'review-session-2' }) });
+  assert.equal(state.status, 'converged');
+});
+
+test('RFR-S-2 public persisted dispatch path records runtime state atomically', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() })));
+  const result = await dispatchFindingRepairFromRepo(root, { storyId: 'story-1', stage: 'runtime', role: 'runtime', adapterId: 'codex',
+    requirements: { capabilities: ['code'], timeout_ms: 1000, managed_worktree: root }, runState: { story_id: 'story-1' },
+    runtimeCoordinator: { dispatch: async (state) => ({ state: { ...state, marker: true }, dispatch: { dispatch_id: 'd1', status: 'running' } }) } });
+  assert.equal(result.summary.status, 'repairing');
+  assert.equal(JSON.parse(await readFile(result.artifact)).runtime_state.marker, true);
+});
+
+test('CLI dispatch reaches the injected Agent Runtime coordinator', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-cli-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() })));
+  let called = false;
+  const result = await runCli(['review', 'finding-repair', 'dispatch', root, '--id', 'story-1', '--stage', 'runtime', '--role', 'runtime', '--adapter', 'codex'], {
+    stdout: { write() {} }, stderr: { write() {} },
+    findingRepairRuntimeCoordinator: { dispatch: async (state) => { called = true; return { state, dispatch: { dispatch_id: 'd1', status: 'running' } }; } }
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(called, true);
+});
+
+test('artifact path traversal is rejected and missing status gives the plan command', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-'));
+  await assert.rejects(() => getFindingRepairStatus(root, { storyId: '../escape', stage: 'runtime', role: 'runtime' }), /path-safe/);
+  await assert.rejects(() => getFindingRepairStatus(root, { storyId: 'story-1', stage: 'runtime', role: 'runtime' }), /no finding repair plan exists; run:/);
+});
+
+test('record rejects caller-asserted evidence when canonical artifacts are absent', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-record-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() })));
+  const resultPath = path.join(root, 'result.json');
+  await writeFile(resultPath, JSON.stringify({ headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
+    verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' }, rereview: rereview() }));
+  await assert.rejects(() => recordFindingRepair(root, { storyId: 'story-1', stage: 'runtime', role: 'runtime', resultPath }), /verification-evidence\.json|ENOENT/);
 });

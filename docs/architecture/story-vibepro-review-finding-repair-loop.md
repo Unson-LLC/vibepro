@@ -8,13 +8,13 @@
 
 - Input: stage/role の current review result、明示された acceptance clause、code scope、test scope。
 - Classification: concrete scopeを持つ `needs_changes` は `repairable`。architecture/security/scope splitまたは境界判断を要求する `block` は `human_decision` / `split_required`。具体的な修正行為を持たないものは `non_actionable`。
-- Execution: repairable taskだけが Agent Runtime Adapter向けのtyped implementation requestを得る。
-- Evidence: implementation後はcurrent HEADにbindしたverificationと`pr prepare`、implementationとは別identity/sessionの同role再reviewが揃うまで収束扱いにしない。
-- Stop: 同じfingerprintが再出現してHEADが進まない場合、またはmax attempts到達時は`no_progress`。
+- Execution: repairable taskだけが Agent Runtime Adapter向けのtyped implementation requestを得る。公開CLIの`dispatch` / `poll`も同じcoordinator境界を使い、runtime transitionをstateへatomicに保存する。
+- Evidence: implementation後はcanonical `.vibepro/pr/<story-id>/verification-evidence.json`と`pr-prepare.json`からcurrent HEADにbindした証跡を読み、implementationとは別identity/sessionの同stage・同role再reviewが揃うまで収束扱いにしない。複数repairable findingは全attemptがpassするまで収束しない。
+- Stop: 同じfingerprintが再出現してHEADが進まない場合、またはmax attempts到達時は`no_progress`。Human Checkpointと停止stateは判断主体、decision question、再計画またはStory分割の次commandを公開する。
 
 ## Persistence
 
-`.vibepro/review-finding-repair/<story-id>/<stage>/<role>/state.json` にloop stateを保存する。各attemptは元review artifact、verdict、finding snapshot、disposition、task、dispatch/result/evidence/re-review参照を保持し、過去attemptを書き換えない。
+`.vibepro/review-finding-repair/<story-id>/<stage>/<role>/state.json` にloop stateを保存する。path segmentは検証し、hierarchy外への逸脱を拒否する。各attemptは元review artifact、verdict、finding snapshot、disposition、task、dispatch/result/evidence/re-review参照を保持し、過去attemptを書き換えない。
 
 ## Reason
 
