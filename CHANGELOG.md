@@ -237,3 +237,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-agent-runtim
 なし
 
 <!-- vibepro-release-pr:360:end -->
+
+<!-- vibepro-release-pr:362:start -->
+## [#362](https://github.com/Unson-LLC/vibepro/pull/362) story-vibepro-risk-adaptive-validation-sequencing - 高コストFull Suite後に境界欠陥が見つかり、修正で証跡を全て取り直す順序を改善したい
+
+- Author: @sintariran
+- Merged: 2026-07-20T10:32:03Z
+- Commit: `e3dd0e2b5c8e1e3ecd748a056c17bb9833f2d923`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:362:end -->

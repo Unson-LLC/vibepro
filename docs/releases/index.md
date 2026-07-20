@@ -65,3 +65,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:360:start -->
 - [PR #360](https://github.com/Unson-LLC/vibepro/pull/360) — [2026-07](/releases/2026-07): story-vibepro-agent-runtime-adapters - handoffとreview dispatch文書を作るだけでなく、利用可能なagent runtimeへ実行委譲したい
 <!-- vibepro-release-index-pr:360:end -->
+
+<!-- vibepro-release-index-pr:362:start -->
+- [PR #362](https://github.com/Unson-LLC/vibepro/pull/362) — [2026-07](/releases/2026-07): story-vibepro-risk-adaptive-validation-sequencing - 高コストFull Suite後に境界欠陥が見つかり、修正で証跡を全て取り直す順序を改善したい
+<!-- vibepro-release-index-pr:362:end -->
