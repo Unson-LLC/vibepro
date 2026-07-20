@@ -19,7 +19,7 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 
 `advance` starts at most one child. If a child is active, it observes and verifies that child first. A running or stopped child returns without starting another child. A `pr_ready` child permits the next child. A cancelled child leaves the portfolio stopped unless the operator records an explicit typed decision.
 
-`decide` accepts only `continue`, `retry`, or `skip`, plus `policy_type` and `reason`. Continue/retry delegate to Guarded Run resume. Skip creates an auditable `explicit_skip` stop reason and permits later advancement. `promote` accepts an earlier source Story, later consumer Story, non-transcript artifact path, SHA-256 digest, and reason.
+`decide` accepts only `continue`, `retry`, or `skip`, plus `policy_type` and `reason`. Continue/retry delegate to Guarded Run resume. Skip creates an auditable `explicit_skip` stop reason and permits later advancement. Mutations acquire a portfolio-scoped lock before reading state or starting a child Run. `promote` accepts an earlier source Story, later consumer Story, non-transcript artifact path, SHA-256 digest, and reason; it resolves the artifact realpath, reads the artifact, computes its digest, and rejects a supplied mismatch.
 
 ## Invariants
 
@@ -32,5 +32,4 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 
 ## Verification
 
-`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, mid-Story blocker, restart, typed skip, safe context promotion, summary attribution, contamination stop, parallel rejection, and CLI persistence/readback.
-
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation rejection, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion, persisted contamination stop, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.

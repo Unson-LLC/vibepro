@@ -1,5 +1,5 @@
 import { createHash, randomBytes as nodeRandomBytes } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createGuardedRunSession } from './guarded-run-session.js';
@@ -12,7 +12,7 @@ const STORY_ID = /^story-[a-z0-9][a-z0-9._-]*$/;
 const TERMINAL = new Set(['pr_ready']);
 const STOPPED = new Set(['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed', 'cancelled']);
 const DECISIONS = new Set(['continue', 'skip', 'retry']);
-const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir']);
+const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm']);
 
 export class StoryRunPortfolioError extends Error {
   constructor(code, message, details = {}) {
@@ -37,14 +37,16 @@ export function createStoryRunPortfolioController(dependencies = {}) {
     readFile: dependencies.readFile ?? readFile,
     writeFile: dependencies.writeFile ?? writeFile,
     rename: dependencies.rename ?? rename,
-    mkdir: dependencies.mkdir ?? mkdir
+    mkdir: dependencies.mkdir ?? mkdir,
+    realpath: dependencies.realpath ?? realpath,
+    rm: dependencies.rm ?? rm
   };
   return {
     create: (repoRoot, options) => createPortfolio(deps, repoRoot, options),
     status: (repoRoot, options) => readPortfolio(deps, repoRoot, options),
-    advance: (repoRoot, options) => advancePortfolio(deps, repoRoot, options),
-    decide: (repoRoot, options) => decidePortfolio(deps, repoRoot, options),
-    promote: (repoRoot, options) => promoteContext(deps, repoRoot, options)
+    advance: (repoRoot, options) => withPortfolioLock(deps, repoRoot, options, () => advancePortfolio(deps, repoRoot, options)),
+    decide: (repoRoot, options) => withPortfolioLock(deps, repoRoot, options, () => decidePortfolio(deps, repoRoot, options)),
+    promote: (repoRoot, options) => withPortfolioLock(deps, repoRoot, options, () => promoteContext(deps, repoRoot, options))
   };
 }
 
@@ -92,7 +94,7 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   const active = state.entries.find((entry) => entry.status === 'running' || STOPPED.has(entry.status));
   if (active) {
     const run = await deps.guardedRun.status(repoRoot, { storyId: active.story_id, runId: active.run_id });
-    assertRunOwnership(active, run, state.scope_bindings[active.story_id]);
+    await assertAndPersistRunOwnership(deps, repoRoot, state, active, run);
     active.status = run.status;
     active.worktree = run.execution_context?.root_realpath ?? null;
     active.head_sha = run.current_head_sha ?? null;
@@ -161,7 +163,7 @@ async function decidePortfolio(deps, repoRoot, options = {}) {
       answeredBy: options.answeredBy,
       reflectedIn: options.reflectedIn ?? []
     });
-    assertRunOwnership(entry, run, state.scope_bindings[entry.story_id]);
+    await assertAndPersistRunOwnership(deps, repoRoot, state, entry, run);
     entry.status = run.status;
     entry.head_sha = run.current_head_sha ?? entry.head_sha;
     entry.stop_reason = run.stop_reason ?? null;
@@ -184,12 +186,32 @@ async function promoteContext(deps, repoRoot, options = {}) {
     throw error('raw_transcript_forbidden', 'Raw transcripts cannot be promoted between Story Runs.');
   }
   const absoluteArtifact = path.resolve(repoRoot, options.artifactPath);
-  const relativeArtifact = path.relative(path.resolve(repoRoot), absoluteArtifact);
+  let realRoot;
+  let realArtifact;
+  try {
+    [realRoot, realArtifact] = await Promise.all([
+      deps.realpath(path.resolve(repoRoot)),
+      deps.realpath(absoluteArtifact)
+    ]);
+  } catch (cause) {
+    throw error('artifact_unavailable', 'Promoted context artifact must exist and be readable.', { cause: cause.code ?? cause.message });
+  }
+  const relativeArtifact = path.relative(realRoot, realArtifact);
   if (relativeArtifact.startsWith('..') || path.isAbsolute(relativeArtifact)) {
     throw error('artifact_outside_repository', 'Promoted context artifact must stay inside the repository.');
   }
-  const digest = options.digest ?? createHash('sha256').update(await deps.readFile(absoluteArtifact)).digest('hex');
-  if (!/^[a-f0-9]{64}$/.test(digest)) throw error('invalid_digest', 'Promoted context digest must be sha256 hex.');
+  let artifactContent;
+  try {
+    artifactContent = await deps.readFile(realArtifact);
+  } catch (cause) {
+    throw error('artifact_unavailable', 'Promoted context artifact must exist and be readable.', { cause: cause.code ?? cause.message });
+  }
+  const actualDigest = createHash('sha256').update(artifactContent).digest('hex');
+  if (options.digest && !/^[a-f0-9]{64}$/.test(options.digest)) throw error('invalid_digest', 'Promoted context digest must be sha256 hex.');
+  if (options.digest && options.digest !== actualDigest) {
+    throw error('digest_mismatch', 'Promoted context digest does not match the artifact content.', { expected: options.digest, actual: actualDigest });
+  }
+  const digest = actualDigest;
   state.promoted_context.push({
     source_story_id: source.story_id,
     artifact_path: options.artifactPath,
@@ -226,6 +248,20 @@ function assertRunOwnership(entry, run, binding = {}) {
       expected: { story_id: entry.story_id, run_id: entry.run_id, worktree: entry.worktree, head_sha: entry.head_sha },
       actual: { story_id: run.story_id, run_id: run.run_id, worktree: run.execution_context?.root_realpath, branch, head_sha: run.current_head_sha, mixed_reviews: mixedReviews, mixed_sessions: mixedSessions }
     });
+  }
+}
+
+async function assertAndPersistRunOwnership(deps, repoRoot, state, entry, run) {
+  try {
+    assertRunOwnership(entry, run, state.scope_bindings[entry.story_id]);
+  } catch (cause) {
+    if (cause.code !== 'scope_contamination') throw cause;
+    entry.status = 'blocked';
+    entry.stop_reason = { code: cause.code, message: cause.message, details: cause.details };
+    state.status = 'blocked';
+    state.updated_at = iso(deps.now());
+    await persist(deps, repoRoot, state);
+    throw cause;
   }
 }
 
@@ -288,6 +324,23 @@ async function persist(deps, repoRoot, state, options = {}) {
   const temporary = `${file}.tmp-${process.pid}`;
   await deps.writeFile(temporary, `${JSON.stringify(state, null, 2)}\n`);
   await deps.rename(temporary, file);
+}
+
+async function withPortfolioLock(deps, repoRoot, options, operation) {
+  const portfolioId = requirePortfolioId(options?.portfolioId);
+  const lock = `${statePath(repoRoot, portfolioId)}.lock`;
+  await deps.mkdir(path.dirname(lock), { recursive: true });
+  try {
+    await deps.mkdir(lock);
+  } catch (cause) {
+    if (cause.code === 'EEXIST') throw error('portfolio_busy', `Portfolio is already being mutated: ${portfolioId}.`);
+    throw cause;
+  }
+  try {
+    return await operation();
+  } finally {
+    await deps.rm(lock, { recursive: true, force: true });
+  }
 }
 
 function statePath(repoRoot, portfolioId) {

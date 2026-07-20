@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -63,14 +64,34 @@ test('SRP-S-4 blocker is not success and explicit typed skip survives restart', 
 test('SRP-S-5 promotes digest-bound artifact context and rejects raw transcripts', async (t) => {
   const fixture = await createFixture(t);
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-context', storyIds: STORIES.slice(0, 2) });
+  await mkdir(path.join(fixture.root, 'docs/decisions'), { recursive: true });
+  const content = 'approved boundary\n';
+  await writeFile(path.join(fixture.root, 'docs/decisions/boundary.md'), content);
+  const digest = createHash('sha256').update(content).digest('hex');
   const state = await fixture.controller.promote(fixture.root, {
     portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
-    artifactPath: 'docs/decisions/boundary.md', digest: 'a'.repeat(64), reason: 'Reuse approved boundary'
+    artifactPath: 'docs/decisions/boundary.md', digest, reason: 'Reuse approved boundary'
   });
   assert.deepEqual(state.promoted_context[0], {
-    source_story_id: STORIES[0], artifact_path: 'docs/decisions/boundary.md', digest: 'a'.repeat(64),
+    source_story_id: STORIES[0], artifact_path: 'docs/decisions/boundary.md', digest,
     consumer_story_id: STORIES[1], reason: 'Reuse approved boundary', promoted_at: '2026-07-20T00:00:00.000Z'
   });
+  await assert.rejects(fixture.controller.promote(fixture.root, {
+    portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
+    artifactPath: 'docs/decisions/boundary.md', digest: 'a'.repeat(64), reason: 'Tampered digest'
+  }), errorCode('digest_mismatch'));
+  await assert.rejects(fixture.controller.promote(fixture.root, {
+    portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
+    artifactPath: 'docs/decisions/missing.md', reason: 'Missing artifact'
+  }), errorCode('artifact_unavailable'));
+  const outside = await mkdtemp(path.join(os.tmpdir(), 'vibepro-portfolio-outside-'));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  await writeFile(path.join(outside, 'secret.md'), 'outside');
+  await symlink(path.join(outside, 'secret.md'), path.join(fixture.root, 'docs/decisions/outside.md'));
+  await assert.rejects(fixture.controller.promote(fixture.root, {
+    portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
+    artifactPath: 'docs/decisions/outside.md', reason: 'Symlink escape'
+  }), errorCode('artifact_outside_repository'));
   await assert.rejects(fixture.controller.promote(fixture.root, {
     portfolioId: 'portfolio-context', sourceStoryId: STORIES[0], consumerStoryId: STORIES[1],
     artifactPath: '.codex/session-transcript.jsonl', reason: 'copy session'
@@ -98,6 +119,10 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
   await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-contamination' });
   fixture.contaminate(STORIES[0], { story_id: STORIES[1] });
   await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-contamination' }), errorCode('scope_contamination'));
+  const stopped = await fixture.controller.status(fixture.root, { portfolioId: 'portfolio-contamination' });
+  assert.equal(stopped.status, 'blocked');
+  assert.equal(stopped.entries[0].stop_reason.code, 'scope_contamination');
+  assert.match(renderStoryRunPortfolioSummary(stopped), /stop_reason=scope_contamination/);
 
   const cases = [
     ['branch', { execution_context: { root_realpath: `/worktrees/${STORIES[0]}`, branch_name: 'foreign-branch' } }],
@@ -111,6 +136,19 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
     fixture.contaminate(STORIES[0], contamination);
     await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId }), errorCode('scope_contamination'));
   }
+});
+
+test('SRP-S-3 concurrent mutation is rejected before a duplicate child Run starts', async (t) => {
+  let release;
+  const entered = new Promise((resolve) => { release = resolve; });
+  const fixture = await createFixture(t, { runEntered: entered });
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-lock', storyIds: STORIES.slice(0, 2) });
+  const first = fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-lock' });
+  await fixture.waitForRunStart();
+  await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-lock' }), errorCode('portfolio_busy'));
+  release();
+  await first;
+  assert.deepEqual(fixture.started, [STORIES[0]]);
 });
 
 test('Portfolio CLI creates and reads a JSON portfolio', async (t) => {
@@ -128,14 +166,46 @@ test('Portfolio CLI creates and reads a JSON portfolio', async (t) => {
   assert.equal(JSON.parse(await readFile(path.join(fixture.root, '.vibepro/portfolios/portfolio-cli/state.json'), 'utf8')).mode, 'sequential');
 });
 
-async function createFixture(t) {
+test('Portfolio CLI covers advance decide promote and typed JSON and human errors', async (t) => {
+  const fixture = await createFixture(t);
+  const invoke = (args, stdout = capture(), stderr = capture()) => runCli(args, {
+    stdout, stderr, storyRunPortfolioDependencies: fixture.dependencies
+  });
+  await invoke(['execute', 'portfolio-create', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--stories', STORIES.slice(0, 2).join(','), '--json']);
+  const human = capture();
+  const advanced = await invoke(['execute', 'portfolio-advance', fixture.root, '--portfolio-id', 'portfolio-cli-all'], human);
+  assert.equal(advanced.exitCode, 0);
+  assert.match(human.text(), /Portfolio portfolio-cli-all: running/);
+  fixture.setStatus(STORIES[0], 'blocked', { code: 'gate_blocked', message: 'Evidence missing' });
+  await invoke(['execute', 'portfolio-advance', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--json']);
+  const typedError = capture();
+  const rejected = await invoke(['execute', 'portfolio-decide', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--story-id', STORIES[0], '--decision', 'skip', '--json'], capture(), typedError);
+  assert.equal(rejected.exitCode, 2);
+  assert.equal(JSON.parse(typedError.text()).stop_reason.code, 'typed_policy_required');
+  const decided = await invoke(['execute', 'portfolio-decide', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--story-id', STORIES[0], '--decision', 'skip', '--policy-type', 'operator_exception', '--reason', 'defer', '--json']);
+  assert.equal(decided.result.entries[0].status, 'skipped');
+  await mkdir(path.join(fixture.root, 'docs'), { recursive: true });
+  await writeFile(path.join(fixture.root, 'docs/context.md'), 'context');
+  const promoted = await invoke(['execute', 'portfolio-promote', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--source-story-id', STORIES[0], '--consumer-story-id', STORIES[1], '--artifact', 'docs/context.md', '--reason', 'reuse', '--json']);
+  assert.equal(promoted.result.promoted_context.length, 1);
+  const humanError = capture();
+  const missing = await invoke(['execute', 'portfolio-promote', fixture.root, '--portfolio-id', 'portfolio-cli-all', '--source-story-id', STORIES[0], '--consumer-story-id', STORIES[1], '--artifact', 'docs/missing.md', '--reason', 'reuse'], capture(), humanError);
+  assert.equal(missing.exitCode, 2);
+  assert.match(humanError.text(), /^artifact_unavailable:/);
+});
+
+async function createFixture(t, options = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-portfolio-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const runs = new Map();
   const started = [];
+  let runStarted;
+  const runStart = new Promise((resolve) => { runStarted = resolve; });
   const guardedRun = {
     async run(_root, { storyId }) {
       started.push(storyId);
+      runStarted();
+      if (options.runEntered) await options.runEntered;
       const run = runState(storyId);
       runs.set(storyId, run);
       return structuredClone(run);
@@ -151,6 +221,7 @@ async function createFixture(t) {
   const dependencies = { guardedRun, now: () => new Date('2026-07-20T00:00:00.000Z'), randomBytes: () => Buffer.from('01020304', 'hex') };
   return {
     root, runs, started, dependencies,
+    waitForRunStart: () => runStart,
     controller: createStoryRunPortfolioController(dependencies),
     restart: () => createStoryRunPortfolioController(dependencies),
     setStatus(storyId, status, stopReason = null) { Object.assign(runs.get(storyId), { status, stop_reason: stopReason }); },
