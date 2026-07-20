@@ -736,12 +736,23 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(freshPrepare.exitCode, 0);
   const freshHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await mkdir(path.join(repo, '.vibepro', 'qa'), { recursive: true });
-  for (const name of ['targeted', 'preflight', 'full']) {
-    await writeFile(path.join(repo, '.vibepro', 'qa', `${name}.json`), JSON.stringify({
-      schema_version: '0.1.0', story_id: 'story-risk-adaptive', status: 'pass', head_sha: freshHead
-      , command: 'node --test', test_fingerprint: 'fresh-tests-v1'
-    }));
-  }
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'sequence-status.json'), JSON.stringify({
+    status: 'pass', observed: { focused_tests: 1 }
+  }));
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test',
+    '--summary', 'targeted validation passed',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'targeted workflow contract validation passed',
+    '--observed', 'test_fingerprint=fresh-tests-v1',
+    '--observed', 'validation_phase=targeted_validation'
+  ])).exitCode, 0);
+  const canonicalEvidence = '.vibepro/pr/story-risk-adaptive/verification-evidence.json';
   const persistedSequencePath = path.join(repo, '.vibepro', 'validation-sequencing', 'story-risk-adaptive', 'state.json');
   const freshSequence = await readJson(persistedSequencePath);
   assert.equal(freshSequence.plan.risk_profile, 'workflow_heavy');
@@ -764,10 +775,11 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     ...freshSequence.plan.risk_surfaces.flatMap((surface) => ['--surface', surface]),
     '--command', 'node --test',
     '--test-fingerprint', 'fresh-tests-v1',
-    '--evidence', '.vibepro/qa/targeted.json',
+    '--evidence', canonicalEvidence,
     '--json'
   ]);
   assert.equal(freshPlan.exitCode, 0);
+  let freshTargetedStderr = '';
   const freshTargeted = await runCli([
     'sequence', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -775,37 +787,84 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--head', freshHead,
     '--command', 'node --test',
     '--test-fingerprint', 'fresh-tests-v1',
-    '--evidence', '.vibepro/qa/targeted.json',
+    '--evidence', canonicalEvidence,
     '--json'
-  ]);
-  assert.equal(freshTargeted.exitCode, 0);
+  ], { stderr: { write: (chunk) => { freshTargetedStderr += chunk; } } });
+  assert.equal(freshTargeted.exitCode, 0, freshTargetedStderr);
   assert.equal(freshTargeted.result.evaluation.next_required_action.phase, 'preflight_review');
+  assert.equal((await runCli([
+    'review', 'prepare', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'start', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--agent-system', 'codex', '--agent-id', 'boundary-reviewer'
+  ])).exitCode, 0);
+  const preflightTranscript = path.join(repo, '.vibepro', 'reviews', 'story-risk-adaptive', 'architecture_spec', 'transcript-architecture_boundary.md');
+  await writeFile(preflightTranscript, '# architecture boundary review transcript\nAggregate workflow boundaries inspected and passed.\n');
+  const preflightTranscriptRelative = '.vibepro/reviews/story-risk-adaptive/architecture_spec/transcript-architecture_boundary.md';
+  assert.equal((await runCli([
+    'review', 'close', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--agent-id', 'boundary-reviewer', '--close-reason', 'completed', '--close-evidence', preflightTranscriptRelative
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--status', 'pass', '--summary', 'aggregate workflow boundary passed',
+    '--inspection-summary', `inspected aggregate boundary; risk_surfaces=${freshSequence.plan.preflight_surfaces.slice().sort().join(',')}`,
+    '--inspection-input', 'src/lib/services/formProjectStartService.ts',
+    '--judgment-delta', 'unverified aggregate workflow boundary became verified',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'boundary-reviewer',
+    '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative,
+    '--strict-head-binding', '--strict-head-reason', 'validation preflight binds to the planned head'
+  ])).exitCode, 0);
+  const preflightReviewEvidence = '.vibepro/reviews/story-risk-adaptive/architecture_spec/review-result-architecture_boundary.json';
   assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'preflight_review',
     '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
-    , '--evidence', '.vibepro/qa/preflight.json'
+    , '--source', 'agent_review', '--evidence', preflightReviewEvidence
   ])).exitCode, 0);
   assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'code_frozen',
     '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
   ])).exitCode, 0);
   assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test',
+    '--summary', 'expensive validation passed after code freeze',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'expensive workflow contract validation passed after freeze',
+    '--observed', 'test_fingerprint=fresh-tests-v1',
+    '--observed', 'validation_phase=expensive_verification'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'expensive_verification',
     '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
-    , '--evidence', '.vibepro/qa/full.json'
+    , '--evidence', canonicalEvidence
   ])).exitCode, 0);
   assert.equal((await runCli([
     'review', 'prepare', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract'
   ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'start', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
+    '--agent-system', 'codex', '--agent-id', 'runtime-reviewer'
+  ])).exitCode, 0);
   const finalTranscript = path.join(repo, '.vibepro', 'reviews', 'story-risk-adaptive', 'implementation', 'transcript-runtime_contract.md');
   await writeFile(finalTranscript, '# runtime contract review transcript\nCurrent-head implementation inspected and passed.\n');
+  const finalTranscriptRelative = '.vibepro/reviews/story-risk-adaptive/implementation/transcript-runtime_contract.md';
+  assert.equal((await runCli([
+    'review', 'close', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
+    '--agent-id', 'runtime-reviewer', '--close-reason', 'completed', '--close-evidence', finalTranscriptRelative
+  ])).exitCode, 0);
   assert.equal((await runCli([
     'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
     '--status', 'pass', '--summary', 'runtime contract passed',
     '--inspection-summary', 'inspected workflow implementation', '--inspection-input', 'src/lib/services/formProjectStartService.ts',
     '--judgment-delta', 'unverified -> pass after current-head inspection',
     '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'runtime-reviewer', '--agent-closed',
-    '--agent-transcript', '.vibepro/reviews/story-risk-adaptive/implementation/transcript-runtime_contract.md',
+    '--agent-transcript', finalTranscriptRelative, '--agent-close-evidence', finalTranscriptRelative,
     '--strict-head-binding', '--strict-head-reason', 'final sequence review binds to frozen head'
   ])).exitCode, 0);
   let finalSequenceStderr = '';
@@ -869,10 +928,15 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(reconciledSequence.plan.required, true);
   assert.equal(reconciledSequence.proposed_binding.head_sha, currentHead);
   assert.equal(reconciledSequence.phases.targeted_validation.status, 'invalidated');
-  await writeFile(path.join(repo, '.vibepro', 'qa', 'targeted.json'), JSON.stringify({
-    schema_version: '0.1.0', story_id: 'story-risk-adaptive', status: 'pass', head_sha: currentHead,
-    command: 'node --test', test_fingerprint: 'tests-v1'
-  }));
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive', '--kind', 'unit', '--status', 'pass', '--command', 'node --test',
+    '--summary', 'targeted validation passed after workflow change',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'targeted workflow contract validation passed after workflow change',
+    '--observed', 'test_fingerprint=tests-v1', '--observed', 'validation_phase=targeted_validation'
+  ])).exitCode, 0);
   const recordedTargeted = await runCli([
     'sequence', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -880,7 +944,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--head', currentHead,
     '--command', 'node --test',
     '--test-fingerprint', 'tests-v1',
-    '--evidence', '.vibepro/qa/targeted.json',
+    '--evidence', canonicalEvidence,
     '--json'
   ]);
   assert.equal(recordedTargeted.exitCode, 0);
