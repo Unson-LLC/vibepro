@@ -136,6 +136,46 @@ test('RFR-S-2 public persisted dispatch path records runtime state atomically', 
   assert.equal(JSON.parse(await readFile(result.artifact)).runtime_state.marker, true);
 });
 
+test('dispatch normalizes synchronous completed and terminal runtime outcomes', async () => {
+  for (const terminalStatus of ['completed', 'failed', 'cancelled', 'timed_out']) {
+    const state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() });
+    const next = await dispatchFindingRepair(state, {
+      adapterId: 'codex', runState: { story_id: 'story-1' },
+      runtimeCoordinator: { dispatch: async (runtimeState) => ({
+        state: runtimeState, dispatch: { dispatch_id: 'd1', status: terminalStatus }
+      }) }
+    });
+    assert.equal(next.status, terminalStatus === 'completed' ? 'awaiting_rereview' : 'no_progress');
+    assert.equal(next.next_action.type, terminalStatus === 'completed' ? 'record_rereview' : 'stop');
+  }
+});
+
+test('persisted dispatch intent prevents duplicate work when coordinator result is uncertain', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-dispatch-error-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify(createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review() })));
+  const result = await dispatchFindingRepairFromRepo(root, {
+    storyId: 'story-1', stage: 'runtime', role: 'runtime', adapterId: 'codex', runState: { story_id: 'story-1' },
+    runtimeCoordinator: { dispatch: async () => { throw new Error('receipt lost'); } }
+  });
+  assert.equal(result.state.status, 'no_progress');
+  assert.equal(result.state.stop_reason, 'runtime_dispatch_uncertain');
+  await assert.rejects(() => dispatchFindingRepairFromRepo(root, {
+    storyId: 'story-1', stage: 'runtime', role: 'runtime', adapterId: 'codex', runState: {}, runtimeCoordinator: { dispatch: async () => ({}) }
+  }), /not ready/);
+});
+
+test('persisted state rejects unsupported or structurally partial schemas', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-schema-'));
+  const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify({ schema_version: '9.9.9' }));
+  await assert.rejects(() => getFindingRepairStatus(root, { storyId: 'story-1', stage: 'runtime', role: 'runtime' }), /schema_version/);
+  await writeFile(path.join(dir, 'state.json'), JSON.stringify({ schema_version: '0.1.0', story_id: 'story-1' }));
+  await assert.rejects(() => getFindingRepairStatus(root, { storyId: 'story-1', stage: 'runtime', role: 'runtime' }), /state\.stage/);
+});
+
 test('CLI dispatch reaches the injected Agent Runtime coordinator', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-repair-cli-'));
   const dir = path.join(root, '.vibepro', 'review-finding-repair', 'story-1', 'runtime', 'runtime');

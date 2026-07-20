@@ -103,6 +103,7 @@ export function summarizeFindingRepairState(state) {
 }
 
 export async function dispatchFindingRepair(state, input = {}) {
+  assertFindingRepairState(state);
   if (state.status !== 'planned' || state.next_action?.type !== 'dispatch_implementation') {
     throw new Error('finding repair is not ready for implementation dispatch');
   }
@@ -115,41 +116,49 @@ export async function dispatchFindingRepair(state, input = {}) {
     requirements: input.requirements,
     implementation_identity: input.implementationIdentity ?? null
   };
-  const dispatched = await input.runtimeCoordinator.dispatch(input.runState, request);
-  return {
+  const dispatching = {
     ...state,
-    status: dispatched.dispatch.status === 'running' ? 'repairing' : state.status,
-    runtime_dispatch: structuredClone(dispatched.dispatch),
-    runtime_state: structuredClone(dispatched.state),
-    next_action: dispatched.dispatch.status === 'running'
-      ? { type: 'poll_implementation', dispatch_id: dispatched.dispatch.dispatch_id }
-      : state.next_action
+    status: 'dispatching',
+    next_action: { type: 'await_dispatch_receipt', task_id: request.task_id }
   };
+  if (input.beforeDispatch) await input.beforeDispatch(dispatching);
+  const dispatched = await input.runtimeCoordinator.dispatch(input.runState, request);
+  const next = {
+    ...state,
+    runtime_dispatch: structuredClone(dispatched.dispatch),
+    runtime_state: structuredClone(dispatched.state)
+  };
+  return applyRuntimeResult(next, dispatched.dispatch.status);
 }
 
 export async function dispatchFindingRepairFromRepo(repoRoot, input = {}) {
   const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
   const state = JSON.parse(await readFile(artifact, 'utf8'));
-  const next = await dispatchFindingRepair(state, input);
-  await writeJsonAtomic(artifact, next);
-  return { artifact, state: next, summary: summarizeFindingRepairState(next) };
+  assertFindingRepairState(state);
+  try {
+    const next = await dispatchFindingRepair(state, { ...input, beforeDispatch: async (dispatching) => writeJsonAtomic(artifact, dispatching) });
+    await writeJsonAtomic(artifact, next);
+    return { artifact, state: next, summary: summarizeFindingRepairState(next) };
+  } catch (error) {
+    let persisted;
+    try { persisted = JSON.parse(await readFile(artifact, 'utf8')); } catch { throw error; }
+    if (persisted.status === 'dispatching') {
+      persisted.runtime_error = { message: error instanceof Error ? error.message : String(error) };
+      return persistStoppedRuntime(artifact, persisted, 'runtime_dispatch_uncertain');
+    }
+    throw error;
+  }
 }
 
 export async function pollFindingRepairFromRepo(repoRoot, input = {}) {
   const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
   const state = JSON.parse(await readFile(artifact, 'utf8'));
+  assertFindingRepairState(state);
   if (state.status !== 'repairing' || !state.runtime_dispatch?.dispatch_id) throw new Error('finding repair has no running implementation dispatch');
   if (!input.runtimeCoordinator || typeof input.runtimeCoordinator.poll !== 'function') throw new Error('runtimeCoordinator.poll is required');
   const observed = await input.runtimeCoordinator.poll(state.runtime_state, state.runtime_dispatch.dispatch_id);
-  const next = { ...state, runtime_dispatch: structuredClone(observed.dispatch), runtime_state: structuredClone(observed.state) };
-  if (observed.dispatch.status === 'completed') {
-    next.status = 'awaiting_rereview';
-    next.next_action = {
-      type: 'record_rereview',
-      command: recordCommand(next),
-      result_schema: 'headSha, implementationIdentity, implementationSessionId, rereview'
-    };
-  } else if (['failed', 'cancelled', 'timed_out'].includes(observed.dispatch.status)) {
+  const next = applyRuntimeResult({ ...state, runtime_dispatch: structuredClone(observed.dispatch), runtime_state: structuredClone(observed.state) }, observed.dispatch.status);
+  if (['failed', 'cancelled', 'timed_out'].includes(observed.dispatch.status)) {
     return persistStoppedRuntime(artifact, next, `runtime_${observed.dispatch.status}`);
   }
   await writeJsonAtomic(artifact, next);
@@ -177,6 +186,7 @@ export async function planFindingRepair(repoRoot, input = {}) {
 export async function recordFindingRepair(repoRoot, input = {}) {
   const artifact = statePath(repoRoot, required(input.storyId, 'storyId'), required(input.stage, 'stage'), required(input.role, 'role'));
   const current = JSON.parse(await readFile(artifact, 'utf8'));
+  assertFindingRepairState(current);
   const result = JSON.parse(await readFile(path.resolve(repoRoot, required(input.resultPath, 'resultPath')), 'utf8'));
   const canonical = await readCanonicalEvidence(repoRoot, current.story_id, required(result.headSha, 'headSha'));
   const state = recordFindingRepairAttempt(current, { ...result, ...canonical });
@@ -192,7 +202,49 @@ export async function getFindingRepairStatus(repoRoot, input = {}) {
     if (error?.code === 'ENOENT') throw new Error(`no finding repair plan exists; run: ${planCommand(input)}`);
     throw error;
   }
+  assertFindingRepairState(state);
   return { artifact, state, summary: summarizeFindingRepairState(state) };
+}
+
+function assertFindingRepairState(state) {
+  if (!state || typeof state !== 'object') throw new Error('finding repair state must be an object');
+  if (state.schema_version !== '0.1.0') throw new Error(`unsupported finding repair state schema_version: ${state.schema_version ?? 'missing'}`);
+  required(state.story_id, 'state.story_id');
+  required(state.stage, 'state.stage');
+  required(state.role, 'state.role');
+  required(state.status, 'state.status');
+  positiveInteger(state.max_attempts, 'state.max_attempts');
+  if (!state.original_review || typeof state.original_review !== 'object') throw new Error('state.original_review is required');
+  if (!Array.isArray(state.attempts)) throw new Error('state.attempts must be an array');
+  if (!state.next_action || typeof state.next_action.type !== 'string') throw new Error('state.next_action is required');
+  for (const attempt of state.attempts) {
+    positiveInteger(attempt?.attempt_number, 'attempt.attempt_number');
+    required(attempt?.finding_fingerprint, 'attempt.finding_fingerprint');
+    if (!DISPOSITIONS.has(attempt?.disposition)) throw new Error(`unsupported attempt disposition: ${attempt?.disposition ?? 'missing'}`);
+    if (attempt.disposition === 'repairable' && (!attempt.task || typeof attempt.task !== 'object')) throw new Error('repairable attempt.task is required');
+  }
+  return state;
+}
+
+function applyRuntimeResult(state, status) {
+  if (status === 'running') {
+    state.status = 'repairing';
+    state.next_action = { type: 'poll_implementation', dispatch_id: required(state.runtime_dispatch?.dispatch_id, 'runtime dispatch id') };
+    return state;
+  }
+  if (status === 'completed') {
+    state.status = 'awaiting_rereview';
+    state.stop_reason = null;
+    state.next_action = { type: 'record_rereview', command: recordCommand(state), result_schema: 'headSha, implementationIdentity, implementationSessionId, rereview' };
+    return state;
+  }
+  if (['failed', 'cancelled', 'timed_out'].includes(status)) {
+    state.status = 'no_progress';
+    state.stop_reason = `runtime_${status}`;
+    state.next_action = runtimeStopAction(state, state.stop_reason);
+    return state;
+  }
+  throw new Error(`unsupported runtime dispatch status: ${status ?? 'missing'}`);
 }
 
 function createAttempt({ storyId, stage, role, review, finding, attemptNumber, index }) {
@@ -286,7 +338,12 @@ function recordCommand(state) { return `vibepro review finding-repair record . -
 async function persistStoppedRuntime(artifact, state, reason) {
   state.status = 'no_progress';
   state.stop_reason = reason;
-  state.next_action = {
+  state.next_action = runtimeStopAction(state, reason);
+  await writeJsonAtomic(artifact, state);
+  return { artifact, state, summary: summarizeFindingRepairState(state) };
+}
+function runtimeStopAction(state, reason) {
+  return {
     type: 'stop',
     reason,
     authority: 'human_owner',
@@ -297,8 +354,6 @@ async function persistStoppedRuntime(artifact, state, reason) {
       'vibepro story add <repo> --id <new-story-id>'
     ]
   };
-  await writeJsonAtomic(artifact, state);
-  return { artifact, state, summary: summarizeFindingRepairState(state) };
 }
 async function readCanonicalEvidence(repoRoot, storyId, headSha) {
   const root = path.join(getWorkspaceDir(repoRoot), 'pr', safeSegment(storyId, 'storyId'));
