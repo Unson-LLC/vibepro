@@ -5215,6 +5215,13 @@
             "required": true,
             "relationship": "refines",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+            "required": true,
+            "relationship": "refines",
+            "last_reviewed_root_hash": null
           }
         ]
       },
@@ -5327,6 +5334,13 @@
         {
           "kind": "architecture",
           "path": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md",
+          "required": true,
+          "relationship": "refines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
           "required": true,
           "relationship": "refines",
           "last_reviewed_root_hash": null
