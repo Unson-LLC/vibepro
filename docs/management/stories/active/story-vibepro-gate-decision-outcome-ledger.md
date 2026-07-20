@@ -69,6 +69,9 @@ VibeProのgateが実欠陥を捕捉しても、finding、判断、修正、PR、
 
 ## Release Operations
 
+- `release_note`: `vibepro outcome record` / `vibepro outcome refresh` と compact decision-outcome projection を追加する。
+- `rollback_instruction`: 問題時は新commandの利用を停止して当該変更commitをrevertし、既存ledgerを削除・上書きせず従来projectionへ戻す。
+- `observability_evidence`: ownerは bounded JSON と canonical revision の `decision_outcome_binding.status`、件数、process exit codeを一次信号として監視する。
 - `release note`: `vibepro outcome record` / `vibepro outcome refresh` と compact decision-outcome projection を追加する。既存ledgerは読み取り互換を保ち、migrationや履歴の書き換えは不要である。
 - `operator action`: リリース時の必須操作はない。後日観測を結びたい operator だけが bounded summary の selector と current parent revision を確認し、authority-valid source を指定して `outcome record`、続いて `outcome refresh` を実行する。0件・複数件・stale・untrusted・未mergeの場合は候補または固定recoveryを確認し、入力を直して再実行する。自動的な成功扱いや手動JSON編集はしない。
 - `observability evidence`: owner-visibleな一次信号は `.vibepro/pr/<story>/decision-outcome-ledger.json`、各commandのbounded JSON、canonical revisionの `decision_outcome_binding.status` / `reason` / `expected_entry_count` / `promoted_count` / `duplicate_count` である。`bound`、`not_applicable`、`reconciliation_required` と process exit code を監視し、raw stdout/stderrやsecretを監視面へ再掲しない。

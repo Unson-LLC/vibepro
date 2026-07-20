@@ -30,6 +30,7 @@ test(`${STORY_ID} replays finding through bounded review and delivery states`, (
   // story-vibepro-gate-decision-outcome-ledger scenario:S-003
   // story-vibepro-gate-decision-outcome-ledger scenario:S-004
   // story-vibepro-gate-decision-outcome-ledger scenario:S-005
+  // story-vibepro-gate-decision-outcome-ledger scenario:S-006
   // story-vibepro-gate-decision-outcome-ledger scenario:S-011
   // story-vibepro-gate-decision-outcome-ledger scenario:S-007
   const source = {
