@@ -156,6 +156,7 @@ import {
 import {
   StoryRunPortfolioError,
   createStoryRunPortfolioController,
+  renderStoryRunPortfolioError,
   renderStoryRunPortfolioSummary
 } from './story-run-portfolio.js';
 import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
@@ -2439,7 +2440,7 @@ export async function runCli(argv, io = {}) {
         } catch (error) {
           if (!(error instanceof StoryRunPortfolioError)) throw error;
           const payload = error.toJSON();
-          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : `${error.code}: ${error.message}\n`);
+          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : renderStoryRunPortfolioError(error));
           return { exitCode: 2, command, subcommand, result: payload };
         }
       }

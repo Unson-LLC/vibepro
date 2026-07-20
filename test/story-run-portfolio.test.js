@@ -194,6 +194,23 @@ test('orphaned Portfolio recovery mutex fails closed with an operator repair han
       && cause.details.recovery_lock === `${lock}.recovery`
       && /remove the recovery lock/.test(cause.details.required_action)
   );
+
+  const humanError = capture();
+  const human = await runCli(['execute', 'portfolio-advance', fixture.root, '--portfolio-id', 'portfolio-recovery-orphan'], {
+    stdout: capture(), stderr: humanError, storyRunPortfolioDependencies: fixture.dependencies
+  });
+  assert.equal(human.exitCode, 2);
+  assert.equal(humanError.text().includes(`recovery_lock=${lock}.recovery`), true);
+  assert.match(humanError.text(), /required_action=Inspect and remove the recovery lock only after proving no recovery process is active\./);
+
+  const jsonError = capture();
+  const json = await runCli(['execute', 'portfolio-advance', fixture.root, '--portfolio-id', 'portfolio-recovery-orphan', '--json'], {
+    stdout: capture(), stderr: jsonError, storyRunPortfolioDependencies: fixture.dependencies
+  });
+  assert.equal(json.exitCode, 2);
+  const payload = JSON.parse(jsonError.text());
+  assert.equal(payload.stop_reason.details.recovery_lock, `${lock}.recovery`);
+  assert.match(payload.stop_reason.details.required_action, /remove the recovery lock/);
 });
 
 test('Portfolio restart reconciles a child Run created before Portfolio publish', async (t) => {

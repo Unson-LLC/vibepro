@@ -531,3 +531,12 @@ export function renderStoryRunPortfolioSummary(state) {
   }
   return `${lines.join('\n')}\n`;
 }
+
+export function renderStoryRunPortfolioError(cause) {
+  const lines = [`${cause.code}: ${cause.message}`];
+  const details = cause.details ?? {};
+  for (const key of ['recovery_lock', 'artifact', 'run_id', 'creation_request_id', 'cause', 'required_action']) {
+    if (details[key] !== undefined && details[key] !== null) lines.push(`${key}=${details[key]}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
