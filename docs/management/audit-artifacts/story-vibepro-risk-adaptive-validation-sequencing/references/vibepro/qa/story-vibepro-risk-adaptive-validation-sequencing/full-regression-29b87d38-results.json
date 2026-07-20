@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+  "status": "pass",
+  "command": "env npm_config_cache=/tmp/vibepro-npm-cache node --test --test-concurrency=2 --test-reporter=dot",
+  "exit_code": 0,
+  "environment_notes": [
+    "Executed outside the filesystem/network sandbox so tests may bind 0.0.0.0.",
+    "npm cache isolated to /tmp because the user cache contains root-owned entries.",
+    "The initial sandboxed run failed only on listen EPERM and npm cache EPERM; the identical test suite passed after removing those environment constraints."
+  ]
+}

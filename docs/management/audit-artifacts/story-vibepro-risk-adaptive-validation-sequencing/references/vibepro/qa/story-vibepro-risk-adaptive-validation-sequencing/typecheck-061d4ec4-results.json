@@ -1,0 +1,8 @@
+{
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "head_sha": "061d4ec4818ce5bbc4e34b9e31c637e577e89ed4",
+  "recorded_at": "2026-07-20T08:52:34Z",
+  "status": "pass",
+  "command": "node --check src/validation-sequencing.js",
+  "failed": 0
+}

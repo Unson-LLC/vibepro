@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "3c3a6433559a396a2562b77c850c1da6023e2634",
+  "tests": 52,
+  "pass": 52,
+  "fail": 0,
+  "tap_artifact": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/story7-targeted-3c3a6433.tap"
+}

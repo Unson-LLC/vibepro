@@ -1,0 +1,316 @@
+TAP version 13
+# Subtest: import-ci records successful CI checks as head-bound verification evidence
+ok 1 - import-ci records successful CI checks as head-bound verification evidence
+  ---
+  duration_ms: 1607.53175
+  type: 'test'
+  ...
+# Subtest: import-ci public path records frozen node test coverage from realistic CI checks
+ok 2 - import-ci public path records frozen node test coverage from realistic CI checks
+  ---
+  duration_ms: 1543.657042
+  type: 'test'
+  ...
+# Subtest: import-ci does not treat an unrelated same-kind check as frozen command coverage
+ok 3 - import-ci does not treat an unrelated same-kind check as frozen command coverage
+  ---
+  duration_ms: 1533.320334
+  type: 'test'
+  ...
+# Subtest: import-ci rejects when CI head does not match current HEAD
+ok 4 - import-ci rejects when CI head does not match current HEAD
+  ---
+  duration_ms: 1038.77975
+  type: 'test'
+  ...
+# Subtest: import-ci does not record failing checks as pass
+ok 5 - import-ci does not record failing checks as pass
+  ---
+  duration_ms: 1269.118375
+  type: 'test'
+  ...
+# Subtest: import-ci reports pending checks as incomplete without recording
+ok 6 - import-ci reports pending checks as incomplete without recording
+  ---
+  duration_ms: 1258.91925
+  type: 'test'
+  ...
+# Subtest: import-ci honors --check name=kind override mapping
+ok 7 - import-ci honors --check name=kind override mapping
+  ---
+  duration_ms: 1391.29175
+  type: 'test'
+  ...
+# Subtest: public sequence help exposes phase order and terminal dispositions
+ok 8 - public sequence help exposes phase order and terminal dispositions
+  ---
+  duration_ms: 2.474667
+  type: 'test'
+  ...
+# Subtest: AC-1 high-risk work receives a boundary-specific preflight plan
+ok 9 - AC-1 high-risk work receives a boundary-specific preflight plan
+  ---
+  duration_ms: 117.126666
+  type: 'test'
+  ...
+# Subtest: AC-2 preflight review is advisory and cannot satisfy final review
+ok 10 - AC-2 preflight review is advisory and cannot satisfy final review
+  ---
+  duration_ms: 0.16475
+  type: 'test'
+  ...
+# Subtest: AC-3 code freeze requires targeted validation and preflight disposition
+ok 11 - AC-3 code freeze requires targeted validation and preflight disposition
+  ---
+  duration_ms: 0.049625
+  type: 'test'
+  ...
+# Subtest: AC-4 exact frozen binding reuses expensive verification
+ok 12 - AC-4 exact frozen binding reuses expensive verification
+  ---
+  duration_ms: 0.100125
+  type: 'test'
+  ...
+# Subtest: AC-5 documentation changes invalidate only downstream phases
+ok 13 - AC-5 documentation changes invalidate only downstream phases
+  ---
+  duration_ms: 0.036416
+  type: 'test'
+  ...
+# Subtest: AC-6 unclassified mutations fail closed
+ok 14 - AC-6 unclassified mutations fail closed
+  ---
+  duration_ms: 0.05225
+  type: 'test'
+  ...
+# Subtest: AC-7 final review must bind to current HEAD
+ok 15 - AC-7 final review must bind to current HEAD
+  ---
+  duration_ms: 0.042541
+  type: 'test'
+  ...
+# Subtest: AC-8 imported current-head CI is reusable expensive verification
+ok 16 - AC-8 imported current-head CI is reusable expensive verification
+  ---
+  duration_ms: 0.216625
+  type: 'test'
+  ...
+# Subtest: AC-9 S-001 acceptance matrix executes without failures
+ok 17 - AC-9 S-001 acceptance matrix executes without failures
+  ---
+  duration_ms: 8.620542
+  type: 'test'
+  ...
+# Subtest: change classifier selects workflow_heavy for cross-surface workflow changes
+ok 18 - change classifier selects workflow_heavy for cross-surface workflow changes
+  ---
+  duration_ms: 1.829333
+  type: 'test'
+  ...
+# Subtest: change classifier avoids workflow_heavy for narrow changes
+ok 19 - change classifier avoids workflow_heavy for narrow changes
+  ---
+  duration_ms: 0.448833
+  type: 'test'
+  ...
+# Subtest: change classifier does not treat design authority files as auth boundary
+ok 20 - change classifier does not treat design authority files as auth boundary
+  ---
+  duration_ms: 0.13825
+  type: 'test'
+  ...
+# Subtest: change classifier does not treat standalone session cost paths as auth boundary
+ok 21 - change classifier does not treat standalone session cost paths as auth boundary
+  ---
+  duration_ms: 0.062709
+  type: 'test'
+  ...
+# Subtest: change classifier recognizes monorepo app runtime API source paths
+ok 22 - change classifier recognizes monorepo app runtime API source paths
+  ---
+  duration_ms: 0.070458
+  type: 'test'
+  ...
+# Subtest: change classifier marks Story Spec and test marker edits as low-risk evidence changes
+ok 23 - change classifier marks Story Spec and test marker edits as low-risk evidence changes
+  ---
+  duration_ms: 0.331875
+  type: 'test'
+  ...
+# Subtest: pr prepare groups monorepo apps src runtime files as source
+ok 24 - pr prepare groups monorepo apps src runtime files as source
+  ---
+  duration_ms: 2026.002958
+  type: 'test'
+  ...
+# Subtest: bug physics triage requires probe evidence before selecting a timing gate profile
+ok 25 - bug physics triage requires probe evidence before selecting a timing gate profile
+  ---
+  duration_ms: 1932.235917
+  type: 'test'
+  ...
+# Subtest: pr prepare reuses same-head passing verification for low-risk evidence changes only
+ok 26 - pr prepare reuses same-head passing verification for low-risk evidence changes only
+  ---
+  duration_ms: 3746.487625
+  type: 'test'
+  ...
+# Subtest: pr prepare invalidates stale E2E evidence when test files changed
+ok 27 - pr prepare invalidates stale E2E evidence when test files changed
+  ---
+  duration_ms: 2345.339291
+  type: 'test'
+  ...
+# Subtest: worktree feature stories do not trigger deployment bug physics without deployment evidence
+ok 28 - worktree feature stories do not trigger deployment bug physics without deployment evidence
+  ---
+  duration_ms: 1912.110917
+  type: 'test'
+  ...
+# Subtest: bug physics triage emits multi-label profiles typed N/A gates and feedback edge
+ok 29 - bug physics triage emits multi-label profiles typed N/A gates and feedback edge
+  ---
+  duration_ms: 2310.303417
+  type: 'test'
+  ...
+# Subtest: deployment bug physics bypasses code gates through typed N/A instead of waiver
+ok 30 - deployment bug physics bypasses code gates through typed N/A instead of waiver
+  ---
+  duration_ms: 2315.429292
+  type: 'test'
+  ...
+# Subtest: pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence
+ok 31 - pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence
+  ---
+  duration_ms: 12441.303708
+  type: 'test'
+  ...
+# Subtest: agent review gate minimal recovery plan dedupes stale result and timed-out lifecycle
+ok 32 - agent review gate minimal recovery plan dedupes stale result and timed-out lifecycle
+  ---
+  duration_ms: 3399.810625
+  type: 'test'
+  ...
+# Subtest: workflow-heavy release confidence requires state scenario and no blocker questions
+ok 33 - workflow-heavy release confidence requires state scenario and no blocker questions
+  ---
+  duration_ms: 4471.641916
+  type: 'test'
+  ...
+# Subtest: workflow-heavy E2E replay rejects marker-only story files and manifest-only flow passes
+ok 34 - workflow-heavy E2E replay rejects marker-only story files and manifest-only flow passes
+  ---
+  duration_ms: 33240.982541
+  type: 'test'
+  ...
+# Subtest: high-risk plan schedules boundary-specific preflight before expensive verification
+ok 35 - high-risk plan schedules boundary-specific preflight before expensive verification
+  ---
+  duration_ms: 1.237042
+  type: 'test'
+  ...
+# Subtest: advisory preflight never satisfies final review and freeze waits for its disposition
+ok 36 - advisory preflight never satisfies final review and freeze waits for its disposition
+  ---
+  duration_ms: 0.435834
+  type: 'test'
+  ...
+# Subtest: expensive verification is reused only at the exact frozen binding
+ok 37 - expensive verification is reused only at the exact frozen binding
+  ---
+  duration_ms: 0.188292
+  type: 'test'
+  ...
+# Subtest: freeze rejects nonterminal or unknown preflight dispositions
+ok 38 - freeze rejects nonterminal or unknown preflight dispositions
+  ---
+  duration_ms: 0.199291
+  type: 'test'
+  ...
+# Subtest: freeze rejects passed preflight findings that have no terminal disposition
+ok 39 - freeze rejects passed preflight findings that have no terminal disposition
+  ---
+  duration_ms: 0.10125
+  type: 'test'
+  ...
+# Subtest: mutation invalidates scoped phases and unknown surfaces fail closed
+ok 40 - mutation invalidates scoped phases and unknown surfaces fail closed
+  ---
+  duration_ms: 0.156166
+  type: 'test'
+  ...
+# Subtest: persisted light plan is invalidated when current risk classification escalates
+ok 41 - persisted light plan is invalidated when current risk classification escalates
+  ---
+  duration_ms: 0.197833
+  type: 'test'
+  ...
+# Subtest: final readiness requires final review at current HEAD even when CI supplied expensive evidence
+ok 42 - final readiness requires final review at current HEAD even when CI supplied expensive evidence
+  ---
+  duration_ms: 0.166917
+  type: 'test'
+  ...
+# Subtest: changing the frozen binding invalidates stale downstream evidence and readiness fails closed
+ok 43 - changing the frozen binding invalidates stale downstream evidence and readiness fails closed
+  ---
+  duration_ms: 0.347333
+  type: 'test'
+  ...
+# Subtest: final review cannot be recorded before exact-bound expensive verification passes
+ok 44 - final review cannot be recorded before exact-bound expensive verification passes
+  ---
+  duration_ms: 0.284292
+  type: 'test'
+  ...
+# Subtest: freeze and evaluation reject targeted or preflight evidence from an older binding
+ok 45 - freeze and evaluation reject targeted or preflight evidence from an older binding
+  ---
+  duration_ms: 0.123583
+  type: 'test'
+  ...
+# Subtest: evaluation exposes a deterministic next required sequence action
+ok 46 - evaluation exposes a deterministic next required sequence action
+  ---
+  duration_ms: 0.087125
+  type: 'test'
+  ...
+# Subtest: targeted completion advances the next action to advisory preflight before freeze exists
+ok 47 - targeted completion advances the next action to advisory preflight before freeze exists
+  ---
+  duration_ms: 0.04075
+  type: 'test'
+  ...
+# Subtest: current HEAD drift exposes an actionable invalidation command after a completed sequence
+ok 48 - current HEAD drift exposes an actionable invalidation command after a completed sequence
+  ---
+  duration_ms: 0.094958
+  type: 'test'
+  ...
+# Subtest: current-head CI import records reusable expensive verification against the frozen binding
+ok 49 - current-head CI import records reusable expensive verification against the frozen binding
+  ---
+  duration_ms: 6.214875
+  type: 'test'
+  ...
+# Subtest: CI import fails closed when command identity is unproven or mapped checks are unresolved
+ok 50 - CI import fails closed when command identity is unproven or mapped checks are unresolved
+  ---
+  duration_ms: 0.716042
+  type: 'test'
+  ...
+# Subtest: sequence CLI persists the planned and recorded workflow through the public command path
+ok 51 - sequence CLI persists the planned and recorded workflow through the public command path
+  ---
+  duration_ms: 3.377625
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 70461.888042

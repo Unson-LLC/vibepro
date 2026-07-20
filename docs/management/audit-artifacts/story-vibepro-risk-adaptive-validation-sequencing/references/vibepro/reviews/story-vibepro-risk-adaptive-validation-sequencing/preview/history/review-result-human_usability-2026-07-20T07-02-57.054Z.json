@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "pass",
+  "summary": "Japanese and English sequence guidance now match implementation",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "verified corrected evidence-producer guidance and English/Japanese help parity with 34/34 focused and 43/43 sequence suites",
+    "evidence": null,
+    "inputs": [
+      "docs/ja/reference/cli.md",
+      "docs/reference/cli.md",
+      "src/cli.js",
+      "src/validation-sequencing.js"
+    ]
+  },
+  "judgment_delta": [
+    "Previous Japanese preflight evidence misdirection is resolved"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "expected_root": null,
+    "expected_head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+    "current_head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "expected_root": null,
+      "expected_head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+      "current_head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T07:02:57.054Z",
+  "git_context": {
+    "head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+    "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T07:02:57.047Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "8f083a5a894df33b7068d4bf2726c4eaee6fce29",
+    "surface_files": [
+      {
+        "path": "docs/ja/reference/cli.md",
+        "sha256": "bf9b0e8cfbb3c6fdd2764ff8f64e0fd3ed335153db2e4ba3066b0b9355f1d824",
+        "size": 19674
+      },
+      {
+        "path": "docs/reference/cli.md",
+        "sha256": "539e05570e4423202b441708edfb5d98e5e640666814b1c0aede1440ab7a9ace",
+        "size": 19125
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "bf54e980e474607b38cb1284fb0d43f52f48233e9dc785fd1f5b06615a0e6172",
+        "size": 202551
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "cb158d1a27cb94527f9b920d5e96f7f5dee8087c1635097f2b9847032f932d0b",
+        "size": 25057
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b40106f925e32e0ae83087ed3bc3d45d4e653679b500b39bad5b9d6e03f64bf7"
+  },
+  "source_fingerprint": "815f281d78e703ea854f34326bc00abdd1cece8aee9c697b3a632c4f321501f9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "story7_runtime_rereview",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/preview/transcript-human-usability-8f083a5a.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/preview/transcript-human-usability-8f083a5a.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "head_sha": "aa8aa235",
+  "command": "node --test --test-concurrency=2 test/validation-sequencing.test.js test/ci-evidence-import.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+  "total": 45,
+  "pass": 45,
+  "fail": 0,
+  "success": true,
+  "coverage": [
+    "final review producer lifecycle is actionable",
+    "story id path traversal fails closed",
+    "validation sequencing state machine",
+    "trusted CI evidence import",
+    "public acceptance matrix"
+  ]
+}

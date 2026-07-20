@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Sequencing regressions are resolved at current HEAD",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed next-action progression, fresh and drifted persistence, disposition guard and 51/51 TAP",
+    "evidence": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/story7-targeted-067e68e4.tap",
+    "inputs": [
+      "src/validation-sequencing.js",
+      "src/pr-manager.js",
+      "test/validation-sequencing.test.js",
+      "test/risk-adaptive-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Pre-freeze loop and persistence gaps existed -> focused regression paths now pass"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "expected_root": null,
+    "expected_head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+    "current_head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "expected_root": null,
+      "expected_head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+      "current_head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T02:17:44.865Z",
+  "git_context": {
+    "head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+    "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T02:17:44.858Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "067e68e4391a50686b1dce0322333cd6775edd4e",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "df42d8d070f310f88892559c8e5a83fd742d558cb3efd069373c2ba6a87733ad",
+        "size": 653410
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "09568915a2894710ce929d20510aae62dae530e493dab53b669d14d4d7cf832a",
+        "size": 12218
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "ff9088972bb7127785c34ece0c5a22ef35840829211191ae2ef4a3192cf3e351",
+        "size": 80188
+      },
+      {
+        "path": "test/validation-sequencing.test.js",
+        "sha256": "5f4882a3ea38fd7c4aa28dfc95e184f6dcf7d34040c2bc8e81a2bccbdbcf27f8",
+        "size": 14693
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "f4ec53c1d2f6aa6b73a6eedfb8c168c69aaf5641da9c2ce58920e4a0bae3bfff"
+  },
+  "source_fingerprint": "8c96ee1eea77989ae3f3393f16b4d949a7db5b9f46a09770bcbc71b714c89717",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story7_arch_regression_2b7",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/architecture_spec/transcript-regression_risk-067e68e4.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
