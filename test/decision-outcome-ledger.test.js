@@ -176,7 +176,10 @@ test('GDL-S-1 duplicate subjects without an explicit link remain distinct addres
 });
 
 test('GDL-S-1 byte-identical source instances collapse with explicit multiplicity', () => {
-  const source = finding(null, { source_ref: null, native_id: null });
+  const source = finding(null, {
+    source_ref: `.vibepro/reviews/${STORY_ID}/implementation/review-result.json`,
+    native_id: null
+  });
   const single = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [source] });
   const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [source, structuredClone(source)] });
 
@@ -242,7 +245,10 @@ test('GDL-S-1 outcome refresh preserves a managed observation recorded with the 
   const observationDir = path.join(fixture.root, '.vibepro', 'observations', STORY_ID);
   await mkdir(prDir, { recursive: true });
   await mkdir(observationDir, { recursive: true });
-  const source = finding(null, { source_ref: null, native_id: null });
+  const source = finding(null, {
+    source_ref: `.vibepro/reviews/${STORY_ID}/implementation/review-result.json`,
+    native_id: null
+  });
   const verification = {
     schema_version: '0.1.0', story_id: STORY_ID,
     commands: [{
@@ -857,6 +863,19 @@ test('GDL-S-5 observation resolution selects the exact parent revision and prese
   assert.equal(untrusted.traces[0].downstream_outcome.status, 'not_observed');
   assert.equal(untrusted.traces[0].downstream_outcome.missing_reason, 'observation_untrusted');
   assert.equal(untrusted.traces[0].source_errors[0].code, 'observation_untrusted');
+});
+
+test('GDL-S-9 observation validation requires an exact canonical selector one-of', () => {
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('selector-shape')] });
+  const trace = ledger.traces[0];
+  for (const trace_selector of [
+    { decision_trace_id: 'not-a-trace' },
+    { decision_trace_id: trace.decision_trace_id, extra: true },
+    { decision_trace_id: trace.decision_trace_id, collision_group: `cg_${'a'.repeat(64)}` },
+    { collision_group: `cg_${'a'.repeat(64)}`, trace_source_ref: 'not-a-source-ref' }
+  ]) {
+    assert.equal(validateDecisionOutcomeObservation(observationFor(trace, { trace_selector })).valid, false);
+  }
 });
 
 test('GDL-S-9 observation resolution rejects incomplete authority envelopes instead of promoting their value', () => {
@@ -1684,24 +1703,26 @@ test('GDL-S-9 collision selector records one trusted source and bounds zero or m
   });
   const trace = ledger.traces[0];
   trace.decision_trace_id = null;
-  trace.collision_group = 'cg_fixture';
-  trace.trace_source_ref = 'tsr_fixture';
+  const collisionGroup = `cg_${'c'.repeat(64)}`;
+  const traceSourceRef = `tsr_${'d'.repeat(64)}`;
+  trace.collision_group = collisionGroup;
+  trace.trace_source_ref = traceSourceRef;
   await writeMergeAuthority(prDir, fixture.head);
 
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
   const recorded = await recordOutcome(root, {
-    storyId: STORY_ID, collisionGroup: 'cg_fixture', traceSourceRef: 'tsr_fixture',
+    storyId: STORY_ID, collisionGroup, traceSourceRef,
     parentRevision: trace.parent_revision_fingerprint, status: 'not_applicable',
     reason: 'fixture outcome does not apply', producer: 'operator:test',
     githubPrView: authoritativePr(fixture.head)
   });
-  assert.deepEqual(recorded.resolved_selector, { collision_group: 'cg_fixture', trace_source_ref: 'tsr_fixture' });
+  assert.deepEqual(recorded.resolved_selector, { collision_group: collisionGroup, trace_source_ref: traceSourceRef });
 
   trace.eligible_outcome_sources = { total_count: 0, returned_count: 0, omitted_count: 0, truncated: false, entries: [] };
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
   const zeroBefore = await snapshotManagedOutcomeState(root);
   await assert.rejects(recordOutcome(root, {
-    storyId: STORY_ID, collisionGroup: 'cg_fixture', traceSourceRef: 'tsr_fixture',
+    storyId: STORY_ID, collisionGroup, traceSourceRef,
     parentRevision: trace.parent_revision_fingerprint, status: 'observed', value: true, producer: 'operator:test',
     githubPrView: authoritativePr(fixture.head)
   }), (error) => error.error_id === 'outcome_source_missing'
@@ -1716,7 +1737,7 @@ test('GDL-S-9 collision selector records one trusted source and bounds zero or m
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
   const multipleBefore = await snapshotManagedOutcomeState(root);
   await assert.rejects(recordOutcome(root, {
-    storyId: STORY_ID, collisionGroup: 'cg_fixture', traceSourceRef: 'tsr_fixture',
+    storyId: STORY_ID, collisionGroup, traceSourceRef,
     parentRevision: trace.parent_revision_fingerprint, status: 'observed', value: true, producer: 'operator:test',
     githubPrView: authoritativePr(fixture.head)
   }), (error) => error.error_id === 'outcome_source_not_unique'
@@ -2242,6 +2263,13 @@ test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledger
         status: 'observed',
         value: null,
         provenance: ledger.traces[0].finding.provenance
+      } }]
+    }), 'finding'],
+    ['observed claim with malformed provenance', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], finding: {
+        ...ledger.traces[0].finding,
+        provenance: [{ source_kind: 'review', source_ref: null, source_digest: 'not-a-digest' }]
       } }]
     }), 'finding'],
     ['wrong artifact digest', (ledger) => ({ ...ledger, artifact_digest: 'f'.repeat(64) }), 'artifact_digest'],

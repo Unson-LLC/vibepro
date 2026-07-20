@@ -296,6 +296,12 @@ function isValidClaim(claim) {
     || !Array.isArray(claim.provenance)) return false;
   return claim.status === 'observed'
     ? claim.value != null && claim.provenance.length > 0
+      && claim.provenance.every((entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
+        && typeof entry.source_kind === 'string' && entry.source_kind.trim() !== ''
+        && typeof entry.source_ref === 'string' && entry.source_ref.trim() !== ''
+        && /^[a-f0-9]{64}$/.test(entry.source_digest ?? '')
+        && (entry.source_head_sha == null || typeof entry.source_head_sha === 'string')
+        && (entry.native_id == null || typeof entry.native_id === 'string'))
     : claim.value == null && claim.provenance.length === 0;
 }
 
@@ -771,7 +777,10 @@ function normalizeObservationReadAliases(value) {
 function isValidObservationReadAlias(alias) {
   if (!alias || typeof alias !== 'object' || Array.isArray(alias)
     || !/^[a-f0-9]{64}$/.test(alias.parent_revision_fingerprint ?? '')) return false;
-  const selector = alias.trace_selector;
+  return isValidTraceSelector(alias.trace_selector);
+}
+
+function isValidTraceSelector(selector) {
   if (!selector || typeof selector !== 'object' || Array.isArray(selector)) return false;
   const keys = Object.keys(selector).sort();
   if (keys.length === 1 && keys[0] === 'decision_trace_id') {
@@ -1170,13 +1179,7 @@ export function validateDecisionOutcomeObservation(observation, expected = {}) {
     return { valid: false, code: 'observation_malformed' };
   }
   const selector = observation.trace_selector;
-  const selectorValid = selector && typeof selector === 'object' && !Array.isArray(selector)
-    && ((safeString(selector.decision_trace_id, 128)
-      && selector.collision_group == null
-      && selector.trace_source_ref == null)
-      || (selector.decision_trace_id == null
-        && safeString(selector.collision_group, 128)
-        && safeString(selector.trace_source_ref, 128)));
+  const selectorValid = isValidTraceSelector(selector);
   const structural = observation.schema_version === '0.1.0'
     && /^obs_[a-f0-9]{64}$/.test(String(observation.observation_id ?? ''))
     && safeString(observation.story_id, 256)
