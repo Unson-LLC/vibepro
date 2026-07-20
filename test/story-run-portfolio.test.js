@@ -204,6 +204,19 @@ test('Portfolio restart reconciles a child Run created before Portfolio publish'
   assert.equal(fixture.started.filter((storyId) => storyId === STORIES[0]).length, 1);
 });
 
+test('Portfolio restart never adopts a historical Run when creation did not begin', async (t) => {
+  const fixture = await createFixture(t, { runErrorOnce: true });
+  fixture.seedHistorical(STORIES[0], 'run-20260719T000000Z-deadbeef');
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-precreate-gap', storyIds: STORIES.slice(0, 1) });
+  await assert.rejects(
+    fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-precreate-gap' }),
+    /injected run failure/
+  );
+  const recovered = await fixture.restart().advance(fixture.root, { portfolioId: 'portfolio-precreate-gap' });
+  assert.notEqual(recovered.entries[0].run_id, 'run-20260719T000000Z-deadbeef');
+  assert.equal(fixture.started.filter((storyId) => storyId === STORIES[0]).length, 1);
+});
+
 test('Portfolio release refuses to delete a lock whose owner token changed', async (t) => {
   let release;
   const entered = new Promise((resolve) => { release = resolve; });
@@ -265,20 +278,24 @@ async function createFixture(t, options = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-portfolio-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const runs = new Map();
+  const requestRuns = new Map();
   const started = [];
   let runStarted;
   const runStart = new Promise((resolve) => { runStarted = resolve; });
   const guardedRun = {
-    async run(_root, { storyId }) {
-      started.push(storyId);
+    async run(_root, { storyId, creationRequestId }) {
       runStarted();
       if (options.runEntered) await options.runEntered;
       if (options.runErrorOnce) {
         options.runErrorOnce = false;
         throw new Error('injected run failure');
       }
+      if (creationRequestId && requestRuns.has(creationRequestId)) return structuredClone(requestRuns.get(creationRequestId));
+      started.push(storyId);
       const run = runState(storyId);
+      run.creation_request_id = creationRequestId ?? null;
       runs.set(storyId, run);
+      if (creationRequestId) requestRuns.set(creationRequestId, run);
       return structuredClone(run);
     },
     async status(_root, { storyId }) {
@@ -303,6 +320,7 @@ async function createFixture(t, options = {}) {
     waitForRunStart: () => runStart,
     controller: createStoryRunPortfolioController(dependencies),
     restart: () => createStoryRunPortfolioController(dependencies),
+    seedHistorical(storyId, runId) { runs.set(storyId, { ...runState(storyId), run_id: runId, creation_request_id: null }); },
     setStatus(storyId, status, stopReason = null) { Object.assign(runs.get(storyId), { status, stop_reason: stopReason }); },
     contaminate(storyId, values) { Object.assign(runs.get(storyId), values); }
   };

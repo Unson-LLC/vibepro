@@ -405,6 +405,18 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
 });
 
+test('Portfolio creation request identity returns the same guarded Run exactly once', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const creationRequestId = 'portfolio-0123456789abcdef01234567';
+  const created = await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  const retried = await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  assert.equal(created.run_id, retried.run_id);
+  assert.equal(retried.creation_request_id, creationRequestId);
+  const entries = await readdir(path.dirname(fixture.runFile(fixture.source, created.run_id)));
+  assert.ok(entries.includes('state.json'));
+});
+
 test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority', async (t) => {
   const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   const session = fixture.session();

@@ -11,9 +11,9 @@
 | Concurrent mutation exclusion and duplicate child prevention | `SRP-S-3 concurrent mutation` focused test |
 | Digest mismatch, missing artifact, and repository symlink escape | `SRP-S-5` focused test |
 | Internal transcript symlink rejection | `SRP-S-5` focused test |
-| Concurrent create, dead-owner recovery, and exception lock release | Portfolio lock focused test |
+| Concurrent create, recovery-mutex serialized dead-owner recovery, and exception lock release | Portfolio lock focused test |
 | Owner-token change cannot delete another mutation lock | Portfolio owner-token focused test |
-| Run-created/Portfolio-publish failure reconciles the same child Run after restart | Portfolio publish-gap focused test |
+| Pre-create crash rejects historical Run adoption; publish-gap retry reconciles only the creation-request-bound child | Portfolio creation identity focused tests |
 | Stopped human summary provides typed next action | `SRP-S-7` focused test |
 | Unproved parallel execution rejection | `SRP-S-8` focused test |
 | CLI create/status/advance/decide/promote, JSON and human surfaces | CLI integration focused tests |

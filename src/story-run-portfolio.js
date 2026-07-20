@@ -101,12 +101,9 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   if (active) {
     let run;
     if (active.status === 'starting') {
-      try {
-        run = await deps.guardedRun.status(repoRoot, { storyId: active.story_id });
-      } catch (cause) {
-        if (cause.code !== 'run_not_found') throw cause;
-        run = await deps.guardedRun.run(repoRoot, { storyId: active.story_id });
-      }
+      const creationRequestId = state.scope_bindings[active.story_id]?.creation_request_id;
+      if (!creationRequestId) throw error('starting_identity_missing', `Starting Portfolio entry has no creation request identity: ${active.story_id}.`);
+      run = await deps.guardedRun.run(repoRoot, { storyId: active.story_id, creationRequestId });
       if (run.story_id !== active.story_id) {
         await assertAndPersistRunOwnership(deps, repoRoot, state, active, run);
       }
@@ -151,9 +148,11 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   }
   next.status = 'starting';
   state.status = 'starting';
+  const creationRequestId = portfolioCreationRequestId(state.portfolio_id, next.story_id, next.order);
+  state.scope_bindings[next.story_id] = { status: 'starting', creation_request_id: creationRequestId };
   state.updated_at = iso(deps.now());
   await persist(deps, repoRoot, state);
-  const run = await deps.guardedRun.run(repoRoot, { storyId: next.story_id });
+  const run = await deps.guardedRun.run(repoRoot, { storyId: next.story_id, creationRequestId });
   next.run_id = run.run_id;
   next.status = run.status;
   next.worktree = run.execution_context?.root_realpath ?? null;
@@ -399,31 +398,56 @@ async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = 
   }
   if (recovered) throw error('portfolio_lock_recovery_failed', `Orphaned Portfolio lock could not be recovered: ${portfolioId}.`, { owner });
 
-  const orphan = `${lock}.orphan-${process.pid}-${token}`;
+  const recoveryLock = `${lock}.recovery`;
   try {
-    await deps.rename(lock, orphan);
+    await deps.mkdir(recoveryLock);
   } catch (cause) {
-    if (['ENOENT', 'EEXIST', 'ENOTEMPTY'].includes(cause.code)) {
-      throw error('portfolio_busy', `Portfolio lock changed during recovery: ${portfolioId}.`);
-    }
+    if (cause.code === 'EEXIST') throw error('portfolio_busy', `Portfolio lock recovery is already in progress: ${portfolioId}.`);
     throw cause;
   }
-  let movedOwner;
   try {
-    movedOwner = JSON.parse(await deps.readFile(path.join(orphan, 'owner.json'), 'utf8'));
-  } catch (cause) {
-    throw error('portfolio_lock_recovery_failed', `Recovered Portfolio lock ownership is unreadable: ${portfolioId}.`, { cause: cause.code ?? cause.message });
-  }
-  if (movedOwner.token !== owner.token) {
+    let currentOwner;
     try {
-      await deps.rename(orphan, lock);
+      currentOwner = JSON.parse(await deps.readFile(path.join(lock, 'owner.json'), 'utf8'));
     } catch (cause) {
-      throw error('portfolio_lock_recovery_failed', `Portfolio lock changed during owner verification: ${portfolioId}.`, { expected_token: owner.token, actual_token: movedOwner.token, cause: cause.code ?? cause.message });
+      throw error('portfolio_lock_recovery_required', `Portfolio lock changed before recovery: ${portfolioId}.`, { cause: cause.code ?? cause.message });
     }
-    throw error('portfolio_busy', `Portfolio lock owner changed during recovery: ${portfolioId}.`, { owner: movedOwner });
+    if (currentOwner.token !== owner.token || deps.isProcessAlive(currentOwner.pid)) {
+      throw error('portfolio_busy', `Portfolio lock owner changed before recovery: ${portfolioId}.`, { owner: currentOwner });
+    }
+
+    const orphan = `${lock}.orphan-${process.pid}-${token}`;
+    try {
+      await deps.rename(lock, orphan);
+    } catch (cause) {
+      if (['ENOENT', 'EEXIST', 'ENOTEMPTY'].includes(cause.code)) {
+        throw error('portfolio_busy', `Portfolio lock changed during recovery: ${portfolioId}.`);
+      }
+      throw cause;
+    }
+    let movedOwner;
+    try {
+      movedOwner = JSON.parse(await deps.readFile(path.join(orphan, 'owner.json'), 'utf8'));
+    } catch (cause) {
+      throw error('portfolio_lock_recovery_failed', `Recovered Portfolio lock ownership is unreadable: ${portfolioId}.`, { cause: cause.code ?? cause.message });
+    }
+    if (movedOwner.token !== owner.token) {
+      try {
+        await deps.rename(orphan, lock);
+      } catch (cause) {
+        throw error('portfolio_lock_recovery_failed', `Portfolio lock changed during owner verification: ${portfolioId}.`, { expected_token: owner.token, actual_token: movedOwner.token, cause: cause.code ?? cause.message });
+      }
+      throw error('portfolio_busy', `Portfolio lock owner changed during recovery: ${portfolioId}.`, { owner: movedOwner });
+    }
+    await deps.rm(orphan, { recursive: true, force: true });
+    return acquirePortfolioLock(deps, lock, portfolioId, token, true);
+  } finally {
+    await deps.rm(recoveryLock, { recursive: true, force: true });
   }
-  await deps.rm(orphan, { recursive: true, force: true });
-  return acquirePortfolioLock(deps, lock, portfolioId, token, true);
+}
+
+function portfolioCreationRequestId(portfolioId, storyId, order) {
+  return `portfolio-${createHash('sha256').update(`${portfolioId}:${storyId}:${order}`).digest('hex').slice(0, 24)}`;
 }
 
 function isProcessAlive(pid) {
