@@ -336,6 +336,18 @@ test('current HEAD drift is repaired before suggesting a pending final review', 
   assert.match(evaluation.next_required_action.command, /HEAD changed/);
 });
 
+test('pending final review at the frozen current HEAD recommends final review without invalidation', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen', 'expensive_verification']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  const evaluation = evaluateValidationSequence(state, { currentHeadSha: binding.headSha });
+  assert.deepEqual(evaluation.blocking_phases, ['final_review', 'final_review_binding']);
+  assert.equal(evaluation.next_required_action.phase, 'final_review');
+  assert.match(evaluation.next_required_action.command, /sequence record .*--phase final_review/);
+  assert.doesNotMatch(evaluation.next_required_action.command, /sequence invalidate/);
+});
+
 test('direct CI sequence recording is rejected without a validated import receipt', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-validation-sequence-'));
   let state = stateForHighRisk();

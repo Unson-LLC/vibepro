@@ -328,7 +328,13 @@ export function evaluateValidationSequence(state, { currentHeadSha = null } = {}
     if (phase === 'preflight_review') return !isPreflightClosed(state?.phases?.[phase]);
     return state?.phases?.[phase]?.status !== 'passed';
   });
-  if (state?.phases?.final_review?.head_sha !== currentHeadSha) blocking.push('current_head_binding');
+  const candidateHeadSha = state?.frozen_binding?.head_sha ?? state?.proposed_binding?.head_sha ?? null;
+  const finalReview = state?.phases?.final_review;
+  const candidateHeadDrifted = Boolean(candidateHeadSha && currentHeadSha && candidateHeadSha !== currentHeadSha);
+  const completedFinalReviewDrifted = finalReview?.status === 'passed'
+    && Boolean(currentHeadSha)
+    && finalReview.head_sha !== currentHeadSha;
+  if (candidateHeadDrifted || completedFinalReviewDrifted) blocking.push('current_head_binding');
   if (state?.frozen_binding) {
     for (const phase of VALIDATION_PHASES) {
       if (!sameBinding(state.frozen_binding, state?.phases?.[phase]?.binding)) blocking.push(`${phase}_binding`);

@@ -139,6 +139,11 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'code_frozen'])).exitCode, 0);
   assert.equal((await runCli(['verify', 'record', root, '--id', 'story-sequence-e2e', '--kind', 'e2e', '--status', 'pass', '--command', 'node --test', '--artifact', 'test-results.json', '--target', 'index.js', '--scenario', 'post-freeze expensive suite passed', '--observed', 'test_fingerprint=suite-v1', '--observed', 'validation_phase=expensive_verification', '--strict-head-binding', '--json'])).exitCode, 0);
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'expensive_verification', '--evidence', evidenceRef])).exitCode, 0);
+  const awaitingFinalReview = await runCli(['sequence', 'status', root, '--id', 'story-sequence-e2e', '--json']);
+  assert.deepEqual(awaitingFinalReview.result.evaluation.blocking_phases, ['final_review', 'final_review_binding']);
+  assert.equal(awaitingFinalReview.result.evaluation.next_required_action.phase, 'final_review');
+  assert.match(awaitingFinalReview.result.evaluation.next_required_action.command, /sequence record .*--phase final_review/);
+  assert.doesNotMatch(awaitingFinalReview.result.evaluation.next_required_action.command, /sequence invalidate/);
   stderr = '';
   const duplicateExpensive = await runCli(['sequence', 'record', ...common, '--phase', 'expensive_verification', '--evidence', evidenceRef], {
     stderr: { write: (chunk) => { stderr += chunk; } }
