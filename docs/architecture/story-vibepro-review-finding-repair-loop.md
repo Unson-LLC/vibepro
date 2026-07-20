@@ -1,3 +1,7 @@
+---
+parent_design: vibepro-autonomy-roadmap-rebaseline
+---
+
 # Review Finding Repair Loop Architecture
 
 ## Decision
