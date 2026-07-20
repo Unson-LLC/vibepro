@@ -417,6 +417,23 @@ test('Portfolio creation request identity returns the same guarded Run exactly o
   assert.ok(entries.includes('state.json'));
 });
 
+test('Portfolio creation request fails closed when any Run candidate is corrupt', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const creationRequestId = 'portfolio-0123456789abcdef01234567';
+  await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  const corruptRunId = 'run-20260715T010204Z-05060708';
+  const corruptFile = fixture.runFile(fixture.source, corruptRunId);
+  await mkdir(path.dirname(corruptFile), { recursive: true });
+  await writeFile(corruptFile, '{not-json\n');
+  await assert.rejects(
+    session.run(fixture.source, { storyId: STORY_ID, creationRequestId }),
+    (cause) => cause.code === 'creation_request_scan_blocked'
+      && cause.details.run_id === corruptRunId
+      && cause.details.artifact === corruptFile
+  );
+});
+
 test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority', async (t) => {
   const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   const session = fixture.session();

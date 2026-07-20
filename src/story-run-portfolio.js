@@ -399,10 +399,35 @@ async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = 
   if (recovered) throw error('portfolio_lock_recovery_failed', `Orphaned Portfolio lock could not be recovered: ${portfolioId}.`, { owner });
 
   const recoveryLock = `${lock}.recovery`;
+  const recoveryOwner = { schema_version: 1, pid: process.pid, token, acquired_at: iso(deps.now()) };
+  let recoveryLockCreated = false;
   try {
     await deps.mkdir(recoveryLock);
+    recoveryLockCreated = true;
+    await deps.writeFile(path.join(recoveryLock, 'owner.json'), `${JSON.stringify(recoveryOwner, null, 2)}\n`);
   } catch (cause) {
-    if (cause.code === 'EEXIST') throw error('portfolio_busy', `Portfolio lock recovery is already in progress: ${portfolioId}.`);
+    if (recoveryLockCreated) {
+      await deps.rm(recoveryLock, { recursive: true, force: true });
+      throw cause;
+    }
+    if (cause.code === 'EEXIST') {
+      let existingRecoveryOwner;
+      try {
+        existingRecoveryOwner = JSON.parse(await deps.readFile(path.join(recoveryLock, 'owner.json'), 'utf8'));
+      } catch (ownerCause) {
+        throw error('portfolio_lock_recovery_required', `Portfolio recovery lock ownership cannot be verified: ${portfolioId}.`, {
+          recovery_lock: recoveryLock, cause: ownerCause.code ?? ownerCause.message,
+          required_action: 'Inspect and remove the recovery lock only after proving no recovery process is active.'
+        });
+      }
+      if (!Number.isInteger(existingRecoveryOwner.pid) || !existingRecoveryOwner.token || !deps.isProcessAlive(existingRecoveryOwner.pid)) {
+        throw error('portfolio_lock_recovery_required', `Portfolio recovery lock has no live owner: ${portfolioId}.`, {
+          recovery_lock: recoveryLock, owner: existingRecoveryOwner,
+          required_action: 'Inspect and remove the recovery lock only after proving no recovery process is active.'
+        });
+      }
+      throw error('portfolio_busy', `Portfolio lock recovery is already in progress: ${portfolioId}.`, { owner: existingRecoveryOwner });
+    }
     throw cause;
   }
   try {
@@ -442,6 +467,19 @@ async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = 
     await deps.rm(orphan, { recursive: true, force: true });
     return acquirePortfolioLock(deps, lock, portfolioId, token, true);
   } finally {
+    let currentRecoveryOwner;
+    try {
+      currentRecoveryOwner = JSON.parse(await deps.readFile(path.join(recoveryLock, 'owner.json'), 'utf8'));
+    } catch (cause) {
+      throw error('portfolio_lock_recovery_required', `Portfolio recovery lock changed before release: ${portfolioId}.`, {
+        recovery_lock: recoveryLock, cause: cause.code ?? cause.message
+      });
+    }
+    if (currentRecoveryOwner.token !== token) {
+      throw error('portfolio_lock_ownership_lost', `Portfolio recovery lock owner changed before release: ${portfolioId}.`, {
+        expected_token: token, actual_token: currentRecoveryOwner.token
+      });
+    }
     await deps.rm(recoveryLock, { recursive: true, force: true });
   }
 }

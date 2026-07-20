@@ -665,7 +665,11 @@ async function findRunByCreationRequest(deps, binding, caller, storyId, creation
   for (const runId of entries.filter((entry) => RUN_ID_PATTERN.test(entry))) {
     const file = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const raw = await readOptionalFile(deps, file);
-    if (raw === null) continue;
+    if (raw === null) {
+      throw contractError('creation_request_scan_blocked', 'A guarded Run disappeared while resolving a creation request identity.', {
+        story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file, cause: 'run_state_missing'
+      });
+    }
     let state;
     try {
       state = migrateRunState(JSON.parse(raw)).state;
@@ -673,7 +677,12 @@ async function findRunByCreationRequest(deps, binding, caller, storyId, creation
         storyId, runId, expectedAuthorityKind: binding.authorityKind
       });
     } catch (cause) {
-      if (cause instanceof SyntaxError || isGuardedRunError(cause)) continue;
+      if (cause instanceof SyntaxError || isGuardedRunError(cause)) {
+        throw contractError('creation_request_scan_blocked', 'A guarded Run cannot be validated while resolving a creation request identity.', {
+          story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file,
+          cause: cause.code ?? cause.message
+        });
+      }
       throw cause;
     }
     if (state.creation_request_id === creationRequestId) matches.push(state);
