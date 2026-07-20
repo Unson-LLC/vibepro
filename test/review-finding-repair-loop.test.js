@@ -89,6 +89,37 @@ test('RFR-S-6 multi-attempt repeated fingerprint without HEAD progress stops no_
   assert.equal(summarizeFindingRepairState(state).stop_reason, 'repeated_finding_without_head_progress');
 });
 
+test('RFR-S-7 changed finding advances to attempt 2 and converges after a fresh pass', () => {
+  let state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review(), maxAttempts: 3 });
+  const firstFingerprint = state.attempts[0].finding_fingerprint;
+
+  state = recordFindingRepairAttempt(state, {
+    headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-1',
+    verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' },
+    rereview: rereview({ status: 'needs_changes', session_id: 'review-1', findings: [{
+      id: 'changed-finding', severity: 'high', detail: 'src/next.js needs a changed regression fixture',
+      acceptance_clause: 'RFR-S-7', code_scope: ['src/next.js'], test_scope: ['test/next.test.js']
+    }] })
+  });
+
+  assert.equal(state.status, 'planned');
+  assert.deepEqual(state.attempts.map((attempt) => attempt.attempt_number), [1, 2]);
+  assert.notEqual(state.attempts[1].finding_fingerprint, firstFingerprint);
+  assert.equal(state.attempts[1].input_head_sha, 'head-2');
+  assert.equal(state.next_action.task.task_id, state.attempts[1].task.task_id);
+
+  state = recordFindingRepairAttempt(state, {
+    headSha: 'head-3', implementationIdentity: 'impl', implementationSessionId: 'impl-2',
+    verification: { status: 'pass', head_sha: 'head-3' }, prPrepare: { status: 'ready', head_sha: 'head-3' },
+    rereview: rereview({ head_sha: 'head-3', session_id: 'review-2' })
+  });
+
+  assert.equal(state.status, 'converged');
+  assert.equal(state.attempts[1].outcome.implementation.head_sha, 'head-3');
+  assert.equal(state.attempts[1].rereview.status, 'pass');
+  assert.deepEqual(state.next_action, { type: 'complete', head_sha: 'head-3' });
+});
+
 test('RFR-S-6 maximum attempt budget stops a changing finding loop', () => {
   let state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review(), maxAttempts: 1 });
   state = recordFindingRepairAttempt(state, {
