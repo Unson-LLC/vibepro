@@ -17,7 +17,7 @@ parent_design:
 
 An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`, `head_sha`, `cost_attribution`, and `stop_reason`. Cost attribution input must identify the same `story_id` and `run_id` before its measurements can be merged; a mismatch is persisted as `scope_contamination`. Attribution separately represents Trusted PR-ready milliseconds, active/wait milliseconds, tokens/cost, Full Suite count, evidence reuse count, and human interruption count. Unknown measurements are `null` in JSON and `unknown` in human output.
 
-`advance` starts at most one child. If a child is active, it observes and verifies that child first. A running or stopped child returns without starting another child. A `pr_ready` child permits the next child. A cancelled child leaves the portfolio stopped unless the operator records an explicit typed decision.
+`advance` starts at most one child. The initial child response must return the requested Story and creation-request identity plus a non-empty Run id before the controller adopts it. If a child is active, it observes and verifies that child first. Mutation and evidence artifacts exposed by the Run require the same Story and Run attribution; a missing or foreign identity is contamination. A running or stopped child returns without starting another child. A `pr_ready` child permits the next child. A cancelled child leaves the portfolio stopped unless the operator records an explicit typed decision.
 
 `decide` accepts only `continue`, `retry`, or `skip`, plus `policy_type` and `reason`. Continue/retry delegate to Guarded Run resume. Skip creates an auditable `explicit_skip` stop reason and permits later advancement. Mutations acquire a portfolio-scoped lock before reading state or starting a child Run. `promote` accepts an earlier source Story, later consumer Story, non-transcript artifact path, SHA-256 digest, and reason; it resolves the artifact realpath, reads the artifact, computes its digest, and rejects a supplied mismatch.
 
@@ -26,7 +26,7 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 - `INV-SRP-1`: one Portfolio entry owns one Story and at most one child Run.
 - `INV-SRP-2`: later mutation cannot begin until prior entries are `pr_ready` or explicitly `skipped`.
 - `INV-SRP-3`: stopped and cancelled child states are not success.
-- `INV-SRP-4`: Story, Run, worktree, branch, review, or session mismatch fails as `scope_contamination`.
+- `INV-SRP-4`: Story, Run, worktree, branch, mutation, evidence, review, or session mismatch fails as `scope_contamination`.
 - `INV-SRP-5`: no raw transcript crosses a Story boundary.
 - `INV-SRP-6`: unavailable cost and time remain unknown.
 - `INV-SRP-7`: every mutation, including create, owns the Portfolio lock; dead-owner recovery is serialized by a recovery mutex and unverifiable owners fail closed.
@@ -58,4 +58,4 @@ human are allowlisted and exclude owner tokens.
 
 ## Verification
 
-`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, every stopped status with typed continue/retry/skip, digest/realpath-safe context promotion including internal transcript symlinks, Story/Run/worktree/branch/review/session and attribution contamination, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, every stopped status with typed continue/retry/skip, digest/realpath-safe context promotion including internal transcript symlinks, Story/Run/worktree/branch/mutation/evidence/review/session and attribution contamination, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.

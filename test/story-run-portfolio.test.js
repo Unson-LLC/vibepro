@@ -176,6 +176,12 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
     ['run', { run_id: 'foreign-run' }],
     ['worktree', { execution_context: { root_realpath: '/worktrees/foreign-story', branch_name: `codex/${STORIES[0]}` } }],
     ['branch', { execution_context: { root_realpath: `/worktrees/${STORIES[0]}`, branch_name: 'foreign-branch' } }],
+    ['mutation-story', { mutation_artifacts: [{ story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id }] }],
+    ['mutation-run', { mutation_artifacts: [{ story_id: STORIES[0], run_id: 'foreign-run' }] }],
+    ['mutation-missing', { mutation_artifacts: [{}] }],
+    ['evidence-story', { evidence_artifacts: [{ story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id }] }],
+    ['evidence-run', { evidence_artifacts: [{ story_id: STORIES[0], run_id: 'foreign-run' }] }],
+    ['evidence-missing', { evidence_artifacts: [{}] }],
     ['review', { review_artifacts: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }],
     ['session', { session_attribution: [{ story_id: STORIES[1], run_id: 'foreign-run' }] }]
   ];
@@ -185,6 +191,31 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
     await fixture.controller.advance(fixture.root, { portfolioId });
     fixture.contaminate(STORIES[0], contamination);
     await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId }), errorCode('scope_contamination'));
+    const contaminated = await fixture.controller.status(fixture.root, { portfolioId });
+    assert.equal(contaminated.status, 'blocked');
+    assert.equal(contaminated.entries[0].stop_reason.code, 'scope_contamination');
+    assert.equal(contaminated.entries[1].status, 'queued');
+    assert.deepEqual(fixture.started.slice(-1), [STORIES[0]]);
+  }
+});
+
+test('SRP-S-2 SRP-S-7 rejects a foreign initial Run before adopting its identity', async (t) => {
+  const cases = [
+    ['story', { story_id: STORIES[1] }],
+    ['run', { creation_request_id: 'portfolio-foreign-request' }],
+    ['missing-run', { run_id: null }]
+  ];
+  for (const [kind, initialRunPatch] of cases) {
+    const fixture = await createFixture(t, { initialRunPatch });
+    const portfolioId = `portfolio-initial-${kind}`;
+    await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 2) });
+    await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId }), errorCode('scope_contamination'));
+    const stopped = await fixture.controller.status(fixture.root, { portfolioId });
+    assert.equal(stopped.status, 'blocked');
+    assert.equal(stopped.entries[0].run_id, null);
+    assert.equal(stopped.entries[0].stop_reason.code, 'scope_contamination');
+    assert.equal(stopped.entries[1].status, 'queued');
+    assert.deepEqual(fixture.started, [STORIES[0]]);
   }
 });
 
@@ -372,7 +403,7 @@ async function createFixture(t, options = {}) {
       run.creation_request_id = creationRequestId ?? null;
       runs.set(storyId, run);
       if (creationRequestId) requestRuns.set(creationRequestId, run);
-      return structuredClone(run);
+      return { ...structuredClone(run), ...(options.initialRunPatch ?? {}) };
     },
     async status(_root, { storyId }) {
       const run = runs.get(storyId);
@@ -408,7 +439,8 @@ function runState(storyId) {
   return {
     story_id: storyId, run_id: `run-20260720T000000Z-${storyId.slice(-1).padStart(8, '0')}`, status: 'running',
     current_head_sha: storyId.slice(-1).repeat(40), stop_reason: null,
-    execution_context: { root_realpath: `/worktrees/${storyId}`, branch_name: `codex/${storyId}` }
+    execution_context: { root_realpath: `/worktrees/${storyId}`, branch_name: `codex/${storyId}` },
+    mutation_artifacts: [], evidence_artifacts: []
   };
 }
 

@@ -163,12 +163,16 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   state.updated_at = iso(deps.now());
   await persist(deps, repoRoot, state);
   const run = await deps.guardedRun.run(repoRoot, { storyId: next.story_id, creationRequestId });
+  if (run.story_id !== next.story_id || run.creation_request_id !== creationRequestId || !run.run_id) {
+    await persistInitialRunContamination(deps, repoRoot, state, next, run, creationRequestId);
+  }
   next.run_id = run.run_id;
+  state.scope_bindings[next.story_id] = buildScopeBinding(run);
+  await assertAndPersistRunOwnership(deps, repoRoot, state, next, run);
   next.status = run.status;
   next.worktree = run.execution_context?.root_realpath ?? null;
   next.head_sha = run.current_head_sha ?? null;
   next.stop_reason = run.stop_reason ?? null;
-  state.scope_bindings[next.story_id] = buildScopeBinding(run);
   state.status = next.status;
   state.updated_at = iso(deps.now());
   await persist(deps, repoRoot, state);
@@ -271,6 +275,8 @@ function buildScopeBinding(run) {
 
 function assertRunOwnership(entry, run, binding = {}) {
   const branch = run.execution_context?.branch ?? run.execution_context?.branch_name ?? null;
+  const mixedMutations = hasMixedAttribution(run.mutation_artifacts, entry);
+  const mixedEvidence = hasMixedAttribution(run.evidence_artifacts, entry);
   const mixedReviews = (run.review_artifacts ?? []).some((artifact) => artifact.story_id !== entry.story_id || artifact.run_id && artifact.run_id !== entry.run_id);
   const mixedSessions = (run.session_attribution ?? []).some((session) => session.story_id !== entry.story_id || session.run_id && session.run_id !== entry.run_id);
   const contaminated = run.story_id !== entry.story_id
@@ -278,14 +284,20 @@ function assertRunOwnership(entry, run, binding = {}) {
     || (entry.worktree && run.execution_context?.root_realpath !== entry.worktree)
     || (binding.worktree && run.execution_context?.root_realpath !== binding.worktree)
     || (binding.branch && branch !== binding.branch)
+    || mixedMutations
+    || mixedEvidence
     || mixedReviews
     || mixedSessions;
   if (contaminated) {
     throw error('scope_contamination', 'Guarded Run identity does not match its Portfolio entry.', {
       expected: { story_id: entry.story_id, run_id: entry.run_id, worktree: entry.worktree, head_sha: entry.head_sha },
-      actual: { story_id: run.story_id, run_id: run.run_id, worktree: run.execution_context?.root_realpath, branch, head_sha: run.current_head_sha, mixed_reviews: mixedReviews, mixed_sessions: mixedSessions }
+      actual: { story_id: run.story_id, run_id: run.run_id, worktree: run.execution_context?.root_realpath, branch, head_sha: run.current_head_sha, mixed_mutations: mixedMutations, mixed_evidence: mixedEvidence, mixed_reviews: mixedReviews, mixed_sessions: mixedSessions }
     });
   }
+}
+
+function hasMixedAttribution(artifacts = [], entry) {
+  return artifacts.some((artifact) => artifact.story_id !== entry.story_id || artifact.run_id && artifact.run_id !== entry.run_id);
 }
 
 async function assertAndPersistRunOwnership(deps, repoRoot, state, entry, run) {
@@ -300,6 +312,19 @@ async function assertAndPersistRunOwnership(deps, repoRoot, state, entry, run) {
     await persist(deps, repoRoot, state);
     throw cause;
   }
+}
+
+async function persistInitialRunContamination(deps, repoRoot, state, entry, run, creationRequestId) {
+  const cause = error('scope_contamination', 'New Guarded Run identity does not match its Portfolio creation request.', {
+    expected: { story_id: entry.story_id, creation_request_id: creationRequestId },
+    actual: { story_id: run.story_id ?? null, run_id: run.run_id ?? null, creation_request_id: run.creation_request_id ?? null }
+  });
+  entry.status = 'blocked';
+  entry.stop_reason = { code: cause.code, message: cause.message, details: cause.details };
+  state.status = 'blocked';
+  state.updated_at = iso(deps.now());
+  await persist(deps, repoRoot, state);
+  throw cause;
 }
 
 function emptyCostAttribution() {

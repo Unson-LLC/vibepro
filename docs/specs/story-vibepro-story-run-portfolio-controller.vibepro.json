@@ -43,5 +43,13 @@
       "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }], "architecture_refs": [{ "file": "docs/architecture/story-vibepro-story-run-portfolio-controller.md", "section": "Failure and recovery" }], "code_refs": [{ "file": "src/story-run-portfolio.js", "anchor": "acquirePortfolioLock" }, { "file": "src/guarded-run-session.js", "anchor": "findRunByCreationRequest" }], "test_refs": [{ "file": "test/story-run-portfolio.test.js", "case": "orphaned Portfolio recovery mutex fails closed with an operator repair handle" }, { "file": "test/guarded-run-session.test.js", "case": "Portfolio creation request fails closed when any Run candidate is corrupt" }] },
       "verifiable_by": { "test_pattern": [{ "file_glob": "test/story-run-portfolio.test.js", "must_contain": "parallel_isolation_unproven" }] }
     }
+  ],
+  "diagrams": [
+    {
+      "id": "DG-SRP-THREAT",
+      "kind": "threat_model",
+      "title": "Portfolio authority and cross-Story contamination boundaries",
+      "mermaid": "flowchart LR\n  Operator[\"Authenticated operator\"] --> Controller[\"Portfolio Controller\"]\n  Controller -->|owner token| Lock[\"Portfolio mutation lock\"]\n  Lock --> State[\"Canonical portfolio state\"]\n  Controller -->|creation request identity| Run[\"One Story Guarded Run\"]\n  Foreign[\"Foreign mutation, evidence, review, session, or cost attribution\"] -->|reject| Block[\"scope_contamination\"]\n  Run -->|Story and Run identity check| Controller\n  Artifact[\"Promoted artifact\"] -->|realpath and SHA-256 check| Controller"
+    }
   ]
 }
