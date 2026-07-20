@@ -11,7 +11,7 @@
         "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md", "section": "Decision" }],
         "code_refs": [{ "file": "src/validation-sequencing.js", "anchor": "buildValidationSequencePlan" }],
-        "test_refs": [{ "file": "test/validation-sequencing.test.js", "case": "high-risk plan schedules boundary-specific preflight before expensive verification" }]
+        "test_refs": [{ "file": "test/validation-sequencing.test.js", "case": "high-risk plan schedules one canonical aggregate boundary preflight before expensive verification" }]
       }
     },
     {
@@ -41,7 +41,6 @@
         ],
         "test_refs": [
           { "file": "test/validation-sequencing.test.js", "case": "expensive verification is reused only at the exact frozen binding" },
-          { "file": "test/validation-sequencing.test.js", "case": "current-head CI import records reusable expensive verification against the frozen binding" },
           { "file": "test/ci-evidence-import.test.js", "case": "import-ci public path records frozen node test coverage from realistic CI checks" }
         ]
       }
