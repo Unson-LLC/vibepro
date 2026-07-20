@@ -21,9 +21,10 @@ const SENSITIVE_KEY_PATTERN = /(?:authorization|api[_-]?key|password|secret|toke
 const SUMMARY_VALUE_KEYS = 8;
 const SUMMARY_ARRAY_ITEMS = 5;
 const SUMMARY_TEXT_LENGTH = 240;
+const LEDGER_STORY_ID_PATTERN = /^story-[a-z0-9][a-z0-9._-]*$/;
 
 export function getDecisionOutcomeLedgerPath(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'decision-outcome-ledger.json');
+  return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', requireLedgerStoryId(storyId), 'decision-outcome-ledger.json');
 }
 
 export async function readDecisionOutcomeLedgerIfExists(repoRoot, storyId) {
@@ -249,10 +250,16 @@ function isValidBehaviorDelta(delta) {
 }
 
 function isValidDelivery(delivery) {
-  return delivery && typeof delivery === 'object' && !Array.isArray(delivery)
-    && ['not_delivered', 'pr_created', 'merged', 'conflicting'].includes(delivery.status)
-    && (delivery.pr == null || (typeof delivery.pr === 'object' && !Array.isArray(delivery.pr)))
-    && (delivery.merge == null || (typeof delivery.merge === 'object' && !Array.isArray(delivery.merge)));
+  if (!delivery || typeof delivery !== 'object' || Array.isArray(delivery)
+    || !['not_delivered', 'pr_created', 'merged', 'conflicting'].includes(delivery.status)
+    || (delivery.pr != null && (typeof delivery.pr !== 'object' || Array.isArray(delivery.pr)))
+    || (delivery.merge != null && (typeof delivery.merge !== 'object' || Array.isArray(delivery.merge)))) return false;
+  if (delivery.status === 'not_delivered') return delivery.pr == null && delivery.merge == null;
+  if (delivery.status === 'conflicting') return true;
+  const validPr = delivery.pr && (Number.isInteger(delivery.pr.number) || typeof delivery.pr.url === 'string');
+  if (!validPr) return false;
+  if (delivery.status === 'pr_created') return delivery.merge == null;
+  return delivery.merge && typeof delivery.merge.sha === 'string' && delivery.merge.sha.trim() !== '';
 }
 
 function isValidDownstreamOutcome(outcome) {
@@ -261,7 +268,15 @@ function isValidDownstreamOutcome(outcome) {
   for (const field of ['value', 'reason', 'source_ref', 'missing_reason']) {
     if (!Object.hasOwn(outcome, field)) return false;
   }
-  return true;
+  if (outcome.status === 'observed') {
+    return outcome.value != null && outcome.reason == null && outcome.missing_reason == null;
+  }
+  if (outcome.status === 'not_applicable') {
+    return outcome.value == null && typeof outcome.reason === 'string' && outcome.reason.trim() !== ''
+      && outcome.missing_reason == null;
+  }
+  return outcome.value == null && outcome.reason == null
+    && typeof outcome.missing_reason === 'string' && outcome.missing_reason.trim() !== '';
 }
 
 function isValidEligibleOutcomeSources(value) {
@@ -275,10 +290,23 @@ function isValidEligibleOutcomeSources(value) {
 }
 
 function isValidClaim(claim) {
-  return claim && typeof claim === 'object' && !Array.isArray(claim)
-    && ['observed', 'not_observed'].includes(claim.status)
-    && Object.hasOwn(claim, 'value')
-    && Array.isArray(claim.provenance);
+  if (!claim || typeof claim !== 'object' || Array.isArray(claim)
+    || !['observed', 'not_observed'].includes(claim.status)
+    || !Object.hasOwn(claim, 'value')
+    || !Array.isArray(claim.provenance)) return false;
+  return claim.status === 'observed'
+    ? claim.value != null && claim.provenance.length > 0
+    : claim.value == null && claim.provenance.length === 0;
+}
+
+function requireLedgerStoryId(value) {
+  if (typeof value !== 'string' || !LEDGER_STORY_ID_PATTERN.test(value)
+    || value.includes('..') || /[\\/%]/.test(value)) {
+    const error = new Error('decision outcome ledger requires a valid story id');
+    error.code = 'outcome_story_invalid';
+    throw error;
+  }
+  return value;
 }
 
 export function reviseDecisionOutcomeLedger(ledger, {
@@ -286,7 +314,7 @@ export function reviseDecisionOutcomeLedger(ledger, {
   observations = [],
   currentHeadSha = null
 } = {}) {
-  if (!ledger?.story_id) throw new Error('decision outcome ledger requires story_id');
+  requireLedgerStoryId(ledger?.story_id);
   const evidenceHeadSha = currentHeadSha ?? ledger.evidence_head_sha ?? null;
   const traces = (ledger.traces ?? []).map((trace) => reviseTrace({
     trace,
@@ -318,7 +346,7 @@ export function buildDecisionOutcomeLedger({
   artifactPath = null,
   createdAt = new Date().toISOString()
 } = {}) {
-  if (!storyId) throw new Error('decision outcome ledger requires storyId');
+  requireLedgerStoryId(storyId);
   const normalizedSources = collapseDuplicateSources(sources.map((source) => normalizeSource(storyId, source)));
   const bySubject = groupBy(normalizedSources.filter((source) => source.normalized_subject_key), 'normalized_subject_key');
   const traces = [];

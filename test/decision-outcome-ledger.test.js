@@ -10,6 +10,7 @@ import test from 'node:test';
 import {
   buildDecisionOutcomeLedger,
   collectDecisionOutcomeSources,
+  getDecisionOutcomeLedgerPath,
   matchesDecisionOutcomeObservation,
   projectDecisionOutcomeSummary,
   reviseDecisionOutcomeLedger,
@@ -720,6 +721,15 @@ test('GDL-S-3 invalid or missing decision trace keys never attach behavior to nu
   assert.equal(ledger.traces[0].behavior_delta.status, 'not_observed');
   assert.equal(ledger.traces[0].behavior_delta.missing_reason, 'explicit_behavior_delta_missing');
   assert.deepEqual(ledger.traces[0].behavior_delta.verification_refs, []);
+});
+
+test('GDL-S-9 exported ledger paths reject traversal story IDs before path construction', () => {
+  for (const storyId of ['story-../escape', 'story-%2fescape', 'story-\\escape', '../story-escape']) {
+    assert.throws(
+      () => getDecisionOutcomeLedgerPath('/tmp/repo', storyId),
+      (error) => error.code === 'outcome_story_invalid'
+    );
+  }
 });
 
 test('GDL-S-3 behavior delta rejects evidence with no current-head binding', () => {
@@ -2213,6 +2223,27 @@ test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledger
         missing_reason: 'behavior_delta_conflict'
       } }]
     }), 'behavior_delta'],
+    ['observed outcome without value', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], downstream_outcome: {
+        ...ledger.traces[0].downstream_outcome,
+        status: 'observed',
+        value: null,
+        missing_reason: null
+      } }]
+    }), 'downstream_outcome'],
+    ['merged delivery without identity', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], delivery: { status: 'merged', pr: null, merge: null } }]
+    }), 'delivery'],
+    ['observed claim without value', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], finding: {
+        status: 'observed',
+        value: null,
+        provenance: ledger.traces[0].finding.provenance
+      } }]
+    }), 'finding'],
     ['wrong artifact digest', (ledger) => ({ ...ledger, artifact_digest: 'f'.repeat(64) }), 'artifact_digest'],
     ['wrong parent fingerprint', (ledger) => ({
       ...ledger,
