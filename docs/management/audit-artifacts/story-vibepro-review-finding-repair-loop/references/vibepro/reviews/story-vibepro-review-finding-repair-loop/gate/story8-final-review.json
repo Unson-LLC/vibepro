@@ -1,0 +1,18 @@
+{
+  "status": "needs_changes",
+  "head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+  "summary": "Current-head evidence is fresh, but AC-7 and scenario_clause_e2e overstate coverage because successful multi-attempt repair and convergence is not tested.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "rfr-missing-successful-multi-attempt",
+      "detail": "Add a test proving attempt 1 needs_changes, changed finding and HEAD, attempt 2 repair, and final convergence."
+    },
+    {
+      "severity": "medium",
+      "id": "rfr-scenario-clause-e2e-overclaim",
+      "detail": "Re-run and re-record scenario_clause_e2e evidence after adding the concrete multi-attempt fixture."
+    }
+  ],
+  "focused_test_result": "49 passed"
+}

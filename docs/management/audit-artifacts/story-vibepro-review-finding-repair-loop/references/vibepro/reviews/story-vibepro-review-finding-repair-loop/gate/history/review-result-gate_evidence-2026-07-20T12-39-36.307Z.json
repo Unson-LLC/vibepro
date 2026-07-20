@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-HEAD evidence and all public repair-loop paths passed independent review",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified exact HEAD d4851a31, unit 46/46, full suite 1441/1441, evidence-after-pr-prepare ordering, CLI poll terminal states, status output, and human recovery actions",
+    "evidence": ".vibepro/pr/story-vibepro-review-finding-repair-loop/pr-prepare.json",
+    "inputs": [
+      "src/review-finding-repair-loop.js",
+      "src/cli.js",
+      "test/review-finding-repair-loop.test.js",
+      "test/agent-runtime-adapter.test.js",
+      "docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "Earlier stale evidence, test-count mismatch, and poll/status coverage gaps are closed by d4851a31 and current strict-bound artifacts"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "expected_head_sha": "d4851a3187cf9ebdcf7bffc81b24cab7034505ce",
+    "current_head_sha": "d4851a3187cf9ebdcf7bffc81b24cab7034505ce",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+      "branch": "codex/story-vibepro-review-finding-repair-loop",
+      "actual_branch": "codex/story-vibepro-review-finding-repair-loop",
+      "current_head_sha": "d4851a3187cf9ebdcf7bffc81b24cab7034505ce",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-20T12:39:36.307Z",
+  "git_context": {
+    "head_sha": "d4851a3187cf9ebdcf7bffc81b24cab7034505ce",
+    "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T12:39:36.298Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "d4851a3187cf9ebdcf7bffc81b24cab7034505ce",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json",
+        "sha256": "182cf5a1f13c8ce7465fca34e22aadc407e72ee6535d6f766c9c670bd76e1fdd",
+        "size": 3976
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "62495c3284ea080c8ba4cf813faec7830b706d15c81e2973bf9e2968319b15a7",
+        "size": 205993
+      },
+      {
+        "path": "src/review-finding-repair-loop.js",
+        "sha256": "9978d88791b3a59ed42b5dc3266543e463ab1de7f65eff87a4fee0e27d3425d0",
+        "size": 19628
+      },
+      {
+        "path": "test/agent-runtime-adapter.test.js",
+        "sha256": "764763a380acccf65628f97d83ffb0e81c21b58914c15616cedaf09c975843ef",
+        "size": 25574
+      },
+      {
+        "path": "test/review-finding-repair-loop.test.js",
+        "sha256": "3436f1ddc0d3f2cd04cf44c73b4179475053ec4d9322ec41fc2f8c7518569b8a",
+        "size": 14834
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "86cf8006d61c22c6ddc322b108983569e0d2c5ba82534774ad3edbe1251ed06f"
+  },
+  "source_fingerprint": "e141ba82ff3c836f66cd283c0f909b73ecce768c698ecdf3fd7234a9114a7e46",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "story7_spec_rereview",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/gate-evidence-final-verdict.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "head_sha": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+  "pr": 363,
+  "checks": {
+    "analyze": "pass",
+    "test (20)": "pass",
+    "test (22)": "pass",
+    "CodeQL": "pass"
+  }
+}
