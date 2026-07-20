@@ -223,12 +223,29 @@ function isValidTraceSourceIdentity(identity) {
 }
 
 function isValidBehaviorDelta(delta) {
-  return delta && typeof delta === 'object' && !Array.isArray(delta)
-    && ['observed', 'partial', 'not_observed', 'conflicting'].includes(delta.status)
-    && Array.isArray(delta.change_refs)
-    && Array.isArray(delta.verification_refs)
-    && Array.isArray(delta.verification_sources)
-    && Array.isArray(delta.excluded_sources);
+  if (!delta || typeof delta !== 'object' || Array.isArray(delta)
+    || !['observed', 'partial', 'not_observed', 'conflicting'].includes(delta.status)
+    || !Array.isArray(delta.change_refs)
+    || !Array.isArray(delta.verification_refs)
+    || !Array.isArray(delta.verification_sources)
+    || !Array.isArray(delta.excluded_sources)
+    || !Object.hasOwn(delta, 'before')
+    || !Object.hasOwn(delta, 'after')
+    || !Object.hasOwn(delta, 'missing_reason')) return false;
+  if (delta.status === 'observed') {
+    return delta.before != null && delta.after != null && delta.missing_reason == null
+      && !Object.hasOwn(delta, 'conflicts');
+  }
+  if (delta.status === 'conflicting') {
+    return delta.before == null && delta.after == null
+      && delta.missing_reason === 'behavior_delta_conflict'
+      && Array.isArray(delta.conflicts) && delta.conflicts.length > 1
+      && delta.conflicts.every((item) => item && typeof item === 'object' && !Array.isArray(item)
+        && item.before != null && item.after != null && Array.isArray(item.verification_refs));
+  }
+  return delta.before == null && delta.after == null
+    && typeof delta.missing_reason === 'string' && delta.missing_reason.trim() !== ''
+    && !Object.hasOwn(delta, 'conflicts');
 }
 
 function isValidDelivery(delivery) {
@@ -895,7 +912,8 @@ function buildBehaviorDelta({ storyId, subjectKey, verificationEvidence, current
       .sort((a, b) => canonicalStringify(a).localeCompare(canonicalStringify(b)))
   });
   for (const [index, command] of (verificationEvidence?.commands ?? []).entries()) {
-    if (normalizeSubjectKey(command?.observation?.values?.decision_trace_key) !== subjectKey) continue;
+    const commandSubjectKey = normalizeSubjectKey(command?.observation?.values?.decision_trace_key);
+    if (subjectKey == null || commandSubjectKey == null || commandSubjectKey !== subjectKey) continue;
     const recordedHead = command?.git_context?.head_sha ?? command?.git?.head_sha ?? null;
     const bindingStatus = resolveCommandBindingStatus(command, currentHeadSha);
     if (bindingStatus === 'stale') {

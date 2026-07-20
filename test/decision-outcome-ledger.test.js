@@ -698,6 +698,30 @@ test('GDL-S-3 behavior delta only accepts explicit values from a matching curren
   assert.equal(ledger.traces[0].behavior_delta.excluded_sources[0].reason, 'strict_head_mismatch');
 });
 
+test('GDL-S-3 invalid or missing decision trace keys never attach behavior to null-ID traces', () => {
+  const ledger = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    currentHeadSha: 'head-1',
+    sources: [{ source_kind: 'finding', source_ref: 'finding-without-id.json' }],
+    verificationEvidence: {
+      commands: [{
+        command: 'invalid null key',
+        git_context: { head_sha: 'head-1' },
+        observation: { values: { decision_trace_key: null, behavior_before: 'before', behavior_after: 'after' } }
+      }, {
+        command: 'invalid unprefixed key',
+        git_context: { head_sha: 'head-1' },
+        observation: { values: { decision_trace_key: 'unbound', behavior_before: 'before', behavior_after: 'after' } }
+      }]
+    }
+  });
+
+  assert.equal(ledger.traces[0].decision_trace_id, null);
+  assert.equal(ledger.traces[0].behavior_delta.status, 'not_observed');
+  assert.equal(ledger.traces[0].behavior_delta.missing_reason, 'explicit_behavior_delta_missing');
+  assert.deepEqual(ledger.traces[0].behavior_delta.verification_refs, []);
+});
+
 test('GDL-S-3 behavior delta rejects evidence with no current-head binding', () => {
   const ledger = buildDecisionOutcomeLedger({
     storyId: STORY_ID,
@@ -2171,6 +2195,24 @@ test('GDL-S-7 canonical promotion rejects structurally untrusted decision ledger
       delete trace.behavior_delta;
       return { ...ledger, traces: [trace] };
     }, 'behavior_delta'],
+    ['observed behavior without before', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], behavior_delta: {
+        ...ledger.traces[0].behavior_delta,
+        status: 'observed',
+        before: null,
+        after: 'after',
+        missing_reason: null
+      } }]
+    }), 'behavior_delta'],
+    ['conflicting behavior without conflicts', (ledger) => ({
+      ...ledger,
+      traces: [{ ...ledger.traces[0], behavior_delta: {
+        ...ledger.traces[0].behavior_delta,
+        status: 'conflicting',
+        missing_reason: 'behavior_delta_conflict'
+      } }]
+    }), 'behavior_delta'],
     ['wrong artifact digest', (ledger) => ({ ...ledger, artifact_digest: 'f'.repeat(64) }), 'artifact_digest'],
     ['wrong parent fingerprint', (ledger) => ({
       ...ledger,
