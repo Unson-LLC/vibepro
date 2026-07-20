@@ -37,6 +37,19 @@ function stateForHighRisk() {
   return createValidationSequenceState({ plan });
 }
 
+test('readValidationSequence fails closed when persisted state JSON is malformed', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-validation-malformed-'));
+  const storyId = 'story-malformed-state';
+  const target = getValidationSequencePath(root, storyId);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, '{"schema_version":"0.1.0",');
+
+  await assert.rejects(
+    readValidationSequence(root, storyId),
+    (error) => error instanceof SyntaxError
+  );
+});
+
 test('canonical phase evidence rejects incomplete native records and pre-freeze expensive runs', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-validation-evidence-'));
   const storyId = 'story-evidence-contract';
