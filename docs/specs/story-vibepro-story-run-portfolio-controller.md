@@ -34,6 +34,28 @@ An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`
 
 Stopped human summaries expose the typed `portfolio-decide` continuation shape so the persisted stop is actionable after restart.
 
+## Threat Model
+
+```mermaid
+flowchart LR
+  Operator["Authenticated operator"] -->|typed portfolio mutation| CLI["VibePro CLI"]
+  CLI -->|validate Story, policy, and safe paths| Controller["Portfolio Controller"]
+  Controller -->|owner token checked| Lock["Portfolio lock"]
+  Lock -->|exclusive mutation| State["Canonical portfolio state"]
+  Controller -->|creation request identity| GuardedRun["Guarded Run"]
+  GuardedRun -->|matching request only| Run["One Story Run"]
+  Artifact["Promoted artifact"] -->|realpath and digest verification| Controller
+  Transcript["Transcript or authority mismatch"] -->|reject: scope_contamination| Controller
+  Corrupt["Corrupt or unverifiable owner/candidate"] -->|fail closed: recovery required| Controller
+```
+
+Trust boundaries are the operator-to-CLI input boundary, the Portfolio lock ownership
+boundary, Guarded Run creation identity, and cross-Story artifact promotion. The
+controller never treats an unrelated historical Run as the requested child, never
+promotes transcripts, checks the resolved artifact path and digest, and does not
+steal a live or unverifiable mutation/recovery owner. Recovery details shown to a
+human are allowlisted and exclude owner tokens.
+
 ## Verification
 
 `test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, mid-Story blocker, restart, typed skip, digest/realpath-safe context promotion including internal transcript symlinks, persisted contamination stop and next action, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.
