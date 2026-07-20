@@ -3,6 +3,67 @@
   "model": "vibepro-design-ssot-registry-v1",
   "design_roots": [
     {
+      "id": "vibepro-symlinked-bin-entrypoint",
+      "title": "VibePro Symlinked Binary Entrypoint",
+      "root_doc": "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "CLI direct-execution detection for real and symlinked binary entrypoints",
+      "owned_surfaces": [
+        "bin/vibepro.js direct-execution predicate",
+        "binary entrypoint process contract"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-public-discovery-live-targets",
       "title": "VibePro Public Discovery Live Targets",
       "root_doc": "docs/architecture/vibepro-public-discovery-live-targets.md",

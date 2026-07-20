@@ -1,6 +1,17 @@
 #!/usr/bin/env node
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { runCli } from '../src/cli.js';
+
+export function isDirectExecution(moduleUrl, argvEntry) {
+  if (!argvEntry) return false;
+
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argvEntry);
+  } catch {
+    return false;
+  }
+}
 
 export function createEntrypointIo(runtime = process) {
   return {
@@ -16,6 +27,6 @@ export async function main(argv = process.argv.slice(2), runtime = process) {
   return result;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isDirectExecution(import.meta.url, process.argv[1])) {
   await main();
 }
