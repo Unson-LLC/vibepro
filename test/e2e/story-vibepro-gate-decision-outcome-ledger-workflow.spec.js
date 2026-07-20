@@ -474,10 +474,16 @@ test(`${STORY_ID} records generated null-ID and explicit multi-source selectors 
   const verificationRef = `.vibepro/pr/${STORY_ID}/verification-evidence.json`;
   const decisions = {
     schema_version: '0.1.0', story_id: STORY_ID,
-    decisions: [{
-      schema_version: '0.1.0', decision_id: 'waiver-e2e', story_id: STORY_ID, type: 'waiver', status: 'accepted',
-      source: 'finding:multi-source', artifact: decisionRef
-    }]
+    decisions: [
+      {
+        schema_version: '0.1.0', decision_id: 'waiver-null-e2e', story_id: STORY_ID, type: 'waiver', status: 'accepted',
+        source: null, artifact: decisionRef
+      },
+      {
+        schema_version: '0.1.0', decision_id: 'waiver-e2e', story_id: STORY_ID, type: 'waiver', status: 'accepted',
+        source: 'finding:multi-source', artifact: decisionRef
+      }
+    ]
   };
   const decisionBytes = `${JSON.stringify(decisions, null, 2)}\n`;
   const verification = {
@@ -509,13 +515,13 @@ test(`${STORY_ID} records generated null-ID and explicit multi-source selectors 
     sources: [
       {
         source_kind: 'decision_record', source_ref: decisionRef, source_digest: createHash('sha256').update(decisionBytes).digest('hex'),
-        native_id: null, normalized_subject_key: null, authority_valid: false,
-        decision: { decision_id: null, type: 'waiver', status: 'accepted' }
+        native_id: null, normalized_subject_key: null, authority_valid: true,
+        decision: decisions.decisions[0]
       },
       {
         source_kind: 'decision_record', source_ref: decisionRef, source_digest: createHash('sha256').update(decisionBytes).digest('hex'),
         native_id: 'waiver-e2e', normalized_subject_key: 'finding:multi-source', authority_valid: true,
-        decision: decisions.decisions[0]
+        decision: decisions.decisions[1]
       }
     ],
     verificationEvidence: {
@@ -559,7 +565,7 @@ test(`${STORY_ID} records generated null-ID and explicit multi-source selectors 
   const nullTrace = report.entries.find((entry) => entry.decision_trace_id === null);
   assert.ok(nullTrace.collision_group);
   assert.ok(nullTrace.trace_source_ref);
-  assert.equal(nullTrace.decision.status, 'not_observed');
+  assert.equal(nullTrace.decision.status, 'observed');
   assert.equal(nullTrace.delivery.status, 'merged');
   const nullSource = ledger.traces.find((trace) => trace.trace_source_ref === nullTrace.trace_source_ref).eligible_outcome_sources.entries[0];
   const nullRecorded = JSON.parse((await execFileAsync(process.execPath, [CLI_PATH, 'outcome', 'record', fixture.root,
