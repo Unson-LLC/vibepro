@@ -34,7 +34,15 @@ const expectedNestedTests = [
   'review record persists explicit reviewer identity declaration',
   'pr prepare blocks timed out required review lifecycle even when review result passed',
   'pr prepare marks dispatch preflight for running manual shutdown and unverified review evidence',
-  'atomic owner map ignores optional roles for both blocking and ownership'
+  'atomic owner map ignores optional roles for both blocking and ownership',
+  'emitted repair chain executes with one replacement lifecycle identity',
+  'sequence CLI persists the planned and recorded workflow through the public command path',
+  'DIJ-CONTRACT-001 parse_failure',
+  'workflow_state_regression pr prepare warns',
+  'evidence_lifecycle_regression pr prepare preserves',
+  'inspection-only command',
+  'shell control operator',
+  'summary-depth canonical audit replays the final gate substitute'
 ];
 const patterns = expectedNestedTests.join('|');
 
@@ -60,7 +68,7 @@ test('ASR-E2E-001 replays the complete atomic review workflow contract', async (
   const { NODE_TEST_CONTEXT: _nodeTestContext, ...childEnv } = process.env;
   const { stdout, stderr } = await execFileAsync(
     process.execPath,
-    ['--test', '--test-concurrency=1', `--test-name-pattern=${patterns}`, 'test/vibepro-cli.test.js', 'test/responsibility-authority.test.js', 'test/risk-adaptive-gate.test.js', 'test/agent-review-independence.test.js'],
+    ['--test', '--test-concurrency=1', `--test-name-pattern=${patterns}`, 'test/vibepro-cli.test.js', 'test/responsibility-authority.test.js', 'test/risk-adaptive-gate.test.js', 'test/agent-review-independence.test.js', 'test/review-repair.test.js', 'test/validation-sequencing.test.js', 'test/design-input-judgment.test.js', 'test/verification-evidence-artifact-check.test.js', 'test/canonical-audit-self-contained.test.js'],
     { cwd: repoRoot, env: childEnv, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
   );
   const tap = `${stdout}\n${stderr}`;
