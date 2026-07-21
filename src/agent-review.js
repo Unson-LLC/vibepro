@@ -1273,10 +1273,10 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
     return buildLifecycleUnmetReview(requirement, role);
   });
-  const allUnmetRequiredReviews = [
-    ...unmetRequiredReviews,
-    ...lifecycleRequiredReviews
-  ];
+  const allUnmetRequiredReviews = mergeUnmetReviews(
+    unmetRequiredReviews,
+    lifecycleRequiredReviews
+  );
   const unmetCheckpointReviews = checkpointRequiredReviews.filter((requirement) => {
     const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
     return !role || role.effective_status !== 'pass';
@@ -1292,10 +1292,10 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
     return buildLifecycleUnmetReview(requirement, role);
   });
-  const allUnmetCheckpointReviews = [
-    ...unmetCheckpointReviews,
-    ...lifecycleCheckpointReviews
-  ];
+  const allUnmetCheckpointReviews = mergeUnmetReviews(
+    unmetCheckpointReviews,
+    lifecycleCheckpointReviews
+  );
   const allUnmetReviews = [
     ...allUnmetRequiredReviews,
     ...allUnmetCheckpointReviews
@@ -1328,8 +1328,10 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     summary: {
       required_review_count: requiredReviews.length,
       unmet_required_review_count: allUnmetRequiredReviews.length,
+      source_unmet_required_review_count: unmetRequiredReviews.length + lifecycleRequiredReviews.length,
       checkpoint_required_review_count: checkpointRequiredReviews.length,
       unmet_checkpoint_review_count: allUnmetCheckpointReviews.length,
+      source_unmet_checkpoint_review_count: unmetCheckpointReviews.length + lifecycleCheckpointReviews.length,
       stage_count: stageSummaries.length,
       stale_result_count: stageSummaries.reduce((sum, stage) => sum + stage.stale_count, 0),
       block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0),
@@ -1337,6 +1339,15 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
       lifecycle_timed_out_count: stageSummaries.reduce((sum, stage) => sum + (stage.lifecycle?.timed_out_count ?? 0), 0)
     }
   };
+}
+
+function mergeUnmetReviews(resultReviews, lifecycleReviews) {
+  const lifecycleByRole = new Map(
+    lifecycleReviews.map((review) => [`${review.stage}:${review.role}`, review])
+  );
+  const merged = resultReviews
+    .filter((review) => !lifecycleByRole.has(`${review.stage}:${review.role}`));
+  return [...merged, ...lifecycleReviews];
 }
 
 function buildLifecycleUnmetReview(requirement, role) {
@@ -2858,8 +2869,7 @@ function pathsOverlap(left, right) {
 }
 
 function isWorkspaceArtifactPath(filePath) {
-  const normalized = String(filePath ?? '');
-  return normalized !== '.vibepro/config.json' && normalized.startsWith('.vibepro/');
+  return String(filePath ?? '').startsWith('.vibepro/');
 }
 
 async function getChangedFilesBetween(repoRoot, fromRef, toRef) {

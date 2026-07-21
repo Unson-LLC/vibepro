@@ -240,8 +240,8 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
   assert.ok(guidelinesIdx < instructionsIdx, 'Investigation Guidelines must come before Instructions');
   assert.ok(content.includes(INVESTIGATION_GUIDELINES_BLOCK), 'block must be interpolated verbatim');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
-  assert.match(content, /--inspection-evidence <inspection-evidence>/);
-  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--inspection-evidence "<inspection-evidence>"/);
+  assert.match(content, /--inspection-input "<ref>"/);
   assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);
@@ -258,8 +258,8 @@ test('parallel dispatch record command and prompt include inspection fields', as
   const dispatchPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md');
   const content = await readFile(dispatchPath, 'utf8');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
-  assert.match(content, /--inspection-evidence <inspection-evidence>/);
-  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--inspection-evidence "<inspection-evidence>"/);
+  assert.match(content, /--inspection-input "<ref>"/);
   assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);

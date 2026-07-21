@@ -249,7 +249,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     assertStrictTargetFiles(taskContext, git.changed_files, options);
   }
 
-  const reviewChangedFiles = git.changed_files.filter((file) => !isWorkspaceArtifactPath(file.path));
+  const reviewStorySource = await readResolvedStorySource(root, story);
+  const reviewChangedFiles = git.changed_files.filter((file) => (
+    !isWorkspaceArtifactPath(file.path)
+    || shouldReviewCanonicalStoryRegistration(file.path, reviewStorySource)
+  ));
   const reviewDirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
   const reviewGit = {
     ...git,
@@ -5660,9 +5664,22 @@ function getAllGroupFiles(fileGroups) {
 }
 
 function isWorkspaceArtifactPath(filePath) {
-  const normalized = String(filePath ?? '');
-  if (normalized === '.vibepro/config.json') return false;
-  return normalized.startsWith('.vibepro/');
+  return String(filePath ?? '').startsWith('.vibepro/');
+}
+
+function shouldReviewCanonicalStoryRegistration(filePath, story) {
+  return String(filePath ?? '') === '.vibepro/config.json'
+    && story?.pr_scope_strategy === 'atomic_single_pr';
+}
+
+async function readResolvedStorySource(repoRoot, story) {
+  const source = await findStorySource(repoRoot, story);
+  if (!source?.path) return source;
+  try {
+    return parseStoryDoc(source.path, await readFile(path.join(repoRoot, source.path), 'utf8'));
+  } catch {
+    return source;
+  }
 }
 
 function isGateInfraPath(filePath) {
@@ -13612,7 +13629,11 @@ function buildAgentReviewMinimalRecoveryPlan(agentReviews, status, unmet) {
     schema_version: '0.1.0',
     story_id: storyId,
     status,
-    source_blocker_count: allUnmet.length,
+    source_blocker_count: Number.isInteger(agentReviews.summary?.source_unmet_required_review_count)
+      && Number.isInteger(agentReviews.summary?.source_unmet_checkpoint_review_count)
+      ? agentReviews.summary.source_unmet_required_review_count
+        + agentReviews.summary.source_unmet_checkpoint_review_count
+      : allUnmet.length,
     deduped_blocker_count: deduped.length,
     first_command: firstCommand,
     current_stage: currentStage ? {

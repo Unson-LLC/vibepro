@@ -346,6 +346,7 @@ async function makeAutopilotRepo() {
     type: 'module',
     scripts: {
       test: 'node ./scripts/pass.js',
+      'test:fail': 'node ./scripts/fail.js',
       typecheck: 'node ./scripts/pass.js'
     }
   }, null, 2));
@@ -9514,7 +9515,7 @@ test('pr autopilot records passing verification evidence from a defined command'
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
 
@@ -9533,7 +9534,7 @@ test('pr autopilot records passing verification evidence from a defined command'
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+  assert.equal(evidence.commands[0].command, 'npm test');
   const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json'));
   assert.equal(artifact.exit_code, 0);
   assert.equal(artifact.status, 'pass');
@@ -9551,7 +9552,7 @@ test('pr autopilot records failed verification as fail and stops', async () => {
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9578,7 +9579,7 @@ test('pr autopilot dry-run plans verification without recording evidence', async
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--dry-run',
     '--json'
   ]);
@@ -9629,7 +9630,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
   assert.equal(first.exitCode, 0);
@@ -9643,7 +9644,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9652,7 +9653,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+  assert.equal(evidence.commands[0].command, 'npm test');
 });
 
 test('pr autopilot reruns stale passing records instead of skipping by kind only', async () => {
@@ -9666,7 +9667,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
   assert.equal(first.exitCode, 0);
@@ -9684,7 +9685,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9694,7 +9695,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'fail');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/fail.js');
+  assert.equal(evidence.commands[0].command, 'npm run test:fail');
 });
 
 test('pr prepare flags empty commit messages in the PR range', async () => {
@@ -9939,7 +9940,7 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.agent_skill_discipline.required, true);
   assert.equal(result.result.plan.agent_skill_discipline.common_rationalizations.includes('tests_pass_so_review_done'), true);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
-  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system "<codex\|claude_code>"/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--execution-mode parallel_subagent/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-closed/);
   assert.doesNotMatch(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /manual_review/);
@@ -15937,7 +15938,11 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
   const agentReviews = result.result.preparation.pr_context.agent_reviews;
-  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 1);
+  assert.equal(
+    agentReviews.summary.unmet_checkpoint_review_count,
+    1,
+    JSON.stringify(agentReviews.unmet_checkpoint_reviews, null, 2)
+  );
   assert.equal(agentReviews.unmet_checkpoint_reviews[0].role, 'runtime_contract');
   assert.equal(agentReviews.unmet_checkpoint_reviews[0].status, 'timed_out');
   assert.match(agentReviews.unmet_checkpoint_reviews[0].detail, /checkpoint-runtime-stuck-after-pass/);
@@ -16195,15 +16200,16 @@ test('pr body final E2E prefers current passing e2e-surface evidence over stale 
     '--summary', 'Current HEAD E2E flow failed before the fix',
     '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json'
   ])).exitCode, 0);
-  assert.equal((await runCli([
+  const currentPassingBuild = await runCliWithStdout([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
     '--kind', 'build',
     '--status', 'pass',
-    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--command', 'npm run build:e2e',
     '--summary', 'Current HEAD E2E flow passed after the fix',
     '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-passed-status.json'
-  ])).exitCode, 0);
+  ]);
+  assert.equal(currentPassingBuild.exitCode, 0, currentPassingBuild.stderr);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
@@ -17155,7 +17161,7 @@ test('VQG-S-3 generic verification does not satisfy Visual QA Gate without expli
     '--status',
     'pass',
     '--command',
-    'npm test',
+    'npm run test:e2e',
     '--summary',
     'broad regression suite passed',
     '--target',
@@ -17393,7 +17399,7 @@ export async function execute(actionParams) {
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'npm test',
+    '--command', 'npm run test:e2e',
     '--summary', 'Generic E2E command passed'
   ])).exitCode, 0);
   const genericE2eResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
@@ -19402,27 +19408,28 @@ ADR-unnecessary: This stays inside existing usage report aggregation and does no
 test('evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await mkdir(path.join(repo, 'e2e'), { recursive: true });
   await mkdir(path.join(repo, 'artifacts'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
-  await writeFile(path.join(repo, 'test', 'agent-workflow.test.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
+  await writeFile(path.join(repo, 'e2e', 'agent-workflow.spec.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
   await writeFile(path.join(repo, 'artifacts', 'workflow-replay-unrecognized.json'), JSON.stringify({ replay: true, note: 'artifact exists but status format is unknown' }, null, 2));
   await writeFile(path.join(repo, 'artifacts', 'workflow-replay-verified.json'), JSON.stringify({ status: 'pass', replay: true }, null, 2));
-  await git(repo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js', 'artifacts/workflow-replay-unrecognized.json', 'artifacts/workflow-replay-verified.json']);
+  await git(repo, ['add', 'src/agent-workflow.js', 'e2e/agent-workflow.spec.js', 'artifacts/workflow-replay-unrecognized.json', 'artifacts/workflow-replay-verified.json']);
   await git(repo, ['commit', '-m', 'feat: add durable workflow replay artifact']);
 
-  await runCli([
+  const thinRecord = await runCliWithStdout([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay verified',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
+  assert.equal(thinRecord.exitCode, 0, thinRecord.stderr);
   const thinPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const thinSpine = thinPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   const thinReality = thinSpine.subchecks.find((check) => check.id === 'current_reality');
@@ -19438,13 +19445,13 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay recorded with unrecognized artifact',
     '--artifact', 'artifacts/workflow-replay-unrecognized.json',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
   const unrecognizedPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const unrecognizedSpine = unrecognizedPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
@@ -19460,13 +19467,13 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay verified with durable artifact',
     '--artifact', 'artifacts/workflow-replay-verified.json',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
   const strongPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const strongSpine = strongPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
@@ -20888,9 +20895,9 @@ test('high-risk review pass requires inspection evidence in PR gate', async () =
   assert.equal(inspectionGate.high_risk, true);
   assert.equal(inspectionGate.missing_inspections[0].missing.includes('inspection_evidence'), true);
   const inspectionRecovery = inspectionGate.required_actions.find((action) => action.startsWith('vibepro review record'));
-  assert.match(inspectionRecovery, /--status <pass\|needs_changes\|block>/);
+  assert.match(inspectionRecovery, /--status '<pass\|needs_changes\|block>'/);
   assert.match(inspectionRecovery, /--inspection-summary "<inspection-summary>"/);
-  assert.match(inspectionRecovery, /--inspection-input <inspection-input>/);
+  assert.match(inspectionRecovery, /--inspection-input '<inspection-input>'/);
   assert.match(inspectionRecovery, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.equal(
     result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:review_inspection_required'),

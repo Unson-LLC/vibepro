@@ -238,10 +238,10 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
   const recordCommand = recovery.next_commands.find((command) => command.startsWith('vibepro review record'));
   assert.ok(recordCommand);
   assert.match(recordCommand, /--inspection-summary "<inspection-summary>"/);
-  assert.match(recordCommand, /--inspection-evidence <inspection-evidence>/);
-  assert.match(recordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recordCommand, /--inspection-evidence '<inspection-evidence>'/);
+  assert.match(recordCommand, /--inspection-input '<inspection-input>'/);
   assert.match(recordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
-  assert.match(recordCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recordCommand, /--status '<pass\|needs_changes\|block>'/);
 
   const executable = recordCommand
     .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
@@ -251,8 +251,14 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
     .replace('<inspection-input>', 'src/content-binding-target.js')
     .replace('<initial judgment -> final judgment because evidence>', 'initial risk -> accepted after inspecting the runtime contract source')
     .replace('<pass|needs_changes|block>', 'pass')
-    .replace('<agent-id>', 'agent-minimal-recovery')
-    .replace('<agent-thread-id>', 'thread-minimal-recovery');
+    .replace('<replacement-agent-id>', 'agent-minimal-recovery')
+    .replace('<replacement-agent-thread-id>', 'thread-minimal-recovery')
+    .replace('<replacement-agent-session-id>', 'session-minimal-recovery')
+    .replace('<implementation-session-id>', 'session-implementation')
+    .replace('<replacement-agent-transcript>', 'src/content-binding-target.js')
+    .replace('<replacement-agent-close-evidence>', 'src/content-binding-target.js');
+  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-system', 'codex', '--agent-id', 'agent-minimal-recovery', '--agent-thread-id', 'thread-minimal-recovery', '--agent-session-id', 'session-minimal-recovery']);
+  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-id', 'agent-minimal-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
   await execFileAsync('/bin/sh', ['-c', executable], { cwd: repo, encoding: 'utf8' });
 
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--json']);
@@ -559,7 +565,7 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
   const artifactGate = findGate(prepared, 'gate:artifact_consistency');
   const staleReview = artifactGate.stale_artifact_details.find((item) => item.role === 'runtime_contract');
   const recoveryCommand = staleReview.remediation_commands.find((command) => command.startsWith('vibepro review record'));
-  assert.match(recoveryCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recoveryCommand, /--status '<pass\|needs_changes\|block>'/);
   assert.match(recoveryCommand, /--strict-head-binding/);
   assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
   const freshnessGate = findGate(prepared, 'gate:pr_freshness');
@@ -588,7 +594,12 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
     .replace('<pass|needs_changes|block>', 'pass')
     .replace('<agent-id>', 'agent-strict-recovery')
     .replace('<agent-thread-id>', 'thread-strict-recovery')
-    .replaceAll('<artifact>', 'src/content-binding-target.js');
+    .replace('<agent-session-id>', 'session-strict-recovery')
+    .replace('<implementation-session-id>', 'session-implementation')
+    .replace('<agent-transcript>', 'src/content-binding-target.js')
+    .replace('<agent-close-evidence>', 'src/content-binding-target.js');
+  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-system', 'codex', '--agent-id', 'agent-strict-recovery', '--agent-thread-id', 'thread-strict-recovery', '--agent-session-id', 'session-strict-recovery']);
+  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-id', 'agent-strict-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
   await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
 
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
