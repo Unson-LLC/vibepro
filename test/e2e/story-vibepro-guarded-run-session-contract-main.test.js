@@ -175,6 +175,9 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
       status: 'unknown',
       source: null,
       updated_at: null
+    },
+    migration_compatibility: {
+      retry_policy_enforcement: 'legacy_advisory'
     }
   };
   assert.deepEqual(await runJson(repo, [
@@ -195,6 +198,49 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
   ]), JSON.parse(await readFile(stateFile, 'utf8')));
+});
+
+test('GAH-S-2 fresh CLI recovers quota, timeout, CI pending, and review timeout under persisted policy', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-retry-e2e-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro E2E']);
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded retry E2E' }] },
+    execution: { managed_worktree: 'disabled' }
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Guarded retry E2E\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize guarded retry E2E fixture']);
+
+  for (const code of ['runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout']) {
+    const created = await runJson(repo, [
+      'execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--retry-code', code, '--json'
+    ]);
+    const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+    const blocked = {
+      ...created,
+      status: 'blocked',
+      stop_reason: { code, message: `${code} fixture`, details: {} },
+      transitions: [...created.transitions, {
+        sequence: 2,
+        from: 'running',
+        to: 'blocked',
+        reason: `${code}_fixture`,
+        timestamp: created.updated_at
+      }]
+    };
+    await writeFile(stateFile, `${JSON.stringify(blocked, null, 2)}\n`);
+    const resumed = await runJson(repo, [
+      'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+    ]);
+    assert.equal(resumed.status, 'running', code);
+    assert.equal(resumed.retry_journal.at(-1).stop_code, code);
+    assert.equal(resumed.retry_journal.at(-1).retryable, true);
+  }
 });
 
 async function git(cwd, args) {

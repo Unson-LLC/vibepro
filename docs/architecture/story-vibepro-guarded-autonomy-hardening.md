@@ -11,12 +11,12 @@ Guarded Autonomy remains an orchestration boundary over the existing Guarded Run
 3. A limit produces a persisted `blocked` state and a typed, non-retryable stop reason. Unknown usage remains `null` with `status=unknown`; it is never coerced to zero.
 4. The safe-action registry remains closed to repository-local preparation actions. Critical gates, waivers, merge, deployment, and other external side effects remain outside it.
 5. Existing runtime-review provenance is reused: only a closed, read-only, current-HEAD, separate-session review dispatch may enter the Agent Review Gate.
-6. The cockpit derives active/wait time from authoritative transitions, suite/reuse/invalidation counters from the action journal, interruptions from the human-decision journal, and token/cost from runtime accounting. It renders Trusted PR-ready and outcome-side defect/risk values as `unknown` until observed, instead of manufacturing zeroes.
+6. The cockpit derives active/wait time from authoritative transitions, suite/reuse/invalidation counters only from typed measurements on completed action-journal entries, interruptions from the human-decision journal, and token/cost from runtime accounting. Text matches, failed actions, and an empty journal are not measurements. It renders unobserved values as `unknown`, instead of manufacturing zeroes.
 7. Portfolio advancement automatically snapshots those Run-derived measurements into the matching Story entry. Explicit attribution may add measured values but cannot cross Story/Run identity boundaries.
 
 ## Compatibility and rollback
 
-Legacy Run artifacts remain readable. A pre-hardening `0.2.0` artifact is identified by the absence of the new policy/accounting fields; its advisory attempt/iteration budget is migrated to bounded hardening defaults before enforcement, while usage remains unknown. Rollback disables `--until pr-ready` auto-advance and uses explicit `execute status`, `resume`, and existing manual Gate commands. No rollback may reinterpret a blocked Run as success.
+Legacy Run artifacts remain readable. A pre-hardening `0.2.0` artifact is identified by the absence of the new policy/accounting fields; its advisory attempt/iteration budget is migrated to bounded hardening defaults and receives an explicit `migration_compatibility.retry_policy_enforcement=legacy_advisory` marker, while usage remains unknown. All Runs without that marker enforce persisted retry classification and backoff for every stop code, including custom configured codes. Rollback disables `--until pr-ready` auto-advance and uses explicit `execute status`, `resume`, and existing manual Gate commands. No rollback may reinterpret a blocked Run as success.
 
 ## Failure boundaries
 

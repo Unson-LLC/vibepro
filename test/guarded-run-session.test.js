@@ -11,6 +11,7 @@ import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
   createGuardedRunSession,
+  deriveRunEfficiencyMetrics,
   renderGuardedRunError,
   renderGuardedRunSummary
 } from '../src/guarded-run-session.js';
@@ -499,6 +500,45 @@ test('GAH-S-2 persisted retry policy rejects non-retryable and interrupted backo
   );
 });
 
+test('GAH-S-2 persisted retry policy governs arbitrary configured stop codes', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, {
+    storyId: STORY_ID,
+    retryBackoffMs: 1000,
+    retryableStopCodes: ['vendor_transient']
+  });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'custom_transient',
+    stopReason: { code: 'vendor_transient', message: 'retry later', details: {} }
+  });
+  await assert.rejects(
+    session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_backoff_pending')
+  );
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const secondSession = second.session();
+  await secondSession.run(second.source, {
+    storyId: STORY_ID,
+    retryableStopCodes: ['vendor_transient']
+  });
+  await secondSession.transition(second.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'custom_permanent',
+    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: {} }
+  });
+  await assert.rejects(
+    secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_not_allowed')
+  );
+});
+
 test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
@@ -509,11 +549,46 @@ test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it t
   assert.match(summary, /human_interruptions: 0/);
   assert.match(summary, /active_ms: 0/);
   assert.match(summary, /wait_ms: 0/);
-  assert.match(summary, /full_suite_runs: 0/);
-  assert.match(summary, /evidence_reuse: 0/);
+  assert.match(summary, /full_suite_runs: unknown/);
+  assert.match(summary, /evidence_reuse: unknown/);
   assert.match(summary, /accepted_defects: unknown/);
   assert.match(summary, /risk_reductions: unknown/);
   assert.match(summary, /efficiency_basis: trusted_pr_ready\+accepted_defects\+risk_reductions_vs_active_wait_token_cost/);
+});
+
+test('GAH-S-10 efficiency metrics use only typed completed measurements and preserve unknown', () => {
+  const state = {
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    status: 'running',
+    created_at: FIRST_TIME,
+    updated_at: FIRST_TIME,
+    transitions: [],
+    action_journal: [
+      { status: 'completed', action_id: 'full_suite evidence_reuse', result_summary: 'mentions only' },
+      { status: 'failed', measurements: { full_suite_count: 9, evidence_reuse_count: 8 } },
+      { status: 'completed', measurements: { full_suite_count: 1, evidence_reuse_count: 2, evidence_invalidation_count: 1 } }
+    ]
+  };
+  assert.deepEqual(deriveRunEfficiencyMetrics({ ...state, action_journal: [] }), {
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    trusted_pr_ready_ms: null,
+    active_ms: null,
+    wait_ms: null,
+    total_tokens: null,
+    cost_usd: null,
+    full_suite_count: null,
+    evidence_reuse_count: null,
+    evidence_invalidation_count: null,
+    human_interruption_count: null,
+    accepted_defect_count: null,
+    risk_reduction_count: null
+  });
+  const metrics = deriveRunEfficiencyMetrics(state);
+  assert.equal(metrics.full_suite_count, 1);
+  assert.equal(metrics.evidence_reuse_count, 2);
+  assert.equal(metrics.evidence_invalidation_count, 1);
 });
 
 test('GAH-S-2 CLI rejects guarded policy options outside execute run', async (t) => {

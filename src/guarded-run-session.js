@@ -580,9 +580,14 @@ export function deriveRunEfficiencyMetrics(state) {
     else if (['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed'].includes(current.to)) waitMs += duration;
   }
   const actions = state.action_journal;
-  const countActions = (pattern) => Array.isArray(actions)
-    ? actions.filter((entry) => pattern.test(`${entry.action_id ?? ''} ${entry.result_summary ?? ''}`)).length
-    : null;
+  const measuredCount = (metric) => {
+    if (!Array.isArray(actions)) return null;
+    const measurements = actions
+      .filter((entry) => entry.status === 'completed' && isPlainRecord(entry.measurements))
+      .map((entry) => entry.measurements[metric])
+      .filter((value) => Number.isInteger(value) && value >= 0);
+    return measurements.length > 0 ? measurements.reduce((total, value) => total + value, 0) : null;
+  };
   const created = Date.parse(state.created_at);
   const updated = Date.parse(state.updated_at);
   return {
@@ -595,9 +600,9 @@ export function deriveRunEfficiencyMetrics(state) {
     wait_ms: hasDuration ? waitMs : null,
     total_tokens: state.usage_accounting?.total_tokens ?? null,
     cost_usd: state.usage_accounting?.cost_usd ?? null,
-    full_suite_count: countActions(/full[_ -]?suite/i),
-    evidence_reuse_count: countActions(/evidence[_ -]?reuse/i),
-    evidence_invalidation_count: countActions(/evidence[_ -]?(invalidate|stale)/i),
+    full_suite_count: measuredCount('full_suite_count'),
+    evidence_reuse_count: measuredCount('evidence_reuse_count'),
+    evidence_invalidation_count: measuredCount('evidence_invalidation_count'),
     human_interruption_count: Array.isArray(state.human_decision_journal) ? state.human_decision_journal.length : null,
     accepted_defect_count: null,
     risk_reduction_count: null
@@ -1342,9 +1347,7 @@ function appendRetryAudit(state, resumedAt) {
 
 function enforceRetryPolicy(state, resumedAt) {
   if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return;
-  const policyManaged = state.stop_reason.details?.retry_policy_enforced === true
-    || /^(runtime_|ci_|review_|action_)/.test(state.stop_reason.code);
-  if (!policyManaged) return;
+  if (state.migration_compatibility?.retry_policy_enforcement === 'legacy_advisory') return;
   const retryable = state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code) ?? false;
   if (!retryable) {
     throw contractError('retry_not_allowed', `Stop ${state.stop_reason.code} is not retryable by the persisted policy.`, {
@@ -1533,7 +1536,10 @@ function migrateRunState(state) {
     } : state.budget,
     retry_policy: state.retry_policy ?? { retryable_stop_codes: ['action_failed'], backoff_ms: 0 },
     provider_fallbacks: state.provider_fallbacks ?? [],
-    usage_accounting: state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null }
+    usage_accounting: state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null },
+    migration_compatibility: state.migration_compatibility ?? {
+      retry_policy_enforcement: 'legacy_advisory'
+    }
   };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
@@ -1597,6 +1603,11 @@ function validateRunShape(state) {
         || !Number.isInteger(state.retry_policy.backoff_ms)
         || state.retry_policy.backoff_ms < 0)) {
     throw contractError('invalid_state', 'Guarded Run retry policy is invalid.', { run_id: state.run_id });
+  }
+  if (state.migration_compatibility !== undefined
+      && (!isPlainRecord(state.migration_compatibility)
+        || state.migration_compatibility.retry_policy_enforcement !== 'legacy_advisory')) {
+    throw contractError('invalid_state', 'Guarded Run migration compatibility marker is invalid.', { run_id: state.run_id });
   }
   if (state.retry_journal !== undefined && (!Array.isArray(state.retry_journal)
       || state.retry_journal.some((entry) => !isPlainRecord(entry)
@@ -1678,6 +1689,13 @@ function validateRunShape(state) {
       throw contractError('invalid_state', 'Guarded Run action journal contains an invalid entry.', {
         run_id: state.run_id
       });
+    }
+    if (entry.measurements !== undefined
+        && (!isPlainRecord(entry.measurements)
+          || Object.entries(entry.measurements).some(([key, value]) => ![
+            'full_suite_count', 'evidence_reuse_count', 'evidence_invalidation_count'
+          ].includes(key) || !Number.isInteger(value) || value < 0))) {
+      throw contractError('invalid_state', 'Guarded Run action journal measurements are invalid.', { run_id: state.run_id });
     }
   }
   for (let index = 0; index < state.transitions.length; index += 1) {
