@@ -48,10 +48,12 @@ const DEPENDENCY_KEYS = new Set([
   'resolveGitIdentity',
   'preparePullRequest',
   'safeAutopilotPullRequest',
+  'actionRunners',
   'agentRuntimeCoordinator',
   'recordAgentReview'
 ]);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
+const ACTION_RUNNER_KEYS = new Set(['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare']);
 
 const defaultArtifactIo = { readFile, writeFile, rename, mkdir, readdir, rm };
 
@@ -78,6 +80,7 @@ export class GuardedRunError extends Error {
 export function createGuardedRunSession(dependencies = {}) {
   assertClosedKeys(dependencies, DEPENDENCY_KEYS, 'guarded Run dependency');
   assertClosedKeys(dependencies.artifactIo ?? {}, ARTIFACT_IO_KEYS, 'guarded Run artifact I/O dependency');
+  assertClosedKeys(dependencies.actionRunners ?? {}, ACTION_RUNNER_KEYS, 'guarded Run action runner');
   const deps = {
     now: dependencies.now ?? (() => new Date()),
     randomBytes: dependencies.randomBytes ?? nodeRandomBytes,
@@ -87,6 +90,7 @@ export function createGuardedRunSession(dependencies = {}) {
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
     preparePullRequest: dependencies.preparePullRequest ?? defaultPreparePullRequest,
     safeAutopilotPullRequest: dependencies.safeAutopilotPullRequest ?? defaultSafeAutopilotPullRequest,
+    actionRunners: { ...(dependencies.actionRunners ?? {}) },
     agentRuntimeCoordinator: dependencies.agentRuntimeCoordinator ?? null,
     recordAgentReview: dependencies.recordAgentReview ?? null,
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
@@ -308,6 +312,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
+      action_profile: requireActionProfile(options.actionProfile ?? 'legacy'),
       action_journal: [],
       next_best_action_decisions: []
     };
@@ -349,6 +354,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     ? undefined
     : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
   const result = await runSafeActionPlan(decisionState, {
+    profile: decisionState.action_profile ?? 'legacy',
     plan: selectedPlan,
     onProgress: async (progress) => {
       const checkpoint = {
@@ -364,19 +370,7 @@ async function orchestrateRun(deps, repoRoot, options) {
         'safe_action_checkpoint'
       );
     },
-    runners: {
-      pr_prepare: async () => {
-        const prepared = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
-          storyId: loaded.state.story_id,
-          baseRef: options.baseRef
-        });
-        return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
-      },
-      pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(
-        loaded.state.execution_context.root_realpath,
-        { storyId: loaded.state.story_id, baseRef: options.baseRef }
-      )
-    }
+    runners: buildActionRunners(deps, loaded, options)
   });
   let next = {
     ...decisionState,
@@ -464,6 +458,43 @@ async function orchestrateRun(deps, repoRoot, options) {
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };
+}
+
+function buildActionRunners(deps, loaded, options) {
+  const repoRoot = loaded.state.execution_context.root_realpath;
+  const storyId = loaded.state.story_id;
+  const injected = deps.actionRunners;
+  const unavailable = (actionId) => async () => ({
+    status: 'waiting_for_runtime',
+    stop_reason: 'runtime_required',
+    summary: `${actionId} action owner is not connected`,
+    recovery: { missing_action_runner: actionId }
+  });
+  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
+  autonomous.verify = injected.verify ?? (async () => deps.safeAutopilotPullRequest(repoRoot, {
+    storyId,
+    baseRef: options.baseRef
+  }));
+  autonomous.final_prepare = injected.final_prepare ?? (async () => {
+    const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
+    if (prepared.preparation?.gate_status?.ready_for_pr_create === true) {
+      return { status: 'pr_ready', artifact: prepared.artifacts?.json ?? null };
+    }
+    return {
+      status: 'blocked',
+      stop_reason: 'gate_recheck_required',
+      artifact: prepared.artifacts?.json ?? null,
+      recovery: { required_actions: prepared.preparation?.gate_status?.next_required_actions ?? [] }
+    };
+  });
+  if ((loaded.state.action_profile ?? 'legacy') === 'autonomous') return autonomous;
+  return {
+    pr_prepare: async () => {
+      const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
+      return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
+    },
+    pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(repoRoot, { storyId, baseRef: options.baseRef })
+  };
 }
 
 function hasCompletedResumeCheckpoint(state, resumeNodeId) {
@@ -806,7 +837,15 @@ async function createRun(deps, repoRoot, options) {
     }
     const createdAt = toIso(deps.now());
     const runId = generateRunId(createdAt, deps.randomBytes);
-    const state = buildInitialState({ storyId, runId, createdAt, binding, creationRequestId, policy: buildGuardedPolicy(options, createdAt) });
+    const state = buildInitialState({
+      storyId,
+      runId,
+      createdAt,
+      binding,
+      creationRequestId,
+      policy: buildGuardedPolicy(options, createdAt),
+      actionProfile: requireActionProfile(options.actionProfile ?? 'legacy')
+    });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
       ? getRunStatePath(binding.mirror.root_realpath, storyId, runId)
@@ -1363,7 +1402,7 @@ async function validateAuthorityBinding(deps, caller, state, authorityIdentity, 
   }
 }
 
-function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null, policy }) {
+function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null, policy, actionProfile = 'legacy' }) {
   return {
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     run_id: runId,
@@ -1371,6 +1410,7 @@ function buildInitialState({ storyId, runId, createdAt, binding, creationRequest
     ...(creationRequestId ? { creation_request_id: creationRequestId } : {}),
     target: GUARDED_RUN_TARGET,
     autonomy_mode: GUARDED_AUTONOMY_MODE,
+    ...(actionProfile === 'legacy' ? {} : { action_profile: actionProfile }),
     created_at: createdAt,
     updated_at: createdAt,
     status: 'running',
@@ -1669,6 +1709,7 @@ function migrateRunState(state) {
   const migrated = {
     ...state,
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
+    ...(state.action_profile && state.action_profile !== 'legacy' ? { action_profile: state.action_profile } : {}),
     action_journal: state.action_journal ?? [],
     next_best_action_decisions: state.next_best_action_decisions ?? [],
     human_decision_journal: state.human_decision_journal ?? [],
@@ -1722,6 +1763,7 @@ function validateRunShape(state) {
       run_id: state.run_id
     });
   }
+  requireActionProfile(state.action_profile ?? 'legacy');
   if (!STATUS_VALUES.has(state.status)) {
     throw contractError('unknown_status', `Unknown Run status: ${state.status}.`, {
       run_id: state.run_id,
@@ -2182,6 +2224,15 @@ function requireStoryId(value) {
     });
   }
   return storyId;
+}
+
+function requireActionProfile(value) {
+  if (value !== 'legacy' && value !== 'autonomous') {
+    throw contractError('invalid_action_profile', 'Action profile must be legacy or autonomous.', {
+      action_profile: value ?? null
+    });
+  }
+  return value;
 }
 
 function requireRunId(value) {

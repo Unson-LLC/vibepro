@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 
-const ALLOWED_CLASSIFICATIONS = new Set(['read_only', 'repo_local_safe']);
+const ALLOWED_CLASSIFICATIONS = new Set([
+  'read_only',
+  'repo_local_safe',
+  'agent_runtime_guarded',
+  'agent_runtime_read_only'
+]);
 const ESCAPE_ACTIONS = new Set(['ask', 'split', 'wait', 'stop', 'rediagnose']);
 const METRICS = Object.freeze([
   'expected_progress',

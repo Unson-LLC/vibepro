@@ -216,6 +216,59 @@ test('SAO-S-2 completed actions are checkpointed before the next action starts',
   assert.deepEqual(checkpoints, [['pr_prepare']]);
 });
 
+test('AAD-S-1 autonomous profile exposes the closed implementation DAG', () => {
+  const plan = buildSafeActionPlan(state, { profile: 'autonomous' });
+  assert.deepEqual(plan.map((action) => action.id), [
+    'diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'
+  ]);
+  assert.deepEqual(plan.map((action) => action.depends_on), [
+    [], ['diagnose'], ['prepare_artifacts'], ['implement'], ['verify'], ['review'], ['repair']
+  ]);
+  assert.ok(plan.every((action) => action.action_profile === 'autonomous'));
+});
+
+test('AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const plan = buildSafeActionPlan(autonomousState);
+  const calls = [];
+  const runners = Object.fromEntries(plan.map(({ id }) => [id, async () => {
+    calls.push(id);
+    return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
+  }]));
+  const first = await runSafeActionPlan(autonomousState, { runners });
+  assert.equal(first.state.status, 'pr_ready');
+  assert.deepEqual(calls, plan.map(({ id }) => id));
+  calls.length = 0;
+  const resumed = await runSafeActionPlan({ ...first.state, status: 'running' }, { runners });
+  assert.deepEqual(calls, []);
+  assert.equal(resumed.state.action_journal.length, plan.length);
+});
+
+test('AAD-S-3 autonomous profile rejects missing runners and forged plans', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const missing = await runSafeActionPlan(autonomousState, { runners: {} });
+  assert.equal(missing.state.stop_reason.code, 'action_forbidden');
+  const [diagnose, ...rest] = buildSafeActionPlan(autonomousState);
+  const forged = await runSafeActionPlan(autonomousState, {
+    plan: [{ ...diagnose, classification: 'repo_local_unsafe' }, ...rest],
+    runners: Object.fromEntries([diagnose, ...rest].map(({ id }) => [id, async () => ({ status: 'continue' })]))
+  });
+  assert.equal(forged.state.stop_reason.code, 'action_forbidden');
+});
+
+test('AAD-S-4 autonomous runners must return a typed result', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const result = await runSafeActionPlan(autonomousState, {
+    runners: { diagnose: async () => ({}) }
+  });
+  assert.equal(result.state.status, 'failed');
+  assert.match(result.state.stop_reason.details.recovery.failure, /Invalid safe action result status/);
+});
+
+test('AAD-S-5 unknown action profiles fail closed', () => {
+  assert.throws(() => buildSafeActionPlan(state, { profile: 'untrusted' }), /Unknown safe action profile/);
+});
+
 test('SAO-S-5 safe autopilot classifies missing and failed current evidence without executing commands', async () => {
   const preparation = {
     story: { story_id: 'story-safe' },

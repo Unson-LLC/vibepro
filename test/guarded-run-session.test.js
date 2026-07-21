@@ -42,6 +42,46 @@ function fixtureHumanDecision() {
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
   assert.throws(() => createGuardedRunSession({ service: {} }), /Unknown guarded Run dependency/);
   assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
+  assert.throws(() => createGuardedRunSession({ actionRunners: { shell: async () => ({ status: 'continue' }) } }), /Unknown guarded Run action runner/);
+});
+
+test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const calls = [];
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
+  const session = fixture.session({
+    actionRunners: Object.fromEntries(ids.map((id) => [id, async () => {
+      calls.push(id);
+      return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
+    }]))
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'pr_ready');
+  assert.deepEqual(calls, ids);
+  assert.equal(result.state.action_profile, 'autonomous');
+});
+
+test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'diagnose');
 });
 
 test('RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit', async (t) => {
