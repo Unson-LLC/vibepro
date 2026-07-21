@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-canonical-audit-gate-dag-replay
 title: Canonical Audit Gate DAG Replay Spec
+parent_design:
+  - vibepro-canonical-audit-gate-dag-replay
 related_architecture:
   - ../architecture/vibepro-canonical-audit-gate-dag-replay.md
 ---
