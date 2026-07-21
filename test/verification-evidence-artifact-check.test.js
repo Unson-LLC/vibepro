@@ -247,6 +247,19 @@ test('unit e2e typecheck passも任意commandを拒否する', async () => {
   }
 });
 
+test('build passは名前空間付きpackage scriptを実行可能なbuild checkとして受理する', async () => {
+  const repo = await makeWorkspaceRepo();
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-docs-build',
+    kind: 'build',
+    status: 'pass',
+    command: 'npm run docs:build'
+  });
+
+  assert.equal(latestCommand(result).command, 'npm run docs:build');
+  assert.equal(latestCommand(result).status, 'pass');
+});
+
 test('passing evidenceはrecognized prefix後のshell control operatorを拒否する', async () => {
   const repo = await makeWorkspaceRepo();
   for (const command of [

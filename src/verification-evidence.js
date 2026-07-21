@@ -176,7 +176,7 @@ export function assertCommandMatchesVerificationKind(kind, command, status, obse
     integration: integrationCheck,
     e2e: e2eCheck,
     typecheck: /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:typecheck|check|lint)\b|npx\s+(?:tsc|eslint)\b|(?:tsc|eslint)\b|cargo\s+check\b|go\s+vet\b|make\s+(?:typecheck|check|lint)\b)/i,
-    build: /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:build|compile|typecheck)\b|npx\s+(?:tsc|vite|next)\b|(?:tsc|vite|next)(?:\s+build)?\b|cargo\s+build\b|go\s+build\b|make(?:\s+(?:build|compile))?\b|docker\s+(?:build|compose\b.*\bbuild)\b)/i
+    build: /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:(?:[\w-]+:)*build(?:[:][\w-]+)*|compile|typecheck)\b|npx\s+(?:tsc|vite|next)\b|(?:tsc|vite|next)(?:\s+build)?\b|cargo\s+build\b|go\s+build\b|make(?:\s+(?:build|compile))?\b|docker\s+(?:build|compose\b.*\bbuild)\b)/i
   };
   const verifiedCiTranscript = /^CI\s+[^:]+:\s+https?:\/\//i.test(normalized)
     && artifactCheck?.status === 'verified'
