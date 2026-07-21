@@ -24,6 +24,8 @@ parent_design:
 
 ## Flow
 
+The workflow state transition matrix is `running -> running_detached -> completed -> review lifecycle closed`. A lost push notification keeps the dispatch in `running_detached` until Inbox reconcile advances the same logical dispatch; it never transitions through a replacement spawn.
+
 ```mermaid
 flowchart LR
   Parent["Parent wait"] -->|"600000ms"| Detached["running_detached"]
