@@ -277,7 +277,7 @@
         "period": "2026-07",
         "started_at": "2026-07-19",
         "due_at": null,
-      "category": "dev"
+        "category": "dev"
       },
       {
         "story_id": "story-vibepro-routing-profiles-rendered-projections",
@@ -303,7 +303,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-      "category": "product"
+        "category": "product"
       },
       {
         "story_id": "story-vibepro-agent-runtime-adapters",
@@ -315,7 +315,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-      "category": "platform"
+        "category": "platform"
       },
       {
         "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
@@ -327,7 +327,7 @@
         "period": "2026-07",
         "started_at": "2026-07-16",
         "due_at": null,
-      "category": "quality"
+        "category": "quality"
       },
       {
         "story_id": "story-vibepro-review-finding-repair-loop",
@@ -339,7 +339,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-      "category": "quality"
+        "category": "quality"
       },
       {
         "story_id": "story-vibepro-story-run-portfolio-controller",
@@ -397,8 +397,20 @@
         "split_plan_authority": "advisory_only",
         "pr_decision": "one_pr",
         "pr_decision_rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
+      },
+      {
+        "story_id": "story-vibepro-content-scoped-evidence-reuse-key",
+        "title": "Evidence reuse keyをhead束縛からcontent surface束縛へ移す",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-explicit-run-attribution-lineage"
+    "current_story_id": "story-vibepro-content-scoped-evidence-reuse-key"
   }
 }
