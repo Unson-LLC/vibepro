@@ -904,7 +904,7 @@ async function transitionRun(deps, repoRoot, options) {
   const to = options.to;
   if (!STATUS_VALUES.has(to)) throw contractError('unknown_status', `Unknown Run status: ${to}.`, { status: to });
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  if ((loaded.state.status === 'failed' || loaded.state.status === 'waiting_for_human') && to === 'running') {
+  if (RECOVERABLE_STATUSES.has(loaded.state.status) && to === 'running') {
     throw contractError('invalid_transition', `A ${loaded.state.status} Run can return to running only through execute resume.`, {
       run_id: loaded.state.run_id,
       from: loaded.state.status,
@@ -1348,7 +1348,7 @@ function appendRetryAudit(state, resumedAt) {
 function enforceRetryPolicy(state, resumedAt) {
   if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return;
   if (state.migration_compatibility?.retry_policy_enforcement === 'legacy_advisory') return;
-  const policyManaged = state.stop_reason.details?.retry_policy_enforced === true
+  const policyManaged = state.stop_reason.details?.retry_policy_scope === 'managed'
     || state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code)
     || /^(runtime_|ci_|review_|action_)/.test(state.stop_reason.code);
   if (!policyManaged) return;
@@ -2094,7 +2094,10 @@ function isTypedStopReason(value) {
       || typeof value.message !== 'string' || value.message.length === 0) {
     return false;
   }
-  return !Object.prototype.hasOwnProperty.call(value, 'details') || isPlainRecord(value.details);
+  if (!Object.prototype.hasOwnProperty.call(value, 'details')) return true;
+  if (!isPlainRecord(value.details)) return false;
+  return value.details.retry_policy_scope === undefined
+    || ['managed', 'manual'].includes(value.details.retry_policy_scope);
 }
 
 function serializeState(state) {

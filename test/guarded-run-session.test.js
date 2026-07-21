@@ -471,7 +471,7 @@ test('GAH-S-2 persisted retry policy rejects non-retryable and interrupted backo
     runId: RUN_ID,
     to: 'blocked',
     reason: 'retryable_failure',
-    stopReason: { code: 'action_failed', message: 'retry later', details: { retry_policy_enforced: true } }
+    stopReason: { code: 'action_failed', message: 'retry later', details: { retry_policy_scope: 'managed' } }
   });
   await assert.rejects(
     session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
@@ -492,7 +492,7 @@ test('GAH-S-2 persisted retry policy rejects non-retryable and interrupted backo
     runId: RUN_ID,
     to: 'blocked',
     reason: 'non_retryable_failure',
-    stopReason: { code: 'action_denied', message: 'do not retry', details: { retry_policy_enforced: true } }
+    stopReason: { code: 'action_denied', message: 'do not retry', details: { retry_policy_scope: 'managed' } }
   });
   await assert.rejects(
     secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
@@ -531,7 +531,7 @@ test('GAH-S-2 persisted retry policy governs arbitrary configured stop codes', a
     runId: RUN_ID,
     to: 'blocked',
     reason: 'custom_permanent',
-    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: { retry_policy_enforced: true } }
+    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: { retry_policy_scope: 'managed' } }
   });
   await assert.rejects(
     secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
@@ -1449,7 +1449,7 @@ test('GRS-S-4 GRS-S-5 INV-005 GAH-S-7 lifecycle matrix accepts only the closed t
   const allows = (from, to) => {
     if (from === 'pr_ready') return to === 'pr_ready';
     if (from === 'cancelled') return false;
-    if ((from === 'failed' || from === 'waiting_for_human') && to === 'running') return false;
+    if (recoverable.has(from) && to === 'running') return false;
     if (from === 'running') return recoverable.has(to) || to === 'cancelled' || to === 'pr_ready';
     return to === 'running'
       || (recoverable.has(to) && to !== from)
@@ -1574,13 +1574,13 @@ test('GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop
   );
   assert.equal(await readFile(artifact, 'utf8'), before);
 
-  const resumed = await session.transition(fixture.source, {
+  await assert.rejects(session.transition(fixture.source, {
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'running',
-    reason: 'manual_resume',
-    stopReason: stopReason('must_be_cleared')
-  });
+    reason: 'manual_resume'
+  }), errorWithCode('invalid_transition'));
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(resumed.stop_reason, null);
 });
 
@@ -1592,7 +1592,8 @@ test('GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persist
     { code: '', message: 'message' },
     { code: 'code', message: '' },
     { code: 'code', message: 'message', details: [] },
-    { code: 'code', message: 'message', details: new Date(FIRST_TIME) }
+    { code: 'code', message: 'message', details: new Date(FIRST_TIME) },
+    { code: 'code', message: 'message', details: { retry_policy_scope: 'unknown' } }
   ];
   for (const [index, value] of invalidStopReasons.entries()) {
     const fixture = await createFixture(t, { mode: 'disabled' });

@@ -7,7 +7,7 @@ Guarded Autonomy remains an orchestration boundary over the existing Guarded Run
 ## Components and flow
 
 1. `execute run --until pr-ready --autonomy guarded` validates a closed policy input and persists it with the new Run.
-2. Every orchestration or resume reads the authoritative Run and evaluates attempts, iterations, deadline, token, and cost limits before executing an action. Resume additionally checks persisted retry classification and backoff before changing state; rejected retries do not append a successful retry journal entry.
+2. Every orchestration or resume reads the authoritative Run and evaluates attempts, iterations, deadline, token, and cost limits before executing an action. Every recoverable-to-running transition is exclusive to `execute resume`; the lower-level transition API rejects it. Resume additionally checks persisted retry classification and backoff before changing state; rejected retries do not append a successful retry journal entry.
 3. A limit produces a persisted `blocked` state and a typed, non-retryable stop reason. Unknown usage remains `null` with `status=unknown`; it is never coerced to zero.
 4. The safe-action registry remains closed to repository-local preparation actions. Critical gates, waivers, merge, deployment, and other external side effects remain outside it.
 5. Existing runtime-review provenance is reused: only a closed, read-only, current-HEAD, separate-session review dispatch may enter the Agent Review Gate.
@@ -16,7 +16,7 @@ Guarded Autonomy remains an orchestration boundary over the existing Guarded Run
 
 ## Compatibility and rollback
 
-Legacy Run artifacts remain readable. A pre-hardening `0.2.0` artifact is identified by the absence of the new policy/accounting fields; its advisory attempt/iteration budget is migrated to bounded hardening defaults and receives an explicit `migration_compatibility.retry_policy_enforcement=legacy_advisory` marker, while usage remains unknown. All Runs without that marker enforce persisted retry classification and backoff for every stop code, including custom configured codes. Rollback disables `--until pr-ready` auto-advance and uses explicit `execute status`, `resume`, and existing manual Gate commands. No rollback may reinterpret a blocked Run as success.
+Legacy Run artifacts remain readable. A pre-hardening `0.2.0` artifact is identified by the absence of the new policy/accounting fields; its advisory attempt/iteration budget is migrated to bounded hardening defaults and receives an explicit `migration_compatibility.retry_policy_enforcement=legacy_advisory` marker, while usage remains unknown. All Runs without that marker enforce persisted retry classification and backoff for built-in operational codes, codes listed by the persisted policy, and custom stops explicitly typed with `details.retry_policy_scope=managed`. Operator/advisory stops may be typed `manual`; they still resume only through `execute resume`, but are not classified as automatic retries. Rollback disables `--until pr-ready` auto-advance and uses explicit `execute status`, `resume`, and existing manual Gate commands. No rollback may reinterpret a blocked Run as success.
 
 ## Failure boundaries
 

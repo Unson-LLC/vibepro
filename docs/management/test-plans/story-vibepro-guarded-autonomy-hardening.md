@@ -7,7 +7,7 @@
 | success | current HEAD reaches `pr_ready` only after Gate readiness | Guarded Run orchestration tests |
 | human decision | `waiting_for_human`, typed decision, same-Run resume | human checkpoint tests |
 | repair/no progress | bounded escape or typed stop; no infinite loop | next-best-action and repair-loop tests |
-| quota/timeout/CI pending/review timeout | persisted policy governs built-in and custom codes; fresh CLI recovery records a retry audit for each operational stop | `GAH-S-2 persisted retry policy...`, `GAH-S-2 persisted retry policy governs arbitrary...`, and `GAH-S-2 fresh CLI recovers...` |
+| quota/timeout/CI pending/review timeout | persisted policy governs built-in, configured, and explicitly managed custom codes; all recoverable-to-running paths require resume and fresh CLI records a retry audit for each operational stop | `GAH-S-2 persisted retry policy...`, `GAH-S-2 persisted retry policy governs arbitrary...`, `GRS-S-4 GRS-S-5 INV-005...`, and `GAH-S-2 fresh CLI recovers...` |
 | budget/deadline | typed `blocked` stop with observed and limit | GAH-S-1 unit test |
 | critical gate | no waiver or merge action is available | safe-action closed-registry tests |
 | cancel | terminal, idempotent cancellation | lifecycle tests |
