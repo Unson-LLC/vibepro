@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runCli } from '../src/cli.js';
 
@@ -10,8 +11,33 @@ export function createEntrypointIo(runtime = process) {
   };
 }
 
+export async function resolveEntrypointIo(runtime = process) {
+  const io = createEntrypointIo(runtime);
+  if (runtime.guardedRunDependencies) io.guardedRunDependencies = runtime.guardedRunDependencies;
+  if (runtime.codexSubagentHost) {
+    io.codexSubagentHost = runtime.codexSubagentHost;
+    return io;
+  }
+  const moduleSpecifier = runtime.env?.VIBEPRO_CODEX_HOST_MODULE;
+  if (!moduleSpecifier) return io;
+  const cwd = typeof runtime.cwd === 'function' ? runtime.cwd() : process.cwd();
+  const moduleUrl = moduleSpecifier.startsWith('file:')
+    ? moduleSpecifier
+    : pathToFileURL(path.resolve(cwd, moduleSpecifier)).href;
+  const hostModule = await import(moduleUrl);
+  const factory = hostModule.createCodexSubagentHost ?? hostModule.default;
+  const host = typeof factory === 'function'
+    ? await factory({ env: runtime.env, cwd })
+    : factory;
+  if (!host || typeof host !== 'object') {
+    throw new TypeError('VIBEPRO_CODEX_HOST_MODULE must export createCodexSubagentHost or a default host object');
+  }
+  io.codexSubagentHost = host;
+  return io;
+}
+
 export async function main(argv = process.argv.slice(2), runtime = process) {
-  const result = await runCli(argv, createEntrypointIo(runtime));
+  const result = await runCli(argv, await resolveEntrypointIo(runtime));
   runtime.exitCode = result.exitCode;
   return result;
 }

@@ -31,5 +31,9 @@ export function createCodexGuardedRunBridge({
       dispatchId: resolvedDispatchId
     });
   };
-  return Object.freeze({ inbox, adapter, coordinator, session, resumeFromWake });
+  if (typeof host?.registerResumeHandler !== 'function') {
+    throw new TypeError('Codex host must implement registerResumeHandler for push resume delivery');
+  }
+  const ready = Promise.resolve(host.registerResumeHandler({ resume: resumeFromWake }));
+  return Object.freeze({ inbox, adapter, coordinator, session, resumeFromWake, ready });
 }

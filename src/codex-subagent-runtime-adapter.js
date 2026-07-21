@@ -196,6 +196,12 @@ function findByProviderRun(dispatches, providerRunId) {
 }
 
 function toInboxEvent(request, started, providerEvent, now) {
+  if (providerEvent.provider_run_id && providerEvent.provider_run_id !== started.provider_run_id) {
+    throw new Error(`Codex completion provider_run_id mismatch: ${providerEvent.provider_run_id}`);
+  }
+  if (providerEvent.dispatch_id && providerEvent.dispatch_id !== request.dispatch_id) {
+    throw new Error(`Codex completion dispatch_id mismatch: ${providerEvent.dispatch_id}`);
+  }
   const kind = providerEvent.kind ?? providerEvent.status;
   if (!['progress', 'partial_result', 'completed', 'failed', 'cancelled'].includes(kind)) throw new Error(`unsupported Codex completion event: ${kind}`);
   return {

@@ -334,6 +334,20 @@ test('CDI-S-8 missing completion delivery capability is rejected before spawn', 
   } }), /subscribeCompletion/);
 });
 
+test('CDI-S-8 provider completion correlation mismatch is rejected before Inbox persistence', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-provider-mismatch-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  await assert.rejects(host.emit({
+    event_id: 'wrong-provider', kind: 'completed', provider_run_id: 'another-provider', surface_hash: 'surface-a',
+    result: { changed_files: [], head_sha: 'head-a', summary: 'must not persist' }
+  }), /provider_run_id mismatch/);
+  const observed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.notEqual(observed.dispatch.status, 'completed');
+});
+
 test('CDI-S-7 completion for a different surface is contained and cannot close review', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-surface-mismatch-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));

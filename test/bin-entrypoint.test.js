@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createEntrypointIo, main } from '../bin/vibepro.js';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { createEntrypointIo, main, resolveEntrypointIo } from '../bin/vibepro.js';
 
 test('binary entrypoint IO keeps stdout, stderr, and environment reference identity', () => {
   const runtime = {
@@ -37,4 +40,17 @@ test('binary entrypoint does not enumerate environment values or print a secret 
   assert.equal(result.exitCode, 0);
   assert.equal(runtime.exitCode, 0);
   assert.doesNotMatch(`${stdout.join('')}\n${stderr.join('')}`, /must-not-leak/);
+});
+
+test('binary entrypoint resolves an explicit Codex host module without enumerating env', async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-host-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(path.join(root, 'host.mjs'), 'export function createCodexSubagentHost({ cwd }) { return { marker: cwd }; }\n');
+  const env = new Proxy({ VIBEPRO_CODEX_HOST_MODULE: './host.mjs' }, {
+    ownKeys() { throw new Error('entrypoint must not enumerate environment values'); }
+  });
+  const io = await resolveEntrypointIo({
+    stdout: { write() {} }, stderr: { write() {} }, env, cwd: () => root
+  });
+  assert.equal(io.codexSubagentHost.marker, root);
 });

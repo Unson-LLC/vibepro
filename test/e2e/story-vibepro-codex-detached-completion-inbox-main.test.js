@@ -34,6 +34,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
     async spawn({ idempotency_key }) { lifecycle.push('spawn'); spawns += 1; return { provider_run_id: `codex-${idempotency_key}`, agent_identity: 'codex-reviewer', thread_id: 'codex-thread' }; },
     async status() { return { status: 'running', attempts: 1, usage_accounting: { cost_usd: 0.1 } }; },
     async shutdown() { shutdowns += 1; return { status: 'cancelled' }; },
+    registerResumeHandler({ resume }) { lifecycle.push('register-resume'); wakeHandler = resume; },
     async wake(notification) {
       lifecycle.push(`wake:${notification.event_id}`);
       pushResume = wakeHandler?.({ story_id: STORY_ID, run_id: RUN_ID, ...notification });
@@ -61,6 +62,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   });
 
   const parent = createBridge();
+  await parent.ready;
   const run = await parent.session.run(repoRoot, { storyId: STORY_ID });
   assert.equal(run.run_id, RUN_ID);
   const request = {
@@ -69,7 +71,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
     requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
   };
   const started = await parent.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, request });
-  assert.deepEqual(lifecycle.slice(0, 2), ['subscribe', 'spawn']);
+  assert.deepEqual(lifecycle.slice(0, 3), ['register-resume', 'subscribe', 'spawn']);
 
   clock = '2026-07-22T01:12:03.000Z';
   const detached = await parent.session.pollRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
@@ -78,7 +80,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   assert.equal((await parent.session.status(repoRoot, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
 
   const successor = createBridge();
-  wakeHandler = (notification) => successor.resumeFromWake(notification);
+  await successor.ready;
   await completionHandler({
     event_id: 'e2e-completion', kind: 'completed', surface_hash: 'surface-e2e',
     result: { completion_status: 'completed', changed_files: [], head_sha: headSha, test_suggestions: [], summary: 'E2E review complete', agent_identity: 'codex-reviewer', thread_id: 'codex-thread', lifecycle: 'closed' }
