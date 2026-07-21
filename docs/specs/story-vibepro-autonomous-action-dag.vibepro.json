@@ -1,0 +1,52 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "AAD-S-1",
+      "type": "scenario",
+      "statement": "An autonomous Run executes diagnose, prepare_artifacts, implement, verify, review, repair, and final_prepare in dependency order, and reaches pr_ready only through final_prepare.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "AUTONOMOUS_REGISTRY"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-1"}]}
+    },
+    {
+      "id": "AAD-S-2",
+      "type": "invariant",
+      "statement": "A completed action checkpoint is reused only for the same Run, profile, canonical action, and input HEAD; a changed HEAD is evaluated under a new idempotency key.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "actionKey"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-2"}]}
+    },
+    {
+      "id": "AAD-S-3",
+      "type": "scenario",
+      "statement": "A missing canonical owner produces waiting_for_runtime, while an unknown action, profile, dependency bypass, or forged plan fails closed before execution.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria"}], "code_refs": [{"file": "src/guarded-run-session.js", "anchor": "actionRunners"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3"}, {"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "forged plans"}]}
+    },
+    {
+      "id": "AAD-S-4",
+      "type": "invariant",
+      "statement": "Autonomous runners return only continue, pr_ready, waiting_for_human, waiting_for_runtime, blocked, or failed; untyped results are rejected.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "assertActionResult"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-4"}]}
+    },
+    {
+      "id": "AAD-S-5",
+      "type": "invariant",
+      "statement": "The autonomous registry excludes arbitrary shell, merge, waiver, and deploy, while profile omission preserves the byte-compatible legacy plan and journal contract.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "LEGACY_REGISTRY"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-5"}]}
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Autonomous action execution trust boundary",
+      "mermaid": "flowchart LR\n  Input[Story and current HEAD] --> Plan[Closed autonomous Action DAG]\n  Plan --> Owners[Injected canonical owner runners]\n  Owners --> Journal[HEAD-bound checkpoint journal]\n  Journal --> Final[final_prepare Gate SSOT]\n  Unknown[Unknown profile action or forged plan] -. rejected .-> Stop[typed fail-closed stop]\n  Missing[Missing runtime owner] -. no silent skip .-> Wait[waiting_for_runtime]\n  Plan -. excludes .-> SideEffects[merge waiver deploy arbitrary shell]"
+    }
+  ]
+}

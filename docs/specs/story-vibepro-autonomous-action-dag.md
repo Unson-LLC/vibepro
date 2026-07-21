@@ -9,9 +9,33 @@ code_refs:
 test_refs:
   - test/safe-action-orchestrator.test.js
   - test/guarded-run-session.test.js
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Input["Story and current HEAD"] --> Plan["Closed autonomous Action DAG"]
+        Plan --> Owners["Injected canonical owner runners"]
+        Owners --> Journal["HEAD-bound checkpoint journal"]
+        Journal --> Final["final_prepare Gate SSOT"]
+        Unknown["Unknown profile, action, or forged plan"] -. rejected .-> Stop["typed fail-closed stop"]
+        Missing["Missing runtime owner"] -. no silent skip .-> Wait["waiting_for_runtime"]
+        Plan -. excludes .-> SideEffects["merge, waiver, deploy, arbitrary shell"]
 ---
 
 # Autonomous Action DAG Spec
+
+## Threat model
+
+```mermaid
+flowchart LR
+  Input["Story and current HEAD"] --> Plan["Closed autonomous Action DAG"]
+  Plan --> Owners["Injected canonical owner runners"]
+  Owners --> Journal["HEAD-bound checkpoint journal"]
+  Journal --> Final["final_prepare Gate SSOT"]
+  Unknown["Unknown profile, action, or forged plan"] -. rejected .-> Stop["typed fail-closed stop"]
+  Missing["Missing runtime owner"] -. no silent skip .-> Wait["waiting_for_runtime"]
+  Plan -. excludes .-> SideEffects["merge, waiver, deploy, arbitrary shell"]
+```
 
 ## S-001 Closed profiles
 
