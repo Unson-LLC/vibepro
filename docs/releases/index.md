@@ -77,3 +77,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:364:start -->
 - [PR #364](https://github.com/Unson-LLC/vibepro/pull/364) — [2026-07](/releases/2026-07): story-vibepro-story-run-portfolio-controller - 複数Storyを一つの長大sessionへ混載せず、Storyごとに閉じて順次進めたい
 <!-- vibepro-release-index-pr:364:end -->
+
+<!-- vibepro-release-index-pr:366:start -->
+- [PR #366](https://github.com/Unson-LLC/vibepro/pull/366) — [2026-07](/releases/2026-07): story-vibepro-guarded-autonomy-hardening - 自律ループを無限実行や自己Reviewにせず、費用・時間・停止理由まで運用可能にしたい
+<!-- vibepro-release-index-pr:366:end -->
