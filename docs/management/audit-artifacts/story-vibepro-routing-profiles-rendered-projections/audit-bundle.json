@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-routing-profiles-rendered-projections",
   "source": "execute_merge",
-  "promoted_at": "2026-07-21T08:13:54.344Z",
+  "promoted_at": "2026-07-21T08:26:36.353Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-index.json",
@@ -12,7 +12,9 @@
     "evidence_depth": "standard",
     "compacted": true,
     "persisted_for_main_audit": true,
-    "why_compacted": [],
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded"
+    ],
     "excludes": [
       "duplicated decision index body",
       "duplicated cost summary body",
@@ -38,11 +40,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:335e92681961d7aa7e605b8f9208f64d87d74f9086aa82482f736c96f256c0f3",
-    "compressed_hash": "sha256:3a1b365f736da8d6cc000193dced27d46acece1260579c5de7156907848a4841",
-    "expanded_bytes": 45952,
-    "compressed_bytes": 6027,
-    "expanded_line_count": 1130,
+    "content_hash": "sha256:05ed99039a8e82dc539efeb89a1041b4a385f88d6a3cd4b8e1d8e688f13617fe",
+    "compressed_hash": "sha256:0b8a86389d0eb5f35564fed8e5ed8fc83e4cca39800cccc367f26ed8a1af9836",
+    "expanded_bytes": 46024,
+    "compressed_bytes": 6047,
+    "expanded_line_count": 1131,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "evidence_reuse",
@@ -60,14 +62,14 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-routing-profiles-rendered-projections",
     "cost": {
-      "compressed_bytes": 6027,
-      "expanded_bytes": 45952,
-      "expanded_line_count": 1130,
+      "compressed_bytes": 6047,
+      "expanded_bytes": 46024,
+      "expanded_line_count": 1131,
       "persisted_line_count": 1
     }
   },
   "merge": {
-    "status": "merged",
+    "status": "merged_externally",
     "pr_url": "https://github.com/Unson-LLC/vibepro/pull/367",
     "merge_commit_sha": "6dc82c248cb3c49d09132ad60ec36700197a1283",
     "merged_at": "2026-07-21T08:13:52Z",
@@ -97,7 +99,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:335e92681961d7aa7e605b8f9208f64d87d74f9086aa82482f736c96f256c0f3"
+      "content_hash": "sha256:05ed99039a8e82dc539efeb89a1041b4a385f88d6a3cd4b8e1d8e688f13617fe"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +191,10 @@
       "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
-      "digest": "sha256:833b7c9f5803d2f405d221684f356c9f25cf73d976e32d8c5f0b5c4cd688bd56",
-      "audit_digest": "sha256:9ad8bf46fce267fd60da02c284c22f57f8a680db8567c310606e8d678c90b3f5",
-      "line_count": 2634,
-      "raw_line_count": 6297,
+      "digest": "sha256:f71e1f03beba8c36006fdca2a1f4bcaf36586277c3c862e5407e265a2748107a",
+      "audit_digest": "sha256:6a593c689516de75cfd500d2246a01bfbe427621c0d389b4825320ceb3d8305b",
+      "line_count": 2852,
+      "raw_line_count": 6416,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -207,8 +209,8 @@
       "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
-      "digest": "sha256:8aa9adb5450bcdc8a7a5a2e8b17c0d50614f05d05ff815c59177b16043fd6cab",
-      "audit_digest": "sha256:8aa9adb5450bcdc8a7a5a2e8b17c0d50614f05d05ff815c59177b16043fd6cab",
+      "digest": "sha256:1cbdb4ee62dbb14ffc5714c8f9d4f2510bfd520270d56f3b42d4428e93aa718e",
+      "audit_digest": "sha256:1cbdb4ee62dbb14ffc5714c8f9d4f2510bfd520270d56f3b42d4428e93aa718e",
       "line_count": 1063,
       "raw_line_count": 1063,
       "audit_scope": "judgment_evidence_v1",
