@@ -306,13 +306,15 @@ function validateRuntimeReviewDispatch(dispatch, currentHeadSha) {
 async function orchestrateRun(deps, repoRoot, options) {
   if (options.dryRun) {
     const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
+    const profileResolution = resolveActionProfileDecision(options);
     const preview = {
       run_id: 'dry-run',
       story_id: requireStoryId(options.storyId),
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
-      action_profile: resolveRequestedActionProfile(options),
+      action_profile: profileResolution.effective,
+      ...(profileResolution.fallback_reason ? { action_profile_resolution: profileResolution } : {}),
       action_journal: [],
       next_best_action_decisions: []
     };
@@ -323,19 +325,20 @@ async function orchestrateRun(deps, repoRoot, options) {
   if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human') {
     return { plan: [], state: loaded.state };
   }
-  const policyStop = evaluatePolicyStop(loaded.state, deps.now());
+  const governedState = applyAutonomousFeaturePolicy(loaded.state, options);
+  const policyStop = evaluatePolicyStop(governedState, deps.now());
   if (policyStop) {
-    const stopped = applyPolicyStop(loaded.state, policyStop, toIso(deps.now()));
+    const stopped = applyPolicyStop(governedState, policyStop, toIso(deps.now()));
     await persistAuthorityThenMirror(deps, stopped, loaded.authorityFile, loaded.mirrorFile, 'guarded_policy_stop');
     return { plan: [], state: stopped };
   }
-  const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
-  const decision = selectControllerCheckpoint(loaded.state, options, previousDecision);
-  const resumePlan = buildResumeSafeActionPlan(loaded.state);
+  const previousDecision = governedState.next_best_action_decisions?.at(-1) ?? null;
+  const decision = selectControllerCheckpoint(governedState, options, previousDecision);
+  const resumePlan = buildResumeSafeActionPlan(governedState);
   const decisionState = {
-    ...loaded.state,
-    iteration: loaded.state.iteration + 1,
-    next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
+    ...governedState,
+    iteration: governedState.iteration + 1,
+    next_best_action_decisions: [...(governedState.next_best_action_decisions ?? []), decision]
   };
   const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
   if (!resumePlan && controllerEnabled && isEscapeDecision(decision)) {
@@ -371,7 +374,7 @@ async function orchestrateRun(deps, repoRoot, options) {
         'safe_action_checkpoint'
       );
     },
-    runners: buildActionRunners(deps, loaded, options)
+    runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
   });
   let next = {
     ...decisionState,
@@ -688,7 +691,11 @@ export function renderGuardedRunSummary(value) {
         `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`
       ].join('\n')
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- active_ms: ${efficiency.active_ms ?? 'unknown'}\n- wait_ms: ${efficiency.wait_ms ?? 'unknown'}\n- trusted_pr_ready_ms: ${efficiency.trusted_pr_ready_ms ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- full_suite_runs: ${efficiency.full_suite_count ?? 'unknown'}\n- evidence_reuse: ${efficiency.evidence_reuse_count ?? 'unknown'}\n- evidence_invalidations: ${efficiency.evidence_invalidation_count ?? 'unknown'}\n- accepted_defects: ${efficiency.accepted_defect_count ?? 'unknown'}\n- risk_reductions: ${efficiency.risk_reduction_count ?? 'unknown'}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- efficiency_basis: trusted_pr_ready+accepted_defects+risk_reductions_vs_active_wait_token_cost\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Pending Decision\n\n${pendingDecisionLines}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  const profileResolution = state.action_profile_resolution;
+  const profileSummary = profileResolution
+    ? `${profileResolution.requested} -> ${profileResolution.effective} (${profileResolution.fallback_reason})`
+    : `${state.action_profile ?? 'legacy'} (no fallback)`;
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- action_profile: ${profileSummary}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- active_ms: ${efficiency.active_ms ?? 'unknown'}\n- wait_ms: ${efficiency.wait_ms ?? 'unknown'}\n- trusted_pr_ready_ms: ${efficiency.trusted_pr_ready_ms ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- full_suite_runs: ${efficiency.full_suite_count ?? 'unknown'}\n- evidence_reuse: ${efficiency.evidence_reuse_count ?? 'unknown'}\n- evidence_invalidations: ${efficiency.evidence_invalidation_count ?? 'unknown'}\n- accepted_defects: ${efficiency.accepted_defect_count ?? 'unknown'}\n- risk_reductions: ${efficiency.risk_reduction_count ?? 'unknown'}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- efficiency_basis: trusted_pr_ready+accepted_defects+risk_reductions_vs_active_wait_token_cost\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Pending Decision\n\n${pendingDecisionLines}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 export function deriveRunEfficiencyMetrics(state) {
@@ -838,6 +845,7 @@ async function createRun(deps, repoRoot, options) {
     }
     const createdAt = toIso(deps.now());
     const runId = generateRunId(createdAt, deps.randomBytes);
+    const profileResolution = resolveActionProfileDecision(options);
     const state = buildInitialState({
       storyId,
       runId,
@@ -845,7 +853,8 @@ async function createRun(deps, repoRoot, options) {
       binding,
       creationRequestId,
       policy: buildGuardedPolicy(options, createdAt),
-      actionProfile: resolveRequestedActionProfile(options)
+      actionProfile: profileResolution.effective,
+      actionProfileResolution: profileResolution.fallback_reason ? profileResolution : null
     });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
@@ -1403,7 +1412,7 @@ async function validateAuthorityBinding(deps, caller, state, authorityIdentity, 
   }
 }
 
-function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null, policy, actionProfile = 'legacy' }) {
+function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null, policy, actionProfile = 'legacy', actionProfileResolution = null }) {
   return {
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     run_id: runId,
@@ -1412,6 +1421,7 @@ function buildInitialState({ storyId, runId, createdAt, binding, creationRequest
     target: GUARDED_RUN_TARGET,
     autonomy_mode: GUARDED_AUTONOMY_MODE,
     ...(actionProfile === 'legacy' ? {} : { action_profile: actionProfile }),
+    ...(actionProfileResolution ? { action_profile_resolution: actionProfileResolution } : {}),
     created_at: createdAt,
     updated_at: createdAt,
     status: 'running',
@@ -2237,8 +2247,31 @@ function requireActionProfile(value) {
 }
 
 function resolveRequestedActionProfile(options = {}) {
+  return resolveActionProfileDecision(options).effective;
+}
+
+function resolveActionProfileDecision(options = {}) {
   const requested = requireActionProfile(options.actionProfile ?? 'legacy');
-  return requested === 'autonomous' && options.autonomousEnabled === false ? 'legacy' : requested;
+  const disabled = requested === 'autonomous' && options.autonomousEnabled === false;
+  return {
+    requested,
+    effective: disabled ? 'legacy' : requested,
+    fallback_reason: disabled ? 'autonomous_feature_disabled' : null
+  };
+}
+
+function applyAutonomousFeaturePolicy(state, options = {}) {
+  if ((state.action_profile ?? 'legacy') !== 'autonomous' || options.autonomousEnabled !== false) return state;
+  const { action_profile: _disabledProfile, ...legacyState } = state;
+  return {
+    ...legacyState,
+    action_profile_resolution: {
+      requested: 'autonomous',
+      effective: 'legacy',
+      fallback_reason: 'autonomous_feature_disabled'
+    },
+    resume_from_node_id: null
+  };
 }
 
 function requireRunId(value) {

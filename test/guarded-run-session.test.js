@@ -76,6 +76,39 @@ test('AAD-S-5 Guarded Run records explicit autonomous disable as the legacy prof
     autonomousEnabled: false
   });
   assert.equal(state.action_profile, undefined);
+  assert.deepEqual(state.action_profile_resolution, {
+    requested: 'autonomous',
+    effective: 'legacy',
+    fallback_reason: 'autonomous_feature_disabled'
+  });
+  assert.match(renderGuardedRunSummary(state), /autonomous -> legacy \(autonomous_feature_disabled\)/);
+});
+
+test('AAD-S-5 disabling autonomous execution migrates an existing Run before resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let autonomousCalls = 0;
+  const session = fixture.session({
+    actionRunners: {
+      diagnose: async () => {
+        autonomousCalls += 1;
+        return { status: 'continue' };
+      }
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    autonomousEnabled: false
+  });
+  assert.equal(autonomousCalls, 0);
+  assert.equal(result.state.action_profile, undefined);
+  assert.deepEqual(result.state.action_profile_resolution, {
+    requested: 'autonomous',
+    effective: 'legacy',
+    fallback_reason: 'autonomous_feature_disabled'
+  });
+  assert.match(renderGuardedRunSummary(result.state), /autonomous -> legacy \(autonomous_feature_disabled\)/);
 });
 
 test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async (t) => {

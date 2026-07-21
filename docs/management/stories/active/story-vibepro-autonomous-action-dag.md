@@ -34,7 +34,7 @@ updated_at: 2026-07-21
 - [ ] AAD-S-2: dependency未完了、policy禁止、未知Actionは実行されない。
 - [ ] AAD-S-3: Run/node/HEAD単位のidempotencyとprocess restart resumeが成立する。
 - [ ] AAD-S-4: Action結果は次node、型付き停止、または`pr_ready`だけへ遷移する。
-- [ ] AAD-S-5: legacy二段planとの互換・feature disable経路がある。
+- [ ] AAD-S-5: legacy二段planとの互換・feature disable経路があり、新規・既存Runのrequested/effective profileとfallback理由が永続化・表示される。
 - [ ] AAD-S-6: 全transitionと禁止組合せのcontract testがある。
 - [ ] AAD-S-7: composition portはowner結果のartifact参照だけをjournalへ保存し、owner未接続をsilent skipせず型付き停止する。production owner配線は後続の`story-vibepro-production-runtime-connectors`が所有する。
 

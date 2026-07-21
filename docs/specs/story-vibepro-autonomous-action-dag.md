@@ -55,4 +55,4 @@ runner結果は`continue`、`pr_ready`、`waiting_for_human`、`waiting_for_runt
 
 ## S-005 Safety and compatibility
 
-任意shell、merge、waiver、deploy、未知Actionはcanonical planに入らない。既存Runとprofile未指定呼出しはlegacy挙動を保つ。autonomous profileの無効化はlegacyへ明示fallbackし、silent downgradeを行わない。
+任意shell、merge、waiver、deploy、未知Actionはcanonical planに入らない。既存Runとprofile未指定呼出しはlegacy挙動を保つ。autonomous profileの無効化は新規・既存Runの双方をlegacyへ明示fallbackし、requested profile、effective profile、typed fallback reasonを永続stateとsummaryへ残してsilent downgradeを行わない。
