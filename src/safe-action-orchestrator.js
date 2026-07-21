@@ -125,9 +125,13 @@ export async function runSafeActionPlan(state, options = {}) {
         ? { ...(rawResult ?? {}), status: 'continue' }
         : rawResult;
       assertActionResult(result);
-      const resolvedHead = result.output_head_sha
-        ?? await options.resolveCurrentHead?.({ state: current, action, result })
+      // Runner output is untrusted: always bind action evidence and any suffix
+      // rebinding to the repository HEAD resolved after the runner completes.
+      const resolvedHead = await options.resolveCurrentHead?.({ state: current, action, result })
         ?? current.current_head_sha;
+      if (result.output_head_sha !== undefined && result.output_head_sha !== resolvedHead) {
+        throw new Error(`Safe action output HEAD does not match the authoritative current HEAD: reported=${result.output_head_sha} actual=${resolvedHead}`);
+      }
       const boundResult = { ...result, output_head_sha: resolvedHead };
       if (result.status === 'pr_ready' && profile === 'autonomous' && action.id !== 'final_prepare') {
         throw new Error(`Only autonomous final_prepare may return pr_ready: ${action.id}`);

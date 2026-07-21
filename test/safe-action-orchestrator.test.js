@@ -255,7 +255,10 @@ test('AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix', 
     return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
   }]));
 
-  const result = await runSafeActionPlan(autonomousState, { runners });
+  const result = await runSafeActionPlan(autonomousState, {
+    runners,
+    resolveCurrentHead: async () => calls.includes('implement') ? newHead : oldHead
+  });
 
   assert.equal(result.state.status, 'pr_ready');
   assert.equal(result.state.current_head_sha, newHead);
@@ -278,6 +281,30 @@ test('AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix', 
     result.state.action_journal.find((entry) => entry.action_id === 'implement').idempotency_key,
     result.state.action_journal.find((entry) => entry.action_id === 'verify').idempotency_key
   );
+});
+
+test('AAD-S-3 forged output HEAD cannot rebind a suffix or reach pr_ready', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const calls = [];
+  const runners = Object.fromEntries(buildSafeActionPlan(autonomousState).map(({ id }) => [id, async () => {
+    calls.push(id);
+    if (id === 'implement') return { status: 'continue', output_head_sha: 'forged-head' };
+    return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
+  }]));
+
+  const result = await runSafeActionPlan(autonomousState, {
+    runners,
+    resolveCurrentHead: async () => state.current_head_sha
+  });
+
+  assert.equal(result.state.status, 'failed');
+  assert.equal(result.state.stop_reason.code, 'action_failed');
+  assert.match(result.state.stop_reason.details.recovery.failure, /authoritative current HEAD/);
+  assert.deepEqual(calls, ['diagnose', 'prepare_artifacts', 'implement']);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), [
+    'diagnose', 'prepare_artifacts', 'implement'
+  ]);
+  assert.equal(result.state.action_journal.at(-1).status, 'failed');
 });
 
 test('AAD-S-3 autonomous profile rejects missing runners and forged plans', async () => {
