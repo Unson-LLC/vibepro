@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { getExecutionStatus, reconcileExecutionState, renderExecutionStateSummary, startExecution } from '../../src/execution-state.js';
 import { buildManagedWorktreeGate } from '../../src/managed-worktree-gate.js';
 import { evaluateManagedWorktreeCommandContext } from '../../src/managed-worktree.js';
+import { recordVerificationEvidence, renderVerificationEvidenceSummary } from '../../src/verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-vibepro-managed-worktree-policy-resync';
@@ -132,4 +133,64 @@ test('default execute status output surfaces a failed policy sync', async (t) =>
     'the default text summary must surface the fail-soft sync failure');
   assert.match(summary, /policy_sync_reason: /);
   assert.match(summary, /policy_sync_failed/, 'the managed_worktree headline must flag the failure');
+});
+
+// story-vibepro-managed-worktree-policy-resync ac:4
+// verify record's plain-text output is also a primary policy-drift surface: a policy_sync
+// failure observed by this command's own gate/context refresh must show up without --json.
+test('verify record text output surfaces managed worktree context including a failed policy sync', async (t) => {
+  const root = await makeRepoFixture();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  const result = await recordVerificationEvidence(root, {
+    storyId: STORY_ID,
+    kind: 'unit',
+    status: 'fail',
+    command: 'npm run test:run',
+    managedWorktreeContext: {
+      status: 'satisfied',
+      mode: 'preferred',
+      required: false,
+      command_name: 'verify record',
+      reason: 'verify record is running inside the recorded managed worktree',
+      managed_worktree: {
+        path: path.join(root, '.vibepro-worktrees', STORY_ID),
+        branch: `vibepro/${STORY_ID}`,
+        actual_branch: `vibepro/${STORY_ID}`,
+        dirty: true,
+        raw_dirty: true,
+        policy_sync: {
+          status: 'failed',
+          reason: 'source repo config is unreadable',
+          sections_updated: [],
+          last_event: { status: 'synced', sections_updated: ['budgets'], synced_at: '2026-07-22T00:00:00.000Z' }
+        }
+      }
+    }
+  });
+
+  const summary = renderVerificationEvidenceSummary(result);
+  assert.match(summary, /managed_worktree: preferred\/satisfied\/policy_sync_failed/,
+    'the headline must flag the policy sync failure');
+  assert.match(summary, /policy_sync: failed/);
+  assert.match(summary, /policy_sync_reason: source repo config is unreadable/);
+  assert.match(summary, /policy_sync_last_event: synced \(budgets\) at 2026-07-22T00:00:00\.000Z/);
+  assert.match(summary, /raw_dirty: true/, 'pre-existing dirty context must also surface in text output');
+});
+
+// Evidence recorded before this surface existed has no managed_worktree_context.
+test('verify record text output reports not_recorded when managed worktree context is absent', async (t) => {
+  const root = await makeRepoFixture();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  const result = await recordVerificationEvidence(root, {
+    storyId: STORY_ID,
+    kind: 'unit',
+    status: 'fail',
+    command: 'npm run test:run'
+  });
+
+  const summary = renderVerificationEvidenceSummary(result);
+  assert.match(summary, /managed_worktree: not_recorded/);
+  assert.match(summary, /## Managed Worktree Context\n\n- status: not_recorded/);
 });

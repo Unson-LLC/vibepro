@@ -175,7 +175,9 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
   if (exists) await ensureManagedWorktreeGitExclude(worktreePath);
   const policySync = exists
     ? await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
-      .catch((error) => ({ status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
+      // Fail-soft, but keep the durable audit stamp attached: a failed sync must not
+      // hide the last sync that actually happened before the failure.
+      .catch((error) => withLastPolicySyncEvent(worktreePath, { status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
     : { status: 'skipped', reason: 'managed worktree is missing', sections_updated: [] };
   const actualBranch = await gitOptional(worktreePath, ['branch', '--show-current']) || existing?.branch || null;
   const dirty = await collectDirty(worktreePath);

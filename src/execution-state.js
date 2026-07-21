@@ -45,9 +45,11 @@ export async function getExecutionStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute status');
   const existing = await readManagedExecutionState(repoRoot, storyId);
   if (existing) {
-    // Pass the stored state unrefreshed: buildExecutionState refreshes exactly once.
-    // A second refresh would re-diff the already-synced config and overwrite the
-    // policy_sync audit outcome (synced -> unchanged) before it is ever observed.
+    // Pass the stored state unrefreshed: buildExecutionState performs the refresh.
+    // The policy_sync audit does not depend on refresh count — the last real sync is
+    // stamped durably in the worktree (.vibepro/policy-sync.json via
+    // recordPolicySyncEvent/withLastPolicySyncEvent) and every refresh resurfaces it
+    // as policy_sync.last_event. Refreshing here too would only duplicate git work.
     const managedWorktree = existing.managed_worktree ?? null;
     const state = await buildExecutionState(repoRoot, {
       ...options,
@@ -106,8 +108,9 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
     startedAt: existing?.started_at,
-    // Unrefreshed on purpose: buildExecutionState performs the single refresh
-    // whose policy_sync outcome is persisted (see getExecutionStatus).
+    // Unrefreshed on purpose: buildExecutionState performs the refresh, and the
+    // policy_sync audit survives any refresh count via the durable worktree stamp
+    // (see getExecutionStatus).
     managedWorktree: existing?.managed_worktree ?? null,
     preserveStartedAt: true
   });
