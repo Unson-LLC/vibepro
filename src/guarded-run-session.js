@@ -112,10 +112,17 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
-  const managedRoot = loaded.state.execution_context?.root_realpath;
-  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== managedRoot) {
+  const dispatchAuthority = runtimeDispatchAuthority(loaded.state);
+  if (operation === 'dispatch' && dispatchAuthority.error) {
+    throw contractError('worktree_mismatch', dispatchAuthority.error, {
+      run_id: loaded.state.run_id,
+      expected_authority_kind: loaded.state.execution_context?.authority_kind ?? null
+    });
+  }
+  const authorityRoot = dispatchAuthority.root_realpath;
+  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== authorityRoot) {
     throw new GuardedRunError('worktree_mismatch', 'runtime dispatch must target the Guarded Run managed worktree', {
-      expected: managedRoot,
+      expected: authorityRoot,
       actual: options.request?.requirements?.managed_worktree ?? null
     });
   }
@@ -125,7 +132,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   if (operation !== 'dispatch' && !currentDispatch) {
     throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
   }
-  const identityBefore = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+  const identityBefore = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
   if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
     throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
       expected_head_sha: loaded.state.current_head_sha,
@@ -150,14 +157,29 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     };
   }
   if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
-    const actualIdentity = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+    const actualIdentity = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
     if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
       throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
         reported_head_sha: result.dispatch.result?.head_sha ?? null,
         actual_head_sha: actualIdentity.head_sha
       });
     }
-    result = { ...result, state: { ...result.state, current_head_sha: actualIdentity.head_sha } };
+    const reboundLineage = result.dispatch.lineage
+      ? { ...result.dispatch.lineage, head_sha: actualIdentity.head_sha }
+      : null;
+    const reboundDispatch = reboundLineage
+      ? { ...result.dispatch, lineage: reboundLineage }
+      : result.dispatch;
+    result = {
+      ...result,
+      dispatch: reboundDispatch,
+      state: {
+        ...result.state,
+        current_head_sha: actualIdentity.head_sha,
+        runtime_dispatches: (result.state.runtime_dispatches ?? []).map((dispatch) =>
+          dispatch.dispatch_id === reboundDispatch.dispatch_id ? reboundDispatch : dispatch)
+      }
+    };
   }
   if (operation === 'poll' && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
     result = {
@@ -180,6 +202,24 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     `agent_runtime_${operation}`
   );
   return result;
+}
+
+function runtimeDispatchAuthority(state) {
+  const kind = state?.execution_context?.authority_kind;
+  const managed = state?.managed_worktree;
+  if (kind === 'managed') {
+    if (!managed?.path || !managed?.branch) {
+      return { root_realpath: null, error: 'Guarded Run managed worktree authority is incomplete' };
+    }
+    return { root_realpath: managed.path, branch: managed.branch, error: null };
+  }
+  if (kind === 'repository' || kind === 'source_fallback') {
+    if (!state?.execution_context?.root_realpath) {
+      return { root_realpath: null, error: 'Guarded Run repository authority is incomplete' };
+    }
+    return { root_realpath: state.execution_context.root_realpath, branch: null, error: null };
+  }
+  return { root_realpath: null, error: 'Guarded Run authority kind is incomplete' };
 }
 
 const FALLBACK_RUNTIME_STOP_CODES = new Set([

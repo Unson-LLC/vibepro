@@ -226,7 +226,9 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
       'runtime_result_timeout'
     ), current);
     const next = { ...current, status: result.completion_status, result, updated_at: iso(now), completed_at: iso(now), stop_reason: null };
-    next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, result, next);
+    next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, result, next, {
+      allowImplementationHeadAdvance: current.role === 'implementation'
+    });
     assertProviderIdentityUniqueness([
       ...(options.providerIdentityRecords ?? []),
       ...(runState.runtime_dispatches ?? []).filter((item) => item.dispatch_id !== current.dispatch_id),
@@ -513,14 +515,14 @@ function upsertDispatch(state, record) {
 
 function createDispatchLineage(state, input, dispatchId, runId, headSha) {
   const managedWorktree = state?.managed_worktree;
-  const worktreeRoot = managedWorktree?.path ?? state?.execution_context?.root_realpath;
+  const worktreeRoot = managedWorktree?.path;
   const branch = managedWorktree?.branch;
   if (!worktreeRoot || !branch || !/^[0-9a-f]{40}$/i.test(headSha)) return null;
   const authority = { story_id: state.story_id, run_id: runId, worktree_root: worktreeRoot, branch, head_sha: headSha };
   return createRunLineageEnvelope({ authority, ...(input.lineage ?? {}), dispatch_id: dispatchId });
 }
 
-function appendRuntimeObservation(lineage, provider, observation, record) {
+function appendRuntimeObservation(lineage, provider, observation, record, options = {}) {
   if (!lineage) return null;
   try {
     return appendProviderObservation(lineage, {
@@ -531,7 +533,12 @@ function appendRuntimeObservation(lineage, provider, observation, record) {
       story_id: observation.story_id,
       run_id: observation.run_id,
       dispatch_id: observation.dispatch_id,
-      head_sha: observation.head_sha
+      // The provider may report the commit it produced. That is an observation,
+      // not authority: Guarded Run rebinds the lineage only after checking the
+      // managed worktree's actual HEAD.
+      head_sha: options.allowImplementationHeadAdvance && observation.head_sha !== lineage.head_sha
+        ? undefined
+        : observation.head_sha
     });
   } catch (error) {
     if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);

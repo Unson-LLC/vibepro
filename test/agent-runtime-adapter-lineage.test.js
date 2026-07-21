@@ -110,7 +110,7 @@ test('does not promote caller worktree or branch when Guarded Run authority is i
     root_realpath: undefined,
     branch: undefined,
     current_branch: undefined,
-    execution_context: undefined,
+    execution_context: { root_realpath: '/repo/worktree' },
     managed_worktree: { path: undefined, branch: undefined }
   };
   const result = await coordinator.dispatch(incompleteState, {

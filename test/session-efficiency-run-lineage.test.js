@@ -155,6 +155,27 @@ test('Run lineage module exposes canonical repository resolution for audit consu
   assert.match(unavailable.reason, /not found/);
 });
 
+test('canonical lineage rejects partial current managed authority instead of promoting legacy fields', async () => {
+  const { root } = await fixture();
+  await writeCanonicalRun(root, {
+    dispatch: false,
+    authority: {
+      worktree_root: root,
+      branch: 'codex/legacy-fallback',
+      current_head_sha: HEAD_SHA,
+      execution_context: { authority_kind: 'managed', root_realpath: root, git_dir_realpath: path.join(root, '.git') },
+      managed_worktree: { path: null, branch: null }
+    }
+  });
+
+  const resolved = await resolveCanonicalRunLineage(root, root, {
+    storyId: STORY_ID,
+    runId: 'run-alpha'
+  });
+  assert.equal(resolved.status, 'unavailable');
+  assert.match(resolved.reason, /incomplete or invalid/);
+});
+
 test('session efficiency audit preserves embedded-lineage heuristics when no run id is requested', async () => {
   const { root, codexHome } = await fixture();
   const result = await collectSessionEfficiencyAudit(root, {

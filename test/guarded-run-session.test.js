@@ -216,7 +216,7 @@ test('Guarded Run reuses the same persisted legacy dispatch identity within one 
 });
 
 test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {
-  const fixture = await createFixture(t, { mode: 'disabled' });
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   const nextHead = 'b'.repeat(40);
   let runtimeStatus = 'running';
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
@@ -234,19 +234,21 @@ test('ARA-S-3 Guarded Run collects an implementation result after the managed wo
     runId: RUN_ID,
     request: {
       adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation',
-      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.managed_worktree.path }
     }
   });
-  fixture.setHead(fixture.source, nextHead);
+  fixture.setHead(fixture.managed, nextHead);
   runtimeStatus = 'completed';
   const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.ok(completed.dispatch.result, JSON.stringify(completed));
   assert.equal(completed.dispatch.result.head_sha, nextHead);
+  assert.equal(completed.dispatch.lineage.head_sha, nextHead);
   assert.equal(completed.state.current_head_sha, nextHead);
   assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).current_head_sha, nextHead);
 });
 
 test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree', async (t) => {
-  const fixture = await createFixture(t, { mode: 'disabled' });
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   let runtimeStatus = 'running';
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
     id: 'fixture-runtime',
@@ -260,11 +262,36 @@ test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD d
   const run = await session.run(fixture.source, { storyId: STORY_ID });
   const started = await session.dispatchRuntime(fixture.source, {
     storyId: STORY_ID, runId: RUN_ID,
-    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.managed_worktree.path } }
   });
-  fixture.setHead(fixture.source, 'b'.repeat(40));
+  fixture.setHead(fixture.managed, 'b'.repeat(40));
   runtimeStatus = 'completed';
   await assert.rejects(session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id }), errorWithCode('runtime_head_mismatch'));
+});
+
+test('Guarded Run rejects dispatch when managed authority is partial even with execution_context present', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const session = fixture.session({ agentRuntimeCoordinator: createAgentRuntimeCoordinator({ adapters: [] }) });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const partial = {
+    ...run,
+    managed_worktree: { ...run.managed_worktree, path: null, branch: null },
+    worktree_root: fixture.source,
+    branch: 'caller-observed-branch'
+  };
+  await Promise.all([fixture.managed, fixture.source].map((root) => writeFile(fixture.runFile(root, run.run_id), `${JSON.stringify(partial, null, 2)}\n`)));
+
+  await assert.rejects(
+    session.dispatchRuntime(fixture.source, {
+      storyId: STORY_ID,
+      runId: run.run_id,
+      request: {
+        adapter_id: 'fixture-runtime', task_id: 'partial-authority', role: 'implementation',
+        requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+      }
+    }),
+    errorWithCode('worktree_mismatch')
+  );
 });
 
 test('ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed', async (t) => {

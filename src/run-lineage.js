@@ -41,11 +41,21 @@ function text(value) {
 
 function authorityOf(value = {}) {
   const authority = value.authority ?? value.run ?? value;
+  const authorityKind = authority.execution_context?.authority_kind;
+  const managed = authority.managed_worktree;
+  const currentManagedAuthority = authorityKind === 'managed';
+  const legacyOrUnmanaged = !managed || authorityKind === 'repository' || authorityKind === 'source_fallback';
   return {
     story_id: authority.story_id,
     run_id: authority.run_id,
-    worktree_root: authority.worktree_root ?? authority.root_realpath ?? authority.execution_context?.root_realpath,
-    branch: authority.branch ?? authority.current_branch,
+    worktree_root: currentManagedAuthority
+      ? managed?.path
+      : (legacyOrUnmanaged
+          ? authority.worktree_root ?? authority.root_realpath ?? authority.execution_context?.root_realpath
+          : undefined),
+    branch: currentManagedAuthority
+      ? managed?.branch
+      : (legacyOrUnmanaged ? authority.branch ?? authority.current_branch : undefined),
     head_sha: authority.head_sha ?? authority.current_head_sha
   };
 }
@@ -353,13 +363,7 @@ async function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
   sessionEvents = []
 }) {
   const sourceArtifact = toWorkspaceRelative(authorityRoot, authorityPath);
-  const authority = {
-    story_id: state.story_id,
-    run_id: state.run_id,
-    worktree_root: state.worktree_root ?? state.root_realpath ?? state.execution_context?.root_realpath,
-    branch: state.branch ?? state.current_branch,
-    head_sha: state.current_head_sha ?? state.head_sha
-  };
+  const authority = authorityOf({ ...state, story_id: state.story_id, run_id: state.run_id });
   const authorityError = validateCanonicalRunAuthority(authority, authorityRoot, {
     storyId,
     runId,
