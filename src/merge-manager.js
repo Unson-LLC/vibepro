@@ -671,7 +671,7 @@ function unavailableArtifactTokenAccounting(source, storyId, reason) {
     id,
     label: bucketLabels[id],
     estimated_tokens: null,
-    event_count: 0,
+    event_count: null,
     ratio_of_classified_exposure: null,
     ratio_of_session_tokens: null,
     matched_signals: []
@@ -681,8 +681,8 @@ function unavailableArtifactTokenAccounting(source, storyId, reason) {
     estimated_tokens: null,
     unique_estimated_tokens: null,
     duplicate_estimated_tokens: null,
-    event_count: 0,
-    unique_digest_count: 0
+    event_count: null,
+    unique_digest_count: null
   });
   return {
     status: 'unavailable',
@@ -717,7 +717,7 @@ function unavailableArtifactTokenAccounting(source, storyId, reason) {
       duplicate_over_unique_threshold: 1
     },
     top_exposures: [],
-    unmatched_event_count: 0,
+    unmatched_event_count: null,
     unmatched_estimated_tokens: null,
     window: storyId ? { story_id: storyId } : null,
     reason

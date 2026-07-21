@@ -1373,8 +1373,15 @@ test('session efficiency audit applies high risk only to strict-over-associated 
   );
 });
 
-test('session efficiency audit fails attribution closed when a selected JSONL row is malformed', async () => {
+test('session efficiency audit preserves valid rows and accounts malformed JSONL as unattributed', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const baseline = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
   const original = await readFile(sessionPath, 'utf8');
   await writeFile(sessionPath, `${original}{malformed-json\n`);
 
@@ -1386,11 +1393,14 @@ test('session efficiency audit fails attribution closed when a selected JSONL ro
     now: '2026-06-27T14:00:00.000Z'
   });
 
-  assert.equal(result.attribution.status, 'unavailable');
-  assert.match(result.attribution.reason, /session JSONL parse failed/);
-  assert.equal(result.session.token_accounting.status, 'unavailable');
-  assert.match(result.session.token_accounting.reason, /session JSONL parse failed/);
-  assert.equal(result.audit_readiness.blockers.includes('session_attribution_unavailable'), true);
+  assert.equal(result.attribution.status, 'available');
+  assert.equal(result.attribution.categories.unclassified, baseline.attribution.categories.unclassified + 1);
+  assert.equal(result.session.token_accounting.status, 'available');
+  assert.equal(
+    result.session.artifact_token_accounting.unmatched_event_count,
+    baseline.session.artifact_token_accounting.unmatched_event_count + 1
+  );
+  assert.equal(result.audit_readiness.blockers.includes('session_attribution_unavailable'), false);
 });
 
 test('session efficiency audit fails attribution closed when a selected JSONL file cannot be read', async () => {

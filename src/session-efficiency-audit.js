@@ -1035,7 +1035,9 @@ async function buildSessionAttribution(entries, { repoRoot, storyId, windowStart
       type: entry.type ?? null,
       estimated_tokens: transcriptText ? estimateTextTokens(transcriptText) : 0
     };
-    if (currentStory && refs.includes(currentStory)) {
+    if (entry.type === 'malformed_jsonl') {
+      buckets.unclassified.push(item);
+    } else if (currentStory && refs.includes(currentStory)) {
       buckets.strict.push(item);
     } else if (refs.some((ref) => ref !== currentStory)) {
       buckets.other_story.push({ ...item, story_refs: refs });
@@ -1366,23 +1368,31 @@ async function readCodexSessionEntries(filePaths) {
         });
       } catch (error) {
         malformedRows.push({ source_path: sourcePath, line: index + 1, error: error.message });
+        entries.push({
+          entry: {
+            type: 'malformed_jsonl',
+            payload: { text: lines[index] }
+          },
+          sourcePath,
+          line: index + 1
+        });
       }
     }
-  }
-  if (malformedRows.length > 0) {
-    const first = malformedRows[0];
-    return {
-      status: 'unavailable',
-      entries: [],
-      reason: `session JSONL parse failed at ${first.source_path}:${first.line}; ${malformedRows.length} malformed row(s) found`
-    };
   }
   entries.sort((a, b) => (
     (normalizeTimeMs(a.entry.timestamp) ?? 0) - (normalizeTimeMs(b.entry.timestamp) ?? 0)
     || a.sourcePath.localeCompare(b.sourcePath)
     || a.line - b.line
   ));
-  return { status: 'available', entries, reason: null };
+  const firstMalformed = malformedRows[0];
+  return {
+    status: 'available',
+    entries,
+    reason: firstMalformed
+      ? `session JSONL partially parsed; malformed row retained as unattributed at ${firstMalformed.source_path}:${firstMalformed.line}; ${malformedRows.length} malformed row(s) found`
+      : null,
+    malformed_rows: malformedRows
+  };
 }
 
 function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, timestampMs }) {
@@ -1392,7 +1402,9 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
   if (!text) return null;
   const estimatedTokens = estimateTextTokens(text);
   const isReplayedContext = COMPACTION_REPLAY_ENTRY_TYPES.has(entry?.type);
-  const classification = isReplayedContext
+  const classification = entry?.type === 'malformed_jsonl'
+    ? null
+    : isReplayedContext
     ? { bucket_id: 'replayed_context', matched_signals: ['compaction_replacement_history'] }
     : classifySessionExposureText(text, { storyId });
   const provenanceBucket = classification ? classifyExposureProvenance(entry, classification) : null;

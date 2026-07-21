@@ -13090,7 +13090,10 @@ test('execute merge dry-run keeps absent and unreadable cost accounting explicit
   assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
   assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
   assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.event_count, null);
   assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.event_count, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.unmatched_event_count, null);
   assert.match(unreadable.result.merge.cost_accounting_collection.reason, /ENOENT/);
   assert.equal(unreadable.result.merge.warnings.some((warning) => warning.includes('Cost accounting file could not be read')), true);
 
