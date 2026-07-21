@@ -111,6 +111,98 @@ test('AAD-S-5 disabling autonomous execution migrates an existing Run before res
   assert.match(renderGuardedRunSummary(result.state), /autonomous -> legacy \(autonomous_feature_disabled\)/);
 });
 
+test('AAD-S-5 public CLI selects autonomous execution and reports an explicit new-Run fallback', async (t) => {
+  const autonomousFixture = await createFixture(t, { mode: 'disabled' });
+  const autonomousOut = capture();
+  const autonomous = await runCli([
+    'execute', 'run', autonomousFixture.source,
+    '--story-id', STORY_ID,
+    '--action-profile', 'autonomous',
+    '--json'
+  ], {
+    stdout: autonomousOut,
+    stderr: capture(),
+    guardedRunDependencies: autonomousFixture.dependencies()
+  });
+  assert.equal(autonomous.exitCode, 0);
+  assert.equal(JSON.parse(autonomousOut.text()).action_profile, 'autonomous');
+
+  const disabledFixture = await createFixture(t, { mode: 'disabled' });
+  const disabledOut = capture();
+  const disabled = await runCli([
+    'execute', 'run', disabledFixture.source,
+    '--story-id', STORY_ID,
+    '--action-profile', 'autonomous',
+    '--disable-autonomous-actions'
+  ], {
+    stdout: disabledOut,
+    stderr: capture(),
+    guardedRunDependencies: disabledFixture.dependencies()
+  });
+  assert.equal(disabled.exitCode, 0);
+  assert.match(disabledOut.text(), /autonomous -> legacy \(autonomous_feature_disabled\)/);
+});
+
+test('AAD-S-5 public CLI disables autonomous execution before resuming an existing Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let autonomousCalls = 0;
+  const dependencies = fixture.dependencies({
+    actionRunners: {
+      diagnose: async () => {
+        autonomousCalls += 1;
+        return { status: 'continue' };
+      }
+    }
+  });
+  await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--action-profile', 'autonomous',
+    '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+
+  const resumedOut = capture();
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', RUN_ID,
+    '--until', 'pr-ready',
+    '--disable-autonomous-actions',
+    '--json'
+  ], { stdout: resumedOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  assert.equal(autonomousCalls, 0);
+  assert.deepEqual(JSON.parse(resumedOut.text()).state.action_profile_resolution, {
+    requested: 'autonomous',
+    effective: 'legacy',
+    fallback_reason: 'autonomous_feature_disabled'
+  });
+});
+
+test('AAD-S-5 public CLI rejects invalid and off-path autonomous options', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const invalidError = capture();
+  const invalid = await runCli([
+    'execute', 'run', fixture.source,
+    '--story-id', STORY_ID,
+    '--action-profile', 'unknown',
+    '--json'
+  ], { stdout: capture(), stderr: invalidError, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(invalid.exitCode, 2);
+  assert.equal(JSON.parse(invalidError.text()).stop_reason.code, 'invalid_action_profile');
+
+  const offPathError = capture();
+  const offPath = await runCli([
+    'execute', 'status', fixture.source,
+    '--story-id', STORY_ID,
+    '--run-id', RUN_ID,
+    '--disable-autonomous-actions',
+    '--json'
+  ], { stdout: capture(), stderr: offPathError, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(offPath.exitCode, 2);
+  assert.equal(JSON.parse(offPathError.text()).stop_reason.code, 'autonomous_feature_option_not_supported');
+});
+
 test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();

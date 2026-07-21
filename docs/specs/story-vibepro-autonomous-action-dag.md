@@ -41,6 +41,8 @@ flowchart LR
 
 Action profileは`legacy`または`autonomous`のみ。`legacy`は既存2 node、`autonomous`は`diagnose`、`prepare_artifacts`、`implement`、`verify`、`review`、`repair`、`final_prepare`の順序と直接依存を持つ。autonomous Action objectはprofile、node、input HEAD、idempotency keyを含む。legacy Actionは既存shapeをbyte-compatibleに保ち、profile欠落をlegacyとして扱う。
 
+CLIは`execute run --action-profile legacy|autonomous`を公開し、`execute run|resume --disable-autonomous-actions`をfeature-disable境界とする。`--action-profile`のrun以外での利用、disable指定のrun/resume以外での利用、未知profileは型付きエラーでfail closedにする。既存autonomous Runのdisableは`resume --until pr-ready`でAction実行前に適用する。
+
 ## S-002 Composition runners
 
 Guarded Run dependencyはcanonical autonomous node名だけを受け付ける閉じたrunner mapを持つ。既存`preparePullRequest`と`safeAutopilotPullRequest`はlegacy runnerのまま維持する。runnerはowner結果のartifact参照をjournalへ受け渡し、欠落時は実行を飛ばさず型付き停止にする。production owner adapterの具体配線は`story-vibepro-production-runtime-connectors`で行う。
