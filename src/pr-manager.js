@@ -12405,6 +12405,8 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
   const status = missing.length === 0 ? 'passed' : 'missing_coverage';
   const acceptedCanonicalTerms = acceptedCanonicalEvidenceTermsForModes(missing.map((mode) => mode.id));
+  const verificationCommand = `vibepro verify record . --id <story-id> --kind <unit|integration|e2e> --status pass --command "<executable test command>" --target "<tested path>" --scenario "${missing[0]?.id ?? '<failure-mode>'}: invalid input is rejected" --observed "result=rejected" --strict-head-binding`;
+  const prepareCommand = 'vibepro pr prepare . --story-id <story-id> --view blocking-gates';
   return {
     id: 'gate:failure_mode_coverage',
     type: 'failure_mode_coverage_gate',
@@ -12417,6 +12419,8 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
     modes: coveredModes,
     missing_modes: missing.map((mode) => mode.id),
     accepted_canonical_terms: acceptedCanonicalTerms,
+    primary_next_command: missing.length === 0 ? null : verificationCommand,
+    next_commands: missing.length === 0 ? [] : [verificationCommand, prepareCommand],
     required_actions: missing.length === 0 ? [] : [
       `Record current-bound verification evidence for failure modes: ${missing.map((mode) => mode.id).join(', ')}`,
       acceptedCanonicalTerms.length > 0
@@ -12568,7 +12572,7 @@ function scoreFailureModeEvidence(mode, evidenceText) {
     const nonRejectingOutcomePattern = /\b(?:(?:parse|parsed|validate|validated|accept|accepted|complete|completed) successfully|successfully (?:parse|parsed|validate|validated|accept|accepted|complete|completed)|no errors?|without errors?)\b/;
     const negatedRejectingOutcomePattern = /(?:\b(?:not|never|cannot|without)\b|\b(?:did|does|do|was|were|is|are|will|would|could|should|can)n['’]t\b)(?:\s+\w+){0,3}\s+(?:reject(?:ed|s|ing|ion)?|throw(?:s|ing)?|threw|errors?|fail(?:ed|s|ing)?)\b|\b(?:fail(?:ed|s|ing)?|unable)\s+to\s+(?:reject|throw|fail)\b|\bno\s+(?:rejection|errors?|failure)\b/;
     const assertionClauses = assertionText
-      .split(/(?:[;\n]+|\s+(?:but|while|whereas)\s+|\s+and\s+(?=(?:malformed|invalid|corrupt|partial|missing|negative)\b))/)
+      .split(/(?:[;\n]+|\s+(?:and|but|while|whereas)\s+)/)
       .map((clause) => clause.trim())
       .filter(Boolean);
     const hasConcreteFailureClause = assertionClauses.some((clause) => {

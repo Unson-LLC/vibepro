@@ -18689,6 +18689,8 @@ pr_scope_dependency_boundaries:
     'missing_coverage',
     'typed atomic metadata is a real schema boundary and must fail closed without negative-path evidence'
   );
+  assert.match(failureModeGate.primary_next_command, /vibepro verify record/);
+  assert.equal(failureModeGate.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
   assert.equal(
     failureModeGate.modes.some((mode) => mode.id === 'auth_denied'),
     false,
@@ -20349,6 +20351,27 @@ test('gate evidence classifier normalizes canonical token variants across observ
       .modes.find((mode) => mode.id === 'parse_failure').status,
     'covered',
     'a negative happy-path clause must not suppress an independent malformed-input rejection clause'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'failure clause before happy path',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json rejects with parse error and valid input does not throw',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const reverseMixedClausePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    reverseMixedClausePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a trailing negative happy-path clause must not suppress a preceding malformed-input rejection clause'
   );
 
   assert.equal((await runCli([
