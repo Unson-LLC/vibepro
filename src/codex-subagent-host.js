@@ -51,15 +51,15 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
       return startedFromState(state);
     },
     async status({ provider_run_id: providerRunId, repo_root: repoRoot }) {
-      rememberRunRoot(runRoots, repoRoot);
-      const located = await findRunAcrossRoots(runRoots, providerRunId);
+      const searchRoots = authorityRunRoots(runRoots, repoRoot);
+      const located = await findRunAcrossRoots(searchRoots, providerRunId);
       if (!located) return { status: 'failed', message: `unknown Codex provider run: ${providerRunId}` };
       const state = await readJson(path.join(located, 'state.json'));
       return state?.status === 'delivery_pending' ? { ...state, status: 'running' } : state;
     },
     async shutdown({ provider_run_id: providerRunId, repo_root: repoRoot, reason }) {
-      rememberRunRoot(runRoots, repoRoot);
-      const located = await findRunAcrossRoots(runRoots, providerRunId);
+      const searchRoots = authorityRunRoots(runRoots, repoRoot);
+      const located = await findRunAcrossRoots(searchRoots, providerRunId);
       if (!located) return { status: 'cancelled' };
       const statePath = path.join(located, 'state.json');
       const state = await readJson(statePath);
@@ -71,14 +71,14 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
       return next;
     },
     async subscribeCompletion({ dispatch_id: dispatchId, repo_root: repoRoot, onEvent }) {
-      rememberRunRoot(runRoots, repoRoot);
+      const searchRoots = authorityRunRoots(runRoots, repoRoot);
       const subscriptionId = crypto.randomUUID();
       const timer = setInterval(async () => {
         const subscription = subscriptions.get(subscriptionId);
         if (!subscription || subscription.delivering) return;
         subscription.delivering = true;
         try {
-          const runDir = await findDispatchRunAcrossRoots(runRoots, dispatchId);
+          const runDir = await findDispatchRunAcrossRoots(searchRoots, dispatchId);
           if (!runDir) return;
           const eventsDir = path.join(runDir, 'events');
           let files = [];
@@ -107,8 +107,8 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
       return { subscription_id: subscriptionId };
     },
     async drainCompletion({ dispatch_id: dispatchId, repo_root: repoRoot }) {
-      rememberRunRoot(runRoots, repoRoot);
-      const runDir = await findDispatchRunAcrossRoots(runRoots, dispatchId);
+      const searchRoots = authorityRunRoots(runRoots, repoRoot);
+      const runDir = await findDispatchRunAcrossRoots(searchRoots, dispatchId);
       if (!runDir) return [];
       const eventsDir = path.join(runDir, 'events');
       let files = [];
@@ -129,8 +129,13 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
   };
 }
 
-function rememberRunRoot(runRoots, repoRoot) {
-  if (typeof repoRoot === 'string' && repoRoot.trim()) runRoots.add(path.resolve(repoRoot));
+function authorityRunRoots(runRoots, repoRoot) {
+  if (typeof repoRoot === 'string' && repoRoot.trim()) {
+    const authorityRoot = path.resolve(repoRoot);
+    runRoots.add(authorityRoot);
+    return [authorityRoot];
+  }
+  return runRoots;
 }
 
 async function claimRun(runDir) {

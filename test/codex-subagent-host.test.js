@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -57,6 +57,37 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   assert.equal(successorStatus.status, 'completed');
   const successorEvents = await successorHost.drainCompletion({ dispatch_id: request.dispatch_id, repo_root: repoRoot });
   assert.deepEqual(successorEvents.map((event) => event.kind), ['partial_result', 'completed']);
+});
+
+test('explicit managed authority cannot be shadowed by the caller root for status, delivery, subscription, or shutdown', async (t) => {
+  const callerRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-caller-'));
+  const managedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-managed-'));
+  t.after(() => Promise.all([
+    rm(callerRoot, { recursive: true, force: true }),
+    rm(managedRoot, { recursive: true, force: true })
+  ]));
+  const dispatchId = 'dispatch-shadow-authority';
+  const providerRunId = 'provider-shadow-authority';
+  const sourceRun = path.join(callerRoot, '.vibepro', 'codex-host', 'runs', 'source-shadow');
+  const managedRun = path.join(managedRoot, '.vibepro', 'codex-host', 'runs', 'managed-authority');
+  await Promise.all([mkdir(path.join(sourceRun, 'events'), { recursive: true }), mkdir(path.join(managedRun, 'events'), { recursive: true })]);
+  await Promise.all([
+    writeFile(path.join(sourceRun, 'state.json'), JSON.stringify({ status: 'running', provider_run_id: providerRunId, dispatch_id: dispatchId })),
+    writeFile(path.join(managedRun, 'state.json'), JSON.stringify({ status: 'running_detached', provider_run_id: providerRunId, dispatch_id: dispatchId })),
+    writeFile(path.join(sourceRun, 'events', '001.json'), JSON.stringify({ event_id: 'source-shadow', dispatch_id: dispatchId, kind: 'partial_result' })),
+    writeFile(path.join(managedRun, 'events', '001.json'), JSON.stringify({ event_id: 'managed-authority', dispatch_id: dispatchId, kind: 'partial_result' }))
+  ]);
+  const host = createCodexSubagentHost({ cwd: callerRoot, codexExecutable: process.execPath });
+  const status = await host.status({ provider_run_id: providerRunId, repo_root: managedRoot });
+  assert.equal(status.status, 'running_detached');
+  const drained = await host.drainCompletion({ dispatch_id: dispatchId, repo_root: managedRoot });
+  assert.deepEqual(drained.map((event) => event.event_id), ['managed-authority']);
+  let subscribedEvent = null;
+  await host.subscribeCompletion({ dispatch_id: dispatchId, repo_root: managedRoot, onEvent: async (event) => { subscribedEvent = event; } });
+  await waitFor(async () => subscribedEvent?.event_id === 'managed-authority');
+  await host.shutdown({ provider_run_id: providerRunId, repo_root: managedRoot, reason: 'test_shutdown' });
+  assert.equal(JSON.parse(await readFile(path.join(managedRun, 'state.json'), 'utf8')).status, 'cancelled');
+  assert.equal(JSON.parse(await readFile(path.join(sourceRun, 'state.json'), 'utf8')).status, 'running');
 });
 
 function runtimeRequest(repoRoot) {
