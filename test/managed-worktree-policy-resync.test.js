@@ -173,6 +173,26 @@ test('execution status reports policy_sync=synced instead of masking it with a s
   assert.equal(second.state.managed_worktree.policy_sync.status, 'unchanged');
 });
 
+// story-vibepro-managed-worktree-policy-resync ac:4 a fail-soft sync failure keeps the durable audit stamp
+test('refreshManagedWorktree attaches last_event to a failed policy sync when a stamp exists on disk', async (t) => {
+  const { root, managedWorktree } = await makeRepoWithManagedWorktree();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  await updateParentConfig(root, (config) => {
+    config.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
+  });
+  const synced = await refreshManagedWorktree(root, managedWorktree);
+  assert.equal(synced.policy_sync.status, 'synced');
+
+  await writeFile(path.join(root, '.vibepro', 'config.json'), '{not json');
+
+  const failed = await refreshManagedWorktree(root, managedWorktree);
+  assert.equal(failed.policy_sync.status, 'failed');
+  assert.equal(failed.policy_sync.last_event?.status, 'synced',
+    'the failed result must still carry the durable stamp of the sync that actually happened');
+  assert.deepEqual(failed.policy_sync.last_event.sections_updated, ['budgets']);
+});
+
 // story-vibepro-managed-worktree-policy-resync ac:4 sync failures do not fail the refresh itself
 test('refreshManagedWorktree reports failed policy sync without throwing when the source config is corrupt', async (t) => {
   const { root, managedWorktree } = await makeRepoWithManagedWorktree();
