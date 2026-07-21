@@ -3156,7 +3156,9 @@ function decorateLifecycleEntries(entries = []) {
 }
 
 function decorateLifecycleEntry(entry, { replacedIds = new Set() } = {}) {
-  const effectiveStatus = replacedIds.has(entry.lifecycle_id) && entry.status === 'running'
+  const replacedPredecessor = entry.status === 'running'
+    || (entry.status === 'closed' && entry.close_reason === 'timeout');
+  const effectiveStatus = replacedIds.has(entry.lifecycle_id) && replacedPredecessor
     ? 'replaced'
     : resolveLifecycleEffectiveStatus(entry);
   return {

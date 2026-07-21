@@ -9853,6 +9853,28 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(gateStage.next_actions.some((action) => action.includes('review close') && action.includes('agent-stuck')), true);
   assert.equal(gateStage.next_actions.some((action) => action.includes('review start') && action.includes('--replacement-for')), true);
 
+  const close = await runCli([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-id',
+    'agent-stuck',
+    '--close-reason',
+    'timeout',
+    '--close-evidence',
+    'shutdown',
+    '--json'
+  ]);
+  assert.equal(close.exitCode, 0);
+  assert.equal(close.result.lifecycle.effective_status, 'closed');
+  assert.equal(close.result.lifecycle.close_reason, 'timeout');
+
   const replacement = await runCli([
     'review',
     'start',
@@ -9954,6 +9976,57 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
   const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
   assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
+});
+
+test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Scope decision evidence
+architecture_docs:
+  - docs/architecture/scope.md
+spec_docs:
+  - docs/specs/scope.md
+---
+
+# Scope decision evidence
+
+- [ ] A coherent multi-commit Story remains reviewable with an artifact-backed senior decision.
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'scope.md'), '# Scope architecture\n\nBoundary: one coherent Story may span multiple commits.\n');
+  await writeFile(path.join(repo, 'docs', 'specs', 'scope.md'), '# Scope spec\n\nScope reviewability is explicit.\n');
+  await writeFile(path.join(repo, 'src', 'scope.js'), 'export const scope = "reviewable";\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: establish coherent scope']);
+  for (let index = 0; index < 11; index += 1) {
+    const file = path.join(repo, 'src', `scope-part-${index}.js`);
+    await writeFile(file, `export const part${index} = ${index};\n`);
+    await git(repo, ['add', file]);
+    await git(repo, ['commit', '-m', `feat: coherent scope part ${index}`]);
+  }
+  const decision = await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'needs_review',
+    '--summary', 'Scope is one coherent review unit.',
+    '--source', 'gate:judgment_axis_scope_reviewability',
+    '--reason', 'All commits implement one declared scope contract and are reviewed together.',
+    '--artifact', 'docs/architecture/scope.md',
+    '--status', 'accepted', '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const axis = prepared.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'scope_reviewability');
+  assert.notEqual(axis.status, 'inactive');
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'scope_reviewed'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'decision_record'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'review_owner_map'), false);
+  assert.equal(axis.missing_evidence.includes('review_owner_map'), true);
 });
 
 test('review status and summary tell operators to close running subagents before recording', async () => {
