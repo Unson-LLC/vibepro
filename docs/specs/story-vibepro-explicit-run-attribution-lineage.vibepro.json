@@ -5,6 +5,13 @@
     "caller": "codex",
     "stage": "ai_synthesis"
   },
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Run lineage trust and authority boundaries",
+      "mermaid": "flowchart LR\n  Run[Guarded Run authority] --> Envelope[Versioned lineage envelope]\n  Envelope --> Dispatch[Agent dispatch]\n  Envelope --> Evidence[Review and verification evidence]\n  Envelope --> Audit[Session attribution audit]\n  Envelope --> Capsule[Bounded context capsule]\n  Provider[Provider thread and session observations] -. append-only observation .-> Envelope\n  Conflict[Cross-Run conflict or stale HEAD] --> Reject[Typed fail-closed rejection]\n  Envelope --> Reject\n  Hidden[Transcript and hidden reasoning] -. excluded .-> Capsule"
+    }
+  ],
   "clauses": [
     {
       "id": "C-001",
