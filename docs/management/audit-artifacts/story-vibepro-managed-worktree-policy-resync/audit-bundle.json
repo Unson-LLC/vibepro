@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-managed-worktree-policy-resync",
   "source": "execute_merge",
-  "promoted_at": "2026-07-21T16:27:57.465Z",
+  "promoted_at": "2026-07-21T16:28:35.688Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:2a56348975b10bca352d4c96b27207cc04326ab97613a201c406a4a527249f1e",
-    "compressed_hash": "sha256:2c41b43b4247c9884b9c9b2419f60ac34fb231952239501e4c745ed473d330b3",
-    "expanded_bytes": 35675,
-    "compressed_bytes": 7299,
+    "content_hash": "sha256:d8198b342d965fe1b3f53041f8b9691f20a8d05225d27f78fa0fb12260eeec3b",
+    "compressed_hash": "sha256:cd25f4a6730411ca55184d6b434b940fc2562113b1abf2289e5a2dcfad129ffa",
+    "expanded_bytes": 35708,
+    "compressed_bytes": 7309,
     "expanded_line_count": 816,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -61,14 +61,14 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-managed-worktree-policy-resync",
     "cost": {
-      "compressed_bytes": 7299,
-      "expanded_bytes": 35675,
+      "compressed_bytes": 7309,
+      "expanded_bytes": 35708,
       "expanded_line_count": 816,
       "persisted_line_count": 1
     }
   },
   "merge": {
-    "status": "merged",
+    "status": "merged_externally",
     "pr_url": "https://github.com/Unson-LLC/vibepro/pull/374",
     "merge_commit_sha": "a39b1973eb7e93c50a7d40cdf41a7f36a02f9b0a",
     "merged_at": "2026-07-21T16:27:55Z",
@@ -98,7 +98,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:2a56348975b10bca352d4c96b27207cc04326ab97613a201c406a4a527249f1e"
+      "content_hash": "sha256:d8198b342d965fe1b3f53041f8b9691f20a8d05225d27f78fa0fb12260eeec3b"
     }
   ],
   "raw_artifact_manifest": [
@@ -176,10 +176,10 @@
       "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync/audit-replay-bundle.json.gz",
-      "digest": "sha256:bc445225b873bef9bed5ea761754c14bfda96189c632edeaeec4748024955800",
-      "audit_digest": "sha256:3d81ba84380ff76f50855037e7ebb1596f402873e43c7fcd9c9cc8e54a27f5fc",
-      "line_count": 2132,
-      "raw_line_count": 4766,
+      "digest": "sha256:bc1618563f7e85b0290d78d7a346027bf5a5c76680061e968a72ec00f5d22173",
+      "audit_digest": "sha256:f2d5ce118bcfc621884abe7a2ba71468d366bcf14da741eb02574e785dc42fe5",
+      "line_count": 2131,
+      "raw_line_count": 4767,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -194,8 +194,8 @@
       "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-managed-worktree-policy-resync/audit-replay-bundle.json.gz",
-      "digest": "sha256:f089c558a65090d07eb03bc4632aaba2ff69c8b144e10bffe0b92e84819ad2fc",
-      "audit_digest": "sha256:f089c558a65090d07eb03bc4632aaba2ff69c8b144e10bffe0b92e84819ad2fc",
+      "digest": "sha256:4f4027f3e53f9950921edaf87bfa15e6fd10e10854eff7d87bce67b9891a64a7",
+      "audit_digest": "sha256:4f4027f3e53f9950921edaf87bfa15e6fd10e10854eff7d87bce67b9891a64a7",
       "line_count": 398,
       "raw_line_count": 398,
       "audit_scope": "judgment_evidence_v1",
