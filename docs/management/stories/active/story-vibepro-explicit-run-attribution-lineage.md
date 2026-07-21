@@ -97,12 +97,12 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 - [ ] ERAL-S-2: provider runtime/session idが得られた場合は同じRunへappend-only observationとして保存され、別Story/Runへの再binding、重複identityの矛盾、古いHEADへの黙示更新をfail closedで拒否する。
 - [ ] ERAL-S-3: verification、review、decision、action evidenceはactive Run lineageを継承でき、明示されたStory/Run/worktree/HEADとの不一致をtyped errorとして拒否する。
 - [ ] ERAL-S-4: `audit session-cost`は明示Run lineageを最優先し、各帰属結果に`method`、`source_artifact`、`confidence`、`run_id`を返す。Thread id単独ではStoryを確定しない。
-- [ ] ERAL-S-5: 2つのStory/Runが同一親sessionに観測されるfixtureで、各Run固有eventは対応Storyへ帰属し、共通parent eventは`shared_parent`、他Story固有eventは`other_story`、残りは`unattributed`へ入り、分類合計が対象event総数と一致する。
+- [ ] ERAL-S-5 [S-002]: 2つのStory/Runが同一親sessionに観測されるfixtureで、各Run固有eventは対応Storyへ帰属し、共通parent eventは`shared_parent`、他Story固有eventは`other_story`、残りは`unattributed`へ入り、分類合計が対象event総数と一致する。
 - [ ] ERAL-S-6: `shared_parent`、`unattributed`、`replayed_context`はStory token/timeへ自動配賦されず、0または対象Storyの価値として表示されない。
 - [ ] ERAL-S-7: VibePro外で開始されたCodex sessionは既存の推定経路を維持し、根拠不足時は`ambiguous`または`unavailable`を返す。利用者へThread分離を要求しない。
 - [ ] ERAL-S-8: 既存の`audit session-cost --session-id`出力、Guarded Run schema reader、Agent Runtime Adapter利用者はadditive互換を維持する。
 - [ ] ERAL-S-9: Run context capsuleまたはcompact decision indexから、fresh processがStory→Run→dispatch→evidence→provider observationをtranscript本文なしで再構成できる。
-- [ ] ERAL-S-10: unit testsはidentity validation・mismatch・shared parent分類・unattributed保持を、E2EはGuarded Run作成からdispatch、evidence、session-cost、handoff再構成までを検証する。
+- [ ] ERAL-S-10 [AC-10] [S-006]: unit testsはidentity validation・mismatch・shared parent分類・unattributed保持を、E2EはGuarded Run作成からdispatch、evidence、session-cost、handoff再構成までを検証する。
 - [ ] ERAL-S-11: lineage schema/validationとRun-aware attribution resolverは`session-efficiency-audit.js`から分離され、既存audit出力との互換testとGraphifyによる責務境界確認がある。
 
 ## Attribution Contract
@@ -125,7 +125,7 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 
 ## Implementation Tasks
 
-0. `[DOC]` Accepted Spec JSONへfailure-mode、current-head Done Evidence、Graphify、scope reviewabilityの識別子と参照を固定する（`DOC-ERAL-001`）。
+0. `[DOC]` Accepted Spec JSONへfailure-mode、current-head Done Evidence、Graphify、scope reviewabilityの識別子と参照を固定する。`split_plan.status=split_recommended`は助言に留め、当StoryのPR数はcurrent independent `pr_split_scope` decisionで確定する（`DOC-ERAL-001`）。
 1. `[ARCH]` 既存Guarded RunとAgent Runtime Adapterを基準にlineage envelope、authority、provider observation、mismatch contract、およびsession-efficiency auditから分離するmodule境界をArchitecture/Specへ固定する。
 2. `[CORE]` dispatch/action/evidence recorderへlineageの生成・検証・append-only永続化を追加する。
 3. `[AUDIT]` session-costへRun resolverと`story_attributed/shared_parent/other_story/unattributed/replayed_context`分類を追加する。
@@ -136,7 +136,7 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 
 - `DE-ERAL-001-current-head-verification`: 現行HEADにboundされたfocused unit/integration/E2E verification evidence at `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json`; commit後は `node bin/vibepro.js pr prepare . --story-id story-vibepro-explicit-run-attribution-lineage --summary-json` でrefreshする。
 - `DE-ERAL-002-current-head-graphify-boundary`: current-head Graphify impact and resolver boundary at `.vibepro/graphify/graph.json`。
-- `DE-ERAL-003-scope-reviewability-decision`: passed `pr_split_scope` review at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/pr-split-scope-a9b66db6-final.md`, machine-readable result at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json`。
+- `DE-ERAL-003-scope-reviewability-decision`: current `pr_split_scope` review request/result/lifecycle artifacts are `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-pr_split_scope.md`, `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json`, and `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/lifecycle.json`; no SHA-named close-evidence file is part of the SSOT. The current independent `pr_split_scope` decision is authoritative for this Story: one PR, because the owned changes are one coherent Run-attribution contract with no independently reviewable boundary. `split_plan.status=split_recommended` is advisory only.
 - `node --test test/run-context-capsule-lineage.test.js` によるfresh-process lineage reconstruction。
 - `node --test test/run-lineage.test.js test/session-efficiency-run-lineage.test.js` によるcanonical resolver境界とaudit互換性。
 - `node --test test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js` による実CLIのmethod/confidence/source artifact/bucketとunavailable/ambiguous可視性。
@@ -149,4 +149,4 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 
 Accepted Spec JSON `docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json` is the machine-readable authority for adjudication. Its `failure_modes[]` identifiers are `FM-ERAL-001` through `FM-ERAL-005`; its `done_evidence[]` identifiers are `DE-ERAL-001` through `DE-ERAL-003`. Evidence is current only when the referenced artifact HEAD binding matches `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha`.
 
-The `scope_reviewability` object records the passed `pr_split_scope` review, owner role, review result, decision, and Graphify blast-radius source. An adjudicating agent must inspect those linked artifacts and treat a stale review artifact as requiring refresh, not as a current pass.
+The `scope_reviewability` object records the current independent `pr_split_scope` request/result/lifecycle, owner role, one-PR decision, rationale, and Graphify blast-radius source. `split_plan.status=split_recommended` is advisory and cannot override that decision. An adjudicating agent must inspect those linked artifacts and treat a stale review artifact as requiring refresh, not as a current pass.

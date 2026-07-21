@@ -58,7 +58,7 @@
       "id": "FM-ERAL-005-transcript-leakage-or-unbounded-handoff",
       "failure": "Context capsule or handoff stores transcript, prompt, tool output, hidden reasoning, or unbounded observations.",
       "expected_behavior": "Expose only bounded lineage identity, refs, method, confidence, and bucket summaries.",
-      "clause_refs": ["S-004", "S-005"],
+      "clause_refs": ["S-004", "S-006"],
       "evidence_refs": ["test/run-context-capsule-lineage.test.js", "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js"]
     }
   ],
@@ -81,11 +81,13 @@
     {
       "id": "DE-ERAL-003-scope-reviewability-decision",
       "kind": "scope_reviewed",
-      "head_binding": "review_artifact.head_sha",
+      "head_binding": "review_result.git_context.head_sha",
       "review_role": "pr_split_scope",
       "verdict": "pass",
+      "review_request": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-pr_split_scope.md",
       "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
-      "close_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/pr-split-scope-a9b66db6-final.md",
+      "review_lifecycle": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/lifecycle.json",
+      "refresh_rule": "Resolve review_result.git_context.head_sha at read time; never encode a historical SHA in this SSOT.",
       "decision": "One coherent Run-attribution contract; no unrelated independently reviewable boundary was found."
     }
   ],
@@ -95,11 +97,24 @@
     "review_owner_map": {
       "owner": "single pr_split_scope reviewer",
       "review_role": "pr_split_scope",
+      "review_request": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-pr_split_scope.md",
       "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json"
+    },
+    "split_plan": {
+      "status": "advisory",
+      "artifact": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/split-plan.json",
+      "interpretation": "split_plan.status=split_recommended is advisory and is not the PR split decision."
+    },
+    "authoritative_decision": {
+      "source": "current_independent_pr_split_scope_result",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "review_lifecycle": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/lifecycle.json",
+      "pr_count": 1,
+      "rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
     },
     "decision_record": "DE-ERAL-003-scope-reviewability-decision",
     "blast_radius_source": ".vibepro/graphify/graph.json",
-    "adjudication_rule": "An agent may adjudicate scope from the passed pr_split_scope review plus current-head Graphify; stale review evidence must be refreshed after a content-surface change."
+    "adjudication_rule": "An agent must treat the current independent pr_split_scope result as authoritative for this Story, use split_plan only as advisory context, and refresh the request/result/lifecycle evidence when its review surface is stale."
   },
   "task_plan": {
     "source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
@@ -205,9 +220,13 @@
       "statement": "Mixed-parent events are partitioned exactly once into story_attributed, shared_parent, other_story, unattributed, or replayed_context and bucket totals reconcile to the input event and token totals.",
       "rationale": "ERAL-S-5 acceptance criterion.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "AC-5", "index": 4 }],
         "code_refs": [{ "file": "src/run-lineage.js", "anchor": "ATTRIBUTION_BUCKETS" }],
-        "test_refs": [{ "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" }]
+        "test_refs": [{ "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" }],
+        "machine_links": {
+          "scenario_clause": "S-002",
+          "evidence_refs": ["test/run-lineage.test.js", "test/session-efficiency-run-lineage.test.js"]
+        }
       },
       "verifiable_by": {
         "test_pattern": [{ "file_glob": "test/run-lineage.test.js", "must_cover": "resolves five attribution buckets with bounded provenance and reconciled totals" }]
@@ -273,12 +292,12 @@
       }
     },
     {
-      "id": "S-005",
+      "id": "S-006",
       "type": "scenario",
       "statement": "Focused tests and an end-to-end fixture cover identity validation, mismatch handling, mixed-parent bucket partitioning, unattributed retention, Guarded Run dispatch, evidence propagation, canonical Run session-cost attribution, and transcript-free bounded handoff lineage.",
       "rationale": "ERAL-S-10 acceptance criterion.",
       "origin": {
-        "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }],
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "AC-10", "index": 9 }],
         "code_refs": [{ "file": "src/run-lineage.js", "anchor": "RunLineageError" }],
         "test_refs": [
           { "file": "test/run-lineage.test.js", "case": "rejects malformed and mismatched bindings with typed errors" },
@@ -286,7 +305,24 @@
           { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed" },
           { "file": "test/run-context-capsule-lineage.test.js", "case": "ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage" },
           { "file": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js", "case": "ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction" }
-        ]
+        ],
+        "machine_links": {
+          "acceptance_criterion": "AC-10",
+          "scenario_clause_alias": "S-006",
+          "evidence_refs": [
+            "test/run-lineage.test.js",
+            "test/run-lineage-evidence-propagation.test.js",
+            "test/session-efficiency-run-lineage.test.js",
+            "test/run-context-capsule-lineage.test.js",
+            "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js"
+          ]
+        },
+        "verifiable_by": {
+          "test_pattern": [
+            { "file_glob": "test/run-lineage.test.js", "must_cover": "rejects malformed and mismatched bindings with typed errors" },
+            { "file_glob": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js", "must_cover": "ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction" }
+          ]
+        }
       }
     },
     {
