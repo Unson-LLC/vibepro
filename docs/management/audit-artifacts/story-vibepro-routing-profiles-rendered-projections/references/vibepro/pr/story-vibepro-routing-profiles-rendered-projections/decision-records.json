@@ -1,0 +1,930 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "updated_at": "2026-07-21T06:57:52.329Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784617072329-6564756a",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep issue 359 as one atomic routing contract",
+      "reason": "Resolver authority, producer adoption, projections, migration compatibility, and rollback form one atomic contract; splitting would create intermediate consumers without the authoritative resolver or fail-closed publication semantics.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+          "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T06:57:52.328Z"
+      },
+      "recorded_at": "2026-07-21T06:57:52.329Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784614242105-a2b6139c",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_evidence",
+      "summary": "Design SSOT reconciliation reviewed as non-applicable",
+      "reason": "The change adds repository artifact routing contracts and generated Markdown projections, not product UI tokens, components, visual states, or user-facing design lineage.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-43835759.xml",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": true,
+        "status_fingerprint": "M docs/features/routing-profiles-rendered-projections/08_review.md",
+        "recorded_at": "2026-07-21T06:10:42.102Z"
+      },
+      "recorded_at": "2026-07-21T06:10:42.106Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784614239340-f949482e",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:bug_physics_timing_violation_rate",
+      "source_status": "needs_evidence",
+      "summary": "Timing violation-rate gate reviewed as non-applicable",
+      "reason": "No time-dependent contract or SLO is introduced. State transitions are synchronous and fail closed before the next state; deterministic unit and E2E replay evidence covers the relevant risk.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-43835759.xml",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": true,
+        "status_fingerprint": "M docs/features/routing-profiles-rendered-projections/08_review.md",
+        "recorded_at": "2026-07-21T06:10:39.338Z"
+      },
+      "recorded_at": "2026-07-21T06:10:39.340Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784614236705-3e1e0936",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": "needs_evidence",
+      "summary": "Bug-physics timing triage reviewed as non-applicable",
+      "reason": "Issue 359 changes deterministic artifact routing and atomic writes; it has no asynchronous settle window, timing race, or violation-rate behavior. Focused negative-path and replay tests are the applicable harness.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-43835759.xml",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-43835759.xml",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": true,
+        "status_fingerprint": "M docs/features/routing-profiles-rendered-projections/08_review.md",
+        "recorded_at": "2026-07-21T06:10:36.702Z"
+      },
+      "recorded_at": "2026-07-21T06:10:36.705Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613086705-413ba0fa",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_evidence",
+      "summary": "Runtime responsibility-authority contract is not applicable",
+      "reason": "Ownership fields describe artifact write/read authority inside the routing schema; no operational worker, billing, permission or external ownership boundary changes.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:26.702Z"
+      },
+      "recorded_at": "2026-07-21T05:51:26.705Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613085343-87760a48",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation is not applicable",
+      "reason": "The changed Markdown files are engineering Story, Architecture and generated artifact projections, not product UI or visual design SSOT.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:25.341Z"
+      },
+      "recorded_at": "2026-07-21T05:51:25.343Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613084088-340aa200",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:bug_physics_timing_violation_rate",
+      "source_status": "needs_evidence",
+      "summary": "Timing violation-rate profile is classifier noise",
+      "reason": "No clocks, retries, workers, async settling or SLO behavior changed; deterministic filesystem routing is covered by focused tests.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:24.086Z"
+      },
+      "recorded_at": "2026-07-21T05:51:24.088Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613082192-285a83e0",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": "needs_evidence",
+      "summary": "Bug-physics timing triage is not applicable",
+      "reason": "Issue 359 is a deterministic artifact-routing contract gap, not a timing, concurrency, settling or violation-rate defect.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:22.191Z"
+      },
+      "recorded_at": "2026-07-21T05:51:22.192Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613081364-fee6df5d",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "No split required for the focused Issue 359 change",
+      "reason": "All changed consumers depend on the common resolver and belong to the same acceptance surface; there are no unrelated edits.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:21.363Z"
+      },
+      "recorded_at": "2026-07-21T05:51:21.364Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613080526-3cf7af0d",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep one coherent vertical-slice PR",
+      "reason": "The 24 files jointly implement one routing contract across schema, producers, projections, documentation and tests; splitting would break reviewable compatibility guarantees.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:20.525Z"
+      },
+      "recorded_at": "2026-07-21T05:51:20.527Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784613079554-667cf54f",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Track repository contract and routed human-readable projections only",
+      "reason": "Runtime .vibepro evidence remains ignored; tracked config, docs, source and tests are the product contract.",
+      "reviewer": "codex",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:51:19.551Z"
+      },
+      "recorded_at": "2026-07-21T05:51:19.554Z"
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "open": 0,
+    "by_type": {
+      "needs_review": 7,
+      "noise": 4
+    },
+    "by_status": {
+      "accepted": 11
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-issue-359",
+        "actual_root": "/private/tmp/vibepro-issue-359",
+        "expected_root": null,
+        "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+        "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784617072329-6564756a",
+      "story_id": "story-vibepro-routing-profiles-rendered-projections",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep issue 359 as one atomic routing contract",
+      "reason": "Resolver authority, producer adoption, projections, migration compatibility, and rollback form one atomic contract; splitting would create intermediate consumers without the authoritative resolver or fail-closed publication semantics.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+            "type": "build",
+            "result": "needs_setup"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue-359",
+          "actual_root": "/private/tmp/vibepro-issue-359",
+          "expected_root": null,
+          "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+          "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+        "current_branch": "codex/issue-359-routing-profiles-projections",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T06:57:52.328Z"
+      },
+      "recorded_at": "2026-07-21T06:57:52.329Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.json"
+}

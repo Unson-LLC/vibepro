@@ -1,0 +1,1048 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "updated_at": "2026-07-21T07:47:12.749Z",
+  "events": [
+    {
+      "event_id": "10900462-abef-4d91-9b89-a93ea12a7550",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story states Issue 359 intent, one-SSOT outcome, acceptance criteria and non-goals mapped to implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:37.517Z"
+    },
+    {
+      "event_id": "a170191b-d590-44ca-98f8-47683df8df09",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused tests and CLI paths exercise the changed production behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:37.909Z"
+    },
+    {
+      "event_id": "3f696329-bcc8-4b4f-b26b-95826b6b11fa",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture, Spec and tests enforce one canonical authority, fail-closed writes and ownership boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:38.486Z"
+    },
+    {
+      "event_id": "884f5fb5-2e49-4fce-93cb-556f167d71ee",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Catalog, Story mirror, writer, projection, legacy and containment boundaries are explicit and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:38.837Z"
+    },
+    {
+      "event_id": "7720e7c4-2260-43ba-87b7-590cdacb3ad0",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Negative tests cover routing metadata, paths, collision, lineage, ownership and atomicity failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:39.180Z"
+    },
+    {
+      "event_id": "66bf828e-b599-4c17-9d00-2df72d42ba4a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head unit, integration, E2E and typecheck evidence is sufficient for the scoped Story.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:39.560Z"
+    },
+    {
+      "event_id": "8985e962-7f51-4c4b-adf1-03a94b0a660a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Compatibility and CLI text/JSON contracts are documented and regression tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:40.120Z"
+    },
+    {
+      "event_id": "c0315bd4-83d5-4f24-8168-c256429ba26c",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lifecycle producers share the resolver and preflight failures occur before mutations.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:40.488Z"
+    },
+    {
+      "event_id": "1acec667-4bb2-4073-9561-960a51361c49",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The docs, routing core, consumer adapters and tests form one coherent vertical slice.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:41.157Z"
+    },
+    {
+      "event_id": "0f4a907d-073e-45dc-9909-944fd5fe2bce",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Incomplete and unsupported schema/profile configurations fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:41.862Z"
+    },
+    {
+      "event_id": "7180f822-4c96-45dd-b9e3-45c56eb978b3",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Review, evidence, gate and release projections preserve lineage and ownership.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:42.286Z"
+    },
+    {
+      "event_id": "ddb71a6d-26e1-49b5-8d6b-6e4130226a5d",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Migration and routed lifecycle states are executable and do not falsely become green.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:48:42.604Z"
+    },
+    {
+      "event_id": "caac369c-9c70-40cc-8bf0-a96937ddb39e",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head malformed JSON test rejects invalid_config and proves config and existing artifact bytes remain unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-ux-completion",
+        "session_ref": null
+      },
+      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "recorded_at": "2026-07-21T05:49:16.954Z"
+    },
+    {
+      "event_id": "6eed051e-54fa-4361-8c54-41c2b82bed22",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの14 ACと受理済みSpec 12 clausesを差分実体に照合した。named profile、単一canonical、lineage projection、fail-closedという一貫した意図が実装とテストに対応している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:23.121Z"
+    },
+    {
+      "event_id": "c7273579-4971-4a19-b00e-6c2ff555a91b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD 43835759のfocused unit JUnit 55/0とStory E2E 56/0を確認した。共有resolverが実際のCLI・projection経路で使われ、fresh checkoutを含む現行経路の再生証跡がある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:24.020Z"
+    },
+    {
+      "event_id": "7959506c-4ce0-4cbf-a228-1467397c70d5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec INV-001〜003とコードを照合した。profile完全性、書込前fail-closed、human_owned非上書き、projection非read-authorityが実装され、focused testsで保持される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:24.842Z"
+    },
+    {
+      "event_id": "8fbbcdb3-5e1a-4ff1-b818-53027f8cb2f7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "catalog authorityとStory mirror、canonicalとprojection、generated/curated/human_owned、repository containmentの境界がArchitecture・Spec・resolver preflightに一致し、境界逸脱は書込前に拒否される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:26.032Z"
+    },
+    {
+      "event_id": "382297bd-7d9a-4f68-9407-5919784ef7c6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed config、partial schema、unknown renderer、unsafe projection、metadata conflict、collisionを検討した。schema対象6/0とmutation-boundary対象3/0の個別実行で失敗時の非変更を確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:27.027Z"
+    },
+    {
+      "event_id": "16d48019-8b2d-402e-ac1e-ae202cd030de",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD 43835759にstrict-boundされたunit 55/0、E2E 56/0、typecheck passがあり、AC-1〜14とS-001〜004を再生する。中断したfull suiteはneeds_setupのままで成功扱いされていない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:27.580Z"
+    },
+    {
+      "event_id": "bb02c29d-09d9-4536-8536-8911489e3d6e",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schema 0.2.0のnamed profilesは明示opt-inで、0.1.0 fallbackを保持し、旧resolverは0.2.0をunsupported_schemaで拒否する。CLI出力とlineage契約もfocused testsで固定されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:28.476Z"
+    },
+    {
+      "event_id": "fd392f11-550c-4014-adf5-fcd8694b5e14",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "変更は共有resolverからcanonical writeをpreflightし、その後projection publishへ進む同期的トポロジーである。Spec S-003の状態順序と、unsafe projection時にcanonicalを保持する個別実行3/0から欠落handoffやover-green化を認めない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:29.095Z"
+    },
+    {
+      "event_id": "232ae885-0cd9-432b-9a27-542c27c78944",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "24 filesだが、実装・consumer接続・契約テスト・VibePro生成projectionはartifact routing profileという単一intentに追跡可能である。Spec/Architectureとfocused suiteで一人のreviewerが一貫して判断できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:30.288Z"
+    },
+    {
+      "event_id": "3688b5f8-bdb8-4d1c-8788-3e62a0bcaa6a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed .vibepro/config.jsonをinvalid_configとして拒否し既存artifactと不正config bytesを保持するテストを個別実行しpassした。parse失敗は書込前に閉じる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:31.384Z"
+    },
+    {
+      "event_id": "172ed806-023a-4309-a9e1-f057cdcd3c8d",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "個別実行 `node --test --test-name-pattern='schema 0.2 validates every profile|schema 0.2 requires a non-empty canonical|schema 0.2 rejects repository-global|malformed routing config fails closed' test/artifact-routing.test.js` が6/0。unselected profile欠落、空canonical、legacy混在、不正JSONを明示的に拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:32.100Z"
+    },
+    {
+      "event_id": "0804beba-d82f-42bd-b8d2-a18d82d15df4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Evidence/Test Plan/Review/Gate/PRは同一routing contextとownershipを公開し、fresh E2E 56/0がAC-1〜14を再生する。未完full suiteはneeds_setupでpassに昇格せず、誤green化を認めない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:33.166Z"
+    },
+    {
+      "event_id": "c7cf3cfe-fcd5-433e-9d36-371cf10b5047",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "受理済みSpec S-003は unresolved -> canonical_written -> projections_written -> published を明記する。個別実行でprojection preflight、human_owned非上書き、unsafe projection時canonical保持が3/0、さらにHEAD固定E2E 56/0のworkflow_state_regression scenarioがpassした。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-judgment-438",
+        "session_ref": "collaboration:issue359_runtime_contract"
+      },
+      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "recorded_at": "2026-07-21T06:16:34.155Z"
+    },
+    {
+      "event_id": "0884a766-b6c5-49d5-ac5c-f0dacb2545cf",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:intent is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:28.144Z"
+    },
+    {
+      "event_id": "44cb0737-e496-4b06-a693-bbd78a90c7cb",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:current_reality is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:28.402Z"
+    },
+    {
+      "event_id": "5e75582a-8a01-48c5-b27d-1713de537236",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:invariants is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:28.655Z"
+    },
+    {
+      "event_id": "487b75e8-5c9f-419a-9fca-fb5ccf00d0de",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:boundaries is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:28.908Z"
+    },
+    {
+      "event_id": "15b004b8-01c9-4df7-a0e2-301112e7f57a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:failure_modes is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:29.169Z"
+    },
+    {
+      "event_id": "c70054be-618c-42b6-8e37-720fc02dd8bf",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:done_evidence is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:29.423Z"
+    },
+    {
+      "event_id": "644d4b82-d7d1-4978-af84-087c3f783c14",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:public_contract is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:29.678Z"
+    },
+    {
+      "event_id": "bb7808b5-065b-4568-b893-b8f225fb184d",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:execution_topology is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:29.930Z"
+    },
+    {
+      "event_id": "855b9141-9b25-4f28-9b9a-96073ff06b7e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:scope_reviewability is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:30.217Z"
+    },
+    {
+      "event_id": "18f4be9e-aedc-44b1-9479-0967047fa998",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:parse_failure is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:30.625Z"
+    },
+    {
+      "event_id": "e929e8c7-adb5-49e1-b615-1bb399592e6f",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:schema_failure is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:31.005Z"
+    },
+    {
+      "event_id": "a42288cf-f3fe-49dd-8051-95f41277fb4d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:evidence_lifecycle_regression is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:31.287Z"
+    },
+    {
+      "event_id": "07690346-f831-4a38-a51f-549495f407f7",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:workflow_state_regression is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "recorded_at": "2026-07-21T06:57:31.545Z"
+    },
+    {
+      "event_id": "369a6e90-8333-4229-9dd0-84afa93c325f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:intent sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:51.230Z"
+    },
+    {
+      "event_id": "3330cd04-1c84-4d41-b76c-f35389a60b36",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:current_reality sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:51.487Z"
+    },
+    {
+      "event_id": "c3f611c8-b2f9-456e-beab-8db48c56d624",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:invariants sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:51.741Z"
+    },
+    {
+      "event_id": "08c2ad21-353f-4504-9d22-82e44fb20317",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:boundaries sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:51.997Z"
+    },
+    {
+      "event_id": "f309fcc9-4717-4f4d-8fbc-068ab6cfd0a6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:failure_modes sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:52.242Z"
+    },
+    {
+      "event_id": "417d0a94-95e7-4b49-b5bf-20141a21b4ae",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:done_evidence sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:52.485Z"
+    },
+    {
+      "event_id": "924980a8-cde2-4207-99eb-d7c28e5653da",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:public_contract sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:52.870Z"
+    },
+    {
+      "event_id": "d364fff3-8167-44c5-bf29-a4409ea3e7af",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:execution_topology sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:53.137Z"
+    },
+    {
+      "event_id": "ee8ddaf7-0d20-498f-bef3-23985bfa2064",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:scope_reviewability sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:53.394Z"
+    },
+    {
+      "event_id": "2c16c4b3-9757-48cf-9122-473f36937f40",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:parse_failure sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:53.643Z"
+    },
+    {
+      "event_id": "af9c1e6e-f17d-41b6-a67e-04d535e25ca7",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:schema_failure sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:53.893Z"
+    },
+    {
+      "event_id": "4c468d14-d422-47c9-94b7-39bbdf241c1d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:evidence_lifecycle_regression sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:54.139Z"
+    },
+    {
+      "event_id": "b8be32e4-74ae-4278-adfc-4cf1e281830f",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:workflow_state_regression sound against Story, architecture, implementation, and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359_product_review",
+        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+      },
+      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
+      "recorded_at": "2026-07-21T07:18:54.388Z"
+    },
+    {
+      "event_id": "bc337bb3-4148-4363-82fb-cc679469aa10",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:intent sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:08.719Z"
+    },
+    {
+      "event_id": "0ed92cf9-7a08-4bc3-9bdc-5265fc2b33eb",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:current_reality sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:09.065Z"
+    },
+    {
+      "event_id": "53af292a-aa2f-46b6-9473-45edd461cb1b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:invariants sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:09.396Z"
+    },
+    {
+      "event_id": "efd14dde-6fa8-453e-a3a7-7ab5b3d574fc",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:boundaries sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:09.797Z"
+    },
+    {
+      "event_id": "dd405240-618b-4345-8c1e-56ddd5453a2a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:failure_modes sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:10.174Z"
+    },
+    {
+      "event_id": "d344fb91-af5f-4ee0-a1c5-2dd4e3ed765f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:done_evidence sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:10.463Z"
+    },
+    {
+      "event_id": "ee2f4637-73f3-442a-acf3-f1093484083b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:public_contract sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:10.821Z"
+    },
+    {
+      "event_id": "4ffab44e-36c8-4e63-9647-7496882cd7e3",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:execution_topology sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:11.222Z"
+    },
+    {
+      "event_id": "e844e457-72e6-4826-92a7-7cec1930227b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:scope_reviewability sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:11.586Z"
+    },
+    {
+      "event_id": "24128ae5-db72-4e1d-9739-066265ddc5d8",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:schema_failure sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:11.926Z"
+    },
+    {
+      "event_id": "fd951ae6-4935-4919-b45c-4f35b905c687",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:evidence_lifecycle_regression sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:12.170Z"
+    },
+    {
+      "event_id": "9cd075b9-cc63-442f-aa21-fb7387550cce",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:workflow_state_regression sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:12.460Z"
+    },
+    {
+      "event_id": "fe73ed8f-c406-4f6d-a6ed-2e25c34b5aa3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:parse_failure sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:12.748Z"
+    }
+  ]
+}

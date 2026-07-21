@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Frozen HEAD release risks are controlled by compatible legacy fallback, dry-run-only migration, fail-closed preflight, and an ordered rollback procedure",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "At HEAD 1ac5adcc, verified actual legacy resolve behavior, named-profile migration dry-run with edits_performed 0 and no unresolved collisions, schema and write-path fail-closed tests, preservation of human_owned and curated bytes, repository containment including symlink escape rejection, and the four-step rollback verification contract.",
+    "evidence": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "inputs": [
+      "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+      "src/artifact-routing.js",
+      "test/artifact-routing.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern was that schema 0.2 routing, generated projections, and migration planning could silently break legacy consumers or mutate authoritative artifacts; final judgment is pass because legacy mode resolves to unchanged paths, migration is explicitly non-mutating and collision-aware, writes fail closed before mutation, and rollback preserves machine canonicals while verifying restored legacy authority."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T06:03:24.505Z",
+  "git_context": {
+    "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "58208671d169623adfe2bc9baeba5d54004983dd657bc97995eade922b780568",
+    "user_status_fingerprint_hash": "58208671d169623adfe2bc9baeba5d54004983dd657bc97995eade922b780568",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:03:24.493Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Release risk covers the complete frozen release candidate at HEAD 1ac5adcc"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+        "sha256": "7ddf35a9b77642dce72af9d6c472dacf5276cefff0a72514380bead0b409b0f1",
+        "size": 11743
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "size": 65324
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fb1f371a980f456ed1d77a85c771f541573c771b0a44547d3a9418048c78d8cf"
+  },
+  "source_fingerprint": "fcd04f1720361f80d16b4dc007abc999adbeebb5b93e803f168e58c6dabbef6e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-release-risk-final",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

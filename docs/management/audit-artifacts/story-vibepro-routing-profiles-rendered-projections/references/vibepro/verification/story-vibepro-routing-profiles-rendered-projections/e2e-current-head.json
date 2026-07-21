@@ -1,0 +1,1 @@
+{"status":"pass","command":"node --test test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts","tests":56,"failures":0,"head_sha":"1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb"}

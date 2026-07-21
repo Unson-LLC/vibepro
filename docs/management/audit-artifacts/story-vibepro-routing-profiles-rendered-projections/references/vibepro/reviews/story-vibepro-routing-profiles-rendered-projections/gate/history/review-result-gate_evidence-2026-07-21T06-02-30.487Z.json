@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Frozen-head focused evidence and adjudication are current, reliable, and correctly separate the incomplete full suite.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified frozen HEAD 1ac5adcc: unit/integration 55/0, Story E2E 56/0 with AC-1 through AC-14 scenarios, typecheck pass, all AC adjudications demonstrated, and the incomplete full suite remains needs_setup rather than pass.",
+    "evidence": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "inputs": [
+      "src/artifact-routing.js",
+      "src/agent-review.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+      ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+      ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json",
+      ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json",
+      ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/e2e-current-head.json",
+      ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/typecheck-current-head.json",
+      ".vibepro/verification/story-vibepro-routing-profiles-rendered-projections/full-suite-current-head.json",
+      ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/adjudication.json",
+      ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/judgment-adjudication.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial stale-head and E2E-index concerns were resolved by frozen-head strict-bound focused evidence; the remaining full-suite interruption is explicitly needs_setup and contributes no pass signal."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "current_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T06:02:30.487Z",
+  "git_context": {
+    "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "b235832ee833727a96089759869da8c19dfebde0ddccd20c5b8b9b3eebc468ee",
+    "user_status_fingerprint_hash": "b235832ee833727a96089759869da8c19dfebde0ddccd20c5b8b9b3eebc468ee",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:02:30.459Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Gate evidence is bound to frozen HEAD 1ac5adcc after final verification and adjudication."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "97610fe7e7396889da124c50bb397835d9a2244571ab400442e6bde8b9943181",
+        "size": 151607
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "size": 65324
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "9c4af628210ca17fbc46817fdd726efb3ec47d84ea40dcace6a81163f8b950de",
+        "size": 1346
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1775e5084033b612db5ffbbc8cfdfd483195660d5a3a8aaf79d7f02c0fc9c75f"
+  },
+  "source_fingerprint": "74762d08609e5a6a790a4c5ba35c0990d3616451152c95ee216a2cffd21b2a1b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-gate-evidence-final",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

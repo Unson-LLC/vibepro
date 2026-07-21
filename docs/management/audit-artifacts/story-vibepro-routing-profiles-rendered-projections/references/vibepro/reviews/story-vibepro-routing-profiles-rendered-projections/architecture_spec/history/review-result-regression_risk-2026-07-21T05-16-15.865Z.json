@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Legacy ownership regression is fixed without weakening named profile validation.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected effective schema selection, CLI resolve output, default paths, owner/writer fields, projections, and regression assertions.",
+    "evidence": "55 tests passed and CLI emitted schema 0.1 legacy owner contract",
+    "inputs": [
+      "src/artifact-routing.js",
+      "test/artifact-routing.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes to pass after the mixed 0.1 path and 0.2 ownership state was eliminated"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+    "current_head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+      "current_head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T05:16:15.865Z",
+  "git_context": {
+    "head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "745c05fbf6aef3566cf2a3e49946921c657230666702b7799c6052d820e2042d",
+    "user_status_fingerprint_hash": "745c05fbf6aef3566cf2a3e49946921c657230666702b7799c6052d820e2042d",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T05:16:15.852Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "4f7da9085ecdb3004a2b29d228b614bfecca39a7",
+    "surface_files": [
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "762fa7b95f35d57a0a031980a98ff5b1cd6fc7e9b88a3a999ac2432a40ce7bd1",
+        "size": 65168
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b8322291dc1e3865948c6a25b8d94654d39910238ec12434fea8efcbf842b5f4"
+  },
+  "source_fingerprint": "0495a7e86d7bddc748c2cf3e79c68a7ba3b3023f79066f2f129ce78fcaed5450",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-final2-regression",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/regression_risk-final2.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

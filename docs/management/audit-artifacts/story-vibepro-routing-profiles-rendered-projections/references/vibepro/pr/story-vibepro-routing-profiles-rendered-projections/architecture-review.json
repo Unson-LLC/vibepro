@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "created_at": "2026-07-21T08:10:33.147Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-routing-profiles-rendered-projections.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-routing-profiles-rendered-projections.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/features/routing-profiles-rendered-projections/02_functional_spec.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T08:10:22.623Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/private/tmp/vibepro-issue-359"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-issue-359/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-issue-359/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "branch": "codex/issue-359-routing-profiles-projections",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

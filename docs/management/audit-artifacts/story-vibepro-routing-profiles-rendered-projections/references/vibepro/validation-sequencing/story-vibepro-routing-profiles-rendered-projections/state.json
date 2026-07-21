@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "created_at": "2026-07-21T07:53:18.351Z",
+  "updated_at": "2026-07-21T07:58:21.883Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-routing-profiles-rendered-projections",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "gate_orchestration",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "gate_orchestration",
+      "review_lifecycle"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+    "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+    "verification_command": "node --test test/artifact-routing.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T07:55:35.884Z",
+      "binding": {
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "verification_command": "node --test test/artifact-routing.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-21T07:56:38.701Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-routing-profiles-rendered-projections",
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed gate_orchestration,review_lifecycle; risk_surfaces=gate_orchestration,review_lifecycle",
+        "inspection_inputs": [
+          "src/artifact-routing.js",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "verification_command": "node --test test/artifact-routing.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-07-21T07:56:53.918Z",
+      "binding": {
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "verification_command": "node --test test/artifact-routing.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T07:57:43.275Z",
+      "binding": {
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "verification_command": "node --test test/artifact-routing.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-21T07:58:21.883Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-routing-profiles-rendered-projections",
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "reviewed final frozen-HEAD runtime contract",
+        "inspection_inputs": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "test/artifact-routing.test.js",
+          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+        ]
+      },
+      "binding": {
+        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "verification_command": "node --test test/artifact-routing.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+    "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+    "verification_command": "node --test test/artifact-routing.test.js"
+  },
+  "invalidations": []
+}

@@ -1,0 +1,155 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Final lightweight review found no regression risk blockers on e67f3388",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    "../issue359-final-lightweight-review.md"
+  ],
+  "inspection": {
+    "summary": "Reviewed compatibility fallback, fail-closed conflicts, rollback, producer routing, and focused regression coverage on final HEAD",
+    "evidence": "/private/tmp/issue359-final-lightweight-review.md",
+    "inputs": [
+      "src/artifact-routing.js",
+      "src/story-manager.js",
+      "src/task-manager.js",
+      "src/cli.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "No blocking regression risk; legacy schema fallback and atomic publication failure semantics are covered"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+    "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "current_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T07:00:25.428Z",
+  "git_context": {
+    "head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T07:00:25.419Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
+    "surface_files": [
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "28c82d17ac308182495e9666820fb9ec16a7b875cd300e7044c4d44d404377d3",
+        "size": 211485
+      },
+      {
+        "path": "src/story-manager.js",
+        "sha256": "4b1798041750615769b122d33ba7b4b8d6ba09c8a77bd3e73874cb707736e18d",
+        "size": 97671
+      },
+      {
+        "path": "src/task-manager.js",
+        "sha256": "8e8e60a47a589fa967886d8f35bfdf53470c86c13fcb93acd6c7474f0f46eb0c",
+        "size": 45543
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "size": 65324
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "c218f4e57dce37ba24bf543b3711c0e0e703b19fc6b37635b7c6022a46638b3d",
+        "size": 1323
+      }
+    ],
+    "missing_files": [
+      "../issue359-final-lightweight-review.md"
+    ],
+    "surface_hash": "9ba27b316d69ff8768ffce9801a8f9300ef24615bf8e6e72012c3f68791c8d2e"
+  },
+  "source_fingerprint": "ec3ce358d94e2f55edac82bb934ce1f207de9c3fc9b5211054ad40feb99838a9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-final-e67-architecture_spec-regression_risk",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../issue359-final-lightweight-review.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/issue359-final-lightweight-review.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

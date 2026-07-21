@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "updated_at": "2026-07-21T07:47:08.396Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-14",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-14; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:08.395Z"
+    },
+    {
+      "clause_id": "AC-13",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-13; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:07.758Z"
+    },
+    {
+      "clause_id": "AC-12",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-12; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:07.373Z"
+    },
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-11; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:06.810Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-10; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:06.403Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-9; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:06.006Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-8; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:05.707Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-7; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:05.430Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-6; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:05.185Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-5; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:04.821Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-4; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:04.499Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-3; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:04.126Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-2; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:03.737Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Lightweight fresh-context review on HEAD 63c6a30e confirmed AC-1; final E2E contract fix strengthens canonical writer output coverage and all routing evidence remains passing",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "issue359-lightweight-63c",
+        "session_ref": "collaboration:issue359_product_review"
+      },
+      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "recorded_at": "2026-07-21T07:47:03.472Z"
+    }
+  ]
+}

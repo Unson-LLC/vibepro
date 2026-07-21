@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Fresh frozen-head verification and the accepted Spec establish reliable gate evidence for the explicit workflow-state contract.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "At HEAD 43835759, verified unit 55/0 and Story E2E 56/0, typecheck pass, strict-bound to the clean frozen head, and accepted Spec S-003 explicitly defines unresolved -> canonical_written -> projections_written -> published with fail-stop semantics preserving the previously published state. The interrupted full suite remains needs_setup and contributes no pass signal.",
+    "evidence": null,
+    "inputs": [
+      "src/artifact-routing.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+      "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+      ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "The prior strict-HEAD review became stale after the canonical Spec gained an explicit workflow-state transition; final judgment remains pass because the accepted contract now states the ordered transition and failure boundary, while fresh 43835759-bound evidence passes without treating the incomplete full suite as success."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T06:11:59.132Z",
+  "git_context": {
+    "head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:11:59.123Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final gate evidence must bind the frozen PR head."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "surface_files": [
+      {
+        "path": "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "sha256": "96f7f697c2dbecbc8c7baf008a8d25dac613196419494b56e3fcb93de97eb60d",
+        "size": 10732
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "size": 65324
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "9c4af628210ca17fbc46817fdd726efb3ec47d84ea40dcace6a81163f8b950de",
+        "size": 1346
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "58e350da2d4b00fcb31fdc618936b6e1b0b5f9eb475e34f181391df7e6f89204"
+  },
+  "source_fingerprint": "8b8d96f0158e3b0fddf189e093aad4a935ae297fdbeee81657469a6e51f111b2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-gate-evidence-438",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
