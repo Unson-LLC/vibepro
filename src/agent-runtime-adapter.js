@@ -85,10 +85,12 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
     };
     return { state: upsertDispatch(runState, rebound), dispatch: rebound, reused: true };
   }
-  if (existing && existing.provider_run_id && !TERMINAL_STATUSES.has(existing.status)) {
-    return { state: { ...runState, status: 'running', stop_reason: null }, dispatch: existing, reused: true };
+  if (existing?.provider_run_id) {
+    const state = TERMINAL_STATUSES.has(existing.status)
+      ? runState
+      : { ...runState, status: 'running', stop_reason: null };
+    return { state, dispatch: existing, reused: true };
   }
-  if (existing?.status === 'completed') return { state: runState, dispatch: existing, reused: true };
   if (existing?.stop_reason?.code === 'orphaned_agent') return { state: runState, dispatch: existing, reused: true };
 
   const adapter = registry.get(request.adapter_id);

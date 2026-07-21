@@ -1,12 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
+import { link, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const EVENT_KINDS = new Set(['progress', 'partial_result', 'completed', 'failed', 'cancelled']);
 
 export function createAgentCompletionInbox({ repoRoot, now = () => new Date(), io = {} } = {}) {
   if (typeof repoRoot !== 'string' || repoRoot.length === 0) throw new TypeError('repoRoot is required');
-  const fs = { mkdir, readFile, readdir, rename, writeFile, ...io };
+  const fs = { link, mkdir, readFile, readdir, unlink, writeFile, ...io };
   const root = path.join(repoRoot, '.vibepro', 'runtime-inbox');
 
   return Object.freeze({
@@ -32,12 +32,16 @@ async function appendEvent(fs, root, now, input) {
   const temporary = `${target}.${randomUUID()}.tmp`;
   await fs.writeFile(temporary, `${JSON.stringify(event, null, 2)}\n`, { flag: 'wx' });
   try {
-    await fs.rename(temporary, target);
+    await fs.link(temporary, target);
   } catch (error) {
     if (error?.code !== 'EEXIST') throw error;
     const existing = JSON.parse(await fs.readFile(target, 'utf8'));
     if (stableJson(existing) !== stableJson(event)) throw new Error(`completion inbox event conflict: ${event.event_id}`);
     return { event: existing, reused: true };
+  } finally {
+    await fs.unlink(temporary).catch((error) => {
+      if (error?.code !== 'ENOENT') throw error;
+    });
   }
   return { event, reused: false };
 }
@@ -78,7 +82,15 @@ async function acknowledge(fs, root, now, dispatchId, eventId) {
   const target = path.join(directory, `${safeName(eventId)}.json`);
   const temporary = `${target}.${randomUUID()}.tmp`;
   await fs.writeFile(temporary, `${JSON.stringify(receipt, null, 2)}\n`, { flag: 'wx' });
-  await fs.rename(temporary, target);
+  try {
+    await fs.link(temporary, target);
+  } catch (error) {
+    if (error?.code !== 'EEXIST') throw error;
+  } finally {
+    await fs.unlink(temporary).catch((error) => {
+      if (error?.code !== 'ENOENT') throw error;
+    });
+  }
   return receipt;
 }
 

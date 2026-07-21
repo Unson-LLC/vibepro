@@ -29,26 +29,51 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         recovery_plan: recoveryPlan,
         idempotency_key: request.dispatch_id
       };
-      const started = await host.spawn(effectiveRequest);
-      const record = { request: effectiveRequest, started, subscription: null, started_at: now().toISOString() };
-      dispatches.set(request.dispatch_id, record);
+      let started = null;
+      const pendingBeforeStart = [];
+      let deliveryChain = Promise.resolve();
+      const persistAndWake = async (providerEvent) => {
+        const event = toInboxEvent(request, started, providerEvent, now);
+        await persistentInbox.append(event);
+        try {
+          await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
+        } catch {
+          // Inbox persistence is authoritative; reconcile recovers a lost push.
+        }
+      };
+      const onEvent = (providerEvent) => {
+        if (!started) {
+          pendingBeforeStart.push(providerEvent);
+          return Promise.resolve();
+        }
+        deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
+        return deliveryChain;
+      };
+      let subscription;
       try {
-        record.subscription = await host.subscribeCompletion({
-          provider_run_id: started.provider_run_id,
+        subscription = await host.subscribeCompletion({
+          provider_run_id: null,
           dispatch_id: request.dispatch_id,
-          onEvent: async (providerEvent) => {
-            const event = toInboxEvent(request, started, providerEvent, now);
-            await persistentInbox.append(event);
-            try {
-              await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
-            } catch {
-              // Inbox persistence is authoritative; reconcile recovers a lost push.
-            }
-          }
+          onEvent
         });
+        started = await host.spawn(effectiveRequest);
+        const record = {
+          request: effectiveRequest,
+          started,
+          subscription,
+          started_at: now().toISOString(),
+          awaitDelivery: () => deliveryChain
+        };
+        dispatches.set(request.dispatch_id, record);
+        for (const providerEvent of pendingBeforeStart.splice(0)) {
+          deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
+        }
+        await deliveryChain;
       } catch (error) {
         dispatches.delete(request.dispatch_id);
-        await host.shutdown({ provider_run_id: started.provider_run_id, force: true, reason: 'completion_delivery_unavailable' });
+        if (started?.provider_run_id) {
+          await host.shutdown({ provider_run_id: started.provider_run_id, force: true, reason: 'completion_delivery_unavailable' });
+        }
         throw error;
       }
       return started;
@@ -56,6 +81,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     async status({ provider_run_id }) {
       const record = findByProviderRun(dispatches, provider_run_id);
       if (record) {
+        await record.awaitDelivery?.();
         const reconciled = await persistentInbox.reconcile(record.request.dispatch_id);
         if (reconciled.completion) return completionStatus(reconciled.completion);
       }
@@ -67,6 +93,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     },
     async reconcile({ provider_run_id, dispatch_id, dispatch }) {
       const record = dispatches.get(dispatch_id) ?? findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
+      await record?.awaitDelivery?.();
       const reconciled = await persistentInbox.reconcile(dispatch_id);
       if (reconciled.completion) return completionStatus(reconciled.completion);
       const providerStatus = await host.status({ provider_run_id });
@@ -85,6 +112,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     },
     async collect_result({ provider_run_id, dispatch_id, dispatch }) {
       const record = findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
+      await record?.awaitDelivery?.();
       const logicalDispatchId = record?.request.dispatch_id ?? dispatch_id;
       if (!logicalDispatchId) throw new Error(`unknown Codex provider run: ${provider_run_id}`);
       const reconciled = await persistentInbox.reconcile(logicalDispatchId);

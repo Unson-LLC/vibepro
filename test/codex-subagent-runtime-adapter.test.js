@@ -20,19 +20,45 @@ function fakeCodexHost() {
   let statusDetails = {};
   let lastSpawnRequest;
   let lastShutdownReason;
+  let completionDuringSpawn = null;
+  const lifecycleOrder = [];
   return {
-    metrics: () => ({ spawns, shutdowns, wakes, lastSpawnRequest, lastShutdownReason }),
+    metrics: () => ({ spawns, shutdowns, wakes, lastSpawnRequest, lastShutdownReason, lifecycleOrder }),
     setStatus: (next, details = {}) => { status = next; statusDetails = details; },
+    completeDuringSpawn: (event) => { completionDuringSpawn = event; },
     async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
-    async spawn(request) { spawns += 1; lastSpawnRequest = request; return { provider_run_id: 'codex-provider-1', agent_identity: 'reviewer-codex', thread_id: 'thread-codex' }; },
+    async spawn(request) {
+      lifecycleOrder.push('spawn');
+      spawns += 1;
+      lastSpawnRequest = request;
+      if (completionDuringSpawn) await callback(completionDuringSpawn);
+      return { provider_run_id: 'codex-provider-1', agent_identity: 'reviewer-codex', thread_id: 'thread-codex' };
+    },
     async status() { return { status, ...statusDetails }; },
     async shutdown(input) { shutdowns += 1; lastShutdownReason = input.reason; status = 'cancelled'; return { status }; },
-    async subscribeCompletion({ onEvent }) { callback = onEvent; return { subscription_id: 'subscription-1' }; },
+    async subscribeCompletion({ onEvent }) { lifecycleOrder.push('subscribe'); callback = onEvent; return { subscription_id: 'subscription-1' }; },
     async wake() { wakes += 1; },
     async detach() {},
     emit: async (event) => callback(event)
   };
 }
+
+test('CDI-S-2 completion emitted during spawn is subscribed first and persisted without a loss window', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-immediate-completion-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  host.completeDuringSpawn({
+    event_id: 'immediate-completion', kind: 'completed', observed_at: '2026-07-22T01:00:00.000Z', surface_hash: 'surface-a',
+    result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'completed inside spawn', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+  });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  const recovered = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.deepEqual(host.metrics().lifecycleOrder.slice(0, 2), ['subscribe', 'spawn']);
+  assert.equal(recovered.dispatch.status, 'completed');
+  assert.equal(recovered.dispatch.result.summary, 'completed inside spawn');
+  assert.equal(host.metrics().spawns, 1);
+});
 
 function reviewRequest(repoRoot) {
   return {

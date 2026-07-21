@@ -854,10 +854,12 @@ test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and re
     async wake() {},
     async detach() {}
   };
+  const guardedRunDependencies = fixture.dependencies();
   const bridge = createCodexGuardedRunBridge({
     repoRoot: fixture.source,
     host,
-    guardedRunDependencies: fixture.dependencies(),
+    now: guardedRunDependencies.now,
+    guardedRunDependencies,
     recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: 'pass' }; }
   });
   const session = bridge.session;
@@ -868,7 +870,8 @@ test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and re
     requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
   };
   const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
-  const detached = await session.detachRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  fixture.setTime('2026-07-15T01:12:03.000Z');
+  const detached = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
   assert.equal(detached.dispatch.status, 'running_detached');
   assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
   await completionHandler({

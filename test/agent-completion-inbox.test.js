@@ -32,3 +32,23 @@ test('CDI-S-6 persistent inbox retains partial judgments before completion', asy
   assert.deepEqual(recovered.partial_results, [{ judgment_id: 'security', verdict: 'pass' }]);
   assert.equal(recovered.completion.event_id, 'complete-p');
 });
+
+test('CDI-S-2 concurrent conflicting delivery cannot overwrite an immutable event', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-runtime-inbox-race-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const inbox = createAgentCompletionInbox({ repoRoot });
+  const common = {
+    event_id: 'completion-race', dispatch_id: 'dispatch-race', provider_run_id: 'provider-race', kind: 'completed',
+    observed_at: '2026-07-22T01:00:00.000Z', surface_hash: 'surface-a'
+  };
+  const settled = await Promise.allSettled([
+    inbox.append({ ...common, payload: { summary: 'first' } }),
+    inbox.append({ ...common, payload: { summary: 'second' } })
+  ]);
+  assert.equal(settled.filter((item) => item.status === 'fulfilled').length, 1);
+  assert.equal(settled.filter((item) => item.status === 'rejected').length, 1);
+  assert.match(settled.find((item) => item.status === 'rejected').reason.message, /event conflict/);
+  const recovered = await inbox.reconcile('dispatch-race');
+  assert.equal(recovered.events.length, 1);
+  assert.ok(['first', 'second'].includes(recovered.completion.payload.summary));
+});
