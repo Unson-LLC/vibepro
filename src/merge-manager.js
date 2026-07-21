@@ -612,6 +612,12 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
     ?? session?.elapsed_time_accounting
     ?? input?.elapsed_time_accounting
     ?? null;
+  const artifactToken = cost?.artifact_token_accounting
+    ?? session?.artifact_token_accounting
+    ?? input?.artifact_token_accounting
+    ?? null;
+  const normalizedArtifactToken = artifactToken
+    ?? unavailableArtifactTokenAccounting(source, storyId, 'artifact-token accounting was not present in execute merge cost input');
   const normalized = {
     schema_version: '0.1.0',
     status: hasUsableAccounting(token) || hasUsableAccounting(elapsed) ? 'available' : 'partial',
@@ -621,7 +627,8 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
     session_id: input?.session_id ?? session?.window?.session_id ?? token?.window?.session_id ?? elapsed?.window?.session_id ?? null,
     collected_at: collectedAt ?? null,
     token_accounting: token ?? unavailableTokenAccounting(source, storyId, 'token accounting was not present in execute merge cost input'),
-    elapsed_time_accounting: elapsed ?? unavailableElapsedTimeAccounting(source, storyId, 'elapsed-time accounting was not present in execute merge cost input')
+    elapsed_time_accounting: elapsed ?? unavailableElapsedTimeAccounting(source, storyId, 'elapsed-time accounting was not present in execute merge cost input'),
+    artifact_token_accounting: normalizedArtifactToken
   };
   if (input?.artifact_kind === 'vibepro_session_efficiency_audit') {
     normalized.session_efficiency_audit = {
@@ -629,7 +636,8 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
       audit_readiness: input.audit_readiness ?? null,
       observed_worktree: input.observed_worktree ?? null,
       observed_worktree_source: input.observed_worktree_source ?? null,
-      cost_breakdown: input.cost_breakdown ?? null
+      cost_breakdown: input.cost_breakdown ?? null,
+      artifact_token_accounting: normalizedArtifactToken
     };
   }
   return normalized;
@@ -645,7 +653,74 @@ function unavailableExecuteMergeCostAccounting({ source, reason, storyId, collec
     session_id: null,
     collected_at: collectedAt ?? null,
     token_accounting: unavailableTokenAccounting(source, storyId, reason),
-    elapsed_time_accounting: unavailableElapsedTimeAccounting(source, storyId, reason)
+    elapsed_time_accounting: unavailableElapsedTimeAccounting(source, storyId, reason),
+    artifact_token_accounting: unavailableArtifactTokenAccounting(source, storyId, reason)
+  };
+}
+
+function unavailableArtifactTokenAccounting(source, storyId, reason) {
+  const bucketLabels = {
+    audit_evidence: '監査証跡 / canonical audit artifacts / gate-review-verification evidence',
+    story_spec_architecture_docs: 'story/spec/architecture docs',
+    src_code: 'src/ コード本体',
+    test: 'test/',
+    replayed_context: '再送された文脈（compaction後のgoal/permissions等の再掲）/ replayed carryover context after compaction',
+    unattributed: 'unattributed Codex development in daily window'
+  };
+  const bucket = (id) => ({
+    id,
+    label: bucketLabels[id],
+    estimated_tokens: null,
+    event_count: null,
+    ratio_of_classified_exposure: null,
+    ratio_of_session_tokens: null,
+    matched_signals: []
+  });
+  const provenanceBucket = (id) => ({
+    id,
+    estimated_tokens: null,
+    unique_estimated_tokens: null,
+    duplicate_estimated_tokens: null,
+    event_count: null,
+    unique_digest_count: null
+  });
+  return {
+    status: 'unavailable',
+    estimated_total_tokens: null,
+    classified_estimated_tokens: null,
+    total_session_tokens: null,
+    source,
+    estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
+    coverage: 'signal-matched transcript entries only',
+    buckets: Object.fromEntries([
+      'audit_evidence',
+      'story_spec_architecture_docs',
+      'src_code',
+      'test',
+      'replayed_context',
+      'unattributed'
+    ].map((id) => [id, bucket(id)])),
+    provenance_buckets: Object.fromEntries([
+      'fresh_read',
+      'generated_output',
+      'replayed_context',
+      'world_state',
+      'mixed_tool_output'
+    ].map((id) => [id, provenanceBucket(id)])),
+    unique_estimated_tokens: null,
+    duplicate_estimated_tokens: null,
+    carryover_control: {
+      status: 'unavailable',
+      replayed_context_estimated_tokens: null,
+      duplicate_estimated_tokens: null,
+      duplicate_over_unique: null,
+      duplicate_over_unique_threshold: 1
+    },
+    top_exposures: [],
+    unmatched_event_count: null,
+    unmatched_estimated_tokens: null,
+    window: storyId ? { story_id: storyId } : null,
+    reason
   };
 }
 

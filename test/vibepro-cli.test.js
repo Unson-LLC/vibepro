@@ -3567,6 +3567,42 @@ related_stories:
   assert.deepEqual(relatedDoc.related_stories, ['story-pr-prepare']);
 });
 
+test('pr prepare ignores canonical audit snapshot Story copies for source integrity', async () => {
+  const repo = await makeGitRepoWithStory();
+  const snapshotDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'child-story', 'references', 'vibepro', 'stories', 'child-story', 'tasks');
+  await mkdir(snapshotDir, { recursive: true });
+  await writeFile(path.join(snapshotDir, 'tasks.md'), `---\nstory_id: child-story\ntitle: Child snapshot\n---\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'stacked.js'), 'export const stacked = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const integrity = result.result.preparation.pr_context.story_source_integrity;
+  assert.equal(integrity.status, 'passed');
+  assert.equal(integrity.changed_story_docs.some((doc) => doc.path.includes('/audit-artifacts/')), false);
+});
+
+test('pr prepare never selects a same-id canonical audit snapshot as the primary Story', async () => {
+  const repo = await makeGitRepoWithStory();
+  const liveDir = path.join(repo, 'docs', 'stories');
+  await mkdir(liveDir, { recursive: true });
+  await writeFile(path.join(liveDir, 'story-pr-prepare.md'), `---\nstory_id: story-pr-prepare\ntitle: PR準備\n---\n\n## Acceptance Criteria\n\n- Live Story remains authoritative.\n`);
+  const snapshotDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'references', 'vibepro', 'stories');
+  await mkdir(snapshotDir, { recursive: true });
+  await writeFile(path.join(snapshotDir, 'story-pr-prepare.md'), `---\nstory_id: story-pr-prepare\ntitle: Stale snapshot\n---\n\n## Acceptance Criteria\n\n- Stale snapshot must not become authoritative.\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'stacked.js'), 'export const stacked = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const context = result.result.preparation.pr_context;
+  assert.equal(context.story_source.path, 'docs/stories/story-pr-prepare.md');
+  assert.equal(context.story_source.title, 'PR準備');
+  assert.equal(context.story_source_integrity.status, 'passed');
+});
+
 test('pr prepare accepts path surface matrix decision records', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'stories'), { recursive: true });
@@ -13089,12 +13125,20 @@ test('execute merge dry-run keeps absent and unreadable cost accounting explicit
   assert.equal(unreadable.result.merge.cost_accounting_collection.status, 'unavailable');
   assert.equal(unreadable.result.merge.cost_accounting.token_accounting.total_tokens, null);
   assert.equal(unreadable.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.event_count, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.event_count, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.unmatched_event_count, null);
   assert.match(unreadable.result.merge.cost_accounting_collection.reason, /ENOENT/);
   assert.equal(unreadable.result.merge.warnings.some((warning) => warning.includes('Cost accounting file could not be read')), true);
 
   const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
   assert.equal(artifact.cost_accounting.status, 'unavailable');
   assert.equal(artifact.cost_accounting.token_accounting.total_tokens, null);
+  assert.equal(artifact.cost_accounting.artifact_token_accounting.status, 'unavailable');
 });
 
 test('execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros', async () => {
@@ -13134,6 +13178,14 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'unavailable');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
   assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.label,
+    '監査証跡 / canonical audit artifacts / gate-review-verification evidence');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.ratio_of_classified_exposure, null);
+  assert.deepEqual(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.matched_signals, []);
+  assert.match(result.result.merge.cost_accounting.artifact_token_accounting.estimate_method, /ceil\(text\.length \/ 4\)/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.coverage, 'signal-matched transcript entries only');
 });
 
 test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance', async () => {
@@ -13241,6 +13293,8 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_token_accounting.status, 'available');
 
   const inferred = await runCli([
     'execute',

@@ -1,0 +1,83 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "description": "Session events are partitioned into exclusive attribution classes; mixed parents degrade audit readiness without reallocating tokens or blocking development.",
+      "mermaid": "flowchart LR\n  J[Session events] --> C[Deterministic cue classifier]\n  C --> S[Strict story]\n  C --> W[Worktree associated]\n  C --> O[Other story]\n  C --> U[Unclassified]\n  S --> R[Attribution risk]\n  W --> R\n  O --> R\n  R --> A[Audit readiness]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "SAB-S-1",
+      "type": "scenario",
+      "statement": "A synthetic session containing two story cue sets reports mixed_parent, detected story ids, and strict-to-associated divergence.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "mixed_parent" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "mixed parent" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "mixed_parent" }] }
+    },
+    {
+      "id": "SAB-S-2",
+      "type": "invariant",
+      "statement": "A single-story session reports mixed_parent false without changing existing token or semantic bucket totals.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "artifact_token_accounting" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "single story" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "high risk only" }] }
+    },
+    {
+      "id": "SAB-S-3",
+      "type": "invariant",
+      "statement": "Every event belongs to exactly one of strict, associated-only, other-story, or unclassified and their counts sum to the target event count.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "unclassified" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "classification total" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "strict attribution primary" }] }
+    },
+    {
+      "id": "SAB-S-4",
+      "type": "scenario",
+      "statement": "Attribution risk becomes high only below the declared strict-to-associated threshold and mixed parents make audit readiness partial.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "attribution_risk" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "attribution risk" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "attribution_risk" }] }
+    },
+    {
+      "id": "SAB-S-5",
+      "type": "scenario",
+      "statement": "PR preparation stores a non-blocking session_boundary note and delegates mixed-session determination to audit session-cost.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }], "code_refs": [{ "file": "src/pr-manager.js", "anchor": "session_boundary" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "session_boundary" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "session boundary" }] }
+    },
+    {
+      "id": "SAB-S-6",
+      "type": "scenario",
+      "statement": "When no session can be selected, attribution is explicitly unavailable with a reason instead of being omitted.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "unavailable" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "unavailable" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "unavailable" }] }
+    },
+    {
+      "id": "SAB-FAILURE-001",
+      "type": "scenario",
+      "statement": "Unreadable selected JSONL files make attribution explicitly unavailable with a bounded reason. Malformed rows remain unclassified while valid rows stay available only with partial parse coverage and a session_attribution_partial_parse readiness blocker.",
+      "origin": { "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "session JSONL read failed" }, { "file": "src/session-efficiency-audit.js", "anchor": "parse_coverage" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "fails attribution closed" }, { "file": "test/session-efficiency-audit.test.js", "case": "preserves valid rows and accounts malformed JSONL rows" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "fails attribution closed when a selected JSONL file cannot be read" }, { "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "preserves valid rows and accounts malformed JSONL as unattributed" }] }
+    },
+    {
+      "id": "SAB-BOUNDARY-1",
+      "type": "scenario",
+      "statement": "Explicit non-auto selection with no resolved session preserves the selection reason and now returns an unavailable attribution projection instead of omitting it.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "buildUnavailableSessionAttribution" }], "test_refs": [{ "file": "test/session-efficiency-audit.test.js", "case": "keeps unavailable attribution explicit when inference selects no session" }] },
+      "verifiable_by": { "test_pattern": [{ "file_glob": "test/session-efficiency-audit.test.js", "must_cover": "keeps unavailable attribution explicit when inference selects no session" }] }
+    },
+    {
+      "id": "SAB-INHERITED-2",
+      "type": "contract",
+      "statement": "Requested non-auto session inference behavior remains unchanged.",
+      "origin": { "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "requestedSessionId" }] },
+      "inherited_behavior": { "condition": "!inferSession && requestedSessionId !== 'auto'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] }
+    },
+    {
+      "id": "SAB-INHERITED-3",
+      "type": "contract",
+      "statement": "Session metadata continues to establish the canonical session id and cwd while JSONL input is parsed.",
+      "origin": { "code_refs": [{ "file": "src/session-efficiency-audit.js", "anchor": "entry.type === 'session_meta'" }] },
+      "inherited_behavior": { "condition": "entry.type === 'session_meta'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] }
+    }
+  ]
+}
