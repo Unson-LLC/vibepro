@@ -126,6 +126,11 @@ async function createFixture() {
       }
     },
     {
+      timestamp: '2026-06-27T13:02:15.000Z',
+      type: 'response_item',
+      payload: { text: `review .vibepro/pr/${storyId}/pr-prepare.json` }
+    },
+    {
       timestamp: '2026-06-27T13:02:20.000Z',
       type: 'event_msg',
       payload: { type: 'final_answer' }
@@ -1340,6 +1345,66 @@ test('session efficiency audit makes strict attribution primary and degrades mix
   assert.deepEqual(cliResult.attribution.detected_story_ids, ['STR-999']);
   assert.equal(cliResult.attribution.categories.strict >= 3, true);
   assert.equal(cliResult.audit_readiness.blockers.includes('mixed_parent_session_attribution'), true);
+});
+
+test('session efficiency audit fails closed when one event references the target and another story', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const baseline = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  const originalSession = await readFile(sessionPath, 'utf8');
+  await writeFile(sessionPath, `${originalSession.trimEnd()}\n${JSON.stringify({
+    timestamp: '2026-06-27T13:03:00.000Z',
+    type: 'response_item',
+    payload: { text: `handoff from ${storyId} to STR-999` }
+  })}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.categories.strict, baseline.attribution.categories.strict);
+  assert.equal(result.attribution.categories.unclassified, baseline.attribution.categories.unclassified + 1);
+  assert.equal(result.attribution.mixed_parent, true);
+  assert.deepEqual(result.attribution.detected_story_ids, ['STR-999']);
+});
+
+test('session efficiency audit reports unknown risk and partial readiness with no associated evidence', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), [{
+    conversationId: sessionId,
+    cwd: '/different/repo'
+  }]);
+  await writeFile(
+    sessionPath,
+    `${sessionLines({ sessionId, cwd: '/different/repo' }).map((entry) => JSON.stringify(entry)).join('\n')}\n`
+  );
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.status, 'available');
+  assert.equal(result.attribution.associated_event_count, 0);
+  assert.equal(result.attribution.strict_over_associated, null);
+  assert.equal(result.attribution.attribution_risk, 'unknown');
+  assert.equal(result.audit_readiness.status, 'partial');
+  assert.equal(
+    result.audit_readiness.blockers.includes('session_attribution_no_associated_evidence'),
+    true
+  );
 });
 
 test('session efficiency audit applies high risk only to strict-over-associated threshold breach', async () => {
