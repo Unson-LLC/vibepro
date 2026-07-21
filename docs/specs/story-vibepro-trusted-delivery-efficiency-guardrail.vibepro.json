@@ -140,79 +140,82 @@
       "id": "S-001",
       "type": "scenario",
       "statement": "Given delivery measurements are missing, when a Story budget is evaluated, then unknown values remain unknown and are never converted to zero.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-002",
       "type": "scenario",
       "statement": "Given a review has no concrete risk closure or judgment delta, when dispatch is evaluated, then the guardrail returns a typed stop instead of spawning by role presence alone.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-003",
       "type": "scenario",
       "statement": "Given source, Spec, tests, or review surface are not frozen, when final review is requested, then dispatch is blocked while preflight remains available.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-004",
       "type": "scenario",
       "statement": "Given an identical Story, stage, role, HEAD, and surface binding already exists, when dispatch is requested again, then running, uncollected, or completed-pass work is reused rather than duplicated.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-005",
       "type": "scenario",
       "statement": "Given compatible repairable findings share a role and code-test surface, when repair is planned, then they receive one mutation batch, targeted verification, and independent re-review while conflicts remain separate.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-006",
       "type": "scenario",
       "statement": "Given a running reviewer belongs to an older HEAD, when close is attempted without explicit cancellation confirmation and evidence, then it remains orphaned and fail closed; confirmed cancellation terminalizes it as obsolete.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-007",
       "type": "scenario",
       "statement": "Given budget exhaustion, no progress, unknown attribution, or an orphaned agent, when the next action is evaluated, then a typed stop prevents additional spawn and cannot become success, waiver, or Gate pass.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-008",
       "type": "scenario",
       "statement": "Given correctness Gates pass but lifecycle efficiency debt remains, when PR readiness is prepared, then correctness and timeout, obsolete, orphan, duplicate, and budget debt are displayed separately.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-009",
       "type": "scenario",
       "statement": "Given overlapping parallel reviews and partial usage data, when Story metrics are aggregated, then active wait, tool wait, union review wait, summed agent consumption, counters, tokens, cost, and unknown fields remain distinct.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-010",
       "type": "scenario",
       "statement": "Given no comparable pre-change workflow-heavy measurement exists, when performance evidence is recorded, then before remains unknown, the run establishes a baseline, and no numeric improvement claim or changed-line allocation is made.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-011",
       "type": "scenario",
       "statement": "Given repeated same-role review, repair batches, HEAD mutation, timeout, orphan, budget stop, parallel review, and unknown metrics, when the acceptance replay runs, then each path has executable evidence.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-012",
       "type": "scenario",
       "statement": "Given the efficiency guardrail is enabled, when existing validation, review lifecycle, PR readiness, and Design SSOT contract suites run, then required tests, independent final review, critical Gates, current-HEAD binding, and fail-closed semantics remain intact.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
     },
     {
       "id": "S-013",
       "type": "scenario",
       "statement": "Given a workflow-heavy internal orchestration change without UI or network surface, required validation sequencing, and explicit repository checkpoint ownership, when the workflow state transition selects review coverage, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required; without explicit ownership the existing checkpoint roles remain required.",
-      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [{ "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" }] }
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [
+        { "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" },
+        { "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }
+      ] }
     }
   ],
   "diagrams": [
