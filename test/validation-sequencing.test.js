@@ -159,6 +159,35 @@ test('expensive verification is reused only at the exact frozen binding', () => 
   );
 });
 
+test('post-freeze expensive verification may use a distinct e2e command at the frozen identity', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  const expensive = { ...binding, verificationCommand: 'node --test test/e2e/story.spec.ts' };
+  state = recordValidationPhase(state, { phase: 'expensive_verification', ...expensive, source: 'local' });
+  state = recordValidationPhase(state, { phase: 'final_review', ...binding, ...finalReview });
+  const evaluation = evaluateValidationSequence(state, { currentHeadSha: 'abc123' });
+  assert.equal(evaluation.ready_for_final_gate, true);
+  assert.equal(evaluation.blocking_phases.includes('expensive_verification_binding'), false);
+  assert.equal(state.phases.expensive_verification.binding.verification_command, 'node --test test/e2e/story.spec.ts');
+});
+
+test('post-freeze phase-specific commands still reject changed HEAD or fingerprint', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  assert.throws(() => recordValidationPhase(state, {
+    phase: 'expensive_verification', ...binding,
+    headSha: 'def456', verificationCommand: 'node --test test/e2e/story.spec.ts'
+  }), /frozen HEAD and test fingerprint/);
+  assert.throws(() => recordValidationPhase(state, {
+    phase: 'expensive_verification', ...binding,
+    testFingerprint: 'tests-v2', verificationCommand: 'node --test test/e2e/story.spec.ts'
+  }), /frozen HEAD and test fingerprint/);
+});
+
 test('freeze rejects nonterminal or unknown preflight dispositions', () => {
   let state = stateForHighRisk();
   state = recordValidationPhase(state, { phase: 'targeted_validation', ...binding });
@@ -467,7 +496,7 @@ test('sequence CLI persists the planned and recorded workflow through the public
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-validation-sequence-cli-'));
   const canonicalEvidence = path.join(root, '.vibepro', 'pr', 'story-cli-sequence', 'verification-evidence.json');
   await mkdir(path.dirname(canonicalEvidence), { recursive: true });
-  const sequenceCommand = 'node --test test/integration/sequence.test.js';
+  const sequenceCommand = 'node --test test/unit/sequence.test.js';
   const nativeCommand = (kind, phase, extra = {}) => ({
     kind, status: 'pass', command: sequenceCommand, executed_at: new Date().toISOString(),
     git_context: { head_sha: 'abc123' }, artifact_check: { status: 'verified' },

@@ -357,7 +357,11 @@ export function evaluateValidationSequence(state, { currentHeadSha = null } = {}
   if (candidateHeadDrifted || completedFinalReviewDrifted) blocking.push('current_head_binding');
   if (state?.frozen_binding) {
     for (const phase of VALIDATION_PHASES) {
-      if (!sameBinding(state.frozen_binding, state?.phases?.[phase]?.binding)) blocking.push(`${phase}_binding`);
+      const phaseBinding = state?.phases?.[phase]?.binding;
+      const matchesFreeze = ['expensive_verification', 'final_review'].includes(phase)
+        ? sameFrozenIdentity(state.frozen_binding, phaseBinding)
+        : sameBinding(state.frozen_binding, phaseBinding);
+      if (!matchesFreeze) blocking.push(`${phase}_binding`);
     }
   }
   const uniqueBlocking = [...new Set(blocking)];
@@ -427,10 +431,13 @@ function buildNextRequiredAction(state, blocking) {
     if (['targeted_validation', 'expensive_verification'].includes(phase)) {
       const kind = phase === 'targeted_validation' ? 'unit' : 'e2e';
       const binding = state.frozen_binding ?? state.proposed_binding;
+      const command = phase === 'expensive_verification'
+        ? '<expensive-verification-command>'
+        : binding.verification_command;
       return {
         phase,
-        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(binding.verification_command)} --artifact '<test-result.json>' --target '<tested-path>' --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
-        follow_up_command: `vibepro sequence record . --id ${state.story_id} --phase ${phase} --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
+        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(command)} --artifact '<test-result.json>' --target '<tested-path>' --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
+        follow_up_command: `vibepro sequence record . --id ${state.story_id} --phase ${phase} --command ${JSON.stringify(command)} --test-fingerprint ${binding.test_fingerprint} --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
       };
     }
     if (phase === 'preflight_review') {
@@ -491,14 +498,19 @@ function isPreflightClosed(preflight) {
 }
 
 function assertFrozenBinding(state, binding) {
-  if (!sameBinding(state?.frozen_binding, binding)) throw new Error('phase evidence does not match the frozen HEAD, test fingerprint, and verification command');
+  if (!sameFrozenIdentity(state?.frozen_binding, binding)) throw new Error('phase evidence does not match the frozen HEAD and test fingerprint');
 }
 
 function assertExpensiveVerificationComplete(state, binding) {
   if (state?.phases?.expensive_verification?.status !== 'passed'
-    || !sameBinding(state?.phases?.expensive_verification?.binding, binding)) {
-    throw new Error('final_review requires passed expensive_verification at the exact frozen binding');
+    || !sameFrozenIdentity(state?.phases?.expensive_verification?.binding, binding)) {
+    throw new Error('final_review requires passed expensive_verification at the frozen HEAD and test fingerprint');
   }
+}
+
+function sameFrozenIdentity(left, right) {
+  return Boolean(left?.head_sha && left.head_sha === right?.head_sha
+    && left.test_fingerprint && left.test_fingerprint === right?.test_fingerprint);
 }
 
 function sameBinding(left, right) {
