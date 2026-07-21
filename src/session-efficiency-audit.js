@@ -357,7 +357,7 @@ export function renderSessionEfficiencyAudit(result) {
     `- exposure_dedup: unique=${exposure.unique_estimated_tokens ?? '未確認'} duplicate=${exposure.duplicate_estimated_tokens ?? '未確認'}`,
     `- carryover_control: ${exposure.carryover_control?.status ?? 'unavailable'} replayed_context_tokens=${exposure.carryover_control?.replayed_context_estimated_tokens ?? '未確認'} duplicate_over_unique=${exposure.carryover_control?.duplicate_over_unique ?? '未確認'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
-    `- attribution: ${attribution.status ?? 'unavailable'} strict=${attribution.primary?.event_count ?? 0} associated=${attribution.upper_bound?.event_count ?? 0} strict_over_associated=${attribution.strict_over_associated ?? '未確認'} risk=${attribution.attribution_risk ?? 'unknown'} mixed_parent=${attribution.mixed_parent === true}${attributionReason}`,
+    `- attribution: ${attribution.status ?? 'unavailable'} strict=${attribution.primary?.event_count ?? '未確認'} associated=${attribution.upper_bound?.event_count ?? '未確認'} strict_over_associated=${attribution.strict_over_associated ?? '未確認'} risk=${attribution.attribution_risk ?? 'unknown'} mixed_parent=${attribution.mixed_parent === true}${attributionReason}`,
     `- attribution_detected_story_ids: ${(attribution.detected_story_ids ?? []).join(',') || '-'}`,
     `- audit_readiness: ${auditReadiness.status ?? 'unknown'} blockers=${(auditReadiness.blockers ?? []).join(',') || '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
@@ -368,14 +368,14 @@ export function renderSessionEfficiencyAudit(result) {
     '| --- | ---: | ---: | ---: | ---: |',
     ...SESSION_EXPOSURE_BUCKETS.map((bucket) => {
       const value = exposure.buckets?.[bucket.id] ?? null;
-      return `| ${bucket.label} | ${value?.estimated_tokens ?? 0} | ${formatRatio(value?.ratio_of_classified_exposure)} | ${formatRatio(value?.ratio_of_session_tokens)} | ${value?.event_count ?? 0} |`;
+      return `| ${bucket.label} | ${value?.estimated_tokens ?? '未確認'} | ${formatRatio(value?.ratio_of_classified_exposure)} | ${formatRatio(value?.ratio_of_session_tokens)} | ${value?.event_count ?? '未確認'} |`;
     }),
     '',
     '| provenance | estimated tokens | unique | duplicate | events | digests |',
     '| --- | ---: | ---: | ---: | ---: | ---: |',
     ...SESSION_EXPOSURE_PROVENANCE_BUCKETS.map((bucketId) => {
       const value = exposure.provenance_buckets?.[bucketId] ?? null;
-      return `| ${bucketId} | ${value?.estimated_tokens ?? 0} | ${value?.unique_estimated_tokens ?? 0} | ${value?.duplicate_estimated_tokens ?? 0} | ${value?.event_count ?? 0} | ${value?.unique_digest_count ?? 0} |`;
+      return `| ${bucketId} | ${value?.estimated_tokens ?? '未確認'} | ${value?.unique_estimated_tokens ?? '未確認'} | ${value?.duplicate_estimated_tokens ?? '未確認'} | ${value?.event_count ?? '未確認'} | ${value?.unique_digest_count ?? '未確認'} |`;
     }),
     '',
     '| changed-line参考区分 | changed lines |',
@@ -1023,7 +1023,7 @@ async function buildSessionAttribution(entries, { repoRoot, storyId, windowStart
 
   for (const { entry, sourcePath, line } of entries) {
     const eventAt = normalizeTimeMs(entry.timestamp);
-    if (!isInsideWindow(eventAt, startMs, endMs)) continue;
+    if (!isInsideWindow(eventAt, startMs, endMs) && entry.type !== 'malformed_jsonl') continue;
     const text = JSON.stringify(entry);
     const refs = extractStoryRefs(text);
     for (const ref of refs) storyRefs.add(ref);
@@ -1231,7 +1231,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
     if (entry.type === 'session_meta') {
       cwd = entry.payload?.cwd ?? cwd;
     }
-    if (!isInsideWindow(eventAt, startMs, endMs)) continue;
+    if (!isInsideWindow(eventAt, startMs, endMs) && entry.type !== 'malformed_jsonl') continue;
     if (eventAt !== null) inWindowEventTimestamps.push(eventAt);
     const exposure = summarizeSessionExposureEntry(entry, {
       storyId,

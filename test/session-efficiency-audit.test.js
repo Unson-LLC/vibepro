@@ -1403,6 +1403,26 @@ test('session efficiency audit preserves valid rows and accounts malformed JSONL
   assert.equal(result.audit_readiness.blockers.includes('session_attribution_unavailable'), false);
 });
 
+test('bounded session audit preserves timestamp-less malformed JSONL as unattributed unknown exposure', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const original = await readFile(sessionPath, 'utf8');
+  await writeFile(sessionPath, `${original}{malformed-json\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T14:00:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.attribution.status, 'available');
+  assert.equal(result.attribution.categories.unclassified >= 1, true);
+  assert.equal(result.session.artifact_token_accounting.unmatched_event_count >= 1, true);
+});
+
 test('session efficiency audit fails attribution closed when a selected JSONL file cannot be read', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   await chmod(sessionPath, 0o000);
