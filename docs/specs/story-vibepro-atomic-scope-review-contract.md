@@ -12,6 +12,7 @@ code_refs:
   - src/change-risk-classifier.js
   - src/cli.js
   - src/content-binding.js
+  - src/git-fingerprint.js
   - src/html-report.js#renderNodeGrid
   - src/pr-manager.js
   - src/review-repair.js
