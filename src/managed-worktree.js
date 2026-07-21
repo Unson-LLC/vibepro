@@ -171,10 +171,14 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
   const worktreePath = path.resolve(managedWorktree.path);
   const existing = await findWorktree(root, worktreePath);
   const currentHeadSha = await gitOptional(worktreePath, ['rev-parse', 'HEAD']);
-  if (currentHeadSha || existing) await ensureManagedWorktreeGitExclude(worktreePath);
+  const exists = Boolean(currentHeadSha || existing);
+  if (exists) await ensureManagedWorktreeGitExclude(worktreePath);
+  const policySync = exists
+    ? await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+      .catch((error) => ({ status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
+    : { status: 'skipped', reason: 'managed worktree is missing', sections_updated: [] };
   const actualBranch = await gitOptional(worktreePath, ['branch', '--show-current']) || existing?.branch || null;
   const dirty = await collectDirty(worktreePath);
-  const exists = Boolean(currentHeadSha || existing);
   const branchMatch = isBranchMatch(actualBranch, managedWorktree.branch);
   const availableStatus = ['created', 'reused'].includes(managedWorktree.status)
     ? managedWorktree.status
@@ -192,7 +196,8 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
     dirty_fingerprint: dirty.fingerprint,
     raw_dirty: dirty.raw_dirty,
     raw_dirty_fingerprint: dirty.raw_fingerprint,
-    fingerprint_scope: dirty.fingerprint_scope
+    fingerprint_scope: dirty.fingerprint_scope,
+    policy_sync: policySync
   };
 }
 
@@ -644,6 +649,51 @@ function buildManagedWorktreeContextReason({
   if (!branchMatches) issues.push(`managed branch mismatch: expected ${managedWorktree?.branch ?? '-'}, found ${managedWorktree?.actual_branch ?? '-'}`);
   if (!headMatches) issues.push(`managed worktree HEAD ${managedWorktree?.current_head_sha ?? '-'} does not match expected HEAD ${expectedHeadSha ?? currentHeadSha ?? '-'}`);
   return issues.join('; ');
+}
+
+// Policy sections are enforcement inputs (budgets, execution mode, routing) that must follow
+// the source repo config; everything else in the worktree copy stays a creation-time snapshot.
+const POLICY_CONFIG_SECTIONS = ['budgets', 'execution', 'artifact_routing', 'output'];
+
+async function syncWorktreePolicySections(sourceRepo, worktreePath) {
+  const source = await canonicalPath(sourceRepo);
+  const target = await canonicalPath(worktreePath);
+  if (source === target) {
+    return { status: 'skipped', reason: 'source repo and managed worktree are the same checkout', sections_updated: [] };
+  }
+  const sourceConfig = await readConfig(sourceRepo);
+  if (!sourceConfig) {
+    return { status: 'skipped', reason: 'source repo has no .vibepro/config.json', sections_updated: [] };
+  }
+  const targetPath = path.join(getWorkspaceDir(worktreePath), 'config.json');
+  let targetConfig = null;
+  try {
+    targetConfig = JSON.parse(await readFile(targetPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (!targetConfig) {
+    await mkdir(path.dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, `${JSON.stringify(sourceConfig, null, 2)}\n`);
+    return {
+      status: 'synced',
+      reason: 'managed worktree config was missing; restored a full copy from the source repo',
+      sections_updated: POLICY_CONFIG_SECTIONS.filter((section) => sourceConfig[section] !== undefined)
+    };
+  }
+  const updated = [];
+  for (const section of POLICY_CONFIG_SECTIONS) {
+    const sourceValue = sourceConfig[section];
+    if (JSON.stringify(sourceValue ?? null) === JSON.stringify(targetConfig[section] ?? null)) continue;
+    if (sourceValue === undefined) delete targetConfig[section];
+    else targetConfig[section] = sourceValue;
+    updated.push(section);
+  }
+  if (updated.length === 0) {
+    return { status: 'unchanged', reason: 'policy sections already match the source repo config', sections_updated: [] };
+  }
+  await writeFile(targetPath, `${JSON.stringify(targetConfig, null, 2)}\n`);
+  return { status: 'synced', reason: 'policy sections were resynced from the source repo config', sections_updated: updated };
 }
 
 async function copyWorkspaceControlFiles(repoRoot, worktreePath) {
