@@ -6,6 +6,7 @@ import { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
 import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 import {
   evaluateGateReadiness as defaultReadGateReadiness,
   preparePullRequest as defaultPreparePullRequest,

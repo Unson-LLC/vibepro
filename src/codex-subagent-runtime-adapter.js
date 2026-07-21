@@ -16,8 +16,21 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     async start(request) {
       const existing = dispatches.get(request.dispatch_id);
       if (existing) return existing.started;
-      const started = await host.spawn({ ...request, idempotency_key: request.dispatch_id });
-      const record = { request, started, subscription: null, started_at: now().toISOString() };
+      const recoveryPlan = planJudgmentRecovery({
+        previous: request.previous_judgments,
+        requested: request.requested_judgments,
+        previousSurfaceHash: request.previous_surface_hash,
+        currentSurfaceHash: request.inspection_surface_hash,
+        changedPaths: request.changed_paths
+      });
+      const effectiveRequest = {
+        ...request,
+        requested_judgments: recoveryPlan.remaining_judgments,
+        recovery_plan: recoveryPlan,
+        idempotency_key: request.dispatch_id
+      };
+      const started = await host.spawn(effectiveRequest);
+      const record = { request: effectiveRequest, started, subscription: null, started_at: now().toISOString() };
       dispatches.set(request.dispatch_id, record);
       try {
         record.subscription = await host.subscribeCompletion({
@@ -26,7 +39,11 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
           onEvent: async (providerEvent) => {
             const event = toInboxEvent(request, started, providerEvent, now);
             await persistentInbox.append(event);
-            await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
+            try {
+              await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
+            } catch {
+              // Inbox persistence is authoritative; reconcile recovers a lost push.
+            }
           }
         });
       } catch (error) {
@@ -48,8 +65,8 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       if (typeof host.detach === 'function') await host.detach({ provider_run_id, dispatch_id, monitor_boundary_ms });
       return { status: 'running_detached', provider_run_id, dispatch_id };
     },
-    async reconcile({ provider_run_id, dispatch_id }) {
-      const record = dispatches.get(dispatch_id) ?? findByProviderRun(dispatches, provider_run_id);
+    async reconcile({ provider_run_id, dispatch_id, dispatch }) {
+      const record = dispatches.get(dispatch_id) ?? findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
       const reconciled = await persistentInbox.reconcile(dispatch_id);
       if (reconciled.completion) return completionStatus(reconciled.completion);
       const providerStatus = await host.status({ provider_run_id });
@@ -66,8 +83,8 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     async cancel({ provider_run_id, force = false }) {
       return host.shutdown({ provider_run_id, force, reason: 'explicit_runtime_cancel' });
     },
-    async collect_result({ provider_run_id, dispatch_id }) {
-      const record = findByProviderRun(dispatches, provider_run_id);
+    async collect_result({ provider_run_id, dispatch_id, dispatch }) {
+      const record = findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
       const logicalDispatchId = record?.request.dispatch_id ?? dispatch_id;
       if (!logicalDispatchId) throw new Error(`unknown Codex provider run: ${provider_run_id}`);
       const reconciled = await persistentInbox.reconcile(logicalDispatchId);
@@ -77,6 +94,17 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         ...reconciled.completion.payload,
         completion_status: 'completed',
         partial_results: reconciled.partial_results,
+        judgments: mergeJudgments(
+          record?.request.recovery_plan?.reusable_judgments ?? planJudgmentRecovery({
+            previous: record?.request.previous_judgments,
+            requested: record?.request.requested_judgments,
+            previousSurfaceHash: record?.request.previous_surface_hash,
+            currentSurfaceHash: record?.request.inspection_surface_hash,
+            changedPaths: record?.request.changed_paths
+          }).reusable_judgments,
+          reconciled.partial_results,
+          reconciled.completion.payload?.judgments
+        ),
         surface_hash: reconciled.completion.surface_hash
       };
     }
@@ -146,8 +174,7 @@ function completionStatus(event) {
 function evaluateProgressBounds(record, reconciled, providerStatus, observedNow) {
   const requirements = record.request.requirements;
   const elapsed = observedNow.getTime() - Date.parse(record.started_at);
-  const progressEvents = reconciled.events.filter((event) => event.checkpoint_id || event.kind === 'partial_result');
-  const lastProgressAt = progressEvents.at(-1)?.observed_at ?? record.started_at;
+  const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.started_at);
   const noProgressElapsed = observedNow.getTime() - Date.parse(lastProgressAt);
   const attempts = providerStatus.attempts ?? 1;
   const cost = providerStatus.usage_accounting?.cost_usd ?? 0;
@@ -156,6 +183,53 @@ function evaluateProgressBounds(record, reconciled, providerStatus, observedNow)
   if (attempts > requirements.max_attempts) return stalled('max_attempts_exceeded');
   if (requirements.max_cost_usd > 0 && cost > requirements.max_cost_usd) return stalled('max_cost_exceeded');
   return null;
+}
+
+function lastUniqueProgressAt(events, fallback) {
+  const checkpoints = new Set();
+  const judgments = new Set();
+  let latest = fallback;
+  for (const event of events) {
+    let advanced = false;
+    if (event.checkpoint_id && !checkpoints.has(event.checkpoint_id)) {
+      checkpoints.add(event.checkpoint_id);
+      advanced = true;
+    }
+    if (event.kind === 'partial_result') {
+      for (const judgment of judgmentItems(event.payload)) {
+        if (!judgments.has(judgment.judgment_id)) {
+          judgments.add(judgment.judgment_id);
+          advanced = true;
+        }
+      }
+    }
+    if (advanced) latest = event.observed_at;
+  }
+  return latest;
+}
+
+function reconstructRecord(dispatch) {
+  if (!dispatch?.provider_run_id || !dispatch?.started_at) return null;
+  return {
+    request: dispatch,
+    started: { provider_run_id: dispatch.provider_run_id },
+    started_at: dispatch.started_at
+  };
+}
+
+function judgmentItems(value) {
+  if (Array.isArray(value)) return value.filter((item) => item?.judgment_id);
+  if (value?.judgment_id) return [value];
+  if (Array.isArray(value?.judgments)) return value.judgments.filter((item) => item?.judgment_id);
+  return [];
+}
+
+function mergeJudgments(...collections) {
+  const merged = new Map();
+  for (const collection of collections) {
+    for (const judgment of judgmentItems(collection)) merged.set(judgment.judgment_id, judgment);
+  }
+  return [...merged.values()];
 }
 
 function stalled(reason) {

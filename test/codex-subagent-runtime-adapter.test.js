@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -17,12 +17,16 @@ function fakeCodexHost() {
   let shutdowns = 0;
   let wakes = 0;
   let status = 'running';
+  let statusDetails = {};
+  let lastSpawnRequest;
+  let lastShutdownReason;
   return {
-    metrics: () => ({ spawns, shutdowns, wakes }),
+    metrics: () => ({ spawns, shutdowns, wakes, lastSpawnRequest, lastShutdownReason }),
+    setStatus: (next, details = {}) => { status = next; statusDetails = details; },
     async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
-    async spawn() { spawns += 1; return { provider_run_id: 'codex-provider-1', agent_identity: 'reviewer-codex', thread_id: 'thread-codex' }; },
-    async status() { return { status }; },
-    async shutdown() { shutdowns += 1; status = 'cancelled'; return { status }; },
+    async spawn(request) { spawns += 1; lastSpawnRequest = request; return { provider_run_id: 'codex-provider-1', agent_identity: 'reviewer-codex', thread_id: 'thread-codex' }; },
+    async status() { return { status, ...statusDetails }; },
+    async shutdown(input) { shutdowns += 1; lastShutdownReason = input.reason; status = 'cancelled'; return { status }; },
     async subscribeCompletion({ onEvent }) { callback = onEvent; return { subscription_id: 'subscription-1' }; },
     async wake() { wakes += 1; },
     async detach() {},
@@ -88,10 +92,10 @@ test('CDI-S-3 lost wake notification still reconciles the inbox result', async (
   host.wake = async () => { throw new Error('parent session unavailable'); };
   const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
   const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
-  await assert.rejects(host.emit({
+  await host.emit({
     event_id: 'lost-wake-completion', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z', surface_hash: 'surface-a',
     result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'persisted first', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
-  }), /parent session unavailable/);
+  });
   const recovered = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.equal(recovered.dispatch.status, 'completed');
   assert.equal(recovered.dispatch.result.summary, 'persisted first');
@@ -147,4 +151,156 @@ test('CDI-S-6 CDI-S-7 recovery reuses completed judgments and invalidates only c
   assert.deepEqual(plan.reusable_judgments.map((item) => item.judgment_id), ['runtime']);
   assert.deepEqual(plan.invalidated_judgments, ['docs']);
   assert.deepEqual(plan.remaining_judgments.map((item) => item.judgment_id), ['docs', 'new']);
+});
+
+test('CDI-S-1 monitor polling automatically detaches at the ten-minute boundary without shutdown', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-boundary-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  clock = new Date('2026-07-22T01:10:00.000Z');
+  const detached = await coordinator.poll(started.state, started.dispatch.dispatch_id);
+  assert.equal(detached.dispatch.status, 'running_detached');
+  assert.equal(host.metrics().shutdowns, 0);
+});
+
+test('CDI-S-5 duplicate checkpoint and partial judgment do not extend the no-progress deadline', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-duplicate-progress-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock });
+  const request = reviewRequest(repoRoot);
+  request.requirements.no_progress_deadline_ms = 1000;
+  const started = await coordinator.dispatch(baseState, request);
+  await host.emit({ event_id: 'checkpoint-a', kind: 'progress', checkpoint_id: 'same', observed_at: clock.toISOString() });
+  clock = new Date('2026-07-22T01:00:00.500Z');
+  await host.emit({ event_id: 'checkpoint-a-repeat', kind: 'progress', checkpoint_id: 'same', observed_at: clock.toISOString() });
+  await host.emit({ event_id: 'partial-a', kind: 'partial_result', observed_at: clock.toISOString(), payload: { judgment_id: 'security', verdict: 'pass' } });
+  clock = new Date('2026-07-22T01:00:01.000Z');
+  await host.emit({ event_id: 'partial-a-repeat', kind: 'partial_result', observed_at: clock.toISOString(), payload: { judgment_id: 'security', verdict: 'pass' } });
+  clock = new Date('2026-07-22T01:00:01.600Z');
+  const stalled = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(stalled.dispatch.stop_reason.code, 'runtime_stalled');
+});
+
+test('CDI-S-5 successor process enforces wall-clock, attempt, and cost bounds from persisted dispatch state', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-successor-bounds-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const first = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock });
+  const request = reviewRequest(repoRoot);
+  request.requirements.max_wall_clock_ms = 1000;
+  request.requirements.max_attempts = 1;
+  request.requirements.max_cost_usd = 1;
+  const started = await first.dispatch(baseState, request);
+  const detached = await first.detach(started.state, started.dispatch.dispatch_id);
+  host.setStatus('running', { attempts: 2, usage_accounting: { cost_usd: 2 } });
+  clock = new Date('2026-07-22T01:00:02.000Z');
+  const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock });
+  const stalled = await successor.reconcile(detached.state, detached.dispatch.dispatch_id);
+  assert.equal(stalled.dispatch.stop_reason.code, 'runtime_stalled');
+  assert.equal(host.metrics().lastShutdownReason, 'max_wall_clock_exceeded');
+  assert.equal(host.metrics().spawns, 1);
+});
+
+test('CDI-S-5 attempt and cost caps independently stop a restarted detached dispatch', async (t) => {
+  for (const scenario of [
+    { name: 'attempt', status: { attempts: 2 }, expected: 'max_attempts_exceeded' },
+    { name: 'cost', status: { attempts: 1, usage_accounting: { cost_usd: 2 } }, expected: 'max_cost_exceeded' }
+  ]) {
+    const repoRoot = await mkdtemp(path.join(os.tmpdir(), `vibepro-codex-${scenario.name}-bound-`));
+    t.after(() => rm(repoRoot, { recursive: true, force: true }));
+    const clock = new Date('2026-07-22T01:00:00.000Z');
+    const host = fakeCodexHost();
+    const first = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock });
+    const request = reviewRequest(repoRoot);
+    request.requirements.max_wall_clock_ms = 3600000;
+    request.requirements.no_progress_deadline_ms = 3600000;
+    request.requirements.max_attempts = 1;
+    request.requirements.max_cost_usd = 1;
+    const started = await first.dispatch(baseState, request);
+    const detached = await first.detach(started.state, started.dispatch.dispatch_id);
+    host.setStatus('running', scenario.status);
+    const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock });
+    const stalled = await successor.reconcile(detached.state, detached.dispatch.dispatch_id);
+    assert.equal(stalled.dispatch.stop_reason.code, 'runtime_stalled');
+    assert.equal(host.metrics().lastShutdownReason, scenario.expected);
+  }
+});
+
+test('CDI-S-6 actual spawn receives only unfinished judgments and completion merges reusable partials', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-recovery-wire-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const request = reviewRequest(repoRoot);
+  request.previous_surface_hash = 'surface-a';
+  request.previous_judgments = [{ judgment_id: 'security', verdict: 'pass' }];
+  request.requested_judgments = [{ judgment_id: 'security' }, { judgment_id: 'correctness' }];
+  const started = await coordinator.dispatch(baseState, request);
+  assert.deepEqual(host.metrics().lastSpawnRequest.requested_judgments.map((item) => item.judgment_id), ['correctness']);
+  await host.emit({ event_id: 'recovery-done', kind: 'completed', surface_hash: 'surface-a', result: {
+    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'remaining complete', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed', judgments: [{ judgment_id: 'correctness', verdict: 'pass' }]
+  } });
+  const completed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.deepEqual(completed.dispatch.result.judgments.map((item) => item.judgment_id), ['security', 'correctness']);
+  assert.equal(host.metrics().spawns, 1);
+});
+
+test('CDI-S-7 HEAD change fails closed unless the caller explicitly proves the inspection surface is unchanged', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-rebase-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const original = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  const rebasedState = { ...original.state, current_head_sha: 'head-b' };
+  await assert.rejects(coordinator.dispatch(rebasedState, reviewRequest(repoRoot)), (error) => error.code === 'stale_head');
+  const rebound = await coordinator.dispatch(rebasedState, { ...reviewRequest(repoRoot), surface_unchanged_after_rebase: true });
+  assert.equal(rebound.reused, true);
+  assert.equal(rebound.dispatch.surface_rebound_from_head_sha, 'head-a');
+  assert.equal(host.metrics().spawns, 1);
+});
+
+test('CDI-S-8 missing completion delivery capability is rejected before spawn', () => {
+  assert.throws(() => createCodexSubagentRuntimeAdapter({ repoRoot: '/tmp/repo', host: {
+    probe() {}, spawn() {}, status() {}, shutdown() {}, wake() {}
+  } }), /subscribeCompletion/);
+});
+
+test('CDI-S-7 completion for a different surface is contained and cannot close review', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-surface-mismatch-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  await host.emit({ event_id: 'wrong-surface', kind: 'completed', surface_hash: 'surface-b', result: {
+    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'wrong', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed'
+  } });
+  const contained = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.notEqual(contained.dispatch.status, 'completed');
+  assert.equal(contained.dispatch.stop_reason.code, 'invalid_runtime_result');
+});
+
+test('CDI-S-8 malformed persisted Inbox data remains fail-closed and recoverable in detached state', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-malformed-inbox-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const first = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const started = await first.dispatch(baseState, reviewRequest(repoRoot));
+  const detached = await first.detach(started.state, started.dispatch.dispatch_id);
+  const events = path.join(repoRoot, '.vibepro', 'runtime-inbox', started.dispatch.dispatch_id, 'events');
+  await mkdir(events, { recursive: true });
+  await writeFile(path.join(events, 'malformed.json'), '{not-json');
+  const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const observed = await successor.reconcile(detached.state, detached.dispatch.dispatch_id);
+  assert.equal(observed.dispatch.status, 'running_detached');
+  assert.equal(observed.dispatch.stop_reason.code, 'runtime_reconcile_failed');
+  assert.equal(observed.dispatch.stop_reason.details.recoverable_from_inbox, true);
+  assert.equal(host.metrics().shutdowns, 0);
 });

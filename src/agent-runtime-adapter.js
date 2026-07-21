@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { appendProviderObservation, assertProviderIdentityUniqueness, createRunLineageEnvelope } from './run-lineage.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 
 export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 
@@ -72,6 +73,18 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
     throw error;
   }
   const existing = findDispatch(runState, request.dispatch_id);
+  if (existing && existing.input_head_sha !== request.input_head_sha) {
+    if (input.surface_unchanged_after_rebase !== true || existing.inspection_surface_hash !== request.inspection_surface_hash) {
+      throw new AgentRuntimeError('stale_head', 'logical dispatch reuse across HEAD changes requires an explicit unchanged-surface assertion');
+    }
+    const rebound = {
+      ...existing,
+      input_head_sha: request.input_head_sha,
+      surface_rebound_from_head_sha: existing.input_head_sha,
+      updated_at: iso(now)
+    };
+    return { state: upsertDispatch(runState, rebound), dispatch: rebound, reused: true };
+  }
   if (existing && existing.provider_run_id && !TERMINAL_STATUSES.has(existing.status)) {
     return { state: { ...runState, status: 'running', stop_reason: null }, dispatch: existing, reused: true };
   }
@@ -193,6 +206,10 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
     return containUncertainRuntime(registry, now, runState, current,
       'stale_head', 'runtime dispatch input HEAD no longer matches the authoritative Run HEAD');
   }
+  if (typeof adapter.detach === 'function' && typeof adapter.reconcile === 'function' &&
+      current.status === 'running' && Date.parse(iso(now)) - Date.parse(current.started_at) >= current.requirements.monitor_boundary_ms) {
+    return detach(registry, now, runState, dispatchId);
+  }
   let observed;
   try {
     observed = normalizeStatus(await withTimeout(
@@ -246,10 +263,21 @@ async function reconcile(registry, now, runState, dispatchId, options = {}) {
   try {
     observed = normalizeStatus(await withTimeout(adapter.reconcile({
       provider_run_id: current.provider_run_id,
-      dispatch_id: current.dispatch_id
+      dispatch_id: current.dispatch_id,
+      dispatch: current
     }), current.requirements.timeout_ms, 'runtime_reconcile_timeout'));
   } catch (error) {
-    throw new AgentRuntimeError(error.code ?? 'runtime_reconcile_failed', error.message);
+    const next = {
+      ...current,
+      status: current.status === 'running_detached' ? 'running_detached' : current.status,
+      updated_at: iso(now),
+      stop_reason: {
+        code: error.code ?? 'runtime_reconcile_failed',
+        message: error.message,
+        details: { recoverable_from_inbox: true }
+      }
+    };
+    return { state: upsertDispatch(runState, next), dispatch: next, reused: false };
   }
   return applyObservedStatus(registry, now, runState, current, observed, options);
 }
@@ -290,7 +318,7 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
   }
   try {
     const result = normalizeResult(await withTimeout(
-      adapter.collect_result({ provider_run_id: current.provider_run_id, dispatch_id: current.dispatch_id }),
+      adapter.collect_result({ provider_run_id: current.provider_run_id, dispatch_id: current.dispatch_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_result_timeout'
     ), current);
@@ -418,7 +446,11 @@ function normalizeRequest(state, input) {
     throw new AgentRuntimeError('review_capability_required', 'review runtime must request the review capability');
   }
   const inspectionSurfaceHash = requireText(input.inspection_surface_hash ?? headSha, 'inspection_surface_hash');
-  const dispatchId = `dispatch-${createHash('sha256').update(`${runId}:${adapterId}:${taskId}:${role}:${inspectionSurfaceHash}:${reviewerIdentity ?? ''}:${input.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
+  const dispatchId = deriveDispatchIdentity({
+    run_id: runId, adapter_id: adapterId, task_id: taskId, role,
+    inspection_surface_hash: inspectionSurfaceHash, reviewer_identity: reviewerIdentity,
+    implementation_session_id: input.implementation_session_id ?? null
+  });
   return {
     dispatch_id: dispatchId,
     run_id: runId,
@@ -432,6 +464,10 @@ function normalizeRequest(state, input) {
     implementation_session_id: input.implementation_session_id ?? null,
     lineage: createDispatchLineage(state, input, dispatchId, runId, headSha),
     inspection_surface_hash: inspectionSurfaceHash,
+    requested_judgments: Array.isArray(input.requested_judgments) ? input.requested_judgments : [],
+    previous_judgments: Array.isArray(input.previous_judgments) ? input.previous_judgments : [],
+    previous_surface_hash: input.previous_surface_hash ?? null,
+    changed_paths: Array.isArray(input.changed_paths) ? input.changed_paths.map(String) : [],
     requirements: {
       capabilities,
       timeout_ms: positiveInteger(input.requirements?.timeout_ms, 'timeout_ms'),
@@ -511,6 +547,9 @@ function normalizeResult(value, dispatchRecord) {
   if (Array.isArray(value.partial_results)) result.partial_results = value.partial_results;
   if (Array.isArray(value.judgments)) result.judgments = value.judgments;
   if (value.surface_hash !== undefined) result.surface_hash = value.surface_hash;
+  if (result.surface_hash !== undefined && result.surface_hash !== dispatchRecord.inspection_surface_hash) {
+    throw new AgentRuntimeError('runtime_surface_mismatch', 'runtime result surface must match the dispatch inspection surface');
+  }
   if (dispatchRecord.role === 'review') {
     if (result.changed_files.length > 0) {
       throw new AgentRuntimeError('review_mutation_forbidden', 'review runtime result must not contain changed files');
@@ -550,7 +589,6 @@ function normalizeResult(value, dispatchRecord) {
   }
   return result;
 }
-
 function normalizeReviewResult(value) {
   const status = requireText(value.status, 'review status');
   if (!new Set(['pass', 'needs_changes', 'block']).has(status)) {
@@ -586,7 +624,6 @@ function normalizeReviewFindings(value) {
     };
   });
 }
-
 function normalizeUsageAccounting(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new AgentRuntimeError('invalid_runtime_result', 'usage_accounting must be an object');

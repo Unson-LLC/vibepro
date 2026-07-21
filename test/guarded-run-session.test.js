@@ -19,6 +19,7 @@ import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
 import { createHumanDecision } from '../src/human-decision-checkpoint.js';
 import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
+import { createCodexGuardedRunBridge } from '../src/codex-runtime-bridge.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -839,26 +840,30 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(run.current_head_sha, persisted.current_head_sha);
 });
 
-test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists detached authority and reconciles completion without redispatch', async (t) => {
+test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
-  let status = 'running';
   let starts = 0;
-  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
-    id: 'detached-runtime',
+  let completionHandler;
+  const reviews = [];
+  const host = {
     async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
-    async start() { starts += 1; return { provider_run_id: 'provider-detached', agent_identity: 'reviewer-detached', thread_id: 'thread-detached' }; },
-    async status() { return { status }; },
-    async detach() { return { status: 'running_detached' }; },
-    async reconcile() { return { status }; },
-    async cancel() { status = 'cancelled'; },
-    async collect_result() {
-      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'detached review pass', agent_identity: 'reviewer-detached', lifecycle: 'closed' };
-    }
-  }] });
-  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+    async spawn() { starts += 1; return { provider_run_id: 'provider-detached', agent_identity: 'reviewer-detached', thread_id: 'thread-detached' }; },
+    async status() { return { status: 'running' }; },
+    async shutdown() { return { status: 'cancelled' }; },
+    async subscribeCompletion({ onEvent }) { completionHandler = onEvent; return { subscription_id: 'subscription-detached' }; },
+    async wake() {},
+    async detach() {}
+  };
+  const bridge = createCodexGuardedRunBridge({
+    repoRoot: fixture.source,
+    host,
+    guardedRunDependencies: fixture.dependencies(),
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: 'pass' }; }
+  });
+  const session = bridge.session;
   const run = await session.run(fixture.source, { storyId: STORY_ID });
   const request = {
-    adapter_id: 'detached-runtime', task_id: 'detached-review', role: 'review', reviewer_identity: 'reviewer-detached',
+    adapter_id: 'codex-subagent', task_id: 'detached-review', role: 'review', reviewer_identity: 'reviewer-detached',
     implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-a',
     requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
   };
@@ -866,9 +871,19 @@ test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists detached authority and reconc
   const detached = await session.detachRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
   assert.equal(detached.dispatch.status, 'running_detached');
   assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
-  status = 'completed';
+  await completionHandler({
+    event_id: 'guarded-run-completion', kind: 'completed', surface_hash: 'surface-a',
+    result: { changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'detached review pass', agent_identity: 'reviewer-detached', thread_id: 'thread-detached', lifecycle: 'closed' }
+  });
   const completed = await session.reconcileRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
   assert.equal(completed.dispatch.status, 'completed');
+  const recorded = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'Codex Inbox review' }
+  });
+  assert.equal(recorded.review.status, 'pass');
+  assert.equal(reviews[0].review.agentClosed, true);
+  assert.equal(reviews[0].review.agentThreadId, 'thread-detached');
   const duplicate = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
   assert.equal(duplicate.reused, true);
   assert.equal(starts, 1);

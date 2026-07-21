@@ -27,15 +27,15 @@ PR #360のprovider-neutral runtime adapterを、親sessionの同期wait寿命と
 
 ## Decision
 
-`defineAgentRuntimeAdapter`の既存5メソッドを互換維持し、optionalな`detach`と`reconcile` capabilityを追加する。coordinatorの`detach`は実行中provider runをcancelせず、adapterへ同期監視終了を通知し、dispatchを`running_detached`として更新する。`reconcile`は同じdispatch IDのInboxを先に読み、completion eventがなければhost statusを観測する。dispatch IDはbudget・timestampから独立し、run、adapter、logical task、role、HEAD、surface hash、identityだけで決定する。
+`defineAgentRuntimeAdapter`の既存5メソッドを互換維持し、optionalな`detach`と`reconcile` capabilityを追加する。coordinatorの`poll`は`monitor_boundary_ms`到達時に実行中provider runをcancelせず自動detachし、dispatchを`running_detached`として更新する。`reconcile`は同じdispatch IDのInboxを先に読み、completion eventがなければhost statusを観測する。dispatch IDはbudget・timestamp・HEAD SHAそのものから独立し、run、adapter、logical task、role、inspection surface、identityだけで決定する。HEADが変わった場合は同一surfaceの明示的assertionがある時だけrebindし、暗黙再利用は`stale_head`でfail closedする。
 
 `createAgentCompletionInbox`は`.vibepro/runtime-inbox/<dispatch-id>/events/<event-id>.json`へimmutable eventをatomic renameで追加し、event別receiptをatomic renameで更新する。event IDとdispatch IDで重複配送を抑止し、ack前後ともeventは別sessionから監査・再読できる。completion eventはprovider run correlation、HEAD、surface hash、partial judgments、usage、resultを保持するが、credential/raw transcriptは保持しない。
 
-`createCodexSubagentRuntimeAdapter`は注入されたhostの`probe/spawn/status/shutdown/subscribeCompletion/wake`へだけ依存する。spawn直後にcompletion callbackを登録し、callbackはInbox writeを完了してからwakeを呼ぶ。通知失敗はeventを失わせない。`status/collect_result/reconcile`はInbox優先である。completion callback未接続のhostは構築またはstart時にfail closedする。
+`createCodexSubagentRuntimeAdapter`は注入されたhostの`probe/spawn/status/shutdown/subscribeCompletion/wake`へだけ依存する。spawn直後にcompletion callbackを登録し、callbackはInbox writeを完了してからwakeを呼ぶ。通知失敗はeventを失わせない。`status/collect_result/reconcile`はInbox優先である。completion callback未接続のhostは構築またはstart時にfail closedする。`createCodexGuardedRunBridge`がInbox、adapter、coordinator、Guarded Runを一つのproduction composition boundaryとして結線し、host側はこのbridgeへ実spawnと配送機能を注入する。
 
 progress policyはheartbeatとcheckpointを区別する。checkpointは新しい`checkpoint_id`または増加したcompleted judgment集合だけをprogressとして扱う。`no_progress_deadline_ms`、`max_wall_clock_ms`、`max_attempts`、`max_cost_usd`のいずれかを超えると`stalled`になり、その時だけhost shutdown containmentへ進む。detach/reconcile自体はattemptやcostを増やさない。
 
-review resultはjudgment key別のpartial resultをInboxへ保存する。reconcile時に完了済みjudgmentをunionし、未完了judgmentだけを`remaining_judgments`として返す。同一HEADかつ同一surface hashなら再利用し、budget変更、evidence timestamp、rebaseだけでは破棄しない。surface hashが変わった場合は、変更pathとjudgment surfaceのintersectionに基づく`invalidated_judgments`だけを再判定する。
+review resultはjudgment key別のpartial resultをInboxへ保存する。dispatch前に完了済みjudgmentを計画へ取り込み、host spawnへは未完了judgmentだけを渡す。reconcile時にreusable、partial、completion judgmentをunionする。同一HEADかつ同一surface hashなら再利用し、budget変更とevidence timestampでは破棄しない。rebase後はsurface不変の明示的assertionがある時だけ再利用する。surface hashが変わった場合は、変更pathとjudgment surfaceのintersectionに基づく`invalidated_judgments`だけを再判定する。
 
 Guarded Run Sessionに`detachRuntime`と`reconcileRuntime`を追加し、既存のauthority→mirror永続化とmanaged worktree/HEAD検証を再利用する。reconcileでcompleted reviewを得てもAgent Review recording boundaryを迂回せず、既存`recordRuntimeReview`がidentity、session、HEAD、read-only、closed lifecycleを再検証してからclose済み結果を記録する。
 
