@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="resolver matches cleanup responsibility contract and blocks without current evidence" time="0.446940" classname="test"/>
+	<testcase name="resolver passes matched contract when current-head evidence is bound to required observations" time="0.528130" classname="test"/>
+	<testcase name="resolver accepts verify-record git context and observed values as current responsibility evidence" time="0.377169" classname="test"/>
+	<testcase name="resolver does not satisfy contract evidence with unrelated generic unit pass" time="0.382302" classname="test"/>
+	<testcase name="resolver accepts generic current unit evidence for read-only audit reporting responsibilities" time="0.388309" classname="test"/>
+	<testcase name="resolver emits no_registered_authority for unregistered high-risk state surfaces" time="0.395347" classname="test"/>
+	<testcase name="resolver does not classify derive-only workspace status as an unregistered state responsibility" time="0.430351" classname="test"/>
+	<testcase name="resolver fails closed when workspace status contains a state mutation" time="0.400707" classname="test"/>
+	<testcase name="resolver applies workspace status exemption without hiding unregistered CLI wiring" time="0.396888" classname="test"/>
+	<testcase name="resolver retains a mixed worker candidate beside read-only workspace status" time="0.335210" classname="test"/>
+	<testcase name="resolver fails closed when reviewed workspace status gains an indirect git side effect" time="0.326495" classname="test"/>
+	<testcase name="resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths" time="0.396098" classname="test"/>
+	<testcase name="resolver fails closed when matched registry entry is missing required fields" time="0.425710" classname="test"/>
+	<testcase name="resolver fails closed on malformed responsibility registry JSON" time="0.358999" classname="test"/>
+	<testcase name="root registry resolves VibePro core responsibility authorities with contract-bound evidence" time="0.024937" classname="test"/>
+	<testcase name="resolver does not fan out a shared risk surface across path-anchored responsibilities" time="0.416762" classname="test"/>
+	<testcase name="resolver preserves standalone risk matching for an explicitly risk-only responsibility" time="0.356801" classname="test"/>
+	<testcase name="resolver lets a contract clause path supplement a non-matching registry path" time="0.362704" classname="test"/>
+	<testcase name="resolver matches symbols only in changed production lines" time="0.680763" classname="test"/>
+	<testcase name="resolver matches a symbol added on a changed production line" time="0.897977" classname="test"/>
+	<testcase name="resolver fails closed for symbol matching when the production diff cannot be read" time="0.545465" classname="test"/>
+	<testcase name="resolver fails closed for symbol matching when no diff base is provided" time="0.515987" classname="test"/>
+	<testcase name="resolver compares an explicit head even when another branch is checked out" time="1.381301" classname="test"/>
+	<testcase name="resolver matches a symbol in an untracked production file" time="0.858865" classname="test"/>
+	<testcase name="resolver ignores registered symbols that appear only in test files or story text" time="0.389415" classname="test"/>
+	<testcase name="resolver does not match a contract from responsibility reference alone" time="0.415788" classname="test"/>
+	<testcase name="pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis" time="2.691241" classname="test"/>
+	<testcase name="session efficiency audit uses process-manager worktree and Codex token_count window" time="1.041306" classname="test"/>
+	<testcase name="session efficiency audit estimates audit artifact token exposure from Codex transcript entries" time="0.789092" classname="test"/>
+	<testcase name="SCCB-SCENARIO-001 compaction replacement_history text is bucketed as replayed_context, not audit_evidence/test" time="0.890056" classname="test"/>
+	<testcase name="SEXP-S-1/2/3/4 classifies provenance, preserves semantic totals, and deduplicates repeated mixed tool output by digest" time="0.863110" classname="test"/>
+	<testcase name="session efficiency audit infers the matching Codex session from repo cwd and window" time="0.868866" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id" time="0.906011" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery" time="0.924335" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories" time="0.931885" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo" time="1.514820" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-005 worktree cwd match alone is decisive even without other signals" time="1.693354" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-006 cwd under a different repo worktree directory does not match" time="1.381714" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch" time="1.177717" classname="test"/>
+	<testcase name="SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable" time="0.941021" classname="test"/>
+	<testcase name="SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection" time="0.949911" classname="test"/>
+	<testcase name="SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable" time="0.799368" classname="test"/>
+	<testcase name="audit session-cost CLI exposes JSON contract for active session cost audits" time="1.101206" classname="test"/>
+	<testcase name="AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent" time="1.397461" classname="test"/>
+	<testcase name="AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL" time="0.805094" classname="test"/>
+	<testcase name="AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone" time="0.760797" classname="test"/>
+	<testcase name="audit memory preflight blocks missing memory unless fallback is explicit and commit readback verifies the window" time="0.593988" classname="test"/>
+	<testcase name="audit memory preflight reports corrupt memory and CLI exits non-zero without fallback" time="0.690155" classname="test"/>
+	<testcase name="session efficiency audit makes strict attribution primary and degrades mixed-parent readiness" time="0.784921" classname="test"/>
+	<testcase name="session efficiency audit applies high risk only to strict-over-associated threshold breach" time="0.708937" classname="test"/>
+	<testcase name="session efficiency audit keeps unavailable attribution explicit when inference selects no session" time="0.700541" classname="test"/>
+	<testcase name="PR preparation session boundary is advisory and delegates mixed-session detection to session-cost" time="0.000337" classname="test"/>
+	<!-- tests 52 -->
+	<!-- suites 0 -->
+	<!-- pass 52 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 23367.430666 -->
+</testsuites>
