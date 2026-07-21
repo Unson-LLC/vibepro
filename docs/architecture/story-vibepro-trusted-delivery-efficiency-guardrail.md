@@ -25,7 +25,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 
 - Classify timed-out, obsolete, orphaned, duplicate, and budget-exceeded work separately from correctness readiness.
 - `agent-review` captures HEAD and surface digest when a lifecycle starts. If the current HEAD no longer matches, status inspection derives `orphaned_agent` and fails closed until the provider result is explicitly collected or cancellation is confirmed.
-- Explicit close after a HEAD mutation persists `obsolete`, the terminal HEAD, the mutation reason, and cancellation confirmation; a stale running record is never silently treated as complete.
+- Explicit close after a HEAD mutation persists `obsolete`, the terminal HEAD, the mutation reason, and cancellation confirmation only when both `--cancellation-confirmed` and non-empty cancellation evidence are supplied. Evidence text alone does not prove provider cancellation; without both inputs the lifecycle remains running with terminal status `orphaned_agent`.
 - `pr-manager` reads persisted lifecycle and repair-loop artifacts, evaluates the configured budget, and displays efficiency debt without changing required Gate semantics.
 
 ### Finding batch planner
@@ -55,6 +55,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - The dispatch idempotency key includes Story, stage, role, HEAD, and surface digest.
 - Final review never starts before the exact source/Spec/test/review surface binding is frozen.
 - Provider-specific cancellation is out of scope; unconfirmed cancellation is an orphaned-agent stop.
+- A caller assertion is not provider confirmation unless it is explicit and evidence-bound; HEAD mutation never auto-sets `cancel_confirmed`.
 - Changed lines are not a time, token, or value allocation basis.
 
 ## Compatibility and migration

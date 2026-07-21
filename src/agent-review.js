@@ -584,16 +584,25 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     if (!match) {
       throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
     }
-    match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
-    match.closed_at = new Date().toISOString();
-    match.close_reason = closeReason;
-    match.close_evidence = normalizeNullable(options.closeEvidence);
+    const closeEvidence = normalizeNullable(options.closeEvidence);
     if (match.head_sha && match.head_sha !== gitContext.head_sha) {
+      if (options.cancellationConfirmed !== true || !closeEvidence) {
+        match.terminal_status = 'orphaned_agent';
+        match.terminal_reason = 'head_mutated_cancellation_unconfirmed';
+        match.terminal_head_sha = gitContext.head_sha;
+        match.cancel_confirmed = false;
+        match.cancellation_evidence = closeEvidence;
+        return;
+      }
       match.terminal_status = 'obsolete';
       match.terminal_reason = 'head_mutated_after_dispatch';
       match.terminal_head_sha = gitContext.head_sha;
       match.cancel_confirmed = true;
     }
+    match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
+    match.closed_at = new Date().toISOString();
+    match.close_reason = closeReason;
+    match.close_evidence = closeEvidence;
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
@@ -3221,7 +3230,7 @@ function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
       actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
     }
     if (entry.effective_status === 'orphaned_agent') {
-      actions.push(`Fail closed and confirm cancellation for stale-HEAD ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason replaced --close-evidence <cancellation-evidence>`);
+      actions.push(`Fail closed and confirm cancellation for stale-HEAD ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason replaced --cancellation-confirmed --close-evidence <cancellation-evidence>`);
       actions.push(`After cancellation is confirmed, start a current-HEAD replacement for ${stage}:${entry.role} with --replacement-for ${entry.lifecycle_id}`);
     }
     if (entry.close_reason === 'manual_shutdown') {

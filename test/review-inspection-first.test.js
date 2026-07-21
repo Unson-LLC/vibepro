@@ -62,7 +62,7 @@ async function startCloseable(root) {
   });
 }
 
-test('HEAD mutation fails stale running review closed and persists obsolete after cancellation confirmation', async () => {
+test('HEAD mutation remains orphaned until explicit cancellation confirmation persists obsolete', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const started = await startCloseable(root);
@@ -77,15 +77,31 @@ test('HEAD mutation fails stale running review closed and persists obsolete afte
   assert.match(staleRole.lifecycle.latest.head_sha, /^[a-f0-9]{40}$/);
   assert.match(stale.stages[0].next_actions.join('\n'), /Fail closed and confirm cancellation/);
 
+  const unconfirmed = await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'replaced',
+    closeEvidence: 'provider-cancellation-requested'
+  });
+  assert.equal(unconfirmed.lifecycle.effective_status, 'orphaned_agent');
+  assert.equal(unconfirmed.lifecycle.status, 'running');
+  assert.equal(unconfirmed.lifecycle.cancel_confirmed, false);
+  assert.equal(unconfirmed.lifecycle.closed_at, null);
+  assert.equal(unconfirmed.lifecycle.terminal_reason, 'head_mutated_cancellation_unconfirmed');
+
   const closed = await closeAgentReviewLifecycle(root, {
     storyId: 'story-test',
     stage: 'gate',
     role: 'gate_evidence',
     agentId: 'task-test-1',
     closeReason: 'replaced',
-    closeEvidence: 'provider-cancellation-confirmed'
+    closeEvidence: 'provider-cancellation-confirmed',
+    cancellationConfirmed: true
   });
   assert.equal(closed.lifecycle.effective_status, 'obsolete');
+  assert.equal(closed.lifecycle.status, 'replaced');
   assert.equal(closed.lifecycle.cancel_confirmed, true);
   assert.equal(closed.lifecycle.terminal_reason, 'head_mutated_after_dispatch');
 });

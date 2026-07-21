@@ -22,6 +22,21 @@ frontmatter reconciler requires.
 - C-005: `story-run-portfolio` separates overlapping review wall-clock from summed agent consumption.
 - INV-001: `pr-manager` exposes efficiency debt without weakening correctness readiness.
 
+## Failure and trust boundary
+
+```mermaid
+flowchart LR
+  Parent[Parent coordinator] --> Close[review close]
+  Provider[Provider cancellation result] --> Evidence[Explicit confirmation plus evidence]
+  Head[Current HEAD] --> Close
+  Close -->|same HEAD| Closed[Closed lifecycle]
+  Close -->|changed HEAD and confirmed| Obsolete[Obsolete terminal state]
+  Close -->|changed HEAD and unconfirmed| Orphan[Orphaned agent fail-closed stop]
+  Evidence --> Obsolete
+```
+
+The parent coordinator cannot turn its own cancellation request into provider confirmation. A changed-HEAD lifecycle stays orphaned until explicit confirmation and evidence are both present.
+
 ## Runtime owners
 
 `src/agent-review.js`, `src/pr-manager.js`, and `src/story-run-portfolio.js`
