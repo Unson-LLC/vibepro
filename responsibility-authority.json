@@ -364,15 +364,18 @@
         "paths": [
           "src/safe-action-orchestrator.js",
           "src/guarded-run-session.js",
+          "src/next-best-action-controller.js",
           "src/pr-manager.js",
           "src/cli.js",
           "test/safe-action-orchestrator.test.js",
           "test/guarded-run-session.test.js",
+          "test/next-best-action-controller.test.js",
           "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts"
         ],
         "symbols": [
           "execute run --until pr-ready",
           "SafeActionOrchestrator",
+          "NextBestActionController",
           "action_journal",
           "action_failed"
         ],
