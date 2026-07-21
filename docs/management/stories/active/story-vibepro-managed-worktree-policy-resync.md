@@ -8,6 +8,8 @@ category: quality
 related_stories:
   - story-vibepro-trusted-delivery-efficiency-guardrail
   - story-vibepro-content-scoped-evidence-reuse-key
+parent_design:
+  - vibepro-managed-worktree-policy-resync
 reason: "managed worktreeは作成時にcopyWorkspaceControlFiles()で.vibepro/config.jsonをコピーするが、refreshManagedWorktree()が再同期しないため、コピーが凍結スナップショットになる。親repoにbudgets.delivery_efficiency（PR #370のトークン/subagent予算enforcement）等のポリシーを配布しても既存worktreeへ永遠に届かず、予算enforcementが古い値のまま実行される。修正はrefresh時のポリシーセクション（budgets/execution/artifact_routing/output）の再同期に限定し、story catalog等のスナップショットセクションは凍結のまま維持する。rollback: refreshManagedWorktree内の同期呼び出しをrevertすれば従来の凍結挙動へ戻る。"
 created_at: 2026-07-21
 updated_at: 2026-07-21
