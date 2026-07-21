@@ -101,3 +101,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:374:start -->
 - [PR #374](https://github.com/Unson-LLC/vibepro/pull/374) — [2026-07](/releases/2026-07): story-vibepro-managed-worktree-policy-resync - Managed worktreeのポリシーconfigを凍結させず親repoから再同期する
 <!-- vibepro-release-index-pr:374:end -->
+
+<!-- vibepro-release-index-pr:345:start -->
+- [PR #345](https://github.com/Unson-LLC/vibepro/pull/345) — [2026-07](/releases/2026-07): story-vibepro-session-attribution-boundary-guard - 2026-07-09 の価値監査で親 session 019f3f8c が複数の関連 story を混載し、strict と worktree-bound の attribution 乖離（例: docs-feature-map strict 1h24m vs bound 11h24m 相当）が前回監査から横ばいのまま残った
+<!-- vibepro-release-index-pr:345:end -->
