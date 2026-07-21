@@ -766,7 +766,7 @@ Terminal rendering has an illegal-state-representable surface plus deterministic
     '--id', 'story-risk-adaptive',
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'node --test test/integration/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/unit/risk-adaptive-gate.test.js',
     '--summary', 'real-byte fixture and headless replay assertion passed; invariant unit makes illegal-state unrepresentable; selected harness could not reproduce one symptom, so contradiction feedback must re-triage'
   ])).exitCode, 0);
 
@@ -876,7 +876,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--command', 'node --test test/unit/workflow-validation.test.js',
     '--summary', 'targeted validation passed',
     '--artifact', '.vibepro/qa/sequence-status.json',
     '--target', 'src/lib/services/formProjectStartService.ts',
