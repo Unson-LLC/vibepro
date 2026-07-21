@@ -356,6 +356,11 @@ function extractArtifactObservedValues(data, parsed) {
       for (const [key, value] of Object.entries(data.observed)) record(key, value);
     }
   }
+  if (parsed.format === 'tap') {
+    record('tests', data.tests);
+    record('pass', data.pass);
+    record('fail', data.fail);
+  }
   return values;
 }
 
@@ -392,7 +397,7 @@ async function crossCheckArtifact(repoRoot, { artifact, status }) {
         status: 'unrecognized',
         format: null,
         artifact_outcome: null,
-        reason: 'artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check'
+        reason: 'artifact is not a recognized machine-readable test output (vitest/jest, Playwright, TAP, or generic status JSON); recorded without cross-check'
       },
       observedValues: {}
     };
@@ -443,7 +448,7 @@ function parseArtifactOutcome(raw) {
   try {
     data = JSON.parse(raw);
   } catch {
-    return null;
+    return parseTapArtifactOutcome(raw);
   }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
   if (typeof data.success === 'boolean' || typeof data.numFailedTests === 'number') {
@@ -474,4 +479,45 @@ function parseArtifactOutcome(raw) {
     }
   }
   return null;
+}
+
+function parseTapArtifactOutcome(raw) {
+  const lines = String(raw ?? '').replace(/\r\n?/g, '\n').split('\n');
+  const plans = lines
+    .map((line) => line.match(/^(\s*)(\d+)\.\.(\d+)(?:\s+#.*)?\s*$/))
+    .filter(Boolean);
+  const topLevelPlans = plans.filter((match) => match[1].length === 0);
+  if (topLevelPlans.length !== 1) return null;
+  const plan = topLevelPlans[0];
+  const start = Number(plan[2]);
+  const end = Number(plan[3]);
+  if (!Number.isInteger(start) || !Number.isInteger(end) || end < start) return null;
+  const expectedTests = end - start + 1;
+  const points = lines
+    .map((line) => line.match(/^(\s*)(not ok|ok)\b/))
+    .filter((match) => match && match[1].length === 0);
+  if (points.length !== expectedTests) return null;
+  const failedPoints = points.filter((match) => match[2] === 'not ok').length;
+  const summary = {};
+  for (const line of lines) {
+    const match = line.match(/^#\s+(tests|pass|fail)\s+(\d+)\s*$/);
+    if (match) summary[match[1]] = Number(match[2]);
+  }
+  if (summary.tests !== undefined && summary.tests !== expectedTests) return null;
+  if (summary.pass !== undefined && summary.pass !== expectedTests - failedPoints) return null;
+  if (summary.fail !== undefined && summary.fail !== failedPoints) return null;
+  if (failedPoints > 0 || summary.fail > 0) {
+    return {
+      format: 'tap',
+      outcome: 'fail',
+      detail: `plan=${start}..${end}, tests=${expectedTests}, pass=${summary.pass ?? expectedTests - failedPoints}, fail=${summary.fail ?? failedPoints}`,
+      data: { tests: expectedTests, pass: summary.pass ?? expectedTests - failedPoints, fail: summary.fail ?? failedPoints }
+    };
+  }
+  return {
+    format: 'tap',
+    outcome: 'pass',
+    detail: `plan=${start}..${end}, tests=${expectedTests}, pass=${summary.pass ?? expectedTests}, fail=${summary.fail ?? 0}`,
+    data: { tests: expectedTests, pass: summary.pass ?? expectedTests, fail: summary.fail ?? 0 }
+  };
 }

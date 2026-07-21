@@ -174,7 +174,8 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
       storyId,
       runId: requestedRunId,
       sessionCwd: session.cwd,
-      processCwd: processMetadata?.cwd
+      processCwd: processMetadata?.cwd,
+      sessionEvents: session.lineage_attribution?.events ?? []
     });
     session = {
       ...session,
@@ -1388,7 +1389,8 @@ async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
   storyId,
   runId,
   sessionCwd = null,
-  processCwd = null
+  processCwd = null,
+  sessionEvents = []
 } = {}) {
   const candidateRoots = [...new Set([
     repoRoot,
@@ -1439,7 +1441,13 @@ async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
         observed: { story_id: state.story_id ?? null, run_id: state.run_id ?? null }
       };
     }
-    return buildCanonicalRunLineage(state, authorityRoot, authorityPath, { storyId, runId });
+    return buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
+      storyId,
+      runId,
+      sessionCwd,
+      processCwd,
+      sessionEvents
+    });
   }
   return {
     status: 'unavailable',
@@ -1449,15 +1457,36 @@ async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
   };
 }
 
-function buildCanonicalRunLineage(state, authorityRoot, authorityPath, { storyId, runId }) {
+function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
+  storyId,
+  runId,
+  sessionCwd = null,
+  processCwd = null,
+  sessionEvents = []
+}) {
   const sourceArtifact = toWorkspaceRelative(authorityRoot, authorityPath);
   const authority = {
-    story_id: storyId,
-    run_id: runId,
+    story_id: state.story_id,
+    run_id: state.run_id,
     worktree_root: state.worktree_root ?? state.root_realpath ?? state.execution_context?.root_realpath,
     branch: state.branch ?? state.current_branch,
     head_sha: state.current_head_sha ?? state.head_sha
   };
+  const authorityError = validateCanonicalRunAuthority(authority, authorityRoot, {
+    storyId,
+    runId,
+    sessionCwd,
+    processCwd,
+    sessionEvents
+  });
+  if (authorityError) {
+    return {
+      status: 'unavailable',
+      reason: authorityError,
+      source_artifact: sourceArtifact,
+      requested: { story_id: storyId, run_id: runId }
+    };
+  }
   const events = [];
   const invalidDispatches = [];
   for (const dispatch of Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : []) {
@@ -1507,6 +1536,48 @@ function buildCanonicalRunLineage(state, authorityRoot, authorityPath, { storyId
     invalid_dispatches: invalidDispatches,
     reason: null
   };
+}
+
+function validateCanonicalRunAuthority(authority, authorityRoot, {
+  storyId,
+  runId,
+  sessionCwd = null,
+  processCwd = null,
+  sessionEvents = []
+} = {}) {
+  try {
+    validateRunLineageEnvelope({
+      schema_version: '0.1.0',
+      ...authority,
+      dispatch_id: `authority-${runId}`
+    });
+  } catch (error) {
+    return `canonical Run authority is incomplete or invalid: ${error.message}`;
+  }
+  if (authority.story_id !== storyId || authority.run_id !== runId) {
+    return 'canonical Run authority identity did not match the requested Story/Run';
+  }
+
+  const authorityWorktree = path.resolve(authority.worktree_root);
+  if (authorityWorktree !== path.resolve(authorityRoot)) {
+    return 'canonical Run authority worktree_root did not match its authority artifact root';
+  }
+  for (const [label, cwd] of [['session cwd', sessionCwd], ['process cwd', processCwd]]) {
+    if (cwd && path.resolve(cwd) !== authorityWorktree) {
+      return `canonical Run authority worktree_root did not match ${label}`;
+    }
+  }
+
+  for (const event of Array.isArray(sessionEvents) ? sessionEvents : []) {
+    const lineage = event?.lineage;
+    if (!lineage || lineage.run_id !== runId) continue;
+    try {
+      validateRunLineageEnvelope(lineage, authority);
+    } catch (error) {
+      return `canonical Run authority conflicted with session observation: ${error.message}`;
+    }
+  }
+  return null;
 }
 
 function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {

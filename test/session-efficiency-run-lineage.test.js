@@ -17,15 +17,15 @@ async function git(cwd, args) {
   return execFileAsync('git', args, { cwd, encoding: 'utf8' });
 }
 
-function lineage(runId, storyId = STORY_ID) {
+function lineage(runId, storyId = STORY_ID, binding = {}) {
   return {
     schema_version: '0.1.0',
     story_id: storyId,
     run_id: runId,
     dispatch_id: `dispatch-${runId}`,
-    worktree_root: '/fixture/worktree',
-    branch: 'codex/lineage',
-    head_sha: HEAD_SHA
+    worktree_root: binding.worktree_root ?? '/fixture/worktree',
+    branch: binding.branch ?? 'codex/lineage',
+    head_sha: binding.head_sha ?? HEAD_SHA
   };
 }
 
@@ -79,6 +79,27 @@ async function fixture() {
   return { root, codexHome };
 }
 
+async function writeCanonicalRun(root, { runId = 'run-alpha', authority = {}, dispatch = true } = {}) {
+  const runDir = path.join(root, '.vibepro', 'executions', STORY_ID, 'runs', runId);
+  await mkdir(runDir, { recursive: true });
+  const state = {
+    story_id: STORY_ID,
+    run_id: runId,
+    current_head_sha: HEAD_SHA,
+    execution_context: { root_realpath: root },
+    ...authority,
+    runtime_dispatches: dispatch ? [{
+      dispatch_id: `dispatch-${runId}`,
+      lineage: lineage(runId, STORY_ID, {
+        worktree_root: authority.worktree_root ?? root,
+        branch: authority.branch ?? 'codex/lineage',
+        head_sha: authority.current_head_sha ?? HEAD_SHA
+      })
+    }] : []
+  };
+  await writeFile(path.join(runDir, 'state.json'), `${JSON.stringify(state, null, 2)}\n`);
+}
+
 test('session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed', async () => {
   const { root, codexHome } = await fixture();
   const result = await collectSessionEfficiencyAudit(root, {
@@ -118,4 +139,48 @@ test('session efficiency audit accepts the run_id alias without changed-line all
   assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 1);
   assert.equal(result.lineage_attribution.buckets.other_story.event_count, 1);
   assert.equal(result.cost_breakdown.buckets.every((bucket) => bucket.changed_lines === 0), true);
+});
+
+test('canonical Run lineage fails closed when authority is missing required binding fields', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, { authority: { current_head_sha: undefined }, dispatch: false });
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.mode, 'authoritative_embedded_lineage');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, undefined);
+});
+
+test('canonical Run lineage validates complete authority and matching dispatches', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '07', '21', `${SESSION_ID}.jsonl`);
+  await writeFile(sessionPath, `${JSON.stringify({
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+  })}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.mode, 'canonical_run_artifact_preferred');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'available');
+  assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, 1);
 });

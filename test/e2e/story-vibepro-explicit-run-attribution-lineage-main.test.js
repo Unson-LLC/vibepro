@@ -99,6 +99,18 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   assert.equal(dispatchLineage.thread_id, providerThreadId);
   assert.equal(dispatchLineage.provider_observations[0].thread_id, providerThreadId);
 
+  const canonicalState = JSON.parse(await readFile(statePath, 'utf8'));
+  await writeFile(statePath, `${JSON.stringify({
+    ...canonicalState,
+    worktree_root: dispatchLineage.worktree_root,
+    branch: dispatchLineage.branch,
+    current_head_sha: dispatchLineage.head_sha,
+    execution_context: {
+      ...canonicalState.execution_context,
+      root_realpath: dispatchLineage.worktree_root
+    }
+  }, null, 2)}\n`);
+
   await recordVerificationEvidence(authorityRoot, {
     storyId: STORY_ID,
     kind: 'e2e',
