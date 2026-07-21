@@ -593,6 +593,70 @@ test('GAH-S-10 efficiency metrics use only typed completed measurements and pres
   assert.equal(metrics.risk_reduction_count, 3);
 });
 
+test('GAH-S-10 typed outcome measurements survive authority persistence validation', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const persisted = JSON.parse(await readFile(artifact, 'utf8'));
+  persisted.action_journal.push({
+    action_id: 'outcome_evidence',
+    node_id: 'outcome_evidence',
+    input_head_sha: persisted.current_head_sha,
+    output_head_sha: persisted.current_head_sha,
+    idempotency_key: 'outcome-evidence-current-head',
+    status: 'completed',
+    measurements: { accepted_defect_count: 2, risk_reduction_count: 3 },
+    started_at: FIRST_TIME,
+    completed_at: FIRST_TIME
+  });
+  await writeFile(artifact, `${JSON.stringify(persisted, null, 2)}\n`);
+
+  const loaded = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(loaded.action_journal.at(-1).measurements.accepted_defect_count, 2);
+  assert.equal(deriveRunEfficiencyMetrics(loaded).risk_reduction_count, 3);
+});
+
+test('GAH-S-3 provider fallback tries persisted adapters in order and retains failed attempts for audit', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const probes = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [
+    {
+      id: 'primary-runtime',
+      async probe() { probes.push('primary-runtime'); return { available: false, reason: 'runtime_unavailable' }; },
+      async start() { throw new Error('unreachable'); }, async status() { return { status: 'failed' }; },
+      async cancel() { return { status: 'cancelled' }; }, async collect_result() { throw new Error('unreachable'); }
+    },
+    {
+      id: 'fallback-runtime',
+      async probe() { probes.push('fallback-runtime'); return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+      async start() { return { provider_run_id: 'provider-fallback', agent_identity: 'implementer-2', session_id: 'fallback-session' }; },
+      async status() { return { status: 'running' }; }, async cancel() { return { status: 'cancelled' }; },
+      async collect_result() { throw new Error('unreachable'); }
+    }
+  ] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID, providerFallbacks: ['fallback-runtime'] });
+  const result = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'primary-runtime', task_id: 'implementation-runtime', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+
+  assert.deepEqual(probes, ['primary-runtime', 'fallback-runtime']);
+  assert.equal(result.dispatch.adapter_id, 'fallback-runtime');
+  assert.equal(result.dispatch.status, 'running');
+  assert.deepEqual(result.state.runtime_dispatches.map((entry) => [entry.adapter_id, entry.stop_reason?.code ?? null]), [
+    ['primary-runtime', 'runtime_unavailable'],
+    ['fallback-runtime', null]
+  ]);
+  const loaded = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(loaded.runtime_dispatches.length, 2);
+});
+
 test('GAH-S-2 CLI rejects guarded policy options outside execute run', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const stderr = capture();

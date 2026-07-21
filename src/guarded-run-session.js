@@ -131,7 +131,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     });
   }
   let result = operation === 'dispatch'
-    ? await deps.agentRuntimeCoordinator.dispatch(loaded.state, options.request)
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request)
     : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId);
   if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
     const actualIdentity = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
@@ -163,6 +163,29 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     loaded.mirrorFile,
     `agent_runtime_${operation}`
   );
+  return result;
+}
+
+const FALLBACK_RUNTIME_STOP_CODES = new Set([
+  'runtime_unavailable',
+  'quota_exceeded',
+  'auth_denied',
+  'runtime_probe_timeout',
+  'review_readonly_unavailable'
+]);
+
+async function dispatchRuntimeWithFallbacks(coordinator, state, request) {
+  const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
+    .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
+  let currentState = state;
+  let result = null;
+  for (const adapterId of adapterIds) {
+    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId });
+    currentState = result.state;
+    const fallbackAllowed = result.dispatch?.provider_run_id === null
+      && FALLBACK_RUNTIME_STOP_CODES.has(result.dispatch?.stop_reason?.code);
+    if (!fallbackAllowed) return result;
+  }
   return result;
 }
 
@@ -1697,7 +1720,8 @@ function validateRunShape(state) {
     if (entry.measurements !== undefined
         && (!isPlainRecord(entry.measurements)
           || Object.entries(entry.measurements).some(([key, value]) => ![
-            'full_suite_count', 'evidence_reuse_count', 'evidence_invalidation_count'
+            'full_suite_count', 'evidence_reuse_count', 'evidence_invalidation_count',
+            'accepted_defect_count', 'risk_reduction_count'
           ].includes(key) || !Number.isInteger(value) || value < 0))) {
       throw contractError('invalid_state', 'Guarded Run action journal measurements are invalid.', { run_id: state.run_id });
     }

@@ -7,7 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
-import { buildBootstrapBindingFingerprint } from '../../src/guarded-run-session.js';
+import { buildBootstrapBindingFingerprint, createGuardedRunSession } from '../../src/guarded-run-session.js';
 import { resolveGitIdentity } from '../../src/git-identity.js';
 
 const execFileAsync = promisify(execFile);
@@ -243,7 +243,7 @@ test('GAH-S-2 fresh CLI recovers quota, timeout, CI pending, and review timeout 
   }
 });
 
-test('GAH-S-7 fresh CLI replays the complete operational stop matrix without over-green states', async (t) => {
+test('GAH-S-7 production transitions persist the complete operational stop matrix for fresh CLI replay', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-matrix-e2e-'));
   t.after(() => rm(repo, { recursive: true, force: true }));
   await git(repo, ['init', '-b', 'main']);
@@ -271,20 +271,22 @@ test('GAH-S-7 fresh CLI replays the complete operational stop matrix without ove
   ];
   for (const [name, status, code] of scenarios) {
     const created = await runJson(repo, ['execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json']);
-    const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
-    const replayState = {
-      ...created,
-      status,
-      stop_reason: code ? { code, message: `${name} fixture`, details: {} } : null,
-      transitions: [...created.transitions, {
-        sequence: created.transitions.length + 1,
-        from: 'running',
-        to: status,
-        reason: code ?? 'trusted_pr_ready',
-        timestamp: created.updated_at
-      }]
-    };
-    await writeFile(stateFile, `${JSON.stringify(replayState, null, 2)}\n`);
+    const transitionSession = createGuardedRunSession(status === 'pr_ready'
+      ? { readGateReadiness: async () => ({ ready_for_pr_create: true }) }
+      : {});
+    await transitionSession.transition(repo, {
+      storyId: STORY_ID,
+      runId: created.run_id,
+      to: status,
+      reason: code ?? 'trusted_pr_ready',
+      stopReason: code ? { code, message: `${name} fixture`, details: {} } : null,
+      pendingDecision: status === 'waiting_for_human' ? {
+        type: 'clarification',
+        question: 'Choose the operational boundary?',
+        material_reason: 'The answer changes the execution boundary.',
+        impact_scope: ['implementation']
+      } : undefined
+    });
     const replayed = await runJson(repo, ['execute', 'status', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json']);
     assert.equal(replayed.status, status, name);
     assert.equal(replayed.stop_reason?.code ?? null, code, name);
