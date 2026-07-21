@@ -2277,7 +2277,7 @@ function buildReviewStartCommandTemplate(storyId, stage, roleArg, { identity = '
   return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)}`;
 }
 
-function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent' } = {}) {
+export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent' } = {}) {
   const command = [
     'vibepro review record .',
     '--id',

@@ -3,6 +3,8 @@ import { mkdtemp, readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+
+import { buildReviewRecordCommandTemplate } from '../src/pr-manager.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -285,6 +287,17 @@ test('architecture boundary request and dispatch emit the complete aggregate ins
     assert.match(content, /--inspection-input "<runtime-source-path>"/);
     assert.match(content, /--inspection-input "<test-path>"/);
   }
+});
+
+test('PR readiness recovery emits the complete aggregate inspection surface', () => {
+  const command = buildReviewRecordCommandTemplate(
+    'story-test',
+    'architecture_spec',
+    'architecture_boundary'
+  );
+  assert.match(command, /--inspection-input '<design-story-spec-path>'/);
+  assert.match(command, /--inspection-input '<runtime-source-path>'/);
+  assert.match(command, /--inspection-input '<test-path>'/);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {

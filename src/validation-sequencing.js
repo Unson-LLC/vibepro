@@ -5,6 +5,10 @@ import path from 'node:path';
 import { getWorkspaceDir } from './workspace.js';
 import { assertCommandMatchesVerificationKind } from './verification-evidence.js';
 import { getAgentReviewStatus } from './agent-review.js';
+import {
+  AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS,
+  AGGREGATE_REVIEW
+} from './review-inspection-inputs.js';
 
 export const VALIDATION_SEQUENCE_MODEL = 'vibepro-risk-adaptive-validation-sequencing-v1';
 export const VALIDATION_PHASES = [
@@ -27,8 +31,6 @@ const PREFLIGHT_SENSITIVE_SURFACES = new Set([
 // Preflight is one aggregate architecture-boundary review. The review prompt is
 // scoped by every sensitive surface below, rather than inventing per-surface
 // roles that the canonical Agent Review lifecycle cannot produce.
-const PREFLIGHT_REVIEW = { stage: 'architecture_spec', role: 'architecture_boundary' };
-
 const TERMINAL_PREFLIGHT_DISPOSITIONS = new Set([
   'accepted',
   'rejected',
@@ -42,7 +44,7 @@ export function buildValidationSequencePlan({ storyId, riskProfile = 'light', ri
   const preflightSurfaces = [...new Set(riskSurfaces.filter((surface) => PREFLIGHT_SENSITIVE_SURFACES.has(surface)))];
   const boundarySensitive = preflightSurfaces.length > 0;
   const required = riskProfile === 'workflow_heavy' || riskProfile === 'api_contract' || boundarySensitive;
-  const reviews = required ? [{ ...PREFLIGHT_REVIEW, surfaces: preflightSurfaces }] : [];
+  const reviews = required ? [{ ...AGGREGATE_REVIEW, surfaces: preflightSurfaces }] : [];
   return {
     model: VALIDATION_SEQUENCE_MODEL,
     story_id: storyId ?? null,
@@ -453,7 +455,7 @@ function buildNextRequiredAction(state, blocking) {
       };
     }
     if (phase === 'preflight_review') {
-      const review = state.plan?.preflight_reviews?.[0] ?? PREFLIGHT_REVIEW;
+      const review = state.plan?.preflight_reviews?.[0] ?? AGGREGATE_REVIEW;
       const scope = (review.surfaces ?? []).join(',') || 'declared high-risk boundaries';
       const result = `.vibepro/reviews/${state.story_id}/${review.stage}/review-result-${review.role}.json`;
       return {
@@ -466,7 +468,7 @@ function buildNextRequiredAction(state, blocking) {
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind preflight --closes-risk "${scope}" --expected-judgment-delta "identify boundary risks before freeze" --reusable-evidence <ref>`,
           `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" --inspection-input '<design-story-spec-path>' --inspection-input '<runtime-source-path>' --inspection-input '<test-path>' --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system '<codex|claude_code>' --agent-id '<agent-id>' --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" ${AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS.map((input) => `--inspection-input '${input}'`).join(' ')} --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system '<codex|claude_code>' --agent-id '<agent-id>' --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
           `vibepro sequence record . --id ${state.story_id} --phase preflight_review --evidence ${result}`
         ]
       };

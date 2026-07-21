@@ -1,9 +1,9 @@
-const AGGREGATE_REVIEW = Object.freeze({
+export const AGGREGATE_REVIEW = Object.freeze({
   stage: 'architecture_spec',
   role: 'architecture_boundary'
 });
 
-const AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS = Object.freeze([
+export const AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS = Object.freeze([
   '<design-story-spec-path>',
   '<runtime-source-path>',
   '<test-path>'

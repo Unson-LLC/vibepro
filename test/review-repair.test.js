@@ -200,9 +200,12 @@ test('missing role becomes a run_review candidate with full command chain', asyn
 
 test('architecture boundary repair emits all aggregate inspection inputs', async () => {
   const root = await setupRepairRepo();
+  await writeReviewSummary(root, 'story-repair-broken', 'architecture_spec', [
+    role('architecture_boundary')
+  ]);
   const { result } = await runCli(['review', 'repair', root, '--json']);
   const candidate = result.candidates.find((item) => item.stage === 'architecture_spec' && item.role === 'architecture_boundary');
-  if (!candidate) return;
+  assert.ok(candidate, 'aggregate architecture boundary repair must be emitted');
   const recordCommand = candidate.next_commands.find((command) => command.startsWith('vibepro review record'));
   assert.match(recordCommand, /--inspection-input "<design-story-spec-path>"/);
   assert.match(recordCommand, /--inspection-input "<runtime-source-path>"/);
