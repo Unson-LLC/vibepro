@@ -410,7 +410,7 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--status',
     'pass',
     '--command',
-    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js --grep flow_replay scenario_clause_e2e gate-dag review artifact',
+    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js --test-name-pattern integration',
     '--summary',
     'scenario-only evidence claims evidence_lifecycle_regression, workflow_state_regression, flow_replay, scenario_clause_e2e, gate-dag review artifact coverage but lacks an inspected target',
     '--artifact',

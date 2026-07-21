@@ -251,6 +251,7 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
     .replace('<inspection-input>', 'src/content-binding-target.js')
     .replace('<initial judgment -> final judgment because evidence>', 'initial risk -> accepted after inspecting the runtime contract source')
     .replace('<pass|needs_changes|block>', 'pass')
+    .replace('<codex|claude_code>', 'codex')
     .replace('<replacement-agent-id>', 'agent-minimal-recovery')
     .replace('<replacement-agent-thread-id>', 'thread-minimal-recovery')
     .replace('<replacement-agent-session-id>', 'session-minimal-recovery')

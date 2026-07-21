@@ -175,7 +175,7 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     '--status',
     'pass',
     '--command',
-    'node --test test/risk-adaptive-gate.test.js',
+    'node --test test/risk-adaptive-gate.test.js --test-name-pattern integration',
     '--summary',
     'Artifact replay verified PR prepare review summaries and dispatch commands are required-only',
     '--artifact',
