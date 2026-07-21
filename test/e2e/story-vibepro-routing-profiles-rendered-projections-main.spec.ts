@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { access, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -91,8 +91,27 @@ test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout r
   await execFileAsync('git', ['add', 'src/index.js'], { cwd: checkout });
   await execFileAsync('git', ['commit', '-m', 'feat: exercise routed lifecycle'], { cwd: checkout });
 
+  // The production adapter must fail closed when graphify is absent. Supply a
+  // fixture-local executable instead of relying on the developer machine PATH.
+  const graphifyBin = await mkdtemp(path.join(os.tmpdir(), 'vibepro-profile-graphify-bin-'));
+  const graphifyStub = path.join(graphifyBin, 'graphify');
+  await writeFile(graphifyStub, [
+    '#!/bin/sh',
+    '[ "$#" = 2 ] && [ "$1" = update ] && [ "$2" = . ] || exit 64',
+    'mkdir -p graphify-out',
+    "printf '{\"nodes\":[{\"id\":\"fixture-graphify-stub-node\"}],\"edges\":[]}' > graphify-out/graph.json",
+    "printf '# fixture graphify report\\n' > graphify-out/GRAPH_REPORT.md"
+  ].join('\n'));
+  await chmod(graphifyStub, 0o755);
+
   for (const story of stories) {
-    const invoke = async (args) => execFileAsync(process.execPath, [cli, ...args], { cwd: repoRoot });
+    const invoke = async (args) => execFileAsync(process.execPath, [cli, ...args], {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        PATH: `${graphifyBin}${path.delimiter}${process.env.PATH ?? ''}`
+      }
+    });
     const resolved = JSON.parse((await invoke(['artifacts', 'resolve', checkout, '--id', story.story_id, '--json'])).stdout);
     assert.equal(resolved.profile, story.artifact_profile);
     assert.equal(resolved.variables.feature_slug, story.feature_slug);
@@ -102,6 +121,8 @@ test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout r
 
     // These are production CLI writers, deliberately not resolver/projection imports.
     await invoke(['story', 'diagnose', checkout, '--id', story.story_id, '--run-graphify', '--json']);
+    const graph = JSON.parse(await readFile(path.join(checkout, '.vibepro/graphify/graph.json'), 'utf8'));
+    assert.equal(graph.nodes[0]?.id, 'fixture-graphify-stub-node');
     await invoke(['review', 'prepare', checkout, '--id', story.story_id, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json']);
     await invoke(['pr', 'prepare', checkout, '--base', 'main', '--story-id', story.story_id, '--allow-extra-files', '--json']);
     const status = await invoke(['story', 'status', checkout, '--id', story.story_id, '--json']);
