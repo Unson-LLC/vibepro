@@ -10,8 +10,12 @@ import { promisify } from 'node:util';
 import {
   ArtifactRoutingError,
   buildArtifactMigrationPlan,
+  isCurrentGeneratedProjection,
   projectArtifact,
   resolveArtifactRoute,
+  resolveGateArtifactFile,
+  resolveGraphifyArtifactFile,
+  resolvePrArtifactFile,
   resolveArtifactRoutes,
   writeArtifactProjections
 } from '../src/artifact-routing.js';
@@ -235,6 +239,65 @@ test('projection lineage hashes exact routed canonical bytes and migration class
   await writeFile(canonicalPath, '{"story":{"story_id":"story-routing-profile"},"tasks":[{"id":"A"}]}\n');
   plan = await buildArtifactMigrationPlan(root, { storyId });
   assert.equal(plan.items.find((item) => item.kind === 'task_plan').projection_items[0].action, 'update');
+});
+
+test('generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    task_plan: { canonical: '.vibepro/stories/{story_id}/tasks/tasks.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/06_tasks.md', ownership: 'generated', renderer: { id: 'tasks_markdown', version: '1' } }] }
+  });
+  const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+  const projection = route.projections[0];
+  const canonicalPath = route.canonical.absolute_path;
+  await mkdir(path.dirname(canonicalPath), { recursive: true });
+  await writeFile(canonicalPath, '{"tasks":[]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  const projectionPath = projection.absolute_path;
+  const current = await readFile(projectionPath, 'utf8');
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), true);
+
+  const invalidHeaders = [
+    '<!-- vibepro-projection story_id=' + storyId + ' -->',
+    current.replace('source_sha256=', 'source_sha256=wrong'),
+    current.replace(`source=${route.canonical.relative_path}`, 'source=.vibepro/stories/another/tasks/tasks.json'),
+    current.replace(`profile=${route.profile}`, 'profile=governance_packet'),
+    current.replace('renderer=tasks_markdown@1', 'renderer=tasks_markdown@0'),
+    current.replace(`story_id=${storyId}`, 'story_id=another-story'),
+    current.replace('ownership=generated', 'ownership=human_owned')
+  ];
+  for (const invalid of invalidHeaders) {
+    await writeFile(projectionPath, invalid);
+    assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, invalid.split('\n', 1)[0]);
+  }
+
+  await writeFile(projectionPath, current.replace('direct_edit=false', 'direct_edit=true'));
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, 'manual edits are never a current generated projection');
+  await writeFile(projectionPath, current);
+  await writeFile(canonicalPath, '{"tasks":[{"id":"changed"}]}\n');
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, 'a canonical change stales its projection');
+});
+
+test('named profile lifecycle consumers resolve one PR and Gate family without legacy fallback', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    graphify: { canonical: '.vibepro/packets/{feature_slug}/graphify', ownership: 'generated' },
+    gate: { canonical: '.vibepro/packets/{feature_slug}/gate-dag.json', ownership: 'generated' },
+    pr: { canonical: '.vibepro/packets/{feature_slug}/pr-prepare.json', ownership: 'generated' }
+  });
+  const [prPrepare, prCreate, prMerge, gate, graph] = await Promise.all([
+    resolvePrArtifactFile(root, storyId),
+    resolvePrArtifactFile(root, storyId, 'pr-create.json'),
+    resolvePrArtifactFile(root, storyId, 'pr-merge.json'),
+    resolveGateArtifactFile(root, storyId),
+    resolveGraphifyArtifactFile(root, storyId)
+  ]);
+  const packet = path.join(root, '.vibepro/packets/payments');
+  assert.equal(prPrepare, path.join(packet, 'pr-prepare.json'));
+  assert.equal(prCreate, path.join(packet, 'pr-create.json'));
+  assert.equal(prMerge, path.join(packet, 'pr-merge.json'));
+  assert.equal(gate, path.join(packet, 'gate-dag.json'));
+  assert.equal(graph, path.join(packet, 'graphify', 'graph.json'));
+  for (const target of [prPrepare, prCreate, prMerge, gate, graph]) {
+    assert.equal(target.startsWith(path.join(root, '.vibepro', 'pr', storyId)), false, target);
+  }
 });
 
 test('schema 0.1 generated projections retain legacy byte-copy overwrite compatibility', async () => {
