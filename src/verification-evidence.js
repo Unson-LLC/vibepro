@@ -7,6 +7,7 @@ import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js'
 import { collectGitContext } from './git-fingerprint.js';
 import { buildContentBinding } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
+import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -31,6 +32,13 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     storyId,
     commandName: 'verify record'
   });
+  const gitContext = await collectGitContext(root);
+  const lineage = resolveRecorderLineage(options, {
+    story_id: storyId,
+    worktree_root: root,
+    branch: gitContext.current_branch,
+    head_sha: gitContext.head_sha
+  }, `verification-${options.kind}`);
   const { check: artifactCheck, observedValues: artifactObservedValues } = await crossCheckArtifact(root, {
     artifact: options.artifact,
     status: options.status
@@ -40,7 +48,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');
-  const gitContext = await collectGitContext(root);
   const contentBinding = await buildContentBinding(root, {
     gitContext,
     strictHead: options.strictHeadBinding === true,
@@ -69,6 +76,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       content_binding: contentBinding,
+      ...(lineage ? { lineage } : {}),
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: [managedWorktreeWarning, observationWarning].filter(Boolean)
     };
@@ -94,6 +102,25 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     evidence,
     artifact: toWorkspaceRelative(root, evidencePath)
   };
+}
+
+function resolveRecorderLineage(options, recorderAuthority, dispatchId) {
+  const supplied = options.lineage ?? options.runLineage;
+  const runAuthority = options.runAuthority ?? options.activeRun ?? options.run ?? null;
+  if (!supplied && !runAuthority) return null;
+  const authority = runAuthority ? {
+    ...runAuthority,
+    story_id: runAuthority.story_id ?? runAuthority.storyId,
+    run_id: runAuthority.run_id ?? runAuthority.runId,
+    worktree_root: runAuthority.worktree_root ?? runAuthority.root_realpath ?? runAuthority.execution_context?.root_realpath,
+    branch: runAuthority.branch ?? runAuthority.current_branch,
+    head_sha: runAuthority.head_sha ?? runAuthority.current_head_sha
+  } : null;
+  const lineage = supplied
+    ? assertRunLineageBinding(supplied, authority)
+    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
+  assertRunLineageBinding(lineage, recorderAuthority);
+  return lineage;
 }
 
 export function renderVerificationEvidenceSummary(result) {

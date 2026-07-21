@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
 export const HUMAN_DECISION_SCHEMA_VERSION = '0.1.0';
 export const HUMAN_DECISION_TYPES = new Set([
@@ -26,6 +27,7 @@ export async function createHumanDecision(repoRoot, state, input, options = {}) 
     impact_scope: [...input.impact_scope].sort(),
     source_refs: [...(input.source_refs ?? [])].sort()
   })).digest('hex');
+  const lineage = resolveDecisionLineage(state, options, `decision-${fingerprint.slice(0, 16)}`);
   const directory = decisionDirectory(repoRoot, state.story_id, state.run_id);
   await mkdir(directory, { recursive: true });
   for (const name of await readdir(directory)) {
@@ -57,11 +59,36 @@ export async function createHumanDecision(repoRoot, state, input, options = {}) 
     answered_by: null,
     answered_at: null,
     reflected_in: [],
-    fingerprint
+    fingerprint,
+    ...(lineage ? { lineage } : {})
   };
   await writeJsonAtomic(path.join(directory, `${decisionId}.json`), artifact);
   await writeIndex(directory);
   return artifact;
+}
+
+function resolveDecisionLineage(state, options, dispatchId) {
+  const supplied = options.lineage ?? options.runLineage ?? state.lineage ?? state.run_lineage;
+  const source = options.runAuthority ?? options.activeRun ?? options.run ?? state;
+  const authority = {
+    ...source,
+    story_id: source.story_id ?? source.storyId,
+    run_id: source.run_id ?? source.runId,
+    worktree_root: source.worktree_root ?? source.root_realpath ?? source.execution_context?.root_realpath,
+    branch: source.branch ?? source.current_branch ?? source.execution_context?.branch,
+    head_sha: source.head_sha ?? source.current_head_sha
+  };
+  if (!supplied && !['story_id', 'run_id', 'worktree_root', 'branch', 'head_sha'].every((field) => authority[field])) return null;
+  const lineage = supplied
+    ? assertRunLineageBinding(supplied, authority)
+    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
+  assertRunLineageBinding(lineage, {
+    story_id: state.story_id,
+    run_id: state.run_id,
+    worktree_root: state.execution_context?.root_realpath,
+    head_sha: state.current_head_sha
+  });
+  return lineage;
 }
 
 export async function resolveHumanDecision(repoRoot, state, input, options = {}) {
@@ -98,6 +125,7 @@ export async function resolveHumanDecision(repoRoot, state, input, options = {})
   if (artifact.type === 'waiver_request' && artifact.critical_gate) {
     throw error('critical_gate_waiver_forbidden', 'Critical gates require evidence, split, or block; they cannot be waived.');
   }
+  const lineage = resolveDecisionLineage(state, { ...options, lineage: options.lineage ?? artifact.lineage }, `decision-${artifact.fingerprint.slice(0, 16)}`);
   const resolved = {
     ...artifact,
     status: 'resolved',
@@ -106,6 +134,7 @@ export async function resolveHumanDecision(repoRoot, state, input, options = {})
     answered_at: toIso(options.now?.() ?? new Date()),
     reflected_in: input.reflectedIn ?? []
   };
+  if (lineage) resolved.lineage = lineage;
   await writeJsonAtomic(file, resolved);
   await writeIndex(directory);
   return resolved;
