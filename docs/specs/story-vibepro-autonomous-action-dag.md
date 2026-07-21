@@ -6,9 +6,11 @@ status: active
 code_refs:
   - src/safe-action-orchestrator.js
   - src/guarded-run-session.js
+  - src/story-run-portfolio.js
 test_refs:
   - test/safe-action-orchestrator.test.js
   - test/guarded-run-session.test.js
+  - test/story-run-portfolio.test.js
 diagrams:
   - kind: threat_model
     mermaid: |
