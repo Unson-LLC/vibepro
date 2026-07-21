@@ -15,6 +15,7 @@ import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli as coreRunCli } from '../src/cli.js';
 import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
+import { projectArtifact } from '../src/artifact-routing.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -3946,6 +3947,131 @@ test('pr prepare blocks PR freshness when base advanced after branch creation', 
   assert.match(actions, /vibepro pr prepare/);
 });
 
+test('pr prepare keeps a current generated projection out of artifact consistency but stales a hand edit', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  const canonicalByKind = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: '.vibepro/pr/{story_id}/pr-prepare.json'
+  };
+  const artifacts = Object.fromEntries(Object.entries(canonicalByKind).map(([kind, canonical]) => [kind, {
+    canonical,
+    ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated'
+  }]));
+  artifacts.accepted_spec.projections = [{
+    path: 'docs/features/{feature_slug}/02_functional_spec.md',
+    ownership: 'generated',
+    renderer: { id: 'functional_spec_markdown', version: '1' }
+  }];
+  artifacts.review.projections = [{
+    path: 'docs/features/{feature_slug}/08_review.md',
+    ownership: 'generated',
+    renderer: { id: 'review_summary_markdown', version: '1' }
+  }];
+  config.brainbase.stories = config.brainbase.stories.map((story) => story.story_id === storyId
+    ? { ...story, artifact_profile: 'feature_packet', feature_slug: 'projection-freshness' }
+    : story);
+  config.artifact_routing = {
+    schema_version: '0.2.0',
+    artifacts: {},
+    profiles: {
+      feature_packet: { artifacts },
+      governance_packet: { artifacts: structuredClone(artifacts) }
+    }
+  };
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: projection-freshness\n---\n`);
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'initial projection' }] }
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: configure generated projection fixture']);
+
+  const recordResult = await runCli([
+    'verify', 'record', repo, '--id', storyId, '--kind', 'unit', '--status', 'pass',
+    '--command', 'npm test', '--summary', 'projection freshness fixture passed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  // This advances an ignored canonical artifact and its exact generated view.
+  // It must remain outside the author-dirty fingerprint used by PR/Gate.
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'updated projection' }] }
+  });
+  const generatedResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(generatedResult.exitCode, 0);
+  assert.equal(generatedResult.result.preparation.git.dirty, false);
+  assert.equal(generatedResult.result.preparation.git.raw_dirty, true);
+  const generatedEvidence = generatedResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(generatedEvidence.binding.status, 'current');
+  const generatedGate = generatedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(generatedGate.status, 'passed');
+  assert.equal(generatedGate.current.status_fingerprint_hash, generatedGate.current.user_status_fingerprint_hash);
+
+  // The first record produces the review projection. The replacement review
+  // genuinely inspects that rendered handoff as well as its real source input.
+  // Recording and PR preparation re-render it, but that must not turn the
+  // content-surface review stale merely because it observed its own view.
+  await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract']);
+  const initialReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'initial rendered review projection',
+    '--inspection-summary', 'inspected the runtime input before the projection existed',
+    '--inspection-input', 'index.html',
+    '--judgment-delta', 'pending -> pass after inspecting the runtime input',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-initial', '--agent-closed'
+  ]);
+  assert.equal(initialReview.exitCode, 0);
+  const reviewProjectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '08_review.md');
+  assert.equal(await pathExists(reviewProjectionPath), true);
+
+  const projectionReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'review includes the generated handoff projection',
+    '--inspection-summary', 'inspected the runtime input and its generated review handoff',
+    '--inspection-input', 'index.html', '--inspection-input', 'docs/features/projection-freshness/08_review.md',
+    '--judgment-delta', 'initial pass -> confirmed after inspecting the generated review handoff',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-current', '--agent-closed'
+  ]);
+  assert.equal(projectionReview.exitCode, 0);
+  assert.deepEqual(projectionReview.result.review.content_binding.surface_files.map((file) => file.path), ['index.html']);
+
+  const projectionPrepared = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(projectionPrepared.exitCode, 0);
+  const currentProjectionReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const currentProjectionRole = currentProjectionReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(currentProjectionRole.binding_status, 'current');
+
+  await writeFile(reviewProjectionPath, `${await readFile(reviewProjectionPath, 'utf8')}hand edit\n`);
+  const handEditedReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const handEditedRole = handEditedReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(handEditedRole.binding_status, 'stale');
+  assert.match(handEditedRole.stale_reason, /different user dirty worktree fingerprint/);
+
+  const projectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '02_functional_spec.md');
+  await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}hand edit\n`);
+  const handEditResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(handEditResult.exitCode, 0);
+  assert.equal(handEditResult.result.preparation.git.dirty, true);
+  const handEditEvidence = handEditResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(handEditEvidence.binding.status, 'stale');
+});
+
 test('pr prepare exposes stale verification evidence through artifact consistency gate', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -7491,6 +7617,7 @@ test('story derive creates stories for code surfaces that have no spec documents
   await writeFile(path.join(repo, 'src', 'lib', 'article', 'client.ts'), 'export function listArticles() { return []; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'health', 'route.ts'), 'export function GET() {}\n');
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'manager', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form_file', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm.tsx' },
@@ -7675,6 +7802,7 @@ test('story coverage keeps all uncovered graph files in the catalog', async () =
     await writeFile(path.join(repo, filePath), 'export default function Page() { return null; }\n');
     nodes.push({ id: `unmapped_${index}`, source_file: filePath, label: 'page.tsx' });
   }
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -9770,6 +9898,12 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(replacement.exitCode, 0);
   assert.equal(replacement.result.lifecycle.replacement_for, start.result.lifecycle.lifecycle_id);
 
+  const recovered = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(recovered.exitCode, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.timed_out_count, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.replaced_count, 1);
+  assert.equal(recovered.result.stages[0].lifecycle.entries.find((entry) => entry.lifecycle_id === start.result.lifecycle.lifecycle_id).effective_status, 'replaced');
+
   const record = await runCli([
     'review',
     'record',
@@ -9844,6 +9978,57 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
   const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
   assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
+});
+
+test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Scope decision evidence
+architecture_docs:
+  - docs/architecture/scope.md
+spec_docs:
+  - docs/specs/scope.md
+---
+
+# Scope decision evidence
+
+- [ ] A coherent multi-commit Story remains reviewable with an artifact-backed senior decision.
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'scope.md'), '# Scope architecture\n\nBoundary: one coherent Story may span multiple commits.\n');
+  await writeFile(path.join(repo, 'docs', 'specs', 'scope.md'), '# Scope spec\n\nScope reviewability is explicit.\n');
+  await writeFile(path.join(repo, 'src', 'scope.js'), 'export const scope = "reviewable";\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: establish coherent scope']);
+  for (let index = 0; index < 11; index += 1) {
+    const file = path.join(repo, 'src', `scope-part-${index}.js`);
+    await writeFile(file, `export const part${index} = ${index};\n`);
+    await git(repo, ['add', file]);
+    await git(repo, ['commit', '-m', `feat: coherent scope part ${index}`]);
+  }
+  const decision = await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'needs_review',
+    '--summary', 'Scope is one coherent review unit.',
+    '--source', 'gate:judgment_axis_scope_reviewability',
+    '--reason', 'All commits implement one declared scope contract and are reviewed together.',
+    '--artifact', 'docs/architecture/scope.md',
+    '--status', 'accepted', '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const axis = prepared.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'scope_reviewability');
+  assert.notEqual(axis.status, 'inactive');
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'scope_reviewed'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'decision_record'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'review_owner_map'), false);
+  assert.equal(axis.missing_evidence.includes('review_owner_map'), true);
 });
 
 test('review status and summary tell operators to close running subagents before recording', async () => {
@@ -22445,6 +22630,7 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'task', 'task-service.js'), 'export class TaskService {}\n');
   await writeFile(path.join(repo, 'server', 'routes', 'api.js'), 'export default function api() {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_index', source_file: 'cli/index.js', label: 'cli/index.js' },
@@ -22491,6 +22677,7 @@ test('story derive does not leak next-app product stories into modular-web prese
   await writeFile(path.join(repo, 'lib', 'services', 'auth', 'session.js'), 'export {}\n');
   await writeFile(path.join(repo, 'lib', 'services', 'stripe', 'billing.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'auth', source_file: 'lib/services/auth/session.js', label: 'auth-session' },
@@ -22530,6 +22717,7 @@ test('story derive uses salestailor preset without next-app product story leakag
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formSubmission', 'formSubmissionOrchestrator.ts'),
     'export class FormSubmissionOrchestrator {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'review_page', source_file: 'src/app/projects/[projectId]/sample-review/page.tsx', label: 'SampleReview' },
@@ -22579,6 +22767,7 @@ test('story derive emits story_candidates clustering uncovered files', async () 
   const nodes = [];
   for (let i = 0; i < 5; i += 1) nodes.push({ id: `auth_${i}`, source_file: `lib/auth/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 6; i += 1) nodes.push({ id: `legacy_${i}`, source_file: `lib/legacy/legacy${i}.js`, label: `legacy${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22626,6 +22815,7 @@ test('modular-web preset coveragePatterns absorb broader paths into active stori
   await writeFile(path.join(repo, 'public', 'modules', 'utils', 'helper.js'), 'export {}\n');
   await writeFile(path.join(repo, 'server', 'controllers', 'foo-controller.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_main', source_file: 'cli/main.js', label: 'main' },
@@ -22678,6 +22868,7 @@ test('brainbase preset emits semantically separated active stories', async () =>
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'nocodb-task', 'service.js'), 'export {}\n');
   await writeFile(path.join(repo, 'public', 'modules', 'terminal', 'view.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli', source_file: 'cli/main.js', label: 'cli' },
@@ -22745,6 +22936,7 @@ test('story derive surfaces domain subdirectories as separate candidates', async
   const nodes = [];
   for (let i = 0; i < 3; i += 1) nodes.push({ id: `a${i}`, source_file: `lib/auth-local/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 4; i += 1) nodes.push({ id: `s${i}`, source_file: `lib/session-local/sess${i}.js`, label: `sess${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22770,6 +22962,7 @@ test('story derive omits singletons from story_candidates', async () => {
 
   await mkdir(path.join(repo, 'cli'), { recursive: true });
   await writeFile(path.join(repo, 'cli', 'lonely.js'), 'export {}\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [{ id: 'lonely', source_file: 'cli/lonely.js', label: 'lonely' }],
     links: []
@@ -22801,6 +22994,7 @@ test('story derive suppresses next-app product stories for non-web repositories 
   await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
   await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
@@ -22870,6 +23064,7 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
   await writeFile(path.join(repo, 'src', 'components', 'auth', 'LoginForm.tsx'),
     'export function LoginForm() { return null; }\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm' }
@@ -22920,6 +23115,7 @@ story_id: story-product-profile-personalization
 
 Profile personalization is an explicit product requirement.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
@@ -22985,6 +23181,7 @@ story_id: story-vibepro-pr-prepare-authorization-scoring
 
 The authorization scoring module is called from pr prepare.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'authorization_scoring', source_file: 'src/authorization_scoring.py', label: 'score_authorization' },

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { access, mkdtemp, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -10,11 +10,17 @@ import { promisify } from 'node:util';
 import {
   ArtifactRoutingError,
   buildArtifactMigrationPlan,
+  collectCurrentGeneratedProjectionPaths,
+  isCurrentGeneratedProjection,
   projectArtifact,
   resolveArtifactRoute,
+  resolveGateArtifactFile,
+  resolveGraphifyArtifactFile,
+  resolvePrArtifactFile,
   resolveArtifactRoutes,
   writeArtifactProjections
 } from '../src/artifact-routing.js';
+import { collectGitContext } from '../src/git-fingerprint.js';
 import { writeFinalArchitecture } from '../src/architecture-store.js';
 import { readInferredSpec, writeInferredSpec } from '../src/spec-store.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
@@ -180,8 +186,41 @@ test('artifact resolve text and JSON expose ownership, canonical authority, prof
   const migrationResult = await runCli(['artifacts', 'migrate', root, '--id', storyId, '--dry-run'], { stdout: migrationSink, stderr: migrationSink });
   assert.equal(migrationResult.exitCode, 0);
   assert.match(migrationOutput, /Profile: feature_packet; feature_slug=payments/);
+  assert.match(migrationOutput, /Profile change: legacy -> feature_packet; required=yes/);
   assert.match(migrationOutput, /task_plan: action=.*reason=.*collision=.*ownership=generated; canonical-writer=vibepro; renderer=tasks_markdown@1/);
   assert.match(migrationOutput, /projection: action=.*reason=.*ownership=generated; renderer=tasks_markdown@1; path=docs\/features\/payments\/06_tasks\.md/);
+});
+
+test('rendered Evidence Test Plan Gate and Release projections visibly identify canonical ownership', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    evidence: { canonical: '.vibepro/evidence/{story_id}', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/07_evidence.md', ownership: 'generated', renderer: { id: 'evidence_summary_markdown', version: '1' } }] },
+    test_plan: { canonical: '.vibepro/test-plans/{story_id}.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/05_test_plan.md', ownership: 'generated', renderer: { id: 'test_plan_markdown', version: '1' } }] },
+    gate: { canonical: '.vibepro/pr/{story_id}/gate-dag.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/09_gate.md', ownership: 'generated', renderer: { id: 'gate_summary_markdown', version: '1' } }] },
+    pr: { canonical: '.vibepro/pr/{story_id}/pr-prepare.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/10_release.md', ownership: 'generated', renderer: { id: 'release_summary_markdown', version: '1' } }] }
+  });
+  for (const [kind, fileName] of [['evidence', 'evidence.json'], ['test_plan', null], ['gate', null], ['pr', null]]) {
+    await projectArtifact(root, kind, { storyId, writeCanonical: true, canonicalFileName: fileName ?? undefined, content: { story_id: storyId, status: 'ready' } });
+    const route = await resolveArtifactRoute(root, kind, { storyId });
+    const rendered = await readFile(route.projections[0].absolute_path, 'utf8');
+    assert.match(rendered, /Canonical ownership: generated/, kind);
+    assert.match(rendered, new RegExp(`source=${route.canonical.relative_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), kind);
+  }
+});
+
+test('migration dry-run reports selected profile changes and human-owned overwrite risks without writes', async () => {
+  const { root, storyId } = await namedProfileRepo({ evidence: { canonical: '.vibepro/evidence/{story_id}', ownership: 'human_owned' } });
+  const humanPath = path.join(root, `.vibepro/evidence/${storyId}/evidence.json`);
+  await mkdir(path.dirname(humanPath), { recursive: true });
+  await writeFile(humanPath, 'human evidence\n');
+  const plan = await buildArtifactMigrationPlan(root, { storyId });
+  assert.deepEqual(plan.profile_change, {
+    required: true,
+    from: 'legacy',
+    to: 'feature_packet',
+    reason: 'selected Story uses a named artifact-routing profile'
+  });
+  assert.equal(plan.overwrite_risks.some((risk) => risk.code === 'human_owned_overwrite_risk' && risk.kind === 'evidence'), true);
+  assert.equal(await readFile(humanPath, 'utf8'), 'human evidence\n');
 });
 
 test('projection lineage hashes exact routed canonical bytes and migration classifies noop then update', async () => {
@@ -202,6 +241,95 @@ test('projection lineage hashes exact routed canonical bytes and migration class
   await writeFile(canonicalPath, '{"story":{"story_id":"story-routing-profile"},"tasks":[{"id":"A"}]}\n');
   plan = await buildArtifactMigrationPlan(root, { storyId });
   assert.equal(plan.items.find((item) => item.kind === 'task_plan').projection_items[0].action, 'update');
+});
+
+test('parse_failure schema_failure: generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    task_plan: { canonical: '.vibepro/stories/{story_id}/tasks/tasks.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/06_tasks.md', ownership: 'generated', renderer: { id: 'tasks_markdown', version: '1' } }] }
+  });
+  const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+  const projection = route.projections[0];
+  const canonicalPath = route.canonical.absolute_path;
+  await mkdir(path.dirname(canonicalPath), { recursive: true });
+  await writeFile(canonicalPath, '{"tasks":[]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  const projectionPath = projection.absolute_path;
+  const current = await readFile(projectionPath, 'utf8');
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), true);
+
+  const invalidHeaders = [
+    '<!-- vibepro-projection story_id=' + storyId + ' -->',
+    current.replace('source_sha256=', 'source_sha256=wrong'),
+    current.replace(`source=${route.canonical.relative_path}`, 'source=.vibepro/stories/another/tasks/tasks.json'),
+    current.replace(`profile=${route.profile}`, 'profile=governance_packet'),
+    current.replace('renderer=tasks_markdown@1', 'renderer=tasks_markdown@0'),
+    current.replace(`story_id=${storyId}`, 'story_id=another-story'),
+    current.replace('ownership=generated', 'ownership=human_owned')
+  ];
+  for (const invalid of invalidHeaders) {
+    await writeFile(projectionPath, invalid);
+    assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, invalid.split('\n', 1)[0]);
+  }
+
+  await writeFile(projectionPath, current.replace('direct_edit=false', 'direct_edit=true'));
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, 'manual edits are never a current generated projection');
+  await writeFile(projectionPath, current);
+  await writeFile(canonicalPath, '{"tasks":[{"id":"changed"}]}\n');
+  assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, 'a canonical change stales its projection');
+});
+
+test('current generated projections are excluded from the evidence user-dirty scope but manual projection edits are not', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    task_plan: { canonical: '.vibepro/stories/{story_id}/tasks/tasks.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/06_tasks.md', ownership: 'generated', renderer: { id: 'tasks_markdown', version: '1' } }] }
+  });
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.name', 'Test User'], { cwd: root });
+
+  const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+  await mkdir(path.dirname(route.canonical.absolute_path), { recursive: true });
+  await writeFile(route.canonical.absolute_path, '{"tasks":[]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'chore: routed projection fixture'], { cwd: root });
+
+  await writeFile(route.canonical.absolute_path, '{"tasks":[{"id":"refresh"}]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  const currentPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
+  assert.deepEqual(currentPaths, ['docs/features/payments/06_tasks.md']);
+  const generatedOnlyContext = await collectGitContext(root, { userExcludePaths: currentPaths });
+  assert.equal(generatedOnlyContext.dirty, false);
+  assert.equal(generatedOnlyContext.raw_dirty, true);
+
+  const projectionPath = route.projections[0].absolute_path;
+  await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}manual edit\n`);
+  assert.deepEqual(await collectCurrentGeneratedProjectionPaths(root, { storyId }), []);
+  const manualEditContext = await collectGitContext(root);
+  assert.equal(manualEditContext.dirty, true);
+});
+
+test('named profile lifecycle consumers resolve one PR and Gate family without legacy fallback', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    graphify: { canonical: '.vibepro/packets/{feature_slug}/graphify', ownership: 'generated' },
+    gate: { canonical: '.vibepro/packets/{feature_slug}/gate-dag.json', ownership: 'generated' },
+    pr: { canonical: '.vibepro/packets/{feature_slug}/pr-prepare.json', ownership: 'generated' }
+  });
+  const [prPrepare, prCreate, prMerge, gate, graph] = await Promise.all([
+    resolvePrArtifactFile(root, storyId),
+    resolvePrArtifactFile(root, storyId, 'pr-create.json'),
+    resolvePrArtifactFile(root, storyId, 'pr-merge.json'),
+    resolveGateArtifactFile(root, storyId),
+    resolveGraphifyArtifactFile(root, storyId)
+  ]);
+  const packet = path.join(root, '.vibepro/packets/payments');
+  assert.equal(prPrepare, path.join(packet, 'pr-prepare.json'));
+  assert.equal(prCreate, path.join(packet, 'pr-create.json'));
+  assert.equal(prMerge, path.join(packet, 'pr-merge.json'));
+  assert.equal(gate, path.join(packet, 'gate-dag.json'));
+  assert.equal(graph, path.join(packet, 'graphify', 'graph.json'));
+  for (const target of [prPrepare, prCreate, prMerge, gate, graph]) {
+    assert.equal(target.startsWith(path.join(root, '.vibepro', 'pr', storyId)), false, target);
+  }
 });
 
 test('schema 0.1 generated projections retain legacy byte-copy overwrite compatibility', async () => {
@@ -552,7 +680,7 @@ test('routing fails closed for collisions, traversal, absolute paths, and unreso
   }
 });
 
-test('malformed routing config fails closed before changing repository files', async () => {
+test('parse_failure schema_failure: malformed routing config fails closed before changing repository files', async () => {
   const root = await repo();
   const configPath = path.join(root, '.vibepro', 'config.json');
   const existingArtifact = path.join(root, 'docs', 'existing.md');
@@ -934,7 +1062,7 @@ test('Story Architecture Spec Task Graphify Review Gate PR status migration use 
   await assert.rejects(access(path.join(root, '.vibepro/pr/story-routing-lifecycle/pr-prepare.json')));
 });
 
-test('named profile Graphify review and PR producers write only routed lifecycle paths', async () => {
+test('named profile Graphify review and PR producers leave the removed legacy directory absent', async () => {
   const storyId = 'story-named-producer-routing';
   const featureSlug = 'named-producer-routing';
   const root = await repo();
@@ -964,6 +1092,7 @@ test('named profile Graphify review and PR producers write only routed lifecycle
   await writeFile(path.join(graphSource, 'graph.json'), '{"nodes":[],"edges":[]}\n');
   await writeFile(path.join(graphSource, 'GRAPH_REPORT.md'), '# Graph\n');
   await importGraphifyArtifacts(root, { storyId, sourceDir: 'graph-source' });
+  await rm(path.join(root, '.vibepro/graphify'), { recursive: true, force: true });
   await execFileAsync('git', ['add', '.'], { cwd: root });
   await execFileAsync('git', ['commit', '-m', 'chore: named routing fixture'], { cwd: root });
   await execFileAsync('git', ['switch', '-c', 'feature/named-routing'], { cwd: root });
@@ -974,16 +1103,59 @@ test('named profile Graphify review and PR producers write only routed lifecycle
   const io = { stdout: { write: (v) => { output += v; } }, stderr: { write: (v) => { output += v; } } };
   const review = await runCli(['review', 'prepare', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json'], io);
   assert.equal(review.exitCode, 0, output);
+  const start = await runCli([
+    'review', 'start', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk',
+    '--agent-system', 'codex', '--agent-id', 'routing-test-agent', '--json'
+  ], io);
+  assert.equal(start.exitCode, 0, output);
   const prepare = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', storyId, '--allow-extra-files', '--evidence-depth', 'full', '--evidence-depth-reason', 'named routing regression', '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'], io);
   assert.equal(prepare.exitCode, 0, output);
+  const record = await runCli([
+    'review', 'record', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk',
+    '--status', 'pass', '--summary', 'generated projections do not stale their own review',
+    '--inspection-summary', 'inspected routed producer changes and generated projections',
+    '--inspection-input', 'src/index.js', '--judgment-delta', 'pending -> pass after routed producer inspection',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'routing-test-agent',
+    '--agent-thread-id', 'routing-test-thread',
+    '--agent-closed', '--strict-head-binding', '--strict-head-reason', 'projection freshness regression', '--json'
+  ], io);
+  assert.equal(record.exitCode, 0, output);
+  const freshStatus = await runCli(['review', 'status', root, '--id', storyId, '--stage', 'architecture_spec', '--json']);
+  assert.equal(freshStatus.exitCode, 0);
+  const freshRole = freshStatus.result.stages[0].roles.find((role) => role.role === 'regression_risk');
+  assert.equal(freshRole.effective_status, 'pass');
+  assert.equal(freshRole.binding_status, 'current');
+
+  const reviewProjection = path.join(root, `docs/features/${featureSlug}/08_review.md`);
+  await writeFile(reviewProjection, `${await readFile(reviewProjection, 'utf8')}\nmanual edit\n`);
+  const editedStatus = await runCli(['review', 'status', root, '--id', storyId, '--stage', 'architecture_spec', '--json']);
+  assert.equal(editedStatus.exitCode, 0);
+  const editedRole = editedStatus.result.stages[0].roles.find((role) => role.role === 'regression_risk');
+  assert.equal(editedRole.effective_status, 'stale');
+  assert.equal(editedRole.binding_status, 'stale');
+  assert.match(editedRole.stale_reason, /different user dirty worktree fingerprint/);
   await access(path.join(root, `.vibepro/packets/${featureSlug}/graphify/graph.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/reviews/architecture_spec/review-plan.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/gate-dag.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/pr-prepare.json`));
-  await assert.rejects(access(path.join(root, '.vibepro/graphify/graph.json')));
+  const prArtifact = JSON.parse(await readFile(path.join(root, `.vibepro/packets/${featureSlug}/pr-prepare.json`), 'utf8'));
+  assert.equal(prArtifact.pr_context.agent_reviews.current_git_context.head_sha, prArtifact.git.head_sha);
+  assert.equal(prArtifact.pr_context.agent_reviews.current_git_context.current_branch, prArtifact.git.current_branch);
+  assert.ok(prArtifact.pr_context.agent_reviews.current_git_context.fingerprint_scope.user_excludes.includes(`docs/features/${featureSlug}/08_review.md`));
+  await assert.rejects(access(path.join(root, '.vibepro/graphify')));
   await assert.rejects(access(path.join(root, `.vibepro/reviews/${storyId}`)));
   await assert.rejects(access(path.join(root, `.vibepro/pr/${storyId}/gate-dag.json`)));
   await assert.rejects(access(path.join(root, `.vibepro/pr/${storyId}/pr-prepare.json`)));
+
+  let migrationOutput = '';
+  const migration = await runCli(['artifacts', 'migrate', root, '--id', storyId, '--dry-run', '--json'], {
+    stdout: { write: (v) => { migrationOutput += v; } },
+    stderr: { write: (v) => { migrationOutput += v; } }
+  });
+  assert.equal(migration.exitCode, 0, migrationOutput);
+  const migrationPlan = JSON.parse(migrationOutput);
+  assert.equal(migrationPlan.status, 'ready', migrationOutput);
+  assert.deepEqual(migrationPlan.unresolved, []);
 });
 
 test('story derive binds global Graphify import to the configured current Story under schema 0.2', async () => {

@@ -1,0 +1,599 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "generated_at": "2026-07-21T00:00:00.000Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-07-21T00:00:00.000Z",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "schema 0.2.0 repositories must define at least two stable named artifact-routing profiles; each selected profile must independently define story, architecture, accepted_spec, task_plan, graphify, evidence, test_plan, review, gate, and pr without inheritance or cross-profile composition, and any missing kind or collision fails closed.",
+      "rationale": "AC-1 requires multiple named profiles and a shared resolver must select one deterministically.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "repositoryが二つ以上のnamed artifact-routing profileを定義できる"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "named routing profile"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/artifact-routing.js",
+            "anchor": "ARTIFACT_KINDS"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "schema 0.2.0 resolves complete feature and governance profiles without composition"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/**/*.js",
+            "must_contain": "artifact_routing.artifacts"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "named artifact-routing profile"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given catalog-authoritative artifact_profile and feature_slug for a named-profile Story, matching Story-frontmatter mirrors are mandatory and every lifecycle consumer resolves the same profile and context; missing or conflicting mirrors fail before writes, while profile-less legacy/unconfigured Stories may omit mirrors and use only the 0.1.0 fallback contract.",
+      "inherited_behavior": {
+        "condition": "artifact_profile is unset, or schemaVersion is 0.1.0 and artifact_routing.artifacts remains the repository-global route source",
+        "classification": "inherited",
+        "files": [
+          "src/artifact-routing.js"
+        ]
+      },
+      "rationale": "AC-2 and AC-3 require persistent per-story selection and shared resolution across story discovery, architecture, spec, task, graphify, review, gate, PR, status, and migration.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "各Storyがartifact_profileと明示的feature_slugを永続的に選択できる"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "Story discovery、Architecture、Spec、Task、Graphify、Review、Gate、PR prepare/create/merge、status、migrationが同じprofileを解決する"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "artifact_profile"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile"
+          },
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "schema 0.1 generated projections retain legacy byte-copy overwrite compatibility"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/**/*.js",
+            "must_contain": "feature_slug"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "named profile requires a complete matching Story mirror before writes"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "routing must fail closed before any write when the profile is undefined, required variables are missing, or metadata conflicts are detected.",
+      "rationale": "AC-4 demands that invalid routing state be rejected before filesystem mutation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "profile未定義、必須変数不足、相互矛盾するmetadataは書込前にfail closedする"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/artifact-routing.js",
+            "anchor": "ArtifactRoutingError"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "named profile requires a complete matching Story mirror before writes"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/artifact-routing.js",
+            "must_contain": "ArtifactRoutingError"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "unresolved_variable"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Accepted Spec JSON must render deterministically into Functional Spec Markdown, preserving clauses, origin references, and diagrams.",
+      "rationale": "AC-5 requires a stable Markdown projection for human consumption without introducing a second writable SSOT.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "Accepted Spec JSONを決定論的なFunctional Spec Markdownへrenderできる"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "direct-edit prohibition"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/spec-store.js",
+            "anchor": "writeArtifactProjections"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/spec-pipeline.test.js",
+            "case": "accepted spec JSON deterministically renders lineage-bearing Functional Spec Markdown"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/spec-store.js",
+            "must_contain": "writeArtifactProjections"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "architecture and accepted spec read and write the same configured canonical paths"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Functional Spec, Tasks, Evidence, Test Plan, Review, Gate, and Release Markdown views in both profiles must carry generated, curated, or human_owned ownership plus profile, feature_slug, source canonical path and SHA-256, renderer id/version, and a direct-edit prohibition marker where generated.",
+      "rationale": "AC-7 and AC-8 require every generated view to explain why it exists and whether it is editable.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "Evidence/Test PlanとGate/Release viewがgenerated、curated、human_ownedのownershipを明示する"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "generated projectionがsource path、source hash、renderer version、direct-edit prohibitionを含む"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "generated view"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/**/*.js",
+            "must_contain": "writeArtifactProjections"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "review gate and release views expose ownership and lineage to users"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "The existing machine task authority at .vibepro/stories/{story_id}/tasks/tasks.json must remain unmoved and render deterministically by unique task id and fixed field order into lineage-bearing Tasks Markdown using tasks_markdown renderer version 1; Markdown must never become read authority.",
+      "rationale": "AC-6 requires a machine-owned task model and a reproducible human view without a second editable SSOT.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "machine task modelを決定論的なTasks Markdownへrenderできる"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "Deterministic Projection and Lineage",
+            "text_snippet": ".vibepro/stories/{story_id}/tasks/tasks.json"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/story-task-generator.js",
+            "anchor": "createStoryTasks"
+          },
+          {
+            "file": "src/task-manager.js",
+            "anchor": "createTasksFromPlan"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "machine task JSON deterministically renders lineage-bearing Tasks Markdown"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/**/*.js",
+            "must_contain": "tasks_markdown"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "task JSON remains read authority after Markdown regeneration"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T03:00:00.000Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "VibePro must never overwrite a human_owned packet file, and curated views must remain outside automatic overwrite paths.",
+      "rationale": "AC-9 requires a hard ownership boundary between generated packets and human-curated content.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 8,
+            "text_snippet": "VibeProがhuman-owned packet fileを上書きしない"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "human_owned"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "Each semantic artifact must have exactly one writable canonical path, and generated projections must not become read authority.",
+      "rationale": "AC-10 prevents duplicate SSOTs and projection-driven writes.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 9,
+            "text_snippet": "semantic artifactごとにwritable canonicalは一つだけでprojectionはread authorityにならない"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "方針",
+            "text_snippet": "projection"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "artifacts resolve JSON/text must report story_id, profile, metadata_source, variables, and per-kind canonical owner/writer/read authority plus projection ownership and renderer; artifacts migrate --dry-run must keep edits_performed at zero and classify each candidate as create, update, noop, or conflict with a non-silent reason after comparing lineage headers and legacy byte copies.",
+      "rationale": "AC-11 and AC-12 require a visible routing report and a read-only migration plan.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 10,
+            "text_snippet": "artifacts resolveがprofile、variables、canonical、projection、ownership、rendererを報告する"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 11,
+            "text_snippet": "artifacts migrate --dry-runがprofile変更、move、collision、stale projection、human-owned overwrite riskを編集せず報告する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/artifact-routing.js",
+            "anchor": "buildArtifactMigrationPlan"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "resolve JSON and text report required profile ownership renderer and authority fields"
+          },
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "migration reports create update noop conflict reasons and edits_performed zero"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Story discovery, status, Architecture, Spec, Task, Graphify, Evidence, Test Plan, Review, Gate, PR prepare/create/merge, and migration must each consume one shared resolver result and expose the same profile and feature_slug without local derivation; the workflow state transition is unresolved -> canonical_written -> projections_written -> published, and any resolver or projection failure must stop before the next state while preserving the previously published state; status, gate, and PR summaries must expose the routed surfaces.",
+      "rationale": "AC-3 is a cross-lifecycle contract and requires path-by-path evidence rather than resolver-only unit coverage.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "全producer/consumerへ同じrouting context"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "Lifecycle Consumer Matrix",
+            "text_snippet": "全consumerはprofile/feature_slugを独自推論せず"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "named profile is shared by every lifecycle consumer"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/artifact-routing.test.js",
+            "must_cover": "Story Architecture Spec Task Graphify Review Gate PR status migration use one profile"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T03:00:00.000Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "A fresh checkout must resolve story-feature-checkout to feature_packet surfaces under docs/features/checkout-feature and story-governance-checkout to governance_packet surfaces under docs/governance/checkout-governance, including Functional Spec, Tasks, Evidence, Test Plan, Review, Gate, and Release summaries with lineage; resolve JSON/text, status/gate/PR summaries, migration edits_performed zero, and legacy fallback must all be asserted.",
+      "rationale": "AC-13 requires an end-to-end confirmation on a clean clone, and AC-14 preserves legacy compatibility.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 12,
+            "text_snippet": "feature profileとgovernance profileをfresh checkout E2Eで検証する"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 13,
+            "text_snippet": "profile未設定repositoryと既存artifact_routing.artifacts設定の後方互換を維持する"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "feature and governance named profiles survive fresh checkout with catalog metadata and lineage"
+          },
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "migration dry-run reports create update noop conflict without editing a fresh checkout"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T02:32:43.019Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "artifact_routing schema 0.2.0 introduces named profiles, ownership, and renderers; the new CLI must preserve 0.1.0 repository-global routing, while an old CLI must reject 0.2.0 as unsupported_schema and must not ignore profiles or silently fall back to defaults.",
+      "rationale": "A versioned contract is required so adoption cannot silently route writes to legacy destinations.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 13,
+            "text_snippet": "後方互換を維持する"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+            "section": "Compatibility, Regression, and Fresh Checkout",
+            "text_snippet": "unsupported_schema"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/artifact-routing.js",
+            "anchor": "validateRoutingShape"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "new resolver preserves schema 0.1.0 routing and defaults"
+          },
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "legacy resolver rejects schema 0.2.0 without silent fallback"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T03:20:00.000Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "Given an Agent Review record has neither supplied lineage nor Run authority, the recorder leaves lineage absent; when either source is available, the established lineage-resolution path remains unchanged.",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "inherited",
+        "files": [
+          "src/agent-review.js"
+        ]
+      },
+      "rationale": "The rendered-projection change must not alter the established optional-lineage behavior of Agent Review evidence.",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "resolveRecorderLineage"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/run-lineage-evidence-propagation.test.js",
+            "case": "authoritative evidence recorders inherit validated Run lineage additively"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/run-lineage-evidence-propagation.test.js",
+            "must_cover": "authoritative evidence recorders inherit validated Run lineage additively"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T12:25:22.205Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "Given recorded git context contains user_status_fingerprint_hash, freshness comparison uses that user fingerprint; when it is absent, the established full-fingerprint fallback remains unchanged.",
+      "inherited_behavior": {
+        "condition": "gitContext?.user_status_fingerprint_hash",
+        "classification": "inherited",
+        "files": [
+          "src/git-fingerprint.js"
+        ]
+      },
+      "rationale": "Generated projections must not make user-worktree freshness depend on VibePro-owned output, while preserving legacy evidence fallback.",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/git-fingerprint.js",
+            "anchor": "fingerprintHashForContext"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+            "case": "story-vibepro-evidence-user-fingerprint evidence binding replay"
+          },
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+            "must_cover": "Legacy evidence that lacks the user fingerprint still uses the existing full dirty fingerprint comparison"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T12:25:22.205Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  Story[Story metadata] --> Resolver[Artifact resolver]\n  Resolver --> Canonical[Writable canonical artifact]\n  Resolver --> Projection[Generated projection]\n  Projection --> View[Human-readable view]\n  Canonical --> Migration[Dry-run migration]\n  Projection -. lineage metadata .-> View",
+      "rationale": "Show one resolver feeding canonical and projected surfaces, with migration staying read-only."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Catalog[Catalog authority] --> Resolver[Validated resolver]\n  StoryMirror[Required named-profile Story mirror] --> Resolver\n  Resolver --> Canonical[Canonical artifact]\n  Resolver --> Projection[Generated projection]\n  UntrustedPath[Traversal or symlink input] --> Reject[Fail closed]\n  Reject -. blocks .-> Canonical\n  Reject -. blocks .-> Projection",
+      "rationale": "Show that metadata conflicts and unsafe paths are rejected before either canonical or projection writes."
+    }
+  ],
+  "open_questions": []
+}

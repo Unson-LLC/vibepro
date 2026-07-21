@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext } from './git-fingerprint.js';
+import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
@@ -32,7 +33,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     storyId,
     commandName: 'verify record'
   });
-  const gitContext = await collectGitContext(root);
+  const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
+  const gitContext = await collectGitContext(root, { userExcludePaths: generatedProjectionPaths });
   const lineage = resolveRecorderLineage(options, {
     story_id: storyId,
     worktree_root: root,
