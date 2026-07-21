@@ -24,7 +24,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       idempotency_key: request.dispatch_id,
       completion_delivery: {
         protocol: 'vibepro-runtime-inbox-v1',
-        repo_root: repoRoot,
+        repo_root: request.requirements.managed_worktree,
         story_id: request.story_id,
         run_id: request.run_id,
         dispatch_id: request.dispatch_id

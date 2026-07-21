@@ -137,7 +137,7 @@ function normalizeEvent(input, now) {
 
 function validatePayload(kind, payload) {
   assertAllowedKeys(payload, PAYLOAD_KEYS[kind], `${kind} payload`);
-  for (const key of ['message', 'error_code', 'head_sha', 'completion_status', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'judgment_id', 'verdict', 'reason']) {
+  for (const key of ['message', 'error_code', 'head_sha', 'completion_status', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'judgment_id', 'verdict', 'detail', 'reason']) {
     if (payload[key] !== undefined) requireText(payload[key], key);
   }
   for (const key of ['changed_files', 'test_suggestions', 'surface_paths']) validateStringArray(payload[key], key);
@@ -165,7 +165,7 @@ function validatePayload(kind, payload) {
   for (const judgment of judgments) {
     assertRecord(judgment, 'judgment');
     assertAllowedKeys(judgment, NESTED_KEYS.judgment, 'judgment');
-    for (const key of ['judgment_id', 'verdict', 'reason', 'summary']) if (judgment[key] !== undefined) requireText(judgment[key], `judgment.${key}`);
+    for (const key of ['judgment_id', 'verdict', 'detail', 'reason', 'summary']) if (judgment[key] !== undefined) requireText(judgment[key], `judgment.${key}`);
     validateStringArray(judgment.surface_paths, 'judgment.surface_paths');
     validateFindings(judgment.findings);
   }

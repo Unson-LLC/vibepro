@@ -80,5 +80,13 @@ test('CDI-S-2 Inbox rejects nested objects and oversize text hidden inside allow
     event_id: 'oversize-secret', dispatch_id: 'dispatch-deep', provider_run_id: 'provider-deep', kind: 'failed',
     payload: { message: 'x'.repeat(65537) }
   }), /exceeds maximum length/);
+  await assert.rejects(inbox.append({
+    event_id: 'partial-detail-secret', dispatch_id: 'dispatch-deep', provider_run_id: 'provider-deep', kind: 'partial_result',
+    payload: { judgment_id: 'security', verdict: 'block', detail: { raw_transcript: 'SECRET' } }
+  }), /detail is required/);
+  await assert.rejects(inbox.append({
+    event_id: 'nested-detail-secret', dispatch_id: 'dispatch-deep', provider_run_id: 'provider-deep', kind: 'completed',
+    payload: { judgments: [{ judgment_id: 'security', verdict: 'block', detail: { raw_transcript: 'SECRET' } }] }
+  }), /judgment\.detail is required/);
   assert.deepEqual((await inbox.reconcile('dispatch-deep')).events, []);
 });

@@ -82,6 +82,21 @@ test('CDI-S-4 concurrent starts for one dispatch share the in-flight spawn', asy
   assert.equal(host.metrics().spawns, 1);
 });
 
+test('CDI-S-2 completion delivery descriptor targets managed authority rather than adapter source root', async (t) => {
+  const sourceRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-source-root-'));
+  const managedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-managed-root-'));
+  t.after(() => Promise.all([
+    rm(sourceRoot, { recursive: true, force: true }),
+    rm(managedRoot, { recursive: true, force: true })
+  ]));
+  const host = fakeCodexHost();
+  const adapter = createCodexSubagentRuntimeAdapter({ repoRoot: sourceRoot, host });
+  const request = { ...reviewRequest(managedRoot), dispatch_id: 'dispatch-managed-delivery' };
+  await adapter.start(request);
+  assert.equal(host.metrics().lastSpawnRequest.completion_delivery.repo_root, managedRoot);
+  assert.notEqual(host.metrics().lastSpawnRequest.completion_delivery.repo_root, sourceRoot);
+});
+
 function reviewRequest(repoRoot) {
   return {
     adapter_id: 'codex-subagent', task_id: 'agent-review', role: 'review', reviewer_identity: 'reviewer-codex',
