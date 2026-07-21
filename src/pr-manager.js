@@ -2277,7 +2277,7 @@ function buildReviewStartCommandTemplate(storyId, stage, roleArg, { identity = '
   return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)}`;
 }
 
-export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent' } = {}) {
+export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent', agentSystem = 'codex' } = {}) {
   const command = [
     'vibepro review record .',
     '--id',
@@ -2292,7 +2292,7 @@ export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { cont
     `--inspection-evidence ${shellQuote('<inspection-evidence>')}`,
     ...reviewInspectionInputPlaceholders(stage, roleArg).map((input) => `--inspection-input ${shellQuote(input)}`),
     '--judgment-delta "<initial judgment -> final judgment because evidence>"',
-    '--agent-system codex',
+    `--agent-system ${shellQuote(agentSystem)}`,
     '--execution-mode parallel_subagent',
     `--agent-id ${shellQuote(`<${identity}-id>`)}`,
     `--agent-thread-id ${shellQuote(`<${identity}-thread-id>`)}`,
@@ -13791,13 +13791,14 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   const closeCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
     ? `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} ${selector} --close-reason ${shellQuote(closeReason)} --close-evidence ${shellQuote('<close-evidence>')}`
     : null;
-  const replacementCommand = ['timed_out', 'manual_shutdown'].includes(recoveryKind)
+  const replacementCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
     ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
     : null;
   return {
     status: lifecycle?.effective_status ?? latest?.effective_status ?? null,
     agent_id: agentId,
     lifecycle_id: lifecycleId,
+    agent_system: latest?.agent_system ?? '<codex|claude_code>',
     close_command: closeCommand,
     replacement_command: replacementCommand
   };
@@ -13808,19 +13809,17 @@ export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recover
   const startCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote('<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000`;
   const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
-  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, { contentBinding, identity: 'replacement-agent' });
-  if (['timed_out', 'manual_shutdown'].includes(recoveryKind)) {
+  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, {
+    contentBinding,
+    identity: 'replacement-agent',
+    agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
+  });
+  if (['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) {
     return [
       lifecycleRecovery?.close_command,
       prepareCommand,
       startCommand,
       closeNewCommand,
-      recordCommand
-    ].filter(Boolean);
-  }
-  if (recoveryKind === 'running') {
-    return [
-      lifecycleRecovery?.close_command,
       recordCommand
     ].filter(Boolean);
   }

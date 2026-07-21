@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { runCli } from '../src/cli.js';
 import { createUsageReport } from '../src/usage-report.js';
 import { buildReviewRepairPlan, renderReviewRepair } from '../src/review-repair.js';
+import { buildAgentReviewRecoveryCommands } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -274,6 +275,28 @@ test('stale result with a latest running lifecycle closes and replaces that life
   const chain = candidate.next_commands.join('\n');
   assert.match(chain, /review close .*--agent-id "agent-human-usability-running".*--close-reason manual_shutdown/);
   assert.match(chain, /review start .*--replacement-for lifecycle-human-usability-running(?:\s|$)/);
+});
+
+test('running lifecycle recovery starts and closes a replacement with the original agent system', () => {
+  const commands = buildAgentReviewRecoveryCommands({
+    storyId: 'story-review-recovery',
+    stage: 'implementation',
+    role: 'runtime_contract',
+    recoveryKind: 'running',
+    lifecycleRecovery: {
+      close_command: 'vibepro review close old-lifecycle',
+      replacement_command: 'vibepro review start replacement-lifecycle --agent-system claude_code',
+      agent_system: 'claude_code'
+    }
+  });
+  assert.deepEqual(commands.map((command) => command.match(/review (prepare|start|close|record)/)?.[1]), [
+    'close',
+    'prepare',
+    'start',
+    'close',
+    'record'
+  ]);
+  assert.match(commands.at(-1), /--agent-system claude_code/);
 });
 
 test('pass without provenance and unclosed lifecycle are repair candidates', async () => {
