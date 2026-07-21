@@ -209,19 +209,54 @@ export function assertProviderIdentityUniqueness(records = []) {
     }
     const envelope = record.lineage;
     const validated = envelope ? validateRunLineageEnvelope(envelope) : null;
-    const provider = text(record.adapter_id) ?? validated?.provider_observations?.[0]?.provider ?? 'unknown';
     const observations = validated?.provider_observations ?? [];
-    const values = Object.fromEntries(OBSERVATION_FIELDS
-      .map((field) => [field, text(record[field]) ?? text(validated?.[field])])
+    const adapter = text(record.adapter_id);
+    const lineageValues = Object.fromEntries(OBSERVATION_FIELDS
+      .map((field) => [field, text(validated?.[field])])
       .filter(([, value]) => value));
-    for (const observation of observations) {
-      for (const field of OBSERVATION_FIELDS) {
-        values[field] ??= observation[field];
+
+    for (const field of OBSERVATION_FIELDS) {
+      const recordValue = text(record[field]);
+      const lineageValue = lineageValues[field];
+      if (recordValue && lineageValue && recordValue !== lineageValue) {
+        fail('provider_identity_conflict', 'record provider identity disagrees with lineage identity', {
+          field, record_value: recordValue, lineage_value: lineageValue
+        });
       }
     }
-    for (const field of OBSERVATION_FIELDS) {
-      const value = values[field];
-      if (!value) continue;
+
+    if (observations.length > 0) {
+      for (const observation of observations) {
+        if (adapter && observation.provider && adapter !== observation.provider) {
+          fail('provider_identity_conflict', 'adapter/provider scope disagrees with authoritative lineage observation', {
+            field: 'provider', adapter_id: adapter, provider: observation.provider,
+            run_id: validated?.run_id ?? text(record.run_id)
+          });
+        }
+        for (const field of OBSERVATION_FIELDS) {
+          const recordValue = text(record[field]);
+          if (recordValue && observation[field] && recordValue !== observation[field]) {
+            fail('provider_identity_conflict', 'record provider identity disagrees with authoritative lineage observation', {
+              field, record_value: recordValue, observation_value: observation[field]
+            });
+          }
+        }
+      }
+    }
+
+    const authoritativeIdentities = observations.length > 0
+      ? observations.flatMap((observation) => OBSERVATION_FIELDS
+        .filter((field) => observation[field])
+        .map((field) => ({ provider: observation.provider ?? adapter ?? 'unknown', field, value: observation[field] })))
+      : OBSERVATION_FIELDS
+        .map((field) => ({
+          provider: adapter ?? 'unknown',
+          field,
+          value: text(record[field]) ?? lineageValues[field]
+        }))
+        .filter(({ value }) => value);
+
+    for (const { provider, field, value } of authoritativeIdentities) {
       const key = `${provider}:${field}:${value}`;
       const current = bindings.get(key);
       if (!current) {

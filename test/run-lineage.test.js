@@ -85,6 +85,32 @@ test('provider identities cannot be rebound across persisted dispatch or Run env
   ]), true);
 });
 
+test('authoritative lineage identities cannot be masked by differing legacy record values', () => {
+  const firstWithObservation = appendProviderObservation(envelope({ dispatch_id: 'dispatch-authoritative-a' }), {
+    provider: 'codex', provider_run_id: 'authoritative-provider-run', provider_session_id: 'authoritative-session'
+  });
+  const secondWithObservation = appendProviderObservation(envelope({ run_id: 'run-beta', dispatch_id: 'dispatch-authoritative-b' }), {
+    provider: 'codex', provider_run_id: 'authoritative-provider-run', provider_session_id: 'authoritative-session'
+  });
+  const first = { ...firstWithObservation, provider_run_id: null, provider_session_id: null };
+  const second = { ...secondWithObservation, provider_run_id: null, provider_session_id: null };
+
+  assert.throws(() => assertProviderIdentityUniqueness([
+    { adapter_id: 'codex', provider_run_id: 'legacy-run-a', provider_session_id: 'legacy-session-a', lineage: first },
+    { adapter_id: 'codex', provider_run_id: 'legacy-run-b', provider_session_id: 'legacy-session-b', lineage: second }
+  ]), errorCode('provider_identity_conflict'));
+});
+
+test('authoritative lineage provider scope must agree with the persisted adapter scope', () => {
+  const value = appendProviderObservation(envelope({ dispatch_id: 'dispatch-scope' }), {
+    provider: 'codex', provider_run_id: 'provider-run-scoped'
+  });
+
+  assert.throws(() => assertProviderIdentityUniqueness([
+    { adapter_id: 'other-adapter', lineage: value }
+  ]), errorCode('provider_identity_conflict'));
+});
+
 test('provider-scoped identities allow adapter observations to share identifiers', () => {
   const observation = {
     dispatch_id: 'dispatch-shared',
