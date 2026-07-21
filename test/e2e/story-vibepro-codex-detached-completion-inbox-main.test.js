@@ -155,6 +155,14 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   assert.deepEqual(childResult.reviews[0].review.findings, ['high:cross-process-finding:non-empty finding survives runtime ingestion']);
   assert.deepEqual(childResult.reviews[0].review.inspectionInputs, ['src/codex-runtime-bridge.js']);
 
+  const duplicate = await createBridge().resumeFromWake({
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    dispatch_id: started.dispatch.dispatch_id
+  });
+  assert.equal(duplicate.agent_review.status, 'needs_changes');
+  assert.equal(reviews.length, 0);
+
   const replayBridge = createBridge();
   await replayBridge.ready;
   const replay = await replayBridge.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, request });

@@ -837,6 +837,15 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(reviews[0].review.agentId, 'reviewer-2');
   assert.equal(reviews[0].review.agentClosed, true);
   assert.equal(reviews[0].review.implementationSessionId, 'implementation-session');
+  assert.equal(reviews[0].review.runtimeDispatchId, started.dispatch.dispatch_id);
+  const replayedGate = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'duplicate runtime review' }
+  });
+  assert.equal(replayedGate.reused, true);
+  assert.equal(reviews.length, 1);
   assert.equal(run.current_head_sha, persisted.current_head_sha);
 });
 

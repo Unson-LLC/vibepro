@@ -277,7 +277,19 @@ async function dispatchRuntimeWithFallbacks(coordinator, state, request, options
 }
 async function recordRuntimeReview(deps, repoRoot, options) {
   return recordGuardedRuntimeReview({
-    deps, repoRoot, options, loadRun: loadSelectedRun, createError: (code, message) => new GuardedRunError(code, message)
+    deps,
+    repoRoot,
+    options,
+    loadRun: loadSelectedRun,
+    createError: (code, message) => new GuardedRunError(code, message),
+    now: () => toIso(deps.now()),
+    persistRun: (state, loaded) => persistAuthorityThenMirror(
+      deps,
+      state,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'agent_runtime_review_recorded'
+    )
   });
 }
 async function orchestrateRun(deps, repoRoot, options) {

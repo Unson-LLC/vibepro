@@ -357,6 +357,21 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }, `review-${stage}-${role}`);
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
+  const resultPath = getReviewResultPath(reviewDir, role);
+  if (options.runtimeDispatchId) {
+    const existing = await readJsonIfExists(resultPath);
+    if (existing?.runtime_dispatch_id === options.runtimeDispatchId) {
+      const historyPath = getReviewResultHistoryPath(reviewDir, role, existing.recorded_at);
+      const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+      return {
+        review: existing,
+        summary,
+        artifact: toWorkspaceRelative(root, resultPath),
+        history_artifact: toWorkspaceRelative(root, historyPath),
+        reused: true
+      };
+    }
+  }
   const lifecycle = await readLifecycle(root, storyId, stage);
   const inspection = buildInspectionBlock(options);
   const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
@@ -395,6 +410,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     content_binding: contentBinding,
     ...(lineage ? { lineage } : {}),
     source_fingerprint: sourceFingerprint,
+    ...(options.runtimeDispatchId ? { runtime_dispatch_id: options.runtimeDispatchId } : {}),
     agent_provenance: buildAgentProvenance(root, {
       ...options,
       lifecycleEntries: lifecycle.entries,
@@ -423,7 +439,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
       `review record ${stage}:${role} pass requires --judgment-delta <text> so handoff readers can see how the review conclusion was reached.`
     );
   }
-  const resultPath = getReviewResultPath(reviewDir, role);
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
   const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null; if (existingResult?.operation_idempotency_key === operationIdempotencyKey) result = existingResult;
   const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
@@ -491,7 +506,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
     review: result,
     summary,
     artifact: toWorkspaceRelative(root, resultPath),
-    history_artifact: toWorkspaceRelative(root, historyPath)
+    history_artifact: toWorkspaceRelative(root, historyPath),
+    reused: false
   };
 }
 

@@ -395,6 +395,29 @@ test('recordAgentReview collects the result after an explicitly closed lifecycle
   assert.equal(entry.result_artifact, '.vibepro/reviews/story-test/gate/review-result-gate_evidence.json');
 });
 
+test('recordAgentReview reuses the canonical result for the same runtime dispatch id', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  const options = {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'runtime review',
+    inspectionSummary: 'read runtime bridge and focused tests', inspectionEvidence: 'test/foo.test.js',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js'], judgmentDeltas: ['runtime result -> accepted once'],
+    agentSystem: 'codex', executionMode: 'parallel_subagent', agentId: 'task-runtime-review', agentClosed: true,
+    runtimeDispatchId: 'dispatch-runtime-review-1'
+  };
+  const first = await recordAgentReview(root, options);
+  const reviewDir = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate');
+  const historyBefore = (await readdir(reviewDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
+  const replay = await recordAgentReview(root, { ...options, summary: 'must not replace the first result' });
+  const historyAfter = (await readdir(reviewDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
+  assert.equal(first.reused, false);
+  assert.equal(replay.reused, true);
+  assert.equal(replay.review.summary, 'runtime review');
+  assert.equal(replay.review.runtime_dispatch_id, 'dispatch-runtime-review-1');
+  assert.deepEqual(historyAfter, historyBefore);
+});
+
 test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

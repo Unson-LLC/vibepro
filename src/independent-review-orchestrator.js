@@ -224,20 +224,38 @@ export function createGuardedIndependentReviewRunner({
   });
 }
 
-export async function recordGuardedRuntimeReview({ deps, repoRoot, options, loadRun, createError }) {
+export async function recordGuardedRuntimeReview({ deps, repoRoot, options, loadRun, createError, persistRun, now }) {
   const reviewRecorder = deps.recordAgentReview ?? deps.agentReviewOps?.record;
   if (!reviewRecorder) throw createError('review_runtime_unavailable', 'Guarded Run has no Agent Review recording boundary');
   const loaded = await loadRun(deps, repoRoot, options, { requireCurrentHead: true });
   const dispatch = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
   const provenance = validateRuntimeReviewDispatch(dispatch, loaded.state.current_head_sha, createError);
+  if (dispatch.review_gate_record?.runtime_dispatch_id === dispatch.dispatch_id) {
+    return { dispatch, review: dispatch.review_gate_record.review, reused: true };
+  }
   const review = await reviewRecorder(loaded.state.execution_context.root_realpath, {
     ...(options.review ?? {}), storyId: loaded.state.story_id,
     agentSystem: options.review?.agentSystem ?? 'codex', executionMode: 'parallel_subagent',
     agentId: provenance.agent_identity, agentThreadId: provenance.thread_id,
     agentSessionId: provenance.session_id, agentClosed: true, reviewerIdentity: 'separate_session',
-    implementationSessionId: dispatch.implementation_session_id
+    implementationSessionId: dispatch.implementation_session_id,
+    runtimeDispatchId: dispatch.dispatch_id
   });
-  return { dispatch, review };
+  const recordedDispatch = {
+    ...dispatch,
+    review_gate_record: {
+      runtime_dispatch_id: dispatch.dispatch_id,
+      recorded_at: now(),
+      review
+    }
+  };
+  const nextState = {
+    ...loaded.state,
+    runtime_dispatches: (loaded.state.runtime_dispatches ?? []).map((item) =>
+      item.dispatch_id === dispatch.dispatch_id ? recordedDispatch : item)
+  };
+  await persistRun(nextState, loaded);
+  return { dispatch: recordedDispatch, review, reused: false };
 }
 
 function validateRuntimeReviewDispatch(dispatch, currentHeadSha, createError) {
