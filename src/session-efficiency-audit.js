@@ -154,7 +154,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const sessionFiles = selectedSessionId
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
-  const session = selectedSessionId && sessionFiles.length > 0
+  let session = selectedSessionId && sessionFiles.length > 0
     ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, runId: requestedRunId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, { storyId, runId: requestedRunId });
   const sessionAttribution = selectedSessionId && sessionFiles.length > 0
@@ -169,6 +169,25 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
+  if (requestedRunId) {
+    const canonicalRun = await resolveCanonicalRunLineage(root, observedRoot, {
+      storyId,
+      runId: requestedRunId,
+      sessionCwd: session.cwd,
+      processCwd: processMetadata?.cwd
+    });
+    session = {
+      ...session,
+      lineage_attribution: mergeCanonicalRunAttribution(session.lineage_attribution, canonicalRun, {
+        storyId,
+        runId: requestedRunId,
+        sessionId: selectedSessionId,
+        filePaths: sessionFiles,
+        windowStart: effectiveWindowStart,
+        windowEnd: effectiveWindowEnd
+      })
+    };
+  }
   const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
   const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId, {
     sessionFiles
@@ -1156,11 +1175,12 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runI
         timestamp: entry.timestamp ?? null,
         entry_type: entry.type ?? null
       });
-    } else if (hasThreadOnlyObservation(entry)) {
+    } else if (hasLineageObservation(entry)) {
       lineageEvents.push({
         ...exposure,
         id: `${sourcePath}:${line}`,
         thread_id: extractThreadId(entry),
+        ...extractExplicitAttributionObservation(entry),
         tokens: exposure?.estimated_tokens ?? 0,
         time_ms: 0,
         source_path: sourcePath,
@@ -1346,6 +1366,188 @@ function extractThreadId(entry) {
 
 function hasThreadOnlyObservation(entry) {
   return Boolean(extractThreadId(entry)) && !extractEmbeddedRunLineage(entry);
+}
+
+function extractExplicitAttributionObservation(entry) {
+  const candidates = [entry, entry?.payload, entry?.payload?.data]
+    .filter((candidate) => candidate && typeof candidate === 'object' && !Array.isArray(candidate));
+  const observation = {};
+  for (const candidate of candidates) {
+    for (const field of ['shared_parent', 'run_ids', 'parent_run_ids', 'story_ids', 'run_story_ids', 'replayed_context', 'provenance_bucket']) {
+      if (candidate[field] !== undefined && observation[field] === undefined) observation[field] = candidate[field];
+    }
+  }
+  return observation;
+}
+
+function hasLineageObservation(entry) {
+  return hasThreadOnlyObservation(entry) || Object.keys(extractExplicitAttributionObservation(entry)).length > 0;
+}
+
+async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
+  storyId,
+  runId,
+  sessionCwd = null,
+  processCwd = null
+} = {}) {
+  const candidateRoots = [...new Set([
+    repoRoot,
+    observedRoot,
+    sessionCwd,
+    processCwd
+  ].filter(Boolean).map((candidate) => path.resolve(candidate)))];
+  let firstUnavailable = null;
+  for (const candidateRoot of candidateRoots) {
+    const mirrorPath = path.join(candidateRoot, '.vibepro', 'executions', storyId, 'runs', runId, 'state.json');
+    let state;
+    try {
+      state = JSON.parse(await readFile(mirrorPath, 'utf8'));
+    } catch (error) {
+      if (error.code !== 'ENOENT' && !firstUnavailable) firstUnavailable = { path: mirrorPath, reason: `could not read canonical Run artifact: ${error.message}` };
+      continue;
+    }
+    if (state.story_id !== storyId || state.run_id !== runId) {
+      return {
+        status: 'unavailable',
+        reason: 'canonical Run artifact identity did not match the requested Story/Run',
+        source_artifact: toWorkspaceRelative(candidateRoot, mirrorPath),
+        requested: { story_id: storyId, run_id: runId },
+        observed: { story_id: state.story_id ?? null, run_id: state.run_id ?? null }
+      };
+    }
+    const authorityRoot = path.resolve(state.execution_context?.root_realpath ?? candidateRoot);
+    const authorityPath = path.join(authorityRoot, '.vibepro', 'executions', storyId, 'runs', runId, 'state.json');
+    if (authorityPath !== mirrorPath) {
+      try {
+        state = JSON.parse(await readFile(authorityPath, 'utf8'));
+      } catch (error) {
+        return {
+          status: 'unavailable',
+          reason: 'canonical Run authority points to an unreadable state artifact',
+          source_artifact: toWorkspaceRelative(candidateRoot, mirrorPath),
+          authority_artifact: toWorkspaceRelative(authorityRoot, authorityPath),
+          detail: error.message
+        };
+      }
+    }
+    if (state.story_id !== storyId || state.run_id !== runId) {
+      return {
+        status: 'unavailable',
+        reason: 'canonical Run authority identity did not match the requested Story/Run',
+        source_artifact: toWorkspaceRelative(authorityRoot, authorityPath),
+        requested: { story_id: storyId, run_id: runId },
+        observed: { story_id: state.story_id ?? null, run_id: state.run_id ?? null }
+      };
+    }
+    return buildCanonicalRunLineage(state, authorityRoot, authorityPath, { storyId, runId });
+  }
+  return {
+    status: 'unavailable',
+    reason: firstUnavailable?.reason ?? 'canonical Guarded Run state artifact was not found for the requested Story/Run',
+    source_artifact: firstUnavailable ? toWorkspaceRelative(repoRoot, firstUnavailable.path) : null,
+    requested: { story_id: storyId, run_id: runId }
+  };
+}
+
+function buildCanonicalRunLineage(state, authorityRoot, authorityPath, { storyId, runId }) {
+  const sourceArtifact = toWorkspaceRelative(authorityRoot, authorityPath);
+  const authority = {
+    story_id: storyId,
+    run_id: runId,
+    worktree_root: state.worktree_root ?? state.root_realpath ?? state.execution_context?.root_realpath,
+    branch: state.branch ?? state.current_branch,
+    head_sha: state.current_head_sha ?? state.head_sha
+  };
+  const events = [];
+  const invalidDispatches = [];
+  for (const dispatch of Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : []) {
+    if (!dispatch?.lineage) {
+      invalidDispatches.push({ dispatch_id: dispatch?.dispatch_id ?? null, reason: 'dispatch has no lineage envelope' });
+      continue;
+    }
+    try {
+      const lineage = validateRunLineageEnvelope(dispatch.lineage, authority);
+      events.push({
+        id: `run:${runId}:dispatch:${lineage.dispatch_id}`,
+        event_kind: 'runtime_dispatch',
+        story_id: storyId,
+        run_id: runId,
+        lineage,
+        provider_observations: lineage.provider_observations ?? [],
+        artifact_binding: { story_id: storyId, run_id: runId, source_artifact: sourceArtifact },
+        source_artifact: sourceArtifact,
+        tokens: 0,
+        time_ms: 0
+      });
+    } catch (error) {
+      invalidDispatches.push({ dispatch_id: dispatch.dispatch_id ?? null, reason: error.message, code: error.code ?? null });
+    }
+  }
+  if (events.length === 0) {
+    events.push({
+      id: `run:${runId}:authority`,
+      event_kind: 'run_authority',
+      story_id: storyId,
+      run_id: runId,
+      artifact_binding: { story_id: storyId, run_id: runId, source_artifact: sourceArtifact },
+      source_artifact: sourceArtifact,
+      tokens: 0,
+      time_ms: 0
+    });
+  }
+  const providerObservationCount = events.reduce((total, event) => total + (event.provider_observations?.length ?? 0), 0);
+  return {
+    status: 'available',
+    events,
+    source_artifact: sourceArtifact,
+    authority,
+    dispatch_count: Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches.length : 0,
+    validated_dispatch_count: events.filter((event) => event.event_kind === 'runtime_dispatch').length,
+    provider_observation_count: providerObservationCount,
+    invalid_dispatches: invalidDispatches,
+    reason: null
+  };
+}
+
+function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {
+  storyId,
+  runId,
+  sessionId,
+  filePaths,
+  windowStart,
+  windowEnd
+} = {}) {
+  if (canonicalRun?.status !== 'available') {
+    return {
+      ...sessionAttribution,
+      canonical_run: canonicalRun ?? { status: 'unavailable', reason: 'canonical Run resolver returned no result' }
+    };
+  }
+  const sessionEvents = sessionAttribution?.events ?? [];
+  const events = [...canonicalRun.events, ...sessionEvents];
+  const attribution = resolveRunAttribution(events, { story_id: storyId, run_id: runId });
+  const threadOnlyEvents = sessionEvents.filter((event) => event?.thread_id && !event?.lineage);
+  return {
+    ...attribution,
+    schema_version: '0.1.0',
+    status: 'available',
+    mode: 'canonical_run_artifact_preferred',
+    source: 'guarded-run-authority-artifact+codex-session-jsonl',
+    filter: { run_id: runId, run_id_filter_applied: true },
+    authoritative_event_count: events.filter((event) => event?.lineage).length,
+    thread_only_event_count: threadOnlyEvents.length,
+    session_id: sessionId,
+    window: {
+      session_id: sessionId,
+      source_path: filePaths[0] ?? null,
+      source_paths: filePaths,
+      requested_start: windowStart ?? null,
+      requested_end: windowEnd ?? null,
+      scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+    },
+    canonical_run: canonicalRun,
+    reason: null
+  };
 }
 
 function buildLineageAttribution(events, {
