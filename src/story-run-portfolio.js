@@ -12,7 +12,7 @@ const STORY_ID = /^story-[a-z0-9][a-z0-9._-]*$/;
 const TERMINAL = new Set(['pr_ready']);
 const STOPPED = new Set(['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed', 'cancelled']);
 const ENTRY_STATUSES = new Set(['queued', 'starting', 'running', 'pr_ready', 'skipped', ...STOPPED]);
-const PORTFOLIO_STATUSES = new Set(['starting', 'running', 'completed', 'stopped', 'skipped', ...STOPPED]);
+const PORTFOLIO_STATUSES = new Set(['queued', 'starting', 'running', 'completed', 'skipped', ...STOPPED]);
 const DECISIONS = new Set(['continue', 'skip', 'retry']);
 const STATE_KEYS = ['schema_version', 'portfolio_id', 'mode', 'status', 'created_at', 'updated_at', 'entries', 'promoted_context', 'decision_journal', 'scope_bindings'];
 const ENTRY_KEYS = ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason'];
@@ -82,7 +82,7 @@ async function createPortfolio(deps, repoRoot, options = {}) {
     schema_version: STORY_RUN_PORTFOLIO_SCHEMA_VERSION,
     portfolio_id: portfolioId,
     mode: 'sequential',
-    status: 'running',
+    status: 'queued',
     created_at: now,
     updated_at: now,
     entries: stories.map((storyId, order) => ({
@@ -154,9 +154,10 @@ async function advancePortfolio(deps, repoRoot, options = {}) {
   }
   const next = state.entries.find((entry) => entry.status === 'queued');
   if (!next) {
-    state.status = state.entries.every((entry) => entry.status === 'pr_ready' || entry.status === 'skipped')
-      ? 'completed'
-      : 'stopped';
+    if (!state.entries.every((entry) => entry.status === 'pr_ready' || entry.status === 'skipped')) {
+      throw error('invalid_portfolio_state', 'Portfolio has no queued entry but is not terminal.');
+    }
+    state.status = 'completed';
     state.updated_at = iso(deps.now());
     await persist(deps, repoRoot, state);
     return state;
@@ -198,6 +199,10 @@ async function decidePortfolio(deps, repoRoot, options = {}) {
     throw error('typed_policy_required', 'continue, skip, and retry require a typed policy and reason.');
   }
   if (decision === 'skip') {
+    const binding = state.scope_bindings[entry.story_id];
+    if (entry.run_id === null && binding?.status === 'starting') {
+      state.scope_bindings[entry.story_id] = { creation_request_id: binding.creation_request_id, branch: null, worktree: null };
+    }
     entry.status = 'skipped';
     entry.stop_reason = { code: 'explicit_skip', message: options.reason, details: { policy_type: options.policyType } };
   } else {
@@ -447,7 +452,11 @@ function validateLifecycleState(state) {
       && entry.run_id === null
       && binding?.status === 'starting'
       && entry.stop_reason?.code === 'scope_contamination';
-    if (!rejectedInitialRun && (!nonEmptyString(entry.run_id) || !binding || binding.status === 'starting')) {
+    const skippedBeforeRun = entry.status === 'skipped'
+      && entry.run_id === null
+      && binding
+      && binding.status !== 'starting';
+    if (!rejectedInitialRun && !skippedBeforeRun && (!nonEmptyString(entry.run_id) || !binding || binding.status === 'starting')) {
       throw error('invalid_portfolio_state', 'Started Portfolio entry must own a durable Run and scope binding.');
     }
     if (STOPPED.has(entry.status) && entry.stop_reason === null) {
@@ -468,6 +477,12 @@ function validateLifecycleState(state) {
   }
   if (state.status === 'completed' && !state.entries.every((entry) => ['pr_ready', 'skipped'].includes(entry.status))) {
     throw error('invalid_portfolio_state', 'Completed Portfolio state requires every entry to be terminal.');
+  }
+  if (state.status === 'queued' && !state.entries.every((entry) => entry.status === 'queued')) {
+    throw error('invalid_portfolio_state', 'Queued Portfolio state requires every entry to be queued.');
+  }
+  if (state.status === 'running' && (activeEntries.length !== 1 || activeEntries[0].status !== 'running')) {
+    throw error('invalid_portfolio_state', 'Running Portfolio state requires exactly one running entry.');
   }
   if (state.status === 'starting' && (activeEntries.length !== 1 || activeEntries[0].status !== 'starting')) {
     throw error('invalid_portfolio_state', 'Starting Portfolio state requires exactly one starting entry.');

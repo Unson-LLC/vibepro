@@ -14,6 +14,7 @@ test('SRP-S-1 SRP-S-2 creates closed one-Story entries with explicit attribution
   const fixture = await createFixture(t);
   const state = await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-six', storyIds: STORIES });
   assert.equal(state.entries.length, 6);
+  assert.equal(state.status, 'queued');
   assert.deepEqual(Object.keys(state.entries[0]), ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason']);
   assert.equal(state.entries[0].cost_attribution.total_tokens, null);
   assert.equal(state.entries[0].cost_attribution.full_suite_count, null);
@@ -224,6 +225,21 @@ test('SRP-S-2 SRP-S-7 rejects a foreign initial Run before adopting its identity
   }
 });
 
+test('initial Run contamination can be explicitly skipped and remains valid after restart', async (t) => {
+  const fixture = await createFixture(t, { initialRunPatch: { creation_request_id: 'portfolio-foreign-request' } });
+  const portfolioId = 'portfolio-contamination-skip';
+  await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 2) });
+  await assert.rejects(fixture.controller.advance(fixture.root, { portfolioId }), errorCode('scope_contamination'));
+  fixture.clearInitialRunPatch();
+  const state = await fixture.controller.decide(fixture.root, {
+    portfolioId, storyId: STORIES[0], decision: 'skip', policyType: 'operator_exception', reason: 'reject foreign child Run'
+  });
+  assert.equal(state.entries[0].status, 'skipped');
+  assert.equal((await fixture.restart().status(fixture.root, { portfolioId })).entries[0].status, 'skipped');
+  const advanced = await fixture.restart().advance(fixture.root, { portfolioId });
+  assert.equal(advanced.entries[1].status, 'running');
+});
+
 test('SRP-S-3 concurrent mutation is rejected before a duplicate child Run starts', async (t) => {
   let release;
   const entered = new Promise((resolve) => { release = resolve; });
@@ -288,6 +304,15 @@ test('parseable semantic corruption in Portfolio state fails the closed schema',
       state.scope_bindings[state.entries[0].story_id] = { creation_request_id: 'request-corrupt', branch: null, worktree: null };
     }],
     ['completed-with-queued-entry', (state) => { state.status = 'completed'; }],
+    ['running-with-all-queued', (state) => { state.status = 'running'; }],
+    ['running-with-stopped-entry', (state) => {
+      state.status = 'running';
+      state.entries[0].status = 'blocked';
+      state.entries[0].run_id = 'run-corrupt';
+      state.entries[0].stop_reason = { code: 'blocked', message: 'blocked' };
+      state.scope_bindings[state.entries[0].story_id] = { creation_request_id: 'request-corrupt', branch: null, worktree: null };
+    }],
+    ['incoherent-generic-stopped', (state) => { state.status = 'stopped'; }],
     ['skipped-without-decision', (state) => {
       state.status = 'skipped';
       state.entries[0].status = 'skipped';
@@ -547,6 +572,7 @@ async function createFixture(t, options = {}) {
     waitForRunStart: () => runStart,
     controller: createStoryRunPortfolioController(dependencies),
     restart: () => createStoryRunPortfolioController(dependencies),
+    clearInitialRunPatch() { delete options.initialRunPatch; },
     seedHistorical(storyId, runId) { runs.set(storyId, { ...runState(storyId), run_id: runId, creation_request_id: null }); },
     setStatus(storyId, status, stopReason = null) { Object.assign(runs.get(storyId), { status, stop_reason: stopReason }); },
     contaminate(storyId, values) { Object.assign(runs.get(storyId), values); }
