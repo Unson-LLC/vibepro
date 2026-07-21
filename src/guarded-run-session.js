@@ -368,6 +368,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     onProgress: async (progress) => {
       const checkpoint = {
         ...decisionState,
+        current_head_sha: progress.current_head_sha,
         action_journal: progress.action_journal,
         ...resumeCursorPatch(progress, decisionState)
       };

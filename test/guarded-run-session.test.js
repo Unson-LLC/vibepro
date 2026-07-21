@@ -78,11 +78,17 @@ test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prep
   const newHead = 'changed-autonomous-head';
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
   const calls = [];
-  const session = fixture.session({
+  let persistedAtVerify = null;
+  let session;
+  session = fixture.session({
     preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
     actionRunners: Object.fromEntries(ids.map((id) => [id, async () => {
       calls.push(id);
       if (id === 'implement') fixture.setHead(fixture.source, newHead);
+      if (id === 'verify') persistedAtVerify = await session.status(fixture.source, {
+        storyId: STORY_ID,
+        runId: RUN_ID
+      });
       return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
     }]))
   });
@@ -98,6 +104,9 @@ test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prep
 
   assert.equal(result.state.status, 'pr_ready');
   assert.equal(result.state.current_head_sha, newHead);
+  assert.equal(persistedAtVerify.current_head_sha, newHead);
+  assert.equal(persistedAtVerify.action_journal.at(-1).action_id, 'implement');
+  assert.equal(persistedAtVerify.action_journal.at(-1).output_head_sha, newHead);
   assert.deepEqual(calls, ids);
   const entries = Object.fromEntries(result.state.action_journal.map((entry) => [entry.action_id, entry]));
   assert.equal(entries.implement.input_head_sha, oldHead);
