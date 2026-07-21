@@ -15,6 +15,7 @@ import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli as coreRunCli } from '../src/cli.js';
 import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
+import { projectArtifact } from '../src/artifact-routing.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -3944,6 +3945,86 @@ test('pr prepare blocks PR freshness when base advanced after branch creation', 
   const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
   assert.match(actions, /git fetch origin/);
   assert.match(actions, /vibepro pr prepare/);
+});
+
+test('pr prepare keeps a current generated projection out of artifact consistency but stales a hand edit', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  const canonicalByKind = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: '.vibepro/pr/{story_id}/pr-prepare.json'
+  };
+  const artifacts = Object.fromEntries(Object.entries(canonicalByKind).map(([kind, canonical]) => [kind, {
+    canonical,
+    ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated'
+  }]));
+  artifacts.accepted_spec.projections = [{
+    path: 'docs/features/{feature_slug}/02_functional_spec.md',
+    ownership: 'generated',
+    renderer: { id: 'functional_spec_markdown', version: '1' }
+  }];
+  config.brainbase.stories = config.brainbase.stories.map((story) => story.story_id === storyId
+    ? { ...story, artifact_profile: 'feature_packet', feature_slug: 'projection-freshness' }
+    : story);
+  config.artifact_routing = {
+    schema_version: '0.2.0',
+    artifacts: {},
+    profiles: {
+      feature_packet: { artifacts },
+      governance_packet: { artifacts: structuredClone(artifacts) }
+    }
+  };
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: projection-freshness\n---\n`);
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'initial projection' }] }
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: configure generated projection fixture']);
+
+  const recordResult = await runCli([
+    'verify', 'record', repo, '--id', storyId, '--kind', 'unit', '--status', 'pass',
+    '--command', 'npm test', '--summary', 'projection freshness fixture passed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  // This advances an ignored canonical artifact and its exact generated view.
+  // It must remain outside the author-dirty fingerprint used by PR/Gate.
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'updated projection' }] }
+  });
+  const generatedResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(generatedResult.exitCode, 0);
+  assert.equal(generatedResult.result.preparation.git.dirty, false);
+  assert.equal(generatedResult.result.preparation.git.raw_dirty, true);
+  const generatedEvidence = generatedResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(generatedEvidence.binding.status, 'current');
+  const generatedGate = generatedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(generatedGate.status, 'passed');
+  assert.equal(generatedGate.current.status_fingerprint_hash, generatedGate.current.user_status_fingerprint_hash);
+
+  const projectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '02_functional_spec.md');
+  await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}hand edit\n`);
+  const handEditResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(handEditResult.exitCode, 0);
+  assert.equal(handEditResult.result.preparation.git.dirty, true);
+  const handEditEvidence = handEditResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(handEditEvidence.binding.status, 'stale');
 });
 
 test('pr prepare exposes stale verification evidence through artifact consistency gate', async () => {
