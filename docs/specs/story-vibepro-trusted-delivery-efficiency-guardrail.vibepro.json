@@ -28,7 +28,7 @@
     {
       "id": "C-002",
       "type": "contract",
-      "statement": "Before provider spawn, review authorization records intended model, risk closure, expected judgment delta, reusable evidence and a Story-wide budget snapshot under one lock; final dispatch requires a frozen source, Spec, test and review surface. Active reservations and running, uncollected or completed-pass lifecycles make the Story-stage-role-HEAD-surface binding idempotent, and review start consumes one matching authorization exactly once.",
+      "statement": "Before provider spawn, review authorization records intended model, risk closure, expected judgment delta, reusable evidence and a Story-wide budget snapshot under one lock; final dispatch requires a frozen source, Spec, test and review surface. The conforming host coordinator calls the external provider only for dispatch, receives the provider-native completion notification, and then closes the lifecycle; VibePro owns authorization, exact binding, accounting and fail-closed recording but does not transport provider notifications or technically intercept provider calls outside the host contract. Active reservations and running, uncollected or completed-pass lifecycles make the Story-stage-role-HEAD-surface binding idempotent, and review start consumes one matching authorization exactly once.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }, { "kind": "acceptance_criteria", "index": 3 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Review dispatch decision" }],
@@ -220,7 +220,7 @@
       "kind": "flow",
       "title": "Authorized review lifecycle without blind polling",
       "entities": ["parent_coordinator", "review_authorization", "review_provider", "completion_notification", "lifecycle_store"],
-      "mermaid": "flowchart LR\n  Parent[Parent coordinator] --> Authorize[Authorize under Story budget]\n  Authorize -->|typed stop| Stop[Do not spawn]\n  Authorize -->|authorized| Spawn[Spawn provider agent]\n  Spawn --> Start[Bind provider agent id]\n  Start --> Work[Continue independent parent work]\n  Provider[Review provider] --> Notify[Completion notification]\n  Work --> Notify\n  Notify --> Close[Close provider lifecycle]\n  Close --> Record[Record current-bound judgment]\n  Record --> Next{Additional concrete risk?}\n  Next -->|no| Done[Advance gate]\n  Next -->|yes and budget remains| Authorize"
+      "mermaid": "flowchart LR\n  Parent[Host coordinator] --> Authorize[VibePro authorization under Story budget]\n  Authorize -->|typed stop| Stop[Host must not spawn]\n  Authorize -->|authorized| Spawn[Host calls provider API]\n  Spawn --> Start[VibePro binds provider agent id]\n  Start --> Work[Parent continues independent work]\n  Provider[External review provider] --> Notify[Host-native completion notification]\n  Work --> Notify\n  Notify --> Close[VibePro closes lifecycle]\n  Close --> Record[Record current-bound judgment]\n  Missing[Missing or incomplete provider delivery] --> ExternalStop[External typed failure; no Gate pass]\n  Record --> Next{Additional concrete risk?}\n  Next -->|no| Done[Advance gate]\n  Next -->|yes and budget remains| Authorize"
     },
     {
       "kind": "threat_model",

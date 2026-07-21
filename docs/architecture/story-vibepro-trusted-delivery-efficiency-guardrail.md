@@ -6,6 +6,8 @@ Introduce one pure policy module, `src/delivery-efficiency-guardrail.js`, as the
 
 The guardrail consumes snapshots from those owners and returns deterministic decisions. It does not spawn agents, cancel providers, run tests, waive gates, or mutate repository state.
 
+The host coordinator owns the provider API call, completion notification delivery, and actual shutdown. VibePro owns the pre-spawn authorization decision, exact binding, lifecycle accounting, and fail-closed record. This boundary prevents VibePro from claiming a push-notification guarantee it cannot provide: a conforming host must await its native completion notification rather than poll, while missing or incomplete provider delivery remains an external typed failure and cannot be recorded as a successful review.
+
 ## Components and boundaries
 
 ### Delivery efficiency policy
@@ -24,6 +26,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - `review authorize` runs before provider spawn under a Story-level dispatch lock. It counts every stage lifecycle plus active reservation, enforces the intended model policy, and persists a short-lived binding authorization only for `dispatch`.
 - `review start` cannot create a lifecycle under an efficiency policy without consuming that exact authorization. Story, stage, role, HEAD, surface digest, model, reasoning effort, and cost tier must still match; an authorization is single-use.
 - `review record` cannot synthesize missing lifecycle evidence while the policy is enabled; a result without a consumed authorization is rejected instead of retroactively legitimizing an already-spawned agent.
+- The host coordinator is the enforcement point for "do not spawn" and must use the provider's native completion notification. VibePro cannot stop a rogue caller from invoking an external provider directly; it makes that work unusable for required Gate evidence and visible as unattributed or orphaned debt.
 
 ### Risk-adaptive review coverage ownership
 
@@ -54,7 +57,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 ## Data flow
 
 1. Story/Run policy and current measurements enter the pure guardrail evaluator.
-2. Before provider spawn, a Story-level lock evaluates current freeze binding, all stage lifecycles, active reservations, intended model, decision value, and remaining budget. Only `dispatch` creates a reservation; `review start` consumes it after the runtime returns a real agent id.
+2. Before provider spawn, a Story-level lock evaluates current freeze binding, all stage lifecycles, active reservations, intended model, decision value, and remaining budget. Only `dispatch` creates a reservation; the host coordinator then calls the provider and `review start` consumes the reservation after the runtime returns a real agent id. The host waits on its native completion notification while continuing independent work; VibePro does not poll or transport that notification.
 3. On HEAD mutation, `agent-review` derives an orphaned stop from the stale lifecycle; explicit close persists the obsolete terminal state and binding evidence.
 4. Repair findings are converted into compatible batches; each batch receives one targeted verification and one independent re-review.
 5. `pr-manager` and portfolio surfaces consume the persisted lifecycle, repair, policy, and measurement records and display correctness readiness and efficiency debt independently.
@@ -83,7 +86,7 @@ stateDiagram-v2
 - Required/critical Gates, independent final review, current-HEAD binding, and fail-closed behavior cannot be relaxed by an efficiency decision.
 - Unknown is not zero, free, pass, or waiver.
 - The dispatch idempotency key includes Story, stage, role, HEAD, and surface digest.
-- Provider spawn is never permitted by the workflow before a current, unconsumed authorization exists; parallel reservations count against the same Story budget.
+- A conforming host workflow never calls provider spawn before a current, unconsumed authorization exists; parallel reservations count against the same Story budget. Direct provider calls outside that host contract are not technically intercepted by VibePro and cannot satisfy required review evidence.
 - Final review never starts before the exact source/Spec/test/review surface binding is frozen.
 - Provider-specific cancellation is out of scope; unconfirmed cancellation is an orphaned-agent stop.
 - A caller assertion is not provider confirmation unless it is explicit and evidence-bound; HEAD mutation never auto-sets `cancel_confirmed`.
@@ -96,6 +99,14 @@ stateDiagram-v2
 - Existing single-finding repair artifacts are accepted as one-item batches.
 - Existing PR correctness readiness stays unchanged; the new efficiency debt is additive and cannot turn a failing Gate into pass.
 - Rollback is removal of enforcement at integration points while retaining the pure summary output and existing Gate owners.
+
+## Release and operator contract
+
+- Release note: review dispatch now requires an authorization reservation before lifecycle start; workflow-heavy role selection no longer manufactures UI/network reviews and validation sequencing suppresses duplicate checkpoint reviews.
+- Operator observation: use `vibepro pr prepare --view blocking-gates` and the Story efficiency summary. Treat `budget_exceeded`, `attribution_unknown`, `orphaned_agent`, stale authorization, or missing provider completion as stops, not transient success.
+- Rollout: merge as one contract bundle because policy, lifecycle enforcement, readiness projection, portfolio metrics, and their regression tests must agree atomically. No migration or stored-data rewrite is required.
+- Rollback trigger: unexpected rejection of a previously valid review lifecycle, unexplained orphan growth, or inability to produce a current-HEAD final review.
+- Rollback action: revert the integration commit or disable the configured efficiency policy so legacy review semantics continue in measurement-only mode. Do not delete lifecycle artifacts; retain them for diagnosis. Owner: VibePro maintainer. Support evidence: Story id, current HEAD, `review status --all --history`, and bounded blocking-gates view.
 
 ## Verification strategy
 
