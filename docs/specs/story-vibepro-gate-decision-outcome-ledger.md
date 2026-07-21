@@ -70,6 +70,8 @@ Trust boundary: operator input is untrusted until story ID containment, selector
 
 Upgrade compatibility: multiplicityを含む旧`trace_source_ref`と、それを含む旧`parent_revision_fingerprint`で記録済みのobservationは、決定的read aliasを通して現行traceへ解決する。新規summary/recordはmultiplicity非依存の現行selectorだけを生成する。`observation_read_aliases`自体がまだ保存されていないpre-fix ledgerでは、stable-IDとcollision selectorの双方について、保存済みsource identityとdetector metadataから現行selectorが完全一致すると再計算できる場合に限り旧selector/parent pairを復元する。collision groupだけの弱い一致は許可しない。保存済みaliasはselectorの排他的shapeとID/digest形式を厳密に検証し、malformed entryを黙って除外しない。旧値が存在する場合にsilentな`not_observed`へ縮退しないことをalias fieldを持たないpre-fix/upgrade fixtureで検証する。bug-physics分類はdecision-ledger固有句を除外しつつ、実runtimeの日本語「データ競合」「状態を観測できない」をtiming/observabilityとして保持する正負matrixを必須とする。split planは`design-ssot.json`をrequirements SSOT laneに置く。
 
+Normative compatibility correction for GDL-S-9: the strict `^story-` rule above applies to public `--id` and exported outcome-manager entrypoints. Lower-level exported decision-ledger path/read/write helpers retain the repository-wide path-safe opaque tracker-ID contract, accepting `^[A-Za-z0-9][A-Za-z0-9._-]*$` for IDs such as `STR-047` and `US-002` while rejecting `..`, slash, backslash, percent, and encoded separators before path composition. This lower-level compatibility does not relax the public outcome-manager boundary.
+
 ## Contracts
 
 ### GDL-CONTRACT-001: Stable identity

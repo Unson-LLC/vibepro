@@ -170,7 +170,40 @@ export async function refreshOutcome(repoRoot, options = {}) {
     await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
     throw error;
   } finally {
-    if (revisedExposed) await atomicWrite(ledgerPath, originalLedgerBytes);
+    if (revisedExposed) {
+      try {
+        await atomicWrite(ledgerPath, originalLedgerBytes);
+      } catch {
+        let restorePostcondition = await inspectOutcomeLedgerPostcondition(
+          ledgerPath,
+          originalLedgerBytes
+        );
+        if (restorePostcondition.status !== 'applied') {
+          try {
+            await atomicWrite(ledgerPath, originalLedgerBytes);
+          } catch {
+            // Inspect the filesystem state after the bounded retry. The injected
+            // writer may report failure after applying the replacement.
+          }
+          restorePostcondition = await inspectOutcomeLedgerPostcondition(
+            ledgerPath,
+            originalLedgerBytes
+          );
+        }
+        if (restorePostcondition.status !== 'applied') {
+          await restoreDirectory(canonicalDir, canonicalSnapshot);
+          await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+          throw new OutcomeCommandError(
+            'outcome_local_restore_failed',
+            'temporary outcome ledger bytes could not be restored',
+            {
+              ledger_postcondition: restorePostcondition,
+              recovery: 'restore the local decision outcome ledger from version control, then rerun vibepro outcome refresh'
+            }
+          );
+        }
+      }
+    }
   }
   let persistence;
   try {

@@ -1566,6 +1566,64 @@ test('GDL-S-9 failed canonical persistence restores the prior local ledger', asy
   await assert.rejects(readFile(path.join(root, 'docs', 'management', 'audit-artifacts', STORY_ID, 'audit-bundle.json')), { code: 'ENOENT' });
 });
 
+test('GDL-S-9 temporary ledger restore retries a failed replacement before persistence', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-restore-retry-');
+  const { root } = fixture;
+  const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+  const ledgerPath = path.join(prDir, 'decision-outcome-ledger.json');
+  await mkdir(prDir, { recursive: true });
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('restore-retry')] });
+  const original = `${JSON.stringify(ledger, null, 2)}\n`;
+  await writeFile(ledgerPath, original);
+  await writeMergeAuthority(prDir, fixture.head);
+  let writeCount = 0;
+
+  await refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(fixture.head),
+    persistenceService: async () => ({ summary: { status: 'pushed', commit_sha: 'canonical-restore-retry' } }),
+    atomicWrite: async (target, data) => {
+      writeCount += 1;
+      if (writeCount === 2) throw new Error('injected temporary restore failure');
+      return atomicReplaceFile(target, data);
+    }
+  });
+
+  assert.equal(writeCount, 4);
+  assert.notEqual(await readFile(ledgerPath, 'utf8'), original);
+});
+
+test('GDL-S-9 promotion failure preserves its error after a transient ledger restore failure', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-promotion-restore-retry-');
+  const { root } = fixture;
+  const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+  const ledgerPath = path.join(prDir, 'decision-outcome-ledger.json');
+  await mkdir(prDir, { recursive: true });
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('promotion-restore-retry')] });
+  const original = `${JSON.stringify(ledger, null, 2)}\n`;
+  await writeFile(ledgerPath, original);
+  await writeMergeAuthority(prDir, fixture.head);
+  let writeCount = 0;
+
+  await assert.rejects(refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(fixture.head),
+    persistenceService: async () => ({ summary: { status: 'push_failed' } }),
+    atomicWrite: async (target, data) => {
+      writeCount += 1;
+      if (writeCount === 2) throw new Error('injected temporary restore failure');
+      return atomicReplaceFile(target, data);
+    }
+  }), (error) => error.error_id === 'outcome_promotion_failed');
+
+  assert.equal(writeCount, 3);
+  assert.equal(await readFile(ledgerPath, 'utf8'), original);
+  await assert.rejects(
+    readFile(path.join(root, 'docs', 'management', 'audit-artifacts', STORY_ID, 'audit-bundle.json')),
+    { code: 'ENOENT' }
+  );
+});
+
 test('GDL-S-9 outcome refresh rejects a requested base that differs from live PR authority', async () => {
   const fixture = await createOutcomeRepository('vibepro-outcome-base-authority-');
   const prDir = path.join(fixture.root, '.vibepro', 'pr', STORY_ID);

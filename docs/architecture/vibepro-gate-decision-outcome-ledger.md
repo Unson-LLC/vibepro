@@ -104,6 +104,8 @@ Live merge authority first binds the PR URL to the configured `remote.origin.url
 
 各traceは`decision_trace_id`、`trace_source_ref`、null-ID時に必須の`collision_group`、`parent_revision_fingerprint`、`revision_fingerprint`、`trace_status`、`finding`、`decision`、`behavior_delta`、`delivery`、`downstream_outcome`、`source_errors[]`、boundedな`eligible_outcome_sources`を持つ。`downstream_outcome.status`は`observed|not_observed|not_applicable`だけを許し、unreadable/untrustedはsource error分類に限定する。review、pr-prepare、usage-reportのbounded summaryは共通projectorを使い、最大20件を`conflicting → incomplete → partial → complete`、次に`decision_trace_id`（nullは`collision_group + trace_source_ref`）の昇順で選ぶ。3 surfaceすべてが各entryの`collision_group`と`trace_source_ref`を省略せず返し、CLI成功JSONのresolved selectorも同じ値を返す。本文を複製せず、各段階のstatus、stable IDs、path、digestと`total_count`、`returned_count`、`omitted_count`、`truncated`、full ledgerのpath/digestだけを返す。
 
+Lower-level decision-ledger path/read/write helpers are a separate compatibility boundary: they preserve path-safe opaque tracker IDs such as `STR-047` and `US-002` under `^[A-Za-z0-9][A-Za-z0-9._-]*$`, while rejecting traversal, separators, percent, and encoded separators before path composition. This does not widen the public outcome-manager contract.
+
 ## Compatibility and Failure Behavior
 
 - legacy field欠損は`null`/`unknown`として保持し、current authorityが同一delivery identityを証明した場合だけ不足しているimmutable identityを補完する。PR番号・URL・merge SHAはimmutable identityとして相互検証し、URL内のPR番号と明示番号の食い違いもconflictにする。PR/merge状態と`merged_at`はcurrent authorityだけでrefreshし、省略された可変値にlegacy値を混ぜない。
