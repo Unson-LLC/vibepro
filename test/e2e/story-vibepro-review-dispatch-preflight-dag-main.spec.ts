@@ -220,11 +220,11 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:prepare:')), true);
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:join:')), true);
 
-  const dispatchNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:dispatch_batch:'));
+  const dispatchNode = nodeById(gateDag, 'review:dispatch_batch:gate');
   assert.equal(dispatchNode.type, 'agent_review_dispatch_batch_gate');
-  const preflightNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:preflight:'));
+  const preflightNode = nodeById(gateDag, 'review:preflight:gate:gate_evidence');
   assert.equal(preflightNode.type, 'agent_review_dispatch_preflight_gate');
-  const prepareNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:prepare:'));
+  const prepareNode = nodeById(gateDag, 'review:prepare:gate');
   assert.equal(
     gateDag.edges.some((edge: { from: string; to: string }) => edge.from === dispatchNode.id && edge.to === preflightNode.id)
       && gateDag.edges.some((edge: { from: string; to: string }) => edge.from === preflightNode.id && edge.to === prepareNode.id),
@@ -295,7 +295,7 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance covers dispatch pre
   const manualShutdownRepo = await makeStoryRepo();
   await recordGateEvidence(manualShutdownRepo);
   await runCli(['review', 'start', manualShutdownRepo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--agent-system', 'codex', '--agent-id', 'agent-manual-shutdown']);
-  await runCli(['review', 'close', manualShutdownRepo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--agent-id', 'agent-manual-shutdown', '--close-reason', 'manual_shutdown']);
+  await runCli(['review', 'close', manualShutdownRepo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--agent-id', 'agent-manual-shutdown', '--close-reason', 'manual_shutdown', '--close-evidence', 'agent:agent-manual-shutdown:manual-shutdown']);
   const manualShutdown = await preflightFor(manualShutdownRepo);
   assert.equal(manualShutdown.node.preflight_kind, 'lifecycle_recovery');
   assert.equal(manualShutdown.node.status, 'needs_review');

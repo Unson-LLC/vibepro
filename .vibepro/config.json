@@ -411,6 +411,18 @@
         "category": "quality"
       },
       {
+        "story_id": "story-vibepro-atomic-scope-review-contract",
+        "title": "atomic単一PRを現HEADのreview ownershipと検証証跡でfail-closedに裁定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
         "story_id": "story-vibepro-story-run-portfolio-controller",
         "title": "複数Storyを混載しないStory Run Portfolio Controller",
         "ssot": "local",

@@ -486,6 +486,16 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     'artifact_replay',
     '--scenario',
     'scenario_clause_e2e',
+    '--observed',
+    'evidence_lifecycle_regression=covered',
+    '--observed',
+    'workflow_state_regression=covered',
+    '--observed',
+    'flow_replay=covered',
+    '--observed',
+    'artifact_replay=covered',
+    '--observed',
+    'scenario_clause_e2e=covered',
     '--json'
   ]);
   assert.equal(verification.exitCode, 0);
@@ -501,8 +511,8 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(resolved.exitCode, 0);
   const resolvedFailureGate = nodeById(resolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(resolvedFailureGate.candidate_count >= 1, true);
-  assert.equal(resolvedFailureGate.status, 'missing_coverage');
-  assert.deepEqual(resolvedFailureGate.missing_modes, ['parse_failure']);
+  assert.equal(resolvedFailureGate.status, 'passed');
+  assert.deepEqual(resolvedFailureGate.missing_modes, []);
   assert.equal(
     resolvedFailureGate.modes.every((mode) => mode.id === 'parse_failure' || mode.status === 'covered' || mode.status === 'not_required'),
     true

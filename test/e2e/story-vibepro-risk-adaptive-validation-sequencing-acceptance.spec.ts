@@ -100,7 +100,8 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   await execFileAsync('git', ['commit', '-m', 'test: initialize sequence fixture'], { cwd: root });
   const { stdout: head } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
   const headSha = head.trim();
-  const common = [root, '--id', 'story-sequence-e2e', '--head', headSha, '--command', 'node --test', '--test-fingerprint', 'suite-v1', '--json'];
+  const sequenceCommand = 'node --test --test-name-pattern=e2e test/sequence.test.js';
+  const common = [root, '--id', 'story-sequence-e2e', '--head', headSha, '--command', sequenceCommand, '--test-fingerprint', 'suite-v1', '--json'];
   const plan = await runCli(['sequence', 'plan', ...common, '--risk-profile', 'workflow_heavy', '--surface', 'core_workflow_state']);
   assert.equal(plan.exitCode, 0);
   assert.equal(plan.result.evaluation.next_required_action.phase, 'targeted_validation');
@@ -115,7 +116,9 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   const evidenceRef = '.vibepro/pr/story-sequence-e2e/verification-evidence.json';
   const resultArtifact = path.join(root, 'test-results.json');
   await writeFile(resultArtifact, JSON.stringify({ numTotalTests: 1, numFailedTests: 0, success: true }));
-  assert.equal((await runCli(['verify', 'record', root, '--id', 'story-sequence-e2e', '--kind', 'unit', '--status', 'pass', '--command', 'node --test', '--artifact', 'test-results.json', '--target', 'index.js', '--scenario', 'targeted sequence suite passed', '--observed', 'test_fingerprint=suite-v1', '--observed', 'validation_phase=targeted_validation', '--strict-head-binding', '--json'])).exitCode, 0);
+  let verifyError = '';
+  const targetedEvidence = await runCli(['verify', 'record', root, '--id', 'story-sequence-e2e', '--kind', 'unit', '--status', 'pass', '--command', sequenceCommand, '--artifact', 'test-results.json', '--target', 'index.js', '--scenario', 'targeted sequence suite passed', '--observed', 'test_fingerprint=suite-v1', '--observed', 'validation_phase=targeted_validation', '--strict-head-binding', '--json'], { stderr: { write: (chunk) => { verifyError += chunk; } } });
+  assert.equal(targetedEvidence.exitCode, 0, verifyError);
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'targeted_validation', '--evidence', evidenceRef])).exitCode, 0);
 
   const transcript = path.join(root, '.vibepro', 'reviews', 'story-sequence-e2e', 'architecture_spec', 'transcript.md');
@@ -137,7 +140,7 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   assert.equal((await readValidationSequence(root, 'story-sequence-e2e')).phases.preflight_review.status, 'pending');
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'preflight_review', '--status', 'dispositioned', '--finding', 'boundary-1', '--disposition', 'boundary-1:accepted', '--evidence', preflightRef])).exitCode, 0);
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'code_frozen'])).exitCode, 0);
-  assert.equal((await runCli(['verify', 'record', root, '--id', 'story-sequence-e2e', '--kind', 'e2e', '--status', 'pass', '--command', 'node --test', '--artifact', 'test-results.json', '--target', 'index.js', '--scenario', 'post-freeze expensive suite passed', '--observed', 'test_fingerprint=suite-v1', '--observed', 'validation_phase=expensive_verification', '--strict-head-binding', '--json'])).exitCode, 0);
+  assert.equal((await runCli(['verify', 'record', root, '--id', 'story-sequence-e2e', '--kind', 'e2e', '--status', 'pass', '--command', sequenceCommand, '--artifact', 'test-results.json', '--target', 'index.js', '--scenario', 'post-freeze expensive suite passed', '--observed', 'test_fingerprint=suite-v1', '--observed', 'validation_phase=expensive_verification', '--strict-head-binding', '--json'])).exitCode, 0);
   assert.equal((await runCli(['sequence', 'record', ...common, '--phase', 'expensive_verification', '--evidence', evidenceRef])).exitCode, 0);
   const awaitingFinalReview = await runCli(['sequence', 'status', root, '--id', 'story-sequence-e2e', '--json']);
   assert.deepEqual(awaitingFinalReview.result.evaluation.blocking_phases, ['final_review', 'final_review_binding']);

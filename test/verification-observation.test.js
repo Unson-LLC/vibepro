@@ -63,6 +63,85 @@ test('verify record rejects malformed --observed input', async () => {
   assert.notEqual(result.exitCode, 0);
 });
 
+test('verify record rejects shell substitution and unterminated quotes in passing commands', async () => {
+  const root = await setupRepo();
+  for (const command of [
+    'node --test "$(touch /tmp/should-not-run)"',
+    'node --test `touch /tmp/should-not-run`',
+    'node --test "$TEST_TARGET"',
+    'node --test ${TEST_TARGET}',
+    'node --test "test/widgets.test.js'
+  ]) {
+    const result = await runCli([
+      'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+      '--command', command, '--target', 'test/widgets.test.js', '--scenario', 'unit suite passed'
+    ]);
+    assert.notEqual(result.exitCode, 0, command);
+  }
+});
+
+test('unit evidence requires an explicit native test selection', async () => {
+  const root = await setupRepo();
+  const bare = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test', '--target', 'test/widgets.test.js', '--scenario', 'unit suite passed'
+  ]);
+  assert.notEqual(bare.exitCode, 0);
+  for (const observed of ['tests_passed=1', 'expected=1']) {
+    const callerCount = await runCli([
+      'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+      '--command', 'node --test', '--target', 'test/widgets.test.js', '--observed', observed
+    ]);
+    assert.notEqual(callerCount.exitCode, 0, `caller count must not authorize discovery: ${observed}`);
+  }
+  const genericArtifact = path.join(root, 'generic-test-result.json');
+  await writeFile(genericArtifact, JSON.stringify({ status: 'pass', observed: { tests_passed: 1 } }));
+  const genericCount = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test', '--target', 'test/widgets.test.js', '--artifact', 'generic-test-result.json'
+  ]);
+  assert.notEqual(genericCount.exitCode, 0, 'generic caller-authored artifacts must not authorize native discovery');
+  const nativeArtifact = path.join(root, 'native-test-result.json');
+  await writeFile(nativeArtifact, JSON.stringify({ success: true, numFailedTests: 0, numTotalTests: 1 }));
+  const discovered = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test', '--target', 'test/widgets.test.js', '--artifact', 'native-test-result.json'
+  ]);
+  assert.equal(discovered.exitCode, 0, 'recognized test-runner counts may prove native discovery');
+  const scoped = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test test/widgets.test.js', '--target', 'test/widgets.test.js', '--scenario', 'unit suite passed'
+  ]);
+  assert.equal(scoped.exitCode, 0);
+});
+
+test('manual generic artifacts cannot impersonate imported CI transcripts', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'fake-ci.json'), JSON.stringify({
+    status: 'pass', exit_code: 0, observed: { head_sha: 'attacker-controlled' }
+  }));
+  const result = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'integration', '--status', 'pass',
+    '--command', 'CI tests: https://example.invalid/run/1', '--target', 'tests',
+    '--observed', 'head_sha=attacker-controlled', '--artifact', 'fake-ci.json'
+  ]);
+  assert.notEqual(result.exitCode, 0);
+});
+
+test('integration evidence requires an integration-specific executable command', async () => {
+  const root = await setupRepo();
+  const bare = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/widgets.test.js', '--target', 'test/widgets.test.js', '--scenario', 'integration passed'
+  ]);
+  assert.notEqual(bare.exitCode, 0);
+  const scoped = await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/widgets.test.js', '--target', 'test/integration/widgets.test.js', '--scenario', 'integration passed'
+  ]);
+  assert.equal(scoped.exitCode, 0);
+});
+
 test('generic status artifact observed values are merged with CLI priority', async () => {
   const root = await setupRepo();
   const artifact = path.join(root, 'status.json');
@@ -73,7 +152,7 @@ test('generic status artifact observed values are merged with CLI priority', asy
   }));
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'integration', '--status', 'pass',
-    '--command', 'node bin/vibepro.js usage report . --json',
+    '--command', 'node --test test/integration/usage-report.test.js',
     '--target', 'src/usage-report.js',
     '--observed', 'story_count=81',
     '--artifact', 'status.json'
@@ -105,7 +184,7 @@ test('observation_check is missing for a passing claim without any observation',
   const root = await setupRepo();
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'build', '--status', 'pass',
-    '--command', 'node build.js'
+    '--command', 'npm run build'
   ]);
   const evidence = await readJson(evidencePath(root));
   const command = evidence.commands.find((item) => item.kind === 'build');
@@ -117,14 +196,14 @@ test('verify record clears stale observation warnings when the same kind is rere
   const root = await setupRepo();
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'build', '--status', 'pass',
-    '--command', 'node build.js'
+    '--command', 'npm run build'
   ]);
   let evidence = await readJson(evidencePath(root));
   assert.ok(evidence.warnings.some((warning) => warning.id === 'verification_observation_missing'));
 
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'build', '--status', 'pass',
-    '--command', 'node build.js',
+    '--command', 'npm run build',
     '--target', 'src/build.js',
     '--scenario', 'build completes',
     '--observed', 'exit_code=0'
@@ -140,7 +219,7 @@ test('observation_check is partial when only values are present', async () => {
   const root = await setupRepo();
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'typecheck', '--status', 'pass',
-    '--command', 'node --check src/widgets.js',
+    '--command', 'npm run typecheck',
     '--observed', 'exit_code=0'
   ]);
   const evidence = await readJson(evidencePath(root));
@@ -225,7 +304,7 @@ test('observation text contributes to judgment evidence classification', async (
   // bland summary and command, but observation markers describe all workflow evidence kinds
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'e2e', '--status', 'pass',
-    '--command', 'node run-check.js',
+    '--command', 'node --test test/e2e/run-check.spec.js',
     '--summary', 'verification done',
     '--artifact', 'observation-evidence.json',
     '--target', 'src-change.js',

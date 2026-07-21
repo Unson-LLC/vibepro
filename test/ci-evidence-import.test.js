@@ -88,7 +88,8 @@ async function writePhaseEvidence(root, headSha, command) {
   const fingerprint = command === 'node --test' ? 'suite-v1' : 'security-v2';
   const nativeCommand = (kind, phase, extra = {}) => ({
     kind, status: 'pass', command, executed_at: new Date().toISOString(),
-    git_context: { head_sha: headSha }, artifact_check: { status: 'verified' },
+    git_context: { head_sha: headSha }, artifact_check: { status: 'verified', format: 'vitest_jest' },
+    artifact_observed_values: { numTotalTests: '1' },
     observation_check: { status: 'recorded' }, content_binding: { schema_version: '0.1.0', recorded_head_sha: headSha },
     observation: { values: { test_fingerprint: fingerprint, validation_phase: phase, ...extra } }
   });

@@ -54,6 +54,9 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   );
   const fileGroups = renderFileGroups(preparation.file_groups, language);
   const graphSummary = renderGraphSummary(splitPlan.graph_context, language);
+  const scopeEvidence = renderCards(localizedText(language, { ja: 'スコープ判定証跡', en: 'Scope Decision Evidence' }),
+    (preparation.scope.reasons ?? []).map((reason) => ({ title: preparation.scope.status, detail: reason, tone: 'info' })));
+  const lineageEvidence = renderLineageEvidence(preparation.scope?.signals, language);
   const artifacts = renderKeyValueTable([
     ['PR body draft', bodyPath],
     ['Gate DAG HTML', gateDagPath],
@@ -83,6 +86,8 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${scopeEvidence}
+      ${lineageEvidence}
       ${engineeringJudgmentSection}
       ${renderExecutionGatePanel(executionGate, language)}
       ${renderAgentReviewPanel(agentReviews, language, preparation.gate_status?.agent_review_minimal_recovery_plan)}
@@ -149,6 +154,7 @@ export function renderGateDagHtml(gateDag, options = {}) {
         meta: `${node.id} / ${node.status}`,
         tone: toneForStatus(node.status)
       })))}
+      ${renderLineageEvidence([{ accepted_current_story_lineage: gateDag.accepted_current_story_lineage }], options.language ?? 'ja')}
       <section>
         <h2>Visual DAG</h2>
         ${renderGateDagSvg(gateDag)}
@@ -188,6 +194,7 @@ export function renderSplitPlanHtml(splitPlan, options = {}) {
         ${metricCard('Cumulative Gates', splitPlan.stacked_gate_plan.summary.cumulative_gate_count, 'lanes')}
         ${metricCard('Final Validation', splitPlan.stacked_gate_plan.final_validation.required ? 'required' : 'not required', splitPlan.stacked_gate_plan.final_validation.trigger)}
       </section>
+      ${renderLineageEvidence([{ accepted_current_story_lineage: splitPlan.accepted_current_story_lineage }], options.language ?? 'ja')}
       <section>
         <h2>PR Lanes</h2>
         <div class="lane-board">${laneBoard}</div>
@@ -212,6 +219,23 @@ export function renderSplitPlanHtml(splitPlan, options = {}) {
       </section>
     `
   });
+}
+
+function renderLineageEvidence(signals, language = 'ja') {
+  const lineage = (signals ?? []).flatMap((signal) => Array.isArray(signal?.accepted_current_story_lineage)
+    ? signal.accepted_current_story_lineage
+    : []);
+  if (lineage.length === 0) return '';
+  const rows = lineage.flatMap((item, index) => [
+    [`lineage[${index}].reference`, item.reference],
+    [`lineage[${index}].commit_sha`, item.commit_sha],
+    [`lineage[${index}].parent_count`, item.parent_count],
+    [`lineage[${index}].source_ref`, item.source_ref],
+    [`lineage[${index}].target_ref`, item.target_ref],
+    [`lineage[${index}].remote_tracking_sha`, item.remote_tracking_sha],
+    [`lineage[${index}].basis`, item.basis]
+  ]);
+  return `<section><h2>${escapeHtml(localizedText(language, { ja: '受理したStory系譜', en: 'Accepted Story Lineage' }))}</h2>${renderKeyValueTable(rows)}</section>`;
 }
 
 export function renderPrCreateHtml(execution, options = {}) {
@@ -1115,6 +1139,7 @@ function renderNodeGrid(nodes) {
       <p class="muted">${escapeHtml(node.id)} / ${escapeHtml(node.type)}</p>
       <p><span class="${statusClass(node.status ?? 'unknown')}">${escapeHtml(node.status ?? 'unknown')}</span></p>
       <p>${escapeHtml(node.reason ?? node.command ?? node.artifact ?? '-')}</p>
+      ${Array.isArray(node.reasons) && node.reasons.length > 0 ? renderList(node.reasons) : ''}
     </article>
   `).join('')}</div>`;
 }

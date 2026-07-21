@@ -546,10 +546,10 @@ function resolveEvidenceRequirements({
   const stale = [];
   const matched = [];
   for (const evidence of requiredEvidence) {
-    const currentMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, {
+    const currentMatch = findPreferredVerificationCommand(commands, evidence, contractClauseIds, {
       requireCurrent: true,
       allowGenericCurrentEvidence
-    }));
+    });
     if (currentMatch) {
       matched.push({
         evidence,
@@ -559,10 +559,10 @@ function resolveEvidenceRequirements({
       });
       continue;
     }
-    const staleMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, {
+    const staleMatch = findPreferredVerificationCommand(commands, evidence, contractClauseIds, {
       requireCurrent: false,
       allowGenericCurrentEvidence
-    }));
+    });
     if (staleMatch) {
       stale.push(evidence);
     } else {
@@ -577,6 +577,20 @@ function resolveEvidenceRequirements({
   };
 }
 
+function findPreferredVerificationCommand(commands, evidence, contractClauseIds, options) {
+  const matches = commands.filter((command) => verificationCommandMatches(
+    command,
+    evidence,
+    contractClauseIds,
+    options
+  ));
+  if (matches.length < 2 || contractClauseIds.length === 0) return matches[0];
+  return matches.find((command) => hasContractEvidenceBinding(
+    verificationCommandHaystack(command),
+    contractClauseIds
+  )) ?? matches[0];
+}
+
 function verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent, allowGenericCurrentEvidence = false }) {
   if (!PASS_STATUSES.has(String(command?.status ?? '').toLowerCase())) return false;
   const bindingStatus = command?.binding?.status ?? command?.git_context?.binding_status ?? null;
@@ -586,7 +600,17 @@ function verificationCommandMatches(command, evidence, contractClauseIds, { requ
   if (requireCurrent && !current) return false;
   const normalizedEvidence = normalizeEvidenceToken(evidence);
   if (normalizedEvidence === 'current_head_verification') return true;
-  const haystack = [
+  const haystack = verificationCommandHaystack(command);
+  const tokens = normalizedEvidence.split(/[^a-z0-9]+/).filter((token) => token.length >= 3);
+  if (tokens.length === 0 || !tokens.every((token) => haystack.includes(token))) return false;
+  if (isGenericEvidenceRequirement(tokens)) {
+    return allowGenericCurrentEvidence && requireCurrent ? true : hasContractEvidenceBinding(haystack, contractClauseIds);
+  }
+  return true;
+}
+
+function verificationCommandHaystack(command) {
+  return [
     command?.kind,
     command?.command,
     command?.summary,
@@ -596,12 +620,6 @@ function verificationCommandMatches(command, evidence, contractClauseIds, { requ
     ...Object.entries(command?.observation?.values ?? {}).flatMap(([key, value]) => [key, value]),
     ...Object.entries(command?.observation?.observed ?? {}).flatMap(([key, value]) => [key, value])
   ].filter(Boolean).join('\n').toLowerCase();
-  const tokens = normalizedEvidence.split(/[^a-z0-9]+/).filter((token) => token.length >= 3);
-  if (tokens.length === 0 || !tokens.every((token) => haystack.includes(token))) return false;
-  if (isGenericEvidenceRequirement(tokens)) {
-    return allowGenericCurrentEvidence && requireCurrent ? true : hasContractEvidenceBinding(haystack, contractClauseIds);
-  }
-  return true;
 }
 
 function isCurrentGitContext(gitContext) {

@@ -571,6 +571,51 @@ test('root registry resolves VibePro core responsibility authorities with contra
   }
 });
 
+test('resolver prefers contract-bound evidence over an earlier unqualified scenario match', async () => {
+  const qualifiedCommand = 'node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js';
+  const result = await resolveResponsibilityAuthority(REPO_ROOT, {
+    git: { changed_files: ['src/session-efficiency-audit.js'] },
+    fileGroups: { source: { files: ['src/session-efficiency-audit.js'] } },
+    changeClassification: { risk_surfaces: ['verification_evidence'] },
+    storySource: {
+      content: 'vibepro.runtime_cost.telemetry_ingestion VIBE-CORE-COST-001',
+      acceptance_criteria: []
+    },
+    verificationEvidence: {
+      commands: [
+        {
+          kind: 'e2e',
+          status: 'pass',
+          command: 'node --test test/vibepro-cli.test.js',
+          summary: 'Atomic scope replay',
+          binding: { status: 'current' },
+          observation: { scenarios: ['integration_runtime_path', 'negative_path'] }
+        },
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: qualifiedCommand,
+          summary: '49 contract responsibility tests passed',
+          binding: { status: 'current' },
+          observation: {
+            targets: ['src/session-efficiency-audit.js', 'VIBE-CORE-COST-001'],
+            scenarios: ['unit_regression', 'integration_runtime_path', 'negative_path']
+          }
+        }
+      ]
+    }
+  });
+
+  const matched = result.matched_responsibilities.find((item) => (
+    item.id === 'vibepro.runtime_cost.telemetry_ingestion'
+  ));
+  assert.ok(matched);
+  assert.equal(matched.evidence_status, 'passed');
+  for (const evidence of ['integration_runtime_path', 'negative_path']) {
+    assert.equal(matched.matched_evidence.find((item) => item.evidence === evidence)?.command, qualifiedCommand);
+  }
+});
+
 test('resolver does not fan out a shared risk surface across path-anchored responsibilities', async () => {
   const repo = await makeFixtureRepo();
   await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({

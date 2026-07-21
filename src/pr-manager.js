@@ -273,6 +273,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     dirtyFiles: reviewDirtyFiles,
     dirtyFilesAffectScope: reviewGit.includes_dirty_in_changed_files,
     commits: reviewGit.commits,
+    storyId: story.story_id,
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
@@ -314,6 +315,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     prContext,
     suggestedBranch
   }));
+  prContext.gate_dag.accepted_current_story_lineage = collectAcceptedCurrentStoryLineage(scope);
+  reconcileAtomicScopeGateDag(prContext.gate_dag, splitPlan.atomic_scope);
   let gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const authorizationScoring = buildAuthorizationScoring({
     fileGroups,
@@ -438,9 +441,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       ...prContext.judgment_dag_adjudication
     };
   }
-  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
-    ? 'needs_verification'
-    : 'ready_for_review';
+  reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const createdAt = new Date().toISOString();
@@ -506,9 +507,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   prContext.evidence_reuse = evidenceReuseSummary;
   prContext.gate_dag.nodes.push(buildEvidenceReuseGate(evidenceReuse));
   prContext.gate_dag.summary.evidence_reuse = evidenceReuseSummary;
-  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
-    ? 'needs_verification'
-    : 'ready_for_review';
+  reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const seniorGapJudgment = buildSeniorGapJudgment({
@@ -534,9 +533,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     followup_count: seniorGapJudgment.followups.length
   };
   decisionIndex.senior_gap_judgment = prContext.gate_dag.summary.senior_gap_judgment;
-  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
-    ? 'needs_verification'
-    : 'ready_for_review';
+  reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const gateOutcomeLedger = workspace.initialized
@@ -1037,6 +1034,7 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
     created_at: preparation.created_at,
     recommended_decision: recommendHumanDecision(preparation),
     recommendation_reason: buildHumanReviewReason(preparation),
+    accepted_current_story_lineage: collectAcceptedCurrentStoryLineage(preparation.scope),
     source_artifacts: {
       review_cockpit: reviewCockpitPath,
       architecture_review: architectureReviewPath,
@@ -1110,9 +1108,15 @@ function buildHumanReviewReason(preparation) {
   }
   if (splitPlan) {
     reasons.push(`Split Plan is ${splitPlan.status} with strategy ${splitPlan.recommended_strategy}.`);
+    if (splitPlan.atomic_scope?.status === 'accepted') {
+      reasons.push(`Automatic split advice is retained for review, but the typed atomic scope declaration accepts one cumulative PR: ${splitPlan.atomic_scope.reason}`);
+    }
   }
   if (preparation.scope?.status && preparation.scope?.recommended_strategy) {
     reasons.push(`Scope is ${preparation.scope.status}; recommended strategy is ${preparation.scope.recommended_strategy}.`);
+    if (preparation.scope.reasons?.length > 0) {
+      reasons.push(`Scope evidence: ${preparation.scope.reasons.join('; ')}`);
+    }
   }
   if (preparation.pr_context?.visual_qa) {
     const visualQa = preparation.pr_context.visual_qa;
@@ -2240,8 +2244,8 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
         stage,
         roles,
         prepare_command: gate.command,
-        start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
-        close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
+        start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
+        close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
         record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
         artifact: gate.artifact ?? null,
         reason: gate.reason ?? 'required Agent Review prepare is missing'
@@ -2255,8 +2259,8 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
       stage,
       roles,
       prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
-      start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
-      close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
+      start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
+      close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
       record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
       artifact: `.vibepro/reviews/${storyId}/${stage}/parallel-dispatch.md`,
       reason: 'required Agent Review role is missing or stale'
@@ -2264,7 +2268,11 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
   });
 }
 
-function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null } = {}) {
+function buildReviewStartCommandTemplate(storyId, stage, roleArg, { identity = 'agent' } = {}) {
+  return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)}`;
+}
+
+function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent' } = {}) {
   const command = [
     'vibepro review record .',
     '--id',
@@ -2273,17 +2281,22 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBind
     shellQuote(stage),
     '--role',
     shellQuote(roleArg),
-    '--status <pass|needs_changes|block>',
+    `--status ${shellQuote('<pass|needs_changes|block>')}`,
     '--summary "<summary>"',
     '--inspection-summary "<inspection-summary>"',
-    '--inspection-evidence <inspection-evidence>',
-    '--inspection-input <inspection-input>',
+    `--inspection-evidence ${shellQuote('<inspection-evidence>')}`,
+    `--inspection-input ${shellQuote('<inspection-input>')}`,
     '--judgment-delta "<initial judgment -> final judgment because evidence>"',
     '--agent-system codex',
     '--execution-mode parallel_subagent',
-    '--agent-id <agent-id>',
-    '--agent-thread-id <agent-thread-id>',
-    '--agent-closed'
+    `--agent-id ${shellQuote(`<${identity}-id>`)}`,
+    `--agent-thread-id ${shellQuote(`<${identity}-thread-id>`)}`,
+    `--agent-session-id ${shellQuote(`<${identity}-session-id>`)}`,
+    `--implementation-session-id ${shellQuote('<implementation-session-id>')}`,
+    '--reviewer-identity separate_session',
+    `--agent-transcript ${shellQuote(`<${identity}-transcript>`)}`,
+    '--agent-closed',
+    `--agent-close-evidence ${shellQuote(`<${identity}-close-evidence>`)}`
   ].join(' ');
   if (contentBinding?.mode !== 'strict_head') return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
@@ -2425,6 +2438,7 @@ ${firstLook}
 | Commits | ${preparation.git.commits.length} |
 | Scope | ${preparation.scope.status} (PR size only; not completion approval) |
 | Recommended strategy | ${preparation.scope.recommended_strategy} |
+| Scope reasons | ${(preparation.scope.reasons ?? []).join('; ') || '-'} |
 | Task | ${preparation.task_context?.task?.id ?? '-'} |
 | Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
 
@@ -3203,22 +3217,34 @@ async function getDiffLineStats(repoRoot, baseRef, headRef, includeDirty) {
 }
 
 async function getCommits(repoRoot, baseRef, headRef) {
-  const output = await gitOptional(repoRoot, ['log', '--format=%H%x09%s', `${baseRef}..${headRef}`]);
-  return output
+  const output = await gitOptional(repoRoot, ['log', '--format=%H%x09%P%x09%s', `${baseRef}..${headRef}`]);
+  const commits = output
     .split('\n')
     .map((line) => line.trimEnd())
     .filter((line) => line.length > 0)
     .map((line) => {
-      const separatorIndex = line.indexOf('\t');
-      const sha = separatorIndex === -1 ? line.trim() : line.slice(0, separatorIndex).trim();
-      const message = separatorIndex === -1 ? '' : line.slice(separatorIndex + 1);
+      const [sha = '', parents = '', ...messageParts] = line.split('\t');
+      const message = messageParts.join('\t');
       return {
-        sha,
+        sha: sha.trim(),
         short_sha: sha.slice(0, 12),
+        parent_shas: parents.trim().split(/\s+/).filter(Boolean),
         message,
         message_empty: message.trim().length === 0
       };
     });
+  return Promise.all(commits.map(async (commit) => {
+    const mergeTitle = String(commit.message).match(/^Merge remote-tracking branch ['"]([^'"]+)['"] into ([^\s]+)$/i);
+    if (!mergeTitle) return commit;
+    const remoteTrackingRef = mergeTitle[1];
+    const remoteTrackingSha = (await gitOptional(repoRoot, ['rev-parse', '--verify', `refs/remotes/${remoteTrackingRef}`])).trim();
+    return {
+      ...commit,
+      merge_source_ref: remoteTrackingRef,
+      merge_target_ref: mergeTitle[2],
+      remote_tracking_sha: remoteTrackingSha || null
+    };
+  }));
 }
 
 function buildCommitMessageHealth(commits, { baseRef, headRef }) {
@@ -3361,6 +3387,7 @@ function groupChangedFiles(files) {
     else if (isContractMetadataPath(target)) groups.contract_metadata.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('Tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target) || /(Tests?|Spec)\.swift$/.test(target)) groups.tests.push(file);
     else if (isSourcePath(target)) groups.source.push(file);
+    else if (target === '.vibepro/config.json') groups.repo_control.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
     else if (isRepoControlPath(target)) groups.repo_control.push(file);
     else groups.other.push(file);
@@ -3489,24 +3516,77 @@ function isContractMetadataPath(filePath) {
     || filePath.startsWith('docs/management/contracts/');
 }
 
-function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, maxReviewableFiles }) {
+function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, storyId = null, maxReviewableFiles }) {
   const reasons = [];
+  const signals = [];
   if (changedFiles.length > maxReviewableFiles) {
     reasons.push(`差分が ${changedFiles.length} files あり、レビュー可能な目安 ${maxReviewableFiles} files を超えている`);
+    signals.push({ id: 'reviewable_file_limit_exceeded', unsafe_for_atomic_override: false });
   }
   if (hasMixedRepoControlChanges(fileGroups)) {
     reasons.push('repo制御ファイルやagent設定が差分に含まれている');
+    const repoControlFiles = fileGroups.repo_control.files ?? [];
+    const hasIndependentRepoControlSurface = repoControlFiles.some((file) => file !== '.vibepro/config.json');
+    signals.push({
+      id: 'mixed_repo_control_surface',
+      unsafe_for_atomic_override: hasIndependentRepoControlSurface,
+      repo_control_files: repoControlFiles,
+      reason: hasIndependentRepoControlSurface
+        ? 'repository execution or agent-control changes remain independently releasable and cannot be absorbed by an atomic Story declaration'
+        : '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review'
+    });
   }
   const nonWorkspaceDirty = dirtyFiles.filter((file) => !file.path.startsWith('.vibepro/'));
   if (dirtyFilesAffectScope && nonWorkspaceDirty.length > 0) {
     reasons.push(`未コミット差分が ${nonWorkspaceDirty.length} files 残っている`);
+    signals.push({ id: 'dirty_review_surface', unsafe_for_atomic_override: true });
   }
   if (commits.length > 1) {
-    reasons.push(`baseからのcommitが ${commits.length} 件あり、Story外の変更混入を確認する必要がある`);
+    const currentStoryId = String(storyId ?? '').trim().toLowerCase();
+    const referencedWorkItems = [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)))];
+    const acceptedVersionedLineage = currentStoryId
+      ? commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)
+        .filter((reference) => reference !== currentStoryId && isCurrentStoryLineage(reference, currentStoryId, commit))
+        .map((reference) => ({
+          reference,
+          commit_sha: commit.sha,
+          parent_count: commit.parent_shas.length,
+          source_ref: commit.merge_source_ref,
+          target_ref: commit.merge_target_ref,
+          remote_tracking_sha: commit.remote_tracking_sha,
+          basis: 'merge_topology_canonical_ref_and_title'
+        })))
+      : [];
+    const foreignWorkItems = currentStoryId
+      ? [...new Set(commits.flatMap((commit) => extractCommitWorkItemRefs(commit.message)
+        .filter((reference) => !isCurrentStoryLineage(reference, currentStoryId, commit))))]
+      : referencedWorkItems;
+    if (foreignWorkItems.length > 0) {
+      reasons.push(`baseからのcommitが ${commits.length} 件あり、別work item ${foreignWorkItems.join(', ')} のlineageが含まれている`);
+      signals.push({
+        id: 'multiple_commits_foreign_story_lineage',
+        unsafe_for_atomic_override: true,
+        referenced_work_items: referencedWorkItems,
+        foreign_work_items: foreignWorkItems
+      });
+    } else {
+      const acceptedLineageNote = acceptedVersionedLineage.length > 0
+        ? `（current Storyのversioned mergeとして ${acceptedVersionedLineage.map((item) => `${item.reference}@${item.commit_sha.slice(0, 12)} parents=${item.parent_count}`).join(', ')} を受理）`
+        : '';
+      reasons.push(`baseからのcommitが ${commits.length} 件あるため履歴確認が必要だが、別Story lineageは検出されていない${acceptedLineageNote}`);
+      signals.push({
+        id: 'multiple_commits_scope_contamination_risk',
+        unsafe_for_atomic_override: false,
+        referenced_work_items: referencedWorkItems,
+        foreign_work_items: [],
+        ...(acceptedVersionedLineage.length > 0 ? { accepted_current_story_lineage: acceptedVersionedLineage } : {})
+      });
+    }
   }
   const emptyMessageCommits = commits.filter((commit) => commit.message_empty);
   if (emptyMessageCommits.length > 0) {
     reasons.push(`commit messageが空のcommitが ${emptyMessageCommits.length} 件あり、PR履歴として意味を確認できない`);
+    signals.push({ id: 'empty_commit_message', unsafe_for_atomic_override: true });
   }
 
   const needsCleanBranch = reasons.length > 0;
@@ -3514,9 +3594,28 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
     status: needsCleanBranch ? 'needs_clean_branch' : 'reviewable',
     recommended_strategy: needsCleanBranch ? 'clean_branch_or_split_pr' : 'current_branch_pr',
     reasons,
+    signals,
     reviewable_file_limit: maxReviewableFiles,
     changed_file_count: changedFiles.length
   };
+}
+
+function isCurrentStoryLineage(reference, currentStoryId, commit) {
+  if (reference === currentStoryId) return true;
+  if (!new RegExp(`^${escapeRegExp(currentStoryId)}-v\\d+$`).test(reference)) return false;
+  if ((commit?.parent_shas?.length ?? 0) < 2) return false;
+  const expectedSource = `origin/codex/${reference}`;
+  const expectedTarget = `codex/${reference}`;
+  if (commit?.merge_source_ref !== expectedSource || commit?.merge_target_ref !== expectedTarget) return false;
+  return Boolean(commit?.remote_tracking_sha && commit.parent_shas.includes(commit.remote_tracking_sha));
+}
+
+function extractCommitWorkItemRefs(message) {
+  const text = String(message ?? '').toLowerCase();
+  return [...new Set([
+    ...(text.match(/\bstory-[a-z0-9][a-z0-9-]*/g) ?? []),
+    ...(text.match(/\b(?:str|bfd|bug|inc)-\d+\b/g) ?? [])
+  ])];
 }
 
 function hasMixedRepoControlChanges(fileGroups) {
@@ -3729,6 +3828,8 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const warnings = collectReleaseDecisionWarningGates(prContext.gate_dag);
   const gateNote = buildHumanGateNote(unresolved, warnings);
   const scopeNote = buildScopeDecisionNote(scope, splitPlan);
+  const acceptedLineage = collectAcceptedCurrentStoryLineage(scope);
+  const splitDigest = buildHumanSplitDigest(splitPlan);
   const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
   const evidenceDir = `.vibepro/pr/${story.story_id}`;
   const gateStatus = prContext.gate_dag?.overall_status ?? '-';
@@ -3812,6 +3913,8 @@ ${userAction}
 ## レビュー観点
 - Gate: ${gateNote}
 - Scope: ${scopeNote}
+- Scope lineage evidence: ${acceptedLineage.length > 0 ? `\`${JSON.stringify(acceptedLineage)}\`` : '-'}
+- 分割判断: ${splitDigest}
 - 管理worktree: ${managedWorktreeStatus}
 ${reviewFocus}${riskLines}
 
@@ -4449,10 +4552,29 @@ function buildHumanEvidenceDigest(gateDag) {
 
 function buildHumanSplitDigest(splitPlan) {
   if (!splitPlan) return '分割計画なし';
-  if (splitPlan.status === 'split_recommended') {
-    return `分割案は監査ログに残す。${splitPlan.recommended_strategy ?? 'strategy未設定'}`;
+  const atomicScope = splitPlan.atomic_scope;
+  const automatic = splitPlan.automatic_recommendation;
+  const laneIds = (splitPlan.lanes ?? []).map((lane) => lane.id).filter(Boolean);
+  const laneDigest = laneIds.length > 0 ? laneIds.join(', ') : 'laneなし';
+  const automaticDigest = automatic
+    ? `${automatic.status} / ${automatic.recommended_strategy ?? 'strategy未設定'}`
+    : '未評価';
+  if (atomicScope?.status === 'accepted') {
+    return `atomic accepted: ${atomicScope.reason ?? 'reason未設定'} / 自動勧告: ${automaticDigest} / lanes: ${laneDigest} / 採用: ${splitPlan.recommended_strategy ?? 'strategy未設定'}`;
   }
-  return `${splitPlan.status}${splitPlan.recommended_strategy ? ` / ${splitPlan.recommended_strategy}` : ''}`;
+  if (atomicScope?.status === 'rejected') {
+    const rejection = (atomicScope.rejection_reasons ?? []).join('; ') || 'rejection reason未設定';
+    const ownerRepair = (atomicScope.next_actions ?? [])
+      .find((action) => action.type === 'record_current_head_review_owners');
+    const repairDigest = ownerRepair
+      ? ` / owner repair roles: ${(ownerRepair.roles_requiring_surface_coverage ?? []).join(', ') || '未特定'} / uncovered paths: ${(ownerRepair.uncovered_paths ?? []).join(', ') || 'なし'} / commands: ${(ownerRepair.prepare_commands ?? [ownerRepair.command]).filter(Boolean).join(' ; ')} / follow-up: ${ownerRepair.follow_up_command ?? ownerRepair.follow_up ?? '未設定'}`
+      : '';
+    return `atomic rejected: ${rejection}${repairDigest} / 自動勧告: ${automaticDigest} / lanes: ${laneDigest} / 採用: ${splitPlan.recommended_strategy ?? 'strategy未設定'}`;
+  }
+  if (splitPlan.status === 'split_recommended') {
+    return `分割推奨 / 自動勧告: ${automaticDigest} / lanes: ${laneDigest} / 採用: ${splitPlan.recommended_strategy ?? 'strategy未設定'}`;
+  }
+  return `${splitPlan.status}${splitPlan.recommended_strategy ? ` / ${splitPlan.recommended_strategy}` : ''} / 自動勧告: ${automaticDigest} / lanes: ${laneDigest}`;
 }
 
 function formatPrStoryLabel(story, source = {}) {
@@ -4927,25 +5049,282 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
     suggestedBranch,
     graphContext
   });
-  const splitRequired = scope.status !== 'reviewable' || lanes.some((lane) => lane.recommendation === 'separate_pr');
+  const automaticSplitRequired = scope.status !== 'reviewable' || lanes.some((lane) => lane.recommendation === 'separate_pr');
+  const atomicScope = evaluateAtomicScopeDeclaration({
+    storySource: prContext.story_source,
+    scope,
+    lanes,
+    automaticSplitRequired,
+    agentReviews: prContext.agent_reviews
+  });
+  const splitRequired = automaticSplitRequired && atomicScope.status !== 'accepted';
   const mergeOrder = lanes
     .slice()
     .sort((a, b) => a.order - b.order)
     .map((lane) => lane.id);
-  const stackedGatePlan = buildStackedGatePlan({ lanes, mergeOrder, prContext });
+  const stackedGatePlan = buildStackedGatePlan({ lanes, mergeOrder, prContext, atomicScope });
   return {
     schema_version: '0.1.0',
     model: 'story-pr-split-plan-v1',
     story_id: story.story_id,
     status: splitRequired ? 'split_recommended' : 'single_pr_ok',
-    recommended_strategy: splitRequired ? 'split_by_lane_then_prepare' : 'keep_current_pr',
-    rationale: buildSplitRationale({ scope, lanes, graphContext }),
+    recommended_strategy: splitRequired
+      ? 'split_by_lane_then_prepare'
+      : (atomicScope.status === 'accepted' ? 'keep_current_pr_atomic_scope' : 'keep_current_pr'),
+    automatic_recommendation: {
+      status: automaticSplitRequired ? 'split_recommended' : 'single_pr_ok',
+      recommended_strategy: automaticSplitRequired ? 'split_by_lane_then_prepare' : 'keep_current_pr'
+    },
+    accepted_current_story_lineage: collectAcceptedCurrentStoryLineage(scope),
+    atomic_scope: atomicScope,
+    rationale: buildSplitRationale({ scope, lanes, graphContext, atomicScope }),
     graph_context: graphContext,
     lanes,
     merge_order: mergeOrder,
     stacked_gate_plan: stackedGatePlan,
     next_actions: buildSplitNextActions({ lanes, splitRequired })
   };
+}
+
+function collectAcceptedCurrentStoryLineage(scope) {
+  return (scope?.signals ?? [])
+    .flatMap((signal) => Array.isArray(signal.accepted_current_story_lineage)
+      ? signal.accepted_current_story_lineage
+      : [])
+    .map((item) => ({
+      reference: item.reference,
+      commit_sha: item.commit_sha,
+      parent_count: item.parent_count,
+      source_ref: item.source_ref,
+      target_ref: item.target_ref,
+      remote_tracking_sha: item.remote_tracking_sha,
+      basis: item.basis
+    }));
+}
+
+function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSplitRequired, agentReviews = null }) {
+  const strategy = storySource?.pr_scope_strategy ?? null;
+  const reason = storySource?.pr_scope_reason ?? null;
+  const reviewFacets = storySource?.pr_scope_review_facets ?? [];
+  const dependencyBoundaryDeclarations = storySource?.pr_scope_dependency_boundaries ?? [];
+  const laneIds = lanes.map((lane) => lane.id);
+  if (strategy !== 'atomic_single_pr') {
+    return {
+      status: 'not_requested',
+      strategy,
+      reason,
+      review_facets: reviewFacets,
+      dependency_boundaries: [],
+      missing_review_facets: [],
+      missing_dependency_facets: [],
+      invalid_dependency_boundaries: [],
+      unsafe_scope_signals: [],
+      unsafe_scope_reasons: [],
+      source_ref: storySource?.path ?? null
+    };
+  }
+
+  const missingReviewFacets = laneIds.filter((laneId) => !reviewFacets.includes(laneId));
+  const dependencyBoundaryResult = validateAtomicScopeDependencyBoundaries(dependencyBoundaryDeclarations, laneIds);
+  const missingReasonFacets = dependencyBoundaryResult.missing_facets;
+  const unsafeScopeSignals = (scope.signals ?? []).filter((signal) => signal.unsafe_for_atomic_override === true);
+  const unsafeSignalIds = new Set(unsafeScopeSignals.map((signal) => signal.id));
+  const unsafeScopeReasons = (scope.reasons ?? []).filter((_, index) => {
+    const signal = scope.signals?.[index];
+    return signal && unsafeSignalIds.has(signal.id);
+  });
+  const reviewOwnerMap = buildAgentReviewOwnerMapEvidence(agentReviews, lanes);
+  const reviewOwnerMapVerified = reviewOwnerMap.verified;
+  const rejectionReasons = [];
+  if (!reason || reason.trim().length < 80) rejectionReasons.push('pr_scope_reason must explain the atomic release boundary in at least 80 characters');
+  if (dependencyBoundaryDeclarations.length === 0 && laneIds.length > 1) rejectionReasons.push('pr_scope_dependency_boundaries must declare typed lane dependencies');
+  if (dependencyBoundaryResult.invalid.length > 0) rejectionReasons.push(`invalid typed dependency boundaries: ${dependencyBoundaryResult.invalid.join(', ')}`);
+  if (missingReasonFacets.length > 0) rejectionReasons.push(`typed dependency boundaries must connect every generated facet: ${missingReasonFacets.join(', ')}`);
+  if (reviewFacets.length === 0) rejectionReasons.push('pr_scope_review_facets must enumerate every generated lane');
+  if (missingReviewFacets.length > 0) rejectionReasons.push(`missing generated review facets: ${missingReviewFacets.join(', ')}`);
+  if (unsafeScopeSignals.length > 0) rejectionReasons.push('unsafe scope signals cannot be overridden by Story metadata');
+  if (!reviewOwnerMapVerified) {
+    rejectionReasons.push('atomic scope requires a current-head reviewer owner map with every configured role passing');
+  }
+  const nextActions = buildAtomicScopeNextActions({
+    storyId: storySource?.story_id ?? null,
+    rejectionReasons,
+    reviewOwnerMap,
+    unsafeScopeSignals
+  });
+
+  return {
+    status: rejectionReasons.length === 0 ? 'accepted' : 'rejected',
+    strategy,
+    reason,
+    review_facets: reviewFacets,
+    dependency_boundaries: dependencyBoundaryResult.boundaries,
+    generated_lane_ids: laneIds,
+    missing_review_facets: missingReviewFacets,
+    missing_reason_facets: missingReasonFacets,
+    missing_dependency_facets: dependencyBoundaryResult.missing_facets,
+    invalid_dependency_boundaries: dependencyBoundaryResult.invalid,
+    unsafe_scope_signals: unsafeScopeSignals,
+    unsafe_scope_reasons: unsafeScopeReasons,
+    review_owner_map_verified: reviewOwnerMapVerified,
+    next_actions: nextActions,
+    review_owner_map: reviewOwnerMap.facets,
+    unowned_review_facets: reviewOwnerMap.unowned_facets,
+    automatic_split_required: automaticSplitRequired,
+    rejection_reasons: rejectionReasons,
+    source_ref: storySource?.path ?? null
+  };
+}
+
+function buildAtomicScopeNextActions({ storyId, rejectionReasons = [], reviewOwnerMap, unsafeScopeSignals = [] }) {
+  const quotedStoryId = shellQuote(storyId ?? '<story-id>');
+  if (rejectionReasons.length === 0) {
+    return [{ type: 'continue_atomic_pr', command: `vibepro pr prepare . --story-id ${quotedStoryId}` }];
+  }
+  const actions = [];
+  if (rejectionReasons.some((reason) => reason.includes('reviewer owner map'))) {
+    const missing = reviewOwnerMap?.missing_required_role_keys ?? [];
+    const required = reviewOwnerMap?.required_role_keys ?? [];
+    const rolesRequiringSurfaceCoverage = missing.length > 0 ? missing : required;
+    const unownedReviewFacets = reviewOwnerMap?.facets
+      ?.filter((facet) => !facet.owned)
+      .map((facet) => facet.facet) ?? [];
+    const uncoveredPaths = [...new Set(
+      reviewOwnerMap?.facets?.flatMap((facet) => facet.uncovered_paths ?? []) ?? []
+    )];
+    const prepareCommands = rolesRequiringSurfaceCoverage.map((roleKey) => {
+      const separator = roleKey.indexOf(':');
+      const stage = separator >= 0 ? roleKey.slice(0, separator) : roleKey;
+      const role = separator >= 0 ? roleKey.slice(separator + 1) : roleKey;
+      return `vibepro review prepare . --id ${quotedStoryId} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
+    });
+    actions.push({
+      type: 'record_current_head_review_owners',
+      missing_required_roles: missing,
+      roles_requiring_surface_coverage: rolesRequiringSurfaceCoverage,
+      unowned_review_facets: unownedReviewFacets,
+      uncovered_paths: uncoveredPaths,
+      prepare_commands: prepareCommands,
+      follow_up_command: `vibepro review status . --id ${quotedStoryId}`,
+      command: prepareCommands[0] ?? `vibepro review status . --id ${quotedStoryId}`,
+      follow_up: `vibepro review status . --id ${quotedStoryId}`
+    });
+  }
+  if (rejectionReasons.some((reason) => /pr_scope_|typed dependency|generated review facets/.test(reason))) {
+    actions.push({
+      type: 'complete_atomic_scope_declaration',
+      target: 'Story frontmatter',
+      required_fields: ['pr_scope_reason', 'pr_scope_review_facets', 'pr_scope_dependency_boundaries']
+    });
+  }
+  if (unsafeScopeSignals.length > 0) {
+    actions.push({
+      type: 'split_unsafe_scope_surface',
+      unsafe_signal_ids: unsafeScopeSignals.map((signal) => signal.id),
+      reason: 'Unsafe repo-control or foreign-lineage surfaces cannot be repaired by atomic metadata.'
+    });
+  }
+  actions.push({
+    type: 'rerun_atomic_scope_decision',
+    command: `vibepro pr prepare . --story-id ${quotedStoryId}`
+  });
+  return actions;
+}
+
+function validateAtomicScopeDependencyBoundaries(declarations, laneIds) {
+  const laneSet = new Set(laneIds);
+  const boundaries = [];
+  const invalid = [];
+  for (const declaration of declarations) {
+    const match = String(declaration).trim().match(/^([A-Za-z0-9_-]+)\s*->\s*([A-Za-z0-9_-]+)$/);
+    if (!match || !laneSet.has(match?.[1]) || !laneSet.has(match?.[2]) || match?.[1] === match?.[2]) {
+      invalid.push(String(declaration));
+      continue;
+    }
+    boundaries.push({ from: match[1], to: match[2] });
+  }
+  if (laneIds.length <= 1) return { boundaries, invalid, missing_facets: [] };
+  const adjacency = new Map(laneIds.map((laneId) => [laneId, new Set()]));
+  for (const boundary of boundaries) {
+    adjacency.get(boundary.from).add(boundary.to);
+    adjacency.get(boundary.to).add(boundary.from);
+  }
+  const visited = new Set();
+  const pending = boundaries.length > 0 ? [boundaries[0].from] : [];
+  while (pending.length > 0) {
+    const laneId = pending.pop();
+    if (visited.has(laneId)) continue;
+    visited.add(laneId);
+    for (const neighbor of adjacency.get(laneId) ?? []) pending.push(neighbor);
+  }
+  return {
+    boundaries,
+    invalid,
+    missing_facets: laneIds.filter((laneId) => !visited.has(laneId))
+  };
+}
+
+function reconcileAtomicScopeGateDag(gateDag, atomicScope) {
+  if (!gateDag || atomicScope?.status !== 'accepted') return gateDag;
+  const replaceGate = (id, transform) => {
+    const index = (gateDag.nodes ?? []).findIndex((node) => node.id === id);
+    if (index >= 0) gateDag.nodes[index] = transform(gateDag.nodes[index]);
+  };
+  replaceGate('gate:pr_scope_judgment', (gate) => ({
+    ...gate,
+    status: 'passed',
+    classification: 'atomic_scope_accepted',
+    atomic_scope: atomicScope,
+    required_actions: [],
+    reason: `Typed atomic scope accepted with current-head reviewer ownership: ${atomicScope.reason}`
+  }));
+  if (atomicScope.automatic_split_required === true
+    && !(gateDag.nodes ?? []).some((node) => node.id === 'gate:split_resolution')) {
+    gateDag.nodes ??= [];
+    gateDag.nodes.push({
+      id: 'gate:split_resolution',
+      type: 'split_resolution_gate',
+      label: 'Split Resolution Gate',
+      status: 'passed',
+      required: true,
+      atomic_scope: atomicScope,
+      decision_id: null,
+      reason: 'Typed atomic scope resolves the automatic split recommendation for this current HEAD'
+    });
+    gateDag.edges ??= [];
+    if (!gateDag.edges.some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:split_resolution')) {
+      gateDag.edges.push({ from: 'gate:pr_route_classification', to: 'gate:split_resolution' });
+    }
+    if (!gateDag.edges.some((edge) => edge.from === 'gate:split_resolution' && edge.to === 'gate:pr_body_contract')) {
+      gateDag.edges.push({ from: 'gate:split_resolution', to: 'gate:pr_body_contract' });
+    }
+  }
+  replaceGate('gate:split_resolution', (gate) => ({
+    ...gate,
+    status: 'passed',
+    atomic_scope: atomicScope,
+    decision_id: null,
+    reason: 'Typed atomic scope resolves the automatic split recommendation for this current HEAD'
+  }));
+  if (gateDag.summary) {
+    gateDag.summary.pr_scope_judgment_status = 'passed';
+    gateDag.summary.atomic_scope_status = 'accepted';
+    gateDag.summary.needs_evidence_count = collectUnresolvedRequiredGates(gateDag).length;
+  }
+  gateDag.overall_status = collectUnresolvedRequiredGates(gateDag).length > 0
+    ? 'needs_verification'
+    : 'ready_for_review';
+  return gateDag;
+}
+
+function reconcileGateDagOutcomeSummary(gateDag) {
+  const unresolvedCount = collectUnresolvedRequiredGates(gateDag).length;
+  gateDag.summary ??= {};
+  gateDag.summary.needs_evidence_count = unresolvedCount;
+  gateDag.overall_status = unresolvedCount > 0
+    ? 'needs_verification'
+    : 'ready_for_review';
+  return gateDag;
 }
 
 async function buildGraphImpactContext(repoRoot, changedFiles, storyId = 'story-default') {
@@ -4975,8 +5354,8 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   };
 
   const repoControlFiles = fileGroups.repo_control.files;
-  const e2eFiles = fileGroups.tests.files.filter((file) => file.startsWith('e2e/'));
-  const unitTestFiles = fileGroups.tests.files.filter((file) => !file.startsWith('e2e/'));
+  const e2eFiles = fileGroups.tests.files.filter(isE2eTestPath);
+  const unitTestFiles = fileGroups.tests.files.filter((file) => !isE2eTestPath(file));
   const e2eGateRequired = prContext.gate_dag?.nodes?.some((node) => node.id === 'gate:e2e' && node.required) === true;
   const gateInfraFiles = repoControlFiles.filter((file) => isE2eInfraPath(file) || (e2eGateRequired && isPackageManifestPath(file)));
   const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
@@ -5110,7 +5489,7 @@ function buildRuntimeLaneGates(prContext) {
   return gates;
 }
 
-function buildSplitRationale({ scope, lanes, graphContext }) {
+function buildSplitRationale({ scope, lanes, graphContext, atomicScope = null }) {
   const items = [];
   if (scope.reasons.length > 0) items.push(...scope.reasons);
   if (lanes.length > 1) items.push(`${lanes.length} lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる`);
@@ -5119,33 +5498,52 @@ function buildSplitRationale({ scope, lanes, graphContext }) {
   } else {
     items.push(`Graphify未利用: ${graphContext.reason}`);
   }
+  if (atomicScope?.status === 'accepted') {
+    items.push(`型付きatomic scopeを採用: ${atomicScope.reason}`);
+  } else if (atomicScope?.status === 'rejected') {
+    items.push(`型付きatomic scopeを不採用: ${atomicScope.rejection_reasons.join('; ')}`);
+  }
   return items;
 }
 
-function buildStackedGatePlan({ lanes, mergeOrder, prContext }) {
+function buildStackedGatePlan({ lanes, mergeOrder, prContext, atomicScope = null }) {
   const byId = new Map(lanes.map((lane) => [lane.id, lane]));
   const orderedLanes = mergeOrder.map((id) => byId.get(id)).filter(Boolean);
   const runtimeLane = byId.get('runtime-behavior') ?? null;
   const e2eLane = byId.get('e2e-gate') ?? null;
   const hasRuntimeChanges = Boolean(runtimeLane?.files?.some((file) => file.startsWith('src/')));
   const requiresCumulativeE2e = Boolean(e2eLane && hasRuntimeChanges);
+  const requiresAtomicHeadValidation = atomicScope?.status === 'accepted';
   const requiredCommands = extractGateCommands(prContext);
 
   const lanePlans = orderedLanes.map((lane, index) => {
     const previousLaneIds = orderedLanes.slice(0, index).map((item) => item.id);
-    const gateMode = lane.id === 'e2e-gate' && requiresCumulativeE2e
-      ? 'cumulative_after_dependencies'
-      : 'isolated_pr';
-    const dependsOn = gateMode === 'cumulative_after_dependencies'
+    const gateMode = requiresAtomicHeadValidation
+      ? 'cumulative_atomic_head'
+      : lane.id === 'e2e-gate' && requiresCumulativeE2e
+        ? 'cumulative_after_dependencies'
+        : 'isolated_pr';
+    const dependsOn = gateMode === 'cumulative_after_dependencies' || gateMode === 'cumulative_atomic_head'
       ? previousLaneIds
       : [];
     return {
       lane_id: lane.id,
       gate_mode: gateMode,
       depends_on: dependsOn,
-      isolated_checks: buildIsolatedLaneChecks(lane, requiredCommands),
-      cumulative_checks: buildCumulativeLaneChecks({ lane, commands: requiredCommands, requiresCumulativeE2e }),
-      review_note: buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulativeE2e })
+      isolated_checks: requiresAtomicHeadValidation ? [] : buildIsolatedLaneChecks(lane, requiredCommands),
+      cumulative_checks: buildCumulativeLaneChecks({
+        lane,
+        commands: requiredCommands,
+        requiresCumulativeE2e,
+        requiresAtomicHeadValidation
+      }),
+      review_note: buildStackedGateReviewNote({
+        lane,
+        gateMode,
+        dependsOn,
+        requiresCumulativeE2e,
+        requiresAtomicHeadValidation
+      })
     };
   });
 
@@ -5154,24 +5552,37 @@ function buildStackedGatePlan({ lanes, mergeOrder, prContext }) {
     model: 'stacked-pr-gate-plan-v1',
     summary: {
       lane_count: lanePlans.length,
-      cumulative_gate_count: lanePlans.filter((lane) => lane.gate_mode === 'cumulative_after_dependencies').length,
-      requires_cumulative_e2e: requiresCumulativeE2e
+      cumulative_gate_count: lanePlans.filter((lane) => lane.gate_mode !== 'isolated_pr').length,
+      requires_cumulative_e2e: requiresCumulativeE2e,
+      requires_atomic_head_validation: requiresAtomicHeadValidation
     },
     lane_plans: lanePlans,
-    final_validation: buildFinalValidationPlan({ requiredCommands, requiresCumulativeE2e })
+    final_validation: buildFinalValidationPlan({
+      requiredCommands,
+      requiresCumulativeE2e,
+      requiresAtomicHeadValidation
+    })
   };
 }
 
 function extractGateCommands(prContext) {
   const gates = prContext.gate_dag?.nodes?.filter((node) => node.type === 'verification_gate') ?? [];
   const commandByLabel = new Map(gates.map((gate) => [gate.label, gate.command]).filter(([, command]) => command));
+  const e2eGate = gates.find((gate) => gate.label === 'E2E Gate') ?? null;
   const unitCommand = commandByLabel.get('Unit Gate') ?? prContext.verification_commands?.find((item) => item.kind === 'unit')?.command ?? 'npm test';
   const integrationCommand = commandByLabel.get('Integration Gate') ?? prContext.verification_commands?.find((item) => item.kind === 'typecheck')?.command ?? 'npm run typecheck';
   const e2eCommand = commandByLabel.get('E2E Gate') ?? 'npx playwright test';
+  const all = [...new Set([
+    unitCommand,
+    integrationCommand,
+    ...(e2eGate?.required ? [e2eCommand] : []),
+    ...(prContext.verification_commands ?? []).map((item) => item.command)
+  ].filter(Boolean))];
   return {
     unit: unitCommand,
     integration: integrationCommand,
-    e2e: e2eCommand
+    e2e: e2eCommand,
+    all
   };
 }
 
@@ -5183,14 +5594,20 @@ function buildIsolatedLaneChecks(lane, commands) {
   return ['manual review'];
 }
 
-function buildCumulativeLaneChecks({ lane, commands, requiresCumulativeE2e }) {
+function buildCumulativeLaneChecks({ lane, commands, requiresCumulativeE2e, requiresAtomicHeadValidation = false }) {
+  if (requiresAtomicHeadValidation) {
+    return commands.all;
+  }
   if (lane.id === 'e2e-gate' && requiresCumulativeE2e) {
     return [commands.unit, commands.integration, commands.e2e];
   }
   return [];
 }
 
-function buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulativeE2e }) {
+function buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulativeE2e, requiresAtomicHeadValidation = false }) {
+  if (requiresAtomicHeadValidation) {
+    return `${lane.id} は独立PRではなく同一atomic HEADのreview facetとして確認し、全facetを含む累積状態で最終Gateを再実行する。`;
+  }
   if (gateMode === 'cumulative_after_dependencies') {
     return `${lane.id} は単体PRだけで完了判定せず、${dependsOn.join(' -> ')} を取り込んだ累積状態でGateを確認する。`;
   }
@@ -5203,12 +5620,16 @@ function buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulat
   return `${lane.id} は単体PRとしてレビュー可能。`;
 }
 
-function buildFinalValidationPlan({ requiredCommands, requiresCumulativeE2e }) {
-  const commands = [requiredCommands.unit, requiredCommands.integration];
-  if (requiresCumulativeE2e) commands.push(requiredCommands.e2e);
+function buildFinalValidationPlan({ requiredCommands, requiresCumulativeE2e, requiresAtomicHeadValidation = false }) {
+  const commands = requiresAtomicHeadValidation
+    ? requiredCommands.all
+    : [requiredCommands.unit, requiredCommands.integration];
+  if (!requiresAtomicHeadValidation && requiresCumulativeE2e) commands.push(requiredCommands.e2e);
   return {
-    required: requiresCumulativeE2e,
-    trigger: requiresCumulativeE2e
+    required: requiresCumulativeE2e || requiresAtomicHeadValidation,
+    trigger: requiresAtomicHeadValidation
+      ? 'typed atomic scopeで宣言した全review facetを同一HEADに含める'
+      : requiresCumulativeE2e
       ? 'runtime-behavior と e2e-gate の両方がmerge対象に含まれる'
       : '各PRのisolated checksで十分',
     commands
@@ -5222,7 +5643,7 @@ function buildSplitNextActions({ lanes, splitRequired }) {
   return lanes.map((lane) => ({
     lane_id: lane.id,
     action: `Create ${lane.suggested_branch} with ${lane.file_count} files`,
-    command: `git switch -c ${lane.suggested_branch} <base> && git add ${lane.files.map(shellQuote).join(' ')}`
+    command: `git switch -c ${lane.suggested_branch} "<base>" && git add ${lane.files.map(shellQuote).join(' ')}`
   }));
 }
 
@@ -5233,7 +5654,9 @@ function getAllGroupFiles(fileGroups) {
 }
 
 function isWorkspaceArtifactPath(filePath) {
-  return String(filePath ?? '').startsWith('.vibepro/');
+  const normalized = String(filePath ?? '');
+  if (normalized === '.vibepro/config.json') return false;
+  return normalized.startsWith('.vibepro/');
 }
 
 function isGateInfraPath(filePath) {
@@ -6920,6 +7343,10 @@ function parseStoryDoc(file, content) {
     ),
     architecture_docs: normalizeFrontmatterList(frontmatter.architecture_docs),
     spec_docs: normalizeFrontmatterList(frontmatter.spec_docs),
+    pr_scope_strategy: frontmatter.pr_scope_strategy ?? null,
+    pr_scope_reason: frontmatter.pr_scope_reason ?? null,
+    pr_scope_review_facets: normalizeFrontmatterList(frontmatter.pr_scope_review_facets),
+    pr_scope_dependency_boundaries: normalizeFrontmatterList(frontmatter.pr_scope_dependency_boundaries),
     architecture_reason: frontmatter.reason
       ?? extractFrontmatterBlockReason(content, 'architecture_docs')
       ?? extractArchitectureDecisionReason(content)
@@ -10226,16 +10653,110 @@ function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null
   return passed.length > 0 && invalid.length === 0;
 }
 
-function hasAgentReviewOwnerMapEvidence(agentReviews = null) {
+function collectRequiredAgentReviewOwners(agentReviews = null) {
+  const declaredRequiredReviews = [
+    ...(agentReviews?.required_reviews ?? []),
+    ...(agentReviews?.checkpoint_required_reviews ?? [])
+  ];
+  const requiredRoleKeys = new Set(declaredRequiredReviews.map((review) => (
+    `${review.stage}:${review.role}`
+  )));
   const roles = (agentReviews?.stages ?? []).flatMap((stage) => (
     (stage.roles ?? []).map((role) => ({
       stage: stage.stage,
       role: role.role,
-      effective_status: role.effective_status
-    }))
+      effective_status: role.effective_status,
+      binding_mode: role.content_binding?.mode ?? null,
+      reviewer_identity: role.agent_provenance?.reviewer_identity?.relation ?? 'unknown',
+      reviewer_identity_source: role.agent_provenance?.reviewer_identity?.source ?? 'undeclared',
+      reviewer_session_id: role.agent_provenance?.reviewer_identity?.reviewer_session_id ?? null,
+      implementation_session_id: role.agent_provenance?.reviewer_identity?.implementation_session_id ?? null,
+      lifecycle_status: role.lifecycle?.effective_status ?? null,
+      surface_files: (role.content_binding?.surface_files ?? []).map((file) => (
+        typeof file === 'string' ? file : file?.path
+      )).filter(Boolean)
+    })).filter((role) => requiredRoleKeys.has(`${role.stage}:${role.role}`))
   ));
-  if (roles.length === 0) return false;
-  return roles.every((role) => role.stage && role.role && role.effective_status === 'pass');
+  const resolvedRequiredRoleKeys = new Set(roles.map((role) => `${role.stage}:${role.role}`));
+  const missingRequiredRoleKeys = [...requiredRoleKeys].filter((key) => !resolvedRequiredRoleKeys.has(key));
+  const allRequiredRolesCurrent = requiredRoleKeys.size > 0
+    && missingRequiredRoleKeys.length === 0
+    && roles.length === requiredRoleKeys.size
+    && roles.every((role) => (
+    role.stage
+      && role.role
+      && role.effective_status === 'pass'
+      && role.binding_mode === 'strict_head'
+      && role.reviewer_identity === 'separate_session'
+      && role.reviewer_identity_source === 'lifecycle_agent_binding'
+      && role.reviewer_session_id
+      && role.implementation_session_id
+      && role.reviewer_session_id !== role.implementation_session_id
+      && role.lifecycle_status === 'closed'
+  ));
+  return {
+    roles,
+    requiredRoleKeys,
+    missingRequiredRoleKeys,
+    allRequiredRolesCurrent
+  };
+}
+
+export function buildAgentReviewOwnerMapEvidence(agentReviews = null, lanes = []) {
+  const {
+    roles,
+    requiredRoleKeys,
+    missingRequiredRoleKeys,
+    allRequiredRolesCurrent
+  } = collectRequiredAgentReviewOwners(agentReviews);
+  const facets = lanes.map((lane) => {
+    const changedPaths = [...new Set(lane.files ?? [])].filter(Boolean);
+    const owners = roles.filter((role) => (
+      role.effective_status === 'pass'
+      && role.binding_mode === 'strict_head'
+      && role.reviewer_identity === 'separate_session'
+      && role.reviewer_identity_source === 'lifecycle_agent_binding'
+      && role.reviewer_session_id
+      && role.implementation_session_id
+      && role.reviewer_session_id !== role.implementation_session_id
+    )).map((role) => {
+      const coveredPaths = changedPaths.filter((changedPath) => (
+        role.surface_files.some((surfaceFile) => verificationTargetCoversChangedPath(surfaceFile, changedPath))
+      ));
+      return {
+        stage: role.stage,
+        role: role.role,
+        effective_status: role.effective_status,
+        binding_mode: role.binding_mode,
+        reviewer_identity: role.reviewer_identity,
+        reviewer_identity_source: role.reviewer_identity_source,
+        reviewer_session_id: role.reviewer_session_id,
+        implementation_session_id: role.implementation_session_id,
+        covered_paths: coveredPaths
+      };
+    }).filter((owner) => owner.covered_paths.length > 0);
+    const coveredPaths = new Set(owners.flatMap((owner) => owner.covered_paths));
+    const uncoveredPaths = changedPaths.filter((changedPath) => !coveredPaths.has(changedPath));
+    return {
+      facet: lane.id,
+      changed_paths: changedPaths,
+      owners,
+      uncovered_paths: uncoveredPaths,
+      owned: allRequiredRolesCurrent && changedPaths.length > 0 && uncoveredPaths.length === 0
+    };
+  });
+  const unownedFacets = facets.filter((facet) => !facet.owned).map((facet) => facet.facet);
+  return {
+    verified: facets.length > 0 && unownedFacets.length === 0,
+    facets,
+    unowned_facets: unownedFacets,
+    required_role_keys: [...requiredRoleKeys],
+    missing_required_role_keys: missingRequiredRoleKeys
+  };
+}
+
+function hasAgentReviewOwnerMapEvidence(agentReviews = null) {
+  return collectRequiredAgentReviewOwners(agentReviews).allRequiredRolesCurrent;
 }
 
 const BUG_PHYSICS_CLASSES = ['timing', 'state-invariant', 'deterministic-byte', 'observability', 'deployment'];
@@ -11287,15 +11808,6 @@ function buildAgentReviewDispatchPreflight(stage, role) {
   const latest = lifecycle.latest ?? {};
   const latestCloseReason = latest.close_reason ?? null;
   const preflightId = `review:preflight:${stage}:${role.role}`;
-  if (role.effective_status === 'stale') {
-    return {
-      id: preflightId,
-      role: role.role,
-      status: 'failed',
-      kind: 'git_stability',
-      reason: role.stale_reason ?? `Recorded ${stage}:${role.role} review is stale; rerun review prepare and dispatch only after evidence matches the current git state`
-    };
-  }
   if (lifecycle.effective_status === 'running' || lifecycle.running_count > 0) {
     return {
       id: preflightId,
@@ -11303,6 +11815,15 @@ function buildAgentReviewDispatchPreflight(stage, role) {
       status: 'failed',
       kind: 'dedupe_running',
       reason: `A ${stage}:${role.role} review subagent is already running; close or record it before dispatching another reviewer for the same role`
+    };
+  }
+  if (role.effective_status === 'stale') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'failed',
+      kind: 'git_stability',
+      reason: role.stale_reason ?? `Recorded ${stage}:${role.role} review is stale; rerun review prepare and dispatch only after evidence matches the current git state`
     };
   }
   if (lifecycle.effective_status === 'timed_out' || lifecycle.timed_out_count > 0) {
@@ -11668,9 +12189,9 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
       : '';
     return [
       `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
-      `vibepro review start . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-system codex --agent-id <agent-id>`,
-      `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      `${recordCommand}${strictFreshnessArgs} --agent-transcript <artifact> --agent-close-evidence <artifact>`,
+      buildReviewStartCommandTemplate(storyId ?? '<story-id>', artifact.stage ?? '<stage>', artifact.role ?? '<role>'),
+      `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
+      `${recordCommand}${strictFreshnessArgs}`,
       `vibepro pr prepare . --story-id ${storyArg}`
     ];
   }
@@ -11845,7 +12366,8 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
 
 function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, inferredSpec = null } = {}) {
   const modes = deriveFailureModeCandidates({ storySource, fileGroups, changeClassification, inferredSpec });
-  const highRisk = changeClassification?.profile === 'workflow_heavy'
+  const highRisk = storySource?.pr_scope_strategy === 'atomic_single_pr'
+    || changeClassification?.profile === 'workflow_heavy'
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
   const currentEvidence = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const coveredModes = modes.map((mode) => {
@@ -11914,7 +12436,11 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
     ...(fileGroups?.tests?.files ?? []),
     ...(fileGroups?.other?.files ?? [])
   ].join('\n').toLowerCase();
+  const runtimeSourceFiles = (fileGroups?.source?.files ?? []).join('\n').toLowerCase();
   const surfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  const typedAtomicScopeBoundary = storySource?.pr_scope_strategy === 'atomic_single_pr'
+    || (storySource?.pr_scope_review_facets ?? []).length > 0
+    || (storySource?.pr_scope_dependency_boundaries ?? []).length > 0;
   const candidates = [];
   const add = (id, reason, keywords) => {
     if (candidates.some((mode) => mode.id === id)) return;
@@ -11923,10 +12449,10 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
   if (/\b(timeout|deadline|time out|タイムアウト)\b/.test(text) || /\b(timeout|retry|poll)\b/.test(files)) {
     add('timeout', 'Timeout/deadline behavior is mentioned by Story or touched runtime code', ['timeout', 'deadline', 'time out']);
   }
-  if (/\b(json|parse|parser|解析|パース)\b/.test(text) || /\b(parser|json|extract)\b/.test(files)) {
+  if (/\b(json|parse|parser|解析|パース)\b/.test(text) || /\b(parser|json|extract)\b/.test(runtimeSourceFiles)) {
     add('parse_failure', 'Parser/JSON extraction behavior can fail on malformed input', ['parse', 'parser', 'json', 'malformed']);
   }
-  if (/\b(schema|validation|validate|検証)\b/.test(text) || /\b(schema|validator|validation)\b/.test(files)) {
+  if (typedAtomicScopeBoundary || /\b(schema|validation|validate|検証)\b/.test(text) || /\b(schema|validator|validation)\b/.test(files)) {
     add('schema_failure', 'Schema/validation behavior can reject malformed or partial data', ['schema', 'validation', 'validate']);
   }
   if (/\b(provider|external|api|http|network|外部)\b/.test(text) || surfaces.has('api_contract')) {
@@ -11935,7 +12461,7 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
   if (/\b(retry|queue|worker|poll|非同期)\b/.test(text) || /\b(queue|worker|retry|poll)\b/.test(files)) {
     add('retry_or_async_failure', 'Retry/queue/worker/polling paths can fail or duplicate work', ['retry', 'queue', 'worker', 'poll']);
   }
-  if (/\b(auth|permission|role|security|認可|認証)\b/.test(text) || surfaces.has('auth') || surfaces.has('security')) {
+  if (/\b(auth|authentication|authorization|permission|access control|security|credential|認可|認証)\b/.test(text) || surfaces.has('auth') || surfaces.has('security')) {
     add('auth_denied', 'Auth/permission boundary can deny or leak access', ['auth', 'permission', 'security', 'denied']);
   }
   if (/\b(db|database|persist|保存|永続)\b/.test(text) || surfaces.has('database') || surfaces.has('persistence')) {
@@ -11968,14 +12494,34 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 function findFailureModeEvidenceCommand(mode, currentEvidence) {
   let bestMatch = null;
   for (const command of currentEvidence ?? []) {
-    if (command?.observation_check?.status !== 'recorded') continue;
-    const evidenceText = appendCanonicalEvidenceTokens(resolveVerificationCommandSearchText(command).text.toLowerCase());
+    if (!isExecutableFailureModeEvidence(command, mode)) continue;
+    const resolvedEvidence = resolveVerificationCommandSearchText(command);
+    const evidenceText = appendCanonicalEvidenceTokens(resolvedEvidence.surface_text.toLowerCase());
     const score = scoreFailureModeEvidence(mode, evidenceText);
     if (score > (bestMatch?.score ?? 0)) {
       bestMatch = { command, score };
     }
   }
   return bestMatch?.score > 0 ? bestMatch.command : null;
+}
+
+function isExecutableFailureModeEvidence(command, mode) {
+  if (!isPassingVerificationStatus(command?.status)) return false;
+  if (command?.observation_check?.status !== 'recorded') return false;
+  if (!String(command?.command ?? '').trim()) return false;
+  const resolvedEvidence = resolveVerificationCommandSearchText(command);
+  if (resolvedEvidence.source !== 'structured_observation') return false;
+  if ((resolvedEvidence.targets ?? []).length === 0) return false;
+  if (!String(resolvedEvidence.surface_text ?? '').trim()) return false;
+  const scenarioAssertion = (command?.observation?.scenarios ?? [])
+    .map((scenario) => String(scenario))
+    .join('\n');
+  const observedValues = command?.observation?.values;
+  const observedAssertion = observedValues && typeof observedValues === 'object'
+    ? Object.entries(observedValues).map(([key, value]) => `${key}=${String(value)}`).join('\n')
+    : '';
+  return scoreFailureModeEvidence(mode, scenarioAssertion) > 0
+    || scoreFailureModeEvidence(mode, observedAssertion) > 0;
 }
 
 function failureModeCoveredByEvidence(mode, evidenceText) {
@@ -12101,6 +12647,11 @@ function resolveVerificationCommandSearchText(command) {
         source: command?.observation_check?.status === 'recorded'
           ? 'structured_observation'
           : 'partial_structured_observation',
+        targets: observation.targets ?? [],
+        surface_text: [
+          ...(observation.scenarios ?? []),
+          ...observedValues
+        ].filter(Boolean).join('\n'),
         deprecation: null
       };
     }
@@ -12139,6 +12690,7 @@ function canResolutionSatisfyPathSurfaceCoverage(resolution) {
 
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
+  const requireTargetCoverage = storySource?.pr_scope_strategy === 'atomic_single_pr';
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const flowEvidenceText = buildFlowVerificationSurfaceSearchText(flowVerification);
   const highRisk = changeClassification?.profile === 'workflow_heavy';
@@ -12148,13 +12700,15 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     for (const command of currentVerification) {
       const resolution = resolveVerificationCommandSearchText(command);
       if (!canResolutionSatisfyPathSurfaceCoverage(resolution)) continue;
-      if (pathSurfaceCoveredByEvidence(surface, resolution.text.toLowerCase())) {
+      if (pathSurfaceCoveredByResolution(surface, resolution, { requireTargetCoverage })) {
         verificationEvidenceItem = command;
         verificationResolution = resolution;
         break;
       }
     }
-    const flowEvidence = !verificationEvidenceItem && pathSurfaceCoveredByEvidence(surface, flowEvidenceText);
+    const flowEvidence = !requireTargetCoverage
+      && !verificationEvidenceItem
+      && pathSurfaceCoveredByEvidence(surface, flowEvidenceText);
     const evidence = Boolean(verificationEvidenceItem || flowEvidence);
     const required = highRisk || surface.required;
     return {
@@ -12186,6 +12740,7 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     status,
     required: true,
     high_risk: highRisk,
+    target_binding_mode: requireTargetCoverage ? 'atomic_changed_paths' : 'legacy_surface_signal',
     row_count: rows.length,
     missing_surface_count: missing.length,
     accepted_decision: acceptedDecision ? {
@@ -12218,41 +12773,63 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
 
 function derivePathSurfaceRows({ storySource = null, fileGroups = null, changeClassification = null } = {}) {
   const rows = [];
-  const files = [
-    ...(fileGroups?.source?.files ?? []),
-    ...(fileGroups?.tests?.files ?? []),
-    ...(fileGroups?.specifications?.files ?? []),
-    ...(fileGroups?.architecture_docs?.files ?? [])
-  ];
+  const atomicTargetBinding = storySource?.pr_scope_strategy === 'atomic_single_pr';
+  const files = [...new Set(Object.entries(fileGroups ?? {})
+    .filter(([group]) => group !== 'vibepro_artifacts')
+    .flatMap(([, value]) => value?.files ?? []))].sort();
   const text = [
     storySource?.title,
     storySource?.background,
     storySource?.policy,
     ...(storySource?.acceptance_criteria ?? [])
   ].filter(Boolean).join('\n').toLowerCase();
-  const add = (surface, pathType, reason, required = false) => {
-    if (rows.some((row) => row.surface === surface && row.path_type === pathType)) return;
-    rows.push({ surface, path_type: pathType, reason, required });
+  const add = (surface, pathType, reason, required = false, changedPath = null) => {
+    const existing = rows.find((row) => row.surface === surface && row.path_type === pathType);
+    if (existing) {
+      if (atomicTargetBinding && changedPath && !existing.changed_paths.includes(changedPath)) existing.changed_paths.push(changedPath);
+      return;
+    }
+    rows.push({
+      surface,
+      path_type: pathType,
+      reason,
+      required,
+      ...(atomicTargetBinding ? { changed_paths: changedPath ? [changedPath] : [] } : {})
+    });
   };
+  if (atomicTargetBinding && files.length > 0) {
+    for (const file of files) {
+      add('changed_path_inventory', 'atomic_changed_path_surface', 'Atomic scope requires current evidence for every changed path', true, file);
+    }
+  }
   for (const file of files) {
     const normalized = file.toLowerCase();
     if (/\.(tsx|jsx|vue|svelte)$/.test(normalized) || normalized.includes('/components/') || normalized.includes('/app/')) {
-      add('ui', 'output_surface', `UI file changed: ${file}`, true);
+      add('ui', 'output_surface', `UI file changed: ${file}`, true, file);
     }
     if (normalized.includes('/api/') || /route\.(ts|js)$/.test(normalized)) {
-      add('api', 'contract_surface', `API route/client file changed: ${file}`, true);
+      add('api', 'contract_surface', `API route/client file changed: ${file}`, true, file);
     }
     if (normalized.includes('/services/') || normalized.includes('/lib/')) {
-      add('service', 'transform_surface', `Service/transform file changed: ${file}`);
+      add('service', 'transform_surface', `Service/transform file changed: ${file}`, false, file);
     }
     if (normalized.includes('/worker') || normalized.includes('/queue')) {
-      add('worker', 'async_surface', `Worker/queue file changed: ${file}`, true);
+      add('worker', 'async_surface', `Worker/queue file changed: ${file}`, true, file);
+    }
+    if (atomicTargetBinding && pathImpliesCliSurface(normalized)) {
+      add('cli', 'public_contract_surface', `CLI entrypoint/command file changed: ${file}`, true, file);
+    }
+    if (atomicTargetBinding && pathImpliesStateTransitionSurface(normalized)) {
+      add('state', 'state_transition_surface', `State transition/ledger file changed: ${file}`, true, file);
+    }
+    if (atomicTargetBinding && pathImpliesManagedProcessSurface(normalized)) {
+      add('process', 'external_process_surface', `Managed external-process file changed: ${file}`, true, file);
     }
     if (normalized.includes('pr-manager') || normalized.includes('report') || normalized.includes('html-report')) {
-      add('review_surface', 'gate_or_report_surface', `Gate/report artifact code changed: ${file}`, true);
+      add('review_surface', 'gate_or_report_surface', `Gate/report artifact code changed: ${file}`, true, file);
     }
-    if (pathImpliesPersistenceSurface(normalized)) {
-      add('persistence', 'state_surface', `Persistence/schema file changed: ${file}`, true);
+    if (pathImpliesPersistenceSurface(normalized, { includeAtomicAliases: atomicTargetBinding })) {
+      add('persistence', 'state_surface', `Persistence/schema file changed: ${file}`, true, file);
     }
   }
   if (/\b(report|summary|hq|review|artifact|pr body|gate)\b/.test(text)) {
@@ -12267,11 +12844,33 @@ function derivePathSurfaceRows({ storySource = null, fileGroups = null, changeCl
   return rows;
 }
 
-function pathImpliesPersistenceSurface(normalizedPath) {
+function pathImpliesPersistenceSurface(normalizedPath, { includeAtomicAliases = false } = {}) {
   const normalized = String(normalizedPath ?? '').toLowerCase();
   if (!normalized) return false;
   if (/^docs\/(management\/stories|stories|specs)\/story-/.test(normalized)) return false;
-  return /(^|[\/._-])(database|db|prisma|schema|migrations?)(?=$|[\/._-])/.test(normalized);
+  const pattern = includeAtomicAliases
+    ? /(^|[\/._-])(database|db|prisma|schema|migrations?|persistence|atomic-file)(?=$|[\/._-])/
+    : /(^|[\/._-])(database|db|prisma|schema|migrations?)(?=$|[\/._-])/;
+  return pattern.test(normalized);
+}
+
+function pathImpliesCliSurface(normalizedPath) {
+  const normalized = String(normalizedPath ?? '').toLowerCase();
+  return normalized === 'src/cli.js'
+    || normalized === 'bin/vibepro.js'
+    || /(^|\/)cli(?=$|[\/._-])/.test(normalized);
+}
+
+function pathImpliesStateTransitionSurface(normalizedPath) {
+  const normalized = String(normalizedPath ?? '').toLowerCase();
+  if (!normalized || normalized.startsWith('docs/')) return false;
+  return /(^|[\/._-])(outcome-manager|decision-outcome-ledger|state-manager)(?=$|[\/._-])/.test(normalized);
+}
+
+function pathImpliesManagedProcessSurface(normalizedPath) {
+  const normalized = String(normalizedPath ?? '').toLowerCase();
+  if (!normalized || normalized.startsWith('docs/')) return false;
+  return /(^|[\/._-])managed-command-executor(?=$|[\/._-])/.test(normalized);
 }
 
 function pathSurfaceCoveredByEvidence(surface, evidenceText) {
@@ -12281,10 +12880,34 @@ function pathSurfaceCoveredByEvidence(surface, evidenceText) {
     api: ['api', 'http', 'network', 'route'],
     service: ['service', 'transform', 'unit'],
     worker: ['worker', 'queue', 'retry', 'async', 'poll'],
+    cli: ['cli'],
+    state: ['state', 'outcome', 'ledger'],
+    process: ['process', 'executor'],
     review_surface: ['gate', 'report', 'pr body', 'artifact', 'review'],
-    persistence: ['database', 'db', 'schema', 'persist', 'storage']
+    persistence: ['database', 'db', 'schema', 'persist', 'persistence', 'storage'],
+    changed_path_inventory: ['changed_path_inventory', 'changed path', 'path surface', 'atomic scope']
   }[surface.surface] ?? [surface.surface];
   return terms.some((term) => evidenceTextContainsSurfaceTerm(evidenceText, term));
+}
+
+function pathSurfaceCoveredByResolution(surface, resolution, { requireTargetCoverage = false } = {}) {
+  if (resolution?.source !== 'structured_observation') {
+    if (requireTargetCoverage) return false;
+    return pathSurfaceCoveredByEvidence(surface, resolution?.text?.toLowerCase());
+  }
+  if (!pathSurfaceCoveredByEvidence(surface, resolution.surface_text?.toLowerCase())) return false;
+  if (!requireTargetCoverage) return true;
+  if ((surface.changed_paths ?? []).length === 0) return true;
+  return surface.changed_paths.every((changedPath) => (
+    resolution.targets.some((target) => verificationTargetCoversChangedPath(target, changedPath))
+  ));
+}
+
+function verificationTargetCoversChangedPath(target, changedPath) {
+  const normalizedTarget = String(target ?? '').trim().replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '');
+  const normalizedChangedPath = String(changedPath ?? '').trim().replaceAll('\\', '/').replace(/^\.\//, '');
+  if (!normalizedTarget || normalizedTarget === '.' || !normalizedChangedPath) return false;
+  return normalizedChangedPath === normalizedTarget || normalizedChangedPath.startsWith(`${normalizedTarget}/`);
 }
 
 function evidenceTextContainsSurfaceTerm(evidenceText, term) {
@@ -12997,7 +13620,7 @@ function buildAgentReviewMinimalRecoveryPlan(agentReviews, status, unmet) {
     } : null,
     current_stage_work: currentStageItems,
     later_stages_blocked: blockedLaterStages,
-    rerun_command: `vibepro pr prepare . --story-id ${storyId} --base <base-ref>`
+    rerun_command: `vibepro pr prepare . --story-id ${shellQuote(storyId)} --base ${shellQuote('<base-ref>')}`
   };
 }
 
@@ -13043,7 +13666,9 @@ function mergeAgentReviewRecoveryDetails(primary, secondary) {
 
 function buildAgentReviewRecoveryItem(item, role, storyId) {
   const lifecycle = role?.lifecycle ?? null;
-  const lifecycleStatus = lifecycle?.effective_status ?? lifecycle?.latest?.effective_status ?? null;
+  const lifecycleStatus = lifecycle?.latest?.close_reason === 'manual_shutdown'
+    ? 'manual_shutdown'
+    : lifecycle?.effective_status ?? lifecycle?.latest?.effective_status ?? null;
   const recoveryKind = classifyAgentReviewRecoveryKind(item, role, lifecycleStatus);
   const lifecycleRecovery = buildAgentReviewLifecycleRecovery({
     storyId,
@@ -13073,6 +13698,7 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
 
 function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
   if (lifecycleStatus === 'timed_out' || item.status === 'timed_out') return 'timed_out';
+  if (lifecycleStatus === 'manual_shutdown' || item.status === 'manual_shutdown') return 'manual_shutdown';
   if (lifecycleStatus === 'running' || item.status === 'running') return 'running';
   if (role?.stale || item.status === 'stale' || role?.effective_status === 'stale') return 'stale';
   if (item.status === 'unverified_agent' || role?.effective_status === 'unverified_agent') return 'unverified_agent';
@@ -13083,6 +13709,7 @@ function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
 function recoveryPriority(kind) {
   return {
     timed_out: 60,
+    manual_shutdown: 55,
     running: 50,
     stale: 40,
     unverified_agent: 30,
@@ -13092,18 +13719,22 @@ function recoveryPriority(kind) {
 
 function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, recoveryKind }) {
   const latest = lifecycle?.latest ?? null;
-  if (!latest && !['timed_out', 'running'].includes(recoveryKind)) return null;
+  if (!latest && !['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) return null;
   const agentId = latest?.agent_id ?? null;
   const lifecycleId = latest?.lifecycle_id ?? null;
   const selector = agentId
-    ? `--agent-id "${agentId}"`
-    : `--lifecycle-id ${lifecycleId ?? '<lifecycle-id>'}`;
-  const closeReason = recoveryKind === 'timed_out' ? 'timeout' : 'completed';
-  const closeCommand = ['timed_out', 'running'].includes(recoveryKind)
-    ? `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} ${selector} --close-reason ${closeReason} --close-evidence <close-evidence>`
+    ? `--agent-id ${shellQuote(agentId)}`
+    : `--lifecycle-id ${shellQuote(lifecycleId ?? '<lifecycle-id>')}`;
+  const closeReason = recoveryKind === 'timed_out'
+    ? 'timeout'
+    : recoveryKind === 'manual_shutdown'
+      ? 'manual_shutdown'
+      : 'completed';
+  const closeCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
+    ? `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} ${selector} --close-reason ${shellQuote(closeReason)} --close-evidence ${shellQuote('<close-evidence>')}`
     : null;
-  const replacementCommand = recoveryKind === 'timed_out'
-    ? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system ${latest?.agent_system ?? '<codex|claude_code>'} --agent-id "<subagent-id>" --timeout-ms 600000 --replacement-for ${lifecycleId ?? '<previous-lifecycle-id>'}`
+  const replacementCommand = ['timed_out', 'manual_shutdown'].includes(recoveryKind)
+    ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
     : null;
   return {
     status: lifecycle?.effective_status ?? latest?.effective_status ?? null,
@@ -13115,15 +13746,17 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
 }
 
 function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
-  const prepareCommand = `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`;
+  const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
   const startCommand = lifecycleRecovery?.replacement_command
-    ?? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`;
-  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, { contentBinding });
-  if (recoveryKind === 'timed_out') {
+    ?? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote('<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000`;
+  const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
+  const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, { contentBinding, identity: 'replacement-agent' });
+  if (['timed_out', 'manual_shutdown'].includes(recoveryKind)) {
     return [
       lifecycleRecovery?.close_command,
       prepareCommand,
       startCommand,
+      closeNewCommand,
       recordCommand
     ].filter(Boolean);
   }
@@ -13136,6 +13769,7 @@ function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, 
   return [
     prepareCommand,
     startCommand,
+    closeNewCommand,
     recordCommand
   ];
 }

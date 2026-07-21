@@ -1,0 +1,284 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "ASR-S-1",
+      "type": "scenario",
+      "statement": "In the atomic review workflow, the scope state transitions from split_recommended to accepted only when typed dependency boundaries connect every generated lane, every lane is declared as a review facet, no typed unsafe scope signal exists, and lifecycle-bound current-HEAD reviewers own every changed path; otherwise the workflow state remains rejected and prose lane-name matching cannot establish the dependency boundary.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "evaluateAtomicScopeDeclaration" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "rejects an incomplete typed atomic scope declaration" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "rejects a long prose-only atomic scope reason" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "rejects malformed or disconnected typed atomic scope dependencies" }
+        ]
+      },
+      "inherited_behaviors": [
+        { "condition": "!authority", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
+        { "condition": "!entry.primary_authority?.ref", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
+        { "condition": "!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind", "classification": "unchanged", "files": ["src/responsibility-authority.js"] }
+      ]
+    },
+    {
+      "id": "ASR-S-2",
+      "type": "invariant",
+      "statement": "Atomic scope is not accepted until every required or checkpoint-required Agent Review role is closed and passing on the strict current HEAD, and every changed path in each generated facet is represented in that required-role owner map; optional roles neither block when missing nor establish ownership when passing.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "evaluateAtomicScopeDeclaration" },
+          { "file": "src/pr-manager.js", "anchor": "buildAgentReviewOwnerMapEvidence" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "current-head reviewer ownership evidence" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "atomic owner map ignores optional roles" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-3",
+      "type": "invariant",
+      "statement": "Accepted atomic scope retains the automatic split plan and maps every generated lane to cumulative_atomic_head on one current HEAD.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "buildStackedGatePlan" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "cumulative_atomic_head" },
+          { "file_glob": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts", "must_contain": "ac:3 ac:4 cumulative atomic HEAD" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-4",
+      "type": "invariant",
+      "statement": "Accepted atomic validation preserves every generated unit, integration or build, typecheck, and required E2E command without dropping a lane command.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "buildStackedGatePlan" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "keeps every required verification command" },
+          { "file_glob": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts", "must_contain": "ac:3 ac:4 cumulative atomic HEAD" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-5",
+      "type": "scenario",
+      "statement": "Structured surface evidence covers one surface row only when its evidence targets collectively contain every changed path in that row; a matching surface name, targetless Flow Verification prose, or one covered path cannot cover unrelated or remaining paths for an atomic Story.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "buildPathSurfaceMatrix" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "does not let structured path surface evidence cover an unrelated changed target" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "requires structured evidence to cover every changed path in one surface row" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "requires structured evidence for CLI state persistence" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-6",
+      "type": "invariant",
+      "statement": "Stories without atomic scope metadata and small reviewable pull requests retain their existing split and readiness behavior.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Compatibility and rollback" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "evaluateAtomicScopeDeclaration" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_contain": "pr prepare keeps a reviewable small PR on the legacy single-PR readiness path" }]
+      }
+    },
+    {
+      "id": "ASR-S-7",
+      "type": "invariant",
+      "statement": "Accepted atomic scope reconciles the PR scope judgment and split resolution gates to passed and recomputes needs_evidence_count in the same prepare result, so scope advice cannot remain a contradictory readiness blocker in either nodes or summary output.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "reconcileAtomicScopeGateDag" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_contain": "materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice" }]
+      }
+    },
+    {
+      "id": "ASR-S-8",
+      "type": "invariant",
+      "statement": "When multiple current commands match required responsibility evidence, the resolver prefers a command bound to the target contract clause ID over an earlier scenario-only match, without weakening existing authority registry validation.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Verification Evidence Boundary" }],
+        "code_refs": [{ "file": "src/responsibility-authority.js", "anchor": "findPreferredVerificationCommand" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/responsibility-authority.test.js", "must_contain": "resolver prefers contract-bound evidence over an earlier unqualified scenario match" }]
+      },
+      "inherited_behaviors": [
+        { "condition": "!authority", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
+        { "condition": "!entry.primary_authority?.ref", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
+        { "condition": "!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind", "classification": "unchanged", "files": ["src/responsibility-authority.js"] }
+      ]
+    },
+    {
+      "id": "ASR-S-9",
+      "type": "scenario",
+      "statement": "Multiple commits remain a review-required scope signal but do not disable atomic override by count alone; only explicit commit-message lineage to a Story, STR, BFD, BUG, or INC other than the current Story produces an unsafe typed signal.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/pr-manager.js", "anchor": "assessScope" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "keeps explicit foreign work-item lineage unsafe for atomic scope" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-10",
+      "type": "invariant",
+      "statement": "A separate_session relation is not accepted from CLI assertions or arbitrary identifiers; atomic owner evidence requires the latest lifecycle for the same role, agent, and agent system to be closed, its reviewer session or thread identifier to match the record and differ from the implementation session identifier, and any newer running lifecycle invalidates an older closed lifecycle. Timeout or manual-shutdown recovery must emit an executable old-close, replacement_for start, replacement close, and record chain that reuses one replacement identity and records transcript plus close evidence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [
+          { "file": "src/agent-review.js", "anchor": "buildReviewerIdentity" },
+          { "file": "src/cli.js", "anchor": "review start" },
+          { "file": "src/pr-manager.js", "anchor": "buildAgentReviewOwnerMapEvidence" },
+          { "file": "src/pr-manager.js", "anchor": "buildAgentReviewRecoveryCommands" },
+          { "file": "src/review-repair.js", "anchor": "buildReviewRepairPlan" },
+          { "file": "src/validation-sequencing.js", "anchor": "evaluateValidationSequence" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "self asserted separate review" },
+          { "file_glob": "test/review-repair.test.js", "must_contain": "one replacement lifecycle identity" },
+          { "file_glob": "test/validation-sequencing.test.js", "must_contain": "agent-transcript" },
+          { "file_glob": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts", "must_contain": "newer running lifecycle" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-11",
+      "type": "invariant",
+      "statement": "Typed atomic scope metadata is treated as a schema validation boundary, while governance-only review role or responsibility authority language does not create an auth_denied candidate.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "deriveFailureModeCandidates" },
+          { "file": "src/pr-manager.js", "anchor": "buildFailureModeCoverageGate" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "typed atomic metadata is a real schema boundary" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "governance concepts, not authentication boundaries" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-12",
+      "type": "invariant",
+      "statement": "The change-risk classifier promotes the gate-review boundary to workflow_heavy only when gate_orchestration and review_lifecycle coexist; gate-only and review-only changes retain their prior non-heavy profile unless another independent heavy condition applies.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/change-risk-classifier.js", "anchor": "gateReviewWorkflowHeavy" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/risk-adaptive-gate.test.js", "must_contain": "change classifier selects workflow_heavy for cross-surface workflow changes" }]
+      }
+    },
+    {
+      "id": "ASR-S-13",
+      "type": "invariant",
+      "statement": "Failure-mode coverage requires a current-bound passing executable command, a structured observation, at least one target, and an explicit mode assertion in scenario or observed values; keyword-only, failing, inspection-only, or target-unbound evidence remains uncovered.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Verification Evidence Boundary" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "buildFailureModeCoverageGate" },
+          { "file": "src/verification-evidence.js", "anchor": "recordVerificationEvidence" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "a mode ID placed only in the target must not masquerade as an executed negative-path assertion" },
+          { "file_glob": "test/verification-evidence-artifact-check.test.js", "must_contain": "inspection-only command is not valid passing evidence" }
+        ]
+      }
+    },
+    {
+      "id": "ASR-S-14",
+      "type": "invariant",
+      "statement": "When .vibepro/config.json is the only mixed repo-control path it is treated as tracked canonical Story registration and may be reviewed through the typed atomic contract; any additional independent repo-control path remains unsafe for atomic override.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 13 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [
+          { "file": "src/content-binding.js", "anchor": "isInternalWorkspacePath" },
+          { "file": "src/pr-manager.js", "anchor": "assessScope" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_contain": "the canonical Story registration change must remain reviewable through the typed atomic contract" }]
+      }
+    },
+    {
+      "id": "ASR-S-15",
+      "type": "invariant",
+      "statement": "A versioned current-Story lineage exception is accepted only for a real merge commit whose canonical origin/codex source ref resolves to one of its parents and whose target is the matching codex branch; title-only, single-parent, missing-ref, mismatched-remote, or mismatched-target claims remain unsafe. Accepted lineage evidence is preserved in canonical summaries and rendered review surfaces.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 14 }],
+        "architecture_refs": [{ "file": "docs/architecture/vibepro-atomic-scope-review-contract.md", "section": "Boundary" }],
+        "code_refs": [
+          { "file": "src/pr-manager.js", "anchor": "isCurrentStoryLineage" },
+          { "file": "src/canonical-audit.js", "anchor": "summarizeScopeForLlm" },
+          { "file": "src/html-report.js", "anchor": "renderNodeGrid" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "treats a versioned branch merge title as current Story lineage" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "does not trust a spoofed two-parent versioned Story merge" }
+        ]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Atomic scope acceptance flow",
+      "mermaid": "flowchart LR\n  Diff[Changed files] --> Lanes[Generated split lanes]\n  Story[Typed Story declaration] --> Validate[Validate reason facets and unsafe signals]\n  Lanes --> Validate\n  Reviews[Current-head review owner map] --> Validate\n  Evidence[Target-bound verification] --> Validate\n  Validate -->|reject| Split[Retain automatic split recommendation]\n  Validate -->|accept| Atomic[Cumulative atomic HEAD]\n  Lanes --> Atomic"
+    },
+    {
+      "kind": "threat_model",
+      "title": "Atomic scope trust boundaries",
+      "mermaid": "flowchart LR\n  Author[Story author] --> Declaration[Atomic declaration]\n  Declaration --> Validator[Typed scope validator]\n  SameSession[Same-session reviewer] -->|rejected| OwnerMap[Review owner map]\n  UnknownReviewer[Unknown reviewer identity] -->|rejected| OwnerMap\n  SeparateReviewer[Separate-session reviewer] -->|strict current HEAD| OwnerMap\n  StaleEvidence[Stale or unrelated evidence] -->|rejected| EvidenceResolver[Contract-bound evidence resolver]\n  Validator --> Decision[Atomic scope decision]\n  OwnerMap --> Decision\n  EvidenceResolver --> Decision"
+    }
+  ]
+}

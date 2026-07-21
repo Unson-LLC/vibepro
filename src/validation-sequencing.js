@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir } from './workspace.js';
+import { assertCommandMatchesVerificationKind } from './verification-evidence.js';
 import { getAgentReviewStatus } from './agent-review.js';
 
 export const VALIDATION_SEQUENCE_MODEL = 'vibepro-risk-adaptive-validation-sequencing-v1';
@@ -78,7 +79,16 @@ export function createValidationSequenceState({ plan, headSha = null, testFinger
 export function reconcileValidationSequenceState(state, { storyId, riskProfile = 'light', riskSurfaces = [], headSha = null, reconciledAt = new Date().toISOString() } = {}) {
   const currentPlan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces });
   if (!state) return createValidationSequenceState({ plan: currentPlan, headSha, createdAt: reconciledAt });
-  if (samePlan(state.plan, currentPlan)) return state;
+  if (samePlan(state.plan, currentPlan)) {
+    if (!headSha || state.proposed_binding?.head_sha === headSha) return state;
+    const next = invalidateValidationSequence(state, {
+      changedSurfaces: ['unknown'],
+      reason: 'current HEAD differs from the persisted validation binding',
+      invalidatedAt: reconciledAt
+    });
+    next.proposed_binding = { ...next.proposed_binding, head_sha: headSha };
+    return next;
+  }
 
   const next = invalidateValidationSequence(state, {
     changedSurfaces: ['unknown'],
@@ -225,8 +235,14 @@ export async function validateValidationPhaseEvidence(repoRoot, evidencePath, { 
   const commands = Array.isArray(artifact.commands) ? artifact.commands : [];
   const canonicalVerification = artifact.schema_version === '0.1.0'
     && artifact.story_id === storyId
-    && commands.some((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status)
-      && item.git_context?.head_sha === headSha
+    && commands.some((item) => {
+      if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
+      try {
+        assertCommandMatchesVerificationKind(item.kind, item.command, item.status, item.observation, item.artifact_check, item.artifact_observed_values);
+      } catch {
+        return false;
+      }
+      return item.git_context?.head_sha === headSha
       && item.command === verificationCommand
       && item.observation?.values?.test_fingerprint === testFingerprint
       && item.observation?.values?.validation_phase === phase
@@ -236,7 +252,8 @@ export async function validateValidationPhaseEvidence(repoRoot, evidencePath, { 
       && item.observation_check?.status === 'recorded'
       && item.content_binding?.schema_version === '0.1.0'
       && item.content_binding?.recorded_head_sha === headSha
-      && (!notBefore || Date.parse(item.executed_at) >= Date.parse(notBefore)));
+      && (!notBefore || Date.parse(item.executed_at) >= Date.parse(notBefore));
+    });
   if (!canonicalVerification) {
     throw new Error('phase evidence must be passing canonical evidence bound to the Story, HEAD, verification command, and test fingerprint');
   }
@@ -265,6 +282,9 @@ function assertFinalReviewProvenance({ source, evidence, reviewProvenance, story
   if (reviewProvenance.status !== 'pass') throw new Error('final_review Agent Review evidence must have status=pass');
   if (reviewProvenance.story_id !== storyId) throw new Error('final_review Agent Review evidence must match the validation Story');
   if (reviewProvenance.head_sha !== headSha) throw new Error('final_review Agent Review evidence must bind to the frozen HEAD');
+  if (reviewProvenance.stage !== 'implementation' || reviewProvenance.role !== 'runtime_contract') {
+    throw new Error('final_review requires implementation:runtime_contract Agent Review provenance');
+  }
   if (!['codex', 'claude_code'].includes(reviewProvenance.system)
     || reviewProvenance.execution_mode !== 'parallel_subagent'
     || reviewProvenance.evidence_strength !== 'strong'
@@ -291,7 +311,7 @@ export function invalidateValidationSequence(state, { changedSurfaces = [], chan
   const next = structuredClone(state);
   const derivedSurfaces = changedFiles.length > 0
     ? changedFiles.map(classifyChangedFileSurface)
-    : ['unknown'];
+    : changedSurfaces.length > 0 ? [] : ['unknown'];
   const surfaces = [...new Set([...changedSurfaces, ...derivedSurfaces])];
   const unknown = surfaces.length === 0 || surfaces.some((surface) => ['runtime_source', 'tests', 'repo_control', 'other', 'unknown'].includes(surface));
   const invalidated = unknown
@@ -409,7 +429,7 @@ function buildNextRequiredAction(state, blocking) {
       const binding = state.frozen_binding ?? state.proposed_binding;
       return {
         phase,
-        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(binding.verification_command)} --artifact <test-result.json> --target <tested-path> --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
+        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(binding.verification_command)} --artifact '<test-result.json>' --target '<tested-path>' --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
         follow_up_command: `vibepro sequence record . --id ${state.story_id} --phase ${phase} --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
       };
     }
@@ -425,9 +445,9 @@ function buildNextRequiredAction(state, blocking) {
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind preflight --closes-risk "${scope}" --expected-judgment-delta "identify boundary risks before freeze" --reusable-evidence <ref>`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path>`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" --inspection-input '<reviewed-path>' --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
           `vibepro sequence record . --id ${state.story_id} --phase preflight_review --evidence ${result}`
         ]
       };
@@ -443,9 +463,9 @@ function buildNextRequiredAction(state, blocking) {
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind final --closes-risk "runtime contract regression" --expected-judgment-delta "confirm frozen release candidate" --freeze source,spec,test,review_surface`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path> --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input '<reviewed-path>' --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>' --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
           `vibepro sequence record . --id ${state.story_id} --phase final_review --source agent_review --evidence ${result}`
         ]
       };
