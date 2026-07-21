@@ -10,6 +10,7 @@ import { promisify } from 'node:util';
 import {
   ArtifactRoutingError,
   buildArtifactMigrationPlan,
+  collectCurrentGeneratedProjectionPaths,
   isCurrentGeneratedProjection,
   projectArtifact,
   resolveArtifactRoute,
@@ -19,6 +20,7 @@ import {
   resolveArtifactRoutes,
   writeArtifactProjections
 } from '../src/artifact-routing.js';
+import { collectGitContext } from '../src/git-fingerprint.js';
 import { writeFinalArchitecture } from '../src/architecture-store.js';
 import { readInferredSpec, writeInferredSpec } from '../src/spec-store.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
@@ -274,6 +276,36 @@ test('generated projection freshness fails closed for malformed or non-canonical
   await writeFile(projectionPath, current);
   await writeFile(canonicalPath, '{"tasks":[{"id":"changed"}]}\n');
   assert.equal(await isCurrentGeneratedProjection(root, route, projection), false, 'a canonical change stales its projection');
+});
+
+test('current generated projections are excluded from the evidence user-dirty scope but manual projection edits are not', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    task_plan: { canonical: '.vibepro/stories/{story_id}/tasks/tasks.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/06_tasks.md', ownership: 'generated', renderer: { id: 'tasks_markdown', version: '1' } }] }
+  });
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.name', 'Test User'], { cwd: root });
+
+  const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+  await mkdir(path.dirname(route.canonical.absolute_path), { recursive: true });
+  await writeFile(route.canonical.absolute_path, '{"tasks":[]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'chore: routed projection fixture'], { cwd: root });
+
+  await writeFile(route.canonical.absolute_path, '{"tasks":[{"id":"refresh"}]}\n');
+  await projectArtifact(root, 'task_plan', { storyId });
+  const currentPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
+  assert.deepEqual(currentPaths, ['docs/features/payments/06_tasks.md']);
+  const generatedOnlyContext = await collectGitContext(root, { userExcludePaths: currentPaths });
+  assert.equal(generatedOnlyContext.dirty, false);
+  assert.equal(generatedOnlyContext.raw_dirty, true);
+
+  const projectionPath = route.projections[0].absolute_path;
+  await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}manual edit\n`);
+  assert.deepEqual(await collectCurrentGeneratedProjectionPaths(root, { storyId }), []);
+  const manualEditContext = await collectGitContext(root);
+  assert.equal(manualEditContext.dirty, true);
 });
 
 test('named profile lifecycle consumers resolve one PR and Gate family without legacy fallback', async () => {

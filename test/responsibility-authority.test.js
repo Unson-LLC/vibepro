@@ -120,6 +120,74 @@ test('resolver accepts verify-record git context and observed values as current 
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'passed');
 });
 
+test('resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty', async () => {
+  const repo = await makeFixtureRepo();
+  await writeResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), 'export const symbol = "metadata.awaitingProductionGenerationStart";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/cleanup-worker.js'] },
+    fileGroups: { source: { files: ['src/cleanup-worker.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    verificationEvidence: {
+      commands: [{
+        kind: 'unit',
+        status: 'pass',
+        command: 'npm test',
+        summary: 'unit_regression cleanup_recovery_replay GEN-STATE-001',
+        git_context: {
+          head_sha: 'abc123',
+          // `dirty` is the user-dirty scope. `raw_dirty` remains diagnostic
+          // evidence that a current generated projection was rendered.
+          dirty: false,
+          raw_dirty: true,
+          user_status_fingerprint_hash: 'generated-projection-excluded'
+        },
+        observation: {
+          targets: ['GEN-STATE-001'],
+          scenarios: ['cleanup recovery replay']
+        }
+      }]
+    }
+  });
+
+  assert.equal(result.status, 'passed');
+  assert.equal(result.summary.missing_evidence_count, 0);
+});
+
+test('resolver still rejects current-head evidence when the user-dirty scope contains a manual edit', async () => {
+  const repo = await makeFixtureRepo();
+  await writeResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), 'export const symbol = "metadata.awaitingProductionGenerationStart";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/cleanup-worker.js'] },
+    fileGroups: { source: { files: ['src/cleanup-worker.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    verificationEvidence: {
+      commands: [{
+        kind: 'unit',
+        status: 'pass',
+        command: 'npm test',
+        summary: 'unit_regression cleanup_recovery_replay GEN-STATE-001',
+        git_context: {
+          head_sha: 'abc123',
+          dirty: true,
+          raw_dirty: true,
+          user_status_fingerprint_hash: 'manual-edit'
+        },
+        observation: {
+          targets: ['GEN-STATE-001'],
+          scenarios: ['cleanup recovery replay']
+        }
+      }]
+    }
+  });
+
+  assert.equal(result.status, 'stale');
+  assert.deepEqual(result.matched_responsibilities[0].stale_evidence.sort(), ['cleanup_recovery_replay', 'current_head_verification', 'unit_regression'].sort());
+});
+
 test('resolver does not satisfy contract evidence with unrelated generic unit pass', async () => {
   const repo = await makeFixtureRepo();
   await writeResponsibilityFixture(repo);

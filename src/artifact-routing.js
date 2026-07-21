@@ -61,6 +61,25 @@ export async function resolveArtifactRoute(repoRoot, kind, options = {}) {
   if (!ARTIFACT_KINDS.includes(kind)) throw new ArtifactRoutingError('unknown_kind', `Unknown artifact kind: ${kind}`, { kind });
   return (await resolveArtifactRoutes(repoRoot, options)).routes[kind];
 }
+
+// A rendered projection is an implementation by-product, not an author edit.
+// Keep this deliberately fail-closed: only bytes that still render exactly from
+// their current canonical source are safe to omit from the user-dirty scope.
+// Callers that bind evidence or reviews should use this list with
+// collectGitContext({ userExcludePaths }) so both paths apply the same rule.
+export async function collectCurrentGeneratedProjectionPaths(repoRoot, options = {}) {
+  const resolved = await resolveArtifactRoutes(repoRoot, options);
+  const paths = [];
+  for (const route of Object.values(resolved.routes)) {
+    for (const projection of route.projections ?? []) {
+      if (projection.ownership !== 'generated') continue;
+      if (await isCurrentGeneratedProjection(repoRoot, route, projection)) {
+        paths.push(projection.relative_path);
+      }
+    }
+  }
+  return [...new Set(paths)].sort();
+}
 export async function resolvePrArtifactFile(repoRoot, storyId, fileName = 'pr-prepare.json') { const r = await resolveArtifactRoute(repoRoot, 'pr', { storyId }); return fileName === 'pr-prepare.json' ? r.canonical.absolute_path : assertArtifactWritePath(repoRoot, toPosix(path.join(path.dirname(r.canonical.relative_path), fileName))); }
 export async function resolveGateArtifactFile(repoRoot, storyId) { return (await resolveArtifactRoute(repoRoot, 'gate', { storyId })).canonical.absolute_path; }
 export async function resolveGraphifyArtifactFile(repoRoot, storyId, fileName = 'graph.json') { const r = await resolveArtifactRoute(repoRoot, 'graphify', { storyId }); return assertArtifactWritePath(repoRoot, toPosix(path.join(r.canonical.relative_path, fileName))); }

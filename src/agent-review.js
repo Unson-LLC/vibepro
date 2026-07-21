@@ -12,7 +12,7 @@ import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evi
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
-import { assertArtifactWritePath, isCurrentGeneratedProjection, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -642,16 +642,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
 }
 
 async function collectReviewGitContext(repoRoot, storyId) {
-  const resolved = await resolveArtifactRoutes(repoRoot, { storyId });
-  const generatedProjectionPaths = [];
-  for (const route of Object.values(resolved.routes)) {
-    for (const projection of route.projections ?? []) {
-      if (projection.ownership !== 'generated') continue;
-      if (await isCurrentGeneratedProjection(repoRoot, route, projection)) {
-        generatedProjectionPaths.push(projection.relative_path);
-      }
-    }
-  }
+  const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(repoRoot, { storyId });
   return collectGitContext(repoRoot, { userExcludePaths: generatedProjectionPaths });
 }
 
