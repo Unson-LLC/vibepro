@@ -197,6 +197,12 @@ test('session efficiency audit uses process-manager worktree and Codex token_cou
   assert.equal(result.audit_readiness.status, 'ready');
   assert.equal(result.observed_worktree, root);
   assert.equal(result.observed_worktree_source, 'process_manager');
+  assert.equal(result.attribution.session_cwd_matches_repo, true);
+  assert.equal(result.attribution.categories.worktree_associated > 0, true);
+  assert.equal(
+    result.attribution.upper_bound.event_count,
+    result.attribution.categories.strict + result.attribution.categories.worktree_associated
+  );
   assert.equal(result.session.token_accounting.status, 'available');
   assert.equal(result.session.token_accounting.total_tokens, 250);
   assert.equal(result.session.token_accounting.input_tokens, 200);
@@ -1255,6 +1261,11 @@ test('session efficiency audit makes strict attribution primary and degrades mix
       timestamp: '2026-06-27T13:02:00.000Z',
       type: 'response_item',
       payload: { text: `review .vibepro/pr/${storyId}/pr-prepare.json` }
+    },
+    {
+      timestamp: '2026-06-27T13:02:05.000Z',
+      type: 'response_item',
+      payload: { text: `verification evidence for ${storyId}` }
     }
   ];
   await writeFile(

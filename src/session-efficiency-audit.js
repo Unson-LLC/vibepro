@@ -178,7 +178,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
         storyId,
         windowStart: effectiveWindowStart,
         windowEnd: effectiveWindowEnd,
-        sessionCwd: session.cwd,
+        sessionCwd: processMetadata?.cwd ?? session.cwd,
         sessionEntries
       });
     } catch (error) {
