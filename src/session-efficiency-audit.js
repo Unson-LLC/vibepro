@@ -9,6 +9,7 @@ import {
   parseNumstat,
   summarizeDiffLineStats
 } from './evidence-cost-budget.js';
+import { resolveRunAttribution, validateRunLineageEnvelope } from './run-lineage.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -114,6 +115,8 @@ const SESSION_EXPOSURE_SIGNALS = [
 export async function collectSessionEfficiencyAudit(repoRoot, {
   storyId,
   sessionId,
+  runId = null,
+  run_id = null,
   inferSession = false,
   codexHome = null,
   automationMemoryPath = null,
@@ -127,6 +130,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   if (!storyId) throw new Error('audit session-cost requires --story-id <id>');
 
   const root = path.resolve(repoRoot);
+  const requestedRunId = normalizeOptionalText(runId ?? run_id);
   const resolvedCodexHome = path.resolve(codexHome ?? process.env.CODEX_HOME ?? path.join(os.homedir(), '.codex'));
   const automationMemory = await resolveAutomationMemoryWindow(automationMemoryPath, { now });
   const effectiveWindowStart = windowStart ?? automationMemory.window_start ?? null;
@@ -151,8 +155,8 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
   const session = selectedSessionId && sessionFiles.length > 0
-    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
-    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
+    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, runId: requestedRunId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, { storyId, runId: requestedRunId });
   const sessionAttribution = selectedSessionId && sessionFiles.length > 0
     ? await buildSessionAttribution(sessionFiles, {
       repoRoot: root,
@@ -193,6 +197,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
     observed_worktree_matches_repo: observedWorktreeMatchesRepo,
     attribution: sessionAttribution,
+    lineage_attribution: session.lineage_attribution,
     session,
     process_manager: processMetadata ? {
       status: 'available',
@@ -1106,7 +1111,7 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, windowStart, windowEnd } = {}) {
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd } = {}) {
   const entries = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
@@ -1114,6 +1119,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
   const taskStartedEvents = [];
   const finalAnswerEvents = [];
   const exposureEvents = [];
+  const lineageEvents = [];
   const inWindowEventTimestamps = [];
   let cwd = null;
   let firstEventAt = null;
@@ -1137,6 +1143,32 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
       timestampMs: eventAt
     });
     if (exposure) exposureEvents.push(exposure);
+    const embeddedLineage = extractEmbeddedRunLineage(entry);
+    if (embeddedLineage) {
+      lineageEvents.push({
+        ...exposure,
+        id: `${sourcePath}:${line}`,
+        lineage: embeddedLineage,
+        tokens: exposure?.estimated_tokens ?? 0,
+        time_ms: 0,
+        source_path: sourcePath,
+        line,
+        timestamp: entry.timestamp ?? null,
+        entry_type: entry.type ?? null
+      });
+    } else if (hasThreadOnlyObservation(entry)) {
+      lineageEvents.push({
+        ...exposure,
+        id: `${sourcePath}:${line}`,
+        thread_id: extractThreadId(entry),
+        tokens: exposure?.estimated_tokens ?? 0,
+        time_ms: 0,
+        source_path: sourcePath,
+        line,
+        timestamp: entry.timestamp ?? null,
+        entry_type: entry.type ?? null
+      });
+    }
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
       if (usage) tokenEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, usage });
@@ -1163,6 +1195,14 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
     ? subtractUsage(lastToken.usage, firstToken.usage)
     : null;
   const artifactTokenAccounting = buildArtifactTokenAccounting(exposureEvents, tokenDelta, {
+    sessionId,
+    filePaths,
+    windowStart,
+    windowEnd
+  });
+  const lineageAttribution = buildLineageAttribution(lineageEvents, {
+    storyId,
+    runId,
     sessionId,
     filePaths,
     windowStart,
@@ -1215,6 +1255,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
       reason: 'no token_count events were found in the selected session window'
     },
     artifact_token_accounting: artifactTokenAccounting,
+    lineage_attribution: lineageAttribution,
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
       status: finalAnswerEvents.length > 0 || windowEnd ? 'available' : 'partial',
       elapsed_ms: Math.max(0, windowFinishedAt - windowStartedAt),
@@ -1264,6 +1305,93 @@ async function readCodexSessionEntries(filePaths) {
     || a.line - b.line
   ));
   return entries;
+}
+
+function normalizeOptionalText(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized || null;
+}
+
+function embeddedLineageCandidates(entry) {
+  return [
+    entry?.lineage,
+    entry?.run_lineage,
+    entry?.payload?.lineage,
+    entry?.payload?.run_lineage,
+    entry?.payload?.data?.lineage,
+    entry?.payload?.artifact_binding?.lineage
+  ].filter((candidate) => candidate && typeof candidate === 'object' && !Array.isArray(candidate));
+}
+
+function extractEmbeddedRunLineage(entry) {
+  for (const candidate of embeddedLineageCandidates(entry)) {
+    try {
+      return validateRunLineageEnvelope(candidate);
+    } catch {
+      // An unvalidated or stale envelope is not authoritative evidence.
+    }
+  }
+  return null;
+}
+
+function extractThreadId(entry) {
+  return normalizeOptionalText(
+    entry?.thread_id
+    ?? entry?.threadId
+    ?? entry?.payload?.thread_id
+    ?? entry?.payload?.threadId
+    ?? entry?.payload?.provider_observation?.thread_id
+  );
+}
+
+function hasThreadOnlyObservation(entry) {
+  return Boolean(extractThreadId(entry)) && !extractEmbeddedRunLineage(entry);
+}
+
+function buildLineageAttribution(events, {
+  storyId,
+  runId = null,
+  sessionId = null,
+  filePaths = [],
+  windowStart = null,
+  windowEnd = null
+} = {}) {
+  const authoritativeEvents = events.filter((event) => event?.lineage);
+  const threadOnlyEvents = events.filter((event) => event?.thread_id && !event?.lineage);
+  const targetRunId = runId ?? [...new Set(
+    authoritativeEvents
+      .filter((event) => event.lineage.story_id === storyId)
+      .map((event) => event.lineage.run_id)
+  )][0] ?? null;
+  const attribution = resolveRunAttribution(events, {
+    story_id: storyId,
+    run_id: targetRunId
+  });
+  return {
+    ...attribution,
+    schema_version: '0.1.0',
+    status: events.length > 0 ? 'available' : 'unavailable',
+    mode: 'authoritative_embedded_lineage',
+    source: 'codex-session-jsonl-embedded-lineage',
+    filter: {
+      run_id: runId,
+      run_id_filter_applied: Boolean(runId)
+    },
+    authoritative_event_count: authoritativeEvents.length,
+    thread_only_event_count: threadOnlyEvents.length,
+    session_id: sessionId,
+    window: {
+      session_id: sessionId,
+      source_path: filePaths[0] ?? null,
+      source_paths: filePaths,
+      requested_start: windowStart ?? null,
+      requested_end: windowEnd ?? null,
+      scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+    },
+    reason: events.length > 0
+      ? null
+      : 'no embedded lineage or thread-only observations were found in the selected session window'
+  };
 }
 
 function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, timestampMs }) {
@@ -1494,7 +1622,7 @@ function formatRatio(value) {
   return value === null || value === undefined ? '未確認' : `${value}%`;
 }
 
-function missingSessionAccounting(sessionId, windowStart, windowEnd) {
+function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId = null, runId = null } = {}) {
   return {
     status: 'unavailable',
     source_path: null,
@@ -1540,7 +1668,14 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       unmatched_estimated_tokens: 0,
       window: { session_id: sessionId },
       reason: 'codex session jsonl was not found'
-    }
+    },
+    lineage_attribution: buildLineageAttribution([], {
+      storyId,
+      runId,
+      sessionId,
+      windowStart,
+      windowEnd
+    })
   };
 }
 
