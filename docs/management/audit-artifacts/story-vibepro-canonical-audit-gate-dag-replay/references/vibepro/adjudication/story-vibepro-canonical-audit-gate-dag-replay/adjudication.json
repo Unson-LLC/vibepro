@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "updated_at": "2026-07-21T08:31:14.579Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Malformed evidence-plan and decision-index JSON both propagate SyntaxError and abort promotion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:14.579Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Full-depth promotion still includes and replays the physical gate DAG.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:14.455Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Incomplete substitute preserves missing gate_dag, source_missing, unresolved count, and blocked handoff replay.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:14.322Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Complete summary substitute includes evidence_plan and decision_index and replays without physical gate_dag at current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:14.182Z"
+    }
+  ]
+}

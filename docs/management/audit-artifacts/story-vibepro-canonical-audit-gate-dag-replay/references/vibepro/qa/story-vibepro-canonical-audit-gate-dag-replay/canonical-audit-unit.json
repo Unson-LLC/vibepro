@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/canonical-audit-self-contained.test.js",
+  "tests": 15,
+  "passed": 15,
+  "failed": 0,
+  "summary": "Summary substitute, incomplete fail-closed replay, malformed JSON fail-fast, and full-depth compatibility passed."
+}

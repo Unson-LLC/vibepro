@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "model": "vibepro-gate-outcome-ledger-v3",
-  "updated_at": "2026-07-21T08:09:54.390Z",
+  "updated_at": "2026-07-21T08:40:49.232Z",
   "entries": [
     {
       "schema_version": "0.1.0",
@@ -372,6 +372,528 @@
           "src/cli.js",
           "src/pr-manager.js",
           "test/agent-review-independence.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:agent_review|needs_review|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:artifact_consistency|stale_evidence|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:definition_of_done|needs_evidence|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:evidence_adjudication|needs_evidence|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_axis_data_state|needs_evidence|passed|2026-07-21T08:32:16.420Z|2026-07-21T08:33:06.168Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_axis_data_state",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:32:16.420Z",
+      "resolved_at": "2026-07-21T08:33:06.168Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_axis_data_state|needs_evidence|passed|2026-07-21T08:39:46.534Z|2026-07-21T08:40:29.520Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_axis_data_state",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:39:46.534Z",
+      "resolved_at": "2026-07-21T08:40:29.520Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-21T08:33:50.426Z|2026-07-21T08:35:14.141Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:33:50.426Z",
+      "resolved_at": "2026-07-21T08:35:14.141Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-21T08:40:29.520Z|2026-07-21T08:40:49.232Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:40:29.520Z",
+      "resolved_at": "2026-07-21T08:40:49.232Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:responsibility_authority|needs_evidence|passed|2026-07-21T08:31:54.175Z|2026-07-21T08:32:16.420Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:31:54.175Z",
+      "resolved_at": "2026-07-21T08:32:16.420Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:senior_gap_judgment|needs_review|passed|2026-07-21T08:32:16.420Z|2026-07-21T08:33:06.168Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:32:16.420Z",
+      "resolved_at": "2026-07-21T08:33:06.168Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:senior_gap_judgment|needs_review|passed|2026-07-21T08:33:50.426Z|2026-07-21T08:35:14.141Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:33:50.426Z",
+      "resolved_at": "2026-07-21T08:35:14.141Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|gate:senior_gap_judgment|needs_review|passed|2026-07-21T08:40:29.520Z|2026-07-21T08:40:49.232Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:40:29.520Z",
+      "resolved_at": "2026-07-21T08:40:49.232Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|review:dispatch_batch:gate|failed|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|review:join:gate|needs_review|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|review:preflight:gate:gate_evidence|failed|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-canonical-audit-gate-dag-replay|review:record:gate:gate_evidence|needs_review|passed|2026-07-21T08:27:01.398Z|2026-07-21T08:31:54.175Z",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-21T08:27:01.398Z",
+      "resolved_at": "2026-07-21T08:31:54.175Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "src/canonical-audit.js",
+          "test/canonical-audit-self-contained.test.js"
         ]
       }
     },
