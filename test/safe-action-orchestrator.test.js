@@ -313,6 +313,23 @@ test('AAD-S-5 explicitly selecting legacy keeps the two-node rollback path', () 
   assert.ok(plan.every((action) => action.action_profile === undefined));
 });
 
+test('AAD-S-5 disabling autonomous explicitly falls back to the legacy plan', () => {
+  const plan = buildSafeActionPlan(state, { profile: 'autonomous', autonomousEnabled: false });
+  assert.deepEqual(plan.map(({ id }) => id), ['pr_prepare', 'pr_autopilot_safe']);
+});
+
+test('AAD-S-6 dependency-incomplete suffix cannot execute its runner', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const [, prepareArtifacts, ...rest] = buildSafeActionPlan(autonomousState);
+  let called = false;
+  const result = await runSafeActionPlan(autonomousState, {
+    plan: [prepareArtifacts, ...rest],
+    runners: { prepare_artifacts: async () => { called = true; return { status: 'continue' }; } }
+  });
+  assert.equal(called, false);
+  assert.equal(result.state.stop_reason.code, 'action_forbidden');
+});
+
 test('SAO-S-5 safe autopilot classifies missing and failed current evidence without executing commands', async () => {
   const preparation = {
     story: { story_id: 'story-safe' },

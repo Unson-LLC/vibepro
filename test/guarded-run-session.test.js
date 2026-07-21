@@ -68,6 +68,16 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   assert.equal(result.state.action_profile, 'autonomous');
 });
 
+test('AAD-S-5 Guarded Run records explicit autonomous disable as the legacy profile', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const state = await fixture.session().run(fixture.source, {
+    storyId: STORY_ID,
+    actionProfile: 'autonomous',
+    autonomousEnabled: false
+  });
+  assert.equal(state.action_profile, undefined);
+});
+
 test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();

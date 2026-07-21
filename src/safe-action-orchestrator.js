@@ -25,7 +25,7 @@ const ESCAPE_REGISTRY = Object.freeze([
 ]);
 
 export function buildSafeActionPlan(state, options = {}) {
-  const profile = resolveActionProfile(state, options.profile);
+  const profile = resolveActionProfile(state, options.profile, options);
   return ACTION_PROFILES[profile].map((action) => {
     const lineage = resolveActionLineage(state, state.lineage ?? state.run_lineage, `action-${action.id}`);
     return {
@@ -40,7 +40,7 @@ export function buildSafeActionPlan(state, options = {}) {
 }
 
 export function selectSafeActionCandidate(state, options = {}) {
-  const profile = resolveActionProfile(state, options.profile);
+  const profile = resolveActionProfile(state, options.profile, options);
   const candidates = buildSafeActionPlan(state, { ...options, profile })
     .filter((action) => !hasCompletedCheckpoint(state, action.id, state, profile))
     .map((action) => ({
@@ -85,7 +85,7 @@ function buildEscapeCandidates(requestedIds = [], metrics = {}) {
 }
 
 export async function runSafeActionPlan(state, options = {}) {
-  const profile = resolveActionProfile(state, options.profile);
+  const profile = resolveActionProfile(state, options.profile, options);
   const plan = options.plan ?? buildSafeActionPlan(state, { profile });
   const canonicalPlan = buildSafeActionPlan(state, { profile });
   if (!isAllowedCanonicalPlan(plan, canonicalPlan)) {
@@ -205,8 +205,9 @@ function isCanonicalAction(action, state, expectedKey, profile) {
     && (action.idempotency_key === undefined || action.idempotency_key === expectedKey);
 }
 
-function resolveActionProfile(state, requestedProfile) {
+function resolveActionProfile(state, requestedProfile, options = {}) {
   const profile = requestedProfile ?? state.action_profile ?? 'legacy';
+  if (profile === 'autonomous' && options.autonomousEnabled === false) return 'legacy';
   if (!Object.hasOwn(ACTION_PROFILES, profile)) throw new Error(`Unknown safe action profile: ${profile}`);
   return profile;
 }

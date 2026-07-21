@@ -312,7 +312,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
-      action_profile: requireActionProfile(options.actionProfile ?? 'legacy'),
+      action_profile: resolveRequestedActionProfile(options),
       action_journal: [],
       next_best_action_decisions: []
     };
@@ -845,7 +845,7 @@ async function createRun(deps, repoRoot, options) {
       binding,
       creationRequestId,
       policy: buildGuardedPolicy(options, createdAt),
-      actionProfile: requireActionProfile(options.actionProfile ?? 'legacy')
+      actionProfile: resolveRequestedActionProfile(options)
     });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
@@ -2234,6 +2234,11 @@ function requireActionProfile(value) {
     });
   }
   return value;
+}
+
+function resolveRequestedActionProfile(options = {}) {
+  const requested = requireActionProfile(options.actionProfile ?? 'legacy');
+  return requested === 'autonomous' && options.autonomousEnabled === false ? 'legacy' : requested;
 }
 
 function requireRunId(value) {
