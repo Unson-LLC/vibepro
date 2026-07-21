@@ -32,7 +32,7 @@ updated_at: 2026-07-22
 - PR #360はprovider-neutral adapter契約とGuarded Runへのauthority-first永続化を導入したが、実Codex hostのspawn/completion配送と永続Inboxは未結線である。
 - PR #370はStory全体のbudget・validation・review効率を扱うopen PRであり、本Storyのruntime delivery責務を流用または上書きしない。
 - 直前の実測では軽量Codex subagentが`wait_agent(600000)`を超過してrunningのままshutdownされ、review結果なし、budget追加、HEAD変更、証跡stale、replacement再実行という閉路になった。
-- 本Storyは`createCodexGuardedRunBridge`をproduction composition boundaryとして追加し、`VIBEPRO_CODEX_HOST_MODULE`と公開runtime commandからhost所有のspawn/配送をVibeProのInbox/coordinator/Guarded Runへ実際に結線する。
+- 本Storyは`createCodexGuardedRunBridge`をproduction composition boundaryとして追加し、built-in Codex CLI host（`VIBEPRO_CODEX_HOST_MODULE`で差し替え可能）と公開runtime commandからhost所有のspawn/配送をVibeProのInbox/coordinator/Guarded Runへ実際に結線する。
 
 ## Acceptance Criteria
 

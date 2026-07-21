@@ -2,6 +2,7 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runCli } from '../src/cli.js';
+import { createCodexSubagentHost } from '../src/codex-subagent-host.js';
 
 export function createEntrypointIo(runtime = process) {
   return {
@@ -19,8 +20,11 @@ export async function resolveEntrypointIo(runtime = process) {
     return io;
   }
   const moduleSpecifier = runtime.env?.VIBEPRO_CODEX_HOST_MODULE;
-  if (!moduleSpecifier) return io;
   const cwd = typeof runtime.cwd === 'function' ? runtime.cwd() : process.cwd();
+  if (!moduleSpecifier) {
+    io.codexSubagentHost = await createCodexSubagentHost({ env: runtime.env, cwd });
+    return io;
+  }
   const moduleUrl = moduleSpecifier.startsWith('file:')
     ? moduleSpecifier
     : pathToFileURL(path.resolve(cwd, moduleSpecifier)).href;
