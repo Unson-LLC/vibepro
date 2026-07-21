@@ -13154,6 +13154,16 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
         output_tokens: 77,
         source: 'codex-session-jsonl',
         window: { session_id: 'partial-session' }
+      },
+      session_efficiency_audit: {
+        artifact_kind: 'vibepro_session_efficiency_audit',
+        attribution: {
+          status: 'available',
+          primary: { basis: 'strict_story_cues', event_count: 2 },
+          upper_bound: { basis: 'strict_plus_worktree_associated', event_count: 3 },
+          mixed_parent: false,
+          strict_over_associated: 0.667
+        }
       }
     }
   });
@@ -13175,6 +13185,11 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.cost_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 777);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.attribution.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.primary.event_count, 2);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.upper_bound.event_count, 3);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.mixed_parent, false);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.strict_over_associated, 0.667);
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'unavailable');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
   assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
