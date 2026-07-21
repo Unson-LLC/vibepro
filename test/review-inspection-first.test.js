@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { buildReviewRecordCommandTemplate } from '../src/pr-manager.js';
+import { buildAgentReviewRecoveryCommands, buildReviewRecordCommandTemplate } from '../src/pr-manager.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -290,11 +290,16 @@ test('architecture boundary request and dispatch emit the complete aggregate ins
 });
 
 test('PR readiness recovery emits the complete aggregate inspection surface', () => {
-  const command = buildReviewRecordCommandTemplate(
-    'story-test',
-    'architecture_spec',
-    'architecture_boundary'
-  );
+  const commands = buildAgentReviewRecoveryCommands({
+    storyId: 'story-test',
+    stage: 'architecture_spec',
+    role: 'architecture_boundary',
+    recoveryKind: 'missing',
+    lifecycleRecovery: null
+  });
+  assert.match(commands[0], /review prepare .*--stage architecture_spec.*--role architecture_boundary/);
+  const command = commands.find((item) => item.startsWith('vibepro review record'));
+  assert.ok(command, 'PR recovery output must contain a record command');
   assert.match(command, /--inspection-input '<design-story-spec-path>'/);
   assert.match(command, /--inspection-input '<runtime-source-path>'/);
   assert.match(command, /--inspection-input '<test-path>'/);

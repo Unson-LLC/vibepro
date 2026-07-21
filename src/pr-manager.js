@@ -13773,7 +13773,7 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   };
 }
 
-function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
+export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
   const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
   const startCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote('<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000`;
