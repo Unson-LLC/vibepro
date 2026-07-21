@@ -573,8 +573,12 @@ function normalizeResult(value, dispatchRecord) {
     if (result.changed_files.length > 0) {
       throw new AgentRuntimeError('review_mutation_forbidden', 'review runtime result must not contain changed files');
     }
-    if (result.head_sha !== dispatchRecord.input_head_sha) {
-      throw new AgentRuntimeError('runtime_head_mismatch', 'review result HEAD must match the dispatch input HEAD');
+    const acceptedResultHeads = new Set([
+      dispatchRecord.input_head_sha,
+      dispatchRecord.surface_rebound_from_head_sha
+    ].filter(Boolean));
+    if (!acceptedResultHeads.has(result.head_sha)) {
+      throw new AgentRuntimeError('runtime_head_mismatch', 'review result HEAD must match the dispatch input HEAD or its explicitly unchanged-surface predecessor');
     }
     const actualIdentity = requireText(value.agent_identity ?? dispatchRecord.agent_identity, 'review agent_identity');
     if (actualIdentity === dispatchRecord.implementation_identity ||

@@ -843,17 +843,30 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
 test('CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitly unchanged rebase surface', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let starts = 0;
+  let runtimeStatus = 'running';
+  const reviews = [];
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
     id: 'fixture-runtime',
     async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
     async start() { starts += 1; return { provider_run_id: 'provider-rebase', agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase' }; },
-    async status() { return { status: 'running' }; }, async cancel() {}, async collect_result() { return {}; }
+    async status() { return { status: runtimeStatus }; }, async cancel() {},
+    async collect_result() {
+      return {
+        completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'reused old-HEAD review',
+        agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase', lifecycle: 'closed',
+        review_record: { status: 'pass', summary: 'surface unchanged', findings: [], inspection_summary: 'rebase surface inspected', inspection_evidence: 'runtime/rebase-review', judgment_deltas: ['old HEAD -> current HEAD because surface is unchanged'] }
+      };
+    }
   }] });
-  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; }
+  });
   const run = await session.run(fixture.source, { storyId: STORY_ID });
   const request = {
     adapter_id: 'fixture-runtime', task_id: 'review-rebase', role: 'review', reviewer_identity: 'reviewer-rebase',
     implementation_identity: 'implementer', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-stable',
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/agent-runtime-adapter.js'], strict_head_binding: false },
     requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
   };
   const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
@@ -868,6 +881,16 @@ test('CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitl
   assert.equal(rebound.dispatch.surface_rebound_from_head_sha, run.current_head_sha);
   assert.equal(rebound.state.current_head_sha, rebasedHead);
   assert.equal(starts, 1);
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.status, 'completed');
+  assert.equal(completed.dispatch.result.head_sha, run.current_head_sha);
+  const recorded = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'surface unchanged' }
+  });
+  assert.equal(recorded.review.status, 'pass');
+  assert.equal(reviews.length, 1);
 });
 
 test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle', async (t) => {
