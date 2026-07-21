@@ -1,0 +1,32 @@
+{
+  "agent_system": "claude_code",
+  "agent_id": "claude-testplan-gatecov-fed325a0",
+  "subagent_session_id": "aa0c575ac6edce59c",
+  "model": "claude-sonnet-5",
+  "execution_mode": "parallel_subagent",
+  "dispatched_by": "claude_code_coordinator",
+  "review_rounds": [
+    {
+      "head_sha": "fed325a0",
+      "status": "needs_changes",
+      "findings": [
+        {
+          "id": "path-surface-coverage-buildmanagedworktreegate-untested",
+          "severity": "high",
+          "detail": "cli.jsの17箇所から使われる支配的経路buildManagedWorktreeGateのpolicy_sync検証テストが皆無。read-only probeで現状の正動作は確認済みだが回帰保護がない。"
+        },
+        {
+          "id": "evidence-accuracy-adjacent-suite-mislabeled-as-policy-sync-coverage",
+          "severity": "medium",
+          "detail": "verification-evidence.jsonがvibepro-cliグループ24/24をpolicy_syncカバレッジのように引用（実際は既存gate機構の回帰確認でpolicy_sync言及0件）。"
+        }
+      ]
+    },
+    {
+      "head_sha": "78982951",
+      "status": "pass",
+      "summary": "両findings解消を確認。新規テスト'buildManagedWorktreeGate path performs the policy sync and surfaces policy_sync'がreviewerのprobeと同一手順でsynced/sections_updated/worktree実書き込み/last_event伝播をassert（実行9/9 pass）。verification-evidence.jsonはvibepro-cliグループを『既存gate機構回帰のみ、policy_syncカバレッジではない』と正確に分離表現。",
+      "judgment_delta": "needs_changes -> pass because 支配的経路を直接exerciseする新規e2eテストの実在・実行と、evidence記録の正確な切り分けをdiffとverification-evidence.json再読で直接確認"
+    }
+  ]
+}
