@@ -409,8 +409,20 @@
         "started_at": "2026-07-21",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-managed-worktree-policy-resync",
+        "title": "Managed worktreeのポリシーconfigを凍結させず親repoから再同期する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-content-scoped-evidence-reuse-key"
+    "current_story_id": "story-vibepro-managed-worktree-policy-resync"
   }
 }
