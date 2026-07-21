@@ -285,6 +285,18 @@ test('passing evidenceはverification kindと異なるscriptを拒否する', as
   await assert.rejects(recordVerificationEvidence(repo, {
     storyId: 'story-kind-mismatch', kind: 'integration', status: 'pass', command: 'npm run unit'
   }), /recognized executable integration check/);
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch',
+    kind: 'unit',
+    status: 'pass',
+    command: 'node --test --test-force-exit test/e2e/story-main.spec.ts'
+  }), /recognized executable unit check/);
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch',
+    kind: 'unit',
+    status: 'pass',
+    command: 'node --test test/integration/runtime.test.js'
+  }), /recognized executable unit check/);
 });
 
 test('integration passは実行可能なintegration test commandを受理する', async () => {

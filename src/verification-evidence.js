@@ -165,7 +165,9 @@ export function assertCommandMatchesVerificationKind(kind, command, status, obse
   const observedTapTestCount = ['tests', 'pass']
     .map((key) => Number(artifactObservedValues?.[key]))
     .find((value) => Number.isFinite(value) && value > 0);
-  const nativeTestCheck = /^node\s+--test\b(?=[^\r\n]*(?:--test-name-pattern(?:=|\s)|\s(?!-)\S+))/i.test(normalized)
+  const specializedNativeTest = /(?:^|[\s/_.-])(?:e2e|integration)(?:[\s/_.-]|$)/i.test(normalized);
+  const nativeTestCheck = (!specializedNativeTest
+    && /^node\s+--test\b(?=[^\r\n]*(?:--test-name-pattern(?:=|\s)|\s(?!-)\S+))/i.test(normalized))
     || (bareNativeTest && artifactCheck?.format === 'vitest_jest' && observedTestCount !== undefined)
     || (bareNativeTest && artifactCheck?.format === 'tap' && observedTapTestCount !== undefined);
   const genericUnitCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test|check|unit)\b|npx\s+(?:vitest|jest)\b|pytest\b|cargo\s+test\b|go\s+test\b|make\s+(?:test|check|unit)\b)/i;
