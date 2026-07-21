@@ -406,16 +406,45 @@ test('recordAgentReview reuses the canonical result for the same runtime dispatc
     agentSystem: 'codex', executionMode: 'parallel_subagent', agentId: 'task-runtime-review', agentClosed: true,
     runtimeDispatchId: 'dispatch-runtime-review-1'
   };
-  const first = await recordAgentReview(root, options);
   const reviewDir = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate');
-  const historyBefore = (await readdir(reviewDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
+  const results = await Promise.all(Array.from({ length: 20 }, () => recordAgentReview(root, options)));
+  const first = results.find((result) => result.reused === false);
+  assert.ok(first);
+  assert.equal(results.filter((result) => result.reused === false).length, 1);
+  const historyDir = path.join(reviewDir, 'history');
+  const historyBefore = (await readdir(historyDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
   const replay = await recordAgentReview(root, { ...options, summary: 'must not replace the first result' });
-  const historyAfter = (await readdir(reviewDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
+  const historyAfter = (await readdir(historyDir)).filter((file) => file.startsWith('review-result-gate_evidence-'));
   assert.equal(first.reused, false);
   assert.equal(replay.reused, true);
   assert.equal(replay.review.summary, 'runtime review');
   assert.equal(replay.review.runtime_dispatch_id, 'dispatch-runtime-review-1');
   assert.deepEqual(historyAfter, historyBefore);
+});
+
+test('recordAgentReview serializes the same runtime dispatch across OS processes', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  const options = {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'cross-process runtime review',
+    inspectionSummary: 'read runtime bridge and focused tests', inspectionEvidence: 'test/foo.test.js',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js'], judgmentDeltas: ['runtime result -> accepted once'],
+    agentSystem: 'codex', executionMode: 'parallel_subagent', agentId: 'task-runtime-process', agentClosed: true,
+    runtimeDispatchId: 'dispatch-runtime-process-1'
+  };
+  const runner = path.join(root, 'record-runtime-review.mjs');
+  await writeFile(runner, `
+    import { recordAgentReview } from ${JSON.stringify(new URL('../src/agent-review.js', import.meta.url).href)};
+    const result = await recordAgentReview(${JSON.stringify(root)}, ${JSON.stringify(options)});
+    process.stdout.write(JSON.stringify({ reused: result.reused, recorded_at: result.review.recorded_at }));
+  `);
+  const outputs = await Promise.all(Array.from({ length: 4 }, () => execFileAsync(process.execPath, [runner], { cwd: root, encoding: 'utf8' })));
+  const results = outputs.map(({ stdout }) => JSON.parse(stdout));
+  assert.equal(results.filter((result) => result.reused === false).length, 1);
+  assert.equal(new Set(results.map((result) => result.recorded_at)).size, 1);
+  const historyDir = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'history');
+  assert.equal((await readdir(historyDir)).filter((file) => file.startsWith('review-result-gate_evidence-')).length, 1);
 });
 
 test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {
