@@ -1,0 +1,548 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-explicit-run-attribution-lineage",
+  "updated_at": "2026-07-21T10:00:26.021Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+      "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+      "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+        "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Current PR is one coherent Run-lineage contract and reviewable as one unit",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "reviewer": "user",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-current-head.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-current-head.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/typecheck-current-head.status.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T10:00:26.007Z"
+      },
+      "recorded_at": "2026-07-21T10:00:26.021Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784628019855-4c8129a2",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "source_status": "needs_evidence",
+      "summary": "Current-bound Luna review lifecycle accepted despite historical timed-out entries",
+      "reason": "Required gate_evidence review and PR-final unit_integration, e2e_ux, gate_coverage, code_spec_alignment, and ux_completion reviews all pass at HEAD 5e829717 with closed lightweight Codex subagent lifecycles; only superseded historical timed-out lifecycle entries remain in the aggregate counter, so they do not represent an open review risk.",
+      "reviewer": "user",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-current-head.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-current-head.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/typecheck-current-head.status.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T10:00:19.841Z"
+      },
+      "recorded_at": "2026-07-21T10:00:19.856Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784627322391-77550179",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:axis:scope_reviewability",
+      "source_status": null,
+      "summary": "Single-PR scope accepted for the requested Story delivery",
+      "reason": "User explicitly instructed this VibePro Story to proceed through PR and merge; fresh current-head scope review confirms the 31 files form one atomic lineage contract with no unrelated diff",
+      "reviewer": "user",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-5e829717-pr_split_scope.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-current-head.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-current-head.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/typecheck-current-head.status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T09:48:42.370Z"
+      },
+      "recorded_at": "2026-07-21T09:48:42.393Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784598836806-de1bcb3d",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Track only the workspace Story registration artifact.",
+      "reason": "The changed .vibepro/config.json entry is canonical Story registration required by self-dogfood; generated diagnostic, review, verification, and PR artifacts remain ignored and are not committed.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+          "current_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T01:53:56.794Z"
+      },
+      "recorded_at": "2026-07-21T01:53:56.807Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784598832408-dbfe3079",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Keep explicit Run lineage as one reviewable contract.",
+      "reason": "Runtime authority, provider observation, evidence propagation, audit attribution, and capsule projection share one versioned fail-closed invariant; splitting them would create intermediate states where attribution can silently diverge.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+          "current_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "385f22b8273c11053c343be2b57c7e10e0e46dca",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T01:53:52.394Z"
+      },
+      "recorded_at": "2026-07-21T01:53:52.410Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2,
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 5
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+        "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+        "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+          "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+          "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Current PR is one coherent Run-lineage contract and reviewable as one unit",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "reviewer": "user",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-current-head.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-current-head.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/typecheck-current-head.status.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+          "expected_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+            "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+            "current_head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+        "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T10:00:26.007Z"
+      },
+      "recorded_at": "2026-07-21T10:00:26.021Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/decision-records.json"
+}

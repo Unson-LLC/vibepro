@@ -1,0 +1,1588 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-explicit-run-attribution-lineage",
+  "updated_at": "2026-07-21T12:23:23.576Z",
+  "events": [
+    {
+      "event_id": "e7e7c9e9-5cac-4870-9763-234d210c417b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story purpose, ACs, and Thread-independent authority match implementation and E2E.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:36:51.748Z"
+    },
+    {
+      "event_id": "c28dfb31-bb71-4748-8661-6ad27434722d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded Run through dispatch, evidence, audit, and capsule is demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:36:53.114Z"
+    },
+    {
+      "event_id": "e2c5a7f0-4f71-4b92-aa34-f67f1750ac01",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Binding, non-allocation, and compatibility invariants are verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:36:54.729Z"
+    },
+    {
+      "event_id": "0a053f96-d917-4ed5-8292-56cc67e2a781",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Resolver, provider observation, and typed mismatch boundaries are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:36:56.775Z"
+    },
+    {
+      "event_id": "3f46e57a-295b-4706-a7e9-42477d9fe833",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse, schema, provider, stale, and unavailable paths are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:36:58.646Z"
+    },
+    {
+      "event_id": "eea2a2bc-ba30-46bf-8980-187944e01a77",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused verification and fresh-process E2E evidence exist.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:00.553Z"
+    },
+    {
+      "event_id": "89b4a1ff-069a-4588-8322-6422fae0623e",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Human and JSON CLI outputs remain honest and additive-compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:03.947Z"
+    },
+    {
+      "event_id": "c9918841-87e6-42c5-b4f8-657c58796d81",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Append-only lineage transitions and fail-closed flow are verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:08.651Z"
+    },
+    {
+      "event_id": "0946ec1b-125a-464b-b59e-25280a63f662",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review confirms one coherent Run-attribution PR.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:12.609Z"
+    },
+    {
+      "event_id": "226856d5-2206-4219-88da-5747105614e2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is false; parse loss is handled and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:43.409Z"
+    },
+    {
+      "event_id": "5459aef2-1096-4c67-8754-209a4bce05f0",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is false; invalid envelopes are typed and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:49.929Z"
+    },
+    {
+      "event_id": "da4e100c-b69b-4acc-9ebc-24747daabccc",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is false; provider conflict and rebind fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:37:55.933Z"
+    },
+    {
+      "event_id": "57dae60a-e351-4da9-9e26-a33106b4dfec",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is false; lineage inheritance and no-write mismatch are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:38:02.400Z"
+    },
+    {
+      "event_id": "265f3a2b-60a7-488f-b417-d682ed037dc4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is false; stale and invalid transitions are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:38:07.246Z"
+    },
+    {
+      "event_id": "0dab895f-c8bd-43f2-bb6a-691d48fddad6",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "226856d5-2206-4219-88da-5747105614e2",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Parse loss is required and handled by degraded audit semantics",
+      "reason": "Independent judge found the classifier premise too weak; implementation already handles this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/session-efficiency-run-lineage.test.js",
+          "sha256": "7047060d3294431251ead0950e1d5887ccaa4cdffc9fce2a1364d89403631626"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:39:55.938Z"
+    },
+    {
+      "event_id": "c1223b22-523b-4130-8a44-2e4d464605a6",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "5459aef2-1096-4c67-8754-209a4bce05f0",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Schema invalidity is required and rejected with typed outcomes",
+      "reason": "Independent judge found the classifier premise too weak; implementation already handles this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage.test.js",
+          "sha256": "b9c8460303fffea5b540747ac718323097536ec758414e8d2634989d1533fe3c"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:39:59.962Z"
+    },
+    {
+      "event_id": "a4687796-5775-4d87-8730-ceaa200cb5ee",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "da4e100c-b69b-4acc-9ebc-24747daabccc",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Provider identity conflict is required and fails closed",
+      "reason": "Independent judge found the classifier premise too weak; implementation already handles this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage.test.js",
+          "sha256": "b9c8460303fffea5b540747ac718323097536ec758414e8d2634989d1533fe3c"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:40:04.843Z"
+    },
+    {
+      "event_id": "76d8f046-5d0f-463f-b482-ddb5a052243f",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "57dae60a-e351-4da9-9e26-a33106b4dfec",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Evidence lineage regression is required and tested before write",
+      "reason": "Independent judge found the classifier premise too weak; implementation already handles this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage-evidence-propagation.test.js",
+          "sha256": "33b75ffe4190ff327ac3e79ccd0c14620b442cc2affc7101319998b151d28e41"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:40:11.465Z"
+    },
+    {
+      "event_id": "51a738d9-c030-41af-8063-d7133752bf6c",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "265f3a2b-60a7-488f-b417-d682ed037dc4",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Workflow stale and invalid transitions are required and tested",
+      "reason": "Independent judge found the classifier premise too weak; implementation already handles this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/agent-runtime-adapter-lineage.test.js",
+          "sha256": "cde88cc25d72547fd7c62775d7b0ae715d234f5c8ad0da2ca048c0321c3a3678"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8327-9d45-7d32-95f0-49f5c11781b3",
+        "session_ref": "agent:019f8327-9d45-7d32-95f0-49f5c11781b3"
+      },
+      "head_commit": "09e8b44a30c06eeece75ff20717a8ae24a4ce045",
+      "recorded_at": "2026-07-21T05:40:15.822Z"
+    },
+    {
+      "event_id": "f970b63a-7e78-41a8-8db9-2b309e955d23",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head story intent, AC-1..AC-11, and Thread-independent Run authority align with the inspected implementation and focused E2E evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:26:55.393Z"
+    },
+    {
+      "event_id": "edbaa393-3fd1-492b-bec9-151b7347287e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head source paths and strict-head unit, integration, and E2E artifacts directly demonstrate the guarded Run lineage flow.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:26:56.334Z"
+    },
+    {
+      "event_id": "1de10484-a075-4291-9b26-25cf9e9e2c12",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and tests directly demonstrate binding, non-allocation, append-only identity, and additive compatibility invariants.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:26:57.234Z"
+    },
+    {
+      "event_id": "f76ecc5c-1c45-437c-9a48-866e02c8e684",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head code exposes explicit resolver, provider-observation, typed-mismatch, and fail-closed boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:26:58.280Z"
+    },
+    {
+      "event_id": "1b83160e-b39f-414f-853f-aaba2b62cfbe",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The five corrected failure modes have current-head replacement evidence and are linked below by correction ID.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:26:59.147Z"
+    },
+    {
+      "event_id": "c44cd6b5-3965-4a44-8e34-0dd2e88b652c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The current verification artifact records strict-head b10a891 evidence with passing focused E2E and integration outcomes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:00.007Z"
+    },
+    {
+      "event_id": "39668574-0b67-462b-88d2-c60dbc4e6df2",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, tests, and story/spec docs directly support the public attribution fields and compatibility behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:00.876Z"
+    },
+    {
+      "event_id": "db1ffcf0-6a4d-48cd-8a89-8c8c715146e4",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head adapter, capsule, evidence propagation, and resolver tests demonstrate the execution topology and fail-closed transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:01.771Z"
+    },
+    {
+      "event_id": "a17879ee-ad68-4057-9ce1-9c9a50bf9408",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation is coherent and focused, but current-head independent scope-review evidence is not present; the prior scope review is stale.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:02.669Z"
+    },
+    {
+      "event_id": "7a9b0724-9232-4be7-b3a0-0d63277e0f64",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Legacy correction 0dab895f-c8bd-43f2-bb6a-691d48fddad6 is stale; fresh current-head premise check pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:47.789Z"
+    },
+    {
+      "event_id": "45f84b42-6c4e-4c3d-9700-dc973312eca9",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Legacy correction c1223b22-523b-4130-8a44-2e4d464605a6 is stale; fresh current-head premise check pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:48.643Z"
+    },
+    {
+      "event_id": "7c2d4499-df32-472e-afe7-80723a31e88f",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Legacy correction a4687796-5775-4d87-8730-ceaa200cb5ee is stale; fresh current-head premise check pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:49.690Z"
+    },
+    {
+      "event_id": "be6d0c5a-14b3-4777-8069-3d6c1aa4e1b4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Legacy correction 76d8f046-5d0f-463f-b482-ddb5a052243f is stale; fresh current-head premise check pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:50.590Z"
+    },
+    {
+      "event_id": "19c73d2e-5008-46c2-8eb6-fbe6c9678557",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Legacy correction 51a738d9-c030-41af-8063-d7133752bf6c is stale; fresh current-head premise check pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:27:51.426Z"
+    },
+    {
+      "event_id": "1910a476-ab5e-40cd-aaae-bacb9ee8c543",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "7a9b0724-9232-4be7-b3a0-0d63277e0f64",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Parse loss is required and handled by degraded audit semantics",
+      "reason": "Legacy correction 0dab895f-c8bd-43f2-bb6a-691d48fddad6 is superseded by this current-head correction.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/session-efficiency-run-lineage.test.js",
+          "sha256": "7047060d3294431251ead0950e1d5887ccaa4cdffc9fce2a1364d89403631626"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:13.517Z"
+    },
+    {
+      "event_id": "b7a7baaa-2bf4-4efb-a1ac-55a08abc80df",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "45f84b42-6c4e-4c3d-9700-dc973312eca9",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Schema invalidity is required and rejected with typed outcomes",
+      "reason": "Legacy correction c1223b22-523b-4130-8a44-2e4d464605a6 is superseded by this current-head correction.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage.test.js",
+          "sha256": "7f9887fc257d70c9093b1c5d94cddbf12e5beac1a4656aa9c86affbcfa1e3fe8"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:14.430Z"
+    },
+    {
+      "event_id": "52d67f98-0a76-42a5-8dec-75d50d492855",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "7c2d4499-df32-472e-afe7-80723a31e88f",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Provider identity conflict is required and fails closed",
+      "reason": "Legacy correction a4687796-5775-4d87-8730-ceaa200cb5ee is superseded by this current-head correction.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage.test.js",
+          "sha256": "7f9887fc257d70c9093b1c5d94cddbf12e5beac1a4656aa9c86affbcfa1e3fe8"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:15.393Z"
+    },
+    {
+      "event_id": "305ecb33-f1d4-4dcf-ba0b-8ed0f39dd60a",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "be6d0c5a-14b3-4777-8069-3d6c1aa4e1b4",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Evidence lifecycle lineage inheritance and no-write mismatch rejection are required",
+      "reason": "Legacy correction 76d8f046-5d0f-463f-b482-ddb5a052243f is superseded by this current-head correction.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/run-lineage-evidence-propagation.test.js",
+          "sha256": "33b75ffe4190ff327ac3e79ccd0c14620b442cc2affc7101319998b151d28e41"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:16.285Z"
+    },
+    {
+      "event_id": "6dfb10ff-4280-44ac-8ba1-8e26f46cea55",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "19c73d2e-5008-46c2-8eb6-fbe6c9678557",
+      "wrong_premise": "Failure mode is not required",
+      "corrected_premise": "Workflow state regression handling is required and fails closed",
+      "reason": "Legacy correction 51a738d9-c030-41af-8063-d7133752bf6c is superseded by this current-head correction.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/agent-runtime-adapter-lineage.test.js",
+          "sha256": "3f5c70dfe6d5893451339b1db019cc64cda4338b83f957d8d3a36964ae36d089"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:17.234Z"
+    },
+    {
+      "event_id": "e714ffdb-4939-43a1-9976-c04929a7f570",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "1910a476-ab5e-40cd-aaae-bacb9ee8c543",
+      "reason": "Current-head corrected premise is demonstrated by replacement evidence; supersedes supplied correction 0dab895f-c8bd-43f2-bb6a-691d48fddad6.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:51.242Z"
+    },
+    {
+      "event_id": "2e7b4e69-e1e4-4d4b-886b-ec180efaeadc",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "b7a7baaa-2bf4-4efb-a1ac-55a08abc80df",
+      "reason": "Current-head corrected premise is demonstrated by replacement evidence; supersedes supplied correction c1223b22-523b-4130-8a44-2e4d464605a6.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:52.152Z"
+    },
+    {
+      "event_id": "c64a0942-56da-478b-a5b6-5848e7d61def",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "52d67f98-0a76-42a5-8dec-75d50d492855",
+      "reason": "Current-head corrected premise is demonstrated by replacement evidence; supersedes supplied correction a4687796-5775-4d87-8730-ceaa200cb5ee.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:53.039Z"
+    },
+    {
+      "event_id": "91417a0c-ad67-4b1b-93ca-b5ef55e0395d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "305ecb33-f1d4-4dcf-ba0b-8ed0f39dd60a",
+      "reason": "Current-head corrected premise is demonstrated by replacement evidence; supersedes supplied correction 76d8f046-5d0f-463f-b482-ddb5a052243f.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:54.015Z"
+    },
+    {
+      "event_id": "fb5e79ad-09af-44ec-8628-b6e87297f472",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "6dfb10ff-4280-44ac-8ba1-8e26f46cea55",
+      "reason": "Current-head corrected premise is demonstrated by replacement evidence; supersedes supplied correction 51a738d9-c030-41af-8063-d7133752bf6c.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge",
+        "session_ref": "agent:019f81fa-cd6e-79c2-8235-f8eec5c343ef-independent-judge"
+      },
+      "head_commit": "b10a891b089e5531d05f6a576230aee9c9f285c6",
+      "recorded_at": "2026-07-21T06:28:55.185Z"
+    },
+    {
+      "event_id": "f3e77db8-ddac-4ecd-8517-61b32fbd029b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "変更目的・11 AC・boundaryはStoryに明記され、今回のdf9d58f差分もそのStoryの責務authority closureに限定されているため、意図の検討は成立している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:05.139Z"
+    },
+    {
+      "event_id": "af0531ba-a829-40d6-8e94-2b27cd99f8b3",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "変更実体はRun lineage、audit、evidence、gate authorityの接続であり、現行HEADのfocused test群とGraphifyのchanged/related scopeでruntime/path影響を確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:06.097Z"
+    },
+    {
+      "event_id": "8e123685-b5f7-4332-93ca-3206cd7e7647",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec/Architectureがauthority、append-only observation、非配賦bucket、transcript-free capsule、additive compatibilityを明示し、対応するnegative/compatibility testsがある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:07.013Z"
+    },
+    {
+      "event_id": "be91c698-8357-4fd1-90b9-1ed653e47e61",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architectureのmodule boundaryとresponsibility registryがprimary authority/owned pathsを固定し、Story/Spec/decisionのscope boundaryも同じRun-attribution contractに揃っている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:07.944Z"
+    },
+    {
+      "event_id": "aedc5974-7262-40e7-a5d1-80e21647bc54",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "invalid lineage、provider conflict、stale HEAD、mixed-parent overassignment、transcript leakageをSpecのFM-ERAL-001..005とfocused testsが具体的に扱うため、failure-mode検討は実体に接地している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:08.875Z"
+    },
+    {
+      "event_id": "ccbe90b4-6178-4719-b8d1-97458a4c3f09",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head verification、Graphify boundary、scope reviewのDone EvidenceがSpecに定義され、現行HEADのfocused test結果と生成済みGraphify/scope artifactsが対応する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:09.792Z"
+    },
+    {
+      "event_id": "e77f130e-f288-4c55-b3d1-6e20d3c4bfff",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI/session-cost出力、legacy fields、Guarded Run reader、adapter利用者を保持する設計とcompatibility testsがあり、lineage fieldsはadditive。外部契約を壊さない判断は成立している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:10.714Z"
+    },
+    {
+      "event_id": "663d3785-5dbf-4638-a247-3b0f0af7830f",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded Run→dispatch→provider observation→evidence/review→capsule→session-costの連結をE2Eが通し、cross-Run/stale-head/invalid-transitionのnegative testsが証跡欠落と誤再bindingを防いでいる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:11.611Z"
+    },
+    {
+      "event_id": "153f0e88-c9cb-48b8-a41a-1ed1deef9496",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "split_planのsplit_recommendedは28 commit/Graphify blast radiusに基づく advisory signalに留まる。最終候補df9d58fの追加差分は責務registryと証拠集約のstructural gate closureだけで、Story全体の変更も一つのRun-attribution contractに従属する。current independent pr_split_scope resultはone PR/no independent boundaryと明示し、1 reviewerの一貫した判断として成立する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:12.502Z"
+    },
+    {
+      "event_id": "c1c527a1-3ffa-4059-9b85-4f4e2806f5f8",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "parse failureは主契約の中心ではないが、session auditのmalformed row handlingをfocused testが確認しており、今回のstructural gate closureがparse failureを隠す変更でもない。not_requiredの消化は実体と矛盾しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:14.139Z"
+    },
+    {
+      "event_id": "a658e756-d626-4d6b-9b7b-de5378606516",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "lineage schema validation、mismatch拒否、malformed responsibility registryのfail-closed testsがあり、部分/不正入力の扱いは検証済み。not_required分類でも、Story固有FMで同じリスクを明示的にカバーしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:15.167Z"
+    },
+    {
+      "event_id": "031b4fcb-49b8-4377-94e1-f78bdcc97682",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider observation conflict/cross-Run rebindとprovider-only unavailableのnegative pathsがあり、外部providerの不完全・衝突入力を黙ってauthority化しない。今回の変更はnetwork依存を追加していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:16.086Z"
+    },
+    {
+      "event_id": "29252139-e242-4ecb-a0bf-bcd8a8cff987",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "verification/review evidenceのcurrent-head binding、structured observationの集約、responsibility authorityのrequired evidence closureを現行テストとpr-manager差分が扱う。未更新証跡をgreenにする根拠はない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:16.986Z"
+    },
+    {
+      "event_id": "f488ab68-873b-4352-830d-4c3b3f57c6d8",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded Run stateのstale HEAD/invalid transition/pending semanticsとcurrent-head gate evidenceをfocused testsが確認し、df9d58fは責務authorityを登録して未登録状態を隠すだけの変更ではない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-adjudicator-df9d58f3",
+        "session_ref": null
+      },
+      "head_commit": "df9d58f3763035b0af78a9ca8474bf2aa4ecda85",
+      "recorded_at": "2026-07-21T06:44:17.971Z"
+    },
+    {
+      "event_id": "34c9c641-63fb-4256-9416-357009866e63",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyと11 ACの目的境界が明示",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:13.419Z"
+    },
+    {
+      "event_id": "68c491a7-676d-4564-834a-1884ddcd407a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head E2E 14/14とintegration 128/128が実経路とfailure pathを実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:14.350Z"
+    },
+    {
+      "event_id": "0533ae71-674d-4e1f-b41e-d6926102f302",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec Architectureとidentity authority partition handoff testsが一致",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:15.250Z"
+    },
+    {
+      "event_id": "df695621-7f5f-4e31-bafa-9bde059b5b2c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "managed authority provider observation audit capsule境界を実装 Graphify reviewで確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:16.206Z"
+    },
+    {
+      "event_id": "961b44e4-f6d4-4422-8255-c94b0e4acf52",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "stale schema provider mismatch等の主要failure modeをcurrent-head testsで確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:17.380Z"
+    },
+    {
+      "event_id": "aed46b53-cf6c-4b22-b089-9c418f8398ea",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head TAP Graphify fixed-HEAD reviewがDone Evidenceを充足",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:18.454Z"
+    },
+    {
+      "event_id": "fb245328-9c1e-4b7c-ab52-db28163c69e3",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI E2E additive互換 legacy fields Thread非権威化を確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:19.395Z"
+    },
+    {
+      "event_id": "9cff5440-9f93-46bd-8006-68551956cc87",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run dispatch observation evidence session-cost handoffのE2E経路を確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:20.456Z"
+    },
+    {
+      "event_id": "3513e1cd-e2a1-46c2-95a2-3cd9ff94fb1b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed JSONLのdegraded behaviorをcurrent testsで確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:21.568Z"
+    },
+    {
+      "event_id": "6c0e2af1-ce07-4c1b-ac20-a545429f8bf7",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed mismatched binding corrupt unsupported schemaのfail-closed testsを確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:22.578Z"
+    },
+    {
+      "event_id": "708e0f4e-b18b-4168-b9ed-c88a194905b6",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider rebind fallback unavailable conflict testsを確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:23.572Z"
+    },
+    {
+      "event_id": "8696c57e-85ad-4159-b873-14ab711863de",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "evidence記録 session-cost handoffまでE2E通過",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:24.461Z"
+    },
+    {
+      "event_id": "4c50c5a1-5def-4b7f-997e-60a02fbed949",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "stale HEAD retry fallback migration fresh-process lifecycle testsを確認",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:25.357Z"
+    },
+    {
+      "event_id": "2a2c2ab4-c4f6-4c51-9b2b-ede1d6110b70",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head pr_split_scope reviewで単一PRの原子性を確定する必要がある",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8404-1a4a-7c73-9d02-8e5c6d6c466f",
+        "session_ref": "5e829717106cadc59b23c2f4d7ede74e97b04a22"
+      },
+      "head_commit": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+      "recorded_at": "2026-07-21T09:37:26.184Z"
+    },
+    {
+      "event_id": "25a859b3-31c2-4ae2-b8ed-2498988657e2",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent directly replaces impossible Task splitting with explicit Run lineage authority",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:44.136Z"
+    },
+    {
+      "event_id": "2ee0adf5-3755-42d6-97b5-a536368bba99",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final E2E exercises real Guarded Run dispatch evidence audit and capsule paths",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:45.812Z"
+    },
+    {
+      "event_id": "88611b28-561a-4625-9f0d-6ebff964d080",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Identity binding exhaustive buckets compatibility and exclusion invariants are tested",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:47.176Z"
+    },
+    {
+      "event_id": "ca3dda65-c32f-4801-9ab1-625c16294084",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-lineage owns authority while session-efficiency only consumes resolved attribution",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:48.927Z"
+    },
+    {
+      "event_id": "5cd14eeb-4c14-4b26-8b21-325feb695ccd",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed stale corrupt conflicting and unavailable paths fail closed in tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:50.431Z"
+    },
+    {
+      "event_id": "0eda8105-f7d0-453c-a3c0-b12b28c184fb",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final HEAD has strict unit integration E2E typecheck and independent review evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:51.886Z"
+    },
+    {
+      "event_id": "0c35d840-273d-4a1d-a2a0-fd4bd7a87f23",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changes are additive and preserve callers while rejecting authoritative conflicts",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:54.859Z"
+    },
+    {
+      "event_id": "123bd2b0-003f-4920-bac6-84779db08315",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent reviewable Run-attribution authority contract",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:56.997Z"
+    },
+    {
+      "event_id": "487f83cf-52da-4095-bafe-62c6074fb163",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed partial mismatched and stale lineage inputs return typed failures",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:44:59.384Z"
+    },
+    {
+      "event_id": "906265a0-f167-455f-8795-97f6d0e17bf0",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider collisions scope disagreement and scan failures are explicit degraded outcomes",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:45:02.611Z"
+    },
+    {
+      "event_id": "72a9c015-65b2-4638-a0ee-d6ac2b3d9b67",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "E2E verifies lineage through evidence audit and transcript-free handoff",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:45:11.573Z"
+    },
+    {
+      "event_id": "d279da9d-a903-4364-9c14-8b23deb36049",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests cover invalid persisted dispatch state stale authority and bounded reconstruction",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8473-c7ed-7002-897a-399b6efc27e8",
+        "session_ref": ".vibepro/adjudication/story-vibepro-explicit-run-attribution-lineage/transcript-4cc07d8e-final.md"
+      },
+      "head_commit": "4cc07d8ef2301b2e3e36da0fd93d146338ea1d8b",
+      "recorded_at": "2026-07-21T11:45:18.310Z"
+    },
+    {
+      "event_id": "33ed25a3-0def-4232-8a75-16f31f7ed081",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story states the actual intent: reliable Run attribution without imposing Codex Task separation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:16:45.644Z"
+    },
+    {
+      "event_id": "cc64aa5b-ed6b-43e1-b6ad-61bcd0663707",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The docs accurately model Codex Task or Thread as one conversation and provider identity as observational.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:16:50.573Z"
+    },
+    {
+      "event_id": "0d730cf5-6354-491e-8172-31ea24bfb012",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authority, observation, fallback, and Graphify responsibility boundaries are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:16:53.900Z"
+    },
+    {
+      "event_id": "d2f34746-ac66-4927-ad1f-fba53e3339c4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Append-only identity, fail-closed ambiguity, and HEAD binding invariants are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:16:56.782Z"
+    },
+    {
+      "event_id": "1d3f6f06-faaf-48e5-9e65-f8987e805197",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Corrupt, partial, stale, conflicting, and unavailable lineage failure modes are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:16:58.667Z"
+    },
+    {
+      "event_id": "a6e9c65f-efae-476b-a96c-6109bf4c2ac7",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head verification, Graphify diagnosis, docs, and independent review establish completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:00.118Z"
+    },
+    {
+      "event_id": "73652901-7577-43e2-8db7-b5b47c4a1b97",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, Architecture, and Spec publish the additive schema and fail-closed contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:02.121Z"
+    },
+    {
+      "event_id": "c164b87c-1a23-4dcb-9b15-16e6b75edb01",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change remains one coherent Run-attribution contract and is reviewable as one PR.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:04.065Z"
+    },
+    {
+      "event_id": "a2bde4e6-e199-4d76-8e0e-3fe763bdbb8b",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed or partial managed authority is rejected and legacy inference is explicit-only.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:06.692Z"
+    },
+    {
+      "event_id": "0b065146-d2a3-45ba-a01b-98bd3ecbe263",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Invalid or conflicting provider identities never become authoritative lineage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:08.484Z"
+    },
+    {
+      "event_id": "5798fecb-5a59-4487-bb27-5d56886612b1",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verification, review, decision, action, audit, and capsule lineage propagation is regression-tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:09.971Z"
+    },
+    {
+      "event_id": "f4b9121a-6372-47a8-abf0-eef12ae0ad6d",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Legacy behavior remains compatible only when no managed authority exists.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:17:11.250Z"
+    }
+  ]
+}

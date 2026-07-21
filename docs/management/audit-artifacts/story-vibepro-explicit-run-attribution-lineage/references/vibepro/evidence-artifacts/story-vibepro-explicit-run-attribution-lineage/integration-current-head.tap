@@ -1,0 +1,358 @@
+TAP version 13
+# Subtest: resolver matches cleanup responsibility contract and blocks without current evidence
+ok 1 - resolver matches cleanup responsibility contract and blocks without current evidence
+  ---
+  duration_ms: 726.431833
+  type: 'test'
+  ...
+# Subtest: resolver passes matched contract when current-head evidence is bound to required observations
+ok 2 - resolver passes matched contract when current-head evidence is bound to required observations
+  ---
+  duration_ms: 486.010958
+  type: 'test'
+  ...
+# Subtest: resolver accepts verify-record git context and observed values as current responsibility evidence
+ok 3 - resolver accepts verify-record git context and observed values as current responsibility evidence
+  ---
+  duration_ms: 434.901458
+  type: 'test'
+  ...
+# Subtest: resolver does not satisfy contract evidence with unrelated generic unit pass
+ok 4 - resolver does not satisfy contract evidence with unrelated generic unit pass
+  ---
+  duration_ms: 445.904208
+  type: 'test'
+  ...
+# Subtest: resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+ok 5 - resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+  ---
+  duration_ms: 509.427583
+  type: 'test'
+  ...
+# Subtest: resolver emits no_registered_authority for unregistered high-risk state surfaces
+ok 6 - resolver emits no_registered_authority for unregistered high-risk state surfaces
+  ---
+  duration_ms: 376.550458
+  type: 'test'
+  ...
+# Subtest: resolver uses the accepted Run-lineage Architecture registry contract
+ok 7 - resolver uses the accepted Run-lineage Architecture registry contract
+  ---
+  duration_ms: 31.036375
+  type: 'test'
+  ...
+# Subtest: resolver does not classify derive-only workspace status as an unregistered state responsibility
+ok 8 - resolver does not classify derive-only workspace status as an unregistered state responsibility
+  ---
+  duration_ms: 487.507042
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when workspace status contains a state mutation
+ok 9 - resolver fails closed when workspace status contains a state mutation
+  ---
+  duration_ms: 425.012958
+  type: 'test'
+  ...
+# Subtest: resolver applies workspace status exemption without hiding unregistered CLI wiring
+ok 10 - resolver applies workspace status exemption without hiding unregistered CLI wiring
+  ---
+  duration_ms: 526.118542
+  type: 'test'
+  ...
+# Subtest: resolver retains a mixed worker candidate beside read-only workspace status
+ok 11 - resolver retains a mixed worker candidate beside read-only workspace status
+  ---
+  duration_ms: 349.995125
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when reviewed workspace status gains an indirect git side effect
+ok 12 - resolver fails closed when reviewed workspace status gains an indirect git side effect
+  ---
+  duration_ms: 358.153959
+  type: 'test'
+  ...
+# Subtest: resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+ok 13 - resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+  ---
+  duration_ms: 357.447334
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when matched registry entry is missing required fields
+ok 14 - resolver fails closed when matched registry entry is missing required fields
+  ---
+  duration_ms: 416.2595
+  type: 'test'
+  ...
+# Subtest: resolver fails closed on malformed responsibility registry JSON
+ok 15 - resolver fails closed on malformed responsibility registry JSON
+  ---
+  duration_ms: 439.915375
+  type: 'test'
+  ...
+# Subtest: root registry resolves VibePro core responsibility authorities with contract-bound evidence
+ok 16 - root registry resolves VibePro core responsibility authorities with contract-bound evidence
+  ---
+  duration_ms: 93.325041
+  type: 'test'
+  ...
+# Subtest: resolver does not fan out a shared risk surface across path-anchored responsibilities
+ok 17 - resolver does not fan out a shared risk surface across path-anchored responsibilities
+  ---
+  duration_ms: 407.801125
+  type: 'test'
+  ...
+# Subtest: resolver preserves standalone risk matching for an explicitly risk-only responsibility
+ok 18 - resolver preserves standalone risk matching for an explicitly risk-only responsibility
+  ---
+  duration_ms: 329.851083
+  type: 'test'
+  ...
+# Subtest: resolver lets a contract clause path supplement a non-matching registry path
+ok 19 - resolver lets a contract clause path supplement a non-matching registry path
+  ---
+  duration_ms: 345.750125
+  type: 'test'
+  ...
+# Subtest: resolver matches symbols only in changed production lines
+ok 20 - resolver matches symbols only in changed production lines
+  ---
+  duration_ms: 699.480917
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol added on a changed production line
+ok 21 - resolver matches a symbol added on a changed production line
+  ---
+  duration_ms: 924.448666
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when the production diff cannot be read
+ok 22 - resolver fails closed for symbol matching when the production diff cannot be read
+  ---
+  duration_ms: 509.344208
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when no diff base is provided
+ok 23 - resolver fails closed for symbol matching when no diff base is provided
+  ---
+  duration_ms: 383.399
+  type: 'test'
+  ...
+# Subtest: resolver compares an explicit head even when another branch is checked out
+ok 24 - resolver compares an explicit head even when another branch is checked out
+  ---
+  duration_ms: 1150.896375
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol in an untracked production file
+ok 25 - resolver matches a symbol in an untracked production file
+  ---
+  duration_ms: 926.747167
+  type: 'test'
+  ...
+# Subtest: resolver ignores registered symbols that appear only in test files or story text
+ok 26 - resolver ignores registered symbols that appear only in test files or story text
+  ---
+  duration_ms: 379.794
+  type: 'test'
+  ...
+# Subtest: resolver does not match a contract from responsibility reference alone
+ok 27 - resolver does not match a contract from responsibility reference alone
+  ---
+  duration_ms: 423.0605
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+ok 28 - pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+  ---
+  duration_ms: 3122.553833
+  type: 'test'
+  ...
+# Subtest: AC-9/AC-11 fresh process recovers capsule lineage across the Run-state responsibility boundary
+ok 29 - AC-9/AC-11 fresh process recovers capsule lineage across the Run-state responsibility boundary
+  ---
+  duration_ms: 2312.6205
+  type: 'test'
+  ...
+# Subtest: lineage projection remains bounded when the Run owns many dispatches
+ok 30 - lineage projection remains bounded when the Run owns many dispatches
+  ---
+  duration_ms: 87.549625
+  type: 'test'
+  ...
+# Subtest: creates and validates a version 0.1.0 envelope from Run authority
+ok 31 - creates and validates a version 0.1.0 envelope from Run authority
+  ---
+  duration_ms: 11.458791
+  type: 'test'
+  ...
+# Subtest: rejects malformed and mismatched bindings with typed errors
+ok 32 - rejects malformed and mismatched bindings with typed errors
+  ---
+  duration_ms: 2.116125
+  type: 'test'
+  ...
+# Subtest: provider observations merge append-only, deduplicate, and reject rebind/conflict
+ok 33 - provider observations merge append-only, deduplicate, and reject rebind/conflict
+  ---
+  duration_ms: 1.716667
+  type: 'test'
+  ...
+# Subtest: provider identities cannot be rebound across persisted dispatch or Run envelopes
+ok 34 - provider identities cannot be rebound across persisted dispatch or Run envelopes
+  ---
+  duration_ms: 8.472833
+  type: 'test'
+  ...
+# Subtest: authoritative lineage identities cannot be masked by differing legacy record values
+ok 35 - authoritative lineage identities cannot be masked by differing legacy record values
+  ---
+  duration_ms: 6.682667
+  type: 'test'
+  ...
+# Subtest: authoritative lineage provider scope must agree with the persisted adapter scope
+ok 36 - authoritative lineage provider scope must agree with the persisted adapter scope
+  ---
+  duration_ms: 20.048459
+  type: 'test'
+  ...
+# Subtest: provider-scoped identities allow adapter observations to share identifiers
+ok 37 - provider-scoped identities allow adapter observations to share identifiers
+  ---
+  duration_ms: 0.928917
+  type: 'test'
+  ...
+# Subtest: legacy dispatch records cannot rebind provider identities across Runs or dispatches
+ok 38 - legacy dispatch records cannot rebind provider identities across Runs or dispatches
+  ---
+  duration_ms: 23.382333
+  type: 'test'
+  ...
+# Subtest: repeated legacy dispatch records with the same Run and dispatch are idempotent
+ok 39 - repeated legacy dispatch records with the same Run and dispatch are idempotent
+  ---
+  duration_ms: 20.672166
+  type: 'test'
+  ...
+# Subtest: resolves five attribution buckets with bounded provenance and reconciled totals
+ok 40 - resolves five attribution buckets with bounded provenance and reconciled totals
+  ---
+  duration_ms: 3.085417
+  type: 'test'
+  ...
+# Subtest: thread-only observations never become authoritative story attribution
+ok 41 - thread-only observations never become authoritative story attribution
+  ---
+  duration_ms: 137.967208
+  type: 'test'
+  ...
+# Subtest: AC-11 session efficiency audit consumes canonical Run resolution and validation from run-lineage
+ok 42 - AC-11 session efficiency audit consumes canonical Run resolution and validation from run-lineage
+  ---
+  duration_ms: 189.924834
+  type: 'test'
+  ...
+# Subtest: Run lineage module exposes canonical repository resolution for audit consumers
+ok 43 - Run lineage module exposes canonical repository resolution for audit consumers
+  ---
+  duration_ms: 669.606875
+  type: 'test'
+  ...
+# Subtest: canonical Run resolution fails closed on a malformed authoritative candidate without fallback
+ok 44 - canonical Run resolution fails closed on a malformed authoritative candidate without fallback
+  ---
+  duration_ms: 525.592959
+  type: 'test'
+  ...
+# Subtest: canonical lineage rejects partial current managed authority instead of promoting legacy fields
+ok 45 - canonical lineage rejects partial current managed authority instead of promoting legacy fields
+  ---
+  duration_ms: 416.373084
+  type: 'test'
+  ...
+# Subtest: session efficiency audit preserves embedded-lineage heuristics when no run id is requested
+ok 46 - session efficiency audit preserves embedded-lineage heuristics when no run id is requested
+  ---
+  duration_ms: 779.215166
+  type: 'test'
+  ...
+# Subtest: explicit run_id alias fails closed when canonical Run authority is missing
+ok 47 - explicit run_id alias fails closed when canonical Run authority is missing
+  ---
+  duration_ms: 576.436375
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage fails closed when authority is missing required binding fields
+ok 48 - canonical Run lineage fails closed when authority is missing required binding fields
+  ---
+  duration_ms: 493.113709
+  type: 'test'
+  ...
+# Subtest: explicit run id fails closed when complete authority conflicts with session observations
+ok 49 - explicit run id fails closed when complete authority conflicts with session observations
+  ---
+  duration_ms: 735.619042
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage validates complete authority and matching dispatches
+ok 50 - canonical Run lineage validates complete authority and matching dispatches
+  ---
+  duration_ms: 652.985292
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage fails closed on conflicting persisted provider identities
+ok 51 - canonical Run lineage fails closed on conflicting persisted provider identities
+  ---
+  duration_ms: 521.3015
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage fails closed on provider identities duplicated across persisted Runs
+ok 52 - canonical Run lineage fails closed on provider identities duplicated across persisted Runs
+  ---
+  duration_ms: 529.799208
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage reports a degraded provider scan when an expected runs path is a file
+ok 53 - canonical Run lineage reports a degraded provider scan when an expected runs path is a file
+  ---
+  duration_ms: 672.472708
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage fails closed when one dispatch is valid and another has invalid lineage
+ok 54 - canonical Run lineage fails closed when one dispatch is valid and another has invalid lineage
+  ---
+  duration_ms: 630.890917
+  type: 'test'
+  ...
+# Subtest: canonical Run lineage deterministically deduplicates one mirrored session event per dispatch
+ok 55 - canonical Run lineage deterministically deduplicates one mirrored session event per dispatch
+  ---
+  duration_ms: 508.216333
+  type: 'test'
+  ...
+# Subtest: malformed JSONL rows are reported as parse loss and degrade audit readiness
+ok 56 - malformed JSONL rows are reported as parse loss and degrade audit readiness
+  ---
+  duration_ms: 509.491
+  type: 'test'
+  ...
+# Subtest: AC-6 excludes shared-parent, unattributed, and replayed context from Story token/time/value display
+ok 57 - AC-6 excludes shared-parent, unattributed, and replayed context from Story token/time/value display
+  ---
+  duration_ms: 527.930083
+  type: 'test'
+  ...
+# Subtest: AC-7 external sessions keep advisory inference and fail unavailable or ambiguous without Thread separation
+ok 58 - AC-7 external sessions keep advisory inference and fail unavailable or ambiguous without Thread separation
+  ---
+  duration_ms: 1040.110916
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18244.474792

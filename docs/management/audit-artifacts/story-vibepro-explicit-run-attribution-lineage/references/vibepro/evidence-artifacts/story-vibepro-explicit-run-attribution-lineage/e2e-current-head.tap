@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction
+ok 1 - ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction
+  ---
+  duration_ms: 46764.918667
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50991.852792

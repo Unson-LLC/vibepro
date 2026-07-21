@@ -1,0 +1,159 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-explicit-run-attribution-lineage",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head verification, Graphify responsibility boundary, and fail-closed lineage contract are coherent",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, Spec, origin/main..HEAD, current-head verification evidence, Graphify diagnosis 2026-07-21T120806Z, source, and regression tests; independent focused suite passed 46/46",
+    "evidence": ".vibepro/diagnostics/2026-07-21T120806Z/summary.md",
+    "inputs": [
+      "src/run-lineage.js",
+      "docs/specs/story-vibepro-explicit-run-attribution-lineage.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial confidence became a temporary Graphify binding block, then pass after correcting the artifact-contract premise and re-inspecting the same current-head diagnose run"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+    "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+    "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+    "expected_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+    "current_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+      "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+      "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+      "current_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "repo root /Users/ksato/.codex/worktrees/4334/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/4334/vibepro",
+      "expected_root": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+      "expected_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "current_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/4334/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/4334/vibepro/.worktrees/vibepro/story-vibepro-explicit-run-attribution-lineage-17tm1x",
+        "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "actual_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+        "current_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": true,
+        "raw_dirty_fingerprint": " M .vibepro/config.json",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-21T12:15:32.921Z",
+  "git_context": {
+    "head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+    "current_branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "7572d25691cf6e475656093261f9deddd80428ce6688df0bf888ec6da9487126",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T12:15:32.877Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Gate evidence review is bound to current-head canonical artifacts"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-explicit-run-attribution-lineage.md",
+        "sha256": "7472551584437fc1837d06dcf25d27e3b45a683de109ab4f46c77a8004edd473",
+        "size": 5768
+      },
+      {
+        "path": "src/run-lineage.js",
+        "sha256": "5dbd19cb2ae484e09a29e5924b1342a9d5cd8798a15850d93bd5281917bb1abc",
+        "size": 28177
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a52084f58fd7677534b5470dd4fc3726b0828541d8aa7d9fedf1f4b11c80bc22"
+  },
+  "source_fingerprint": "ecaeb1414841189b7507d523bbee9f68a346a5c79110036803b9bfadbd3a0de3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "medium",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

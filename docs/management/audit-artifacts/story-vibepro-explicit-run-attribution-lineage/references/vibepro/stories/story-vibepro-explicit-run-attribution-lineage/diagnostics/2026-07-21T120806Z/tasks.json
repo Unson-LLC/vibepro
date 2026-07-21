@@ -1,0 +1,1429 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-21T12:09:51.405Z",
+  "story": {
+    "story_id": "story-vibepro-explicit-run-attribution-lineage",
+    "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+    "ssot": "local",
+    "status": "active",
+    "horizon": "now",
+    "view": "dev",
+    "period": "2026-07",
+    "started_at": "2026-07-21",
+    "due_at": null,
+    "category": "product"
+  },
+  "source_run": {
+    "run_id": "2026-07-21T120806Z",
+    "gate_status": "needs_review"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-01-arch-guarded-run-agent-runtime-adapter-lineage-envelope-authority-provider-observation-mismatch-contract-session-efficiency-audit-module-architecture-spec",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-01-arch-guarded-run-agent-runtime-adapter-lineage-envelope-authority-provider-observation-mismatch-contract-session-efficiency-audit-module-architecture-spec",
+      "finding_id": null,
+      "title": "[ARCH] 既存Guarded RunとAgent Runtime Adapterを基準にlineage envelope、authority、provider observation、mismatch contract、およびsession-efficiency auditから分離するmodule境界をArchitecture/Specへ固定する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 20,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "implement-task",
+          "title": "[ARCH] 既存Guarded RunとAgent Runtime Adapterを基準にlineage envelope、authority、provider observation、mismatch contract、およびsession-efficiency auditから分離するmodule境界をArchitecture/Specへ固定する。",
+          "detail": "[ARCH] 既存Guarded RunとAgent Runtime Adapterを基準にlineage envelope、authority、provider observation、mismatch contract、およびsession-efficiency auditから分離するmodule境界をArchitecture/Specへ固定する。を実装し、Storyの受け入れ基準と対応させる"
+        }
+      ],
+      "acceptance_criteria": [],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-01-arch-guarded-run-agent-runtime-adapter-lineage-envelope-authority-provider-observation-mismatch-contract-session-efficiency-audit-module-architecture-spec was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-02-core-dispatch-action-evidence-recorder-lineage-append-only",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-02-core-dispatch-action-evidence-recorder-lineage-append-only",
+      "finding_id": null,
+      "title": "[CORE] dispatch/action/evidence recorderへlineageの生成・検証・append-only永続化を追加する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 30,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "implement-task",
+          "title": "[CORE] dispatch/action/evidence recorderへlineageの生成・検証・append-only永続化を追加する。",
+          "detail": "[CORE] dispatch/action/evidence recorderへlineageの生成・検証・append-only永続化を追加する。を実装し、Storyの受け入れ基準と対応させる"
+        }
+      ],
+      "acceptance_criteria": [],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-02-core-dispatch-action-evidence-recorder-lineage-append-only was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-03-audit-session-cost-run-resolver-story-attributed-shared-parent-other-story-unattributed-replayed-context",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-03-audit-session-cost-run-resolver-story-attributed-shared-parent-other-story-unattributed-replayed-context",
+      "finding_id": null,
+      "title": "[AUDIT] session-costへRun resolverとstory_attributed/shared_parent/other_story/unattributed/replayed_context分類を追加する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 40,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "implement-task",
+          "title": "[AUDIT] session-costへRun resolverとstory_attributed/shared_parent/other_story/unattributed/replayed_context分類を追加する。",
+          "detail": "[AUDIT] session-costへRun resolverとstory_attributed/shared_parent/other_story/unattributed/replayed_context分類を追加する。を実装し、Storyの受け入れ基準と対応させる"
+        }
+      ],
+      "acceptance_criteria": [],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-03-audit-session-cost-run-resolver-story-attributed-shared-parent-other-story-unattributed-replayed-context was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-04-handoff-context-capsule-pr-decision-surface-bounded-lineage-summary-ref",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-04-handoff-context-capsule-pr-decision-surface-bounded-lineage-summary-ref",
+      "finding_id": null,
+      "title": "[HANDOFF] context capsuleとPR decision surfaceへbounded lineage summary/refを追加する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 50,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "implement-task",
+          "title": "[HANDOFF] context capsuleとPR decision surfaceへbounded lineage summary/refを追加する。",
+          "detail": "[HANDOFF] context capsuleとPR decision surfaceへbounded lineage summary/refを追加する。を実装し、Storyの受け入れ基準と対応させる"
+        }
+      ],
+      "acceptance_criteria": [],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-04-handoff-context-capsule-pr-decision-surface-bounded-lineage-summary-ref was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-05-qa-run-mixed-parent-provider-id-stale-head-vibe-pro-session-fresh-process-handoff-unit-e2-e-fixture",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-05-qa-run-mixed-parent-provider-id-stale-head-vibe-pro-session-fresh-process-handoff-unit-e2-e-fixture",
+      "finding_id": null,
+      "title": "[QA] 単一Run、mixed parent、provider id衝突、stale HEAD、VibePro外session、fresh-process handoffのunit/E2E fixtureを追加する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 60,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 0,
+      "target_files": [],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "implement-task",
+          "title": "[QA] 単一Run、mixed parent、provider id衝突、stale HEAD、VibePro外session、fresh-process handoffのunit/E2E fixtureを追加する。",
+          "detail": "[QA] 単一Run、mixed parent、provider id衝突、stale HEAD、VibePro外session、fresh-process handoffのunit/E2E fixtureを追加する。を実装し、Storyの受け入れ基準と対応させる"
+        }
+      ],
+      "acceptance_criteria": [],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-05-qa-run-mixed-parent-provider-id-stale-head-vibe-pro-session-fresh-process-handoff-unit-e2-e-fixture was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-explicit-run-attribution-lineage-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-explicit-run-attribution-lineage-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "high",
+      "status": "done",
+      "order": 70,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/nocodb-story-sync.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-task-generator.js",
+        "src/cli.js",
+        "src/workspace.js",
+        "src/diagnostic-engine.js",
+        "src/artifact-routing.js",
+        "src/architecture-profiler.js",
+        "src/playbook-exporter.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-html.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-manager.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-task-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-explicit-run-attribution-lineage-business_context_gap",
+          "story_id": "story-vibepro-explicit-run-attribution-lineage",
+          "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+          "type": "business_context_gap",
+          "severity": "high",
+          "reason": "Storyの事業/利用文脈が未確定。",
+          "potential_bug": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。",
+          "recommended_review": "対象ユーザー、利用場面、成功状態をStory正本に明記してからSpecを承認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "story_backed",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js"
+            ],
+            "open_question": "business_context"
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "spec": [],
+            "architecture": [
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/task-manager.js",
+              "src/visual-verifier.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 134
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 14,
+                "degree": 126
+              },
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 124
+              },
+              {
+                "id": "src_story_task_generator_js",
+                "label": "story-task-generator.js",
+                "source_file": "src/story-task-generator.js",
+                "community": 3,
+                "degree": 34
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 29,
+                "edge_count": 118
+              },
+              {
+                "id": 14,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 119,
+                "edge_count": 274
+              },
+              {
+                "id": 3,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 35,
+                "edge_count": 83
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              },
+              {
+                "id": 22,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 32,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 33,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 762,
+            "impact_score": 0.0723,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        },
+        {
+          "id": "story-vibepro-explicit-run-attribution-lineage-business_metric_gap",
+          "story_id": "story-vibepro-explicit-run-attribution-lineage",
+          "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+          "type": "business_metric_gap",
+          "severity": "medium",
+          "reason": "Storyの成功指標または観測観点が未確定。",
+          "potential_bug": "受け入れ基準を満たしても、プロダクト上の改善を検知できない可能性がある。",
+          "recommended_review": "少なくとも1つのKPI、ログ、運用確認観点をSpecまたはStoryへ紐づける。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "story_backed",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js"
+            ],
+            "open_question": "business_metric"
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "spec": [],
+            "architecture": [
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/task-manager.js",
+              "src/visual-verifier.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 134
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 14,
+                "degree": 126
+              },
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 124
+              },
+              {
+                "id": "src_story_task_generator_js",
+                "label": "story-task-generator.js",
+                "source_file": "src/story-task-generator.js",
+                "community": 3,
+                "degree": 34
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 29,
+                "edge_count": 118
+              },
+              {
+                "id": 14,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 119,
+                "edge_count": 274
+              },
+              {
+                "id": 3,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 35,
+                "edge_count": 83
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              },
+              {
+                "id": 22,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 32,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 33,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 762,
+            "impact_score": 0.0723,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        },
+        {
+          "id": "story-vibepro-explicit-run-attribution-lineage-cross_community_architecture_review",
+          "story_id": "story-vibepro-explicit-run-attribution-lineage",
+          "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+          "type": "cross_community_architecture_review",
+          "severity": "medium",
+          "reason": "Graphify上で複数communityに跨り、ADRは存在するため、ADRと実依存の対応確認が必要。",
+          "potential_bug": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。",
+          "recommended_review": "ADRの対象境界とGraphifyのaffected_communities/hub_nodesが一致しているか確認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "story_backed",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md"
+            ],
+            "spec": [],
+            "architecture": [
+              "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/artifact-routing.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/task-manager.js",
+              "src/visual-verifier.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 134
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 5,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 14,
+                "degree": 126
+              },
+              {
+                "id": "src_workspace_getworkspacedir",
+                "label": "getWorkspaceDir()",
+                "source_file": "src/workspace.js",
+                "community": 2,
+                "degree": 124
+              },
+              {
+                "id": "src_story_task_generator_js",
+                "label": "story-task-generator.js",
+                "source_file": "src/story-task-generator.js",
+                "community": 3,
+                "degree": 34
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 5,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 2,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 29,
+                "edge_count": 118
+              },
+              {
+                "id": 14,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 119,
+                "edge_count": 274
+              },
+              {
+                "id": 3,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 35,
+                "edge_count": 83
+              },
+              {
+                "id": 12,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 4
+              },
+              {
+                "id": 22,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 32,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 33,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              }
+            ],
+            "related_edge_count": 762,
+            "impact_score": 0.0723,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 6,
+        "matched_file_count": 6,
+        "matched_files": [
+          "src/nocodb-story-sync.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 336,
+        "affected_communities": [
+          {
+            "id": 5,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 276
+          },
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 29,
+            "edge_count": 118
+          },
+          {
+            "id": 14,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 119,
+            "edge_count": 274
+          },
+          {
+            "id": 3,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 35,
+            "edge_count": 83
+          },
+          {
+            "id": 12,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 4
+          },
+          {
+            "id": 22,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 6
+          },
+          {
+            "id": 32,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 33,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 6
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 134
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 5,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 14,
+            "degree": 126
+          },
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 124
+          },
+          {
+            "id": "src_story_task_generator_js",
+            "label": "story-task-generator.js",
+            "source_file": "src/story-task-generator.js",
+            "community": 3,
+            "degree": 34
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/diagnostic-engine.js",
+          "src/artifact-routing.js",
+          "src/architecture-profiler.js",
+          "src/playbook-exporter.js",
+          "src/task-manager.js",
+          "src/visual-verifier.js"
+        ],
+        "related_edge_count": 762,
+        "impact_score": 0.0723,
+        "community_span": 9,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-21T12:09:51.405Z",
+      "completion_evidence": {
+        "run_id": "2026-07-21T120806Z",
+        "reason": "source story-vibepro-explicit-run-attribution-lineage-source-alignment-review was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "VP-TASK-ARCH-001",
+      "source_type": "action_candidate",
+      "source_id": "VP-ACTION-ARCH-001",
+      "finding_id": "VP-ARCH-001",
+      "title": "responsibility split campaignをStory化する",
+      "priority": "medium",
+      "status": "todo",
+      "order": 70,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 1,
+      "target_files": [
+        "src/session-efficiency-audit.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/session-efficiency-audit.js",
+          "reason": "リファクタリングcampaign VP-CAMPAIGN-REF-001 の対象ファイル"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/run-context-capsule.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/run-lineage.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/evidence-cost-budget.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/merge-manager.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "split-by-graph-community",
+        "reason": "Graphify上で複数communityに跨るため、先にflow単位の責務差分を分け、共通化は安定した境界に限定する。"
+      },
+      "implementation_steps": [
+        {
+          "id": "inventory-current-behavior",
+          "title": "現在の挙動を棚卸しする",
+          "detail": "対象ファイルごとにquery条件、返却shape、fallback、例外処理、呼び出し元期待値を確認する。Graphifyの関連ファイルがある場合は先に呼び出し方向と共有hubを確認する。"
+        },
+        {
+          "id": "decide-abstraction-boundary",
+          "title": "共通境界を決める",
+          "detail": "同じ用途なら共通service/helper/repositoryへ集約する。複数communityに跨る場合は、共通化前にflow単位の責務差分をStory内で分ける。"
+        },
+        {
+          "id": "replace-call-sites",
+          "title": "呼び出し元を置き換える",
+          "detail": "既存の返却shapeを保ったまま、対象箇所を共通境界へ接続する。"
+        },
+        {
+          "id": "rerun-diagnosis",
+          "title": "診断を再実行する",
+          "detail": "型検査・関連テスト・VibePro診断で対象機会が減ったこと、Graphify上の影響範囲外を不用意に変更していないことを確認する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "campaign内の機会がStory単位として実装順に並んでいる。",
+        "最初に直す機会と後続に回す機会の判断根拠がscore/reasonで説明できる。",
+        "修正後のVibePro診断で対象findingまたはopportunityの件数差分を確認できる。",
+        "混在していた責務が読み取れる単位へ分離されている。",
+        "既存テストまたは型検査で入出力互換性が確認されている。",
+        "VibePro診断で責務混在候補の根拠が減っている。"
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 1,
+        "matched_file_count": 1,
+        "matched_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 104,
+        "affected_communities": [
+          {
+            "id": 14,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 103,
+            "edge_count": 255
+          },
+          {
+            "id": 2,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 8
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 136
+          },
+          {
+            "id": "src_workspace_getworkspacedir",
+            "label": "getWorkspaceDir()",
+            "source_file": "src/workspace.js",
+            "community": 2,
+            "degree": 126
+          },
+          {
+            "id": "src_session_efficiency_audit_js",
+            "label": "session-efficiency-audit.js",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 103
+          },
+          {
+            "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+            "label": "collectSessionEfficiencyAudit()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 19
+          },
+          {
+            "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+            "label": "parseCodexSessionJsonlFiles()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 14
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/evidence-cost-budget.js",
+          "src/merge-manager.js"
+        ],
+        "related_edge_count": 257,
+        "impact_score": 0.0235,
+        "community_span": 2,
+        "cross_community": true
+      },
+      "pre_fix_briefing": {
+        "opportunity": {
+          "id": "VP-OPP-ARCH-019",
+          "source": "responsibility_hotspot",
+          "refactoring_intent": "responsibility_split",
+          "rank": 1,
+          "score": {
+            "total": 51,
+            "components": {
+              "security_proximity": 25,
+              "blast_radius": 6,
+              "confidence": 10,
+              "story_fit": 5,
+              "source": 5
+            },
+            "reasons": [
+              "security_proximity:auth_or_identity",
+              "confidence:medium"
+            ]
+          },
+          "suggested_abstraction": {
+            "id": "split-runtime-responsibilities",
+            "label": "runtime責務を境界ごとに分離する",
+            "target_shape": "route/action/service/helpers"
+          },
+          "evidence_refs": {
+            "file": "src/session-efficiency-audit.js",
+            "line_count": 2386,
+            "signals": [
+              "auth",
+              "validation",
+              "environment"
+            ],
+            "examples": []
+          }
+        },
+        "campaign": {
+          "id": "VP-CAMPAIGN-REF-001",
+          "rank": 1,
+          "title": "responsibility split campaignをStory化する",
+          "opportunity_ids": [
+            "VP-OPP-ARCH-019"
+          ],
+          "expected_diagnostic_delta": {
+            "duplicate_query_shapes": 0,
+            "responsibility_hotspots": 1
+          }
+        },
+        "target_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "graph_context": {
+          "matched_route_count": 0,
+          "target_file_count": 1,
+          "matched_file_count": 1,
+          "matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "unmatched_files": [],
+          "matched_node_count": 104,
+          "affected_communities": [
+            {
+              "id": 14,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 103,
+              "edge_count": 255
+            },
+            {
+              "id": 2,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 1,
+              "edge_count": 8
+            }
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_workspace_toworkspacerelative",
+              "label": "toWorkspaceRelative()",
+              "source_file": "src/workspace.js",
+              "community": 2,
+              "degree": 136
+            },
+            {
+              "id": "src_workspace_getworkspacedir",
+              "label": "getWorkspaceDir()",
+              "source_file": "src/workspace.js",
+              "community": 2,
+              "degree": 126
+            },
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 103
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 19
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 14
+            }
+          ],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "related_edge_count": 257,
+          "impact_score": 0.0235,
+          "community_span": 2,
+          "cross_community": true
+        },
+        "investigation_scope": {
+          "target_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "read_first_files": [
+            "src/session-efficiency-audit.js",
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "graph_matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "graph_unmatched_files": [],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_workspace_toworkspacerelative",
+              "label": "toWorkspaceRelative()",
+              "source_file": "src/workspace.js",
+              "community": 2,
+              "degree": 136
+            },
+            {
+              "id": "src_workspace_getworkspacedir",
+              "label": "getWorkspaceDir()",
+              "source_file": "src/workspace.js",
+              "community": 2,
+              "degree": 126
+            },
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 103
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 19
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 14
+            }
+          ],
+          "affected_communities": [
+            {
+              "id": 14,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 103,
+              "edge_count": 255
+            },
+            {
+              "id": 2,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 1,
+              "edge_count": 8
+            }
+          ],
+          "community_span": 2,
+          "cross_community": true,
+          "guidance": "複数communityに跨るため、先にflowごとの責務差分を確認し、共通化は安定した境界に限定する。"
+        },
+        "invariants": [
+          "APIまたはUIから見える入出力を変えない。",
+          "認可順序とエラーハンドリングを分離前後で維持する。",
+          "副作用を呼び出すタイミングを変えない。"
+        ],
+        "evidence_examples": [],
+        "strategy_options": [
+          {
+            "id": "split-runtime-boundaries",
+            "label": "方針A: runtime責務をroute/action/service/helperへ分離する",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "認可、DB、検証、外部I/Oの責務境界を読みやすくできる",
+              "副作用の順序をレビューしやすくなる"
+            ],
+            "cautions": [
+              "入出力と副作用タイミングを先に固定する必要がある",
+              "Graphify上で複数communityに跨るため、flow差分を確認してから共通化する必要がある"
+            ]
+          },
+          {
+            "id": "extract-side-effect-boundary",
+            "label": "方針B: 外部I/Oや通知など副作用境界から切り出す",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "大きなファイルを段階的に小さくできる",
+              "テストしづらい副作用を隔離できる"
+            ],
+            "cautions": [
+              "DB更新やレスポンス整形との順序を変えない確認が必要",
+              "Graphify上で複数communityに跨るため、flow差分を確認してから共通化する必要がある"
+            ]
+          }
+        ],
+        "recommended_strategy": {
+          "id": "split-by-graph-community",
+          "reason": "Graphify上で複数communityに跨るため、先にflow単位の責務差分を分け、共通化は安定した境界に限定する。"
+        }
+      }
+    }
+  ]
+}

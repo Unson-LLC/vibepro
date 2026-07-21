@@ -1,0 +1,8 @@
+{
+  "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+  "exit_code": 0,
+  "pass_count": 1,
+  "fail_count": 0,
+  "command": "npm run typecheck",
+  "completed_at": "2026-07-21T09:16:58.300Z"
+}
