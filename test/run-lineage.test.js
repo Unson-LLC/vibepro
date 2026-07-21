@@ -55,8 +55,12 @@ test('provider observations merge append-only, deduplicate, and reject rebind/co
     provider: 'codex', provider_run_id: 'provider-run-1', provider_session_id: 'provider-session-1', thread_id: 'thread-1'
   });
   assert.equal(duplicate.provider_observations.length, 1);
+  const otherProvider = appendProviderObservation(observed, {
+    provider: 'other', provider_run_id: 'provider-run-1', provider_session_id: 'provider-session-1', thread_id: 'thread-1'
+  });
+  assert.equal(otherProvider.provider_observations.length, 2);
   assert.throws(() => appendProviderObservation(observed, {
-    provider: 'other', provider_run_id: 'provider-run-1', provider_session_id: 'other-session'
+    provider: 'codex', provider_run_id: 'provider-run-1', provider_session_id: 'provider-session-2'
   }), errorCode('provider_observation_conflict'));
   assert.throws(() => appendProviderObservation(observed, {
     provider: 'codex', provider_run_id: 'provider-run-2', run_id: 'run-other', story_id: 'story-other'
@@ -79,6 +83,23 @@ test('provider identities cannot be rebound across persisted dispatch or Run env
     { adapter_id: 'codex', lineage: first },
     { adapter_id: 'codex', lineage: { ...first } }
   ]), true);
+});
+
+test('provider-scoped identities allow adapter observations to share identifiers', () => {
+  const observation = {
+    dispatch_id: 'dispatch-shared',
+    run_id: 'run-shared',
+    provider_session_id: 'shared-session'
+  };
+
+  assert.equal(assertProviderIdentityUniqueness([
+    { ...observation, adapter_id: 'codex' },
+    { ...observation, adapter_id: 'other' }
+  ]), true);
+  assert.throws(() => assertProviderIdentityUniqueness([
+    { ...observation, adapter_id: 'codex', dispatch_id: 'dispatch-a', run_id: 'run-a' },
+    { ...observation, adapter_id: 'codex', dispatch_id: 'dispatch-b', run_id: 'run-b' }
+  ]), errorCode('provider_identity_conflict'));
 });
 
 test('legacy dispatch records cannot rebind provider identities across Runs or dispatches', () => {

@@ -132,8 +132,17 @@ export function assertRunLineageBinding(envelope, authority) {
   return validateRunLineageEnvelope(envelope, authority);
 }
 
+function identityScope(value) {
+  return value.provider ?? value.adapter_id ?? null;
+}
+
+function sameIdentityScope(left, right) {
+  return identityScope(left) === identityScope(right);
+}
+
 function sameIdentity(left, right) {
-  return OBSERVATION_FIELDS.some((field) => left[field] && right[field] && left[field] === right[field]);
+  return sameIdentityScope(left, right)
+    && OBSERVATION_FIELDS.some((field) => left[field] && right[field] && left[field] === right[field]);
 }
 
 export function appendProviderObservation(input, observation) {
@@ -158,7 +167,10 @@ export function appendProviderObservation(input, observation) {
     }
   }
   for (const current of observations) {
-    if (sameIdentity(current, nextObservation) || (current.provider_run_id && nextObservation.provider_run_id && current.provider_run_id === nextObservation.provider_run_id)) {
+    if (sameIdentityScope(current, nextObservation)
+        && current.provider_run_id
+        && nextObservation.provider_run_id
+        && current.provider_run_id === nextObservation.provider_run_id) {
       fail('provider_observation_conflict', 'provider identity cannot be rebound', { field: 'provider_observation' });
     }
   }
