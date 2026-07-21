@@ -64,6 +64,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         subscription,
         logical_started_at: now().toISOString(),
         attempt_started_at: now().toISOString(),
+        accumulated_cost_usd: 0,
         awaitDelivery: () => deliveryChain,
         setStarted(next) { started = next; this.started = next; }
       };
@@ -126,8 +127,9 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       }
       const stalled = evaluateProgressBounds(record, reconciled, providerStatus, now());
       if (stalled) {
-        const attempts = providerStatus.attempts ?? record.recovery_attempts ?? 1;
-        if (attempts < record.request.requirements.max_attempts) {
+        const attempts = Math.max(providerStatus.attempts ?? 1, record.recovery_attempts ?? 1);
+        if (stalled.stop_reason.code === 'no_progress_deadline_exceeded'
+          && attempts < record.request.requirements.max_attempts) {
           const inFlight = recovering.get(dispatch_id);
           if (inFlight) return inFlight;
           const recovery = resumeIncomplete(record, reconciled, attempts);
@@ -191,6 +193,8 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       currentSurfaceHash: record.request.inspection_surface_hash,
       changedPaths: []
     });
+    const attemptCost = reportedCost(await host.status({ provider_run_id: record.started.provider_run_id }));
+    record.accumulated_cost_usd = (record.accumulated_cost_usd ?? 0) + attemptCost;
     const recoveryRequest = {
       ...record.request,
       previous_judgments: recoveryPlan.reusable_judgments,
@@ -211,6 +215,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       session_id: restarted.session_id ?? null,
       thread_id: restarted.thread_id ?? null,
       attempts: attempts + 1,
+      usage_accounting: { cost_usd: record.accumulated_cost_usd, total_tokens: null },
       partial_results: partialJudgments,
       recovery_plan: recoveryPlan
     };
@@ -295,12 +300,12 @@ function evaluateProgressBounds(record, reconciled, providerStatus, observedNow)
   const elapsed = observedNow.getTime() - Date.parse(record.logical_started_at);
   const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.attempt_started_at);
   const noProgressElapsed = observedNow.getTime() - Date.parse(lastProgressAt);
-  const attempts = providerStatus.attempts ?? 1;
-  const cost = providerStatus.usage_accounting?.cost_usd ?? 0;
+  const attempts = Math.max(providerStatus.attempts ?? 1, record.recovery_attempts ?? 1);
+  const cost = (record.accumulated_cost_usd ?? 0) + reportedCost(providerStatus);
   if (elapsed > requirements.max_wall_clock_ms) return stalled('max_wall_clock_exceeded');
-  if (noProgressElapsed > requirements.no_progress_deadline_ms) return stalled('no_progress_deadline_exceeded');
   if (attempts > requirements.max_attempts) return stalled('max_attempts_exceeded');
   if (requirements.max_cost_usd > 0 && cost > requirements.max_cost_usd) return stalled('max_cost_exceeded');
+  if (noProgressElapsed > requirements.no_progress_deadline_ms) return stalled('no_progress_deadline_exceeded');
   return null;
 }
 
@@ -333,8 +338,15 @@ function reconstructRecord(dispatch) {
     request: dispatch,
     started: { provider_run_id: dispatch.provider_run_id },
     logical_started_at: dispatch.started_at,
-    attempt_started_at: dispatch.updated_at ?? dispatch.started_at
+    attempt_started_at: dispatch.updated_at ?? dispatch.started_at,
+    recovery_attempts: dispatch.attempts ?? 1,
+    accumulated_cost_usd: dispatch.usage_accounting?.cost_usd ?? 0
   };
+}
+
+function reportedCost(providerStatus) {
+  const cost = providerStatus?.usage_accounting?.cost_usd;
+  return typeof cost === 'number' && Number.isFinite(cost) && cost >= 0 ? cost : 0;
 }
 
 function judgmentItems(value) {

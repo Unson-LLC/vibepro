@@ -54,3 +54,15 @@ test('binary entrypoint resolves an explicit Codex host module without enumerati
   });
   assert.equal(io.codexSubagentHost.marker, root);
 });
+
+test('runtime commands bind the Codex host to the explicit repository instead of shell cwd', async (t) => {
+  const shellRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-shell-'));
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-entrypoint-repo-'));
+  t.after(() => rm(shellRoot, { recursive: true, force: true }));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  await writeFile(path.join(shellRoot, 'host.mjs'), 'export function createCodexSubagentHost({ cwd }) { return { marker: cwd }; }\n');
+  const io = await resolveEntrypointIo({
+    stdout: { write() {} }, stderr: { write() {} }, env: { VIBEPRO_CODEX_HOST_MODULE: './host.mjs' }, cwd: () => shellRoot
+  }, ['execute', 'runtime-poll', repoRoot, '--story-id', 'story']);
+  assert.equal(io.codexSubagentHost.marker, repoRoot);
+});

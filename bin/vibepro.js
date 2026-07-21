@@ -12,7 +12,7 @@ export function createEntrypointIo(runtime = process) {
   };
 }
 
-export async function resolveEntrypointIo(runtime = process) {
+export async function resolveEntrypointIo(runtime = process, argv = []) {
   const io = createEntrypointIo(runtime);
   if (runtime.guardedRunDependencies) io.guardedRunDependencies = runtime.guardedRunDependencies;
   if (runtime.codexSubagentHost) {
@@ -20,14 +20,15 @@ export async function resolveEntrypointIo(runtime = process) {
     return io;
   }
   const moduleSpecifier = runtime.env?.VIBEPRO_CODEX_HOST_MODULE;
-  const cwd = typeof runtime.cwd === 'function' ? runtime.cwd() : process.cwd();
+  const shellCwd = typeof runtime.cwd === 'function' ? runtime.cwd() : process.cwd();
+  const cwd = resolveRuntimeRepoRoot(argv, shellCwd);
   if (!moduleSpecifier) {
     io.codexSubagentHost = await createCodexSubagentHost({ env: runtime.env, cwd });
     return io;
   }
   const moduleUrl = moduleSpecifier.startsWith('file:')
     ? moduleSpecifier
-    : pathToFileURL(path.resolve(cwd, moduleSpecifier)).href;
+    : pathToFileURL(path.resolve(shellCwd, moduleSpecifier)).href;
   const hostModule = await import(moduleUrl);
   const factory = hostModule.createCodexSubagentHost ?? hostModule.default;
   const host = typeof factory === 'function'
@@ -41,9 +42,16 @@ export async function resolveEntrypointIo(runtime = process) {
 }
 
 export async function main(argv = process.argv.slice(2), runtime = process) {
-  const result = await runCli(argv, await resolveEntrypointIo(runtime));
+  const result = await runCli(argv, await resolveEntrypointIo(runtime, argv));
   runtime.exitCode = result.exitCode;
   return result;
+}
+
+function resolveRuntimeRepoRoot(argv, cwd) {
+  if (argv[0] === 'execute' && String(argv[1] ?? '').startsWith('runtime-') && argv[2] && !argv[2].startsWith('-')) {
+    return path.resolve(cwd, argv[2]);
+  }
+  return cwd;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

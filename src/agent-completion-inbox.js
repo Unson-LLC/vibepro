@@ -7,7 +7,7 @@ const MAX_EVENT_BYTES = 262144;
 const MAX_TEXT_LENGTH = 65536;
 const PAYLOAD_KEYS = Object.freeze({
   progress: new Set(['heartbeat', 'message', 'progress_percent']),
-  partial_result: new Set(['judgment_id', 'verdict', 'reason', 'summary', 'findings', 'surface_paths', 'judgments']),
+  partial_result: new Set(['judgment_id', 'verdict', 'detail', 'reason', 'summary', 'findings', 'surface_paths', 'judgments']),
   completed: new Set(['completion_status', 'changed_files', 'head_sha', 'test_suggestions', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'review_record', 'judgments', 'message', 'usage_accounting']),
   failed: new Set(['message', 'error_code', 'head_sha', 'usage_accounting']),
   cancelled: new Set(['message', 'error_code', 'head_sha', 'usage_accounting'])
@@ -15,7 +15,7 @@ const PAYLOAD_KEYS = Object.freeze({
 const NESTED_KEYS = Object.freeze({
   review_record: new Set(['status', 'summary', 'findings', 'inspection_summary', 'inspection_evidence', 'judgment_deltas']),
   finding: new Set(['id', 'severity', 'detail']),
-  judgment: new Set(['judgment_id', 'verdict', 'reason', 'summary', 'findings', 'surface_paths']),
+  judgment: new Set(['judgment_id', 'verdict', 'detail', 'reason', 'summary', 'findings', 'surface_paths']),
   usage_accounting: new Set(['input_tokens', 'output_tokens', 'total_tokens', 'cost_usd'])
 });
 

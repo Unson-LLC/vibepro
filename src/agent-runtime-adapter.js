@@ -309,6 +309,7 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
       progress_checkpoint: observed.progress_checkpoint ?? current.progress_checkpoint ?? null,
       partial_results: observed.partial_results ?? current.partial_results ?? [],
       attempts: observed.attempts ?? current.attempts ?? 1,
+      usage_accounting: observed.usage_accounting ?? current.usage_accounting ?? null,
       recovery_plan: observed.recovery_plan ?? current.recovery_plan ?? null
     };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
@@ -553,6 +554,7 @@ function normalizeStatus(value) {
     dispatch_id: value.dispatch_id ?? null,
     head_sha: value.head_sha ?? null,
     attempts: Number.isInteger(value.attempts) ? value.attempts : null,
+    usage_accounting: value.usage_accounting === undefined ? null : normalizeUsageAccounting(value.usage_accounting),
     partial_results: Array.isArray(value.partial_results) ? value.partial_results : null,
     recovery_plan: value.recovery_plan ?? null
   };

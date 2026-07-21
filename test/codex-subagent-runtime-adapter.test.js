@@ -178,6 +178,35 @@ test('CDI-S-5 CDI-S-6 bounded recovery resumes only unfinished judgments and rea
   assert.equal(host.metrics().spawns, 2);
 });
 
+test('CDI-S-4 CDI-S-10 recovery accumulates provider cost on the logical dispatch and never buys another attempt past the cap', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-cumulative-cost-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const request = reviewRequest(repoRoot);
+  request.requirements.no_progress_deadline_ms = 1000;
+  request.requirements.max_attempts = 3;
+  request.requirements.max_cost_usd = 1;
+  const started = await coordinator.dispatch(baseState, request);
+  host.setStatus('running', { attempts: 1, usage_accounting: { cost_usd: 0.6, total_tokens: 100 } });
+  clock = new Date('2026-07-22T01:00:02.000Z');
+  const recovered = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(recovered.dispatch.status, 'running_detached');
+  assert.equal(recovered.dispatch.attempts, 2);
+  assert.equal(recovered.dispatch.usage_accounting.cost_usd, 0.6);
+  assert.equal(host.metrics().spawns, 2);
+
+  host.setStatus('running', { attempts: 2, usage_accounting: { cost_usd: 0.6, total_tokens: 100 } });
+  clock = new Date('2026-07-22T01:00:04.000Z');
+  const stopped = await coordinator.reconcile(recovered.state, recovered.dispatch.dispatch_id);
+  assert.equal(stopped.dispatch.stop_reason.code, 'runtime_stalled');
+  assert.equal(host.metrics().lastShutdownReason, 'max_cost_exceeded');
+  assert.equal(host.metrics().spawns, 2);
+});
+
 test('CDI-S-3 lost wake notification still reconciles the inbox result', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-lost-wake-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));

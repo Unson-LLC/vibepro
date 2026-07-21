@@ -13,6 +13,7 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
   const workerPath = fileURLToPath(new URL('./codex-subagent-host-worker.js', import.meta.url));
   let resumeHandler = null;
   const subscriptions = new Map();
+  const runRoots = new Set([path.resolve(cwd)]);
 
   return {
     async probe() {
@@ -24,6 +25,7 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
     },
     async spawn(request) {
       const repoRoot = path.resolve(request.requirements.managed_worktree);
+      runRoots.add(repoRoot);
       const runDir = resolveRunDir(repoRoot, request.dispatch_id, request.idempotency_key);
       await mkdir(path.dirname(runDir), { recursive: true, mode: 0o700 });
       const claimed = await claimRun(runDir);
@@ -49,13 +51,13 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
       return startedFromState(state);
     },
     async status({ provider_run_id: providerRunId }) {
-      const located = await findRun(cwd, providerRunId);
+      const located = await findRunAcrossRoots(runRoots, providerRunId);
       if (!located) return { status: 'failed', message: `unknown Codex provider run: ${providerRunId}` };
       const state = await readJson(path.join(located, 'state.json'));
       return state?.status === 'delivery_pending' ? { ...state, status: 'running' } : state;
     },
     async shutdown({ provider_run_id: providerRunId, reason }) {
-      const located = await findRun(cwd, providerRunId);
+      const located = await findRunAcrossRoots(runRoots, providerRunId);
       if (!located) return { status: 'cancelled' };
       const statePath = path.join(located, 'state.json');
       const state = await readJson(statePath);
@@ -73,7 +75,7 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
         if (!subscription || subscription.delivering) return;
         subscription.delivering = true;
         try {
-          const runDir = await findDispatchRun(cwd, dispatchId);
+          const runDir = await findDispatchRunAcrossRoots(runRoots, dispatchId);
           if (!runDir) return;
           const eventsDir = path.join(runDir, 'events');
           let files = [];
@@ -154,6 +156,14 @@ async function findRun(repoRoot, providerRunId) {
   return null;
 }
 
+async function findRunAcrossRoots(repoRoots, providerRunId) {
+  for (const repoRoot of repoRoots) {
+    const located = await findRun(repoRoot, providerRunId);
+    if (located) return located;
+  }
+  return null;
+}
+
 async function findDispatchRun(repoRoot, dispatchId) {
   const base = path.join(path.resolve(repoRoot), ...HOST_ROOT);
   let entries;
@@ -162,6 +172,14 @@ async function findDispatchRun(repoRoot, dispatchId) {
     const runDir = path.join(base, entry);
     const state = await readJson(path.join(runDir, 'state.json'));
     if (state?.dispatch_id === dispatchId && state.status !== 'cancelled') return runDir;
+  }
+  return null;
+}
+
+async function findDispatchRunAcrossRoots(repoRoots, dispatchId) {
+  for (const repoRoot of repoRoots) {
+    const located = await findDispatchRun(repoRoot, dispatchId);
+    if (located) return located;
   }
   return null;
 }

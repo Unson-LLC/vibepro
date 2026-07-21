@@ -18,13 +18,15 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
     process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'real-codex-session-1' }) + '\\n');
     await writeFile(output, JSON.stringify({
       summary: 'detached Codex result', test_suggestions: ['node --test'],
-      judgments: [{ judgment_id: 'correctness', verdict: 'pass' }],
+      judgments: [{ judgment_id: 'correctness', verdict: 'pass', detail: 'schema-valid bounded detail' }],
       review_record: { status: 'pass', summary: 'host review pass', findings: [],
         inspection_summary: 'Inspected runtime host', inspection_evidence: 'test/codex-subagent-host.test.js',
         judgment_deltas: ['detached worker -> completed event'] }
     }));
   `);
-  const host = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
+  const callerRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-caller-'));
+  t.after(() => rm(callerRoot, { recursive: true, force: true }));
+  const host = createCodexSubagentHost({ cwd: callerRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
   assert.equal((await host.probe()).available, true);
   const request = runtimeRequest(repoRoot);
   const deliveredEvents = [];
@@ -39,6 +41,7 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   await Promise.race([delivered, new Promise((_, reject) => setTimeout(() => reject(new Error('completion timeout')), 10000))]);
   const completion = deliveredEvents.find((event) => event.kind === 'completed');
   assert.deepEqual(deliveredEvents.map((event) => event.kind), ['partial_result', 'completed']);
+  assert.equal(deliveredEvents[0].payload.detail, 'schema-valid bounded detail');
   assert.equal(completion.kind, 'completed');
   assert.equal(completion.result.thread_id, first.thread_id);
   assert.equal(completion.result.review_record.status, 'pass');
