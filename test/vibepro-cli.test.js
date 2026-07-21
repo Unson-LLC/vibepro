@@ -20294,6 +20294,27 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--kind', 'unit',
     '--status', 'pass',
     '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated rejection marker',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json did not reject and invalid input does not throw',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const negatedParsePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.notEqual(
+    negatedParsePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a negated rejecting outcome must not close parse failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
     '--summary', 'schema marker only',
     '--target', 'src/auth-json-parser.js',
     '--scenario', 'schema_failure',
@@ -20315,9 +20336,30 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--kind', 'unit',
     '--status', 'pass',
     '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated schema rejection',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'invalid schema was not rejected and did not fail validation',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const negatedSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.notEqual(
+    negatedSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'covered',
+    'a negated rejecting outcome must not close schema failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
     '--summary', 'invalid schema regression',
     '--target', 'src/auth-schema-validator.js',
-    '--scenario', 'schema validation rejects invalid payload',
+    '--scenario', 'schema validator successfully rejects invalid payload',
     '--observed', 'exit_code=0',
     '--json'
   ])).exitCode, 0);

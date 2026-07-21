@@ -12563,8 +12563,9 @@ function scoreFailureModeEvidence(mode, evidenceText) {
     const assertionText = normalizedText.replaceAll(modeId, ' ');
     const invalidInputTokens = ['malformed', 'invalid', 'corrupt', 'partial', 'missing', 'negative'];
     const rejectingOutcomeTokens = ['reject', 'throw', 'error', 'fail'];
-    const nonRejectingOutcomeTokens = ['successfully', 'accepted', 'no error', 'without error'];
-    if (nonRejectingOutcomeTokens.some((token) => assertionText.includes(token))) return 0;
+    const nonRejectingOutcomePattern = /\b(?:(?:parse|parsed|validate|validated|accept|accepted|complete|completed) successfully|successfully (?:parse|parsed|validate|validated|accept|accepted|complete|completed)|no errors?|without errors?)\b/;
+    const negatedRejectingOutcomePattern = /\b(?:(?:did|does|do|was|were|is|are|will|would|could|should|can|cannot)\s+)?not\s+(?:\w+\s+){0,2}(?:reject(?:ed|s|ing)?|throw(?:s|ing)?|threw|errors?|fail(?:ed|s|ing)?)\b/;
+    if (nonRejectingOutcomePattern.test(assertionText) || negatedRejectingOutcomePattern.test(assertionText)) return 0;
     const hasInvalidInput = invalidInputTokens
       .some((token) => assertionText.includes(token));
     const hasRejectingOutcome = rejectingOutcomeTokens
