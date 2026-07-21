@@ -9,9 +9,60 @@ import { promisify } from 'node:util';
 
 import { classifyChangeRisk } from '../src/change-risk-classifier.js';
 import { runCli } from '../src/cli.js';
-import { bugPhysicsVerificationText } from '../src/pr-manager.js';
+import { bugPhysicsVerificationText, buildArtifactConsistencyGate } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
+
+test('artifact consistency preserves stale non-required reviews as nonblocking history', () => {
+  const gate = buildArtifactConsistencyGate({
+    git: {
+      head_sha: 'current-head',
+      status_fingerprint_hash: hashFingerprint('current'),
+      user_status_fingerprint_hash: hashFingerprint('current-user'),
+      dirty: false,
+      raw_dirty: false
+    },
+    verificationEvidence: { commands: [] },
+    agentReviews: {
+      required_reviews: [{ stage: 'gate', role: 'gate_evidence' }],
+      checkpoint_required_reviews: [],
+      stages: [
+        {
+          stage: 'architecture_spec',
+          roles: [{
+            role: 'architecture_boundary',
+            artifact: '.vibepro/reviews/story/architecture_spec/review-result-architecture_boundary.json',
+            effective_status: 'stale',
+            stale_reason: 'strict HEAD review was recorded for old-head, current head is current-head',
+            git_context: { head_sha: 'old-head' }
+          }]
+        },
+        {
+          stage: 'gate',
+          roles: [{
+            role: 'gate_evidence',
+            artifact: '.vibepro/reviews/story/gate/review-result-gate_evidence.json',
+            effective_status: 'pass',
+            git_context: { head_sha: 'current-head' }
+          }]
+        }
+      ]
+    },
+    storyId: 'story'
+  });
+
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.inconsistent_artifact_count, 0);
+  assert.equal(
+    gate.artifacts.find((artifact) => artifact.role === 'architecture_boundary').status,
+    'historical_nonblocking'
+  );
+  assert.equal(
+    gate.artifacts.find((artifact) => artifact.role === 'gate_evidence').status,
+    'current'
+  );
+  assert.match(gate.reason, /historical nonblocking/);
+});
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });

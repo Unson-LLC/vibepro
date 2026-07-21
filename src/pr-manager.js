@@ -11491,7 +11491,7 @@ function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agent
   return bindings;
 }
 
-function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
+export function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
   const managedWorktree = managedWorktreeContext?.managed_worktree ?? managedWorktreeContext;
   const current = {
     head_sha: git?.head_sha ?? null,
@@ -11694,10 +11694,12 @@ function buildArtifactConsistencyPassedReason(artifacts = []) {
   const currentCount = artifacts.filter((artifact) => artifact.status === 'current').length;
   const reusedMergeDeltaCount = artifacts.filter((artifact) => artifact.status === 'reused_merge_delta').length;
   const reusedLowRiskCount = artifacts.filter((artifact) => artifact.status === 'reused_low_risk').length;
+  const historicalNonblockingCount = artifacts.filter((artifact) => artifact.status === 'historical_nonblocking').length;
   const parts = [];
   if (currentCount > 0) parts.push(`${currentCount} current`);
   if (reusedMergeDeltaCount > 0) parts.push(`${reusedMergeDeltaCount} merge-delta reused`);
   if (reusedLowRiskCount > 0) parts.push(`${reusedLowRiskCount} low-risk reused`);
+  if (historicalNonblockingCount > 0) parts.push(`${historicalNonblockingCount} historical nonblocking`);
   return `${artifacts.length} recorded verification/review artifact(s) accepted for artifact consistency (${parts.join(', ')}); reused artifacts are not labeled as current`;
 }
 
@@ -11740,7 +11742,10 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
 }
 
 function isArtifactBindingAccepted(status) {
-  return status === 'current' || status === 'reused_low_risk' || status === 'reused_merge_delta';
+  return status === 'current'
+    || status === 'reused_low_risk'
+    || status === 'reused_merge_delta'
+    || status === 'historical_nonblocking';
 }
 
 function isAgentReviewMergeDeltaReused(role) {
@@ -11749,10 +11754,18 @@ function isAgentReviewMergeDeltaReused(role) {
 
 function collectReviewArtifactBindings(agentReviews = null, changeClassification = null) {
   const stages = Array.isArray(agentReviews?.stages) ? agentReviews.stages : [];
+  const hasCurrentRequirementSet = Array.isArray(agentReviews?.required_reviews)
+    || Array.isArray(agentReviews?.checkpoint_required_reviews);
+  const currentRequirementKeys = new Set([
+    ...(agentReviews?.required_reviews ?? []),
+    ...(agentReviews?.checkpoint_required_reviews ?? [])
+  ].map((requirement) => `${requirement?.stage ?? ''}:${requirement?.role ?? ''}`));
   const artifacts = [];
   for (const stage of stages) {
     for (const role of stage.roles ?? []) {
       if (!role.artifact) continue;
+      const roleKey = `${stage.stage ?? ''}:${role.role ?? ''}`;
+      const historicalNonblocking = hasCurrentRequirementSet && !currentRequirementKeys.has(roleKey);
       const stale = role.effective_status === 'stale';
       const unverified = role.effective_status === 'unverified_agent';
       const mergeDeltaReused = isAgentReviewMergeDeltaReused(role);
@@ -11762,7 +11775,9 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         && !mergeDeltaReused
         && stale
         && canReuseLowRiskArtifactBinding({ status: 'pass', binding: { status: 'stale', reason: staleReason } }, changeClassification);
-      const status = current
+      const status = historicalNonblocking
+        ? 'historical_nonblocking'
+        : current
         ? 'current'
         : mergeDeltaReused
           ? 'reused_merge_delta'
@@ -11780,9 +11795,12 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         recorded_status_fingerprint_hash: fullFingerprintHashForContext(role.git_context ?? role.source_git_context),
         recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
         status,
+        required_current: !historicalNonblocking,
         content_binding: role.content_binding ?? null,
         reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
-        reason: current
+        reason: historicalNonblocking
+          ? 'review result is retained as audit history but is not part of the current PR-final or checkpoint-required review set'
+          : current
           ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'
           : mergeDeltaReused
             ? `merge-delta review reuse accepted for artifact consistency: ${staleReason}`
