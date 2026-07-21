@@ -29,7 +29,7 @@ test('story-vibepro-autonomous-action-dag AAD-S-1 through AAD-S-7 workflow repla
     { clause: 'AC-3', pattern: /AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session/ },
     { clause: 'AC-4', pattern: /AAD-S-4 only final_prepare may produce pr_ready/ },
     { clause: 'AC-5', pattern: /AAD-S-5 public CLI disables autonomous execution before resuming an existing Run/ },
-    { clause: 'AC-6', pattern: /AAD-S-6 waiting_for_runtime stops before dependent autonomous nodes/ },
+    { clause: 'AC-6', pattern: /AAD-S-6 final_prepare waiting_for_runtime stops before dependent autonomous nodes/ },
     { clause: 'AC-7 S-003', pattern: /AAD-S-7 autonomous composition preserves canonical owner artifact references/ }
   ]) assert.match(result.stdout, scenario.pattern, `${scenario.clause} executable workflow replay`);
 });
