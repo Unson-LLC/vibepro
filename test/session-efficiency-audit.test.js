@@ -1226,6 +1226,7 @@ test('session efficiency audit makes strict attribution primary and degrades mix
     sessionPath,
     `${originalSession.trimEnd()}\n${attributionEvents.map((entry) => JSON.stringify(entry)).join('\n')}\n`
   );
+  const expectedAttributionEventCount = originalSession.trimEnd().split('\n').length + attributionEvents.length;
 
   const result = await collectSessionEfficiencyAudit(root, {
     storyId,
@@ -1252,6 +1253,7 @@ test('session efficiency audit makes strict attribution primary and degrades mix
     Object.values(result.attribution.categories).reduce((sum, count) => sum + count, 0),
     result.attribution.event_count
   );
+  assert.equal(result.attribution.event_count, expectedAttributionEventCount);
   assert.equal(result.attribution.mode, 'strict_primary_with_worktree_upper_bound');
   assert.equal(result.attribution.primary.event_count, result.attribution.categories.strict);
   assert.equal(
@@ -1269,6 +1271,14 @@ test('session efficiency audit makes strict attribution primary and degrades mix
   assert.equal(result.session.artifact_token_accounting.estimated_total_tokens > 0, true);
   assert.equal(result.session.artifact_token_accounting.classified_estimated_tokens > 0, true);
   assert.equal(result.session.artifact_token_accounting.buckets.audit_evidence.estimated_tokens > 0, true);
+  const repeated = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+  assert.deepEqual(repeated.attribution, result.attribution);
   const rendered = renderSessionEfficiencyAudit(result);
   assert.match(rendered, /attribution: available/);
   assert.match(rendered, /mixed_parent=true/);
