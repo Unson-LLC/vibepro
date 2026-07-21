@@ -279,7 +279,23 @@ test('parseable semantic corruption in Portfolio state fails the closed schema',
     ['fractional-count', (state) => { state.entries[0].cost_attribution.full_suite_count = 0.5; }],
     ['extra-entry-field', (state) => { state.entries[0].unexpected = true; }],
     ['invalid-promoted-context', (state) => { state.promoted_context.push({ source_story_id: STORIES[0] }); }],
-    ['invalid-decision-journal', (state) => { state.decision_journal.push({ story_id: STORIES[0], decision: 'continue' }); }]
+    ['invalid-decision-journal', (state) => { state.decision_journal.push({ story_id: STORIES[0], decision: 'continue' }); }],
+    ['starting-without-identity', (state) => { state.status = 'starting'; state.entries[0].status = 'starting'; }],
+    ['stopped-without-reason', (state) => {
+      state.status = 'blocked';
+      state.entries[0].status = 'blocked';
+      state.entries[0].run_id = 'run-corrupt';
+      state.scope_bindings[state.entries[0].story_id] = { creation_request_id: 'request-corrupt', branch: null, worktree: null };
+    }],
+    ['completed-with-queued-entry', (state) => { state.status = 'completed'; }],
+    ['skipped-without-decision', (state) => {
+      state.status = 'skipped';
+      state.entries[0].status = 'skipped';
+      state.entries[0].run_id = 'run-corrupt';
+      state.entries[0].stop_reason = { code: 'explicit_skip', message: 'tampered', details: { policy_type: 'operator' } };
+      state.scope_bindings[state.entries[0].story_id] = { creation_request_id: 'request-corrupt', branch: null, worktree: null };
+    }],
+    ['pr-ready-without-run-binding', (state) => { state.entries[0].status = 'pr_ready'; }]
   ];
   for (const [kind, corrupt] of cases) {
     const fixture = await createFixture(t);

@@ -421,6 +421,63 @@ function validateState(state, portfolioId) {
       throw error('invalid_portfolio_state', 'Decision journal does not match the closed schema.');
     }
   }
+  validateLifecycleState(state);
+}
+
+function validateLifecycleState(state) {
+  const activeEntries = state.entries.filter((entry) => entry.status === 'starting' || entry.status === 'running' || STOPPED.has(entry.status));
+  if (activeEntries.length > 1) {
+    throw error('invalid_portfolio_state', 'Sequential Portfolio state cannot contain multiple active entries.');
+  }
+  for (const entry of state.entries) {
+    const binding = state.scope_bindings[entry.story_id];
+    if (entry.status === 'queued') {
+      if (entry.run_id !== null || entry.worktree !== null || entry.head_sha !== null || entry.stop_reason !== null || binding !== undefined) {
+        throw error('invalid_portfolio_state', 'Queued Portfolio entry must not own runtime state.');
+      }
+      continue;
+    }
+    if (entry.status === 'starting') {
+      if (entry.run_id !== null || entry.worktree !== null || entry.head_sha !== null || entry.stop_reason !== null || binding?.status !== 'starting') {
+        throw error('invalid_portfolio_state', 'Starting Portfolio entry must own only its creation request identity.');
+      }
+      continue;
+    }
+    const rejectedInitialRun = entry.status === 'blocked'
+      && entry.run_id === null
+      && binding?.status === 'starting'
+      && entry.stop_reason?.code === 'scope_contamination';
+    if (!rejectedInitialRun && (!nonEmptyString(entry.run_id) || !binding || binding.status === 'starting')) {
+      throw error('invalid_portfolio_state', 'Started Portfolio entry must own a durable Run and scope binding.');
+    }
+    if (STOPPED.has(entry.status) && entry.stop_reason === null) {
+      throw error('invalid_portfolio_state', 'Stopped Portfolio entry requires a typed stop reason.');
+    }
+    if ((entry.status === 'running' || entry.status === 'pr_ready') && entry.stop_reason !== null) {
+      throw error('invalid_portfolio_state', 'Non-stopped Portfolio entry cannot retain a stop reason.');
+    }
+    if (entry.status === 'skipped') {
+      const matchingDecision = state.decision_journal.some((item) => item.story_id === entry.story_id
+        && item.decision === 'skip'
+        && item.reason === entry.stop_reason?.message
+        && item.policy_type === entry.stop_reason?.details?.policy_type);
+      if (entry.stop_reason?.code !== 'explicit_skip' || !matchingDecision) {
+        throw error('invalid_portfolio_state', 'Skipped Portfolio entry requires its matching typed decision.');
+      }
+    }
+  }
+  if (state.status === 'completed' && !state.entries.every((entry) => ['pr_ready', 'skipped'].includes(entry.status))) {
+    throw error('invalid_portfolio_state', 'Completed Portfolio state requires every entry to be terminal.');
+  }
+  if (state.status === 'starting' && (activeEntries.length !== 1 || activeEntries[0].status !== 'starting')) {
+    throw error('invalid_portfolio_state', 'Starting Portfolio state requires exactly one starting entry.');
+  }
+  if (STOPPED.has(state.status) && (activeEntries.length !== 1 || activeEntries[0].status !== state.status)) {
+    throw error('invalid_portfolio_state', 'Stopped Portfolio state must match its stopped entry.');
+  }
+  if (state.status === 'skipped' && !state.entries.some((entry) => entry.status === 'skipped')) {
+    throw error('invalid_portfolio_state', 'Skipped Portfolio state requires an explicitly skipped entry.');
+  }
 }
 
 function hasExactKeys(value, keys) {
