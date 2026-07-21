@@ -7,7 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
-import { buildBootstrapBindingFingerprint } from '../../src/guarded-run-session.js';
+import { buildBootstrapBindingFingerprint, createGuardedRunSession } from '../../src/guarded-run-session.js';
 import { resolveGitIdentity } from '../../src/git-identity.js';
 
 const execFileAsync = promisify(execFile);
@@ -129,7 +129,7 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
     stop_reason: { code: 'fixture_blocked', message: 'fixture blocked', details: {} },
     attempt: 1,
     iteration: 0,
-    budget: { max_attempts: 1, max_iterations: 0 },
+    budget: { max_attempts: 2, max_iterations: 1 },
     deadline: null,
     last_progress_at: createdAt,
     pending_decision: null,
@@ -162,7 +162,23 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
     action_journal: [],
     next_best_action_decisions: [],
     human_decision_journal: [],
-    resume_from_node_id: null
+    retry_journal: [],
+    resume_from_node_id: null,
+    retry_policy: {
+      retryable_stop_codes: ['action_failed'],
+      backoff_ms: 0
+    },
+    provider_fallbacks: [],
+    usage_accounting: {
+      total_tokens: null,
+      cost_usd: null,
+      status: 'unknown',
+      source: null,
+      updated_at: null
+    },
+    migration_compatibility: {
+      retry_policy_enforcement: 'legacy_advisory'
+    }
   };
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
@@ -182,6 +198,104 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'
   ]), JSON.parse(await readFile(stateFile, 'utf8')));
+});
+
+test('GAH-S-2 fresh CLI recovers quota, timeout, CI pending, and review timeout under persisted policy', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-retry-e2e-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro E2E']);
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded retry E2E' }] },
+    execution: { managed_worktree: 'disabled' }
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Guarded retry E2E\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize guarded retry E2E fixture']);
+
+  for (const code of ['runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout']) {
+    const created = await runJson(repo, [
+      'execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--retry-code', code, '--json'
+    ]);
+    const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+    const blocked = {
+      ...created,
+      status: 'blocked',
+      stop_reason: { code, message: `${code} fixture`, details: {} },
+      transitions: [...created.transitions, {
+        sequence: 2,
+        from: 'running',
+        to: 'blocked',
+        reason: `${code}_fixture`,
+        timestamp: created.updated_at
+      }]
+    };
+    await writeFile(stateFile, `${JSON.stringify(blocked, null, 2)}\n`);
+    const resumed = await runJson(repo, [
+      'execute', 'resume', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json'
+    ]);
+    assert.equal(resumed.status, 'running', code);
+    assert.equal(resumed.retry_journal.at(-1).stop_code, code);
+    assert.equal(resumed.retry_journal.at(-1).retryable, true);
+  }
+});
+
+test('GAH-S-7 production transitions persist the complete operational stop matrix for fresh CLI replay', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-matrix-e2e-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro E2E']);
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded operational matrix E2E' }] },
+    execution: { managed_worktree: 'disabled' }
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Guarded operational matrix E2E\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize guarded operational matrix fixture']);
+
+  const scenarios = [
+    ['success', 'pr_ready', null],
+    ['human_decision', 'waiting_for_human', 'human_decision_required'],
+    ['repair_convergence', 'blocked', 'repair_converged'],
+    ['no_progress', 'blocked', 'no_progress'],
+    ['quota', 'blocked', 'runtime_quota'],
+    ['timeout', 'blocked', 'runtime_timeout'],
+    ['ci_pending', 'blocked', 'ci_pending'],
+    ['critical_gate', 'blocked', 'critical_gate_blocked']
+  ];
+  for (const [name, status, code] of scenarios) {
+    const created = await runJson(repo, ['execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json']);
+    const transitionSession = createGuardedRunSession(status === 'pr_ready'
+      ? { readGateReadiness: async () => ({ ready_for_pr_create: true }) }
+      : {});
+    await transitionSession.transition(repo, {
+      storyId: STORY_ID,
+      runId: created.run_id,
+      to: status,
+      reason: code ?? 'trusted_pr_ready',
+      stopReason: code ? { code, message: `${name} fixture`, details: {} } : null,
+      pendingDecision: status === 'waiting_for_human' ? {
+        type: 'clarification',
+        question: 'Choose the operational boundary?',
+        material_reason: 'The answer changes the execution boundary.',
+        impact_scope: ['implementation']
+      } : undefined
+    });
+    const replayed = await runJson(repo, ['execute', 'status', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json']);
+    assert.equal(replayed.status, status, name);
+    assert.equal(replayed.stop_reason?.code ?? null, code, name);
+  }
+
+  const cancellable = await runJson(repo, ['execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json']);
+  const cancelled = await runJson(repo, ['execute', 'cancel', repo, '--story-id', STORY_ID, '--run-id', cancellable.run_id, '--json']);
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(cancelled.transitions.at(-1).reason, 'operator_cancelled');
 });
 
 async function git(cwd, args) {

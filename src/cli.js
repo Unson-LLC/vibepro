@@ -328,7 +328,7 @@ Review record migration:
   VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
 
 Guarded Run sessions:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
       Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
@@ -585,7 +585,7 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 Guarded Runセッション:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
       --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
@@ -2326,7 +2326,16 @@ export async function runCli(argv, io = {}) {
         decisionId: getOption(rest, '--decision'),
         answer: getOption(rest, '--answer'),
         answeredBy: getOption(rest, '--answered-by'),
-        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? []
+        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? [],
+        autonomy: getOption(rest, '--autonomy'),
+        maxAttempts: parseNumberOption(rest, '--max-attempts'),
+        maxIterations: parseNumberOption(rest, '--max-iterations'),
+        maxDurationMs: parseNumberOption(rest, '--max-duration-ms'),
+        maxTokens: parseNumberOption(rest, '--max-tokens'),
+        maxCostUsd: parseNumberOption(rest, '--max-cost-usd'),
+        retryBackoffMs: parseNumberOption(rest, '--retry-backoff-ms'),
+        retryableStopCodes: getOption(rest, '--retryable-stop-codes')?.split(',').map((item) => item.trim()).filter(Boolean),
+        providerFallbacks: getOption(rest, '--provider-fallbacks')?.split(',').map((item) => item.trim()).filter(Boolean)
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',
@@ -2355,6 +2364,21 @@ export async function runCli(argv, io = {}) {
         const jsonOutput = hasFlag(rest, '--json');
         const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
         try {
+          const guardedPolicyFlags = [
+            '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
+            '--max-tokens', '--max-cost-usd', '--retry-backoff-ms',
+            '--retryable-stop-codes', '--provider-fallbacks'
+          ];
+          const offPathPolicyFlags = subcommand === 'run'
+            ? []
+            : guardedPolicyFlags.filter((flag) => hasFlag(rest, flag));
+          if (offPathPolicyFlags.length > 0) {
+            throw new GuardedRunError(
+              'policy_options_not_supported',
+              'Guarded autonomy policy options are supported only by execute run.',
+              { command: `execute ${subcommand}`, unsupported_options: offPathPolicyFlags, supported_command: 'execute run' }
+            );
+          }
           if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
             throw new GuardedRunError(
               'invalid_target',
@@ -2364,6 +2388,9 @@ export async function runCli(argv, io = {}) {
           }
           if ((subcommand === 'run' || subcommand === 'resume') && runOptions.until && runOptions.until !== 'pr-ready') {
             throw new GuardedRunError('invalid_until', 'Guarded Run supports only --until pr-ready.', { until: runOptions.until });
+          }
+          if (runOptions.autonomy && runOptions.autonomy !== 'guarded') {
+            throw new GuardedRunError('invalid_autonomy', 'Guarded Run supports only --autonomy guarded.', { autonomy: runOptions.autonomy });
           }
           const result = subcommand === 'run'
             ? runOptions.until

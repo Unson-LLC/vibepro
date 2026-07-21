@@ -5236,6 +5236,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+            "required": true,
+            "relationship": "refines",
+            "last_reviewed_root_hash": null
           }
         ]
       },
@@ -5371,6 +5378,13 @@
           "path": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
           "required": true,
           "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+          "required": true,
+          "relationship": "refines",
           "last_reviewed_root_hash": null
         }
       ],
@@ -5899,5 +5913,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-20T14:55:45.082Z"
+  "updated_at": "2026-07-21T05:21:00.600Z"
 }

@@ -11,6 +11,7 @@ import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
   createGuardedRunSession,
+  deriveRunEfficiencyMetrics,
   renderGuardedRunError,
   renderGuardedRunSummary
 } from '../src/guarded-run-session.js';
@@ -78,7 +79,7 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
   ]);
 });
 
-test('ARA-S-1 ARA-S-3 ARA-S-4 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
+test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let runtimeStatus = 'running';
   const reviews = [];
@@ -333,7 +334,7 @@ test('HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same
   assert.deepEqual(journalEntry.reflected_in, persistedDecision.reflected_in);
 });
 
-test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
+test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults and repeated cancel is byte-stable', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
   const created = await session.run(fixture.source, { storyId: STORY_ID });
@@ -350,8 +351,18 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     stop_reason: null,
     attempt: 1,
     iteration: 0,
-    budget: { max_attempts: 1, max_iterations: 0 },
-    deadline: null,
+    budget: { max_attempts: 3, max_iterations: 12, max_duration_ms: 3600000, max_tokens: null, max_cost_usd: null },
+    deadline: '2026-07-15T02:02:03.000Z',
+    retry_policy: {
+      retryable_stop_codes: [
+        'runtime_required', 'runtime_quota', 'runtime_timeout', 'runtime_unavailable',
+        'quota_exceeded', 'runtime_probe_timeout', 'runtime_start_timeout',
+        'runtime_status_timeout', 'runtime_result_timeout', 'ci_pending', 'review_timeout', 'action_failed'
+      ],
+      backoff_ms: 0
+    },
+    provider_fallbacks: [],
+    usage_accounting: { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null },
     last_progress_at: FIRST_TIME,
     pending_decision: null,
     current_head_sha: fixture.identity(fixture.source).head_sha,
@@ -364,6 +375,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     action_journal: [],
     next_best_action_decisions: [],
     human_decision_journal: [],
+    retry_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -384,8 +396,19 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   });
   const resumed = await session.resume(fixture.source, { storyId: STORY_ID });
   assert.equal(resumed.attempt, 2);
-  assert.equal(resumed.budget.max_attempts, 1);
+  assert.equal(resumed.budget.max_attempts, 3);
   assert.equal(resumed.iteration, 0);
+  assert.deepEqual(resumed.retry_journal, [{
+    sequence: 1,
+    stop_code: 'fixture_blocked',
+    retryable: false,
+    backoff_ms: 0,
+    stopped_at: FIRST_TIME,
+    resumed_at: FIRST_TIME,
+    elapsed_ms: 0,
+    backoff_satisfied: true,
+    resumed_by: 'operator'
+  }]);
   const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const before = await readFile(artifact, 'utf8');
@@ -403,6 +426,374 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   assert.equal(repairAfter.updated_at, repairBefore.updated_at);
   assert.deepEqual(repairAfter.transitions, repairBefore.transitions);
   await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GAH-S-1 GAH-S-2 budget deadline retry and provider policy produce typed non-success stops', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, {
+    storyId: STORY_ID,
+    maxAttempts: 1,
+    maxIterations: 2,
+    maxDurationMs: 1000,
+    maxTokens: 100,
+    maxCostUsd: 1.5
+  });
+  assert.equal(created.status, 'running');
+  assert.equal(created.usage_accounting.status, 'unknown');
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked',
+    stopReason: { code: 'action_failed', message: 'retry', details: {} }
+  });
+  const stopped = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.status, 'blocked');
+  assert.equal(stopped.stop_reason.code, 'max_attempts_exceeded');
+  assert.equal(stopped.stop_reason.details.retryable, false);
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const deadlineSession = second.session();
+  await deadlineSession.run(second.source, { storyId: STORY_ID, maxDurationMs: 1000 });
+  second.setTime('2026-07-15T01:02:05.000Z');
+  const deadline = await deadlineSession.orchestrate(second.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(deadline.state.status, 'blocked');
+  assert.equal(deadline.state.stop_reason.code, 'deadline_exceeded');
+});
+
+test('GAH-S-2 persisted retry policy rejects non-retryable and interrupted backoff before resuming', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, {
+    storyId: STORY_ID,
+    retryBackoffMs: 1000,
+    retryableStopCodes: ['action_failed']
+  });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'retryable_failure',
+    stopReason: { code: 'action_failed', message: 'retry later', details: { retry_policy_scope: 'managed' } }
+  });
+  await assert.rejects(
+    session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_backoff_pending')
+  );
+  assert.deepEqual((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).retry_journal, []);
+  fixture.setTime('2026-07-15T01:02:05.000Z');
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.retry_journal[0].retryable, true);
+  assert.equal(resumed.retry_journal[0].backoff_satisfied, true);
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const secondSession = second.session();
+  await secondSession.run(second.source, { storyId: STORY_ID, retryableStopCodes: ['action_failed'], retryBackoffMs: 0 });
+  await secondSession.transition(second.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'non_retryable_failure',
+    stopReason: { code: 'action_denied', message: 'do not retry', details: { retry_policy_scope: 'managed' } }
+  });
+  await assert.rejects(
+    secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_not_allowed')
+  );
+});
+
+test('GAH-S-2 persisted retry policy governs arbitrary configured stop codes', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, {
+    storyId: STORY_ID,
+    retryBackoffMs: 1000,
+    retryableStopCodes: ['vendor_transient']
+  });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'custom_transient',
+    stopReason: { code: 'vendor_transient', message: 'retry later', details: {} }
+  });
+  await assert.rejects(
+    session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_backoff_pending')
+  );
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const secondSession = second.session();
+  await secondSession.run(second.source, {
+    storyId: STORY_ID,
+    retryableStopCodes: ['vendor_transient']
+  });
+  await secondSession.transition(second.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'custom_permanent',
+    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: { retry_policy_scope: 'managed' } }
+  });
+  await assert.rejects(
+    secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_not_allowed')
+  );
+});
+
+test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const summary = renderGuardedRunSummary(created);
+  assert.match(summary, /tokens: unknown/);
+  assert.match(summary, /cost_usd: unknown/);
+  assert.match(summary, /automated_steps: 0/);
+  assert.match(summary, /human_interruptions: 0/);
+  assert.match(summary, /active_ms: 0/);
+  assert.match(summary, /wait_ms: 0/);
+  assert.match(summary, /full_suite_runs: unknown/);
+  assert.match(summary, /evidence_reuse: unknown/);
+  assert.match(summary, /accepted_defects: unknown/);
+  assert.match(summary, /risk_reductions: unknown/);
+  assert.match(summary, /efficiency_basis: trusted_pr_ready\+accepted_defects\+risk_reductions_vs_active_wait_token_cost/);
+});
+
+test('GAH-S-10 efficiency metrics use only typed completed measurements and preserve unknown', () => {
+  const state = {
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    status: 'running',
+    created_at: FIRST_TIME,
+    updated_at: FIRST_TIME,
+    transitions: [],
+    action_journal: [
+      { status: 'completed', action_id: 'full_suite evidence_reuse', result_summary: 'mentions only' },
+      { status: 'failed', measurements: { full_suite_count: 9, evidence_reuse_count: 8 } },
+      { status: 'completed', measurements: { full_suite_count: 1, evidence_reuse_count: 2, evidence_invalidation_count: 1, accepted_defect_count: 2, risk_reduction_count: 3 } }
+    ]
+  };
+  assert.deepEqual(deriveRunEfficiencyMetrics({ ...state, action_journal: [] }), {
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    trusted_pr_ready_ms: null,
+    active_ms: null,
+    wait_ms: null,
+    total_tokens: null,
+    cost_usd: null,
+    full_suite_count: null,
+    evidence_reuse_count: null,
+    evidence_invalidation_count: null,
+    human_interruption_count: null,
+    accepted_defect_count: null,
+    risk_reduction_count: null
+  });
+  const metrics = deriveRunEfficiencyMetrics(state);
+  assert.equal(metrics.full_suite_count, 1);
+  assert.equal(metrics.evidence_reuse_count, 2);
+  assert.equal(metrics.evidence_invalidation_count, 1);
+  assert.equal(metrics.accepted_defect_count, 2);
+  assert.equal(metrics.risk_reduction_count, 3);
+});
+
+test('GAH-S-10 typed outcome measurements survive authority persistence validation', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const persisted = JSON.parse(await readFile(artifact, 'utf8'));
+  persisted.action_journal.push({
+    action_id: 'outcome_evidence',
+    node_id: 'outcome_evidence',
+    input_head_sha: persisted.current_head_sha,
+    output_head_sha: persisted.current_head_sha,
+    idempotency_key: 'outcome-evidence-current-head',
+    status: 'completed',
+    measurements: { accepted_defect_count: 2, risk_reduction_count: 3 },
+    started_at: FIRST_TIME,
+    completed_at: FIRST_TIME
+  });
+  await writeFile(artifact, `${JSON.stringify(persisted, null, 2)}\n`);
+
+  const loaded = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(loaded.action_journal.at(-1).measurements.accepted_defect_count, 2);
+  assert.equal(deriveRunEfficiencyMetrics(loaded).risk_reduction_count, 3);
+});
+
+test('GAH-S-3 provider fallback tries persisted adapters in order and retains failed attempts for audit', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const probes = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [
+    {
+      id: 'primary-runtime',
+      async probe() { probes.push('primary-runtime'); return { available: false, reason: 'runtime_unavailable' }; },
+      async start() { throw new Error('unreachable'); }, async status() { return { status: 'failed' }; },
+      async cancel() { return { status: 'cancelled' }; }, async collect_result() { throw new Error('unreachable'); }
+    },
+    {
+      id: 'fallback-runtime',
+      async probe() { probes.push('fallback-runtime'); return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+      async start() { return { provider_run_id: 'provider-fallback', agent_identity: 'implementer-2', session_id: 'fallback-session' }; },
+      async status() { return { status: 'running' }; }, async cancel() { return { status: 'cancelled' }; },
+      async collect_result() { throw new Error('unreachable'); }
+    }
+  ] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID, providerFallbacks: ['fallback-runtime'] });
+  const result = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'primary-runtime', task_id: 'implementation-runtime', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+
+  assert.deepEqual(probes, ['primary-runtime', 'fallback-runtime']);
+  assert.equal(result.dispatch.adapter_id, 'fallback-runtime');
+  assert.equal(result.dispatch.status, 'running');
+  assert.deepEqual(result.state.runtime_dispatches.map((entry) => [entry.adapter_id, entry.stop_reason?.code ?? null]), [
+    ['primary-runtime', 'runtime_unavailable'],
+    ['fallback-runtime', null]
+  ]);
+  const loaded = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(loaded.runtime_dispatches.length, 2);
+});
+
+test('GAH-S-2 CLI rejects guarded policy options outside execute run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const stderr = capture();
+  const result = await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--max-attempts', '9', '--json'
+  ], { stdout: capture(), stderr, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(result.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'policy_options_not_supported');
+});
+
+test('GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remains typed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'usage-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start() { return { provider_run_id: 'provider-usage', agent_identity: 'implementer-1', session_id: 'implementation-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { runtimeStatus = 'cancelled'; },
+    async collect_result() {
+      return {
+        completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
+        test_suggestions: [], summary: 'measured', usage_accounting: { total_tokens: 125, cost_usd: 0.25, source: 'fixture-runtime' }
+      };
+    }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID, maxTokens: 100, maxCostUsd: 1 });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: {
+      adapter_id: 'usage-runtime', task_id: 'usage', role: 'implementation', implementation_identity: 'implementer-1',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.deepEqual(completed.state.usage_accounting, {
+    total_tokens: 125, cost_usd: 0.25, status: 'known', source: 'fixture-runtime', updated_at: FIRST_TIME
+  });
+  const restarted = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const repolled = await restarted.pollRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id
+  });
+  assert.deepEqual(repolled.state.usage_accounting, completed.state.usage_accounting);
+  const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.status, 'blocked');
+  assert.equal(stopped.state.stop_reason.code, 'token_budget_exceeded');
+  assert.equal(stopped.state.stop_reason.details.retryable, false);
+});
+
+test('GAH-S-2 exhausted runtime fallback stop codes remain resumable by the default policy', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'quota-runtime',
+    async probe() { return { available: false, capabilities: [], reason: 'quota_exceeded' }; },
+    async start() { throw new Error('start must not run when probe reports quota exhaustion'); },
+    async status() { return { status: 'failed' }; },
+    async cancel() {},
+    async collect_result() { throw new Error('no result exists'); }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const blocked = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'quota-runtime', task_id: 'quota', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  assert.equal(blocked.state.stop_reason.code, 'quota_exceeded');
+  assert.doesNotReject(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
+});
+
+for (const timeoutPhase of ['start', 'status', 'result']) {
+  test(`GAH-S-2 contained runtime ${timeoutPhase} timeout persists and resumes under the default policy`, async (t) => {
+    const fixture = await createFixture(t, { mode: 'disabled' });
+    let cancelled = false;
+    let statusCalls = 0;
+    const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+      id: `timeout-${timeoutPhase}-runtime`,
+      async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+      async start() {
+        if (timeoutPhase === 'start') return new Promise(() => {});
+        return { provider_run_id: `provider-${timeoutPhase}`, agent_identity: 'implementer-1', session_id: 'implementation-session' };
+      },
+      async status() {
+        statusCalls += 1;
+        if (timeoutPhase === 'status' && statusCalls === 1) return new Promise(() => {});
+        if (timeoutPhase === 'result' && statusCalls === 1) return { status: 'completed' };
+        return { status: cancelled ? 'cancelled' : 'running' };
+      },
+      async cancel() { cancelled = true; return { status: 'cancelled' }; },
+      async collect_result() {
+        if (timeoutPhase === 'result') return new Promise(() => {});
+        throw new Error('result collection is not expected');
+      }
+    }] });
+    const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+    const run = await session.run(fixture.source, { storyId: STORY_ID });
+    const dispatched = await session.dispatchRuntime(fixture.source, {
+      storyId: STORY_ID,
+      runId: RUN_ID,
+      request: {
+        adapter_id: `timeout-${timeoutPhase}-runtime`, task_id: `timeout-${timeoutPhase}`, role: 'implementation',
+        requirements: { capabilities: ['workspace_write'], timeout_ms: 5, managed_worktree: run.execution_context.root_realpath }
+      }
+    });
+    const stopped = timeoutPhase === 'start'
+      ? dispatched
+      : await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: dispatched.dispatch.dispatch_id });
+    assert.equal(stopped.state.stop_reason.code, `runtime_${timeoutPhase}_timeout`);
+    assert.equal(stopped.dispatch.provider_terminal_status, 'cancelled');
+
+    const restarted = fixture.session({ agentRuntimeCoordinator: coordinator });
+    const resumed = await restarted.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+    assert.equal(resumed.status, 'running');
+    assert.equal(resumed.retry_journal.at(-1).stop_code, `runtime_${timeoutPhase}_timeout`);
+    assert.equal(resumed.retry_journal.at(-1).retryable, true);
+  });
+}
+
+test('GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls', async () => {
+  const stdout = capture();
+  const result = await runCli(['help'], { stdout, stderr: capture() });
+  assert.equal(result.exitCode, 0);
+  assert.match(stdout.text(), /--retry-backoff-ms <ms>/);
+  assert.match(stdout.text(), /--retryable-stop-codes <csv>/);
+  assert.match(stdout.text(), /--provider-fallbacks <csv>/);
 });
 
 test('Portfolio creation request identity returns the same guarded Run exactly once', async (t) => {
@@ -1193,7 +1584,7 @@ test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resu
   assert.deepEqual(await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), cancelled);
 });
 
-test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set', async (t) => {
+test('GRS-S-4 GRS-S-5 INV-005 GAH-S-7 lifecycle matrix accepts only the closed transition set', async (t) => {
   const statuses = [
     'running',
     'waiting_for_human',
@@ -1207,7 +1598,7 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
   const allows = (from, to) => {
     if (from === 'pr_ready') return to === 'pr_ready';
     if (from === 'cancelled') return false;
-    if ((from === 'failed' || from === 'waiting_for_human') && to === 'running') return false;
+    if (recoverable.has(from) && to === 'running') return false;
     if (from === 'running') return recoverable.has(to) || to === 'cancelled' || to === 'pr_ready';
     return to === 'running'
       || (recoverable.has(to) && to !== from)
@@ -1332,13 +1723,13 @@ test('GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop
   );
   assert.equal(await readFile(artifact, 'utf8'), before);
 
-  const resumed = await session.transition(fixture.source, {
+  await assert.rejects(session.transition(fixture.source, {
     storyId: STORY_ID,
     runId: RUN_ID,
     to: 'running',
-    reason: 'manual_resume',
-    stopReason: stopReason('must_be_cleared')
-  });
+    reason: 'manual_resume'
+  }), errorWithCode('invalid_transition'));
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(resumed.stop_reason, null);
 });
 
@@ -1350,7 +1741,8 @@ test('GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persist
     { code: '', message: 'message' },
     { code: 'code', message: '' },
     { code: 'code', message: 'message', details: [] },
-    { code: 'code', message: 'message', details: new Date(FIRST_TIME) }
+    { code: 'code', message: 'message', details: new Date(FIRST_TIME) },
+    { code: 'code', message: 'message', details: { retry_policy_scope: 'unknown' } }
   ];
   for (const [index, value] of invalidStopReasons.entries()) {
     const fixture = await createFixture(t, { mode: 'disabled' });
@@ -1508,6 +1900,38 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('corrupt_state'));
   const names = await readdir(path.dirname(artifact));
   assert.equal(names.some((name) => name.startsWith('state.json.corrupt-20260715T010203Z')), true);
+});
+
+test('GAH-S-1 existing pre-hardening 0.2.0 Run migrates advisory limits before resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const legacy = structuredClone(created);
+  legacy.status = 'blocked';
+  legacy.stop_reason = { code: 'legacy_operational_block', message: 'legacy stop', details: {} };
+  legacy.attempt = 1;
+  legacy.iteration = 0;
+  legacy.budget = { max_attempts: 1, max_iterations: 0 };
+  delete legacy.retry_policy;
+  delete legacy.provider_fallbacks;
+  delete legacy.usage_accounting;
+  delete legacy.retry_journal;
+  legacy.transitions.push({ sequence: 2, from: 'running', to: 'blocked', reason: 'legacy_stop', timestamp: FIRST_TIME });
+  await writeFile(artifact, `${JSON.stringify(legacy, null, 2)}\n`);
+
+  const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(migrated.budget, {
+    max_attempts: 3,
+    max_iterations: 12,
+    max_duration_ms: 3600000,
+    max_tokens: null,
+    max_cost_usd: null
+  });
+  assert.equal(migrated.usage_accounting.status, 'unknown');
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.attempt, 2);
 });
 
 test('GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default', async (t) => {
@@ -1965,7 +2389,7 @@ test('GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-s
   await assert.rejects(stat(repositoryLock), { code: 'ENOENT' });
 });
 
-test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
+test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 GAH-S-5 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-cli-'));
   t.after(() => rm(repo, { recursive: true, force: true }));
   await git(repo, ['init', '-b', 'main']);
@@ -2325,6 +2749,33 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
   assert.match(summary, /next_best_action: ask \(checkpoint=no_progress; no_progress=2\)/);
 });
 
+test('GAH-S-8 human summary renders pending decision and a safe fallback when recovery is absent', () => {
+  const summary = renderGuardedRunSummary({
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    status: 'waiting_for_human',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: 'a'.repeat(40),
+    execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
+    action_journal: [],
+    transitions: [],
+    pending_decision: {
+      decision_id: 'decision-1234567890abcdef',
+      question: 'Which bounded scope should continue?',
+      material_reason: 'The change crosses an ownership boundary.'
+    },
+    stop_reason: { code: 'human_judgment_required', message: 'human judgment required', details: {} }
+  });
+
+  assert.match(summary, /decision-1234567890abcdef/);
+  assert.match(summary, /Which bounded scope should continue\?/);
+  assert.match(summary, /The change crosses an ownership boundary\./);
+  assert.match(summary, /next_command: vibepro execute status '\/tmp\/repo with space'/);
+});
+
 test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const dependencies = {
@@ -2488,7 +2939,7 @@ test('SAO-S-2 C-004 resume retries only the failed action and preserves the comp
   assert.match(renderGuardedRunSummary(retried.state), /pr_autopilot_safe \(completed\): runtime_required/);
 });
 
-test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
+test('SAO-S-2 GAH-S-6 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;
   const session = fixture.session({
@@ -2592,7 +3043,7 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   assert.equal(bootstrapCalls, 0);
 });
 
-test('GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
+test('GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
   const source = await readFile(new URL('../src/guarded-run-session.js', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager).*['"]/i);
   assert.match(source, /from ['"].*safe-action-orchestrator\.js['"]/i);
@@ -2670,6 +3121,9 @@ async function createFixture(t, options = {}) {
       const identity = identities.get(resolved);
       if (!identity) throw new Error(`unknown fixture worktree: ${resolved}`);
       identity.head_sha = headSha;
+    },
+    setTime(value) {
+      clock.value = value;
     },
     runFile(repo, runId) {
       return path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', runId, 'state.json');

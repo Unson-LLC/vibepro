@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
+
 const REQUIRED_METHODS = Object.freeze(['probe', 'start', 'status', 'cancel', 'collect_result']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled', 'timed_out']);
 const RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES]);
@@ -334,6 +336,9 @@ function normalizeResult(value, dispatchRecord) {
     test_suggestions: requireStringArray(value.test_suggestions, 'test_suggestions'),
     summary: requireText(value.summary, 'summary')
   };
+  if (value.usage_accounting !== undefined) {
+    result.usage_accounting = normalizeUsageAccounting(value.usage_accounting);
+  }
   if (dispatchRecord.role === 'review') {
     if (result.changed_files.length > 0) {
       throw new AgentRuntimeError('review_mutation_forbidden', 'review runtime result must not contain changed files');
@@ -371,6 +376,25 @@ function normalizeResult(value, dispatchRecord) {
     }
   }
   return result;
+}
+
+function normalizeUsageAccounting(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'usage_accounting must be an object');
+  }
+  const totalTokens = value.total_tokens ?? null;
+  const costUsd = value.cost_usd ?? null;
+  if (totalTokens !== null && (!Number.isFinite(totalTokens) || totalTokens < 0)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'usage_accounting.total_tokens must be a non-negative number or null');
+  }
+  if (costUsd !== null && (!Number.isFinite(costUsd) || costUsd < 0)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'usage_accounting.cost_usd must be a non-negative number or null');
+  }
+  return {
+    total_tokens: totalTokens,
+    cost_usd: costUsd,
+    source: typeof value.source === 'string' && value.source.length > 0 ? value.source : 'agent_runtime'
+  };
 }
 
 function waiting(state, request, code, message, now, details = {}) {

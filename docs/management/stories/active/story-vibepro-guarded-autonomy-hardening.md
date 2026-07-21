@@ -7,6 +7,7 @@ status: active
 view: dev
 period: 2026-07
 category: quality
+business_metric: "Story別のTrusted PR-ready到達率、active/wait比率、token/cost、human interruption、accepted findingあたりcostをunknown保持で計測する"
 source:
   type: operator_feedback
   title: "自律ループを無限実行や自己Reviewにせず、費用・時間・停止理由まで運用可能にしたい"
@@ -58,6 +59,18 @@ updated_at: 2026-07-15
 - [ ] GAH-S-8: operator向けstatus/cockpitに自動化されたstep、人間判断、費用、経過時間、停止理由、次の安全な操作を表示する。
 - [ ] GAH-S-9: status/cockpitは次Actionの選択理由、active timeとwait time、token/costのunknown、Full Suite回数、evidence reuse/失効、human interruptionをStory別に表示する。
 - [ ] GAH-S-10: 効率評価はtoken最小やartifact数ではなく、Trusted PR-ready到達、accepted defect修正、risk reductionを総コストと対比し、未収集値を0へ変換しない。
+
+### Required Review identity boundary
+
+Required Reviewは実装セッションとの独立性を検証するため、review roleの開始時に`implementation_session_id`を必須とする。欠落時は暗黙に独立扱いせず、開始を拒否する。
+
+```yaml
+inherited_behavior:
+  condition: "role === 'review' && !input.implementation_session_id"
+  classification: unchanged
+  files:
+    - src/agent-runtime-adapter.js
+```
 
 ## 依存関係・ロードマップ完了条件
 

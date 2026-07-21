@@ -32,7 +32,7 @@ test('story-vibepro-safe-action-orchestrator ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 
     'ac4 SAO-S-4 binds repeated execution to the persisted idempotency checkpoint');
   assert.match(result.stdout, /SAO-S-3 action failure stops and records action_failed/,
     'ac5 SAO-S-5 prevents failed Actions from advancing implicitly');
-  assert.match(result.stdout, /SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG/,
+  assert.match(result.stdout, /SAO-S-2 GAH-S-6 pr_ready is revoked until a changed HEAD passes the Gate DAG/,
     'ac6 SAO-S-6 rebinds changed repositories to current-HEAD Gate evaluation');
   assert.match(result.stdout, /SAO-S-8 external safe autopilot options stop before preparation/,
     'S-008 keeps CI, PR, import, and arbitrary environment operations behind human approval');

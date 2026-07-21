@@ -57,7 +57,7 @@ test('SAO-S-4 forbidden action never invokes a runner', async () => {
   assert.equal(result.state.stop_reason.code, 'action_forbidden');
 });
 
-test('SAO-S-4 unknown action cannot claim repo_local_safe classification', async () => {
+test('SAO-S-4 GAH-S-4 unknown action cannot claim repo_local_safe classification', async () => {
   let calls = 0;
   const result = await runSafeActionPlan(state, {
     plan: [{ id: 'unknown_repo_action', classification: 'repo_local_safe', depends_on: [] }],
