@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
+import { appendProviderObservation, createRunLineageEnvelope } from '../src/run-lineage.js';
 
 const state = {
   story_id: 'story-lineage',
@@ -119,4 +120,39 @@ test('poll retains the same authoritative lineage and append-only observation', 
   assert.equal(completed.dispatch.lineage.run_id, state.run_id);
   assert.equal(completed.dispatch.lineage.provider_observations.length, 1);
   assert.equal(completed.dispatch.provider_run_id, 'provider-run-1');
+});
+
+test('fails closed on a provider identity rebound across persisted Run envelopes and reuses idempotent dispatches', async () => {
+  let starts = 0;
+  let cancelled = 0;
+  const runtime = adapter({
+    async start() { starts += 1; return { provider_run_id: 'provider-run-1', agent_identity: 'agent-1', session_id: 'session-2' }; },
+    async cancel() { cancelled += 1; },
+    async status() { return { status: cancelled ? 'cancelled' : 'running' }; }
+  });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [runtime] });
+  const existing = await coordinator.dispatch(state, request);
+  const foreignLineage = appendProviderObservation(createRunLineageEnvelope({
+    story_id: 'story-foreign', run_id: 'run-foreign', dispatch_id: 'dispatch-foreign',
+    worktree_root: '/repo/foreign', branch: 'codex/foreign', head_sha: state.current_head_sha
+  }), { provider: 'provider-a', provider_run_id: 'provider-run-1', provider_session_id: 'foreign-session' });
+
+  const persisted = {
+    ...existing.state,
+    runtime_dispatches: [...existing.state.runtime_dispatches, {
+      adapter_id: 'provider-a', provider_run_id: 'provider-run-1',
+      lineage: foreignLineage
+    }]
+  };
+  await assert.rejects(coordinator.dispatch(persisted, request), { code: 'provider_identity_conflict' });
+  assert.equal(starts, 1);
+
+  const duplicate = await coordinator.dispatch(existing.state, request);
+  assert.equal(duplicate.reused, true);
+  assert.equal(duplicate.dispatch.dispatch_id, existing.dispatch.dispatch_id);
+
+  const rebound = await coordinator.dispatch(existing.state, { ...request, task_id: 'implement-lineage-rebound' });
+  assert.equal(rebound.state.status, 'failed');
+  assert.equal(rebound.dispatch.stop_reason.code, 'provider_identity_conflict');
+  assert.equal(starts, 2);
 });

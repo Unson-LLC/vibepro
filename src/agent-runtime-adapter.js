@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { appendProviderObservation, createRunLineageEnvelope } from './run-lineage.js';
+import { appendProviderObservation, assertProviderIdentityUniqueness, createRunLineageEnvelope } from './run-lineage.js';
 
 export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 
@@ -51,6 +51,13 @@ export function createAgentRuntimeCoordinator({ adapters = [], now = () => new D
 
 async function dispatch(registry, now, runState, input = {}) {
   const request = normalizeRequest(runState, input);
+  let startedRecord = null;
+  try {
+    assertProviderIdentityUniqueness(runState.runtime_dispatches ?? []);
+  } catch (error) {
+    if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
+    throw error;
+  }
   const existing = findDispatch(runState, request.dispatch_id);
   if (existing && existing.provider_run_id && !TERMINAL_STATUSES.has(existing.status)) {
     return { state: { ...runState, status: 'running', stop_reason: null }, dispatch: existing, reused: true };
@@ -102,7 +109,14 @@ async function dispatch(registry, now, runState, input = {}) {
       result: null,
       stop_reason: null
     };
+    startedRecord = dispatchRecord;
     dispatchRecord.lineage = appendRuntimeObservation(dispatchRecord.lineage, adapter.id, started, dispatchRecord);
+    try {
+      assertProviderIdentityUniqueness([...(runState.runtime_dispatches ?? []), dispatchRecord]);
+    } catch (error) {
+      if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
+      throw error;
+    }
     if (request.role === 'review' &&
         (started.agent_identity !== request.reviewer_identity || started.agent_identity === request.implementation_identity)) {
       return containUncertainRuntime(registry, now, upsertDispatch(runState, dispatchRecord), dispatchRecord,
@@ -114,6 +128,11 @@ async function dispatch(registry, now, runState, input = {}) {
     }
     return { state: { ...upsertDispatch(runState, dispatchRecord), status: 'running', stop_reason: null }, dispatch: dispatchRecord, reused: false };
   } catch (error) {
+    if (startedRecord?.provider_run_id) {
+      const failureCode = error.code === 'provider_identity_conflict' ? error.code : 'runtime_start_failed';
+      return containUncertainRuntime(registry, now, upsertDispatch(runState, startedRecord), startedRecord,
+        failureCode, error.message);
+    }
     if (WAIT_REASONS.has(error.code) && error.code !== 'runtime_start_timeout') {
       return waiting(runState, request, error.code, error.message, now);
     }
@@ -138,6 +157,12 @@ async function dispatch(registry, now, runState, input = {}) {
 
 async function poll(registry, now, runState, dispatchId) {
   const current = requireDispatch(runState, dispatchId);
+  try {
+    assertProviderIdentityUniqueness(runState.runtime_dispatches ?? []);
+  } catch (error) {
+    if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
+    throw error;
+  }
   if (TERMINAL_STATUSES.has(current.status)) return { state: runState, dispatch: current, reused: true };
   if (!current.provider_run_id) throw new AgentRuntimeError('runtime_not_started', 'waiting runtime dispatch must be retried through dispatch()');
   const adapter = requireAdapter(registry, current.adapter_id);
@@ -150,7 +175,8 @@ async function poll(registry, now, runState, dispatchId) {
     ));
   } catch (error) {
     return containUncertainRuntime(registry, now, runState, current,
-      error.code === 'runtime_status_timeout' ? error.code : 'runtime_status_failed', error.message);
+      error.code === 'runtime_status_timeout' || error.code === 'provider_identity_conflict' || error.code === 'provider_observation_conflict'
+        ? error.code : 'runtime_status_failed', error.message);
   }
   if (observed.status === 'permission_wait') {
     return waitingExisting(runState, current, 'permission_wait', observed.message ?? 'runtime requires permission', now);

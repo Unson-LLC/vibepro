@@ -225,6 +225,79 @@ test('canonical Run lineage validates complete authority and matching dispatches
   assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, 1);
 });
 
+test('canonical Run lineage deterministically deduplicates one mirrored session event per dispatch', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+  const mirroredLineage = lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' });
+  await writeSessionFile(codexHome, SESSION_ID, [
+    {
+      timestamp: '2026-07-21T01:00:00.000Z',
+      type: 'event_msg',
+      lineage: mirroredLineage,
+      payload: { type: 'assistant_message', content: 'mirrored dispatch observation' }
+    },
+    {
+      timestamp: '2026-07-21T01:00:01.000Z',
+      type: 'event_msg',
+      lineage: mirroredLineage,
+      payload: { type: 'assistant_message', content: 'distinct observation for the same dispatch' }
+    }
+  ]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.deduplication.method, 'canonical_dispatch_id_preferred_once_per_dispatch');
+  assert.equal(result.lineage_attribution.deduplication.duplicate_event_count, 1);
+  assert.equal(result.lineage_attribution.deduplication.input_event_count, 3);
+  assert.equal(result.lineage_attribution.deduplication.output_event_count, 2);
+  assert.equal(result.lineage_attribution.total_event_count, 2);
+  assert.equal(result.lineage_attribution.events.filter((event) => event.lineage?.dispatch_id === 'dispatch-run-alpha').length, 2);
+});
+
+test('malformed JSONL rows are reported as parse loss and degrade audit readiness', async () => {
+  const { root, codexHome } = await fixture();
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '07', '21', `${SESSION_ID}.jsonl`);
+  const validEntries = [
+    {
+      timestamp: '2026-07-21T01:00:00.000Z',
+      type: 'event_msg',
+      payload: { type: 'assistant_message', content: 'valid row' }
+    },
+    {
+      timestamp: '2026-07-21T01:00:01.000Z',
+      type: 'event_msg',
+      payload: { type: 'assistant_message', content: 'another valid row' }
+    }
+  ];
+  await writeFile(sessionPath, `${JSON.stringify(validEntries[0])}\n{"timestamp":"2026-07-21T01:00:00.500Z", malformed\n${JSON.stringify(validEntries[1])}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.session.parse_diagnostics.status, 'degraded');
+  assert.equal(result.session.parse_diagnostics.confidence, 'degraded');
+  assert.equal(result.session.parse_diagnostics.physical_row_count, 3);
+  assert.equal(result.session.parse_diagnostics.parsed_row_count, 2);
+  assert.equal(result.session.parse_diagnostics.malformed_row_count, 1);
+  assert.equal(result.session.parse_diagnostics.malformed_rows[0].line, 2);
+  assert.ok(result.audit_readiness.blockers.includes('session_jsonl_parse_loss'));
+  assert.match(renderSessionEfficiencyAudit(result), /session_jsonl_parse: degraded malformed_rows=1 confidence=degraded/);
+});
+
 test('AC-6 excludes shared-parent, unattributed, and replayed context from Story token/time/value display', async () => {
   const { root, codexHome } = await fixture();
   const timestamp = '2026-07-21T01:00:00.000Z';

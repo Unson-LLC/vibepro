@@ -5,6 +5,7 @@ import {
   LINEAGE_SCHEMA_VERSION,
   RunLineageError,
   appendProviderObservation,
+  assertProviderIdentityUniqueness,
   createRunLineageEnvelope,
   resolveRunAttribution,
   validateRunLineageEnvelope
@@ -60,6 +61,24 @@ test('provider observations merge append-only, deduplicate, and reject rebind/co
   assert.throws(() => appendProviderObservation(observed, {
     provider: 'codex', provider_run_id: 'provider-run-2', run_id: 'run-other', story_id: 'story-other'
   }), errorCode('provider_observation_conflict'));
+});
+
+test('provider identities cannot be rebound across persisted dispatch or Run envelopes', () => {
+  const first = appendProviderObservation(envelope({ dispatch_id: 'dispatch-a' }), {
+    provider: 'codex', provider_run_id: 'provider-run-1', provider_session_id: 'session-1', thread_id: 'thread-1'
+  });
+  const second = appendProviderObservation(envelope({ run_id: 'run-beta', dispatch_id: 'dispatch-b' }), {
+    provider: 'codex', provider_run_id: 'provider-run-1', provider_session_id: 'session-2'
+  });
+
+  assert.throws(() => assertProviderIdentityUniqueness([
+    { adapter_id: 'codex', lineage: first },
+    { adapter_id: 'codex', lineage: second }
+  ]), errorCode('provider_identity_conflict'));
+  assert.equal(assertProviderIdentityUniqueness([
+    { adapter_id: 'codex', lineage: first },
+    { adapter_id: 'codex', lineage: { ...first } }
+  ]), true);
 });
 
 test('resolves five attribution buckets with bounded provenance and reconciled totals', () => {

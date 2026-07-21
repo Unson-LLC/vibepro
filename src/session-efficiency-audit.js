@@ -357,6 +357,7 @@ export function renderSessionEfficiencyAudit(result) {
     `- session: ${result.session_id}`,
     `- observed_worktree: ${result.observed_worktree} (${result.observed_worktree_source})`,
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
+    `- session_jsonl_parse: ${result.session.parse_diagnostics?.status ?? 'unknown'} malformed_rows=${result.session.parse_diagnostics?.malformed_row_count ?? '未確認'} confidence=${result.session.parse_diagnostics?.confidence ?? '未確認'}`,
     `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
@@ -999,7 +1000,7 @@ async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
 }
 
 async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const buckets = {
@@ -1052,6 +1053,7 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
     mixed_parent: [...storyRefs].some((ref) => ref !== currentStory),
     detected_story_refs: [...storyRefs].sort(),
     session_cwd_matches_repo: sessionCwdMatchesRepo,
+    parse_diagnostics,
     note: 'Advisory attribution only; mixed sessions are surfaced but do not block audit readiness.'
   };
 }
@@ -1132,7 +1134,7 @@ function resolveUserPath(value) {
 }
 
 async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
@@ -1277,6 +1279,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runI
     },
     artifact_token_accounting: artifactTokenAccounting,
     lineage_attribution: lineageAttribution,
+    parse_diagnostics,
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
       status: finalAnswerEvents.length > 0 || windowEnd ? 'available' : 'partial',
       elapsed_ms: Math.max(0, windowFinishedAt - windowStartedAt),
@@ -1305,18 +1308,26 @@ async function parseCodexSessionJsonl(filePath, options = {}) {
 
 async function readCodexSessionEntries(filePaths) {
   const entries = [];
+  const malformedRows = [];
+  let physicalLineCount = 0;
   for (const sourcePath of filePaths) {
     const text = await readFile(sourcePath, 'utf8');
-    const lines = text.split('\n').filter(Boolean);
+    const lines = text.split('\n');
     for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].trim()) continue;
+      physicalLineCount += 1;
       try {
         entries.push({
           entry: JSON.parse(lines[index]),
           sourcePath,
           line: index + 1
         });
-      } catch {
-        // Ignore malformed JSONL rows; other rows in the session may still carry usable accounting.
+      } catch (error) {
+        malformedRows.push({
+          source_path: sourcePath,
+          line: index + 1,
+          reason: error.message
+        });
       }
     }
   }
@@ -1325,7 +1336,21 @@ async function readCodexSessionEntries(filePaths) {
     || a.sourcePath.localeCompare(b.sourcePath)
     || a.line - b.line
   ));
-  return entries;
+  return {
+    entries,
+    parse_diagnostics: {
+      status: malformedRows.length > 0 ? 'degraded' : 'clean',
+      confidence: malformedRows.length > 0 ? 'degraded' : 'high',
+      physical_row_count: physicalLineCount,
+      parsed_row_count: entries.length,
+      malformed_row_count: malformedRows.length,
+      dropped_row_count: malformedRows.length,
+      malformed_rows: malformedRows,
+      reason: malformedRows.length > 0
+        ? 'one or more JSONL rows could not be parsed; audit totals may be incomplete'
+        : null
+    }
+  };
 }
 
 function normalizeOptionalText(value) {
@@ -1624,7 +1649,8 @@ function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {
     };
   }
   const sessionEvents = sessionAttribution?.events ?? [];
-  const events = [...canonicalRun.events, ...sessionEvents];
+  const deduplication = deduplicateCanonicalAndSessionEvents(canonicalRun.events, sessionEvents);
+  const events = deduplication.events;
   const attribution = resolveRunAttribution(events, { story_id: storyId, run_id: runId });
   const threadOnlyEvents = sessionEvents.filter((event) => event?.thread_id && !event?.lineage);
   return {
@@ -1646,8 +1672,45 @@ function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {
       scope: windowStart || windowEnd ? 'bounded' : 'full_session'
     },
     canonical_run: canonicalRun,
+    deduplication: deduplication.summary,
     reason: null
   };
+}
+
+function deduplicateCanonicalAndSessionEvents(canonicalEvents, sessionEvents) {
+  const remainingSessionEvents = [...sessionEvents];
+  const removed = [];
+  const events = [];
+  for (const canonicalEvent of canonicalEvents) {
+    events.push(canonicalEvent);
+    const canonicalKey = lineageDispatchKey(canonicalEvent);
+    if (!canonicalKey) continue;
+    const duplicateIndex = remainingSessionEvents.findIndex((event) => lineageDispatchKey(event) === canonicalKey);
+    if (duplicateIndex === -1) continue;
+    const [duplicate] = remainingSessionEvents.splice(duplicateIndex, 1);
+    removed.push({
+      method: 'canonical_dispatch_id_preferred',
+      canonical_event_id: canonicalEvent.id ?? null,
+      session_event_id: duplicate.id ?? null,
+      dispatch_id: canonicalKey
+    });
+  }
+  events.push(...remainingSessionEvents);
+  return {
+    events,
+    summary: {
+      status: removed.length > 0 ? 'applied' : 'not_needed',
+      method: 'canonical_dispatch_id_preferred_once_per_dispatch',
+      input_event_count: canonicalEvents.length + sessionEvents.length,
+      output_event_count: events.length,
+      duplicate_event_count: removed.length,
+      removed
+    }
+  };
+}
+
+function lineageDispatchKey(event) {
+  return normalizeOptionalText(event?.lineage?.dispatch_id);
 }
 
 function buildLineageAttribution(events, {
@@ -2412,7 +2475,8 @@ function buildAuditReadiness({ session, processMetadata, observedWorktreeMatches
     !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
     observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
     !isUsableArtifactInventory(artifactInventory) ? artifactInventoryBlocker(artifactInventory) : null,
-    git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
+    git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null,
+    session.parse_diagnostics?.status === 'degraded' ? 'session_jsonl_parse_loss' : null
   ].filter(Boolean);
   return {
     status: blockers.length === 0 ? 'ready' : 'partial',
