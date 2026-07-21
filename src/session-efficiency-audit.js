@@ -164,19 +164,22 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   let sessionAttribution;
   if (selectedSessionId && sessionFiles.length > 0) {
     try {
+      const sessionEntries = await readCodexSessionEntries(sessionFiles);
       session = await parseCodexSessionJsonlFiles(sessionFiles, {
         sessionId: selectedSessionId,
         storyId,
         runId: requestedRunId,
         windowStart: effectiveWindowStart,
-        windowEnd: effectiveWindowEnd
+        windowEnd: effectiveWindowEnd,
+        sessionEntries
       });
       sessionAttribution = await buildSessionAttribution(sessionFiles, {
         repoRoot: root,
         storyId,
         windowStart: effectiveWindowStart,
         windowEnd: effectiveWindowEnd,
-        sessionCwd: session.cwd
+        sessionCwd: session.cwd,
+        sessionEntries
       });
     } catch (error) {
       const reason = `session JSONL read failed: ${error.message}`;
@@ -1082,8 +1085,8 @@ async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
   return toWorkspaceRelative(repoRoot, filePath);
 }
 
-async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
-  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
+async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null, sessionEntries = null } = {}) {
+  const { entries, parse_diagnostics } = sessionEntries ?? await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const buckets = {
@@ -1297,8 +1300,8 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd } = {}) {
-  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd, sessionEntries = null } = {}) {
+  const { entries, parse_diagnostics } = sessionEntries ?? await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];

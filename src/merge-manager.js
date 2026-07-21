@@ -637,6 +637,11 @@ function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null,
       observed_worktree: input.observed_worktree ?? null,
       observed_worktree_source: input.observed_worktree_source ?? null,
       cost_breakdown: input.cost_breakdown ?? null,
+      attribution: input.attribution ?? null,
+      primary: input.primary ?? input.attribution?.primary ?? null,
+      upper_bound: input.upper_bound ?? input.attribution?.upper_bound ?? null,
+      mixed_parent: input.mixed_parent ?? input.attribution?.mixed_parent ?? null,
+      strict_over_associated: input.strict_over_associated ?? input.attribution?.strict_over_associated ?? null,
       artifact_token_accounting: normalizedArtifactToken
     };
   }

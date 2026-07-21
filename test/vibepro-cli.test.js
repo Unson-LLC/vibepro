@@ -13293,6 +13293,23 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.attribution.status, 'available');
+  assert.deepEqual(
+    result.result.merge.cost_accounting.session_efficiency_audit.primary,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.primary
+  );
+  assert.deepEqual(
+    result.result.merge.cost_accounting.session_efficiency_audit.upper_bound,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.upper_bound
+  );
+  assert.equal(
+    result.result.merge.cost_accounting.session_efficiency_audit.mixed_parent,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.mixed_parent
+  );
+  assert.equal(
+    result.result.merge.cost_accounting.session_efficiency_audit.strict_over_associated,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.strict_over_associated
+  );
   assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_token_accounting.status, 'available');
 
