@@ -354,7 +354,10 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults a
     budget: { max_attempts: 3, max_iterations: 12, max_duration_ms: 3600000, max_tokens: null, max_cost_usd: null },
     deadline: '2026-07-15T02:02:03.000Z',
     retry_policy: {
-      retryable_stop_codes: ['runtime_required', 'runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'],
+      retryable_stop_codes: [
+        'runtime_required', 'runtime_quota', 'runtime_timeout', 'runtime_unavailable',
+        'quota_exceeded', 'runtime_probe_timeout', 'ci_pending', 'review_timeout', 'action_failed'
+      ],
       backoff_ms: 0
     },
     provider_fallbacks: [],
@@ -698,10 +701,41 @@ test('GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remain
   assert.deepEqual(completed.state.usage_accounting, {
     total_tokens: 125, cost_usd: 0.25, status: 'known', source: 'fixture-runtime', updated_at: FIRST_TIME
   });
+  const restarted = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const repolled = await restarted.pollRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id
+  });
+  assert.deepEqual(repolled.state.usage_accounting, completed.state.usage_accounting);
   const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(stopped.state.status, 'blocked');
   assert.equal(stopped.state.stop_reason.code, 'token_budget_exceeded');
   assert.equal(stopped.state.stop_reason.details.retryable, false);
+});
+
+test('GAH-S-2 exhausted runtime fallback stop codes remain resumable by the default policy', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'quota-runtime',
+    async probe() { return { available: false, capabilities: [], reason: 'quota_exceeded' }; },
+    async start() { throw new Error('start must not run when probe reports quota exhaustion'); },
+    async status() { return { status: 'failed' }; },
+    async cancel() {},
+    async collect_result() { throw new Error('no result exists'); }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const blocked = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'quota-runtime', task_id: 'quota', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  assert.equal(blocked.state.stop_reason.code, 'quota_exceeded');
+  assert.doesNotReject(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
 });
 
 test('GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls', async () => {
@@ -2664,6 +2698,33 @@ test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', (
   assert.match(summary, /failure: autopilot interrupted/);
   assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
   assert.match(summary, /next_best_action: ask \(checkpoint=no_progress; no_progress=2\)/);
+});
+
+test('GAH-S-8 human summary renders pending decision and a safe fallback when recovery is absent', () => {
+  const summary = renderGuardedRunSummary({
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    status: 'waiting_for_human',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: 'a'.repeat(40),
+    execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
+    action_journal: [],
+    transitions: [],
+    pending_decision: {
+      decision_id: 'decision-1234567890abcdef',
+      question: 'Which bounded scope should continue?',
+      material_reason: 'The change crosses an ownership boundary.'
+    },
+    stop_reason: { code: 'human_judgment_required', message: 'human judgment required', details: {} }
+  });
+
+  assert.match(summary, /decision-1234567890abcdef/);
+  assert.match(summary, /Which bounded scope should continue\?/);
+  assert.match(summary, /The change crosses an ownership boundary\./);
+  assert.match(summary, /next_command: vibepro execute status '\/tmp\/repo with space'/);
 });
 
 test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes', async (t) => {
