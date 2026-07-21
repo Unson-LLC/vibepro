@@ -6,7 +6,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { getExecutionStatus, reconcileExecutionState, startExecution } from '../../src/execution-state.js';
+import { getExecutionStatus, reconcileExecutionState, renderExecutionStateSummary, startExecution } from '../../src/execution-state.js';
+import { buildManagedWorktreeGate } from '../../src/managed-worktree-gate.js';
 import { evaluateManagedWorktreeCommandContext } from '../../src/managed-worktree.js';
 
 const execFileAsync = promisify(execFile);
@@ -81,4 +82,54 @@ test('gate-then-reconcile command order keeps the synced policy distribution aud
 
   const status = await getExecutionStatus(root, { storyId: STORY_ID });
   assert.equal(status.state.managed_worktree.policy_sync.last_event.status, 'synced');
+});
+
+// story-vibepro-managed-worktree-policy-resync ac:1
+// story-vibepro-managed-worktree-policy-resync ac:4
+// buildManagedWorktreeGate is the dominant protected-command path (assertManagedWorktreeCommandAllowed
+// call sites across cli.js). Its refresh must perform the sync and surface policy_sync too.
+test('buildManagedWorktreeGate path performs the policy sync and surfaces policy_sync', async (t) => {
+  const root = await makeRepoFixture();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  await startExecution(root, { storyId: STORY_ID });
+
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const parentConfig = JSON.parse(await readFile(configPath, 'utf8'));
+  parentConfig.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
+  await writeJson(configPath, parentConfig);
+
+  const gate = await buildManagedWorktreeGate(root, { storyId: STORY_ID });
+  assert.equal(gate.managed_worktree.policy_sync.status, 'synced');
+  assert.deepEqual(gate.managed_worktree.policy_sync.sections_updated, ['budgets']);
+
+  const state = await getExecutionStatus(root, { storyId: STORY_ID });
+  const worktreePath = state.state.managed_worktree.path;
+  const worktreeConfig = JSON.parse(await readFile(path.join(worktreePath, '.vibepro', 'config.json'), 'utf8'));
+  assert.deepEqual(worktreeConfig.budgets.delivery_efficiency, { max_fresh_input_tokens: 900000 },
+    'the gate path must actually write the distributed policy into the worktree copy');
+  assert.equal(state.state.managed_worktree.policy_sync.last_event.status, 'synced');
+});
+
+// story-vibepro-managed-worktree-policy-resync ac:4
+// A fail-soft sync failure must be visible on the default human-readable surface,
+// not only via --json: silent policy drift is the bug this story exists to prevent.
+test('default execute status output surfaces a failed policy sync', async (t) => {
+  const root = await makeRepoFixture();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  const started = await startExecution(root, { storyId: STORY_ID });
+  const worktreePath = started.state.managed_worktree.path;
+  await writeFile(path.join(root, '.vibepro', 'config.json'), '{not json');
+
+  // Run from inside the managed worktree (the S-005 posture): the worktree's own config
+  // copy is valid, only the parent source is corrupt, so the sync fails soft.
+  const status = await getExecutionStatus(worktreePath, { storyId: STORY_ID });
+  assert.equal(status.state.managed_worktree.policy_sync.status, 'failed');
+
+  const summary = renderExecutionStateSummary(status);
+  assert.match(summary, /policy_sync: failed/,
+    'the default text summary must surface the fail-soft sync failure');
+  assert.match(summary, /policy_sync_reason: /);
+  assert.match(summary, /policy_sync_failed/, 'the managed_worktree headline must flag the failure');
 });
