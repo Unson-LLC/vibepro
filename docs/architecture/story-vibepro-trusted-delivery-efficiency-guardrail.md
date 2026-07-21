@@ -31,7 +31,7 @@ The host coordinator owns the provider API call, completion notification deliver
 ### Risk-adaptive review coverage ownership
 
 - `workflow_heavy` requires release-risk judgment, but does not by itself imply a UI or network surface. Human-usability review is selected only from changed UI source, and network-runtime review only from a detected network contract.
-- When Risk-adaptive Validation Sequencing is required, it owns aggregate preflight, freeze ordering, expensive verification, and final-review binding. The legacy five workflow checkpoint roles are recorded as suppressed duplicates rather than dispatched again.
+- When Risk-adaptive Validation Sequencing is required and the repository explicitly enables `agent_reviews.defaults.validation_sequence_owns_checkpoints`, it owns aggregate preflight, freeze ordering, expensive verification, and final-review binding. The legacy five workflow checkpoint roles are recorded as suppressed duplicates rather than dispatched again. Repositories without that ownership flag retain the existing checkpoint review contract.
 - The final source-change gate-evidence review and workflow-heavy release-risk review remain independent requirements. Surface selection reduces duplicated judgment; it does not weaken current-HEAD freshness or final review.
 
 ### Lifecycle debt
@@ -68,8 +68,8 @@ The host coordinator owns the provider API call, completion notification deliver
 stateDiagram-v2
   [*] --> ClassifyRisk
   ClassifyRisk --> SelectSurfaceRoles
-  SelectSurfaceRoles --> ValidationSequenceOwned: workflow_heavy and sequence required
-  SelectSurfaceRoles --> AgentCheckpointOwned: workflow_heavy and no sequence
+  SelectSurfaceRoles --> ValidationSequenceOwned: workflow_heavy, sequence required, ownership enabled
+  SelectSurfaceRoles --> AgentCheckpointOwned: ownership not enabled
   ValidationSequenceOwned --> SuppressDuplicateCheckpoints
   AgentCheckpointOwned --> RequireLegacyCheckpoints
   SuppressDuplicateCheckpoints --> FinalIndependentReviews
@@ -91,18 +91,19 @@ stateDiagram-v2
 - Provider-specific cancellation is out of scope; unconfirmed cancellation is an orphaned-agent stop.
 - A caller assertion is not provider confirmation unless it is explicit and evidence-bound; HEAD mutation never auto-sets `cancel_confirmed`.
 - Changed lines are not a time, token, or value allocation basis.
-- Review role count follows concrete risk surfaces and ownership; a broad risk profile cannot manufacture UI/network work or duplicate validation-sequence checkpoints.
+- Review role count follows concrete risk surfaces and explicit ownership; a broad risk profile cannot manufacture UI/network work, and validation-sequence checkpoint suppression cannot activate without repository opt-in.
 
 ## Compatibility and migration
 
 - Existing callers without an efficiency policy continue in measurement-only mode; unknown fields remain explicit.
+- Existing repositories without `agent_reviews.defaults.validation_sequence_owns_checkpoints: true` retain their checkpoint role requirements; VibePro self-dogfood enables the flag because its Validation Sequence is the canonical checkpoint owner.
 - Existing single-finding repair artifacts are accepted as one-item batches.
 - Existing PR correctness readiness stays unchanged; the new efficiency debt is additive and cannot turn a failing Gate into pass.
 - Rollback is removal of enforcement at integration points while retaining the pure summary output and existing Gate owners.
 
 ## Release and operator contract
 
-- Release note: review dispatch now requires an authorization reservation before lifecycle start; workflow-heavy role selection no longer manufactures UI/network reviews and validation sequencing suppresses duplicate checkpoint reviews.
+- Release note: review dispatch now requires an authorization reservation before lifecycle start; workflow-heavy role selection no longer manufactures UI/network reviews, and explicitly configured validation-sequence ownership suppresses duplicate checkpoint reviews.
 - Operator observation: use `vibepro pr prepare --view blocking-gates` and the Story efficiency summary. Treat `budget_exceeded`, `attribution_unknown`, `orphaned_agent`, stale authorization, or missing provider completion as stops, not transient success.
 - Rollout: merge as one contract bundle because policy, lifecycle enforcement, readiness projection, portfolio metrics, and their regression tests must agree atomically. No migration or stored-data rewrite is required.
 - Rollback trigger: unexpected rejection of a previously valid review lifecycle, unexplained orphan growth, or inability to produce a current-HEAD final review.
@@ -124,5 +125,5 @@ stateDiagram-v2
 - TDEG-S-10: performance artifacts compare equivalent risk class; no changed-line allocation.
 - TDEG-S-11: dedicated E2E-style unit matrix across the pure orchestration contract.
 - TDEG-S-12: existing contract suites and full suite remain green.
-- TDEG-S-13: risk-adaptive coverage selection keeps final gate/release review while suppressing irrelevant surface roles and validation-sequence checkpoint duplicates.
+- TDEG-S-13: risk-adaptive coverage selection keeps final gate/release review while suppressing irrelevant surface roles and, only under explicit repository ownership, validation-sequence checkpoint duplicates.
 - TDEG-S-1: Story-specific amendments merge narrowly over the global budget, including role limits, while unlisted Stories retain the global policy unchanged.

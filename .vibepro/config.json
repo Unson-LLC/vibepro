@@ -8,6 +8,11 @@
   "execution": {
     "managed_worktree": "preferred"
   },
+  "agent_reviews": {
+    "defaults": {
+      "validation_sequence_owns_checkpoints": true
+    }
+  },
   "artifact_routing": {
     "schema_version": "0.2.0",
     "artifacts": {},

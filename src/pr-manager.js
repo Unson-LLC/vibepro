@@ -11754,20 +11754,24 @@ function isAgentReviewMergeDeltaReused(role) {
 
 function collectReviewArtifactBindings(agentReviews = null, changeClassification = null) {
   const stages = Array.isArray(agentReviews?.stages) ? agentReviews.stages : [];
-  const hasCurrentRequirementSet = Array.isArray(agentReviews?.required_reviews)
-    || Array.isArray(agentReviews?.checkpoint_required_reviews);
   const currentRequirementKeys = new Set([
     ...(agentReviews?.required_reviews ?? []),
     ...(agentReviews?.checkpoint_required_reviews ?? [])
   ].map((requirement) => `${requirement?.stage ?? ''}:${requirement?.role ?? ''}`));
+  const explicitlySupersededKeys = new Set([
+    ...(agentReviews?.risk_adaptive_coverage?.duplicate_checkpoint_roles_suppressed ?? []),
+    ...(agentReviews?.risk_adaptive_coverage?.validation_sequence_review_roles ?? [])
+  ]);
   const artifacts = [];
   for (const stage of stages) {
     for (const role of stage.roles ?? []) {
       if (!role.artifact) continue;
       const roleKey = `${stage.stage ?? ''}:${role.role ?? ''}`;
-      const historicalNonblocking = hasCurrentRequirementSet && !currentRequirementKeys.has(roleKey);
       const stale = role.effective_status === 'stale';
       const unverified = role.effective_status === 'unverified_agent';
+      const historicalNonblocking = stale
+        && explicitlySupersededKeys.has(roleKey)
+        && !currentRequirementKeys.has(roleKey);
       const mergeDeltaReused = isAgentReviewMergeDeltaReused(role);
       const current = !stale && !unverified && !mergeDeltaReused;
       const staleReason = role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state';

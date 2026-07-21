@@ -26,6 +26,10 @@ test('artifact consistency preserves stale non-required reviews as nonblocking h
     agentReviews: {
       required_reviews: [{ stage: 'gate', role: 'gate_evidence' }],
       checkpoint_required_reviews: [],
+      risk_adaptive_coverage: {
+        duplicate_checkpoint_roles_suppressed: ['architecture_spec:architecture_boundary'],
+        validation_sequence_review_roles: []
+      },
       stages: [
         {
           stage: 'architecture_spec',
@@ -123,6 +127,16 @@ async function makeGitRepo() {
     '--period',
     '2026-05'
   ]);
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    ...(config.agent_reviews ?? {}),
+    defaults: {
+      ...(config.agent_reviews?.defaults ?? {}),
+      validation_sequence_owns_checkpoints: true
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'chore: init risk gate repo']);
   await git(root, ['switch', '-c', 'feature/risk-gate']);

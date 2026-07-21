@@ -20,9 +20,13 @@ const FREEZE_KEYS = ['source', 'spec', 'test', 'review_surface'];
 
 export function selectRiskAdaptiveReviewCoverage(input = {}) {
   const workflowHeavy = input.risk_profile === 'workflow_heavy';
-  const validationSequenceOwnsCheckpoints = workflowHeavy && input.validation_sequence_required === true;
+  const enforcementEnabled = input.validation_sequence_checkpoint_ownership === true;
+  const validationSequenceOwnsCheckpoints = enforcementEnabled
+    && workflowHeavy
+    && input.validation_sequence_required === true;
   return {
     risk_profile: input.risk_profile ?? null,
+    enforcement_enabled: enforcementEnabled,
     final_roles: {
       release_risk: workflowHeavy,
       human_usability: input.has_ui_surface === true,
@@ -41,6 +45,9 @@ export function selectRiskAdaptiveReviewCoverage(input = {}) {
           'implementation:runtime_contract',
           'implementation:ux_completion'
         ]
+      : [],
+    validation_sequence_review_roles: validationSequenceOwnsCheckpoints
+      ? ['architecture_spec:architecture_boundary']
       : []
   };
 }

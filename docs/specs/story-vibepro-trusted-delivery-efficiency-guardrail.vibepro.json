@@ -121,7 +121,7 @@
     {
       "id": "C-006",
       "type": "contract",
-      "statement": "Review coverage is selected from concrete UI and network change surfaces. Workflow-heavy changes retain independent final gate-evidence and release-risk judgment, while a required validation sequence owns aggregate checkpoints and suppresses the five legacy duplicate checkpoint roles.",
+      "statement": "Review coverage is selected from concrete UI and network change surfaces. Workflow-heavy changes retain independent final gate-evidence and release-risk judgment. A required validation sequence owns aggregate checkpoints and suppresses the five legacy duplicate checkpoint roles only when the repository explicitly enables validation-sequence checkpoint ownership; repositories without the flag retain existing checkpoint requirements.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Risk-adaptive review coverage ownership" }],
@@ -211,7 +211,7 @@
     {
       "id": "S-013",
       "type": "scenario",
-      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface and with required validation sequencing, when the workflow state transition selects review coverage, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required.",
+      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface, required validation sequencing, and explicit repository checkpoint ownership, when the workflow state transition selects review coverage, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required; without explicit ownership the existing checkpoint roles remain required.",
       "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [{ "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" }] }
     }
   ],
@@ -232,7 +232,7 @@
       "kind": "state",
       "title": "Risk-adaptive review coverage ownership",
       "entities": ["Review coverage", "UI", "network", "validation sequence", "checkpoint roles"],
-      "mermaid": "stateDiagram-v2\n  [*] --> ClassifyRisk\n  ClassifyRisk --> SelectSurfaceRoles\n  SelectSurfaceRoles --> ValidationSequenceOwned: sequence required\n  SelectSurfaceRoles --> AgentCheckpointOwned: no sequence\n  ValidationSequenceOwned --> SuppressDuplicateCheckpoints\n  AgentCheckpointOwned --> RequireLegacyCheckpoints\n  SuppressDuplicateCheckpoints --> FinalIndependentReviews\n  RequireLegacyCheckpoints --> FinalIndependentReviews\n  FinalIndependentReviews --> [*]"
+      "mermaid": "stateDiagram-v2\n  [*] --> ClassifyRisk\n  ClassifyRisk --> SelectSurfaceRoles\n  SelectSurfaceRoles --> ValidationSequenceOwned: sequence required and ownership enabled\n  SelectSurfaceRoles --> AgentCheckpointOwned: ownership not enabled\n  ValidationSequenceOwned --> SuppressDuplicateCheckpoints\n  AgentCheckpointOwned --> RequireLegacyCheckpoints\n  SuppressDuplicateCheckpoints --> FinalIndependentReviews\n  RequireLegacyCheckpoints --> FinalIndependentReviews\n  FinalIndependentReviews --> [*]"
     }
   ]
 }

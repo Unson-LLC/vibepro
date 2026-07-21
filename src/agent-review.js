@@ -1166,7 +1166,8 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     risk_profile: options.changeClassification?.profile,
     has_ui_surface: hasUiExperienceSourceChange(options.fileGroups),
     has_network_surface: hasNetworkContractRisk(options.networkContracts),
-    validation_sequence_required: options.validationSequence?.plan?.required === true
+    validation_sequence_required: options.validationSequence?.plan?.required === true,
+    validation_sequence_checkpoint_ownership: reviewPolicy.defaults.validation_sequence_owns_checkpoints === true
   });
   const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy, riskAdaptiveCoverage });
   const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy, riskAdaptiveCoverage });
@@ -1587,7 +1588,8 @@ function normalizeAgentReviewPolicy(raw = {}) {
     defaults: {
       timeout_ms: raw?.defaults?.timeout_ms,
       freshness_mode: defaultFreshnessMode,
-      model_policy: normalizeModelPolicy(raw?.defaults?.model_policy)
+      model_policy: normalizeModelPolicy(raw?.defaults?.model_policy),
+      validation_sequence_owns_checkpoints: raw?.defaults?.validation_sequence_owns_checkpoints === true
     },
     stages,
     roles

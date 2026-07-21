@@ -105,7 +105,8 @@ test('risk-adaptive review coverage suppresses irrelevant roles and validation-s
     risk_profile: 'workflow_heavy',
     has_ui_surface: false,
     has_network_surface: false,
-    validation_sequence_required: true
+    validation_sequence_required: true,
+    validation_sequence_checkpoint_ownership: true
   });
   assert.deepEqual(internalWorkflow.final_roles, {
     release_risk: true,
@@ -120,12 +121,16 @@ test('risk-adaptive review coverage suppresses irrelevant roles and validation-s
     'implementation:runtime_contract',
     'implementation:ux_completion'
   ]);
+  assert.deepEqual(internalWorkflow.validation_sequence_review_roles, [
+    'architecture_spec:architecture_boundary'
+  ]);
 
   const productWorkflow = selectRiskAdaptiveReviewCoverage({
     risk_profile: 'workflow_heavy',
     has_ui_surface: true,
     has_network_surface: true,
-    validation_sequence_required: false
+    validation_sequence_required: false,
+    validation_sequence_checkpoint_ownership: true
   });
   assert.deepEqual(productWorkflow.final_roles, {
     release_risk: true,
