@@ -45,7 +45,10 @@ export async function getExecutionStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute status');
   const existing = await readManagedExecutionState(repoRoot, storyId);
   if (existing) {
-    const managedWorktree = await refreshManagedWorktree(repoRoot, existing.managed_worktree).catch(() => existing.managed_worktree ?? null);
+    // Pass the stored state unrefreshed: buildExecutionState refreshes exactly once.
+    // A second refresh would re-diff the already-synced config and overwrite the
+    // policy_sync audit outcome (synced -> unchanged) before it is ever observed.
+    const managedWorktree = existing.managed_worktree ?? null;
     const state = await buildExecutionState(repoRoot, {
       ...options,
       storyId,
@@ -103,7 +106,9 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
     startedAt: existing?.started_at,
-    managedWorktree: await refreshManagedWorktree(repoRoot, existing?.managed_worktree).catch(() => existing?.managed_worktree ?? null),
+    // Unrefreshed on purpose: buildExecutionState performs the single refresh
+    // whose policy_sync outcome is persisted (see getExecutionStatus).
+    managedWorktree: existing?.managed_worktree ?? null,
     preserveStartedAt: true
   });
   return writeExecutionStateWithLinkedCopies(repoRoot, state);

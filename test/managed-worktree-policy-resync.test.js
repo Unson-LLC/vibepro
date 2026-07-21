@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
+import { getExecutionStatus, startExecution } from '../src/execution-state.js';
 import { ensureManagedWorktree, refreshManagedWorktree } from '../src/managed-worktree.js';
 
 const execFileAsync = promisify(execFile);
@@ -37,7 +38,7 @@ function baseConfig() {
   };
 }
 
-async function makeRepoWithManagedWorktree() {
+async function makeRepoFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-policy-resync-'));
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
@@ -48,6 +49,11 @@ async function makeRepoWithManagedWorktree() {
   await writeFile(path.join(root, 'README.md'), '# policy resync fixture\n');
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'chore: init policy resync fixture']);
+  return root;
+}
+
+async function makeRepoWithManagedWorktree() {
+  const root = await makeRepoFixture();
   const managedWorktree = await ensureManagedWorktree(root, { storyId: STORY_ID });
   assert.equal(managedWorktree.status, 'created');
   return { root, managedWorktree };
@@ -145,6 +151,26 @@ test('refreshManagedWorktree skips policy sync when the source resolves to the w
   const refreshed = await refreshManagedWorktree(managedWorktree.path, selfSourced);
   assert.equal(refreshed.policy_sync.status, 'skipped');
   assert.deepEqual(refreshed.policy_sync.sections_updated, []);
+});
+
+// story-vibepro-managed-worktree-policy-resync ac:4 the synced outcome is auditable through the execution state path
+test('execution status reports policy_sync=synced instead of masking it with a second refresh', async (t) => {
+  const root = await makeRepoFixture();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+
+  await startExecution(root, { storyId: STORY_ID });
+  await updateParentConfig(root, (config) => {
+    config.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
+  });
+
+  const first = await getExecutionStatus(root, { storyId: STORY_ID });
+  assert.equal(first.found, true);
+  assert.equal(first.state.managed_worktree.policy_sync.status, 'synced',
+    'the CLI-backed status path must report the sync that actually happened, not a post-sync unchanged diff');
+  assert.deepEqual(first.state.managed_worktree.policy_sync.sections_updated, ['budgets']);
+
+  const second = await getExecutionStatus(root, { storyId: STORY_ID });
+  assert.equal(second.state.managed_worktree.policy_sync.status, 'unchanged');
 });
 
 // story-vibepro-managed-worktree-policy-resync ac:4 sync failures do not fail the refresh itself
