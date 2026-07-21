@@ -12,6 +12,8 @@ related_stories:
   - story-vibepro-agent-runtime-adapters
   - story-vibepro-review-finding-repair-loop
   - story-vibepro-content-scoped-evidence-freshness
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 reason: "alternatives considered: 10分ごとにagentをshutdownしてreplacementを起動する、親sessionを無期限に維持する、またはprovider completionを永続Inboxへ配送してRunがreconcileする; selected the persistent completion Inbox boundary. compatibility impact: existing provider-neutral adapter methods and manual review lifecycle remain supported while adapters may additionally expose detached completion delivery. rollback plan: disable the Codex host adapter and return to explicit polling without deleting Inbox events. boundary and scope: VibePro owns policy, binding, lifecycle, Inbox schema, deduplication, bounded recovery, and fail-closed decisions; host owns actual spawn, completion delivery, wakeup, and shutdown. PR #370のStory予算最適化は変更せず、本Storyはruntime delivery lifecycleだけを所有する。"
 created_at: 2026-07-22
 updated_at: 2026-07-22

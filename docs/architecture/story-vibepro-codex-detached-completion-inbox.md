@@ -6,6 +6,8 @@ updated_at: 2026-07-22
 related_stories:
   - story-vibepro-codex-detached-completion-inbox
   - story-vibepro-agent-runtime-adapters
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 ---
 
 # Codex Detached Completion Inbox Architecture

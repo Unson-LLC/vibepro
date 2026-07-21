@@ -2,6 +2,8 @@
 spec_id: spec-vibepro-codex-detached-completion-inbox
 story_id: story-vibepro-codex-detached-completion-inbox
 status: active
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 ---
 
 # Codex Detached Completion Inbox Spec
