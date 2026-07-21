@@ -9,8 +9,258 @@
     "managed_worktree": "preferred"
   },
   "artifact_routing": {
-    "schema_version": "0.1.0",
-    "artifacts": {}
+    "schema_version": "0.2.0",
+    "artifacts": {},
+    "profiles": {
+      "feature_packet": {
+        "artifacts": {
+          "story": {
+            "canonical": "docs/management/stories/active/{story_id}.md",
+            "ownership": "curated"
+          },
+          "architecture": {
+            "canonical": "docs/architecture/{story_id}.md",
+            "ownership": "curated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/04_technical_delta.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "architecture_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "accepted_spec": {
+            "canonical": ".vibepro/spec/{story_id}/spec.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/02_functional_spec.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "functional_spec_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "task_plan": {
+            "canonical": ".vibepro/stories/{story_id}/tasks/tasks.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/06_tasks.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "tasks_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "graphify": {
+            "canonical": ".vibepro/graphify",
+            "ownership": "generated"
+          },
+          "evidence": {
+            "canonical": ".vibepro/evidence/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/07_evidence.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "evidence_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "test_plan": {
+            "canonical": ".vibepro/test-plans/{story_id}.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/05_test_plan.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "test_plan_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "review": {
+            "canonical": ".vibepro/reviews/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/08_review.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "review_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "gate": {
+            "canonical": ".vibepro/pr/{story_id}/gate-dag.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/09_gate.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "gate_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "pr": {
+            "canonical": ".vibepro/pr/{story_id}/pr-prepare.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/10_release.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "release_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "governance_packet": {
+        "artifacts": {
+          "story": {
+            "canonical": "docs/management/stories/active/{story_id}.md",
+            "ownership": "curated"
+          },
+          "architecture": {
+            "canonical": "docs/architecture/{story_id}.md",
+            "ownership": "curated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/architecture.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "architecture_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "accepted_spec": {
+            "canonical": ".vibepro/spec/{story_id}/spec.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/functional-spec.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "functional_spec_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "task_plan": {
+            "canonical": ".vibepro/stories/{story_id}/tasks/tasks.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/tasks.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "tasks_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "graphify": {
+            "canonical": ".vibepro/graphify",
+            "ownership": "generated"
+          },
+          "evidence": {
+            "canonical": ".vibepro/evidence/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/evidence.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "evidence_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "test_plan": {
+            "canonical": ".vibepro/test-plans/{story_id}.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/test-plan.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "test_plan_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "review": {
+            "canonical": ".vibepro/reviews/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/review.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "review_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "gate": {
+            "canonical": ".vibepro/pr/{story_id}/gate-dag.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/gate.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "gate_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "pr": {
+            "canonical": ".vibepro/pr/{story_id}/pr-prepare.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/release.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "release_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
   },
   "budgets": {
     "pr_artifact_bytes": 16384
@@ -27,7 +277,21 @@
         "period": "2026-07",
         "started_at": "2026-07-19",
         "due_at": null,
-        "category": "dev"
+      "category": "dev"
+      },
+      {
+        "story_id": "story-vibepro-routing-profiles-rendered-projections",
+        "title": "Story別routing profileとlineage付きprojectionでfeature packetを正本化する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "dev",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "routing-profiles-rendered-projections"
       },
       {
         "story_id": "story-vibepro-human-decision-checkpoint",
@@ -39,7 +303,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-        "category": "product"
+      "category": "product"
       },
       {
         "story_id": "story-vibepro-agent-runtime-adapters",
@@ -51,7 +315,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-        "category": "platform"
+      "category": "platform"
       },
       {
         "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
@@ -63,7 +327,7 @@
         "period": "2026-07",
         "started_at": "2026-07-16",
         "due_at": null,
-        "category": "quality"
+      "category": "quality"
       },
       {
         "story_id": "story-vibepro-review-finding-repair-loop",
@@ -75,7 +339,7 @@
         "period": "2026-07",
         "started_at": "2026-07-15",
         "due_at": null,
-        "category": "quality"
+      "category": "quality"
       },
       {
         "story_id": "story-vibepro-story-run-portfolio-controller",
@@ -102,6 +366,6 @@
         "category": "product"
       }
     ],
-    "current_story_id": "story-vibepro-guarded-autonomy-hardening"
+    "current_story_id": "story-vibepro-routing-profiles-rendered-projections"
   }
 }

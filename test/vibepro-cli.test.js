@@ -644,7 +644,7 @@ test('managed worktree gate is not applicable when disabled', async () => {
   assert.match(prBody, /- 管理worktree: disabled/);
 });
 
-test('pr prepare removes stale skipped full artifacts for summary evidence depth', async () => {
+test('pr prepare refreshes routed Gate canonical and removes stale skipped full artifacts for summary evidence depth', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'summary-depth-note.md'), 'Summary-depth artifact hygiene fixture.\n');
@@ -685,9 +685,11 @@ test('pr prepare removes stale skipped full artifacts for summary evidence depth
   assert.equal(prepare.evidence_plan.artifact_policy.write_full_gate_dag_dump, false);
   assert.equal(prepare.evidence_plan.artifact_policy.write_html_reports, false);
   assert.equal(prepare.evidence_plan.skipped_artifacts.includes('gate-dag.json'), true);
-  for (const artifact of staleArtifacts) {
+  for (const artifact of staleArtifacts.filter((artifact) => artifact !== 'gate-dag.json')) {
     assert.equal(await pathExists(path.join(prDir, artifact)), false, `${artifact} should be removed when skipped`);
   }
+  const routedGate = await readJson(path.join(prDir, 'gate-dag.json'));
+  assert.notEqual(routedGate.stale, true, 'routed gate canonical should replace the stale standalone dump');
   assert.equal(await pathExists(path.join(prDir, 'pr-prepare.json')), true);
   assert.equal(await pathExists(path.join(prDir, 'evidence-plan.json')), true);
   const evidenceReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));

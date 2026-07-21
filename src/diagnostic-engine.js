@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { projectArtifact } from './artifact-routing.js';
 
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
@@ -116,6 +117,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const specDriftPath = path.join(runDir, 'spec-drift.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  await projectArtifact(repoRoot, 'evidence', { storyId: currentStory.story_id, content: evidence, writeCanonical: true, canonicalFileName: 'evidence.json' });
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
   await writeFile(riskPath, renderRiskRegister({
     runId,

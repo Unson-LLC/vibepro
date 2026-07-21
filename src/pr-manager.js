@@ -92,7 +92,7 @@ import {
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
-import { assertArtifactWritePath, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -812,6 +812,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     timeoutMs: progress.timeoutMs,
     stage: 'write_pr_prepare_json'
   });
+  if (workspace.initialized) {
+    await projectArtifact(root, 'gate', { storyId: story.story_id, content: preparation.pr_context.gate_dag, writeCanonical: true });
+    await projectArtifact(root, 'pr', { storyId: story.story_id, content: preparation });
+  }
   if (drilldownEntry) {
     await writeFile(evidenceDrilldownLogPath, `${JSON.stringify(
       appendEvidenceDrilldownEntry(previousDrilldownLog, drilldownEntry, story.story_id),
@@ -14601,6 +14605,10 @@ async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
   await writeFile(reportPath, renderPrCreateHtml(execution, {
     language: execution.output?.language ?? 'ja'
   }));
+  const projectionStoryId = execution.story_id ?? execution.story?.story_id;
+  if (execution.workspace_initialized && projectionStoryId) {
+    await projectArtifact(repoRoot, 'pr', { storyId: projectionStoryId, content: execution });
+  }
 
   if (!execution.workspace_initialized) {
     return {

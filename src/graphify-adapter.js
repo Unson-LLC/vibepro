@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
-import { assertArtifactWritePath, resolveArtifactRoute } from './artifact-routing.js';
+import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute } from './artifact-routing.js';
 
 const GRAPHIFY_FILES = ['graph.json', 'GRAPH_REPORT.md', 'graph.html'];
 
@@ -13,7 +13,7 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
   const root = path.resolve(repoRoot);
   const sourceArg = options.sourceDir ?? 'graphify-out';
-  const sourceDir = path.resolve(root, sourceArg);
+  const sourceDir = await resolveGraphifySourceDir(root, sourceArg, Boolean(options.runGraphify));
 
   let execution = null;
   const cleanupGeneratedGraphifyOutput = Boolean(options.runGraphify);
@@ -31,8 +31,11 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
 
     for (const fileName of GRAPHIFY_FILES) {
       const sourceFile = path.join(sourceDir, fileName);
+      const destinationFile = path.join(graphifyDir, fileName);
       try {
-        await copyFile(sourceFile, path.join(graphifyDir, fileName));
+        if (path.resolve(sourceFile) !== path.resolve(destinationFile)) {
+          await copyFile(sourceFile, destinationFile);
+        }
       } catch (error) {
         if (error.code !== 'ENOENT') throw error;
       }
@@ -51,12 +54,34 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
       };
     }
     await writeManifest(root, manifest);
+    await projectArtifact(root, 'graphify', {
+      storyId: options.storyId ?? 'story-default',
+      content: { story_id: options.storyId ?? 'story-default', status: 'imported', artifacts: manifest.artifacts },
+      canonicalFileName: 'graph.json'
+    });
 
     return { graphifyDir, graphifyExecuted: Boolean(execution) };
   } finally {
     if (cleanupGeneratedGraphifyOutput) {
       await cleanupDefaultGraphifyOutput(root);
     }
+  }
+}
+
+async function resolveGraphifySourceDir(repoRoot, sourceArg, runGraphifyRequested) {
+  const sourcePath = path.resolve(repoRoot, sourceArg);
+  if (runGraphifyRequested) return sourcePath;
+
+  try {
+    const sourceStat = await stat(sourcePath);
+    if (!sourceStat.isFile()) return sourcePath;
+    if (path.basename(sourcePath) !== 'graph.json') {
+      throw new Error(`graphify --from file must be named graph.json: ${sourcePath}`);
+    }
+    return path.dirname(sourcePath);
+  } catch (error) {
+    if (error.code === 'ENOENT') return sourcePath;
+    throw error;
   }
 }
 

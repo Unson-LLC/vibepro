@@ -2761,10 +2761,13 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'derive') {
         let graph = null;
         if (hasFlag(rest, '--run-graphify') || getOption(rest, '--from')) {
-          const deriveStoryId = getOption(rest, '--id');
+          const explicitStoryId = getOption(rest, '--id');
+          let deriveStoryId = explicitStoryId;
           if (!deriveStoryId) {
-            const graphifyRoute = await resolveArtifactRoute(repoRoot, 'graphify', { storyId: 'story-default' });
-            if (/\{(?:story_id|feature_slug)\}/.test(graphifyRoute.canonical.template)) {
+            const storyContext = await listStories(repoRoot, { includeArchived: false });
+            deriveStoryId = storyContext.current_story_id ?? storyContext.stories[0]?.story_id ?? 'story-default';
+            const graphifyRoute = await resolveArtifactRoute(repoRoot, 'graphify', { storyId: deriveStoryId });
+            if (deriveStoryId === 'story-default' && /\{(?:story_id|feature_slug)\}/.test(graphifyRoute.canonical.template)) {
               throw new ArtifactRoutingError(
                 'unstable_routing_context',
                 'story derive requires --id when the Graphify canonical uses {story_id} or {feature_slug}',
@@ -2773,7 +2776,7 @@ export async function runCli(argv, io = {}) {
             }
           }
           graph = await importGraphifyArtifacts(repoRoot, {
-            storyId: deriveStoryId ?? 'story-default',
+            storyId: deriveStoryId,
             sourceDir: getOption(rest, '--from'),
             runGraphify: hasFlag(rest, '--run-graphify'),
             env: io.env
@@ -3536,11 +3539,11 @@ function parseValidationDisposition(value) {
 }
 
 function renderArtifactRoutes(result) {
-  const lines = [`Artifact routes resolved for ${result.variables.story_id}:`];
+  const lines = [`Artifact routes resolved for ${result.variables.story_id}:`, `Profile: ${result.profile ?? 'legacy'}; metadata source: ${result.metadata_source ?? 'derived'}`, `Variables: story_id=${result.variables.story_id}; feature_slug=${result.variables.feature_slug}`];
   for (const [kind, route] of Object.entries(result.routes ?? {})) {
-    lines.push(`- ${kind}: ${route.canonical.relative_path}`);
+    lines.push(`- ${kind}: ownership=${route.canonical.ownership ?? 'legacy'}; canonical=${route.canonical.relative_path}; canonical-writer=${route.canonical_writer ?? route.writer ?? 'owner'}; read-authority=${route.canonical.relative_path}`);
     for (const projection of route.projections ?? []) {
-      lines.push(`  projection (generated): ${projection.relative_path}`);
+      lines.push(`  projection: ownership=${projection.ownership ?? (projection.generated ? 'generated' : 'legacy')}; path=${projection.relative_path}; renderer=${projection.renderer ? `${projection.renderer.id}@${projection.renderer.version}` : '-'}`);
     }
   }
   return `${lines.join('\n')}\n`;
@@ -3549,10 +3552,14 @@ function renderArtifactRoutes(result) {
 function renderArtifactMigrationPlan(result) {
   const lines = [
     `Artifact migration plan for ${result.story_id}: ${result.status}`,
+    `Profile: ${result.profile ?? 'legacy'}; feature_slug=${result.feature_slug ?? '-'}`,
     `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
   ];
   for (const item of result.items ?? []) {
-    lines.push(`- ${item.kind}: ${item.action} (${item.source ?? '-'} -> ${item.destination ?? '-'})`);
+    lines.push(`- ${item.kind}: action=${item.action}; reason=${item.reason ?? '-'}; collision=${item.collision ? 'yes' : 'no'}; ownership=${item.ownership ?? 'legacy'}; canonical-writer=${item.canonical_writer ?? '-'}; renderer=${item.renderer ?? '-'}; route=${item.source ?? '-'} -> ${item.destination ?? '-'}`);
+    for (const projection of item.projection_items ?? []) {
+      lines.push(`  projection: action=${projection.action}; reason=${projection.reason ?? '-'}; ownership=${projection.ownership ?? 'legacy'}; renderer=${projection.renderer ?? '-'}; path=${projection.path}`);
+    }
   }
   for (const unresolved of result.unresolved ?? []) {
     lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
