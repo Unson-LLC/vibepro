@@ -203,6 +203,45 @@ test('resolver emits no_registered_authority for unregistered high-risk state su
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'needs_review');
 });
 
+test('resolver uses the accepted Run-lineage Architecture registry contract', async () => {
+  const result = await resolveResponsibilityAuthority(REPO_ROOT, {
+    git: {
+      changed_files: [
+        'src/human-decision-checkpoint.js',
+        'src/run-context-capsule.js',
+        'src/run-lineage.js'
+      ]
+    },
+    fileGroups: {
+      source: {
+        files: [
+          'src/human-decision-checkpoint.js',
+          'src/run-context-capsule.js',
+          'src/run-lineage.js'
+        ]
+      }
+    },
+    changeClassification: {
+      risk_surfaces: ['core_workflow_state', 'verification_evidence', 'review_lifecycle']
+    },
+    storySource: {
+      title: 'Thread分離に依存せずRun lineageでstory attributionを確定する',
+      content: 'Guarded Run lineage authority and context capsule handoff',
+      acceptance_criteria: []
+    }
+  });
+
+  const matched = result.matched_responsibilities.find((item) => item.id === 'vibepro.run_lineage.explicit_attribution');
+  assert.ok(matched);
+  assert.equal(matched.primary_authority.ref, 'docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture');
+  assert.deepEqual(matched.owned_surfaces.paths, [
+    'src/run-lineage.js',
+    'src/run-context-capsule.js',
+    'src/human-decision-checkpoint.js'
+  ]);
+  assert.equal(result.unregistered_candidates.some((item) => item.paths.some((file) => matched.owned_surfaces.paths.includes(file))), false);
+});
+
 test('resolver does not classify derive-only workspace status as an unregistered state responsibility', async () => {
   const repo = await makeFixtureRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });

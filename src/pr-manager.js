@@ -10414,9 +10414,24 @@ function buildBugPhysicsContradictionGate(triage, verificationEvidence) {
   };
 }
 
-function bugPhysicsVerificationText(verificationEvidence) {
+export function bugPhysicsVerificationText(verificationEvidence) {
   return (verificationEvidence?.commands ?? [])
-    .map((item) => `${item.kind ?? ''} ${item.status ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''}`)
+    .map((item) => {
+      const observation = item.observation ?? {};
+      const scenarios = Array.isArray(observation.scenarios) ? observation.scenarios : [];
+      const values = observation.values && typeof observation.values === 'object'
+        ? Object.entries(observation.values).flatMap(([key, value]) => [key, value])
+        : [];
+      return [
+        item.kind,
+        item.status,
+        item.command,
+        item.summary,
+        item.artifact,
+        ...scenarios,
+        ...values
+      ].filter(Boolean).join(' ');
+    })
     .join('\n');
 }
 

@@ -391,6 +391,41 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.run_lineage.explicit_attribution",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/run-lineage.js",
+          "src/run-context-capsule.js",
+          "src/human-decision-checkpoint.js"
+        ],
+        "symbols": [
+          "Run lineage",
+          "RUN_LINEAGE_SCHEMA_VERSION",
+          "validateRunLineageEnvelope"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "verification_evidence",
+          "review_lifecycle"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.diagnostics.scan_conclusiveness",
       "primary_authority": {
         "kind": "architecture",

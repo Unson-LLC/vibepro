@@ -158,6 +158,6 @@ The accepted Spec JSON is the SSOT for the final gate references in `gate_eviden
 - `common_judgment_spine`: flow replay, artifact replay, and scenario-clause E2E must be recorded against the three focused TAP lanes.
 - `bug_physics_observability_signal_source`: the verification-evidence store is the single authoritative signal source; monitoring and signal availability remain explicit checks.
 - `path_surface_matrix`: the `review_surface` row requires `path_surface:review_surface` and `surface=review_surface` observations for the changed lineage paths.
-- `responsibility_authority`: registry sources and the unregistered lineage candidate paths are named; `no_registered_authority` remains an owner decision, never a waiver.
+- `responsibility_authority`: `vibepro.run_lineage.explicit_attribution` owns the three Run-lineage paths, with this Story Architecture as the accepted primary authority; required evidence remains current-head bound and is not waived.
 - `requirement`: legacy behavior is declared on owning Spec clauses through structured `inherited_behavior` metadata, including the `session_meta` branch.
 - `validation_sequencing`: phase evidence is bound to the final HEAD through the canonical validation-sequencing state artifact.

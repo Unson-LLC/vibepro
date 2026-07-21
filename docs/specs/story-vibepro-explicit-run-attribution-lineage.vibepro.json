@@ -64,12 +64,15 @@
     },
     "responsibility_authority": {
       "registry_sources": ["responsibility-authority.json", "docs/contracts/vibepro-core-responsibilities.json", "docs/contracts/vibepro-responsibility-authority.json"],
-      "unregistered_candidate_paths": [
+      "registry_entry": "vibepro.run_lineage.explicit_attribution",
+      "primary_authority": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture",
+      "owned_paths": [
         "src/human-decision-checkpoint.js",
         "src/run-context-capsule.js",
         "src/run-lineage.js"
       ],
-      "status": "needs_registry_owner_decision; no_registered_authority is not waived"
+      "required_evidence": ["unit_regression", "integration_runtime_path", "negative_path", "current_head_verification"],
+      "status": "registered; required evidence remains current-head bound"
     },
     "requirement": {
       "structured_inherited_behavior": "clauses[].inherited_behavior or clauses[].inherited_behaviors",
