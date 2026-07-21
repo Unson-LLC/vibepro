@@ -31,9 +31,9 @@
     "common_judgment_spine": {
       "required_kinds": ["flow_replay", "artifact_replay", "scenario_clause_e2e"],
       "focused_tap_refs": [
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit.tap",
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-lineage-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
       ],
       "canonical_store": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
       "status": "requires_current_head_refresh_and_structured_observation_fields"
@@ -57,8 +57,8 @@
           "observed": "surface=review_surface"
         },
         "focused_tap_refs": [
-          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
-          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
         ]
       }
     },
@@ -83,9 +83,9 @@
       "state_artifact": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
       "phases": ["targeted_validation", "preflight_review", "code_frozen", "expensive_verification", "final_review"],
       "focused_tap_refs": [
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit.tap",
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
-        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-lineage-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
       ],
       "status": "requires_phase_records_at_final_head"
     }
