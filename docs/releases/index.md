@@ -97,3 +97,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:371:start -->
 - [PR #371](https://github.com/Unson-LLC/vibepro/pull/371) — [2026-07](/releases/2026-07): story-vibepro-explicit-run-attribution-lineage - Codex DesktopのThreadと内部sessionの対応は公開契約ではなく、利用者によるThread分離を正確な価値監査の前提にできない
 <!-- vibepro-release-index-pr:371:end -->
+
+<!-- vibepro-release-index-pr:374:start -->
+- [PR #374](https://github.com/Unson-LLC/vibepro/pull/374) — [2026-07](/releases/2026-07): story-vibepro-managed-worktree-policy-resync - Managed worktreeのポリシーconfigを凍結させず親repoから再同期する
+<!-- vibepro-release-index-pr:374:end -->
