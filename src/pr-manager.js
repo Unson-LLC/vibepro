@@ -12561,13 +12561,15 @@ function scoreFailureModeEvidence(mode, evidenceText) {
     .filter(Boolean);
   if (modeId === 'parse_failure' || modeId === 'schema_failure') {
     const assertionText = normalizedText.replaceAll(modeId, ' ');
-    const failureAssertionTokens = [
-      'malformed', 'invalid', 'corrupt', 'partial', 'missing',
-      'reject', 'throw', 'error', 'fail', 'negative'
-    ];
-    const hasConcreteFailureAssertion = failureAssertionTokens
+    const invalidInputTokens = ['malformed', 'invalid', 'corrupt', 'partial', 'missing', 'negative'];
+    const rejectingOutcomeTokens = ['reject', 'throw', 'error', 'fail'];
+    const nonRejectingOutcomeTokens = ['successfully', 'accepted', 'no error', 'without error'];
+    if (nonRejectingOutcomeTokens.some((token) => assertionText.includes(token))) return 0;
+    const hasInvalidInput = invalidInputTokens
       .some((token) => assertionText.includes(token));
-    if (!hasConcreteFailureAssertion) return 0;
+    const hasRejectingOutcome = rejectingOutcomeTokens
+      .some((token) => assertionText.includes(token));
+    if (!hasInvalidInput || !hasRejectingOutcome) return 0;
     if (modeId && normalizedText.includes(modeId)) return 100;
     const strongKeywords = modeId === 'parse_failure'
       ? keywords.filter((keyword) => keyword !== 'json')

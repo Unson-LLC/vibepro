@@ -20273,6 +20273,27 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--kind', 'unit',
     '--status', 'pass',
     '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'happy path marker',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json parsed successfully with no errors',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const happyPathPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.notEqual(
+    happyPathPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a successful malformed-input claim must not be interpreted as rejection coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
     '--summary', 'schema marker only',
     '--target', 'src/auth-json-parser.js',
     '--scenario', 'schema_failure',
@@ -20286,6 +20307,26 @@ test('gate evidence classifier normalizes canonical token variants across observ
       .modes.find((mode) => mode.id === 'schema_failure').status,
     'covered',
     'a schema mode ID without a concrete invalid-payload assertion must not close coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'invalid schema regression',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'schema validation rejects invalid payload',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const coveredSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    coveredSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'covered'
   );
 
   assert.equal((await runCli([
