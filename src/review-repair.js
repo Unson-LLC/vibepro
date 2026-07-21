@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getIncompleteReviewRoleReason } from './usage-report.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { resolveArtifactRoute } from './artifact-routing.js';
+import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 
 export const REPAIR_ACTIONS = [
   'run_review',
@@ -159,7 +160,7 @@ function buildRepairCommands({ storyId, stage, role, action }) {
       '--summary "<summary>"',
       '--inspection-summary "<inspection-summary>"',
       '--inspection-evidence "<inspection-evidence>"',
-      '--inspection-input "<inspection-input>"',
+      ...reviewInspectionInputPlaceholders(stage, roleName).map((input) => `--inspection-input "${input}"`),
       '--judgment-delta "<initial judgment -> final judgment because evidence>"',
       '--agent-system "<codex|claude_code>"',
       '--execution-mode parallel_subagent',

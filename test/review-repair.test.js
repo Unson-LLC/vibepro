@@ -198,6 +198,17 @@ test('missing role becomes a run_review candidate with full command chain', asyn
   assert.doesNotMatch(joined, /(?:^|\s)<[^>]+>/m, 'all emitted placeholders must be shell-quoted');
 });
 
+test('architecture boundary repair emits all aggregate inspection inputs', async () => {
+  const root = await setupRepairRepo();
+  const { result } = await runCli(['review', 'repair', root, '--json']);
+  const candidate = result.candidates.find((item) => item.stage === 'architecture_spec' && item.role === 'architecture_boundary');
+  if (!candidate) return;
+  const recordCommand = candidate.next_commands.find((command) => command.startsWith('vibepro review record'));
+  assert.match(recordCommand, /--inspection-input "<design-story-spec-path>"/);
+  assert.match(recordCommand, /--inspection-input "<runtime-source-path>"/);
+  assert.match(recordCommand, /--inspection-input "<test-path>"/);
+});
+
 test('emitted repair chain executes with one replacement lifecycle identity', async () => {
   const root = await setupRepairRepo();
   const { result } = await runCli(['review', 'repair', root, '--json']);

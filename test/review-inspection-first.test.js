@@ -271,6 +271,22 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /`--strict-head-reason` is required/i);
 });
 
+test('architecture boundary request and dispatch emit the complete aggregate inspection surface', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'architecture_spec',
+    roles: ['architecture_boundary'],
+    language: 'en'
+  });
+  for (const fileName of ['review-request-architecture_boundary.md', 'parallel-dispatch.md']) {
+    const content = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'architecture_spec', fileName), 'utf8');
+    assert.match(content, /--inspection-input "<design-story-spec-path>"/);
+    assert.match(content, /--inspection-input "<runtime-source-path>"/);
+    assert.match(content, /--inspection-input "<test-path>"/);
+  }
+});
+
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

@@ -40,6 +40,7 @@ import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { runRecipePreflight } from './recipe-preflight.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import {
   renderPerformancePrSection,
   summarizeStoryPerformanceEvidence
@@ -2289,7 +2290,7 @@ function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBind
     '--summary "<summary>"',
     '--inspection-summary "<inspection-summary>"',
     `--inspection-evidence ${shellQuote('<inspection-evidence>')}`,
-    `--inspection-input ${shellQuote('<inspection-input>')}`,
+    ...reviewInspectionInputPlaceholders(stage, roleArg).map((input) => `--inspection-input ${shellQuote(input)}`),
     '--judgment-delta "<initial judgment -> final judgment because evidence>"',
     '--agent-system codex',
     '--execution-mode parallel_subagent',

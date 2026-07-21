@@ -21,6 +21,7 @@ import {
   resolveEfficiencyPolicy,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
+import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -2399,7 +2400,10 @@ function renderMandatoryReviewLenses(lenses) {
 }
 
 function buildReviewRecordCommand({ storyId, stage, role, contentBinding = null }) {
-  const command = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status "<pass|needs_changes|block>" --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence "<inspection-evidence>" --inspection-input "<ref>" --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system "<codex|claude_code>" --execution-mode parallel_subagent --agent-id "<replacement-agent-id>" --agent-thread-id "<replacement-agent-thread-id>" --agent-session-id "<replacement-agent-session-id>" --implementation-session-id "<implementation-session-id>" --reviewer-identity separate_session --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript "<replacement-agent-transcript>" --agent-closed --agent-close-evidence "<replacement-agent-close-evidence>"`;
+  const inspectionInputs = reviewInspectionInputPlaceholders(stage, role, '<ref>')
+    .map((input) => `--inspection-input "${input}"`)
+    .join(' ');
+  const command = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status "<pass|needs_changes|block>" --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence "<inspection-evidence>" ${inspectionInputs} --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system "<codex|claude_code>" --execution-mode parallel_subagent --agent-id "<replacement-agent-id>" --agent-thread-id "<replacement-agent-thread-id>" --agent-session-id "<replacement-agent-session-id>" --implementation-session-id "<implementation-session-id>" --reviewer-identity separate_session --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript "<replacement-agent-transcript>" --agent-closed --agent-close-evidence "<replacement-agent-close-evidence>"`;
   if (contentBinding?.mode !== 'strict_head') return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
