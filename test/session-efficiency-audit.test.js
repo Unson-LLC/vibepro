@@ -779,6 +779,36 @@ test('SCATTR-SCENARIO-003 explicit session from another repo remains partial wit
   assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), true);
 });
 
+test('repo-name-only transcript mentions do not count as worktree-associated attribution', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const otherRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-other-repo-'));
+  await git(otherRoot, ['init']);
+  await git(otherRoot, ['config', 'user.email', 'vibepro@example.test']);
+  await git(otherRoot, ['config', 'user.name', 'VibePro Test']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  const lines = [
+    ...sessionLines({ sessionId, cwd: otherRoot, storyId }),
+    {
+      timestamp: '2026-06-27T13:01:00.000Z',
+      type: 'response_item',
+      payload: { text: `A generic note mentioning ${path.basename(root)} without a worktree path` }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.observed_worktree_matches_repo, false);
+  assert.equal(result.attribution.categories.worktree_associated, 0);
+  assert.equal(result.attribution.categories.unclassified > 0, true);
+});
+
 test('SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
 

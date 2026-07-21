@@ -1054,7 +1054,6 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
   const storyRefs = new Set();
   const currentStory = String(storyId ?? '');
   const repoPath = path.resolve(repoRoot);
-  const repoName = path.basename(repoPath);
   const sessionCwdMatchesRepo = sessionCwd ? await matchesRepo(sessionCwd, repoRoot) : false;
 
   for (const { entry, sourcePath, line } of entries) {
@@ -1073,7 +1072,7 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
       buckets.strict.push(item);
     } else if (refs.some((ref) => ref !== currentStory)) {
       buckets.other_story.push({ ...item, story_refs: refs });
-    } else if (sessionCwdMatchesRepo || text.includes(repoPath) || text.includes(repoName)) {
+    } else if (sessionCwdMatchesRepo || text.includes(repoPath)) {
       buckets.worktree_associated.push(item);
     } else {
       buckets.unclassified.push(item);
