@@ -52,3 +52,18 @@ test('CDI-S-2 concurrent conflicting delivery cannot overwrite an immutable even
   assert.equal(recovered.events.length, 1);
   assert.ok(['first', 'second'].includes(recovered.completion.payload.summary));
 });
+
+test('CDI-S-2 Inbox rejects provider payload fields outside the VibePro-owned schema', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-runtime-inbox-schema-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const inbox = createAgentCompletionInbox({ repoRoot });
+  await assert.rejects(inbox.append({
+    event_id: 'completion-secret', dispatch_id: 'dispatch-secret', kind: 'completed',
+    payload: { summary: 'done', raw_transcript: 'must never be persisted' }
+  }), /unsupported fields: raw_transcript/);
+  await assert.rejects(inbox.append({
+    event_id: 'completion-credential', dispatch_id: 'dispatch-secret', kind: 'completed',
+    payload: { summary: 'done', review_record: { status: 'pass', provider_token: 'secret' } }
+  }), /unsupported fields: provider_token/);
+  assert.equal((await inbox.reconcile('dispatch-secret')).events.length, 0);
+});

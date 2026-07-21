@@ -23,6 +23,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   const gitCommonDir = path.join(repoRoot, '.git-common');
   let clock = '2026-07-22T01:02:03.000Z';
   let completionHandler;
+  let spawnedRequest;
   let spawns = 0;
   let shutdowns = 0;
   let wakeHandler;
@@ -32,7 +33,7 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   const host = {
     async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
     async subscribeCompletion({ onEvent }) { lifecycle.push('subscribe'); completionHandler = onEvent; return { subscription_id: 'codex-subscription' }; },
-    async spawn({ idempotency_key }) { lifecycle.push('spawn'); spawns += 1; return { provider_run_id: `codex-${idempotency_key}`, agent_identity: 'codex-reviewer', thread_id: 'codex-thread' }; },
+    async spawn(request) { lifecycle.push('spawn'); spawnedRequest = request; spawns += 1; return { provider_run_id: `codex-${request.idempotency_key}`, agent_identity: 'codex-reviewer', thread_id: 'codex-thread' }; },
     async status() { return { status: 'running', attempts: 1, usage_accounting: { cost_usd: 0.1 } }; },
     async shutdown() { shutdowns += 1; return { status: 'cancelled' }; },
     registerResumeHandler({ resume }) { lifecycle.push('register-resume'); wakeHandler = resume; },
@@ -91,6 +92,10 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   ], runtime);
   const started = dispatched.result;
   assert.deepEqual(lifecycle.slice(0, 3), ['register-resume', 'subscribe', 'spawn']);
+  assert.deepEqual(spawnedRequest.completion_delivery, {
+    protocol: 'vibepro-runtime-inbox-v1', repo_root: repoRoot, story_id: STORY_ID,
+    run_id: RUN_ID, dispatch_id: started.dispatch.dispatch_id
+  });
 
   clock = '2026-07-22T01:12:03.000Z';
   const polled = await main([
@@ -102,13 +107,18 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   assert.equal(shutdowns, 0);
   assert.equal((await parent.session.status(repoRoot, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
 
-  await completionHandler({
-    event_id: 'e2e-completion', kind: 'completed', surface_hash: 'surface-e2e',
+  const eventPath = path.join(repoRoot, 'runtime-completion.json');
+  await writeFile(eventPath, `${JSON.stringify({
+    event_id: 'e2e-completion', dispatch_id: started.dispatch.dispatch_id,
+    provider_run_id: started.dispatch.provider_run_id, kind: 'completed', surface_hash: 'surface-e2e',
     result: { completion_status: 'completed', changed_files: [], head_sha: headSha, test_suggestions: [], summary: 'E2E review complete', agent_identity: 'codex-reviewer', thread_id: 'codex-thread', lifecycle: 'closed', review_record: { status: 'pass', summary: 'successor recovered persistent Inbox result', findings: [], inspection_summary: 'Inspected detached completion and review closure', inspection_evidence: 'runtime-inbox/e2e-completion', judgment_deltas: ['running_detached -> pass because the correlated completion was recovered'] } }
-  });
-  assert.ok(lifecycle.includes('wake:e2e-completion'));
-
-  const closed = await pushResume;
+  }, null, 2)}\n`);
+  completionHandler = null;
+  const ingested = await main([
+    'execute', 'runtime-ingest', repoRoot, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--dispatch-id', started.dispatch.dispatch_id, '--event', eventPath, '--json'
+  ], runtime);
+  const closed = ingested.result.resumed;
   assert.equal(closed.dispatch.result.review_provenance.lifecycle, 'closed');
   assert.equal(closed.agent_review.status, 'pass');
   assert.equal(reviews[0].review.agentClosed, true);

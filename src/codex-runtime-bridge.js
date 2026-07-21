@@ -60,9 +60,23 @@ export function createCodexGuardedRunBridge({
     });
     return { ...reconciled, agent_review: agentReview.review };
   };
+  const ingestCompletion = async ({ story_id: storyId, run_id: runId, dispatch_id: dispatchId, event } = {}) => {
+    if (!storyId || !runId || !dispatchId || !event) {
+      throw new TypeError('Codex completion ingestion requires story_id, run_id, dispatch_id, and event');
+    }
+    const run = await session.status(repoRoot, { storyId, runId });
+    const dispatch = run.runtime_dispatches?.find((item) => item.dispatch_id === dispatchId);
+    if (!dispatch) throw new Error(`runtime dispatch not found: ${dispatchId}`);
+    if (event.dispatch_id !== dispatchId || event.provider_run_id !== dispatch.provider_run_id) {
+      throw new Error('Codex completion ingestion identity does not match the persisted dispatch authority');
+    }
+    const persistedEvent = await adapter.ingestCompletion({ dispatch, providerEvent: event });
+    const resumed = await resumeFromWake({ story_id: storyId, run_id: runId, dispatch_id: dispatchId });
+    return { event: persistedEvent, resumed };
+  };
   if (typeof host?.registerResumeHandler !== 'function') {
     throw new TypeError('Codex host must implement registerResumeHandler for push resume delivery');
   }
   const ready = Promise.resolve(host.registerResumeHandler({ resume: resumeFromWake }));
-  return Object.freeze({ inbox, adapter, coordinator, session, resumeFromWake, ready });
+  return Object.freeze({ inbox, adapter, coordinator, session, resumeFromWake, ingestCompletion, ready });
 }

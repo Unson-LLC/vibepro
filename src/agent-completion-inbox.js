@@ -3,6 +3,19 @@ import { link, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promi
 import path from 'node:path';
 
 const EVENT_KINDS = new Set(['progress', 'partial_result', 'completed', 'failed', 'cancelled']);
+const PAYLOAD_KEYS = Object.freeze({
+  progress: new Set(['heartbeat', 'message', 'progress_percent']),
+  partial_result: new Set(['judgment_id', 'verdict', 'reason', 'summary', 'findings', 'surface_paths', 'judgments']),
+  completed: new Set(['completion_status', 'changed_files', 'head_sha', 'test_suggestions', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'review_record', 'judgments', 'message', 'usage_accounting']),
+  failed: new Set(['message', 'error_code', 'head_sha', 'usage_accounting']),
+  cancelled: new Set(['message', 'error_code', 'head_sha', 'usage_accounting'])
+});
+const NESTED_KEYS = Object.freeze({
+  review_record: new Set(['status', 'summary', 'findings', 'inspection_summary', 'inspection_evidence', 'judgment_deltas']),
+  finding: new Set(['id', 'severity', 'detail']),
+  judgment: new Set(['judgment_id', 'verdict', 'reason', 'summary', 'findings', 'surface_paths']),
+  usage_accounting: new Set(['input_tokens', 'output_tokens', 'total_tokens', 'cost_usd'])
+});
 
 export function createAgentCompletionInbox({ repoRoot, now = () => new Date(), io = {} } = {}) {
   if (typeof repoRoot !== 'string' || repoRoot.length === 0) throw new TypeError('repoRoot is required');
@@ -102,6 +115,7 @@ function normalizeEvent(input, now) {
   const observedAt = input.observed_at ?? now().toISOString();
   if (Number.isNaN(Date.parse(observedAt))) throw new TypeError('observed_at must be an ISO timestamp');
   const payload = input.payload && typeof input.payload === 'object' && !Array.isArray(input.payload) ? input.payload : {};
+  validatePayload(kind, payload);
   const eventId = input.event_id ?? `event-${createHash('sha256').update(`${dispatchId}:${kind}:${observedAt}:${stableJson(payload)}`).digest('hex').slice(0, 24)}`;
   return {
     schema_version: '1.0.0',
@@ -114,6 +128,45 @@ function normalizeEvent(input, now) {
     surface_hash: input.surface_hash ?? null,
     payload
   };
+}
+
+function validatePayload(kind, payload) {
+  assertAllowedKeys(payload, PAYLOAD_KEYS[kind], `${kind} payload`);
+  if (payload.review_record !== undefined) {
+    assertRecord(payload.review_record, 'review_record');
+    assertAllowedKeys(payload.review_record, NESTED_KEYS.review_record, 'review_record');
+    validateFindings(payload.review_record.findings);
+  }
+  validateFindings(payload.findings);
+  if (payload.usage_accounting !== undefined) {
+    assertRecord(payload.usage_accounting, 'usage_accounting');
+    assertAllowedKeys(payload.usage_accounting, NESTED_KEYS.usage_accounting, 'usage_accounting');
+  }
+  const judgments = payload.judgments ?? (payload.judgment_id ? [payload] : []);
+  if (!Array.isArray(judgments)) throw new TypeError('judgments must be an array');
+  for (const judgment of judgments) {
+    assertRecord(judgment, 'judgment');
+    assertAllowedKeys(judgment, NESTED_KEYS.judgment, 'judgment');
+    validateFindings(judgment.findings);
+  }
+}
+
+function validateFindings(findings) {
+  if (findings === undefined) return;
+  if (!Array.isArray(findings)) throw new TypeError('findings must be an array');
+  for (const finding of findings) {
+    assertRecord(finding, 'finding');
+    assertAllowedKeys(finding, NESTED_KEYS.finding, 'finding');
+  }
+}
+
+function assertRecord(value, name) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError(`${name} must be an object`);
+}
+
+function assertAllowedKeys(value, allowed, name) {
+  const unknown = Object.keys(value).filter((key) => !allowed.has(key));
+  if (unknown.length > 0) throw new TypeError(`${name} contains unsupported fields: ${unknown.join(', ')}`);
 }
 
 function eventDirectory(root, dispatchId) {

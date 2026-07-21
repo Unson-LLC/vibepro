@@ -37,14 +37,14 @@ updated_at: 2026-07-22
 ## Acceptance Criteria
 
 - [x] CDI-S-1: 10分境界は親の同期監視境界として扱い、provider runが継続中ならshutdownせず`running_detached`をauthority-firstに永続化する。
-- [x] CDI-S-2: provider/host completion eventをappend-onlyの永続Inboxへ保存し、親session不在でも後継session/Runが回収できる。
+- [x] CDI-S-2: provider/host completion eventをVibePro所有allowlist schemaで検証してappend-onlyの永続Inboxへ保存し、親session不在でも後継session/Runが回収できる。
 - [x] CDI-S-3: push wakeupで親またはRunを再開でき、通知喪失時もInbox reconcileで同じ結果を回収できる。
 - [x] CDI-S-4: 同一dispatch IDのresume/reconcileは二重spawnせず、timeout recoveryを新規subagent budgetへ二重計上しない。
 - [x] CDI-S-5: heartbeatだけでは延命せず、progress checkpoint、no-progress deadline、総wall-clock、attempt、cost上限から`stalled`を判定する。
 - [x] CDI-S-6: 複数判定の部分成果を永続化し、完了済み部分を再利用して未完了部分だけを再開できる。
 - [x] CDI-S-7: HEADとinspection surfaceが不変なら結果を再利用し、budget設定、証跡timestamp、rebaseだけでは全面失効しない。surface変更時だけ影響範囲を再判定する。
 - [x] CDI-S-8: VibeProとhostの所有境界をfail closedで強制し、host capabilityが未結線なら完了扱いしない。
-- [x] CDI-S-9: 実Codex hostを模したcontract/integration/E2Eでspawn→10分境界→detached継続→completion Inbox→結果回収→review lifecycle closeを証明する。
+- [x] CDI-S-9: 実Codex hostを模したcontract/integration/E2Eでspawn→10分境界→detached継続→親process終了後の`runtime-ingest`→completion Inbox→結果回収→review lifecycle closeを証明する。
 - [x] CDI-S-10: recoveryは論理task単位のwall-clock/attempt/cost上限内で行い、追加予算の反復を正常系にしない。
 
 ## Non Goals

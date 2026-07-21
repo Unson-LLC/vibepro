@@ -20,7 +20,14 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       ...request,
       requested_judgments: recoveryPlan.remaining_judgments,
       recovery_plan: recoveryPlan,
-      idempotency_key: request.dispatch_id
+      idempotency_key: request.dispatch_id,
+      completion_delivery: {
+        protocol: 'vibepro-runtime-inbox-v1',
+        repo_root: repoRoot,
+        story_id: request.story_id,
+        run_id: request.run_id,
+        dispatch_id: request.dispatch_id
+      }
     };
     let started = null;
     const pendingBeforeStart = [];
@@ -150,6 +157,12 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         ),
         surface_hash: reconciled.completion.surface_hash
       };
+    },
+    async ingestCompletion({ dispatch, providerEvent }) {
+      if (!dispatch?.provider_run_id) throw new TypeError('persisted dispatch with provider_run_id is required');
+      const event = toInboxEvent(dispatch, { provider_run_id: dispatch.provider_run_id }, providerEvent, now);
+      await persistentInbox.append(event);
+      return event;
     }
   };
 }
