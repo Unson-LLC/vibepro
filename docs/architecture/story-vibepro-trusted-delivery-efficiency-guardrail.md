@@ -11,6 +11,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 ### Delivery efficiency policy
 
 - Normalize machine-readable budgets for elapsed time, observed work, token/cost, subagent consumption, role dispatches, repair batches, and expensive verification.
+- Resolve an optional, reason-required Story-specific budget amendment over the global policy so historical migration cost can be explicit without increasing every future Story's allowance; reject silent amendments.
 - Preserve missing policy and missing measurements as `null`/`unknown`; never coerce them to zero.
 - Evaluate each known measurement against its budget and return typed stops for exceeded or required-but-unknown dimensions.
 
@@ -24,12 +25,19 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - `review start` cannot create a lifecycle under an efficiency policy without consuming that exact authorization. Story, stage, role, HEAD, surface digest, model, reasoning effort, and cost tier must still match; an authorization is single-use.
 - `review record` cannot synthesize missing lifecycle evidence while the policy is enabled; a result without a consumed authorization is rejected instead of retroactively legitimizing an already-spawned agent.
 
+### Risk-adaptive review coverage ownership
+
+- `workflow_heavy` requires release-risk judgment, but does not by itself imply a UI or network surface. Human-usability review is selected only from changed UI source, and network-runtime review only from a detected network contract.
+- When Risk-adaptive Validation Sequencing is required, it owns aggregate preflight, freeze ordering, expensive verification, and final-review binding. The legacy five workflow checkpoint roles are recorded as suppressed duplicates rather than dispatched again.
+- The final source-change gate-evidence review and workflow-heavy release-risk review remain independent requirements. Surface selection reduces duplicated judgment; it does not weaken current-HEAD freshness or final review.
+
 ### Lifecycle debt
 
 - Classify timed-out, obsolete, orphaned, duplicate, and budget-exceeded work separately from correctness readiness.
 - `agent-review` captures HEAD and surface digest when a lifecycle starts. If the current HEAD no longer matches, status inspection derives `orphaned_agent` and fails closed until the provider result is explicitly collected or cancellation is confirmed.
 - Explicit close after a HEAD mutation persists `obsolete`, the terminal HEAD, the mutation reason, and cancellation confirmation only when both `--cancellation-confirmed` and non-empty cancellation evidence are supplied. Evidence text alone does not prove provider cancellation; without both inputs the lifecycle remains running with terminal status `orphaned_agent`.
 - `pr-manager` reads persisted lifecycle and repair-loop artifacts, evaluates the configured budget, and displays efficiency debt without changing required Gate semantics.
+- `agent-review` and `pr-manager` use the same global-plus-Story policy resolver; authorization and readiness therefore cannot disagree about the effective ceiling.
 
 ### Finding batch planner
 
@@ -51,6 +59,25 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 4. Repair findings are converted into compatible batches; each batch receives one targeted verification and one independent re-review.
 5. `pr-manager` and portfolio surfaces consume the persisted lifecycle, repair, policy, and measurement records and display correctness readiness and efficiency debt independently.
 
+## Review coverage state
+
+```mermaid
+stateDiagram-v2
+  [*] --> ClassifyRisk
+  ClassifyRisk --> SelectSurfaceRoles
+  SelectSurfaceRoles --> ValidationSequenceOwned: workflow_heavy and sequence required
+  SelectSurfaceRoles --> AgentCheckpointOwned: workflow_heavy and no sequence
+  ValidationSequenceOwned --> SuppressDuplicateCheckpoints
+  AgentCheckpointOwned --> RequireLegacyCheckpoints
+  SuppressDuplicateCheckpoints --> FinalIndependentReviews
+  RequireLegacyCheckpoints --> FinalIndependentReviews
+  FinalIndependentReviews --> AddUIReview: UI source changed
+  FinalIndependentReviews --> AddNetworkReview: network contract changed
+  FinalIndependentReviews --> [*]
+  AddUIReview --> [*]
+  AddNetworkReview --> [*]
+```
+
 ## Invariants
 
 - Required/critical Gates, independent final review, current-HEAD binding, and fail-closed behavior cannot be relaxed by an efficiency decision.
@@ -61,6 +88,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - Provider-specific cancellation is out of scope; unconfirmed cancellation is an orphaned-agent stop.
 - A caller assertion is not provider confirmation unless it is explicit and evidence-bound; HEAD mutation never auto-sets `cancel_confirmed`.
 - Changed lines are not a time, token, or value allocation basis.
+- Review role count follows concrete risk surfaces and ownership; a broad risk profile cannot manufacture UI/network work or duplicate validation-sequence checkpoints.
 
 ## Compatibility and migration
 
@@ -85,3 +113,5 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - TDEG-S-10: performance artifacts compare equivalent risk class; no changed-line allocation.
 - TDEG-S-11: dedicated E2E-style unit matrix across the pure orchestration contract.
 - TDEG-S-12: existing contract suites and full suite remain green.
+- TDEG-S-13: risk-adaptive coverage selection keeps final gate/release review while suppressing irrelevant surface roles and validation-sequence checkpoint duplicates.
+- TDEG-S-1: Story-specific amendments merge narrowly over the global budget, including role limits, while unlisted Stories retain the global policy unchanged.

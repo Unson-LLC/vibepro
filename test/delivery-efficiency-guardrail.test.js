@@ -8,8 +8,40 @@ import {
   normalizeEfficiencyPolicy,
   planCompatibleFindingBatches,
   planLifecycleTerminalization,
+  resolveEfficiencyPolicy,
+  selectRiskAdaptiveReviewCoverage,
   summarizeEfficiencyDebt
 } from '../src/delivery-efficiency-guardrail.js';
+
+test('story budget override preserves global defaults and merges role limits', () => {
+  const config = { budgets: {
+    delivery_efficiency: {
+      max_subagent_count: 6,
+      max_review_dispatches_by_role: { architecture: 1, runtime: 1 }
+    },
+    delivery_efficiency_by_story: {
+      'story-a': {
+        max_subagent_count: 9,
+        amendment_reason: 'historical review migration',
+        max_review_dispatches_by_role: { runtime: 2 }
+      }
+    }
+  } };
+
+  assert.deepEqual(resolveEfficiencyPolicy(config, 'story-a'), {
+    max_subagent_count: 9,
+    amendment_reason: 'historical review migration',
+    max_review_dispatches_by_role: { architecture: 1, runtime: 2 }
+  });
+  assert.equal(resolveEfficiencyPolicy(config, 'story-b').max_subagent_count, 6);
+  assert.throws(
+    () => resolveEfficiencyPolicy({ budgets: {
+      delivery_efficiency: { max_subagent_count: 6 },
+      delivery_efficiency_by_story: { 'story-a': { max_subagent_count: 9 } }
+    } }, 'story-a'),
+    /requires amendment_reason/
+  );
+});
 import { buildAgentReviewEfficiencySummary } from '../src/pr-manager.js';
 
 const binding = {
@@ -66,6 +98,41 @@ test('final review waits for an exact frozen surface while preflight remains ava
     budget: { status: 'within_budget' }
   });
   assert.equal(preflight.action, 'dispatch');
+});
+
+test('risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates', () => {
+  const internalWorkflow = selectRiskAdaptiveReviewCoverage({
+    risk_profile: 'workflow_heavy',
+    has_ui_surface: false,
+    has_network_surface: false,
+    validation_sequence_required: true
+  });
+  assert.deepEqual(internalWorkflow.final_roles, {
+    release_risk: true,
+    human_usability: false,
+    network_runtime: false
+  });
+  assert.equal(internalWorkflow.checkpoint_owner, 'validation_sequence');
+  assert.deepEqual(internalWorkflow.duplicate_checkpoint_roles_suppressed, [
+    'architecture_spec:regression_risk',
+    'test_plan:e2e_ux',
+    'test_plan:gate_coverage',
+    'implementation:runtime_contract',
+    'implementation:ux_completion'
+  ]);
+
+  const productWorkflow = selectRiskAdaptiveReviewCoverage({
+    risk_profile: 'workflow_heavy',
+    has_ui_surface: true,
+    has_network_surface: true,
+    validation_sequence_required: false
+  });
+  assert.deepEqual(productWorkflow.final_roles, {
+    release_risk: true,
+    human_usability: true,
+    network_runtime: true
+  });
+  assert.equal(productWorkflow.checkpoint_owner, 'agent_review');
 });
 
 test('same binding dispatch is idempotent for running, uncollected, and completed pass lifecycles', () => {

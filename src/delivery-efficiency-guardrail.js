@@ -17,12 +17,57 @@ const DUPLICATE_STATES = new Set(['running', 'result_uncollected', 'completed_pa
 const DEBT_STATES = new Set(['timed_out', 'obsolete', 'orphaned_agent']);
 const FREEZE_KEYS = ['source', 'spec', 'test', 'review_surface'];
 
+export function selectRiskAdaptiveReviewCoverage(input = {}) {
+  const workflowHeavy = input.risk_profile === 'workflow_heavy';
+  const validationSequenceOwnsCheckpoints = workflowHeavy && input.validation_sequence_required === true;
+  return {
+    risk_profile: input.risk_profile ?? null,
+    final_roles: {
+      release_risk: workflowHeavy,
+      human_usability: input.has_ui_surface === true,
+      network_runtime: input.has_network_surface === true
+    },
+    checkpoint_owner: validationSequenceOwnsCheckpoints
+      ? 'validation_sequence'
+      : workflowHeavy
+        ? 'agent_review'
+        : 'none',
+    duplicate_checkpoint_roles_suppressed: validationSequenceOwnsCheckpoints
+      ? [
+          'architecture_spec:regression_risk',
+          'test_plan:e2e_ux',
+          'test_plan:gate_coverage',
+          'implementation:runtime_contract',
+          'implementation:ux_completion'
+        ]
+      : []
+  };
+}
+
 export function normalizeEfficiencyPolicy(input = {}) {
   const policy = {};
   for (const key of Object.keys(LIMITS)) policy[key] = nullableLimit(input[key], key);
   policy.max_review_dispatches_by_role = normalizeRoleLimits(input.max_review_dispatches_by_role);
   policy.require_known_attribution = input.require_known_attribution === true;
   return policy;
+}
+
+export function resolveEfficiencyPolicy(config = {}, storyId = null) {
+  const base = config?.budgets?.delivery_efficiency;
+  if (!base || typeof base !== 'object' || Array.isArray(base)) return null;
+  const override = storyId ? config?.budgets?.delivery_efficiency_by_story?.[storyId] : null;
+  if (!override || typeof override !== 'object' || Array.isArray(override)) return base;
+  if (typeof override.amendment_reason !== 'string' || !override.amendment_reason.trim()) {
+    throw new Error(`delivery efficiency Story override ${storyId} requires amendment_reason`);
+  }
+  return {
+    ...base,
+    ...override,
+    max_review_dispatches_by_role: {
+      ...(base.max_review_dispatches_by_role ?? {}),
+      ...(override.max_review_dispatches_by_role ?? {})
+    }
+  };
 }
 
 export function evaluateDeliveryBudget(policyInput = {}, metrics = {}) {

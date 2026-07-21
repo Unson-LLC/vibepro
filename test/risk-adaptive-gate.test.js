@@ -1049,79 +1049,59 @@ Sample generation must run a preflight workflow, start detection, poll status, r
 	  assert.deepEqual([...required].sort(), [
 		    'gate:gate_evidence',
 	    'gate:release_risk',
-	    'preview:human_usability',
-	    'preview:network_runtime'
+	    'preview:human_usability'
 		  ]);
 	  assert.deepEqual(agentReviews.required_reviews
 	    .filter((item) => item.policy === 'workflow_heavy')
 	    .map((item) => `${item.stage}:${item.role}`)
 	    .sort(), [
-	    'gate:release_risk',
-	    'preview:network_runtime'
+	    'gate:release_risk'
 	  ]);
   assert.equal(agentReviews.required_reviews.some((item) => ['architecture_spec', 'test_plan', 'implementation'].includes(item.stage)), false);
-  assert.deepEqual(agentReviews.checkpoint_required_reviews
-    .map((item) => `${item.stage}:${item.role}`)
-    .sort(), [
-    'architecture_spec:regression_risk',
-    'implementation:runtime_contract',
-    'implementation:ux_completion',
-    'test_plan:e2e_ux',
-    'test_plan:gate_coverage'
-  ]);
-  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 4);
-  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').unmet_checkpoint_reviews.length, 4);
+  assert.deepEqual(agentReviews.checkpoint_required_reviews, []);
+  assert.equal(agentReviews.risk_adaptive_coverage.checkpoint_owner, 'validation_sequence');
+  assert.equal(agentReviews.risk_adaptive_coverage.duplicate_checkpoint_roles_suppressed.length, 5);
+  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 0);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').unmet_checkpoint_reviews.length, 0);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => stage.stage)
     .sort(), [
-    'architecture_spec',
     'gate',
-    'implementation',
-    'preview',
-    'test_plan'
+    'preview'
   ]);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.serial_between_stages, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.parallel_within_stage, true);
-  assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'architecture_spec');
+  assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'preview');
   const previewStageSummary = agentReviews.stages.find((stage) => stage.stage === 'preview');
   assert.deepEqual(previewStageSummary.roles.map((role) => role.role).sort(), [
-    'human_usability',
-    'network_runtime'
+    'human_usability'
   ]);
   assert.equal(previewStageSummary.next_actions.join('\n').includes('preview_smoke'), false);
   const previewDispatchStage = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
   assert.deepEqual(previewDispatchStage.roles.sort(), [
-    'human_usability',
-    'network_runtime'
+    'human_usability'
   ]);
   assert.equal(previewDispatchStage.prepare_command.includes('preview_smoke'), false);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => `${stage.serial_index}:${stage.stage}:${stage.dispatch_state}`), [
-    '1:architecture_spec:current',
-    '2:test_plan:blocked_by_previous_stage',
-    '3:implementation:blocked_by_previous_stage',
-    '4:preview:blocked_by_previous_stage',
-    '5:gate:blocked_by_previous_stage'
+    '1:preview:current',
+    '2:gate:blocked_by_previous_stage'
   ]);
-  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'test_plan').roles.includes('gate_coverage'), true);
-  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'implementation').roles.includes('runtime_contract'), true);
-  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), true);
-  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:architecture_spec' && edge.to === 'review:dispatch_batch:test_plan'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:test_plan' && edge.to === 'review:preflight:test_plan:gate_coverage'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:test_plan:gate_coverage' && edge.to === 'review:prepare:test_plan'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:dispatch_batch:implementation'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:implementation' && edge.to === 'review:preflight:implementation:runtime_contract'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:implementation:runtime_contract' && edge.to === 'review:prepare:implementation'), true);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), false);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:test_plan:gate_coverage' && edge.to === 'review:prepare:test_plan'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:dispatch_batch:implementation'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:implementation' && edge.to === 'review:preflight:implementation:runtime_contract'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:implementation:runtime_contract' && edge.to === 'review:prepare:implementation'), false);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:gate' && edge.to === 'gate:agent_review'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:prepare:preview' && edge.to === 'review:prepare:gate'), false);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('Current Agent Review stage 1'), true);
-  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('architecture_spec'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('preview'), true);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions.some((action) => action.includes('Later Agent Review stages are serial-barriered')), true);
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.equal(agentReviewGate.minimal_recovery_plan.current_stage.stage, 'architecture_spec');
+  assert.equal(agentReviewGate.minimal_recovery_plan.current_stage.stage, 'preview');
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.current_stage_work.map((item) => `${item.stage}:${item.role}:${item.recovery_kind}`), [
-    'architecture_spec:regression_risk:missing'
+    'preview:human_usability:missing'
   ]);
   const recoveryRecordCommand = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands
     .find((command) => command.startsWith('vibepro review record'));
@@ -1132,9 +1112,6 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.match(recoveryRecordCommand, /--status <pass\|needs_changes\|block>/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
-    'test_plan',
-    'implementation',
-    'preview',
     'gate'
   ]);
   assert.equal(prepare.preparation.gate_status.agent_review_minimal_recovery_plan.first_command, agentReviewGate.minimal_recovery_plan.first_command);
@@ -1151,10 +1128,10 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   });
   assert.equal(summaryResult.exitCode, 0);
   assert.match(prepareSummary, /minimal_recovery_plan/);
-  assert.match(prepareSummary, /current_stage: 1:architecture_spec/);
-  assert.match(prepareSummary, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prepareSummary, /current_stage: 1:preview/);
+  assert.match(prepareSummary, /current_roles: preview:human_usability\(missing\)/);
   assert.match(prepareSummary, /first_command: `vibepro review prepare/);
-  assert.match(prepareSummary, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
+  assert.match(prepareSummary, /later_stages_blocked: 2:gate/);
 
   const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
   await stat(gateDagJsonPath);
@@ -1162,12 +1139,12 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(writtenGateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-prepare.html'), 'utf8');
   assert.match(prPrepareHtml, /minimal_recovery_plan/);
-  assert.match(prPrepareHtml, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prPrepareHtml, /current_roles: preview:human_usability\(missing\)/);
   assert.match(prPrepareHtml, /first_command/);
-  assert.match(prPrepareHtml, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
+  assert.match(prPrepareHtml, /later_stages_blocked: 2:gate/);
 });
 
-test('agent review gate minimal recovery plan dedupes stale result and timed-out lifecycle', async () => {
+test('validation sequence ownership keeps obsolete checkpoint lifecycle out of required recovery', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
@@ -1239,26 +1216,14 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
   const plan = agentReviewGate.minimal_recovery_plan;
 
-  assert.equal(plan.current_stage.stage, 'architecture_spec');
-  assert.equal(plan.source_blocker_count > plan.deduped_blocker_count, true);
-  assert.deepEqual(plan.current_stage_work.map((item) => `${item.stage}:${item.role}`), ['architecture_spec:regression_risk']);
-  assert.equal(plan.current_stage_work[0].recovery_kind, 'timed_out');
-  assert.equal(plan.current_stage_work[0].lifecycle.agent_id, 'agent-timeout');
-  assert.equal(plan.current_stage_work[0].lifecycle.lifecycle_id, 'lifecycle-timeout');
-  assert.match(plan.current_stage_work[0].lifecycle.close_command, /review close .*--agent-id "agent-timeout".*--close-reason timeout/);
-  assert.match(plan.current_stage_work[0].lifecycle.replacement_command, /review start .*--replacement-for lifecycle-timeout/);
-  const strictRecoveryCommand = plan.current_stage_work[0].next_commands
-    .find((command) => command.startsWith('vibepro review record'));
-  assert.match(strictRecoveryCommand, /--strict-head-binding/);
-  assert.match(strictRecoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
-  assert.equal(plan.first_command, plan.current_stage_work[0].lifecycle.close_command);
-  assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), [
-    'test_plan',
-    'implementation',
-    'preview',
-    'gate'
-  ]);
-  assert.equal(result.result.preparation.gate_status.agent_review_minimal_recovery_plan.current_stage_work[0].recovery_kind, 'timed_out');
+  assert.equal(plan.current_stage.stage, 'preview');
+  assert.equal(result.result.preparation.pr_context.agent_reviews.risk_adaptive_coverage.checkpoint_owner, 'validation_sequence');
+  assert.deepEqual(result.result.preparation.pr_context.agent_reviews.checkpoint_required_reviews, []);
+  assert.equal(plan.current_stage_work.some((item) => item.role === 'regression_risk'), false);
+  assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), ['gate']);
+  const architectureStage = result.result.preparation.pr_context.agent_reviews.stages
+    .find((stage) => stage.stage === 'architecture_spec');
+  assert.equal(architectureStage.roles.find((role) => role.role === 'regression_risk').lifecycle.effective_status, 'timed_out');
 });
 
 test('workflow-heavy release confidence requires state scenario and no blocker questions', async () => {

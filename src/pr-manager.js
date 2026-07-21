@@ -9,6 +9,7 @@ import { formatCounts } from './refactoring-delta-reporter.js';
 import {
   aggregateDeliveryMetrics,
   evaluateDeliveryBudget,
+  resolveEfficiencyPolicy,
   summarizeEfficiencyDebt
 } from './delivery-efficiency-guardrail.js';
 import {
@@ -5502,6 +5503,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     networkContracts,
     performanceEvidence,
     changeClassification,
+    validationSequence,
     git
   });
   if (agentReviews) {
@@ -11084,7 +11086,7 @@ async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
   let policy = {};
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    policy = config?.budgets?.delivery_efficiency ?? {};
+    policy = resolveEfficiencyPolicy(config, storyId) ?? {};
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }

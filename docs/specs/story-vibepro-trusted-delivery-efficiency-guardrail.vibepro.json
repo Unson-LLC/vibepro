@@ -10,14 +10,18 @@
     {
       "id": "C-001",
       "type": "contract",
-      "statement": "Delivery policy preserves unspecified limits and unmeasured values as unknown, evaluates time, token, cost, subagent, role-dispatch, repair-batch, and verification budgets, and emits typed budget_exceeded or attribution_unknown stops.",
+      "statement": "Delivery policy preserves unspecified limits and unmeasured values as unknown, evaluates time, token, cost, subagent, role-dispatch, repair-batch, and verification budgets, applies exceptional migration allowance only through a Story-specific override, and emits typed budget_exceeded or attribution_unknown stops.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }, { "kind": "acceptance_criteria", "index": 6 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Delivery efficiency policy" }],
-        "code_refs": [{ "file": "src/delivery-efficiency-guardrail.js", "anchor": "evaluateDeliveryBudget" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "resolveEfficiencyPolicy" },
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "evaluateDeliveryBudget" }
+        ],
         "test_refs": [
           { "file": "test/delivery-efficiency-guardrail.test.js", "case": "policy keeps unspecified and unmeasured budgets unknown instead of zero" },
-          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "budget exceed and required attribution unknown are typed stops" }
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "budget exceed and required attribution unknown are typed stops" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "story budget override preserves global defaults and merges role limits" }
         ]
       }
     },
@@ -115,6 +119,24 @@
       }
     },
     {
+      "id": "C-006",
+      "type": "contract",
+      "statement": "Review coverage is selected from concrete UI and network change surfaces. Workflow-heavy changes retain independent final gate-evidence and release-risk judgment, while a required validation sequence owns aggregate checkpoints and suppresses the five legacy duplicate checkpoint roles.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Risk-adaptive review coverage ownership" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "selectRiskAdaptiveReviewCoverage" },
+          { "file": "src/agent-review.js", "anchor": "summarizeAgentReviewsForPr" },
+          { "file": "src/pr-manager.js", "anchor": "buildPrContext" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" },
+          { "file": "test/risk-adaptive-gate.test.js", "case": "pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence" }
+        ]
+      }
+    },
+    {
       "id": "S-001",
       "type": "scenario",
       "statement": "Given delivery measurements are missing, when a Story budget is evaluated, then unknown values remain unknown and are never converted to zero.",
@@ -185,6 +207,12 @@
       "type": "scenario",
       "statement": "Given the efficiency guardrail is enabled, when existing validation, review lifecycle, PR readiness, and Design SSOT contract suites run, then required tests, independent final review, critical Gates, current-HEAD binding, and fail-closed semantics remain intact.",
       "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
+    },
+    {
+      "id": "S-013",
+      "type": "scenario",
+      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface and with required validation sequencing, when review coverage is selected, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [{ "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" }] }
     }
   ],
   "diagrams": [
@@ -193,6 +221,12 @@
       "title": "Review cancellation trust boundary",
       "entities": ["parent_coordinator", "review_provider", "current_head", "lifecycle_store"],
       "mermaid": "flowchart LR\n  Parent[Parent coordinator] --> Close[review close]\n  Provider[Provider cancellation result] --> Confirm[Explicit confirmation plus evidence]\n  Head[Current HEAD] --> Close\n  Close -->|same HEAD| Closed[Closed lifecycle]\n  Close -->|changed HEAD unconfirmed| Orphan[Orphaned agent fail closed]\n  Confirm --> Obsolete[Obsolete terminal state]\n  Close --> Obsolete"
+    },
+    {
+      "kind": "state",
+      "title": "Risk-adaptive review coverage ownership",
+      "entities": ["Review coverage", "UI", "network", "validation sequence", "checkpoint roles"],
+      "mermaid": "stateDiagram-v2\n  [*] --> ClassifyRisk\n  ClassifyRisk --> SelectSurfaceRoles\n  SelectSurfaceRoles --> ValidationSequenceOwned: sequence required\n  SelectSurfaceRoles --> AgentCheckpointOwned: no sequence\n  ValidationSequenceOwned --> SuppressDuplicateCheckpoints\n  AgentCheckpointOwned --> RequireLegacyCheckpoints\n  SuppressDuplicateCheckpoints --> FinalIndependentReviews\n  RequireLegacyCheckpoints --> FinalIndependentReviews\n  FinalIndependentReviews --> [*]"
     }
   ]
 }

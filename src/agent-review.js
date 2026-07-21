@@ -17,7 +17,9 @@ import {
   aggregateDeliveryMetrics,
   buildReviewDispatchDecision,
   evaluateDeliveryBudget,
-  planLifecycleTerminalization
+  planLifecycleTerminalization,
+  resolveEfficiencyPolicy,
+  selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
@@ -416,7 +418,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }
   const resultPath = getReviewResultPath(reviewDir, role);
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root);
+  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   if (efficiencyPolicy && result.agent_provenance.lifecycle?.agent_closed) {
     const lifecycle = await readLifecycle(root, storyId, stage);
     const startedEntry = findLifecycleEntry(lifecycle.entries, {
@@ -544,7 +546,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectGitContext(root);
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root);
+  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   const reviewKind = normalizeNullable(options.reviewKind);
   const closesRisks = options.closesRisks ?? [];
   const expectedJudgmentDelta = normalizeNullable(options.expectedJudgmentDelta);
@@ -639,7 +641,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     stage,
     role
   });
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root);
+  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   if (!efficiencyPolicy) throw new Error('review authorize requires budgets.delivery_efficiency in .vibepro/config.json');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const storyReviewDir = path.dirname(reviewDir);
@@ -725,11 +727,10 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   };
 }
 
-async function readDeliveryEfficiencyPolicy(repoRoot) {
+async function readDeliveryEfficiencyPolicy(repoRoot, storyId) {
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    const policy = config?.budgets?.delivery_efficiency;
-    return policy && typeof policy === 'object' && !Array.isArray(policy) ? policy : null;
+    return resolveEfficiencyPolicy(config, storyId);
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;
@@ -1161,8 +1162,14 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     ? normalizeGitContext(options.git)
     : await collectGitContext(root);
   const reviewPolicy = await readAgentReviewPolicy(root);
-  const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy });
-  const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy });
+  const riskAdaptiveCoverage = selectRiskAdaptiveReviewCoverage({
+    risk_profile: options.changeClassification?.profile,
+    has_ui_surface: hasUiExperienceSourceChange(options.fileGroups),
+    has_network_surface: hasNetworkContractRisk(options.networkContracts),
+    validation_sequence_required: options.validationSequence?.plan?.required === true
+  });
+  const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy, riskAdaptiveCoverage });
+  const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy, riskAdaptiveCoverage });
   const stages = [...new Set([
     ...requiredReviews.map((item) => item.stage),
     ...checkpointRequiredReviews.map((item) => item.stage),
@@ -1248,6 +1255,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     current_git_context: currentGitContext,
     required_reviews: requiredReviews,
     checkpoint_required_reviews: checkpointRequiredReviews,
+    risk_adaptive_coverage: riskAdaptiveCoverage,
     unmet_required_reviews: allUnmetRequiredReviews,
     unmet_checkpoint_reviews: allUnmetCheckpointReviews,
     stages: stageSummaries,
@@ -1284,7 +1292,7 @@ function buildLifecycleUnmetReview(requirement, role) {
   }];
 }
 
-function buildCheckpointReviewPolicy({ changeClassification, reviewPolicy, fileGroups }) {
+function buildCheckpointReviewPolicy({ changeClassification, reviewPolicy, fileGroups, riskAdaptiveCoverage }) {
   const requirements = [];
   const addRequirement = (item) => {
     if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
@@ -1292,7 +1300,8 @@ function buildCheckpointReviewPolicy({ changeClassification, reviewPolicy, fileG
     if (requirements.some((existing) => `${existing.stage}:${existing.role}` === key)) return;
     requirements.push(item);
   };
-  if (changeClassification?.profile === 'workflow_heavy') {
+  if (changeClassification?.profile === 'workflow_heavy'
+    && riskAdaptiveCoverage?.checkpoint_owner !== 'validation_sequence') {
     addRequirement({
       stage: 'architecture_spec',
       role: 'regression_risk',
@@ -1775,7 +1784,7 @@ function isPlainObject(value) {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
-function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy, changeClassification }) {
+function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy, changeClassification, riskAdaptiveCoverage }) {
   const requirements = [];
   const addRequirement = (item) => {
     if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
@@ -1822,18 +1831,6 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
       stage: 'gate',
       role: 'release_risk',
       reason: 'workflow_heavy changes require release confidence and production-path risk review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'preview',
-      role: 'network_runtime',
-      reason: 'workflow_heavy changes require preview network/runtime validation',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'preview',
-      role: 'human_usability',
-      reason: 'workflow_heavy changes require human usability validation',
       policy: 'workflow_heavy'
     });
   }

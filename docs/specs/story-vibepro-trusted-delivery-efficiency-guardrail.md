@@ -15,12 +15,13 @@ frontmatter reconciler requires.
 
 ## Contract mapping
 
-- C-001: budget evaluation preserves unknown values and emits typed stops.
+- C-001: budget evaluation preserves unknown values, keeps exceptional migration allowance Story-local, and emits typed stops.
 - C-002: review dispatch is freeze-bound and idempotent per Story/stage/role/HEAD/surface.
 - C-003: `agent-review` fails stale running work closed and persists explicit obsolete terminalization.
 - C-004: compatible findings share one repair dispatch, targeted verification, and independent re-review.
 - C-005: `story-run-portfolio` separates overlapping review wall-clock from summed agent consumption.
 - INV-001: `pr-manager` exposes efficiency debt without weakening correctness readiness.
+- C-006: Review coverage follows concrete UI/network surfaces and a single checkpoint owner, while final gate/release judgment remains independent.
 
 ## Failure and trust boundary
 

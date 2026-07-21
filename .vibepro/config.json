@@ -282,6 +282,12 @@
         "security": 1
       },
       "require_known_attribution": false
+    },
+    "delivery_efficiency_by_story": {
+      "story-vibepro-trusted-delivery-efficiency-guardrail": {
+        "max_subagent_count": 9,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization; allow only the three post-freeze risk-adaptive reviews without weakening the default Story budget."
+      }
     }
   },
   "brainbase": {
