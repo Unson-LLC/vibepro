@@ -21,7 +21,7 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
   vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
-  vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
+  vibepro audit session-cost [repo] --story-id <id> [--run-id <id>] [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]

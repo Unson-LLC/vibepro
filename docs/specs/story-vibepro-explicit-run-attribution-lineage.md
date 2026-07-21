@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-explicit-run-attribution-lineage
 title: Explicit Run Attribution Lineage Spec
-status: draft
+status: final
 parent_design:
   - vibepro-explicit-run-attribution-lineage
 ---
@@ -56,13 +56,17 @@ Run-aware attributionは各結果に以下を返す。
 
 | Clause | Verification |
 |---|---|
-| ERAL-S-1, ERAL-S-2 | envelope creation、dispatch persistence、provider collision/stale HEAD unit tests |
-| ERAL-S-3 | evidence/action binding mismatch tests |
-| ERAL-S-4〜ERAL-S-7 | Run-aware mixed-parent fixtureとlegacy fallback tests |
-| ERAL-S-8 | existing adapter/session-cost regression suite |
-| ERAL-S-9 | fresh-process context capsule reconstruction test |
-| ERAL-S-10 | focused unit + end-to-end workflow test |
-| ERAL-S-11 | independent module import boundary、Graphify、existing audit compatibility |
+| ERAL-S-1 | `test/run-lineage.test.js`: `creates and validates a version 0.1.0 envelope from Run authority`; `test/agent-runtime-adapter-lineage.test.js`: `persists Run authority and provider observations while preserving compatibility fields` |
+| ERAL-S-2 | `test/run-lineage.test.js`: `rejects malformed and mismatched bindings with typed errors` / `provider observations merge append-only, deduplicate, and reject rebind/conflict`; adapter provider identity rejection case |
+| ERAL-S-3 | `test/run-lineage-evidence-propagation.test.js`: additive recorder inheritance and mismatch-before-write cases |
+| ERAL-S-4 | `test/session-efficiency-run-lineage.test.js`: embedded lineage attribution leaves Thread-only observations unattributed; `test/run-lineage.test.js`: Thread-only observations are not authoritative |
+| ERAL-S-5 | `test/run-lineage.test.js`: `resolves five attribution buckets with bounded provenance and reconciled totals` |
+| ERAL-S-6 | Five-bucket reconciliation case plus `session efficiency audit accepts the run_id alias without changed-line allocation` |
+| ERAL-S-7 | `test/run-lineage.test.js`: `thread-only observations never become authoritative story attribution` |
+| ERAL-S-8 | `test/session-efficiency-run-lineage.test.js`: run_id alias compatibility; `test/agent-runtime-adapter-lineage.test.js`: polling preserves lineage and observations |
+| ERAL-S-9 | `test/run-context-capsule-lineage.test.js`: bounded Story→Run→dispatch→provider observation projection and bounded many-dispatch projection |
+| ERAL-S-10 | Focused unit coverage in `test/run-lineage.test.js`, `test/run-lineage-evidence-propagation.test.js`, `test/session-efficiency-run-lineage.test.js`, and `test/run-context-capsule-lineage.test.js`; no separate ERAL E2E case is asserted |
+| ERAL-S-11 | `src/run-lineage.js` resolver boundary, `src/session-efficiency-audit.js` consumer import, plus existing audit compatibility and bucket reconciliation tests; Graphify boundary is recorded in readiness artifact |
 
 ## Rollback and privacy
 
