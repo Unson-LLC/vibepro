@@ -180,8 +180,41 @@ test('artifact resolve text and JSON expose ownership, canonical authority, prof
   const migrationResult = await runCli(['artifacts', 'migrate', root, '--id', storyId, '--dry-run'], { stdout: migrationSink, stderr: migrationSink });
   assert.equal(migrationResult.exitCode, 0);
   assert.match(migrationOutput, /Profile: feature_packet; feature_slug=payments/);
+  assert.match(migrationOutput, /Profile change: legacy -> feature_packet; required=yes/);
   assert.match(migrationOutput, /task_plan: action=.*reason=.*collision=.*ownership=generated; canonical-writer=vibepro; renderer=tasks_markdown@1/);
   assert.match(migrationOutput, /projection: action=.*reason=.*ownership=generated; renderer=tasks_markdown@1; path=docs\/features\/payments\/06_tasks\.md/);
+});
+
+test('rendered Evidence Test Plan Gate and Release projections visibly identify canonical ownership', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    evidence: { canonical: '.vibepro/evidence/{story_id}', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/07_evidence.md', ownership: 'generated', renderer: { id: 'evidence_summary_markdown', version: '1' } }] },
+    test_plan: { canonical: '.vibepro/test-plans/{story_id}.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/05_test_plan.md', ownership: 'generated', renderer: { id: 'test_plan_markdown', version: '1' } }] },
+    gate: { canonical: '.vibepro/pr/{story_id}/gate-dag.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/09_gate.md', ownership: 'generated', renderer: { id: 'gate_summary_markdown', version: '1' } }] },
+    pr: { canonical: '.vibepro/pr/{story_id}/pr-prepare.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/10_release.md', ownership: 'generated', renderer: { id: 'release_summary_markdown', version: '1' } }] }
+  });
+  for (const [kind, fileName] of [['evidence', 'evidence.json'], ['test_plan', null], ['gate', null], ['pr', null]]) {
+    await projectArtifact(root, kind, { storyId, writeCanonical: true, canonicalFileName: fileName ?? undefined, content: { story_id: storyId, status: 'ready' } });
+    const route = await resolveArtifactRoute(root, kind, { storyId });
+    const rendered = await readFile(route.projections[0].absolute_path, 'utf8');
+    assert.match(rendered, /Canonical ownership: generated/, kind);
+    assert.match(rendered, new RegExp(`source=${route.canonical.relative_path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), kind);
+  }
+});
+
+test('migration dry-run reports selected profile changes and human-owned overwrite risks without writes', async () => {
+  const { root, storyId } = await namedProfileRepo({ evidence: { canonical: '.vibepro/evidence/{story_id}', ownership: 'human_owned' } });
+  const humanPath = path.join(root, `.vibepro/evidence/${storyId}/evidence.json`);
+  await mkdir(path.dirname(humanPath), { recursive: true });
+  await writeFile(humanPath, 'human evidence\n');
+  const plan = await buildArtifactMigrationPlan(root, { storyId });
+  assert.deepEqual(plan.profile_change, {
+    required: true,
+    from: 'legacy',
+    to: 'feature_packet',
+    reason: 'selected Story uses a named artifact-routing profile'
+  });
+  assert.equal(plan.overwrite_risks.some((risk) => risk.code === 'human_owned_overwrite_risk' && risk.kind === 'evidence'), true);
+  assert.equal(await readFile(humanPath, 'utf8'), 'human evidence\n');
 });
 
 test('projection lineage hashes exact routed canonical bytes and migration classifies noop then update', async () => {

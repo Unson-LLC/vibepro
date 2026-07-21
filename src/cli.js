@@ -3554,6 +3554,7 @@ function renderArtifactMigrationPlan(result) {
   const lines = [
     `Artifact migration plan for ${result.story_id}: ${result.status}`,
     `Profile: ${result.profile ?? 'legacy'}; feature_slug=${result.feature_slug ?? '-'}`,
+    `Profile change: ${result.profile_change?.from ?? 'legacy'} -> ${result.profile_change?.to ?? result.profile ?? 'legacy'}; required=${result.profile_change?.required ? 'yes' : 'no'}; reason=${result.profile_change?.reason ?? '-'}`,
     `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
   ];
   for (const item of result.items ?? []) {
@@ -3564,6 +3565,9 @@ function renderArtifactMigrationPlan(result) {
   }
   for (const unresolved of result.unresolved ?? []) {
     lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
+  }
+  for (const risk of result.overwrite_risks ?? []) {
+    lines.push(`- overwrite-risk: ${risk.code}: ${risk.message}; path=${risk.path}`);
   }
   return `${lines.join('\n')}\n`;
 }

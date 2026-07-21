@@ -172,6 +172,7 @@ export async function buildArtifactMigrationPlan(repoRoot, options = {}) {
     return { schema_version: ARTIFACT_ROUTING_SCHEMA_VERSION, dry_run: true, story_id: options.storyId ?? null, feature_slug: options.featureSlug ?? null, config_path: '.vibepro/config.json', status: 'blocked', edits_performed: 0, items: [], unresolved: [{ code: error.code, message: error.message, ...error.details }] };
   }
   const items = [];
+  const overwrite_risks = [];
   for (const kind of ARTIFACT_KINDS) {
     const source = resolveTemplate(root, kind, DEFAULT_ARTIFACT_TEMPLATES[kind], resolved.variables, 'default').relative_path;
     const destination = resolved.routes[kind].canonical.relative_path;
@@ -187,9 +188,16 @@ export async function buildArtifactMigrationPlan(repoRoot, options = {}) {
       : [];
     const projectionConflict = projection_items.some((item) => item.action === 'conflict');
     const renderers = resolved.routes[kind].projections.map((p) => p.renderer ? `${p.renderer.id}@${p.renderer.version}` : null).filter(Boolean);
-    items.push({ kind, source, destination, ownership: resolved.routes[kind].canonical_owner, canonical_writer: resolved.routes[kind].canonical_writer, renderer: renderers.length ? renderers.join(',') : null, source_exists: sourceExists, destination_exists: destinationExists, action, reason: action === 'noop' ? 'canonical already current' : action === 'create' ? 'canonical is absent' : action === 'update' ? 'managed canonical is stale' : 'canonical contents conflict', collision: collision || projectionConflict, projections: resolved.routes[kind].projections.map((p) => p.relative_path), projection_items });
+    const ownership = resolved.routes[kind].canonical_owner;
+    if (ownership === 'human_owned' && (sourceExists || destinationExists)) {
+      overwrite_risks.push({ code: 'human_owned_overwrite_risk', kind, path: destination, ownership, message: `Human-owned ${kind} bytes are not migration write targets` });
+    }
+    items.push({ kind, source, destination, ownership, canonical_writer: resolved.routes[kind].canonical_writer, renderer: renderers.length ? renderers.join(',') : null, source_exists: sourceExists, destination_exists: destinationExists, action, reason: action === 'noop' ? 'canonical already current' : action === 'create' ? 'canonical is absent' : action === 'update' ? 'managed canonical is stale' : 'canonical contents conflict', collision: collision || projectionConflict, projections: resolved.routes[kind].projections.map((p) => p.relative_path), projection_items });
   }
-  return { schema_version: resolved.schema_version, dry_run: true, story_id: resolved.variables.story_id, feature_slug: resolved.variables.feature_slug, profile: resolved.profile, config_path: resolved.config_path, status: items.some((i) => i.collision) ? 'blocked' : 'ready', edits_performed: 0, items, unresolved: items.filter((i) => i.collision).map((i) => ({ code: 'migration_collision', kind: i.kind, source: i.source, destination: i.destination, message: `Both migration source and destination exist for ${i.kind}` })) };
+  const profile_change = resolved.profile
+    ? { required: true, from: 'legacy', to: resolved.profile, reason: 'selected Story uses a named artifact-routing profile' }
+    : { required: false, from: 'legacy', to: 'legacy', reason: 'selected Story retains legacy artifact routes' };
+  return { schema_version: resolved.schema_version, dry_run: true, story_id: resolved.variables.story_id, feature_slug: resolved.variables.feature_slug, profile: resolved.profile, profile_change, config_path: resolved.config_path, status: items.some((i) => i.collision) ? 'blocked' : 'ready', edits_performed: 0, items, overwrite_risks, unresolved: items.filter((i) => i.collision).map((i) => ({ code: 'migration_collision', kind: i.kind, source: i.source, destination: i.destination, message: `Both migration source and destination exist for ${i.kind}` })) };
 }
 
 async function isManagedLegacyMirror(root, route, source, destination) {
@@ -326,16 +334,20 @@ function renderProjection(route, projection, content) {
   const source = Buffer.isBuffer(content) ? content : Buffer.from(typeof content === 'string' ? content : `${JSON.stringify(content, null, 2)}\n`);
   const hash = createHash('sha256').update(source).digest('hex');
   const header = `<!-- vibepro-projection story_id=${route.story_id} feature_slug=${route.feature_slug} ownership=${projection.ownership} profile=${route.profile ?? 'legacy'} source=${route.canonical.relative_path} source_sha256=${hash} renderer=${projection.renderer.id}@${projection.renderer.version} direct_edit=false -->\n`;
-  if (projection.renderer.id === 'architecture_markdown') return `${header}${source.toString('utf8')}`;
+  // The lineage header is machine-readable.  Repeat the canonical owner in the
+  // rendered body so a reader of any Markdown projection can see who owns its
+  // source without having to decode the header.
+  const canonicalOwnership = `- Canonical ownership: ${route.canonical.ownership ?? 'legacy'}\n\n`;
+  if (projection.renderer.id === 'architecture_markdown') return `${header}${canonicalOwnership}${source.toString('utf8')}`;
   let data; try { data = JSON.parse(source.toString('utf8')); } catch { data = { content: source.toString('utf8').trim() }; }
-  if (projection.renderer.id === 'tasks_markdown') return `${header}${renderTasksMarkdown(data)}`;
-  if (projection.renderer.id === 'gate_summary_markdown') return `${header}${renderGateSummary(data)}`;
-  if (projection.renderer.id === 'release_summary_markdown') return `${header}${renderReleaseSummary(data)}`;
-  if (projection.renderer.id === 'review_summary_markdown') return `${header}${renderReviewProjection(data)}`;
-  if (projection.renderer.id === 'evidence_summary_markdown') return `${header}${renderEvidenceProjection(data)}`;
-  if (projection.renderer.id === 'test_plan_markdown') return `${header}${renderTestPlanProjection(data)}`;
-  if (projection.renderer.id === 'functional_spec_markdown') return `${header}${renderFunctionalSpec(data)}`;
-  return `${header}# ${titleForRenderer(projection.renderer.id)}\n\n${renderKeyValues(data)}\n`;
+  if (projection.renderer.id === 'tasks_markdown') return `${header}${canonicalOwnership}${renderTasksMarkdown(data)}`;
+  if (projection.renderer.id === 'gate_summary_markdown') return `${header}${canonicalOwnership}${renderGateSummary(data)}`;
+  if (projection.renderer.id === 'release_summary_markdown') return `${header}${canonicalOwnership}${renderReleaseSummary(data)}`;
+  if (projection.renderer.id === 'review_summary_markdown') return `${header}${canonicalOwnership}${renderReviewProjection(data)}`;
+  if (projection.renderer.id === 'evidence_summary_markdown') return `${header}${canonicalOwnership}${renderEvidenceProjection(data)}`;
+  if (projection.renderer.id === 'test_plan_markdown') return `${header}${canonicalOwnership}${renderTestPlanProjection(data)}`;
+  if (projection.renderer.id === 'functional_spec_markdown') return `${header}${canonicalOwnership}${renderFunctionalSpec(data)}`;
+  return `${header}${canonicalOwnership}# ${titleForRenderer(projection.renderer.id)}\n\n${renderKeyValues(data)}\n`;
 }
 async function assertProjectionLineage(target, route, projection) {
   let firstLine;
