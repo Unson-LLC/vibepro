@@ -291,9 +291,9 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
-        "max_subagent_count": 19,
-        "max_agent_consumption_ms": 2700000,
-        "amendment_reason": "Six review lifecycles predate pre-spawn authorization and the already-recorded 16 lifecycle runs consumed the default Story budget before final closure. Allow only the remaining current-HEAD architecture preflight, gate-evidence, and release-risk lifecycles, collected in one lightweight provider run, with enough bounded consumption for its 600000 ms timeout; no other review dispatch is permitted, and default Story budgets remain unchanged."
+        "max_subagent_count": 21,
+        "max_agent_consumption_ms": 3300000,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization and 19 recorded lifecycle runs exhausted the prior Story-local allowance before final closure. User explicitly authorized merge completion on 2026-07-22. Allow only the two current-HEAD gate-evidence and release-risk lifecycles plus fresh-context evidence and judgment adjudication, collected in one lightweight provider run with one bounded 600000 ms consumption allowance; no other review dispatch is permitted, and default Story budgets remain unchanged."
       }
     }
   },

@@ -29,6 +29,13 @@
       "id": "C-002",
       "type": "contract",
       "statement": "Before provider spawn, review authorization records intended model, risk closure, expected judgment delta, reusable evidence and a Story-wide budget snapshot under one lock; final dispatch requires a frozen source, Spec, test and review surface. The conforming host coordinator calls the external provider only for dispatch, receives the provider-native completion notification, and then closes the lifecycle; VibePro owns authorization, exact binding, accounting and fail-closed recording but does not transport provider notifications or technically intercept provider calls outside the host contract. Active reservations and running, uncollected or completed-pass lifecycles make the Story-stage-role-HEAD-surface binding idempotent, and review start consumes one matching authorization exactly once.",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "existing",
+        "files": [
+          "src/agent-review.js"
+        ]
+      },
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }, { "kind": "acceptance_criteria", "index": 3 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Review dispatch decision" }],
