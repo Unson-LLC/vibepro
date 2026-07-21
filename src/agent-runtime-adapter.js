@@ -512,8 +512,9 @@ function upsertDispatch(state, record) {
 }
 
 function createDispatchLineage(state, input, dispatchId, runId, headSha) {
-  const worktreeRoot = state?.worktree_root ?? state?.root_realpath ?? state?.execution_context?.root_realpath;
-  const branch = state?.branch ?? state?.current_branch;
+  const managedWorktree = state?.managed_worktree;
+  const worktreeRoot = managedWorktree?.path ?? state?.execution_context?.root_realpath;
+  const branch = managedWorktree?.branch;
   if (!worktreeRoot || !branch || !/^[0-9a-f]{40}$/i.test(headSha)) return null;
   const authority = { story_id: state.story_id, run_id: runId, worktree_root: worktreeRoot, branch, head_sha: headSha };
   return createRunLineageEnvelope({ authority, ...(input.lineage ?? {}), dispatch_id: dispatchId });

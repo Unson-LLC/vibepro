@@ -36,7 +36,7 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
     schema_version: '0.1.0',
     brainbase: { stories: [{ story_id: STORY_ID, title: 'Explicit Run attribution lineage' }] },
-    execution: { managed_worktree: 'disabled' }
+    execution: { managed_worktree: 'preferred' }
   }, null, 2)}\n`);
   await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify({
     schema_version: '0.1.0', tool: 'vibepro', repo: { root: '.', git_remote: null, commit: null }, runs: []
@@ -77,9 +77,8 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   const guardedRun = createGuardedRunSession({ agentRuntimeCoordinator: coordinator });
   const created = await guardedRun.run(repo, { storyId: STORY_ID });
   const authorityRoot = created.execution_context.root_realpath;
-  const statePath = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+  const statePath = path.join(created.execution_context.root_realpath, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
   assert.deepEqual(JSON.parse(await readFile(statePath, 'utf8')), created);
-  await writeFile(statePath, `${JSON.stringify({ ...created, worktree_root: authorityRoot, branch: 'main' }, null, 2)}\n`);
 
   const dispatched = await guardedRun.dispatchRuntime(repo, {
     storyId: STORY_ID,
@@ -99,8 +98,8 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   const dispatchLineage = dispatched.dispatch.lineage;
   assert.equal(dispatchLineage.story_id, STORY_ID);
   assert.equal(dispatchLineage.run_id, created.run_id);
-  assert.equal(dispatchLineage.worktree_root, authorityRoot);
-  assert.equal(dispatchLineage.branch, 'main');
+  assert.equal(dispatchLineage.worktree_root, created.managed_worktree.path);
+  assert.equal(dispatchLineage.branch, created.managed_worktree.branch);
   assert.equal(dispatchLineage.thread_id, providerThreadId);
   assert.equal(dispatchLineage.provider_observations[0].thread_id, providerThreadId);
 
@@ -126,7 +125,7 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
     scenarios: ['provider thread remains an observation'],
     runLineage: dispatchLineage
   });
-  const evidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'verification-evidence.json'), 'utf8'));
+  const evidence = JSON.parse(await readFile(path.join(authorityRoot, '.vibepro', 'pr', STORY_ID, 'verification-evidence.json'), 'utf8'));
   assert.deepEqual(evidence.commands[0].lineage, dispatchLineage);
 
   const capsule = await readRunContextCapsule(authorityRoot, { storyId: STORY_ID, runId: created.run_id });
@@ -142,7 +141,7 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
     run_id: 'run-other-story',
     dispatch_id: 'dispatch-other-story',
     worktree_root: authorityRoot,
-    branch: 'main',
+    branch: created.managed_worktree.branch,
     head_sha: created.current_head_sha
   });
   const sessionPath = path.join(codexHome, 'sessions', '2026', '07', '21', `${SESSION_ID}.jsonl`);

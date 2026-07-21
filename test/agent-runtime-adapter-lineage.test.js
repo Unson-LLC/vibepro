@@ -7,9 +7,14 @@ import { appendProviderObservation, createRunLineageEnvelope } from '../src/run-
 const state = {
   story_id: 'story-lineage',
   run_id: 'run-lineage-1',
-  worktree_root: '/repo/worktree',
-  branch: 'codex/story-lineage',
   current_head_sha: 'a'.repeat(40),
+  execution_context: { root_realpath: '/repo/worktree' },
+  managed_worktree: {
+    mode: 'preferred',
+    status: 'created',
+    path: '/repo/worktree',
+    branch: 'codex/story-lineage'
+  },
   runtime_dispatches: []
 };
 
@@ -71,8 +76,8 @@ test('persists Run authority and provider observations while preserving compatib
     story_id: state.story_id,
     run_id: state.run_id,
     dispatch_id: result.dispatch.dispatch_id,
-    worktree_root: state.worktree_root,
-    branch: state.branch,
+    worktree_root: state.managed_worktree.path,
+    branch: state.managed_worktree.branch,
     head_sha: state.current_head_sha,
     provider_run_id: 'provider-run-1',
     provider_session_id: 'session-1',
@@ -105,7 +110,8 @@ test('does not promote caller worktree or branch when Guarded Run authority is i
     root_realpath: undefined,
     branch: undefined,
     current_branch: undefined,
-    execution_context: undefined
+    execution_context: undefined,
+    managed_worktree: { path: undefined, branch: undefined }
   };
   const result = await coordinator.dispatch(incompleteState, {
     ...request,
