@@ -81,3 +81,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:366:start -->
 - [PR #366](https://github.com/Unson-LLC/vibepro/pull/366) — [2026-07](/releases/2026-07): story-vibepro-guarded-autonomy-hardening - 自律ループを無限実行や自己Reviewにせず、費用・時間・停止理由まで運用可能にしたい
 <!-- vibepro-release-index-pr:366:end -->
+
+<!-- vibepro-release-index-pr:367:start -->
+- [PR #367](https://github.com/Unson-LLC/vibepro/pull/367) — [2026-07](/releases/2026-07): feat(artifact-routing): add profile-based projections
+<!-- vibepro-release-index-pr:367:end -->

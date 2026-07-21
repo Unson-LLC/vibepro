@@ -321,3 +321,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-guarded-auto
 なし
 
 <!-- vibepro-release-pr:366:end -->
+
+<!-- vibepro-release-pr:367:start -->
+## [#367](https://github.com/Unson-LLC/vibepro/pull/367) feat(artifact-routing): add profile-based projections
+
+- Author: @sintariran
+- Merged: 2026-07-21T08:13:52Z
+- Commit: `6dc82c248cb3c49d09132ad60ec36700197a1283`
+
+### Change Summary
+
+- `.vibepro/config.json`に複数のnamed routing profileを定義し、既存`artifact_routing.artifacts`は後方互換なdefaultとして扱う。 - `.vibepro/config.json`の`brainbase.stories[]`を`artifact_profile`と`feature_slug`のauthorityとする。named profileを選ぶStoryではStory frontmatterを必須mirrorとし、不在または不一致なら共通resolverは書込前にfail closedする。profile metadataを持たないlegacy/unconfigured Storyではmirrorを任意とする。 - projectionは`renderer`と`ownership`を持ち、generated viewにsource path、SHA-256、renderer/schema version、direct-edit prohibitionを埋め込む。 - `human_owned`はVibeProが上書きせず、`curated`は自動上書き対象外として明示的な運用境界を返す。 - migration dry-runはprofile変更、move/collision、stale projection、human-owned overwrite...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:367:end -->
