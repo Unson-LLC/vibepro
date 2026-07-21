@@ -631,7 +631,7 @@ test('AC-6 excludes shared-parent, unattributed, and replayed context from Story
   assert.doesNotMatch(rendered, /Story token|Story time|Story value/);
 });
 
-test('AC-7 external sessions keep advisory inference and fail unavailable or ambiguous without Thread separation', async () => {
+test('AC-7 external sessions keep lineage inference advisory while session attribution uses strict story boundaries', async () => {
   const { root, codexHome } = await fixture();
   const externalSession = '019f0000-0000-4000-8000-000000000001';
   const externalEntry = {
@@ -653,7 +653,7 @@ test('AC-7 external sessions keep advisory inference and fail unavailable or amb
     windowEnd: '2026-07-21T01:01:00.000Z'
   });
   assert.equal(inferred.session_selection.status, 'inferred');
-  assert.equal(inferred.attribution.mode, 'advisory');
+  assert.equal(inferred.attribution.mode, 'strict_primary_with_worktree_upper_bound');
   assert.equal(inferred.attribution.categories.strict, 1);
   assert.equal(inferred.lineage_attribution.authoritative_event_count, 0);
   assert.equal(inferred.lineage_attribution.thread_only_event_count, 0);
