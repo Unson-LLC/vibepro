@@ -411,6 +411,18 @@
         "category": "platform"
       },
       {
+        "story_id": "story-vibepro-codex-detached-completion-inbox",
+        "title": "Codex subagentを同期wait境界から切り離して完了を永続回収するRuntime Inbox",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
         "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
         "title": "高シグナル確認を先行するRisk-adaptive Validation Sequencing",
         "ssot": "local",
@@ -748,6 +760,6 @@
         "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-merge-waiver-propagation"
+    "current_story_id": "story-vibepro-codex-detached-completion-inbox"
   }
 }

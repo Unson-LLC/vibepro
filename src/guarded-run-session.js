@@ -111,6 +111,8 @@ export function createGuardedRunSession(dependencies = {}) {
     orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options),
     dispatchRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'dispatch'),
     pollRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'poll'),
+    detachRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'detach'),
+    reconcileRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'reconcile'),
     cancelRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'cancel'),
     recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
   };
@@ -164,7 +166,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
       )
     };
   }
-  if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
+  if ((operation === 'poll' || operation === 'reconcile') && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
     const actualIdentity = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
     if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
       throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
@@ -189,7 +191,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
       }
     };
   }
-  if (operation === 'poll' && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
+  if ((operation === 'poll' || operation === 'reconcile') && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
     result = {
       ...result,
       state: {

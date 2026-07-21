@@ -1,0 +1,50 @@
+---
+title: "Codex Detached Completion Inbox Architecture"
+status: accepted
+created_at: 2026-07-22
+updated_at: 2026-07-22
+related_stories:
+  - story-vibepro-codex-detached-completion-inbox
+  - story-vibepro-agent-runtime-adapters
+---
+
+# Codex Detached Completion Inbox Architecture
+
+## Intent
+
+PR #360のprovider-neutral runtime adapterを、親sessionの同期wait寿命とは独立したCodex subagent lifecycleへ結線する。10分は観測境界であり実行期限ではない。結果はprovider callbackから永続Inboxへ先に入り、push wakeupまたは後続reconcileが同じdispatchを一度だけ回収する。
+
+## Authority Boundary
+
+| Owner | Owns | Must not own |
+|---|---|---|
+| VibePro runtime coordinator | deterministic dispatch ID、HEAD/surface binding、detach/reconcile policy、bounded recovery、fail-closed判定 | provider認証、実spawn、host process shutdown |
+| Completion Inbox | append-only event、dedupe、receipt、partial result、authority-first atomic persistence | Gate pass、review judgment、provider side effect |
+| Codex host adapter | host capability probe、spawn、completion callback配送、wakeup、status、shutdown | VibePro Gate、waiver、merge、surface freshness policy |
+| Guarded Run | authority stateの`running_detached`、reconcile、result取込、review lifecycle bridge | callback到着まで親sessionを維持すること |
+
+## Decision
+
+`defineAgentRuntimeAdapter`の既存5メソッドを互換維持し、optionalな`detach`と`reconcile` capabilityを追加する。coordinatorの`detach`は実行中provider runをcancelせず、adapterへ同期監視終了を通知し、dispatchを`running_detached`として更新する。`reconcile`は同じdispatch IDのInboxを先に読み、completion eventがなければhost statusを観測する。dispatch IDはbudget・timestampから独立し、run、adapter、logical task、role、HEAD、surface hash、identityだけで決定する。
+
+`createAgentCompletionInbox`は`.vibepro/runtime-inbox/<dispatch-id>/events/<event-id>.json`へimmutable eventをatomic renameで追加し、event別receiptをatomic renameで更新する。event IDとdispatch IDで重複配送を抑止し、ack前後ともeventは別sessionから監査・再読できる。completion eventはprovider run correlation、HEAD、surface hash、partial judgments、usage、resultを保持するが、credential/raw transcriptは保持しない。
+
+`createCodexSubagentRuntimeAdapter`は注入されたhostの`probe/spawn/status/shutdown/subscribeCompletion/wake`へだけ依存する。spawn直後にcompletion callbackを登録し、callbackはInbox writeを完了してからwakeを呼ぶ。通知失敗はeventを失わせない。`status/collect_result/reconcile`はInbox優先である。completion callback未接続のhostは構築またはstart時にfail closedする。
+
+progress policyはheartbeatとcheckpointを区別する。checkpointは新しい`checkpoint_id`または増加したcompleted judgment集合だけをprogressとして扱う。`no_progress_deadline_ms`、`max_wall_clock_ms`、`max_attempts`、`max_cost_usd`のいずれかを超えると`stalled`になり、その時だけhost shutdown containmentへ進む。detach/reconcile自体はattemptやcostを増やさない。
+
+review resultはjudgment key別のpartial resultをInboxへ保存する。reconcile時に完了済みjudgmentをunionし、未完了judgmentだけを`remaining_judgments`として返す。同一HEADかつ同一surface hashなら再利用し、budget変更、evidence timestamp、rebaseだけでは破棄しない。surface hashが変わった場合は、変更pathとjudgment surfaceのintersectionに基づく`invalidated_judgments`だけを再判定する。
+
+Guarded Run Sessionに`detachRuntime`と`reconcileRuntime`を追加し、既存のauthority→mirror永続化とmanaged worktree/HEAD検証を再利用する。reconcileでcompleted reviewを得てもAgent Review recording boundaryを迂回せず、既存`recordRuntimeReview`がidentity、session、HEAD、read-only、closed lifecycleを再検証してからclose済み結果を記録する。
+
+## Compatibility and Rollback
+
+optional lifecycle methodを持たないadapterは従来poll/cancel経路を維持するが、10分超過をdetached成功として扱えない。Codex host adapterをregistryから外せばmanual coordinatorへ戻せる。Inbox eventはappend-only監査証跡として残し、rollback時に削除しない。PR #370のbudget設定とreview role選択は変更しない。
+
+## Verification
+
+- contract: same dispatchのdetach/reconcileでspawn countが1、recovery attempt/costが増えない。
+- integration: Guarded Run authorityへ`running_detached`を保存し、別SessionがInbox completionを回収する。
+- failure: wake通知喪失後もreconcileでき、heartbeatのみではno-progress deadlineを延長せず、bounded limitで`stalled`とshutdownになる。
+- partial: 完了judgmentを再利用し、surface変更時に影響judgmentだけinvalidatedになる。
+- E2E: Codex host harnessでspawn→600000ms監視境界→detached継続→completion callback→Inbox→reconcile→closed review bridgeを再生する。

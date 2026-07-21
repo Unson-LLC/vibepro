@@ -839,6 +839,41 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(run.current_head_sha, persisted.current_head_sha);
 });
 
+test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists detached authority and reconciles completion without redispatch', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let status = 'running';
+  let starts = 0;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'detached-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { starts += 1; return { provider_run_id: 'provider-detached', agent_identity: 'reviewer-detached', thread_id: 'thread-detached' }; },
+    async status() { return { status }; },
+    async detach() { return { status: 'running_detached' }; },
+    async reconcile() { return { status }; },
+    async cancel() { status = 'cancelled'; },
+    async collect_result() {
+      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'detached review pass', agent_identity: 'reviewer-detached', lifecycle: 'closed' };
+    }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'detached-runtime', task_id: 'detached-review', role: 'review', reviewer_identity: 'reviewer-detached',
+    implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-a',
+    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
+  };
+  const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  const detached = await session.detachRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(detached.dispatch.status, 'running_detached');
+  assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
+  status = 'completed';
+  const completed = await session.reconcileRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.status, 'completed');
+  const duplicate = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  assert.equal(duplicate.reused, true);
+  assert.equal(starts, 1);
+});
+
 test('Guarded Run rejects provider identities already persisted in a separate Run artifact', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
