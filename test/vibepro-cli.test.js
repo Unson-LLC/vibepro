@@ -7617,6 +7617,7 @@ test('story derive creates stories for code surfaces that have no spec documents
   await writeFile(path.join(repo, 'src', 'lib', 'article', 'client.ts'), 'export function listArticles() { return []; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'health', 'route.ts'), 'export function GET() {}\n');
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'manager', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form_file', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm.tsx' },
@@ -7801,6 +7802,7 @@ test('story coverage keeps all uncovered graph files in the catalog', async () =
     await writeFile(path.join(repo, filePath), 'export default function Page() { return null; }\n');
     nodes.push({ id: `unmapped_${index}`, source_file: filePath, label: 'page.tsx' });
   }
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22628,6 +22630,7 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'task', 'task-service.js'), 'export class TaskService {}\n');
   await writeFile(path.join(repo, 'server', 'routes', 'api.js'), 'export default function api() {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_index', source_file: 'cli/index.js', label: 'cli/index.js' },
@@ -22674,6 +22677,7 @@ test('story derive does not leak next-app product stories into modular-web prese
   await writeFile(path.join(repo, 'lib', 'services', 'auth', 'session.js'), 'export {}\n');
   await writeFile(path.join(repo, 'lib', 'services', 'stripe', 'billing.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'auth', source_file: 'lib/services/auth/session.js', label: 'auth-session' },
@@ -22713,6 +22717,7 @@ test('story derive uses salestailor preset without next-app product story leakag
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formSubmission', 'formSubmissionOrchestrator.ts'),
     'export class FormSubmissionOrchestrator {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'review_page', source_file: 'src/app/projects/[projectId]/sample-review/page.tsx', label: 'SampleReview' },
@@ -22762,6 +22767,7 @@ test('story derive emits story_candidates clustering uncovered files', async () 
   const nodes = [];
   for (let i = 0; i < 5; i += 1) nodes.push({ id: `auth_${i}`, source_file: `lib/auth/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 6; i += 1) nodes.push({ id: `legacy_${i}`, source_file: `lib/legacy/legacy${i}.js`, label: `legacy${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22809,6 +22815,7 @@ test('modular-web preset coveragePatterns absorb broader paths into active stori
   await writeFile(path.join(repo, 'public', 'modules', 'utils', 'helper.js'), 'export {}\n');
   await writeFile(path.join(repo, 'server', 'controllers', 'foo-controller.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_main', source_file: 'cli/main.js', label: 'main' },
@@ -22861,6 +22868,7 @@ test('brainbase preset emits semantically separated active stories', async () =>
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'nocodb-task', 'service.js'), 'export {}\n');
   await writeFile(path.join(repo, 'public', 'modules', 'terminal', 'view.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli', source_file: 'cli/main.js', label: 'cli' },
@@ -22928,6 +22936,7 @@ test('story derive surfaces domain subdirectories as separate candidates', async
   const nodes = [];
   for (let i = 0; i < 3; i += 1) nodes.push({ id: `a${i}`, source_file: `lib/auth-local/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 4; i += 1) nodes.push({ id: `s${i}`, source_file: `lib/session-local/sess${i}.js`, label: `sess${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22953,6 +22962,7 @@ test('story derive omits singletons from story_candidates', async () => {
 
   await mkdir(path.join(repo, 'cli'), { recursive: true });
   await writeFile(path.join(repo, 'cli', 'lonely.js'), 'export {}\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [{ id: 'lonely', source_file: 'cli/lonely.js', label: 'lonely' }],
     links: []
@@ -22984,6 +22994,7 @@ test('story derive suppresses next-app product stories for non-web repositories 
   await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
   await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
@@ -23053,6 +23064,7 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
   await writeFile(path.join(repo, 'src', 'components', 'auth', 'LoginForm.tsx'),
     'export function LoginForm() { return null; }\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm' }
@@ -23103,6 +23115,7 @@ story_id: story-product-profile-personalization
 
 Profile personalization is an explicit product requirement.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
@@ -23168,6 +23181,7 @@ story_id: story-vibepro-pr-prepare-authorization-scoring
 
 The authorization scoring module is called from pr prepare.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'authorization_scoring', source_file: 'src/authorization_scoring.py', label: 'score_authorization' },
