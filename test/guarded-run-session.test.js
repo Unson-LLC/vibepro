@@ -356,7 +356,8 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults a
     retry_policy: {
       retryable_stop_codes: [
         'runtime_required', 'runtime_quota', 'runtime_timeout', 'runtime_unavailable',
-        'quota_exceeded', 'runtime_probe_timeout', 'ci_pending', 'review_timeout', 'action_failed'
+        'quota_exceeded', 'runtime_probe_timeout', 'runtime_start_timeout',
+        'runtime_status_timeout', 'runtime_result_timeout', 'ci_pending', 'review_timeout', 'action_failed'
       ],
       backoff_ms: 0
     },
@@ -737,6 +738,54 @@ test('GAH-S-2 exhausted runtime fallback stop codes remain resumable by the defa
   assert.equal(blocked.state.stop_reason.code, 'quota_exceeded');
   assert.doesNotReject(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
 });
+
+for (const timeoutPhase of ['start', 'status', 'result']) {
+  test(`GAH-S-2 contained runtime ${timeoutPhase} timeout persists and resumes under the default policy`, async (t) => {
+    const fixture = await createFixture(t, { mode: 'disabled' });
+    let cancelled = false;
+    let statusCalls = 0;
+    const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+      id: `timeout-${timeoutPhase}-runtime`,
+      async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+      async start() {
+        if (timeoutPhase === 'start') return new Promise(() => {});
+        return { provider_run_id: `provider-${timeoutPhase}`, agent_identity: 'implementer-1', session_id: 'implementation-session' };
+      },
+      async status() {
+        statusCalls += 1;
+        if (timeoutPhase === 'status' && statusCalls === 1) return new Promise(() => {});
+        if (timeoutPhase === 'result' && statusCalls === 1) return { status: 'completed' };
+        return { status: cancelled ? 'cancelled' : 'running' };
+      },
+      async cancel() { cancelled = true; return { status: 'cancelled' }; },
+      async collect_result() {
+        if (timeoutPhase === 'result') return new Promise(() => {});
+        throw new Error('result collection is not expected');
+      }
+    }] });
+    const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+    const run = await session.run(fixture.source, { storyId: STORY_ID });
+    const dispatched = await session.dispatchRuntime(fixture.source, {
+      storyId: STORY_ID,
+      runId: RUN_ID,
+      request: {
+        adapter_id: `timeout-${timeoutPhase}-runtime`, task_id: `timeout-${timeoutPhase}`, role: 'implementation',
+        requirements: { capabilities: ['workspace_write'], timeout_ms: 5, managed_worktree: run.execution_context.root_realpath }
+      }
+    });
+    const stopped = timeoutPhase === 'start'
+      ? dispatched
+      : await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: dispatched.dispatch.dispatch_id });
+    assert.equal(stopped.state.stop_reason.code, `runtime_${timeoutPhase}_timeout`);
+    assert.equal(stopped.dispatch.provider_terminal_status, 'cancelled');
+
+    const restarted = fixture.session({ agentRuntimeCoordinator: coordinator });
+    const resumed = await restarted.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+    assert.equal(resumed.status, 'running');
+    assert.equal(resumed.retry_journal.at(-1).stop_code, `runtime_${timeoutPhase}_timeout`);
+    assert.equal(resumed.retry_journal.at(-1).retryable, true);
+  });
+}
 
 test('GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls', async () => {
   const stdout = capture();

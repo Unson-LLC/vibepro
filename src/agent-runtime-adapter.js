@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
+
 const REQUIRED_METHODS = Object.freeze(['probe', 'start', 'status', 'cancel', 'collect_result']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled', 'timed_out']);
 const RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES]);

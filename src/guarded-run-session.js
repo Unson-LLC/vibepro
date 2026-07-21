@@ -2,6 +2,7 @@ import { createHash, randomBytes as nodeRandomBytes } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
 import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
@@ -1331,8 +1332,8 @@ function buildGuardedPolicy(options, createdAt) {
   const maxCostUsd = nullablePositiveNumber(options.maxCostUsd, 'max_cost_usd');
   const retryBackoffMs = nonNegativeInteger(options.retryBackoffMs, 0, 'retry_backoff_ms');
   const retryableStopCodes = options.retryableStopCodes ?? [
-    'runtime_required', 'runtime_quota', 'runtime_timeout', 'runtime_unavailable',
-    'quota_exceeded', 'runtime_probe_timeout', 'ci_pending', 'review_timeout', 'action_failed'
+    ...RECOVERABLE_RUNTIME_STOP_CODES,
+    'ci_pending', 'review_timeout', 'action_failed'
   ];
   const providerFallbacks = options.providerFallbacks ?? [];
   if (retryableStopCodes.some((value) => typeof value !== 'string' || value.length === 0)
