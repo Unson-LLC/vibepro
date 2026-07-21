@@ -73,3 +73,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:363:start -->
 - [PR #363](https://github.com/Unson-LLC/vibepro/pull/363) — [2026-07](/releases/2026-07): story-vibepro-review-finding-repair-loop - needs_changesを停止報告で終わらせず、修正・再検証・再Reviewへ閉ループ化したい
 <!-- vibepro-release-index-pr:363:end -->
+
+<!-- vibepro-release-index-pr:364:start -->
+- [PR #364](https://github.com/Unson-LLC/vibepro/pull/364) — [2026-07](/releases/2026-07): story-vibepro-story-run-portfolio-controller - 複数Storyを一つの長大sessionへ混載せず、Storyごとに閉じて順次進めたい
+<!-- vibepro-release-index-pr:364:end -->
