@@ -243,7 +243,7 @@ test('projection lineage hashes exact routed canonical bytes and migration class
   assert.equal(plan.items.find((item) => item.kind === 'task_plan').projection_items[0].action, 'update');
 });
 
-test('generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes', async () => {
+test('parse_failure schema_failure: generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes', async () => {
   const { root, storyId } = await namedProfileRepo({
     task_plan: { canonical: '.vibepro/stories/{story_id}/tasks/tasks.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/06_tasks.md', ownership: 'generated', renderer: { id: 'tasks_markdown', version: '1' } }] }
   });
@@ -680,7 +680,7 @@ test('routing fails closed for collisions, traversal, absolute paths, and unreso
   }
 });
 
-test('malformed routing config fails closed before changing repository files', async () => {
+test('parse_failure schema_failure: malformed routing config fails closed before changing repository files', async () => {
   const root = await repo();
   const configPath = path.join(root, '.vibepro', 'config.json');
   const existingArtifact = path.join(root, 'docs', 'existing.md');

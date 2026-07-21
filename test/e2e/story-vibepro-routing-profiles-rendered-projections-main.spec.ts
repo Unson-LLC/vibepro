@@ -7,6 +7,9 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { recordAgentReview } from '../../src/agent-review.js';
+import { compareFingerprintContexts } from '../../src/git-fingerprint.js';
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const cli = path.join(repoRoot, 'bin/vibepro.js');
 const execFileAsync = promisify(execFile);
@@ -107,4 +110,71 @@ test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout r
       access(resolved.routes.pr.projections[0].absolute_path)
     ]);
   }
+});
+
+// scenario_clause_e2e S-005 S-006 evidence_lifecycle_regression workflow_state_regression:
+// replay inherited Agent Review lineage and evidence freshness behavior through their real recorders.
+test('story-vibepro-routing-profiles-rendered-projections S-005 S-006 scenario_clause_e2e evidence_lifecycle_regression workflow_state_regression preserves optional lineage and user-fingerprint fallback', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routing-inherited-e2e-'));
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro E2E'], { cwd: repo });
+  await writeFile(path.join(repo, 'README.md'), '# inherited behavior fixture\n');
+  await execFileAsync('git', ['add', 'README.md'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', 'test: inherited behavior fixture'], { cwd: repo });
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    selected_story_id: 'story-routing-inherited-e2e'
+  }, null, 2)}\n`);
+  const head = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo })).stdout.trim();
+
+  const noAuthority = await recordAgentReview(repo, {
+    storyId: 'story-routing-inherited-e2e',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'needs_changes',
+    summary: 'S-005 optional lineage is absent without supplied lineage or Run authority'
+  });
+  assert.equal(noAuthority.review.lineage, undefined, 'S-005 leaves lineage absent without either authority source');
+
+  const withAuthority = await recordAgentReview(repo, {
+    storyId: 'story-routing-inherited-e2e',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'needs_changes',
+    summary: 'S-005 Run authority still resolves the established lineage envelope',
+    runAuthority: {
+      story_id: 'story-routing-inherited-e2e',
+      run_id: 'run-routing-inherited-e2e',
+      worktree_root: repo,
+      branch: 'main',
+      head_sha: head
+    }
+  });
+  assert.equal(withAuthority.review.lineage.story_id, 'story-routing-inherited-e2e');
+  assert.equal(withAuthority.review.lineage.run_id, 'run-routing-inherited-e2e');
+  assert.equal(withAuthority.review.lineage.head_sha, head);
+
+  const userFingerprintsMatch = compareFingerprintContexts(
+    { status_fingerprint_hash: 'recorded-full', user_status_fingerprint_hash: 'shared-user' },
+    { status_fingerprint_hash: 'changed-full', user_status_fingerprint_hash: 'shared-user' }
+  );
+  assert.deepEqual(userFingerprintsMatch, {
+    matches: true,
+    usingUserFingerprint: true,
+    recorded: 'shared-user',
+    current: 'shared-user'
+  }, 'S-006 uses the user fingerprint when both contexts provide it');
+
+  const legacyFallsBack = compareFingerprintContexts(
+    { status_fingerprint_hash: 'recorded-full' },
+    { status_fingerprint_hash: 'changed-full', user_status_fingerprint_hash: 'shared-user' }
+  );
+  assert.deepEqual(legacyFallsBack, {
+    matches: false,
+    usingUserFingerprint: false,
+    recorded: 'recorded-full',
+    current: 'changed-full'
+  }, 'S-006 retains full-fingerprint fallback for legacy evidence');
 });
