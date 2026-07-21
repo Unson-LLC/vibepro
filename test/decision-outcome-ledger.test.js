@@ -366,7 +366,7 @@ test('GDL-S-7 actual review source failures remain visible through the bounded c
   );
 });
 
-test('GDL-S-2 unverified review claims without provenance fail closed instead of becoming observed', () => {
+test('story-vibepro-gate-decision-outcome-ledger:AC-2 GDL-S-2 unverified review claims without provenance fail closed instead of becoming observed', () => {
   const sources = collectDecisionOutcomeSources({
     storyId: STORY_ID,
     agentReviews: {
