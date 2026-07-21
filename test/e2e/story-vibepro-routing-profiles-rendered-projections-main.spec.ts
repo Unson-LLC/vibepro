@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { access, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-
-// Reuse the production-path routing contract suite under the Story-specific E2E
-// surface so VibePro can bind every acceptance clause to the executable flow.
-import '../artifact-routing.test.js';
+import { promisify } from 'node:util';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const cli = path.join(repoRoot, 'bin/vibepro.js');
+const execFileAsync = promisify(execFile);
 
 // Story coverage: AC-1 AC-2 AC-3 AC-4 AC-5 AC-6 AC-7 AC-8 AC-9 AC-10 AC-11 AC-12 AC-13 AC-14 S-001 S-002 S-003 S-004.
 test('story-vibepro-routing-profiles-rendered-projections ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 ac:9 ac:10 ac:11 ac:12 ac:13 ac:14 scenario:1 scenario:2 scenario:3 scenario:4 replays the routed artifact lifecycle', async () => {
@@ -53,4 +54,57 @@ test('story-vibepro-routing-profiles-rendered-projections ac:1 ac:2 ac:3 ac:4 ac
   assert.match(storySource, new RegExp(criteria[11]), `story-vibepro-routing-profiles-rendered-projections ac:12 ${criteria[11]}`);
   assert.match(storySource, new RegExp(criteria[12]), `story-vibepro-routing-profiles-rendered-projections ac:13 ${criteria[12]}`);
   assert.match(storySource, new RegExp(criteria[13].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `story-vibepro-routing-profiles-rendered-projections ac:14 ${criteria[13]}`);
+});
+
+test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout runs the CLI lifecycle for feature and governance packets', async () => {
+  const fixture = path.join(await mkdtemp(path.join(os.tmpdir(), 'vibepro-profile-checkout-e2e-')), 'fixture');
+  const checkout = `${fixture}-clone`;
+  const stories = [
+    { story_id: 'story-feature-checkout-e2e', artifact_profile: 'feature_packet', feature_slug: 'feature-checkout-e2e' },
+    { story_id: 'story-governance-checkout-e2e', artifact_profile: 'governance_packet', feature_slug: 'governance-checkout-e2e' }
+  ];
+  const config = JSON.parse(await readFile(path.join(repoRoot, '.vibepro/config.json'), 'utf8'));
+  config.brainbase.stories = stories;
+  await mkdir(path.join(fixture, '.vibepro'), { recursive: true });
+  await writeFile(path.join(fixture, '.vibepro/config.json'), `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(fixture, 'src'), { recursive: true });
+  await writeFile(path.join(fixture, 'src/index.js'), 'export const fixture = 1;\n');
+  for (const story of stories) {
+    const storyPath = path.join(fixture, 'docs/management/stories/active', `${story.story_id}.md`);
+    await mkdir(path.dirname(storyPath), { recursive: true });
+    await writeFile(storyPath, `---\nstory_id: ${story.story_id}\ntitle: ${story.artifact_profile} checkout\nstatus: active\nartifact_profile: ${story.artifact_profile}\nfeature_slug: ${story.feature_slug}\n---\n\n# ${story.artifact_profile} checkout\n`);
+  }
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: fixture });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: fixture });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro E2E'], { cwd: fixture });
+  await execFileAsync('git', ['add', '.'], { cwd: fixture });
+  await execFileAsync('git', ['commit', '-m', 'test: routed packet fixture'], { cwd: fixture });
+  await execFileAsync('git', ['clone', '--quiet', fixture, checkout]);
+  await execFileAsync(process.execPath, [cli, 'init', checkout], { cwd: repoRoot });
+  await execFileAsync('git', ['switch', '-c', 'feature/routed-checkout'], { cwd: checkout });
+  await writeFile(path.join(checkout, 'src/index.js'), 'export const fixture = 2;\n');
+  await execFileAsync('git', ['add', 'src/index.js'], { cwd: checkout });
+  await execFileAsync('git', ['commit', '-m', 'feat: exercise routed lifecycle'], { cwd: checkout });
+
+  for (const story of stories) {
+    const invoke = async (args) => execFileAsync(process.execPath, [cli, ...args], { cwd: repoRoot });
+    const resolved = JSON.parse((await invoke(['artifacts', 'resolve', checkout, '--id', story.story_id, '--json'])).stdout);
+    assert.equal(resolved.profile, story.artifact_profile);
+    assert.equal(resolved.variables.feature_slug, story.feature_slug);
+    const migration = JSON.parse((await invoke(['artifacts', 'migrate', checkout, '--id', story.story_id, '--dry-run', '--json'])).stdout);
+    assert.equal(migration.edits_performed, 0);
+    assert.equal(migration.status, 'ready');
+
+    // These are production CLI writers, deliberately not resolver/projection imports.
+    await invoke(['review', 'prepare', checkout, '--id', story.story_id, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json']);
+    await invoke(['pr', 'prepare', checkout, '--base', 'main', '--story-id', story.story_id, '--allow-extra-files', '--json']);
+    const status = await invoke(['story', 'status', checkout, '--id', story.story_id, '--json']);
+    assert.match(status.stdout, new RegExp(`projection: ownership=generated; path=docs/(?:features|governance)/${story.feature_slug}/`));
+
+    assert.match(resolved.routes.gate.projections[0].relative_path, new RegExp(`^docs/${story.artifact_profile === 'feature_packet' ? 'features' : 'governance'}/${story.feature_slug}/`));
+    await Promise.all([
+      access(resolved.routes.gate.projections[0].absolute_path),
+      access(resolved.routes.pr.projections[0].absolute_path)
+    ]);
+  }
 });
