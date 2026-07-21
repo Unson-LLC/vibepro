@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import { createRunLineageEnvelope } from '../src/run-lineage.js';
 import {
@@ -13,8 +15,9 @@ import {
 const STORY_ID = 'story-vibepro-explicit-run-attribution-lineage';
 const RUN_ID = 'run-20260721T010203Z-01020304';
 const HEAD = 'a'.repeat(40);
+const execFileAsync = promisify(execFile);
 
-test('ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage', async (t) => {
+test('AC-9/AC-11 fresh process recovers capsule lineage across the Run-state responsibility boundary', async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-capsule-lineage-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const runDir = path.join(root, '.vibepro', 'executions', STORY_ID, 'runs', RUN_ID);
@@ -80,6 +83,26 @@ test('ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider obs
   }]);
   assert.equal(fresh.lineage.source_ref, `.vibepro/executions/${STORY_ID}/runs/${RUN_ID}/state.json`);
   assert.doesNotMatch(raw, /PROVIDER_TRANSCRIPT_SHOULD_NEVER_BE_COPIED/);
+  assert.doesNotMatch(raw, /graphify/i);
+
+  const child = await execFileAsync(process.execPath, ['--input-type=module', '-e', `
+    import { createRunContextCapsule } from ${JSON.stringify(new URL('../src/run-context-capsule.js', import.meta.url).href)};
+    const recovered = await createRunContextCapsule({ resolveHead: async () => process.env.CAPSULE_HEAD }).recover(process.env.CAPSULE_ROOT, { storyId: process.env.CAPSULE_STORY, runId: process.env.CAPSULE_RUN });
+    process.stdout.write(JSON.stringify({ authority: recovered.lineage.authority, dispatches: recovered.lineage.dispatches }));
+  `], {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, CAPSULE_ROOT: root, CAPSULE_STORY: STORY_ID, CAPSULE_RUN: RUN_ID, CAPSULE_HEAD: HEAD }
+  });
+  const recoveredByFreshProcess = JSON.parse(child.stdout);
+  assert.deepEqual(recoveredByFreshProcess.authority, authority);
+  assert.equal(recoveredByFreshProcess.dispatches[0].dispatch_id, 'dispatch-implementation-1');
+  assert.deepEqual(recoveredByFreshProcess.dispatches[0].provider_observations, [{
+    provider: 'codex',
+    provider_run_id: 'provider-run-1',
+    provider_session_id: 'provider-session-1',
+    thread_id: 'thread-observation-1'
+  }]);
 });
 
 test('lineage projection remains bounded when the Run owns many dispatches', async (t) => {

@@ -6,7 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { collectSessionEfficiencyAudit } from '../src/session-efficiency-audit.js';
+import { collectSessionEfficiencyAudit, renderSessionEfficiencyAudit } from '../src/session-efficiency-audit.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-vibepro-explicit-run-attribution-lineage';
@@ -98,6 +98,12 @@ async function writeCanonicalRun(root, { runId = 'run-alpha', authority = {}, di
     }] : []
   };
   await writeFile(path.join(runDir, 'state.json'), `${JSON.stringify(state, null, 2)}\n`);
+}
+
+async function writeSessionFile(codexHome, sessionId, entries) {
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '07', '21', `${sessionId}.jsonl`);
+  await mkdir(path.dirname(sessionPath), { recursive: true });
+  await writeFile(sessionPath, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
 }
 
 test('session efficiency audit preserves embedded-lineage heuristics when no run id is requested', async () => {
@@ -217,4 +223,137 @@ test('canonical Run lineage validates complete authority and matching dispatches
   assert.equal(result.lineage_attribution.mode, 'canonical_run_artifact_preferred');
   assert.equal(result.lineage_attribution.canonical_run.status, 'available');
   assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, 1);
+});
+
+test('AC-6 excludes shared-parent, unattributed, and replayed context from Story token/time/value display', async () => {
+  const { root, codexHome } = await fixture();
+  const timestamp = '2026-07-21T01:00:00.000Z';
+  await writeSessionFile(codexHome, SESSION_ID, [
+    {
+      timestamp,
+      type: 'event_msg',
+      payload: {
+        type: 'assistant_message',
+        role: 'assistant',
+        content: 'Read test/session-efficiency-run-lineage.test.js',
+        lineage: lineage('run-alpha')
+      }
+    },
+    {
+      timestamp,
+      type: 'event_msg',
+      shared_parent: true,
+      payload: {
+        type: 'assistant_message',
+        role: 'assistant',
+        content: 'Read src/shared-parent-context.js',
+        run_ids: ['run-alpha', 'run-parent']
+      }
+    },
+    {
+      timestamp,
+      type: 'event_msg',
+      thread_id: 'external-thread-without-lineage',
+      payload: {
+        type: 'assistant_message',
+        role: 'assistant',
+        content: 'Read src/unattributed-context.js'
+      }
+    },
+    {
+      timestamp,
+      type: 'compacted',
+      replayed_context: true,
+      payload: {
+        content: 'Read .vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json',
+        replacement_history: 'replayed prior context'
+      }
+    }
+  ]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  const buckets = result.lineage_attribution.buckets;
+  assert.equal(result.lineage_attribution.events.map((event) => event.bucket).join(','),
+    'story_attributed,shared_parent,unattributed,replayed_context');
+  assert.equal(buckets.story_attributed.event_count, 1);
+  assert.equal(buckets.shared_parent.event_count, 1);
+  assert.equal(buckets.unattributed.event_count, 1);
+  assert.equal(buckets.replayed_context.event_count, 1);
+  assert.ok(buckets.story_attributed.tokens > 0);
+  assert.equal(buckets.story_attributed.time_ms, 0);
+  assert.equal(buckets.story_attributed.value, 0);
+  assert.ok(buckets.shared_parent.tokens > 0);
+  assert.ok(buckets.unattributed.tokens > 0);
+  assert.ok(buckets.replayed_context.tokens > 0);
+  assert.equal(buckets.story_attributed.tokens,
+    result.lineage_attribution.events.find((event) => event.bucket === 'story_attributed').tokens);
+  const rendered = renderSessionEfficiencyAudit(result);
+  assert.match(rendered, /replayed carryover context/);
+  assert.doesNotMatch(rendered, /Story token|Story time|Story value/);
+});
+
+test('AC-7 external sessions keep advisory inference and fail unavailable or ambiguous without Thread separation', async () => {
+  const { root, codexHome } = await fixture();
+  const externalSession = '019f0000-0000-4000-8000-000000000001';
+  const externalEntry = {
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    payload: { type: 'assistant_message', role: 'assistant', content: `Working on ${STORY_ID}` }
+  };
+  await writeSessionFile(codexHome, externalSession, [
+    { timestamp: externalEntry.timestamp, type: 'session_meta', payload: { session_id: externalSession, cwd: root } },
+    externalEntry
+  ]);
+
+  const inferred = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+  assert.equal(inferred.session_selection.status, 'inferred');
+  assert.equal(inferred.attribution.mode, 'advisory');
+  assert.equal(inferred.attribution.categories.strict, 1);
+  assert.equal(inferred.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(inferred.lineage_attribution.thread_only_event_count, 0);
+  assert.equal(inferred.lineage_attribution.buckets.unattributed.event_count, 0);
+
+  const secondSession = '019f0000-0000-4000-8000-000000000002';
+  await writeSessionFile(codexHome, secondSession, [
+    { timestamp: externalEntry.timestamp, type: 'session_meta', payload: { session_id: secondSession, cwd: root } },
+    externalEntry
+  ]);
+  const ambiguous = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+  assert.equal(ambiguous.session_selection.status, 'ambiguous');
+  assert.equal(ambiguous.session_id, null);
+  assert.equal(ambiguous.lineage_attribution.status, 'unavailable');
+  assert.equal(ambiguous.lineage_attribution.thread_only_event_count, 0);
+
+  const unavailable = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome: path.join(os.tmpdir(), 'vibepro-no-sessions-for-lineage'),
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+  assert.equal(unavailable.session_selection.status, 'unavailable');
+  assert.equal(unavailable.lineage_attribution.status, 'unavailable');
+  assert.equal(unavailable.lineage_attribution.thread_only_event_count, 0);
 });
