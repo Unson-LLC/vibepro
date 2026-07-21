@@ -84,6 +84,59 @@ test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async
   assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'diagnose');
 });
 
+test('AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  let diagnoseCalls = 0;
+  let prepareCalls = 0;
+  const firstSession = fixture.session({
+    actionRunners: {
+      diagnose: async () => { diagnoseCalls += 1; return { status: 'continue', artifact: 'diagnose.json' }; },
+      prepare_artifacts: async () => { prepareCalls += 1; return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' }; }
+    }
+  });
+  await firstSession.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  await firstSession.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  const restartedSession = fixture.session({
+    actionRunners: {
+      diagnose: async () => { diagnoseCalls += 1; return { status: 'continue' }; },
+      prepare_artifacts: async () => { prepareCalls += 1; return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' }; }
+    }
+  });
+  await restartedSession.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(diagnoseCalls, 1);
+  assert.equal(prepareCalls, 2);
+});
+
+test('AAD-S-7 autonomous composition preserves canonical owner artifact references', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
+  const session = fixture.session({
+    actionRunners: Object.fromEntries(ids.map((id) => [id, async () => ({
+      status: id === 'final_prepare' ? 'pr_ready' : 'continue',
+      artifact: `.vibepro/owners/${id}.json`
+    })]))
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(
+    result.state.action_journal.filter((entry) => ids.includes(entry.action_id)).map((entry) => entry.artifact),
+    ids.map((id) => `.vibepro/owners/${id}.json`)
+  );
+});
+
 test('RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const events = [];

@@ -46,7 +46,7 @@ export function selectSafeActionCandidate(state, options = {}) {
     .map((action) => ({
       action_id: action.id,
       classification: action.classification,
-      policy_allowed: true,
+      policy_allowed: !new Set(options.policyDeniedActionIds ?? []).has(action.id),
       dependency_ready: dependenciesCompleted(state, action, state, profile),
       metrics: options.metrics?.[action.id] ?? {}
     }));
@@ -105,9 +105,11 @@ export async function runSafeActionPlan(state, options = {}) {
   const seenActionIds = new Set();
   for (const action of plan) {
     const key = actionKey(state, action.id, profile);
+    const policyDenied = new Set(options.policyDeniedActionIds ?? []).has(action.id);
     if (!isCanonicalAction(action, state, key, profile)
       || seenActionIds.has(action.id)
       || !dependenciesCompleted(current, action, executionState, profile)
+      || policyDenied
       || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
@@ -121,8 +123,14 @@ export async function runSafeActionPlan(state, options = {}) {
         ? { ...(rawResult ?? {}), status: 'continue' }
         : rawResult;
       assertActionResult(result);
+      if (result.status === 'pr_ready' && profile === 'autonomous' && action.id !== 'final_prepare') {
+        throw new Error(`Only autonomous final_prepare may return pr_ready: ${action.id}`);
+      }
+      const journalStatus = profile === 'legacy'
+        ? (result.status === 'failed' ? 'failed' : 'completed')
+        : (['continue', 'pr_ready'].includes(result.status) ? 'completed' : 'failed');
       const lineage = resolveActionLineage(current, action.lineage, `action-${action.id}`);
-      const journal = append(current, action, key, result?.status === 'failed' ? 'failed' : 'completed', { ...result, lineage });
+      const journal = append(current, action, key, journalStatus, { ...result, lineage });
       if (result?.status === 'pr_ready') {
         current = transition(journal, 'pr_ready', null);
         break;

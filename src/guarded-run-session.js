@@ -355,6 +355,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
   const result = await runSafeActionPlan(decisionState, {
     profile: decisionState.action_profile ?? 'legacy',
+    policyDeniedActionIds: options.policyDeniedActionIds,
     plan: selectedPlan,
     onProgress: async (progress) => {
       const checkpoint = {

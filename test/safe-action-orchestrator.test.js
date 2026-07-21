@@ -269,6 +269,50 @@ test('AAD-S-5 unknown action profiles fail closed', () => {
   assert.throws(() => buildSafeActionPlan(state, { profile: 'untrusted' }), /Unknown safe action profile/);
 });
 
+test('AAD-S-2 policy-denied autonomous actions fail closed before their runner executes', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  let called = false;
+  const result = await runSafeActionPlan(autonomousState, {
+    policyDeniedActionIds: ['diagnose'],
+    runners: { diagnose: async () => { called = true; return { status: 'continue' }; } }
+  });
+  assert.equal(called, false);
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'action_forbidden');
+});
+
+test('AAD-S-4 only final_prepare may produce pr_ready', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const result = await runSafeActionPlan(autonomousState, {
+    runners: { diagnose: async () => ({ status: 'pr_ready' }) }
+  });
+  assert.equal(result.state.status, 'failed');
+  assert.match(result.state.stop_reason.details.recovery.failure, /Only autonomous final_prepare/);
+});
+
+for (const terminalStatus of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']) {
+  test(`AAD-S-6 ${terminalStatus} stops before dependent autonomous nodes`, async () => {
+    const autonomousState = { ...state, action_profile: 'autonomous' };
+    let dependentCalls = 0;
+    const result = await runSafeActionPlan(autonomousState, {
+      runners: {
+        diagnose: async () => ({ status: terminalStatus, stop_reason: `${terminalStatus}_reason` }),
+        prepare_artifacts: async () => { dependentCalls += 1; return { status: 'continue' }; }
+      }
+    });
+    assert.equal(dependentCalls, 0);
+    assert.equal(result.state.status, terminalStatus);
+    assert.equal(result.state.action_journal.length, 1);
+    assert.equal(result.state.stop_reason.code, `${terminalStatus}_reason`);
+  });
+}
+
+test('AAD-S-5 explicitly selecting legacy keeps the two-node rollback path', () => {
+  const plan = buildSafeActionPlan({ ...state, action_profile: 'autonomous' }, { profile: 'legacy' });
+  assert.deepEqual(plan.map(({ id }) => id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.ok(plan.every((action) => action.action_profile === undefined));
+});
+
 test('SAO-S-5 safe autopilot classifies missing and failed current evidence without executing commands', async () => {
   const preparation = {
     story: { story_id: 'story-safe' },
