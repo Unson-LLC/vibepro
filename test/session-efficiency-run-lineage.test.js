@@ -100,20 +100,19 @@ async function writeCanonicalRun(root, { runId = 'run-alpha', authority = {}, di
   await writeFile(path.join(runDir, 'state.json'), `${JSON.stringify(state, null, 2)}\n`);
 }
 
-test('session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed', async () => {
+test('session efficiency audit preserves embedded-lineage heuristics when no run id is requested', async () => {
   const { root, codexHome } = await fixture();
   const result = await collectSessionEfficiencyAudit(root, {
     storyId: STORY_ID,
     sessionId: SESSION_ID,
-    runId: 'run-alpha',
     codexHome,
     windowStart: '2026-07-21T00:59:00.000Z',
     windowEnd: '2026-07-21T01:01:00.000Z'
   });
 
   const attribution = result.lineage_attribution;
-  assert.equal(attribution.filter.run_id, 'run-alpha');
-  assert.equal(attribution.filter.run_id_filter_applied, true);
+  assert.equal(attribution.filter.run_id, null);
+  assert.equal(attribution.filter.run_id_filter_applied, false);
   assert.equal(attribution.authoritative_event_count, 2);
   assert.equal(attribution.thread_only_event_count, 1);
   assert.equal(attribution.buckets.story_attributed.event_count, 1);
@@ -124,7 +123,7 @@ test('session efficiency audit attributes embedded lineage and leaves thread-onl
   assert.equal(result.session.lineage_attribution.total_event_count, 3);
 });
 
-test('session efficiency audit accepts the run_id alias without changed-line allocation', async () => {
+test('explicit run_id alias fails closed when canonical Run authority is missing', async () => {
   const { root, codexHome } = await fixture();
   const result = await collectSessionEfficiencyAudit(root, {
     storyId: STORY_ID,
@@ -136,8 +135,13 @@ test('session efficiency audit accepts the run_id alias without changed-line all
   });
 
   assert.equal(result.lineage_attribution.filter.run_id, 'run-beta');
-  assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 1);
-  assert.equal(result.lineage_attribution.buckets.other_story.event_count, 1);
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.mode, 'canonical_run_authority_required');
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.other_story.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 3);
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
   assert.equal(result.cost_breakdown.buckets.every((bucket) => bucket.changed_lines === 0), true);
 });
 
@@ -154,9 +158,39 @@ test('canonical Run lineage fails closed when authority is missing required bind
     windowEnd: '2026-07-21T01:01:00.000Z'
   });
 
-  assert.equal(result.lineage_attribution.mode, 'authoritative_embedded_lineage');
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.mode, 'canonical_run_authority_required');
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.other_story.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 3);
   assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
   assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, undefined);
+});
+
+test('explicit run id fails closed when complete authority conflicts with session observations', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.mode, 'canonical_run_authority_required');
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.other_story.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 3);
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.match(result.lineage_attribution.canonical_run.reason, /conflicted with session observation/);
 });
 
 test('canonical Run lineage validates complete authority and matching dispatches', async () => {

@@ -1589,9 +1589,38 @@ function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {
   windowEnd
 } = {}) {
   if (canonicalRun?.status !== 'available') {
+    const observations = (sessionAttribution?.events ?? []).map((event) => ({
+      timestamp: event.timestamp ?? null,
+      source_path: event.source_path ?? null,
+      line: event.line ?? null,
+      entry_type: event.entry_type ?? null,
+      payload_type: event.payload_type ?? null,
+      thread_id: event.thread_id ?? null,
+      tokens: event.tokens ?? event.estimated_tokens ?? event.token_count ?? 0,
+      time_ms: event.time_ms ?? event.duration_ms ?? event.elapsed_ms ?? 0,
+      value: event.value ?? event.amount ?? 0
+    }));
+    const attribution = resolveRunAttribution(observations, { story_id: storyId, run_id: runId });
     return {
-      ...sessionAttribution,
-      canonical_run: canonicalRun ?? { status: 'unavailable', reason: 'canonical Run resolver returned no result' }
+      ...attribution,
+      schema_version: '0.1.0',
+      status: 'unavailable',
+      mode: 'canonical_run_authority_required',
+      source: 'guarded-run-authority-artifact',
+      filter: { run_id: runId, run_id_filter_applied: true },
+      authoritative_event_count: 0,
+      thread_only_event_count: observations.filter((event) => event.thread_id).length,
+      session_id: sessionId,
+      window: {
+        session_id: sessionId,
+        source_path: filePaths[0] ?? null,
+        source_paths: filePaths,
+        requested_start: windowStart ?? null,
+        requested_end: windowEnd ?? null,
+        scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+      },
+      canonical_run: canonicalRun ?? { status: 'unavailable', reason: 'canonical Run resolver returned no result' },
+      reason: canonicalRun?.reason ?? 'canonical Run resolver returned no result'
     };
   }
   const sessionEvents = sessionAttribution?.events ?? [];
