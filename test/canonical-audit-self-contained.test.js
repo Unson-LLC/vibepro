@@ -196,6 +196,37 @@ test('CAGR-S-003 full-depth canonical audit still includes the physical gate DAG
   assert.equal(promoted.bundle.artifacts.some((item) => item.kind === 'gate_dag'), true);
 });
 
+for (const malformedArtifact of ['evidence-plan.json', 'decision-index.json']) {
+  test(`CAGR-S-004 malformed ${malformedArtifact} fails canonical promotion fast`, async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-summary-gate-malformed-'));
+    const storyId = `story-summary-gate-malformed-${malformedArtifact.replace('.json', '')}`;
+    const prDir = path.join(root, '.vibepro', 'pr', storyId);
+    await writeJson(path.join(prDir, 'pr-prepare.json'), {
+      schema_version: '0.1.0',
+      story: { story_id: storyId }
+    });
+    await writeJson(path.join(prDir, 'evidence-plan.json'), {
+      story_id: storyId,
+      evidence_depth: 'summary',
+      artifact_policy: { write_full_gate_dag_dump: false },
+      generated_artifacts: ['evidence-plan.json', 'decision-index.json'],
+      skipped_artifacts: ['gate-dag.json']
+    });
+    await writeJson(path.join(prDir, 'decision-index.json'), {
+      story_id: storyId,
+      evidence_depth: 'summary',
+      gate_summary: { overall_status: 'ready_for_review' },
+      engineering_judgment: { status: 'recorded' }
+    });
+    await writeFile(path.join(prDir, malformedArtifact), '{ malformed json\n');
+
+    await assert.rejects(
+      promoteCanonicalAuditArtifacts(root, { storyId }),
+      SyntaxError
+    );
+  });
+}
+
 test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence instead of copying full raw artifacts', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-budget-'));
   const storyId = 'story-over-budget-evidence';

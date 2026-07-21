@@ -21,6 +21,7 @@ summary depthで正しく生成されたPR証跡をmergeした後も、canonical
 - `CAGR-AC-001`: evidence planが`gate-dag.json`を明示的にskipし、`evidence-plan.json`と`decision-index.json`が存在する場合、canonical auditはgate DAG欠損を未解決参照として扱わない。
 - `CAGR-AC-002`: summary-depth代替契約が不完全な場合、従来どおりgate DAG参照を未解決としてfail closedする。
 - `CAGR-AC-003`: full depthで`gate-dag.json`が存在する場合、canonical replay bundleへ`gate_dag`として収録する。
+- `CAGR-AC-004`: summary-depth代替artifactのJSONが不正な場合、canonical auditは代替不成立として処理を継続せずparse failureを返す。
 
 ## Non Goals
 

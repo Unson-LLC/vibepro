@@ -15,12 +15,14 @@ related_architecture:
 - `CAGR-CONTRACT-002`: 代替は`generated_artifacts`に`evidence-plan.json`と`decision-index.json`があり、両ファイルが実在する場合だけ成立する。
 - `CAGR-CONTRACT-003`: 成立時は`gate_dag`を`missing_artifacts`へ追加せず、そのGate DAG source referenceを`unresolved_references`へ渡さない。
 - `CAGR-CONTRACT-004`: `gate-dag.json`が実在する場合は`gate_dag` artifactとしてcanonical replayへ収録する。
+- `CAGR-CONTRACT-005`: `evidence-plan.json`または`decision-index.json`が不正なJSONの場合、canonical auditはそのparse failureを伝播し、欠損扱いや不完全なreplay bundleへフォールバックしない。
 
 ## Scenarios
 
 - `CAGR-S-001`: summary depthの完全な代替artifact集合をpromotionするとhandoff replayはreadyになる。
 - `CAGR-S-002`: decision indexが欠けたsummary depthをpromotionするとGate DAG参照によりhandoff replayはblockedになる。
 - `CAGR-S-003`: full depthをpromotionするとreplayのartifact kindsに`gate_dag`が含まれる。
+- `CAGR-S-004`: summary-depth代替artifactのいずれかが不正なJSONの場合、promotionは`SyntaxError`で失敗する。
 
 ## Verification
 
