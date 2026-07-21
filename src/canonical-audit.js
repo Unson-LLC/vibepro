@@ -2647,7 +2647,7 @@ async function safeReaddir(dir) {
   try {
     return (await readdir(dir)).sort();
   } catch (error) {
-    if (error.code === 'ENOENT') return [];
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
     throw error;
   }
 }

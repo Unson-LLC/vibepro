@@ -44,6 +44,19 @@ async function writeLargeVerificationEvidence(root, storyId, count = 700) {
   });
 }
 
+test('canonical audit ignores compatibility markdown directly under the story review root', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-compat-markdown-'));
+  const storyId = 'story-canonical-compat-markdown';
+  await mkdir(path.join(root, '.vibepro', 'reviews', storyId), { recursive: true });
+  await writeFile(
+    path.join(root, '.vibepro', 'reviews', storyId, 'gate_evidence-final.md'),
+    '# Compatibility evidence\n',
+    { encoding: 'utf8' }
+  );
+
+  await assert.doesNotReject(() => promoteCanonicalAuditArtifacts(root, { storyId }));
+});
+
 function argvFromReplayCommand(command) {
   assert.match(command, /^vibepro audit replay \. --story-id [A-Za-z0-9._-]+$/);
   return command.split(/\s+/).slice(1);
