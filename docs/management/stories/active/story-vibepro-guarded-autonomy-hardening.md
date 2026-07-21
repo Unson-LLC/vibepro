@@ -7,6 +7,7 @@ status: active
 view: dev
 period: 2026-07
 category: quality
+business_metric: "Story別のTrusted PR-ready到達率、active/wait比率、token/cost、human interruption、accepted findingあたりcostをunknown保持で計測する"
 source:
   type: operator_feedback
   title: "自律ループを無限実行や自己Reviewにせず、費用・時間・停止理由まで運用可能にしたい"

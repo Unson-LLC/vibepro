@@ -129,7 +129,7 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
     stop_reason: { code: 'fixture_blocked', message: 'fixture blocked', details: {} },
     attempt: 1,
     iteration: 0,
-    budget: { max_attempts: 1, max_iterations: 0 },
+    budget: { max_attempts: 2, max_iterations: 1 },
     deadline: null,
     last_progress_at: createdAt,
     pending_decision: null,
@@ -162,7 +162,20 @@ test('GRS-S-3 preferred source-fallback Run resumes from its canonical artifact 
     action_journal: [],
     next_best_action_decisions: [],
     human_decision_journal: [],
-    resume_from_node_id: null
+    retry_journal: [],
+    resume_from_node_id: null,
+    retry_policy: {
+      retryable_stop_codes: ['action_failed'],
+      backoff_ms: 0
+    },
+    provider_fallbacks: [],
+    usage_accounting: {
+      total_tokens: null,
+      cost_usd: null,
+      status: 'unknown',
+      source: null,
+      updated_at: null
+    }
   };
   assert.deepEqual(await runJson(repo, [
     'execute', 'status', repo, '--story-id', STORY_ID, '--run-id', runId, '--json'

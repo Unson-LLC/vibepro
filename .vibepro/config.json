@@ -88,8 +88,20 @@
         "started_at": "2026-07-16",
         "due_at": null,
         "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-guarded-autonomy-hardening",
+        "title": "Guarded Autonomyを予算・独立Review・成果指標で本番運用可能にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product"
       }
     ],
-    "current_story_id": "story-vibepro-story-run-portfolio-controller"
+    "current_story_id": "story-vibepro-guarded-autonomy-hardening"
   }
 }

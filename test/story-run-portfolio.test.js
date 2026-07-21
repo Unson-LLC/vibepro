@@ -136,7 +136,7 @@ test('SRP-S-5 promotes digest-bound artifact context and rejects raw transcripts
   }), errorCode('raw_transcript_forbidden'));
 });
 
-test('SRP-S-6 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero', async (t) => {
+test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero', async (t) => {
   const fixture = await createFixture(t);
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-cost', storyIds: STORIES.slice(0, 1) });
   await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });

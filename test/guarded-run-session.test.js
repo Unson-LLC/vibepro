@@ -78,7 +78,7 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
   ]);
 });
 
-test('ARA-S-1 ARA-S-3 ARA-S-4 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
+test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let runtimeStatus = 'running';
   const reviews = [];
@@ -333,7 +333,7 @@ test('HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same
   assert.deepEqual(journalEntry.reflected_in, persistedDecision.reflected_in);
 });
 
-test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
+test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults and repeated cancel is byte-stable', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
   const created = await session.run(fixture.source, { storyId: STORY_ID });
@@ -350,8 +350,14 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     stop_reason: null,
     attempt: 1,
     iteration: 0,
-    budget: { max_attempts: 1, max_iterations: 0 },
-    deadline: null,
+    budget: { max_attempts: 3, max_iterations: 12, max_duration_ms: 3600000, max_tokens: null, max_cost_usd: null },
+    deadline: '2026-07-15T02:02:03.000Z',
+    retry_policy: {
+      retryable_stop_codes: ['runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'],
+      backoff_ms: 1000
+    },
+    provider_fallbacks: [],
+    usage_accounting: { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null },
     last_progress_at: FIRST_TIME,
     pending_decision: null,
     current_head_sha: fixture.identity(fixture.source).head_sha,
@@ -364,6 +370,7 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
     action_journal: [],
     next_best_action_decisions: [],
     human_decision_journal: [],
+    retry_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -384,8 +391,19 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   });
   const resumed = await session.resume(fixture.source, { storyId: STORY_ID });
   assert.equal(resumed.attempt, 2);
-  assert.equal(resumed.budget.max_attempts, 1);
+  assert.equal(resumed.budget.max_attempts, 3);
   assert.equal(resumed.iteration, 0);
+  assert.deepEqual(resumed.retry_journal, [{
+    sequence: 1,
+    stop_code: 'fixture_blocked',
+    retryable: false,
+    backoff_ms: 1000,
+    stopped_at: FIRST_TIME,
+    resumed_at: FIRST_TIME,
+    elapsed_ms: 0,
+    backoff_satisfied: false,
+    resumed_by: 'operator'
+  }]);
   const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const before = await readFile(artifact, 'utf8');
@@ -403,6 +421,95 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   assert.equal(repairAfter.updated_at, repairBefore.updated_at);
   assert.deepEqual(repairAfter.transitions, repairBefore.transitions);
   await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('GAH-S-1 GAH-S-2 budget deadline retry and provider policy produce typed non-success stops', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, {
+    storyId: STORY_ID,
+    maxAttempts: 1,
+    maxIterations: 2,
+    maxDurationMs: 1000,
+    maxTokens: 100,
+    maxCostUsd: 1.5
+  });
+  assert.equal(created.status, 'running');
+  assert.equal(created.usage_accounting.status, 'unknown');
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'fixture_blocked',
+    stopReason: { code: 'action_failed', message: 'retry', details: {} }
+  });
+  const stopped = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.status, 'blocked');
+  assert.equal(stopped.stop_reason.code, 'max_attempts_exceeded');
+  assert.equal(stopped.stop_reason.details.retryable, false);
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const deadlineSession = second.session();
+  await deadlineSession.run(second.source, { storyId: STORY_ID, maxDurationMs: 1000 });
+  second.setTime('2026-07-15T01:02:05.000Z');
+  const deadline = await deadlineSession.orchestrate(second.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(deadline.state.status, 'blocked');
+  assert.equal(deadline.state.stop_reason.code, 'deadline_exceeded');
+});
+
+test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  const summary = renderGuardedRunSummary(created);
+  assert.match(summary, /tokens: unknown/);
+  assert.match(summary, /cost_usd: unknown/);
+  assert.match(summary, /automated_steps: 0/);
+  assert.match(summary, /human_interruptions: 0/);
+});
+
+test('GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remains typed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'usage-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start() { return { provider_run_id: 'provider-usage', agent_identity: 'implementer-1', session_id: 'implementation-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { runtimeStatus = 'cancelled'; },
+    async collect_result() {
+      return {
+        completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
+        test_suggestions: [], summary: 'measured', usage_accounting: { total_tokens: 125, cost_usd: 0.25, source: 'fixture-runtime' }
+      };
+    }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID, maxTokens: 100, maxCostUsd: 1 });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: {
+      adapter_id: 'usage-runtime', task_id: 'usage', role: 'implementation', implementation_identity: 'implementer-1',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.deepEqual(completed.state.usage_accounting, {
+    total_tokens: 125, cost_usd: 0.25, status: 'known', source: 'fixture-runtime', updated_at: FIRST_TIME
+  });
+  const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.status, 'blocked');
+  assert.equal(stopped.state.stop_reason.code, 'token_budget_exceeded');
+  assert.equal(stopped.state.stop_reason.details.retryable, false);
+});
+
+test('GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls', async () => {
+  const stdout = capture();
+  const result = await runCli(['help'], { stdout, stderr: capture() });
+  assert.equal(result.exitCode, 0);
+  assert.match(stdout.text(), /--retry-backoff-ms <ms>/);
+  assert.match(stdout.text(), /--retryable-stop-codes <csv>/);
+  assert.match(stdout.text(), /--provider-fallbacks <csv>/);
 });
 
 test('Portfolio creation request identity returns the same guarded Run exactly once', async (t) => {
@@ -1193,7 +1300,7 @@ test('GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resu
   assert.deepEqual(await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), cancelled);
 });
 
-test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set', async (t) => {
+test('GRS-S-4 GRS-S-5 INV-005 GAH-S-7 lifecycle matrix accepts only the closed transition set', async (t) => {
   const statuses = [
     'running',
     'waiting_for_human',
@@ -1965,7 +2072,7 @@ test('GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-s
   await assert.rejects(stat(repositoryLock), { code: 'ENOENT' });
 });
 
-test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
+test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 GAH-S-5 repository CLI survives fresh processes and repair is non-mutating', async (t) => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-run-cli-'));
   t.after(() => rm(repo, { recursive: true, force: true }));
   await git(repo, ['init', '-b', 'main']);
@@ -2488,7 +2595,7 @@ test('SAO-S-2 C-004 resume retries only the failed action and preserves the comp
   assert.match(renderGuardedRunSummary(retried.state), /pr_autopilot_safe \(completed\): runtime_required/);
 });
 
-test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
+test('SAO-S-2 GAH-S-6 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;
   const session = fixture.session({
@@ -2592,7 +2699,7 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   assert.equal(bootstrapCalls, 0);
 });
 
-test('GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
+test('GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
   const source = await readFile(new URL('../src/guarded-run-session.js', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager).*['"]/i);
   assert.match(source, /from ['"].*safe-action-orchestrator\.js['"]/i);
@@ -2670,6 +2777,9 @@ async function createFixture(t, options = {}) {
       const identity = identities.get(resolved);
       if (!identity) throw new Error(`unknown fixture worktree: ${resolved}`);
       identity.head_sha = headSha;
+    },
+    setTime(value) {
+      clock.value = value;
     },
     runFile(repo, runId) {
       return path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', runId, 'state.json');
