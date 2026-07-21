@@ -24,12 +24,12 @@ test('story-vibepro-autonomous-action-dag AAD-S-1 through AAD-S-7 workflow repla
 
   assert.match(result.stdout, /# fail 0\b/);
   for (const scenario of [
-    /AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners/,
-    /AAD-S-2 policy-denied autonomous actions fail closed before their runner executes/,
-    /AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session/,
-    /AAD-S-4 only final_prepare may produce pr_ready/,
-    /AAD-S-5 explicitly selecting legacy keeps the two-node rollback path/,
-    /AAD-S-6 waiting_for_runtime stops before dependent autonomous nodes/,
-    /AAD-S-7 autonomous composition preserves canonical owner artifact references/
-  ]) assert.match(result.stdout, scenario);
+    { clause: 'AC-1 S-002', pattern: /AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners/ },
+    { clause: 'AC-2 S-003', pattern: /AAD-S-2 policy-denied autonomous actions fail closed before their runner executes/ },
+    { clause: 'AC-3', pattern: /AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session/ },
+    { clause: 'AC-4', pattern: /AAD-S-4 only final_prepare may produce pr_ready/ },
+    { clause: 'AC-5', pattern: /AAD-S-5 public CLI disables autonomous execution before resuming an existing Run/ },
+    { clause: 'AC-6', pattern: /AAD-S-6 waiting_for_runtime stops before dependent autonomous nodes/ },
+    { clause: 'AC-7 S-003', pattern: /AAD-S-7 autonomous composition preserves canonical owner artifact references/ }
+  ]) assert.match(result.stdout, scenario.pattern, `${scenario.clause} executable workflow replay`);
 });
