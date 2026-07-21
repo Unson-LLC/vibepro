@@ -7,6 +7,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { collectSessionEfficiencyAudit, renderSessionEfficiencyAudit } from '../src/session-efficiency-audit.js';
+import { resolveCanonicalRunLineage } from '../src/run-lineage.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-vibepro-explicit-run-attribution-lineage';
@@ -110,6 +111,29 @@ async function writeSessionFile(codexHome, sessionId, entries) {
   await mkdir(path.dirname(sessionPath), { recursive: true });
   await writeFile(sessionPath, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
 }
+
+test('Run lineage module exposes canonical repository resolution for audit consumers', async () => {
+  const { root } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+
+  const resolved = await resolveCanonicalRunLineage(root, root, {
+    storyId: STORY_ID,
+    runId: 'run-alpha'
+  });
+  assert.equal(resolved.status, 'available');
+  assert.equal(resolved.authority.story_id, STORY_ID);
+  assert.equal(resolved.authority.run_id, 'run-alpha');
+  assert.equal(resolved.source_artifact, `.vibepro/executions/${STORY_ID}/runs/run-alpha/state.json`);
+
+  const unavailable = await resolveCanonicalRunLineage(root, root, {
+    storyId: STORY_ID,
+    runId: 'run-missing'
+  });
+  assert.equal(unavailable.status, 'unavailable');
+  assert.match(unavailable.reason, /not found/);
+});
 
 test('session efficiency audit preserves embedded-lineage heuristics when no run id is requested', async () => {
   const { root, codexHome } = await fixture();

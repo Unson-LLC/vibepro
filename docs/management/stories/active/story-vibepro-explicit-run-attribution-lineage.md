@@ -134,6 +134,9 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 ## Done Evidence
 
 - 現行HEADにboundされたfocused unit/E2E verification evidence。
+- `node --test test/run-context-capsule-lineage.test.js` によるfresh-process lineage reconstruction。
+- `node --test test/run-lineage.test.js test/session-efficiency-run-lineage.test.js` によるcanonical resolver境界とaudit互換性。
+- `node --test test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js` による実CLIのmethod/confidence/source artifact/bucketとunavailable/ambiguous可視性。
 - 既存session-cost fixtureとの後方互換比較。
 - mixed parent fixtureにおける分類総数一致とshared/unattributed非配賦のmachine-readable artifact。
 - fresh processからのhandoff再構成結果。

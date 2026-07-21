@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { createAgentRuntimeCoordinator } from '../../src/agent-runtime-adapter.js';
@@ -14,6 +15,7 @@ import { createRunLineageEnvelope } from '../../src/run-lineage.js';
 import { recordVerificationEvidence } from '../../src/verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
+const CLI_BIN = fileURLToPath(new URL('../../bin/vibepro.js', import.meta.url));
 const STORY_ID = 'story-vibepro-explicit-run-attribution-lineage';
 const SESSION_ID = '019f-eral-e2e-session';
 const OTHER_STORY_ID = 'story-other-lineage';
@@ -144,10 +146,19 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   await mkdir(path.dirname(sessionPath), { recursive: true });
   const timestamp = '2026-07-21T01:03:00.000Z';
   await writeFile(sessionPath, `${[
-    { timestamp, type: 'session_meta', payload: { cwd: authorityRoot } },
+    { timestamp, type: 'session_meta', payload: { session_id: SESSION_ID, cwd: authorityRoot } },
     { timestamp, type: 'event_msg', thread_id: providerThreadId, payload: { type: 'assistant_message', content: 'provider observation only' } },
     { timestamp, type: 'event_msg', thread_id: 'shared-parent-thread', shared_parent: true, run_ids: [created.run_id, 'run-parent'], payload: { type: 'assistant_message', content: 'shared parent observation' } },
-    { timestamp, type: 'event_msg', lineage: otherLineage, payload: { type: 'assistant_message', content: 'other Story observation' } }
+    { timestamp, type: 'event_msg', lineage: otherLineage, payload: { type: 'assistant_message', content: 'other Story observation' } },
+    {
+      timestamp,
+      type: 'compacted',
+      replayed_context: true,
+      payload: {
+        content: `Replayed .vibepro/pr/${STORY_ID}/pr-prepare.json`,
+        replacement_history: 'replayed prior context'
+      }
+    }
   ].map((entry) => JSON.stringify(entry)).join('\n')}\n`);
 
   const audit = await collectSessionEfficiencyAudit(authorityRoot, {
@@ -167,6 +178,12 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   assert.equal(attribution.buckets.shared_parent.event_count, 1);
   assert.equal(attribution.buckets.other_story.event_count, 1);
   assert.equal(attribution.buckets.unattributed.event_count, 1);
+  assert.equal(attribution.buckets.replayed_context.time_ms, 0);
+  assert.equal(attribution.buckets.replayed_context.value, 0);
+  assert.equal(attribution.buckets.story_attributed.time_ms, 0);
+  assert.equal(attribution.buckets.story_attributed.value, 0);
+  assert.equal(audit.session.artifact_token_accounting.buckets.replayed_context.event_count, 1);
+  assert.ok(audit.session.artifact_token_accounting.buckets.replayed_context.estimated_tokens > 0);
   for (const event of attribution.events) {
     assert.equal(typeof event.method, 'string');
     assert.ok(Object.hasOwn(event, 'source_artifact'));
@@ -181,7 +198,92 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
     Object.values(attribution.buckets).reduce((sum, bucket) => sum + bucket.event_count, 0),
     attribution.total_event_count
   );
+
+  const cliAvailable = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--run-id', created.run_id,
+    '--session-id', SESSION_ID,
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff',
+    '--json'
+  ]);
+  assert.ok([0, 2].includes(cliAvailable.exitCode));
+  const cliAvailableResult = JSON.parse(cliAvailable.stdout);
+  assert.equal(cliAvailableResult.artifact_kind, 'vibepro_session_efficiency_audit');
+  assert.equal(cliAvailableResult.lineage_attribution.mode, 'canonical_run_artifact_preferred');
+  assert.equal(cliAvailableResult.lineage_attribution.canonical_run.status, 'available');
+  assert.equal(cliAvailableResult.lineage_attribution.buckets.replayed_context.time_ms, 0);
+  assert.equal(cliAvailableResult.lineage_attribution.buckets.replayed_context.value, 0);
+  assert.equal(cliAvailableResult.session.artifact_token_accounting.buckets.replayed_context.event_count, 1);
+  for (const event of cliAvailableResult.lineage_attribution.events) {
+    assert.equal(typeof event.method, 'string');
+    assert.equal(typeof event.confidence, 'string');
+    assert.ok(Object.hasOwn(event, 'source_artifact'));
+  }
+
+  const cliUnavailable = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--run-id', 'run-missing-from-canonical-state',
+    '--session-id', SESSION_ID,
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff',
+    '--json'
+  ]);
+  assert.equal(cliUnavailable.exitCode, 2);
+  const cliUnavailableResult = JSON.parse(cliUnavailable.stdout);
+  assert.equal(cliUnavailableResult.lineage_attribution.status, 'unavailable');
+  assert.equal(cliUnavailableResult.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.match(cliUnavailableResult.lineage_attribution.canonical_run.reason, /not found/);
+
+  const ambiguousSessionId = '019f-eral-e2e-ambiguous-session';
+  await writeSessionFile(codexHome, ambiguousSessionId, [
+    { timestamp, type: 'session_meta', payload: { session_id: ambiguousSessionId, cwd: authorityRoot } },
+    { timestamp, type: 'event_msg', payload: { type: 'assistant_message', content: `Working on ${STORY_ID}` } }
+  ]);
+  const cliAmbiguous = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--session-id', 'auto',
+    '--infer-session',
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff',
+    '--json'
+  ]);
+  assert.equal(cliAmbiguous.exitCode, 2);
+  const cliAmbiguousResult = JSON.parse(cliAmbiguous.stdout);
+  assert.equal(cliAmbiguousResult.session_selection.status, 'ambiguous', JSON.stringify(cliAmbiguousResult.session_selection));
+  assert.equal(cliAmbiguousResult.session_id, null);
+  assert.equal(cliAmbiguousResult.lineage_attribution.status, 'unavailable');
+  assert.match(cliAmbiguousResult.session_selection.reason, /same top score|ambiguous|confidence/i);
 });
+
+async function runAuditCli(repoRoot, args) {
+  try {
+    const { stdout, stderr } = await execFileAsync(process.execPath, [CLI_BIN, 'audit', 'session-cost', repoRoot, ...args], {
+      cwd: path.dirname(CLI_BIN),
+      encoding: 'utf8',
+      maxBuffer: 16 * 1024 * 1024
+    });
+    return { exitCode: 0, stdout, stderr };
+  } catch (error) {
+    return {
+      exitCode: error.code,
+      stdout: error.stdout ?? '',
+      stderr: error.stderr ?? ''
+    };
+  }
+}
+
+async function writeSessionFile(codexHome, sessionId, entries) {
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '07', '21', `${sessionId}.jsonl`);
+  await mkdir(path.dirname(sessionPath), { recursive: true });
+  await writeFile(sessionPath, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`);
+}
 
 async function git(cwd, args) {
   return execFileAsync('git', args, { cwd, encoding: 'utf8' });
