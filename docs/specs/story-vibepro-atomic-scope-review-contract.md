@@ -8,9 +8,11 @@ architecture_docs:
   - docs/architecture/vibepro-atomic-scope-review-contract.md
 code_refs:
   - src/agent-review.js
+  - src/canonical-audit.js#summarizeScopeForLlm
   - src/change-risk-classifier.js
   - src/cli.js
   - src/content-binding.js
+  - src/html-report.js#renderNodeGrid
   - src/pr-manager.js
   - src/review-repair.js
   - src/responsibility-authority.js
