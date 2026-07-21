@@ -69,6 +69,7 @@ export function toCodexCompletionResult(request, started, output) {
     thread_id: started.thread_id,
     lifecycle: 'closed',
     judgments: output.judgments,
+    ...(started.usage_accounting ? { usage_accounting: started.usage_accounting } : {}),
     ...(output.review_record ? { review_record: output.review_record } : {})
   };
 }

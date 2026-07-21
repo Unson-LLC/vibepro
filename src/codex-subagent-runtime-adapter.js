@@ -324,10 +324,14 @@ function evaluateProgressBounds(record, reconciled, providerStatus, observedNow)
   const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.attempt_started_at);
   const noProgressElapsed = observedNow.getTime() - Date.parse(lastProgressAt);
   const attempts = Math.max(providerStatus.attempts ?? 1, record.recovery_attempts ?? 1);
-  const cost = (record.accumulated_cost_usd ?? 0) + reportedCost(providerStatus);
+  const reportedAttemptCost = reportedCost(providerStatus);
+  const cost = reportedAttemptCost === null ? null : (record.accumulated_cost_usd ?? 0) + reportedAttemptCost;
   if (elapsed > requirements.max_wall_clock_ms) return stalled('max_wall_clock_exceeded');
   if (attempts > requirements.max_attempts) return stalled('max_attempts_exceeded');
-  if (requirements.max_cost_usd > 0 && cost >= requirements.max_cost_usd) return stalled('max_cost_exceeded');
+  if (requirements.max_cost_usd > 0 && cost !== null && cost >= requirements.max_cost_usd) return stalled('max_cost_exceeded');
+  if (requirements.max_cost_usd > 0 && cost === null && noProgressElapsed > requirements.no_progress_deadline_ms) {
+    return stalled('cost_accounting_unavailable');
+  }
   if (noProgressElapsed > requirements.no_progress_deadline_ms) return stalled('no_progress_deadline_exceeded');
   return null;
 }
@@ -369,7 +373,7 @@ function reconstructRecord(dispatch) {
 
 function reportedCost(providerStatus) {
   const cost = providerStatus?.usage_accounting?.cost_usd;
-  return typeof cost === 'number' && Number.isFinite(cost) && cost >= 0 ? cost : 0;
+  return typeof cost === 'number' && Number.isFinite(cost) && cost >= 0 ? cost : null;
 }
 
 function judgmentItems(value) {

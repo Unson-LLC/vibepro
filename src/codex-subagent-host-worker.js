@@ -37,7 +37,11 @@ async function main() {
   if (process.env.VIBEPRO_CODEX_MODEL) args.push('--model', process.env.VIBEPRO_CODEX_MODEL);
   args.push('-');
   const observed = await runCodex(process.env.VIBEPRO_CODEX_EXECUTABLE ?? 'codex', args, buildCodexRuntimePrompt(request));
-  state = { ...state, provider_session_id: observed.sessionId ?? null };
+  state = {
+    ...state,
+    provider_session_id: observed.sessionId ?? null,
+    ...(observed.usageAccounting ? { usage_accounting: observed.usageAccounting } : {})
+  };
   const output = JSON.parse(await readFile(outputPath, 'utf8'));
   const result = toCodexCompletionResult(request, state, output);
   const eventsDir = path.join(runDir, 'events');
@@ -83,13 +87,15 @@ function runCodex(executable, args, prompt) {
     child.on('close', (code) => {
       if (code !== 0) return reject(new Error(`Codex exec failed (${code}): ${stderr.slice(-4096)}`));
       let sessionId = null;
+      let usageAccounting = null;
       for (const line of stdout.split('\n')) {
         try {
           const event = JSON.parse(line);
           if (event.type === 'thread.started') sessionId = event.thread_id ?? event.thread?.id ?? null;
+          usageAccounting = mergeUsageAccounting(usageAccounting, usageFromEvent(event));
         } catch {}
       }
-      resolve({ sessionId });
+      resolve({ sessionId, usageAccounting });
     });
     child.stdin.end(prompt);
   });
@@ -110,6 +116,31 @@ async function deliverToRuntime(request, event) {
 
 function boundedAppend(current, chunk) { return `${current}${chunk}`.slice(-1024 * 1024); }
 function boundedMessage(error) { return String(error?.message ?? error).slice(0, 4096); }
+function usageFromEvent(event) {
+  const source = event?.usage_accounting ?? event?.usage ?? event?.turn?.usage;
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  const inputTokens = nonNegativeNumber(source.input_tokens);
+  const outputTokens = nonNegativeNumber(source.output_tokens);
+  const explicitTotal = nonNegativeNumber(source.total_tokens);
+  const costUsd = nonNegativeNumber(source.cost_usd);
+  const usage = {};
+  if (inputTokens !== null) usage.input_tokens = inputTokens;
+  if (outputTokens !== null) usage.output_tokens = outputTokens;
+  if (explicitTotal !== null) usage.total_tokens = explicitTotal;
+  else if (inputTokens !== null || outputTokens !== null) usage.total_tokens = (inputTokens ?? 0) + (outputTokens ?? 0);
+  if (costUsd !== null) usage.cost_usd = costUsd;
+  return Object.keys(usage).length > 0 ? usage : null;
+}
+function mergeUsageAccounting(current, observed) {
+  if (!observed) return current;
+  if (!current) return observed;
+  const merged = { ...current };
+  for (const key of ['input_tokens', 'output_tokens', 'total_tokens', 'cost_usd']) {
+    if (observed[key] !== undefined) merged[key] = Math.max(merged[key] ?? 0, observed[key]);
+  }
+  return merged;
+}
+function nonNegativeNumber(value) { return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null; }
 async function readJson(file) { return JSON.parse(await readFile(file, 'utf8')); }
 async function writeJson(file, value) {
   const temp = `${file}.${process.pid}.${crypto.randomUUID()}.tmp`;

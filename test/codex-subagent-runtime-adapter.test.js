@@ -34,7 +34,7 @@ function fakeCodexHost() {
       if (completionDuringSpawn) await callback(completionDuringSpawn);
       return { provider_run_id: `codex-provider-${spawns}`, agent_identity: 'reviewer-codex', thread_id: 'thread-codex' };
     },
-    async status() { return { status, ...statusDetails }; },
+    async status() { return { status, usage_accounting: { cost_usd: 0 }, ...statusDetails }; },
     async shutdown(input) { shutdowns += 1; lastShutdownReason = input.reason; status = 'cancelled'; return { status }; },
     async subscribeCompletion({ onEvent }) { lifecycleOrder.push('subscribe'); callback = onEvent; return { subscription_id: 'subscription-1' }; },
     async wake() { wakes += 1; },
@@ -240,6 +240,27 @@ test('CDI-S-10 exact positive cost cap stops before a recovery spawn', async (t)
   const stopped = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.equal(stopped.dispatch.stop_reason.code, 'runtime_stalled');
   assert.equal(host.metrics().lastShutdownReason, 'max_cost_exceeded');
+  assert.equal(host.metrics().spawns, 1);
+});
+
+test('CDI-S-10 missing production cost accounting fails closed before a recovery spawn', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-missing-cost-cap-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const request = reviewRequest(repoRoot);
+  request.requirements.no_progress_deadline_ms = 1000;
+  request.requirements.max_attempts = 3;
+  request.requirements.max_cost_usd = 1;
+  const started = await coordinator.dispatch(baseState, request);
+  host.setStatus('running', { attempts: 1, usage_accounting: { total_tokens: 100 } });
+  clock = new Date('2026-07-22T01:00:02.000Z');
+  const stopped = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(stopped.dispatch.stop_reason.code, 'runtime_stalled');
+  assert.equal(host.metrics().lastShutdownReason, 'cost_accounting_unavailable');
   assert.equal(host.metrics().spawns, 1);
 });
 

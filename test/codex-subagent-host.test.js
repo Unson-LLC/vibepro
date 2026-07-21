@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
+import { createCodexSubagentRuntimeAdapter } from '../src/codex-subagent-runtime-adapter.js';
 import { createCodexSubagentHost } from '../src/codex-subagent-host.js';
 
 test('production Codex host executes a detached CLI worker, dedupes spawn, and delivers completion after parent polling', async (t) => {
@@ -16,6 +18,7 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
     if (args.includes('--version')) process.exit(0);
     const output = args[args.indexOf('-o') + 1];
     process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'real-codex-session-1' }) + '\\n');
+    process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 120, output_tokens: 30, total_tokens: 150, cost_usd: 0.75 } }) + '\\n');
     await writeFile(output, JSON.stringify({
       summary: 'detached Codex result', test_suggestions: ['node --test'],
       judgments: [{ judgment_id: 'correctness', verdict: 'pass', detail: 'schema-valid bounded detail' }],
@@ -45,7 +48,10 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   assert.equal(completion.kind, 'completed');
   assert.equal(completion.result.thread_id, first.thread_id);
   assert.equal(completion.result.review_record.status, 'pass');
+  assert.deepEqual(completion.result.usage_accounting, { input_tokens: 120, output_tokens: 30, total_tokens: 150, cost_usd: 0.75 });
   await waitFor(async () => (await host.status({ provider_run_id: first.provider_run_id })).status === 'completed');
+  assert.deepEqual((await host.status({ provider_run_id: first.provider_run_id })).usage_accounting,
+    { input_tokens: 120, output_tokens: 30, total_tokens: 150, cost_usd: 0.75 });
   const runsRoot = path.join(repoRoot, '.vibepro', 'codex-host', 'runs');
   const [runName] = await readdir(runsRoot);
   await waitFor(async () => access(path.join(runsRoot, runName, 'worker-finished.json')).then(() => true, () => false));
@@ -57,6 +63,40 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   assert.equal(successorStatus.status, 'completed');
   const successorEvents = await successorHost.drainCompletion({ dispatch_id: request.dispatch_id, repo_root: repoRoot });
   assert.deepEqual(successorEvents.map((event) => event.kind), ['partial_result', 'completed']);
+});
+
+test('production Codex host without cost telemetry fails closed instead of spawning a recovery attempt', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-no-cost-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const fakeCodex = path.join(repoRoot, 'fake-codex-no-cost.mjs');
+  await writeFile(fakeCodex, `
+    import { writeFile } from 'node:fs/promises';
+    const args = process.argv.slice(2);
+    if (args.includes('--version')) process.exit(0);
+    const output = args[args.indexOf('-o') + 1];
+    process.stdout.write(JSON.stringify({ type: 'thread.started', thread_id: 'real-codex-session-no-cost' }) + '\\n');
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await writeFile(output, JSON.stringify({ summary: 'late', test_suggestions: [], judgments: [],
+      review_record: { status: 'pass', summary: 'late', findings: [], inspection_summary: 'late',
+        inspection_evidence: 'test/codex-subagent-host.test.js', judgment_deltas: ['late'] } }));
+  `);
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const request = coordinatorRuntimeRequest(repoRoot);
+  const started = await coordinator.dispatch({
+    story_id: 'story-host', run_id: 'run-host', current_head_sha: 'head-host', status: 'running', runtime_dispatches: []
+  }, request);
+  clock = new Date('2026-07-22T01:00:02.000Z');
+  const stopped = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(stopped.dispatch.stop_reason.code, 'runtime_stalled');
+  const runsRoot = path.join(repoRoot, '.vibepro', 'codex-host', 'runs');
+  const runNames = await readdir(runsRoot);
+  assert.equal(runNames.length, 1);
+  const state = JSON.parse(await readFile(path.join(runsRoot, runNames[0], 'state.json'), 'utf8'));
+  assert.equal(state.stop_reason.code, 'cost_accounting_unavailable');
 });
 
 test('explicit managed authority cannot be shadowed by the caller root for status, delivery, subscription, or shutdown', async (t) => {
@@ -97,6 +137,18 @@ function runtimeRequest(repoRoot) {
     input_head_sha: 'head-host', inspection_surface_hash: 'surface-host', requested_judgments: [{ judgment_id: 'correctness' }],
     review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'] },
     requirements: { managed_worktree: repoRoot }, completion_delivery: { protocol: 'vibepro-runtime-inbox-v1' }
+  };
+}
+
+function coordinatorRuntimeRequest(repoRoot) {
+  return {
+    adapter_id: 'codex-subagent', task_id: 'review-host', role: 'review', reviewer_identity: 'reviewer-host',
+    implementation_identity: 'implementer-host', implementation_session_id: 'implementation-session-host',
+    inspection_surface_hash: 'surface-host', requested_judgments: [{ judgment_id: 'correctness' }],
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'] },
+    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000,
+      no_progress_deadline_ms: 1000, max_wall_clock_ms: 3600000, max_attempts: 2,
+      max_cost_usd: 1, managed_worktree: repoRoot }
   };
 }
 
