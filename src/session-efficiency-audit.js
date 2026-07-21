@@ -1822,6 +1822,18 @@ function emptyExposureBuckets(totalSessionTokens) {
   }]));
 }
 
+function unavailableExposureBuckets() {
+  return Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, {
+    id: bucket.id,
+    label: bucket.label,
+    estimated_tokens: null,
+    event_count: null,
+    ratio_of_classified_exposure: null,
+    ratio_of_session_tokens: null,
+    matched_signals: []
+  }]));
+}
+
 function sumTokens(events) {
   return events.reduce((sum, event) => sum + (event.estimated_tokens ?? 0), 0);
 }
@@ -1875,14 +1887,14 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd, reason = nu
       source: 'codex-session-jsonl-text-estimate',
       estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
       coverage: 'signal-matched transcript entries only',
-      buckets: emptyExposureBuckets(null),
+      buckets: unavailableExposureBuckets(),
       provenance_buckets: Object.fromEntries(SESSION_EXPOSURE_PROVENANCE_BUCKETS.map((id) => [id, {
         id,
-        estimated_tokens: 0,
-        unique_estimated_tokens: 0,
-        duplicate_estimated_tokens: 0,
-        event_count: 0,
-        unique_digest_count: 0
+        estimated_tokens: null,
+        unique_estimated_tokens: null,
+        duplicate_estimated_tokens: null,
+        event_count: null,
+        unique_digest_count: null
       }])),
       unique_estimated_tokens: null,
       duplicate_estimated_tokens: null,
@@ -1894,8 +1906,8 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd, reason = nu
         duplicate_over_unique_threshold: 1
       },
       top_exposures: [],
-      unmatched_event_count: 0,
-      unmatched_estimated_tokens: 0,
+      unmatched_event_count: null,
+      unmatched_estimated_tokens: null,
       window: { session_id: sessionId },
       reason: unavailableReason
     }

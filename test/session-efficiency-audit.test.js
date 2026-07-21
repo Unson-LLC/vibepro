@@ -1418,6 +1418,17 @@ test('session efficiency audit fails attribution closed when a selected JSONL fi
   assert.equal(result.attribution.status, 'unavailable');
   assert.match(result.attribution.reason, /session JSONL read failed/);
   assert.equal(result.session.token_accounting.status, 'unavailable');
+  for (const bucket of Object.values(result.session.artifact_token_accounting.buckets)) {
+    assert.equal(bucket.estimated_tokens, null);
+    assert.equal(bucket.event_count, null);
+  }
+  for (const bucket of Object.values(result.session.artifact_token_accounting.provenance_buckets)) {
+    assert.equal(bucket.estimated_tokens, null);
+    assert.equal(bucket.event_count, null);
+    assert.equal(bucket.unique_digest_count, null);
+  }
+  assert.equal(result.session.artifact_token_accounting.unmatched_event_count, null);
+  assert.equal(result.session.artifact_token_accounting.unmatched_estimated_tokens, null);
   assert.match(result.session.token_accounting.reason, /session JSONL read failed/);
   await chmod(sessionPath, 0o600);
 });
