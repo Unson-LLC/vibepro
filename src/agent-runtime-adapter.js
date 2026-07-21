@@ -43,17 +43,18 @@ export function createAgentRuntimeCoordinator({ adapters = [], now = () => new D
   if (registry.size !== adapters.length) throw new AgentRuntimeError('duplicate_adapter', 'runtime adapter ids must be unique');
 
   return {
-    dispatch: (runState, request) => dispatch(registry, now, runState, request),
-    poll: (runState, dispatchId) => poll(registry, now, runState, dispatchId),
+    dispatch: (runState, request, options = {}) => dispatch(registry, now, runState, request, options),
+    poll: (runState, dispatchId, options = {}) => poll(registry, now, runState, dispatchId, options),
     cancel: (runState, dispatchId) => cancel(registry, now, runState, dispatchId)
   };
 }
 
-async function dispatch(registry, now, runState, input = {}) {
+async function dispatch(registry, now, runState, input = {}, options = {}) {
   const request = normalizeRequest(runState, input);
+  const persistedDispatches = options.providerIdentityRecords ?? [];
   let startedRecord = null;
   try {
-    assertProviderIdentityUniqueness(runState.runtime_dispatches ?? []);
+    assertProviderIdentityUniqueness([...persistedDispatches, ...(runState.runtime_dispatches ?? [])]);
   } catch (error) {
     if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
     throw error;
@@ -112,7 +113,11 @@ async function dispatch(registry, now, runState, input = {}) {
     startedRecord = dispatchRecord;
     dispatchRecord.lineage = appendRuntimeObservation(dispatchRecord.lineage, adapter.id, started, dispatchRecord);
     try {
-      assertProviderIdentityUniqueness([...(runState.runtime_dispatches ?? []), dispatchRecord]);
+      assertProviderIdentityUniqueness([
+        ...persistedDispatches,
+        ...(runState.runtime_dispatches ?? []),
+        dispatchRecord
+      ]);
     } catch (error) {
       if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
       throw error;
@@ -129,6 +134,12 @@ async function dispatch(registry, now, runState, input = {}) {
     return { state: { ...upsertDispatch(runState, dispatchRecord), status: 'running', stop_reason: null }, dispatch: dispatchRecord, reused: false };
   } catch (error) {
     if (startedRecord?.provider_run_id) {
+      if (error.code === 'provider_identity_conflict'
+          && error.details?.existing?.run_id
+          && error.details.existing.run_id !== request.run_id) {
+        await containUncertainRuntime(registry, now, runState, startedRecord, error.code, error.message);
+        throw new AgentRuntimeError(error.code, error.message, error.details);
+      }
       const failureCode = error.code === 'provider_identity_conflict' ? error.code : 'runtime_start_failed';
       return containUncertainRuntime(registry, now, upsertDispatch(runState, startedRecord), startedRecord,
         failureCode, error.message);
@@ -155,10 +166,10 @@ async function dispatch(registry, now, runState, input = {}) {
   }
 }
 
-async function poll(registry, now, runState, dispatchId) {
+async function poll(registry, now, runState, dispatchId, options = {}) {
   const current = requireDispatch(runState, dispatchId);
   try {
-    assertProviderIdentityUniqueness(runState.runtime_dispatches ?? []);
+    assertProviderIdentityUniqueness([...(options.providerIdentityRecords ?? []), ...(runState.runtime_dispatches ?? [])]);
   } catch (error) {
     if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
     throw error;
@@ -184,6 +195,11 @@ async function poll(registry, now, runState, dispatchId) {
   if (!TERMINAL_STATUSES.has(observed.status)) {
     const next = { ...current, status: observed.status, updated_at: iso(now), stop_reason: observed.stop_reason ?? null };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
+    assertProviderIdentityUniqueness([
+      ...(options.providerIdentityRecords ?? []),
+      ...(runState.runtime_dispatches ?? []).filter((item) => item.dispatch_id !== current.dispatch_id),
+      next
+    ]);
     return { state: { ...upsertDispatch(runState, next), status: 'running', stop_reason: null }, dispatch: next, reused: false };
   }
   if (observed.status !== 'completed') {
@@ -198,6 +214,11 @@ async function poll(registry, now, runState, dispatchId) {
     ), current);
     const next = { ...current, status: result.completion_status, result, updated_at: iso(now), completed_at: iso(now), stop_reason: null };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, result, next);
+    assertProviderIdentityUniqueness([
+      ...(options.providerIdentityRecords ?? []),
+      ...(runState.runtime_dispatches ?? []).filter((item) => item.dispatch_id !== current.dispatch_id),
+      next
+    ]);
     return { state: upsertDispatch(runState, next), dispatch: next, reused: false };
   } catch (error) {
     const code = error.code === 'runtime_result_timeout' ? error.code : 'invalid_runtime_result';

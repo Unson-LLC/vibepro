@@ -79,7 +79,12 @@ async function fixture() {
   return { root, codexHome };
 }
 
-async function writeCanonicalRun(root, { runId = 'run-alpha', authority = {}, dispatch = true } = {}) {
+async function writeCanonicalRun(root, {
+  runId = 'run-alpha',
+  authority = {},
+  dispatch = true,
+  runtimeDispatches = null
+} = {}) {
   const runDir = path.join(root, '.vibepro', 'executions', STORY_ID, 'runs', runId);
   await mkdir(runDir, { recursive: true });
   const state = {
@@ -88,14 +93,14 @@ async function writeCanonicalRun(root, { runId = 'run-alpha', authority = {}, di
     current_head_sha: HEAD_SHA,
     execution_context: { root_realpath: root },
     ...authority,
-    runtime_dispatches: dispatch ? [{
+    runtime_dispatches: runtimeDispatches ?? (dispatch ? [{
       dispatch_id: `dispatch-${runId}`,
       lineage: lineage(runId, STORY_ID, {
         worktree_root: authority.worktree_root ?? root,
         branch: authority.branch ?? 'codex/lineage',
         head_sha: authority.current_head_sha ?? HEAD_SHA
       })
-    }] : []
+    }] : [])
   };
   await writeFile(path.join(runDir, 'state.json'), `${JSON.stringify(state, null, 2)}\n`);
 }
@@ -223,6 +228,54 @@ test('canonical Run lineage validates complete authority and matching dispatches
   assert.equal(result.lineage_attribution.mode, 'canonical_run_artifact_preferred');
   assert.equal(result.lineage_attribution.canonical_run.status, 'available');
   assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, 1);
+});
+
+test('canonical Run lineage fails closed on conflicting persisted provider identities', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA },
+    runtimeDispatches: [
+      {
+        dispatch_id: 'dispatch-run-alpha',
+        provider_run_id: 'provider-run-conflict',
+        provider_session_id: 'provider-session-alpha',
+        thread_id: 'provider-thread-alpha',
+        lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+      },
+      {
+        dispatch_id: 'dispatch-run-beta',
+        provider_run_id: 'provider-run-conflict',
+        provider_session_id: 'provider-session-beta',
+        thread_id: 'provider-thread-beta',
+        lineage: lineage('run-beta', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+      }
+    ]
+  });
+  await writeSessionFile(codexHome, SESSION_ID, [{
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' }),
+    payload: { type: 'assistant_message', content: 'matching canonical observation' }
+  }]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.status, 'degraded');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.code, 'provider_identity_conflict');
+  assert.match(result.lineage_attribution.canonical_run.reason, /provider identity uniqueness validation failed/);
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.other_story.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
 });
 
 test('canonical Run lineage deterministically deduplicates one mirrored session event per dispatch', async () => {

@@ -12,6 +12,7 @@ import {
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
 import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
+import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -131,9 +132,10 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
       actual_head_sha: identityBefore.head_sha
     });
   }
+  const providerIdentityRecords = await readPersistedProviderIdentityRecords(deps, loaded.authorityIdentity.root_realpath);
   let result = operation === 'dispatch'
-    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request)
-    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId);
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request, { providerIdentityRecords })
+    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
     result = {
@@ -188,13 +190,13 @@ const FALLBACK_RUNTIME_STOP_CODES = new Set([
   'review_readonly_unavailable'
 ]);
 
-async function dispatchRuntimeWithFallbacks(coordinator, state, request) {
+async function dispatchRuntimeWithFallbacks(coordinator, state, request, options = {}) {
   const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
     .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
   let currentState = state;
   let result = null;
   for (const adapterId of adapterIds) {
-    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId });
+    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId }, options);
     currentState = result.state;
     const fallbackAllowed = result.dispatch?.provider_run_id === null
       && FALLBACK_RUNTIME_STOP_CODES.has(result.dispatch?.stop_reason?.code);
@@ -846,6 +848,51 @@ function resolveRepositorySharedLockRoot(identity) {
 async function readRun(deps, repoRoot, options) {
   const loaded = await loadSelectedRun(deps, repoRoot, options);
   return loaded.state;
+}
+
+async function readPersistedProviderIdentityRecords(deps, repoRoot) {
+  const executionsRoot = path.join(getWorkspaceDir(repoRoot), 'executions');
+  let storyEntries;
+  try {
+    storyEntries = await deps.artifactIo.readdir(executionsRoot);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
+    throw error;
+  }
+  const records = [];
+  for (const storyId of [...storyEntries].filter((entry) => typeof entry === 'string').sort()) {
+    const runsRoot = path.join(executionsRoot, storyId, 'runs');
+    let runEntries;
+    try {
+      runEntries = await deps.artifactIo.readdir(runsRoot);
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw error;
+    }
+    for (const runId of [...runEntries].filter((entry) => RUN_ID_PATTERN.test(entry)).sort()) {
+      const artifact = getRunStatePath(repoRoot, storyId, runId);
+      const raw = await readOptionalFile(deps, artifact);
+      if (raw === null) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state disappeared during provider identity validation.', {
+          artifact
+        });
+      }
+      let state;
+      try {
+        state = migrateRunState(JSON.parse(raw)).state;
+      } catch (error) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state cannot be read during provider identity validation.', {
+          artifact,
+          cause: error.code ?? error.message
+        });
+      }
+      for (const dispatch of state.runtime_dispatches ?? []) {
+        records.push({ ...dispatch, source_artifact: artifact });
+      }
+    }
+  }
+  assertProviderIdentityUniqueness(records);
+  return records;
 }
 
 async function watchRun(deps, repoRoot, options) {

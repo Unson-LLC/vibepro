@@ -9,7 +9,11 @@ import {
   parseNumstat,
   summarizeDiffLineStats
 } from './evidence-cost-budget.js';
-import { resolveRunAttribution, validateRunLineageEnvelope } from './run-lineage.js';
+import {
+  assertProviderIdentityUniqueness,
+  resolveRunAttribution,
+  validateRunLineageEnvelope
+} from './run-lineage.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -1510,6 +1514,21 @@ function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
       reason: authorityError,
       source_artifact: sourceArtifact,
       requested: { story_id: storyId, run_id: runId }
+    };
+  }
+  try {
+    assertProviderIdentityUniqueness(state.runtime_dispatches ?? []);
+  } catch (error) {
+    return {
+      status: 'unavailable',
+      reason: `canonical Run provider identity uniqueness validation failed: ${error.message}`,
+      source_artifact: sourceArtifact,
+      requested: { story_id: storyId, run_id: runId },
+      provider_identity_validation: {
+        status: 'degraded',
+        code: error.code ?? 'provider_identity_conflict',
+        details: error.details ?? null
+      }
     };
   }
   const events = [];
