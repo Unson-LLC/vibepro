@@ -211,7 +211,7 @@
     {
       "id": "S-013",
       "type": "scenario",
-      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface and with required validation sequencing, when review coverage is selected, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required.",
+      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface and with required validation sequencing, when the workflow state transition selects review coverage, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required.",
       "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [{ "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" }] }
     }
   ],
