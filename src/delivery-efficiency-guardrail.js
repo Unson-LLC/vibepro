@@ -147,8 +147,13 @@ export function planCompatibleFindingBatches(findings = []) {
 }
 
 export function aggregateDeliveryMetrics(input = {}) {
-  const intervals = (input.reviews ?? []).map((review) => interval(review.started_at, review.finished_at));
-  const reviewDispatchesByRole = (input.reviews ?? []).reduce((counts, review) => {
+  const reviews = input.reviews ?? [];
+  const hasCompleteReviewTiming = reviews.length > 0
+    && reviews.every((review) => review.started_at && review.finished_at);
+  const intervals = hasCompleteReviewTiming
+    ? reviews.map((review) => interval(review.started_at, review.finished_at))
+    : [];
+  const reviewDispatchesByRole = reviews.reduce((counts, review) => {
     if (typeof review.role === 'string' && review.role.trim()) counts[review.role] = (counts[review.role] ?? 0) + 1;
     return counts;
   }, {});
@@ -159,9 +164,9 @@ export function aggregateDeliveryMetrics(input = {}) {
     trusted_pr_ready_ms: elapsed(input.run_started_at, input.trusted_pr_ready_at),
     observed_work_ms: nullableMeasurement(input.observed_work_ms, 'observed_work_ms'),
     tool_wait_ms: nullableMeasurement(input.tool_wait_ms, 'tool_wait_ms'),
-    review_wait_ms: intervals.length > 0 ? unionDuration(intervals) : null,
-    subagent_wall_clock_ms: intervals.length > 0 ? unionDuration(intervals) : null,
-    agent_consumption_ms: intervals.length > 0 ? intervals.reduce((sum, item) => sum + item[1] - item[0], 0) : null,
+    review_wait_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,
+    subagent_wall_clock_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,
+    agent_consumption_ms: hasCompleteReviewTiming ? intervals.reduce((sum, item) => sum + item[1] - item[0], 0) : null,
     subagent_count: nullableMeasurement(input.subagent_count ?? (input.reviews ? input.reviews.length : null), 'subagent_count', true),
     review_dispatch_count: nullableMeasurement(input.review_dispatch_count ?? (input.reviews ? input.reviews.length : null), 'review_dispatch_count', true),
     review_dispatches_by_role: input.review_dispatches_by_role ?? (input.reviews ? reviewDispatchesByRole : null),

@@ -137,6 +137,21 @@ test('metrics separate review union wall clock from parallel agent consumption a
   assert.equal(metrics.tokens_per_accepted_finding.fresh_input, null);
 });
 
+test('metrics preserve unknown review timing while any dispatched review is still open', () => {
+  const metrics = aggregateDeliveryMetrics({
+    reviews: [
+      { role: 'runtime', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:06:00.000Z' },
+      { role: 'gate', started_at: '2026-07-21T00:03:00.000Z', finished_at: null }
+    ]
+  });
+
+  assert.equal(metrics.review_wait_ms, null);
+  assert.equal(metrics.subagent_wall_clock_ms, null);
+  assert.equal(metrics.agent_consumption_ms, null);
+  assert.equal(metrics.subagent_count, 2);
+  assert.deepEqual(metrics.review_dispatches_by_role, { runtime: 1, gate: 1 });
+});
+
 test('efficiency debt stays separate from correctness readiness', () => {
   const summary = summarizeEfficiencyDebt({
     correctness_ready: true,
