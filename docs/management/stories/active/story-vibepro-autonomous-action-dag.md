@@ -15,7 +15,7 @@ related_stories:
   - story-vibepro-pr-evidence-autopilot
   - story-vibepro-managed-worktree-execution-dag
   - story-vibepro-review-finding-repair-loop
-reason: "selected a closed typed DAG instead of executing generated command strings. compatibility: existing pr_prepare and pr_autopilot_safe nodes remain supported, and Portfolio coordination must tolerate a lock released between contention detection and owner inspection without weakening fail-closed handling for ambiguous locks. rollback: disable the expanded DAG and use the legacy two-node plan. boundary: orchestration and transitions only; provider execution belongs to later Stories."
+reason: "selected a closed typed DAG instead of executing generated command strings. compatibility: existing pr_prepare and pr_autopilot_safe nodes remain supported, and Portfolio coordination must tolerate a lock released between contention detection and owner inspection without weakening fail-closed handling for ambiguous locks. rollback: disable the expanded DAG and use the legacy two-node plan; the Portfolio retry is an independent code-only rollback with no state migration, restoring the prior typed stop for the released-lock race. boundary: orchestration and transitions only; provider execution belongs to later Stories."
 created_at: 2026-07-21
 updated_at: 2026-07-21
 ---

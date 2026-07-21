@@ -51,7 +51,7 @@ Guarded Run dependencyはcanonical autonomous node名だけを受け付ける閉
 
 完了checkpointはrun id、profile、action id、input HEADから生成したkeyで照合する。同一HEAD再開では再実行しない。各runnerの完了後にrepositoryからHEADを再取得し、その権威HEADだけをoutput HEADおよびdependency境界として用いる。runnerが申告した`output_head_sha`と権威HEADが一致しなければ、journalへ失敗を記録してdependent Actionまたは`pr_ready`へ進む前にfail closedする。mutationで権威HEADが変われば、同じiteration内の残りsuffixを直ちに新HEAD keyで再評価する。異なるprofileのjournalは完了根拠に使わない。この不変条件は`AAD-S-3 forged output HEAD cannot rebind a suffix or reach pr_ready`で検証する。
 
-複数Runを直列化するPortfolio lockは、既存ownerとの競合を検出後、owner metadataの読取時点で`owner.json`とlock directoryの双方が`ENOENT`になった場合に限り、lock取得を一度だけ再試行する。lock directoryが残るのにowner metadataがない場合、metadataが不正な場合、または再試行後も競合する場合は`portfolio_lock_recovery_required`としてfail closedする。
+複数Runを直列化するPortfolio lockは、既存ownerとの競合を検出後、owner metadataの読取時点で`owner.json`とlock directoryの双方が`ENOENT`になった場合に限り、lock取得を一度だけ再試行する。lock directoryが残るのにowner metadataがない場合やmetadataが不正な場合は`portfolio_lock_recovery_required`、再試行後も正当なlive ownerと競合する場合は`portfolio_busy`として、既存のtyped outcomeでfail closedする。
 
 ## S-004 Result contract
 
