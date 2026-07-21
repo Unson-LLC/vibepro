@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Generated exclusions are limited to deterministic canonical projections; edits and lineage mismatch fail closed while named CLI and legacy behavior remain compatible.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected routing, freshness, fingerprints, review/verification/PR consumers, fresh-checkout lifecycle, and legacy fallback.",
+    "evidence": "HEAD 7059c5ff; artifact-routing plus lifecycle 63 pass and review/content/CLI 13 pass.",
+    "inputs": [
+      "src/artifact-routing.js",
+      "src/git-fingerprint.js",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/verification-evidence.js",
+      "src/workspace.js",
+      "src/cli.js",
+      ".vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+      "test/agent-review-independence.test.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Concern that consumer policies diverge or legacy fallback breaks -> pass because consumers share scoped fingerprints and both lifecycles are tested."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "current_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "current_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T13:31:36.134Z",
+  "git_context": {
+    "head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "03db1435d607f39981c7e88da977af6f62529874d92de98652cc2feaa6c3f0ce",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T13:31:36.129Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 12 file(s)",
+    "recorded_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "07dbcce2eb15eab311999a3765b185763e09f9ab9c3bf5fe721fed4d1315dc87",
+        "size": 153464
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "31598361c6701bf07971b864f474abe337a0a49d2326cdb13dfdc55a7db3ae48",
+        "size": 45451
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "130cb14ae06d1209aab41a7518c6b48c417e6be248e30b0b5875d977a4eccea3",
+        "size": 214082
+      },
+      {
+        "path": "src/git-fingerprint.js",
+        "sha256": "74d573f4a770489639e9bee28b10018dbae13c32a804da42564950730014a843",
+        "size": 5581
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "d87e3880cc5b0a10f7e7ae747c229f675d2d5c93ca645d7dd12cf4ff491962ea",
+        "size": 654848
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "af964dff559fab72f23d79d57ffc88539d21786c6e918a59e1241e9ca315cae4",
+        "size": 19129
+      },
+      {
+        "path": "src/workspace.js",
+        "sha256": "74f1a87af14cc9e68021f56ff1dc8e3970d27e2d941af02068fc8736d8bf19aa",
+        "size": 4314
+      },
+      {
+        "path": "test/agent-review-independence.test.js",
+        "sha256": "52f52ac63c4be348f48f77c1b94eb18a6c40c51ea09b29cdd750fa9fe41dea48",
+        "size": 8836
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689",
+        "size": 77065
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "acc860690d156397cfd31fe1c54f06d6d235606bcdc4bc649ad5b40f917b3947",
+        "size": 35147
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "7cad02c75367b517df545664bc79f3d379594fe42f5728b8ca41e4b10557bf73",
+        "size": 12373
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "6eff523d3733198229ab475136063f362db36ffb812253a497c2bff510ef9a94",
+        "size": 1083728
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5b6d60adfd6c13b705a893d62e03e3e51cc7847776d0128bcd805fbaf2fdc91c"
+  },
+  "source_fingerprint": "414608aeb4a7543a9da4797dd6c3651aa51ea2bc6e0a3ae8adc1633df534661d",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_runtime_contract_terra",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../vibepro-review-runtime-contract.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

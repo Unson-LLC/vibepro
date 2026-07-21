@@ -3,44 +3,41 @@
 - Story: story-vibepro-routing-profiles-rendered-projections
 - Stage: architecture_spec
 - Mode: policy-aware parallel review dispatch
-- Required subagents: 1
-- Current head: e67f33883823ecc77d5cd8cddf20a87b8b4a3574
-- User dirty: true
+- Required subagents: 3
+- Current head: b4def95aac626d5e5e8fa9ba2efc16985b1491e9
+- User dirty: false
 - Raw dirty: true
-- User fingerprint excludes: .vibepro/, .worktrees/vibepro/
+- User fingerprint excludes: .vibepro/, .worktrees/vibepro/, docs/features/routing-profiles-rendered-projections/02_functional_spec.md, docs/features/routing-profiles-rendered-projections/05_test_plan.md, docs/features/routing-profiles-rendered-projections/08_review.md, docs/features/routing-profiles-rendered-projections/09_gate.md, docs/features/routing-profiles-rendered-projections/10_release.md
 - Parallel scope: このstageのみ。別review stageと同じbatchで混ぜない
 
 ## Evidence Reuse First Input
 
 - status: stale
-- evidence_key: evk_d010f2ad87b8d842c6e8e79bdd3a9efe
+- evidence_key: evk_6431a867a6904b668fc34149f2d0c149
 - first_input: false
 - reason: Evidence reuse artifact is not fresh for the current review context.
-- verification_summary_fingerprint: sha256:4370f020ec1c78f4eef53df1aa47469409b0a575031e486e700bb6bd074a17a5
-- current_verification_summary_fingerprint: sha256:4370f020ec1c78f4eef53df1aa47469409b0a575031e486e700bb6bd074a17a5
-- verification_evidence_updated_at: 2026-07-21T06:54:04.834Z
-- current_verification_evidence_updated_at: 2026-07-21T06:54:04.834Z
+- verification_summary_fingerprint: sha256:f9c414123adf948808fd499d326eb8e1f12b346fd90aa29d9f2f4c09519f2543
+- current_verification_summary_fingerprint: sha256:f9c414123adf948808fd499d326eb8e1f12b346fd90aa29d9f2f4c09519f2543
+- verification_evidence_updated_at: 2026-07-21T18:21:18.878Z
+- current_verification_evidence_updated_at: 2026-07-21T18:21:18.878Z
 - preferred_order: -
 
 Reuse key内のverification command timestamps:
-- typecheck: executed_at=2026-07-21T06:54:04.834Z git_recorded_at=2026-07-21T06:54:04.832Z
-- integration: executed_at=2026-07-21T06:54:03.600Z git_recorded_at=2026-07-21T06:54:03.592Z
-- e2e: executed_at=2026-07-21T06:54:02.518Z git_recorded_at=2026-07-21T06:54:02.505Z
-- unit: executed_at=2026-07-21T06:54:01.285Z git_recorded_at=2026-07-21T06:54:01.276Z
-- build: executed_at=2026-07-21T06:50:40.424Z git_recorded_at=2026-07-21T06:50:40.413Z
+- integration: executed_at=2026-07-21T18:21:18.878Z git_recorded_at=2026-07-21T18:21:18.869Z
+- unit: executed_at=2026-07-21T18:21:16.544Z git_recorded_at=2026-07-21T18:21:16.536Z
+- build: executed_at=2026-07-21T18:19:44.123Z git_recorded_at=2026-07-21T18:19:44.120Z
+- typecheck: executed_at=2026-07-21T18:19:42.926Z git_recorded_at=2026-07-21T18:19:42.923Z
+- e2e: executed_at=2026-07-21T18:19:41.321Z git_recorded_at=2026-07-21T18:19:41.316Z
 
 現在のverification command timestamps:
-- typecheck: executed_at=2026-07-21T06:54:04.834Z git_recorded_at=2026-07-21T06:54:04.832Z
-- integration: executed_at=2026-07-21T06:54:03.600Z git_recorded_at=2026-07-21T06:54:03.592Z
-- e2e: executed_at=2026-07-21T06:54:02.518Z git_recorded_at=2026-07-21T06:54:02.505Z
-- unit: executed_at=2026-07-21T06:54:01.285Z git_recorded_at=2026-07-21T06:54:01.276Z
-- build: executed_at=2026-07-21T06:50:40.424Z git_recorded_at=2026-07-21T06:50:40.413Z
+- integration: executed_at=2026-07-21T18:21:18.878Z git_recorded_at=2026-07-21T18:21:18.869Z
+- unit: executed_at=2026-07-21T18:21:16.544Z git_recorded_at=2026-07-21T18:21:16.536Z
+- build: executed_at=2026-07-21T18:19:44.123Z git_recorded_at=2026-07-21T18:19:44.120Z
+- typecheck: executed_at=2026-07-21T18:19:42.926Z git_recorded_at=2026-07-21T18:19:42.923Z
+- e2e: executed_at=2026-07-21T18:19:41.321Z git_recorded_at=2026-07-21T18:19:41.316Z
 
 Stale reasons:
-- verification_summary_fingerprint: verification_summary_fingerprint changed previous=sha256:85c6d6ca14c3898d6cca92c2f0505f0a38bf4d20b0aeb8e471b4b74a898573cd current=sha256:4370f020ec1c78f4eef53df1aa47469409b0a575031e486e700bb6bd074a17a5
-- verification_evidence_updated_at: verification_evidence_updated_at changed previous=2026-07-21T06:50:40.424Z current=2026-07-21T06:54:04.834Z
-- verification_command_timestamps: verification_command_timestamps changed previous=[{"kind":"build","executed_at":"2026-07-21T06:50:40.424Z","git_recorded_at":"2026-07-21T06:50:40.413Z"},{"kind":"typecheck","executed_at":"2026-07-21T06:50:39.431Z","git_recorded_at":"2026-07-21T06:50:39.429Z"},{"kind":"integration","executed_at":"2026-07-21T06:50:38.468Z","git_recorded_at":"2026-07-21T06:50:38.460Z"},{"kind":"e2e","executed_at":"2026-07-21T06:50:37.487Z","git_recorded_at":"2026-07-21T06:50:37.474Z"},{"kind":"unit","executed_at":"2026-07-21T06:50:36.125Z","git_recorded_at":"2026-07-21T06:50:36.117Z"}] current=[{"kind":"typecheck","executed_at":"2026-07-21T06:54:04.834Z","git_recorded_at":"2026-07-21T06:54:04.832Z"},{"kind":"integration","executed_at":"2026-07-21T06:54:03.600Z","git_recorded_at":"2026-07-21T06:54:03.592Z"},{"kind":"e2e","executed_at":"2026-07-21T06:54:02.518Z","git_recorded_at":"2026-07-21T06:54:02.505Z"},{"kind":"unit","executed_at":"2026-07-21T06:54:01.285Z","git_recorded_at":"2026-07-21T06:54:01.276Z"},{"kind":"build","executed_at":"2026-07-21T06:50:40.424Z","git_recorded_at":"2026-07-21T06:50:40.413Z"}]
-- risk_surface_fingerprint: risk_surface_fingerprint changed previous=sha256:33be92f7f0af87ca23295fce2f7cfd0399a5a7639fced2b8c3472cf0e73e84a1 current=sha256:ee87acf0214fbdb824de1f386e520bc6d1efb0f78ecfd65fa80fe44eda5661ae
+- risk_surface_fingerprint: risk_surface_fingerprint changed previous=sha256:efbc67d9389e0b7a939097c82c4851c2962e5b266508a9e024926d0ae26e33d0 current=sha256:5ac2c26d8bd3c6c058ffc0b70c5028ff4258bfceea71cf728e4aafa031672232
 
 
 ## Coordinator指示
@@ -114,7 +111,31 @@ Red flagsとしてfinding化するもの:
 - role concernと全mandatory lensがverdictをどう変えた/確認したかを説明する。
 - 必須のevidence inputがmissing、stale、contradictedなら `needs_changes` または `block` を返す。
 
-## Subagent 1: architecture_spec:spec_consistency
+## Subagent 1: architecture_spec:architecture_boundary
+
+Review request:
+`.vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-architecture_boundary.md`
+
+Prompt:
+上記review requestを読み、`architecture_spec:architecture_boundary` reviewだけを実行してください。すべてのmandatory review lensを含めます。fileは編集しません。返却JSONには `status`, `summary`, `findings`, `inspection_summary`, 任意の `inspection_evidence`, `inspection_inputs`, `judgment_delta` を含めます。`inspection_inputs` には実際に確認したsource、test、Story、Spec、contract、config fileを列挙し、review-request pathや生成された `.vibepro` artifactだけをcontent surfaceとして返してはいけません。
+
+
+subagentの結果受領後に記録するcommand:
+`vibepro review record . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role architecture_boundary --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript <artifact> --agent-closed`
+
+Lifecycle start command:
+`vibepro review start . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role architecture_boundary --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`
+
+timeout/replacement/manual shutdown用Lifecycle close command:
+`vibepro review close . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role architecture_boundary --agent-id "<subagent-id>" --close-reason <completed|timeout|replaced|manual_shutdown>`
+
+必要なprovenance:
+- Codex: spawned subagent idと、利用可能ならthread/call idを保持し、`--agent-system codex --execution-mode parallel_subagent` と一緒に渡す。
+- Claude Code: Task/subagent id、session id、またはtranscript artifactを保持し、`--agent-system claude_code --execution-mode parallel_subagent` と一緒に渡す。
+- Lifecycle: 結果受領後、record commandの前にsubagent thread/sessionをclose/shutdownする。Required Agent Review Gate passには `--agent-closed` が必要。runtimeがagentをcloseできない場合は `needs_changes` を返すか、required Agent Review Gate外でwaiverを記録する。
+- Human waiver: subagentが利用できない場合はblockerを報告するか、Agent Review Gate外でhuman waiver decisionを記録する。required subagent reviewの代替としてmanual_reviewをpassing扱いで記録しない。
+
+## Subagent 2: architecture_spec:spec_consistency
 
 Review request:
 `.vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-spec_consistency.md`
@@ -131,6 +152,30 @@ Lifecycle start command:
 
 timeout/replacement/manual shutdown用Lifecycle close command:
 `vibepro review close . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role spec_consistency --agent-id "<subagent-id>" --close-reason <completed|timeout|replaced|manual_shutdown>`
+
+必要なprovenance:
+- Codex: spawned subagent idと、利用可能ならthread/call idを保持し、`--agent-system codex --execution-mode parallel_subagent` と一緒に渡す。
+- Claude Code: Task/subagent id、session id、またはtranscript artifactを保持し、`--agent-system claude_code --execution-mode parallel_subagent` と一緒に渡す。
+- Lifecycle: 結果受領後、record commandの前にsubagent thread/sessionをclose/shutdownする。Required Agent Review Gate passには `--agent-closed` が必要。runtimeがagentをcloseできない場合は `needs_changes` を返すか、required Agent Review Gate外でwaiverを記録する。
+- Human waiver: subagentが利用できない場合はblockerを報告するか、Agent Review Gate外でhuman waiver decisionを記録する。required subagent reviewの代替としてmanual_reviewをpassing扱いで記録しない。
+
+## Subagent 3: architecture_spec:regression_risk
+
+Review request:
+`.vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-regression_risk.md`
+
+Prompt:
+上記review requestを読み、`architecture_spec:regression_risk` reviewだけを実行してください。すべてのmandatory review lensを含めます。fileは編集しません。返却JSONには `status`, `summary`, `findings`, `inspection_summary`, 任意の `inspection_evidence`, `inspection_inputs`, `judgment_delta` を含めます。`inspection_inputs` には実際に確認したsource、test、Story、Spec、contract、config fileを列挙し、review-request pathや生成された `.vibepro` artifactだけをcontent surfaceとして返してはいけません。
+
+
+subagentの結果受領後に記録するcommand:
+`vibepro review record . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role regression_risk --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript <artifact> --agent-closed`
+
+Lifecycle start command:
+`vibepro review start . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role regression_risk --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`
+
+timeout/replacement/manual shutdown用Lifecycle close command:
+`vibepro review close . --id story-vibepro-routing-profiles-rendered-projections --stage architecture_spec --role regression_risk --agent-id "<subagent-id>" --close-reason <completed|timeout|replaced|manual_shutdown>`
 
 必要なprovenance:
 - Codex: spawned subagent idと、利用可能ならthread/call idを保持し、`--agent-system codex --execution-mode parallel_subagent` と一緒に渡す。

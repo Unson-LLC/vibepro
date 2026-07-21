@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Current HEAD architecture boundary review passed.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed gate orchestration and review lifecycle; risk_surfaces=gate_orchestration,review_lifecycle. Exact generated projection validation, common context, and fail-closed handling were confirmed.",
+    "evidence": "/private/tmp/vibepro-architecture-boundary-962d7e02.md",
+    "inputs": [
+      "src/artifact-routing.js",
+      "src/agent-review.js",
+      "test/artifact-routing.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "No boundary defect found because generated-only exclusions require exact rerender and malformed/manual state stays fail-closed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+    "current_head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "current_head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T16:54:30.158Z",
+  "git_context": {
+    "head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "e8ca1c2b0f7188ea6293ebb71af9dd1e2e67697dad3eafe73413573e30cd818b",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/06_tasks.md",
+        "docs/features/routing-profiles-rendered-projections/07_evidence.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T16:54:30.151Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Current strict HEAD preflight review after base update."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "495d9fb4562d5b90df566e7ad937ce84fa8f39d8e2dd8272d9551e0ae234ea91",
+        "size": 155005
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "31598361c6701bf07971b864f474abe337a0a49d2326cdb13dfdc55a7db3ae48",
+        "size": 45451
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689",
+        "size": 77065
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ae81d3368b1c458ee83474fd48f0d90c14e828909e55d1c168e7596232ab18be"
+  },
+  "source_fingerprint": "45f0d251bc01ca48b24ae74f3a1a1e97ab90290d6f5b0e7b76c074f0bc2e86ab",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/vibepro_gate_recovery_merge/architecture_boundary_review_962",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../vibepro-architecture-boundary-962d7e02.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-architecture-boundary-962d7e02.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

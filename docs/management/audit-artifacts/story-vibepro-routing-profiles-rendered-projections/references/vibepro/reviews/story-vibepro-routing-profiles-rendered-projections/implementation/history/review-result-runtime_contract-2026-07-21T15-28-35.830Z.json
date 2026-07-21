@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "No runtime-contract regression from lifecycle recovery.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed changed lifecycle classification and unaffected routing producer/resolver boundaries.",
+    "evidence": "src/agent-review.js:3154-3177; test/artifact-routing.test.js; focused E2E suite pass",
+    "inputs": [
+      "src/agent-review.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Runtime contract concern -> pass because producer/resolver paths are unchanged and focused regressions pass."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+    "current_head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "current_head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T15:28:35.830Z",
+  "git_context": {
+    "head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "cd5ed9198cf555eb230034ae9dbcd0622403c49b9db30f52a4cd935df88343fd",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/06_tasks.md",
+        "docs/features/routing-profiles-rendered-projections/07_evidence.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T15:28:35.824Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve strict HEAD freshness after lifecycle recovery changes"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "495d9fb4562d5b90df566e7ad937ce84fa8f39d8e2dd8272d9551e0ae234ea91",
+        "size": 155005
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689",
+        "size": 77065
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "53fd5ed74cad05c8994863548696b00ad9a29dfcb162d743d7cfbe596abdee61",
+        "size": 12888
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "70b4e483926b0860f2108414d6e49e722db839b3a5dd16dd910838a1faea3b68"
+  },
+  "source_fingerprint": "08df191cd38b0a627b5bcaff985cc3c19a44cec1ed305892031e6bb5223a2ae6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "terra-low-runtime-contract-9415",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-routing-profiles-rendered-projections",
-  "created_at": "2026-07-21T08:10:33.147Z",
+  "created_at": "2026-07-21T18:35:52.264Z",
   "status": "satisfied",
   "required": true,
   "architecture_decision": "ADRあり (docs/architecture/story-vibepro-routing-profiles-rendered-projections.md)",
@@ -22,25 +22,30 @@
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-07-21T08:10:22.623Z",
+    "collected_at": "2026-07-21T18:35:49.550Z",
     "package": {
       "name": "vibepro",
       "version": "0.2.0-beta.1",
-      "root": "/private/tmp/vibepro-issue-359"
+      "root": "/private/tmp/vibepro-graphify-read-side-effect"
     },
     "cli": {
-      "entrypoint": "/private/tmp/vibepro-issue-359/bin/vibepro.js",
-      "runtime_module": "/private/tmp/vibepro-issue-359/src/runtime-info.js"
+      "entrypoint": "/private/tmp/vibepro-graphify-read-side-effect/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-graphify-read-side-effect/src/runtime-info.js"
     },
     "source_git": {
       "is_git_repo": true,
-      "commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "branch": "codex/issue-359-routing-profiles-projections",
+      "commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "branch": "codex/graphify-read-side-effect",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa",
+      "origin_main_commit": "9afd73b383e492d24a65393ca039fd7370ab572f",
       "origin_main_relation": "ahead",
-      "dirty": false,
-      "dirty_summary": []
+      "dirty": true,
+      "dirty_summary": [
+        "M docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        " M docs/features/routing-profiles-rendered-projections/08_review.md",
+        " M docs/features/routing-profiles-rendered-projections/09_gate.md",
+        " M docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
     }
   },
   "review_record": {

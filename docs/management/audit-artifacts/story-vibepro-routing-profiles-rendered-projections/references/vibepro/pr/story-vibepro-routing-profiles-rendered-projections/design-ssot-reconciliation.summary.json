@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "design-ssot-reconciliation.json",
-  "source_bytes": 490290,
-  "source_content_hash": "sha256:b15f241865950e6a983366414f84ea60493c9ac4c5fcd6dfa293a55ef4ec1e7b",
+  "source_bytes": 500401,
+  "source_content_hash": "sha256:49b470b1b7f669899303ea2a64a4284ff76e1bdd1bf9be5bf67b623241824abc",
   "conclusion": {
     "status_fields": {
       "model": "vibepro-design-ssot-reconciliation-v1",
@@ -13,8 +13,8 @@
     },
     "top_level_counts": {
       "registry_sources_count": 1,
-      "changed_paths_count": 24,
-      "design_roots_count": 89,
+      "changed_paths_count": 14,
+      "design_roots_count": 92,
       "action_items_count": 0,
       "unregistered_changed_docs_count": 0
     }

@@ -56,12 +56,19 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "S-001",
       "type": "scenario",
       "statement": "Given catalog-authoritative artifact_profile and feature_slug for a named-profile Story, matching Story-frontmatter mirrors are mandatory and every lifecycle consumer resolves the same profile and context; missing or conflicting mirrors fail before writes, while profile-less legacy/unconfigured Stories may omit mirrors and use only the 0.1.0 fallback contract.",
+      "inherited_behavior": {
+        "condition": "artifact_profile is unset, or schemaVersion is 0.1.0 and artifact_routing.artifacts remains the repository-global route source",
+        "classification": "inherited",
+        "files": [
+          "src/artifact-routing.js"
+        ]
+      },
       "rationale": "AC-2 and AC-3 require persistent per-story selection and shared resolution across story discovery, architecture, spec, task, graphify, review, gate, PR, status, and migration.",
       "origin": {
         "story_refs": [
@@ -82,6 +89,16 @@
             "section": "方針",
             "text_snippet": "artifact_profile"
           }
+        ],
+        "test_refs": [
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile"
+          },
+          {
+            "file": "test/artifact-routing.test.js",
+            "case": "schema 0.1 generated projections retain legacy byte-copy overwrite compatibility"
+          }
         ]
       },
       "verifiable_by": {
@@ -99,7 +116,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "INV-002",
@@ -142,7 +159,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "C-001",
@@ -192,7 +209,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "C-002",
@@ -235,7 +252,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "C-003",
@@ -289,7 +306,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T03:00:00.000Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "INV-003",
@@ -313,7 +330,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "C-004",
@@ -337,7 +354,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "S-002",
@@ -375,7 +392,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "S-003",
@@ -413,7 +430,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T03:00:00.000Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "S-004",
@@ -445,7 +462,7 @@
         ]
       },
       "first_seen_at": "2026-07-21T02:32:43.019Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     },
     {
       "id": "C-005",
@@ -485,7 +502,85 @@
         ]
       },
       "first_seen_at": "2026-07-21T03:20:00.000Z",
-      "last_revised_at": "2026-07-21T06:38:58.979Z"
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "Given an Agent Review record has neither supplied lineage nor Run authority, the recorder leaves lineage absent; when either source is available, the established lineage-resolution path remains unchanged.",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "inherited",
+        "files": [
+          "src/agent-review.js"
+        ]
+      },
+      "rationale": "The rendered-projection change must not alter the established optional-lineage behavior of Agent Review evidence.",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "resolveRecorderLineage"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/run-lineage-evidence-propagation.test.js",
+            "case": "authoritative evidence recorders inherit validated Run lineage additively"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/run-lineage-evidence-propagation.test.js",
+            "must_cover": "authoritative evidence recorders inherit validated Run lineage additively"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T12:25:22.205Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "Given recorded git context contains user_status_fingerprint_hash, freshness comparison uses that user fingerprint; when it is absent, the established full-fingerprint fallback remains unchanged.",
+      "inherited_behavior": {
+        "condition": "gitContext?.user_status_fingerprint_hash",
+        "classification": "inherited",
+        "files": [
+          "src/git-fingerprint.js"
+        ]
+      },
+      "rationale": "Generated projections must not make user-worktree freshness depend on VibePro-owned output, while preserving legacy evidence fallback.",
+      "origin": {
+        "code_refs": [
+          {
+            "file": "src/git-fingerprint.js",
+            "anchor": "fingerprintHashForContext"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+            "case": "story-vibepro-evidence-user-fingerprint evidence binding replay"
+          },
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
+            "must_cover": "Legacy evidence that lacks the user fingerprint still uses the existing full dirty fingerprint comparison"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-21T12:25:22.205Z",
+      "last_revised_at": "2026-07-21T12:26:17.006Z"
     }
   ],
   "diagrams": [

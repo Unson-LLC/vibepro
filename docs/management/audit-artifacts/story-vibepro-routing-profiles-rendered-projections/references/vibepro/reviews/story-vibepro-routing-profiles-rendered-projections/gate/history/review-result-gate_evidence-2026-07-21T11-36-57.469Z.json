@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Corrected current-head evidence confirms 18/18 integration, 55/55 unit, typecheck pass, and bounded projection freshness exclusions.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected implementation, tests, current-head verification evidence, git status, and diff; exclusion is limited by lineage and exact rendered equality, while hand edits become stale.",
+    "evidence": "/private/tmp/vibepro-gate-terra-final.json",
+    "inputs": [
+      "src/agent-review.js",
+      "src/artifact-routing.js",
+      "src/git-fingerprint.js",
+      "test/artifact-routing.test.js",
+      "test/agent-review-independence.test.js",
+      "test/content-scoped-evidence-freshness.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior needs_changes due to an incorrect nonexistent integration test reference -> pass after corrected real 2-file 18/18 evidence and implementation safeguards were independently confirmed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+    "current_head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+      "current_head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T11:36:57.469Z",
+  "git_context": {
+    "head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "6202b02e0262f5c2feec4b14c93e02c07c670473914dd0b794bcdc3688f60699",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T11:36:57.242Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1e53ed26557e2db1e4ae8c8759401a885414a9dc",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "ae4c82b52f53144e07da11a41e4f7891980181e6611cb2052ddbb3fbe1af743f",
+        "size": 153790
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "c54bd9a089594c2d1f1c0c0dbc48019d23f13226f3b31bff3024889b75abfd2e",
+        "size": 43421
+      },
+      {
+        "path": "src/git-fingerprint.js",
+        "sha256": "74d573f4a770489639e9bee28b10018dbae13c32a804da42564950730014a843",
+        "size": 5581
+      },
+      {
+        "path": "test/agent-review-independence.test.js",
+        "sha256": "52f52ac63c4be348f48f77c1b94eb18a6c40c51ea09b29cdd750fa9fe41dea48",
+        "size": 8836
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "b9091b7cbd137abc5295b7029295f6ff62edcf85bfe0981208287ac22dd746c7",
+        "size": 68449
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "acc860690d156397cfd31fe1c54f06d6d235606bcdc4bc649ad5b40f917b3947",
+        "size": 35147
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "39d7213408d3920a3b2bb6707410e1c7e1facfaa7b03e60f33755ef590f89c01"
+  },
+  "source_fingerprint": "950e5ccc50caf081959ef73669afd67fdbf65897ce36fb80476bad8061b536eb",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/vibepro_gate_terra",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../vibepro-gate-terra-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-gate-terra-final.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
