@@ -9853,28 +9853,6 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(gateStage.next_actions.some((action) => action.includes('review close') && action.includes('agent-stuck')), true);
   assert.equal(gateStage.next_actions.some((action) => action.includes('review start') && action.includes('--replacement-for')), true);
 
-  const close = await runCli([
-    'review',
-    'close',
-    repo,
-    '--id',
-    'story-pr-prepare',
-    '--stage',
-    'gate',
-    '--role',
-    'gate_evidence',
-    '--agent-id',
-    'agent-stuck',
-    '--close-reason',
-    'timeout',
-    '--close-evidence',
-    'shutdown',
-    '--json'
-  ]);
-  assert.equal(close.exitCode, 0);
-  assert.equal(close.result.lifecycle.effective_status, 'closed');
-  assert.equal(close.result.lifecycle.close_reason, 'timeout');
-
   const replacement = await runCli([
     'review',
     'start',
@@ -9895,6 +9873,12 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   ]);
   assert.equal(replacement.exitCode, 0);
   assert.equal(replacement.result.lifecycle.replacement_for, start.result.lifecycle.lifecycle_id);
+
+  const recovered = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(recovered.exitCode, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.timed_out_count, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.replaced_count, 1);
+  assert.equal(recovered.result.stages[0].lifecycle.entries.find((entry) => entry.lifecycle_id === start.result.lifecycle.lifecycle_id).effective_status, 'replaced');
 
   const record = await runCli([
     'review',

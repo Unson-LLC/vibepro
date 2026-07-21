@@ -2194,7 +2194,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
-  const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
+  const lifecycleEntries = decorateLifecycleEntries(lifecycle.entries);
   const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles, lifecycleEntries });
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
@@ -3150,8 +3150,15 @@ function findLifecycleEntry(entries, options = {}) {
   return candidates.at(-1) ?? null;
 }
 
-function decorateLifecycleEntry(entry) {
-  const effectiveStatus = resolveLifecycleEffectiveStatus(entry);
+function decorateLifecycleEntries(entries = []) {
+  const replacedIds = new Set(entries.map((entry) => entry.replacement_for).filter(Boolean));
+  return entries.map((entry) => decorateLifecycleEntry(entry, { replacedIds }));
+}
+
+function decorateLifecycleEntry(entry, { replacedIds = new Set() } = {}) {
+  const effectiveStatus = replacedIds.has(entry.lifecycle_id) && entry.status === 'running'
+    ? 'replaced'
+    : resolveLifecycleEffectiveStatus(entry);
   return {
     ...entry,
     effective_status: effectiveStatus,

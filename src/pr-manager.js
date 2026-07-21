@@ -8614,6 +8614,18 @@ function classifySeniorAxisEvidence({
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
   const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
+  // An artifact-backed senior decision directly answers scope's split question
+  // when automatic classification only flags a multi-commit coherent Story.
+  // Keep this narrow: other axes must still supply their own evidence kinds.
+  if (axis === 'scope_reviewability' && acceptedFollowupDecision && scope?.status !== 'reviewable') {
+    add('scope_reviewed', acceptedFollowupDecision.decision_id ?? 'accepted scope review', {
+      strength: 'supporting',
+      strength_reason: 'artifact-backed accepted senior decision confirms this diff is one reviewable unit',
+      binding_status: 'current',
+      artifact_quality: 'decision_record',
+      artifact: acceptedFollowupDecision.artifact
+    });
+  }
   if (acceptedFollowupDecision) {
     add(
       'decision_record',
