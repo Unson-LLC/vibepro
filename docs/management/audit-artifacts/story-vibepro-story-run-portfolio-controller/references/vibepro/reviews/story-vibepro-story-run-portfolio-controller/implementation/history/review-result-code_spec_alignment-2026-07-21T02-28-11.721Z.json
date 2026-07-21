@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Story, Architecture, Spec, implementation, and tests align; lifecycle corruption and initial contamination skip findings are resolved.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "initial-contamination-skip-invalid-state",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/story-run-portfolio.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "portfolio-state-lifecycle-invariants",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/story-run-portfolio.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed final source, spec, diff, and focused tests; closed status-entry invariants and restart-safe explicit skip are directly covered.",
+    "evidence": ".vibepro/qa/story-vibepro-story-run-portfolio-controller/current-head-status.json",
+    "inputs": [
+      "src/story-run-portfolio.js",
+      "test/story-run-portfolio.test.js",
+      "docs/specs/story-vibepro-story-run-portfolio-controller.md"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes at c5c69d89 -> pass at 32f34362 because typed skip now closes pre-Run binding and restart advances the next Story"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+    "current_head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+      "branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "actual_branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "current_head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T02:28:11.721Z",
+  "git_context": {
+    "head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+    "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T02:28:11.713Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final high-risk implementation review at HEAD 32f34362"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "beee344fdf9ae88bcbd9b7821196a5be8d90242fb9bc58eea703961c13d62db9",
+        "size": 5555
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "66c27354e75452a7908aaf8e9f8d4e40d8986fe94634be70a956f2a26f477d86",
+        "size": 37310
+      },
+      {
+        "path": "test/story-run-portfolio.test.js",
+        "sha256": "d1fffd88c1f5068a5b87d99e512c6c2c57b38f5046cf6c0ac28d857c57e056bc",
+        "size": 35883
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "879d87bb3084ba02e93883d253d14667c067a6fb52d03247a4b42b9bc17f93aa"
+  },
+  "source_fingerprint": "6544d0b921c517f9e931338d5c3863f4eb1222e5c76fed3973837d2ff7b81910",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story9_code_c142",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-run-portfolio-controller/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
