@@ -12556,14 +12556,25 @@ function scoreFailureModeEvidence(mode, evidenceText) {
   if (!evidenceText) return 0;
   const normalizedText = appendCanonicalEvidenceTokens(String(evidenceText ?? '').toLowerCase());
   const modeId = String(mode?.id ?? '').toLowerCase();
-  if (modeId && normalizedText.includes(modeId)) return 100;
   const keywords = (mode?.keywords ?? [])
     .map((keyword) => String(keyword).toLowerCase())
     .filter(Boolean);
-  if (modeId === 'parse_failure') {
-    const strongParseKeywords = keywords.filter((keyword) => keyword !== 'json');
-    return strongParseKeywords.some((keyword) => normalizedText.includes(keyword)) ? 80 : 0;
+  if (modeId === 'parse_failure' || modeId === 'schema_failure') {
+    const assertionText = normalizedText.replaceAll(modeId, ' ');
+    const failureAssertionTokens = [
+      'malformed', 'invalid', 'corrupt', 'partial', 'missing',
+      'reject', 'throw', 'error', 'fail', 'negative'
+    ];
+    const hasConcreteFailureAssertion = failureAssertionTokens
+      .some((token) => assertionText.includes(token));
+    if (!hasConcreteFailureAssertion) return 0;
+    if (modeId && normalizedText.includes(modeId)) return 100;
+    const strongKeywords = modeId === 'parse_failure'
+      ? keywords.filter((keyword) => keyword !== 'json')
+      : keywords;
+    return strongKeywords.some((keyword) => normalizedText.includes(keyword)) ? 80 : 0;
   }
+  if (modeId && normalizedText.includes(modeId)) return 100;
   const matchCount = keywords.filter((keyword) => normalizedText.includes(keyword)).length;
   return matchCount > 0 ? 10 + matchCount : 0;
 }

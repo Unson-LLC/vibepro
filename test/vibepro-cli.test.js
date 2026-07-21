@@ -20237,9 +20237,13 @@ test('gate evidence classifier normalizes canonical token variants across observ
   await mkdir(path.join(parseRepo, 'src'), { recursive: true });
   await writeFile(
     path.join(parseRepo, 'src', 'auth-json-parser.js'),
-    'export function parseAuthorizedPayload(token, input) { if (token !== "ok") throw new Error("denied"); return JSON.parse(input); }\n'
+    'export function parseAuthorizedPayload(token, input) { if (token !== "ok") throw new Error("denied"); const value = JSON.parse(input); if (!value.id) throw new Error("schema validation failed"); return value; }\n'
   );
-  await git(parseRepo, ['add', 'src/auth-json-parser.js']);
+  await writeFile(
+    path.join(parseRepo, 'src', 'auth-schema-validator.js'),
+    'export function validateAuthorizedPayload(value) { if (!value.id) throw new Error("invalid schema"); return value; }\n'
+  );
+  await git(parseRepo, ['add', 'src/auth-json-parser.js', 'src/auth-schema-validator.js']);
   await git(parseRepo, ['commit', '-m', 'feat: add auth json parser']);
 
   assert.equal((await runCli([
@@ -20250,7 +20254,7 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--command', 'node --test test/json-parser.test.js',
     '--summary', 'keyword-only marker',
     '--target', 'parse_failure',
-    '--scenario', 'ordinary happy path completed',
+    '--scenario', 'parse_failure',
     '--observed', 'exit_code=0',
     '--json'
   ])).exitCode, 0);
@@ -20260,7 +20264,28 @@ test('gate evidence classifier normalizes canonical token variants across observ
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'parse_failure').status,
     'covered',
-    'a mode ID placed only in the target must not masquerade as an executed negative-path assertion'
+    'a mode ID without a concrete malformed-input assertion must not masquerade as an executed negative-path assertion'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'schema marker only',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'schema_failure',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const schemaMarkerPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.notEqual(
+    schemaMarkerPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'covered',
+    'a schema mode ID without a concrete invalid-payload assertion must not close coverage'
   );
 
   assert.equal((await runCli([
