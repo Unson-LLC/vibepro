@@ -1,3 +1,8 @@
+---
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
+---
+
 # Guarded Autonomy Hardening Architecture
 
 ## Decision

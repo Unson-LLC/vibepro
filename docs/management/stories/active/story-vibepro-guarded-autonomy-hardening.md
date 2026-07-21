@@ -60,6 +60,18 @@ updated_at: 2026-07-15
 - [ ] GAH-S-9: status/cockpitは次Actionの選択理由、active timeとwait time、token/costのunknown、Full Suite回数、evidence reuse/失効、human interruptionをStory別に表示する。
 - [ ] GAH-S-10: 効率評価はtoken最小やartifact数ではなく、Trusted PR-ready到達、accepted defect修正、risk reductionを総コストと対比し、未収集値を0へ変換しない。
 
+### Required Review identity boundary
+
+Required Reviewは実装セッションとの独立性を検証するため、review roleの開始時に`implementation_session_id`を必須とする。欠落時は暗黙に独立扱いせず、開始を拒否する。
+
+```yaml
+inherited_behavior:
+  condition: "role === 'review' && !input.implementation_session_id"
+  classification: unchanged
+  files:
+    - src/agent-runtime-adapter.js
+```
+
 ## 依存関係・ロードマップ完了条件
 
 ロードマップの10番目かつ完了Story。先行9 Storyが完了し、GAH-S-5からGAH-S-10のE2E、運用可視化、Trusted Delivery Efficiency計測が成立した時点で、推奨ロードマップを完了とする。
