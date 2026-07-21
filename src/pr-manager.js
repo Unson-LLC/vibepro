@@ -5291,7 +5291,13 @@ function reconcileAtomicScopeGateDag(gateDag, atomicScope) {
       decision_id: null,
       reason: 'Typed atomic scope resolves the automatic split recommendation for this current HEAD'
     });
+  }
+  if (atomicScope.automatic_split_required === true) {
     gateDag.edges ??= [];
+    gateDag.edges = gateDag.edges.filter((edge) => !(
+      edge.from === 'gate:pr_route_classification'
+      && edge.to === 'gate:pr_body_contract'
+    ));
     if (!gateDag.edges.some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:split_resolution')) {
       gateDag.edges.push({ from: 'gate:pr_route_classification', to: 'gate:split_resolution' });
     }

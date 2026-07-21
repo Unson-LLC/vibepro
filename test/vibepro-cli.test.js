@@ -18693,6 +18693,12 @@ pr_scope_dependency_boundaries:
     true,
     'the reviewable multi-commit signal should require explicit split-resolution ownership before acceptance'
   );
+  assert.equal(
+    beforeReviews.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:pr_body_contract'),
+    true,
+    'non-accepted scope keeps the ordinary route-to-body edge while split resolution remains independently required'
+  );
 
   const inspectionInputs = [
     'docs/stories/story-pr-prepare.md',
@@ -18729,6 +18735,12 @@ pr_scope_dependency_boundaries:
     accepted.result.preparation.pr_context.gate_dag.edges
       .some((edge) => edge.from === 'gate:split_resolution' && edge.to === 'gate:pr_body_contract'),
     true
+  );
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:pr_body_contract'),
+    false,
+    'accepted atomic scope must not retain a direct edge that bypasses split resolution'
   );
   assert.equal(
     accepted.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:split_resolution'),
