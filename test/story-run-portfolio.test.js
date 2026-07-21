@@ -255,6 +255,47 @@ test('Portfolio lock serializes create, recovers a dead owner, and releases afte
   assert.equal(state.entries[0].status, 'running');
 });
 
+test('malformed Portfolio state fails closed as invalid_portfolio_state', async (t) => {
+  const fixture = await createFixture(t);
+  const portfolioId = 'portfolio-malformed-state';
+  await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 1) });
+  await writeFile(path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json`), '{malformed');
+  await assert.rejects(
+    fixture.controller.status(fixture.root, { portfolioId }),
+    errorCode('invalid_portfolio_state')
+  );
+});
+
+test('malformed Portfolio lock owner fails closed with recovery_required', async (t) => {
+  const fixture = await createFixture(t);
+  const portfolioId = 'portfolio-malformed-owner';
+  await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 1) });
+  const lock = path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json.lock`);
+  await mkdir(lock);
+  await writeFile(path.join(lock, 'owner.json'), '{malformed');
+  await assert.rejects(
+    fixture.controller.advance(fixture.root, { portfolioId }),
+    errorCode('portfolio_lock_recovery_required')
+  );
+});
+
+test('malformed Portfolio recovery owner fails closed with operator repair evidence', async (t) => {
+  const fixture = await createFixture(t);
+  const portfolioId = 'portfolio-malformed-recovery-owner';
+  await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 1) });
+  const lock = path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json.lock`);
+  await mkdir(lock);
+  await writeFile(path.join(lock, 'owner.json'), JSON.stringify({ schema_version: 1, pid: 99999998, token: 'dead-main', acquired_at: '2026-07-19T00:00:00.000Z' }));
+  await mkdir(`${lock}.recovery`);
+  await writeFile(path.join(`${lock}.recovery`, 'owner.json'), '{malformed');
+  await assert.rejects(
+    fixture.controller.advance(fixture.root, { portfolioId }),
+    (cause) => cause.code === 'portfolio_lock_recovery_required'
+      && cause.details.recovery_lock === `${lock}.recovery`
+      && /remove the recovery lock/.test(cause.details.required_action)
+  );
+});
+
 test('orphaned Portfolio recovery mutex fails closed with an operator repair handle', async (t) => {
   const fixture = await createFixture(t);
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-recovery-orphan', storyIds: STORIES.slice(0, 1) });
