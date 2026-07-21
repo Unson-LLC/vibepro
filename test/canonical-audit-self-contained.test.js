@@ -163,7 +163,8 @@ test('CAGR-S-002 incomplete summary-depth substitute keeps the gate DAG missing 
   const prDir = path.join(root, '.vibepro', 'pr', storyId);
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     schema_version: '0.1.0',
-    story: { story_id: storyId }
+    story: { story_id: storyId },
+    gate_dag: `.vibepro/pr/${storyId}/gate-dag.json`
   });
   await writeJson(path.join(prDir, 'evidence-plan.json'), {
     story_id: storyId,
@@ -176,6 +177,16 @@ test('CAGR-S-002 incomplete summary-depth substitute keeps the gate DAG missing 
   const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
 
   assert.equal(promoted.bundle.missing_artifacts.some((item) => item.kind === 'gate_dag'), true);
+  assert.equal(
+    promoted.bundle.unresolved_references.some((item) => (
+      item.source === `.vibepro/pr/${storyId}/gate-dag.json`
+      && item.reason === 'source_missing'
+    )),
+    true
+  );
+  assert.equal(promoted.bundle.handoff_replay_status, 'blocked');
+  assert.equal(promoted.bundle.handoff_replay.status, 'blocked');
+  assert.equal(promoted.bundle.handoff_replay.unresolved_reference_count, 1);
 });
 
 test('CAGR-S-003 full-depth canonical audit still includes the physical gate DAG', async () => {
