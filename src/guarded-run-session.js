@@ -483,8 +483,8 @@ function buildActionRunners(deps, loaded, options) {
   });
   const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
   if (injected.final_prepare) {
-    autonomous.final_prepare = async () => {
-      const ownerResult = await injected.final_prepare();
+    autonomous.final_prepare = async (context) => {
+      const ownerResult = await injected.final_prepare(context);
       if (ownerResult.status !== 'pr_ready') return ownerResult;
       const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
       if (prepared.preparation?.gate_status?.ready_for_pr_create === true) {

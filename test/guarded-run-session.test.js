@@ -356,6 +356,31 @@ test('AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT', 
   assert.equal(result.state.action_journal.at(-1).artifact, '.vibepro/forged-ready.json');
 });
 
+test('AAD-S-1 final_prepare owner receives the canonical action context', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
+  let receivedContext = null;
+  const session = fixture.session({
+    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
+      final_prepare: async (context) => {
+        receivedContext = context;
+        return { status: 'pr_ready' };
+      }
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'pr_ready');
+  assert.equal(receivedContext.state.run_id, RUN_ID);
+  assert.equal(receivedContext.state.story_id, STORY_ID);
+  assert.equal(receivedContext.action.id, 'final_prepare');
+  assert.equal(receivedContext.action.input_head_sha, receivedContext.state.current_head_sha);
+});
+
 test('AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
