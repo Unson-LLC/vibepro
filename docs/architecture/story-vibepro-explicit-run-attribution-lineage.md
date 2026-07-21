@@ -94,6 +94,12 @@ The context capsule and PR decision surface expose only bounded identity, artifa
 - fresh-process capsule recovery without transcript input;
 - Graphify confirms lineage resolution remains outside `session-efficiency-audit.js`.
 
+## Judgment evidence lineage
+
+The accepted Spec JSON is the machine-readable source for adjudication identifiers. Failure modes are explicitly keyed as `FM-ERAL-001-invalid-or-incomplete-lineage`, `FM-ERAL-002-provider-identity-conflict-or-cross-run-rebind`, `FM-ERAL-003-stale-head-binding`, `FM-ERAL-004-unattributed-or-mixed-parent-overassignment`, and `FM-ERAL-005-transcript-leakage-or-unbounded-handoff`. Done evidence is keyed as `DE-ERAL-001-current-head-verification`, `DE-ERAL-002-current-head-graphify-boundary`, and `DE-ERAL-003-scope-reviewability-decision`.
+
+For current-head adjudication, follow `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json`, `.vibepro/graphify/graph.json`, and `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha`. For scope reviewability, inspect the passed `pr_split_scope` result at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json` and close evidence at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/pr-split-scope-a9b66db6-final.md`; the owner map and decision are recorded in `scope_reviewability`.
+
 ## Rollback
 
 Remove the additive envelope fields, propagation hooks, capsule projection, and Run-aware audit option, then remove `src/run-lineage.js`. Existing Guarded Run state, dispatch journals, evidence, and heuristic session-cost paths remain readable; persisted unknown lineage fields are ignored by older readers.

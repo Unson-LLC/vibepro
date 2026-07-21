@@ -387,7 +387,10 @@
         "period": "2026-07",
         "started_at": "2026-07-21",
         "due_at": null,
-        "category": "product"
+        "category": "product",
+        "judgment_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+        "task_plan_source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "reviewability_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json"
       }
     ],
     "current_story_id": "story-vibepro-explicit-run-attribution-lineage"

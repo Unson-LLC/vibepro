@@ -125,6 +125,7 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 
 ## Implementation Tasks
 
+0. `[DOC]` Accepted Spec JSONへfailure-mode、current-head Done Evidence、Graphify、scope reviewabilityの識別子と参照を固定する（`DOC-ERAL-001`）。
 1. `[ARCH]` 既存Guarded RunとAgent Runtime Adapterを基準にlineage envelope、authority、provider observation、mismatch contract、およびsession-efficiency auditから分離するmodule境界をArchitecture/Specへ固定する。
 2. `[CORE]` dispatch/action/evidence recorderへlineageの生成・検証・append-only永続化を追加する。
 3. `[AUDIT]` session-costへRun resolverと`story_attributed/shared_parent/other_story/unattributed/replayed_context`分類を追加する。
@@ -133,7 +134,9 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 
 ## Done Evidence
 
-- 現行HEADにboundされたfocused unit/E2E verification evidence。
+- `DE-ERAL-001-current-head-verification`: 現行HEADにboundされたfocused unit/integration/E2E verification evidence at `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json`; commit後は `node bin/vibepro.js pr prepare . --story-id story-vibepro-explicit-run-attribution-lineage --summary-json` でrefreshする。
+- `DE-ERAL-002-current-head-graphify-boundary`: current-head Graphify impact and resolver boundary at `.vibepro/graphify/graph.json`。
+- `DE-ERAL-003-scope-reviewability-decision`: passed `pr_split_scope` review at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/pr-split-scope-a9b66db6-final.md`, machine-readable result at `.vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json`。
 - `node --test test/run-context-capsule-lineage.test.js` によるfresh-process lineage reconstruction。
 - `node --test test/run-lineage.test.js test/session-efficiency-run-lineage.test.js` によるcanonical resolver境界とaudit互換性。
 - `node --test test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js` による実CLIのmethod/confidence/source artifact/bucketとunavailable/ambiguous可視性。
@@ -141,3 +144,9 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 - mixed parent fixtureにおける分類総数一致とshared/unattributed非配賦のmachine-readable artifact。
 - fresh processからのhandoff再構成結果。
 - Agent ReviewとEngineering Judgmentによるauthority boundary、privacy、provider failure modeの確認。
+
+## Machine-readable judgment SSOT
+
+Accepted Spec JSON `docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json` is the machine-readable authority for adjudication. Its `failure_modes[]` identifiers are `FM-ERAL-001` through `FM-ERAL-005`; its `done_evidence[]` identifiers are `DE-ERAL-001` through `DE-ERAL-003`. Evidence is current only when the referenced artifact HEAD binding matches `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha`.
+
+The `scope_reviewability` object records the passed `pr_split_scope` review, owner role, review result, decision, and Graphify blast-radius source. An adjudicating agent must inspect those linked artifacts and treat a stale review artifact as requiring refresh, not as a current pass.

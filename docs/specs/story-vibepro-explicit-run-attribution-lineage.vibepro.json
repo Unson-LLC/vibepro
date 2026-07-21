@@ -5,6 +5,114 @@
     "caller": "codex",
     "stage": "ai_synthesis"
   },
+  "evidence_catalog": {
+    "binding": {
+      "head_sha_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha",
+      "verification_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "graphify_source": ".vibepro/graphify/graph.json",
+      "rule": "Evidence is current only when the referenced artifact head_sha equals pr-prepare.git.head_sha; refresh pr prepare after any commit."
+    },
+    "failure_mode_ids": [
+      "FM-ERAL-001-invalid-or-incomplete-lineage",
+      "FM-ERAL-002-provider-identity-conflict-or-cross-run-rebind",
+      "FM-ERAL-003-stale-head-binding",
+      "FM-ERAL-004-unattributed-or-mixed-parent-overassignment",
+      "FM-ERAL-005-transcript-leakage-or-unbounded-handoff"
+    ],
+    "done_evidence_ids": [
+      "DE-ERAL-001-current-head-verification",
+      "DE-ERAL-002-current-head-graphify-boundary",
+      "DE-ERAL-003-scope-reviewability-decision"
+    ]
+  },
+  "failure_modes": [
+    {
+      "id": "FM-ERAL-001-invalid-or-incomplete-lineage",
+      "failure": "Malformed, incomplete, or mismatched Story/Run/worktree lineage is persisted or accepted.",
+      "expected_behavior": "Reject before the authoritative write with invalid_run_lineage or run_lineage_mismatch.",
+      "clause_refs": ["C-001", "S-001", "C-002"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/run-lineage-evidence-propagation.test.js"]
+    },
+    {
+      "id": "FM-ERAL-002-provider-identity-conflict-or-cross-run-rebind",
+      "failure": "A provider identity is rebound to another Story/Run or silently replaces Run authority.",
+      "expected_behavior": "Fail closed with provider_observation_conflict and preserve authoritative fields.",
+      "clause_refs": ["S-001", "C-001"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/agent-runtime-adapter-lineage.test.js"]
+    },
+    {
+      "id": "FM-ERAL-003-stale-head-binding",
+      "failure": "An evidence or dispatch record is written against a stale HEAD.",
+      "expected_behavior": "Reject with stale_run_lineage_head without mutating the record.",
+      "clause_refs": ["S-001", "C-002"],
+      "evidence_refs": ["test/run-lineage.test.js", ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json"]
+    },
+    {
+      "id": "FM-ERAL-004-unattributed-or-mixed-parent-overassignment",
+      "failure": "Shared, other-Story, unattributed, or replayed context is allocated to Story-attributed totals.",
+      "expected_behavior": "Partition exactly once and preserve non-attributed buckets without changed-line or path-majority allocation.",
+      "clause_refs": ["S-002", "INV-001", "S-003"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/session-efficiency-run-lineage.test.js"]
+    },
+    {
+      "id": "FM-ERAL-005-transcript-leakage-or-unbounded-handoff",
+      "failure": "Context capsule or handoff stores transcript, prompt, tool output, hidden reasoning, or unbounded observations.",
+      "expected_behavior": "Expose only bounded lineage identity, refs, method, confidence, and bucket summaries.",
+      "clause_refs": ["S-004", "S-005"],
+      "evidence_refs": ["test/run-context-capsule-lineage.test.js", "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js"]
+    }
+  ],
+  "done_evidence": [
+    {
+      "id": "DE-ERAL-001-current-head-verification",
+      "kind": "current_verification",
+      "head_binding": "pr-prepare.git.head_sha",
+      "artifact": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "required_checks": ["unit", "integration", "e2e"],
+      "refresh_command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-explicit-run-attribution-lineage --summary-json"
+    },
+    {
+      "id": "DE-ERAL-002-current-head-graphify-boundary",
+      "kind": "graph_impact_scope",
+      "head_binding": "pr-prepare.git.head_sha",
+      "artifact": ".vibepro/graphify/graph.json",
+      "purpose": "Confirm the lineage resolver boundary and changed/related file scope before adjudication."
+    },
+    {
+      "id": "DE-ERAL-003-scope-reviewability-decision",
+      "kind": "scope_reviewed",
+      "head_binding": "review_artifact.head_sha",
+      "review_role": "pr_split_scope",
+      "verdict": "pass",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "close_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/pr-split-scope-a9b66db6-final.md",
+      "decision": "One coherent Run-attribution contract; no unrelated independently reviewable boundary was found."
+    }
+  ],
+  "scope_reviewability": {
+    "status": "reviewable",
+    "scope_reviewed": "DE-ERAL-003-scope-reviewability-decision",
+    "review_owner_map": {
+      "owner": "single pr_split_scope reviewer",
+      "review_role": "pr_split_scope",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json"
+    },
+    "decision_record": "DE-ERAL-003-scope-reviewability-decision",
+    "blast_radius_source": ".vibepro/graphify/graph.json",
+    "adjudication_rule": "An agent may adjudicate scope from the passed pr_split_scope review plus current-head Graphify; stale review evidence must be refreshed after a content-surface change."
+  },
+  "task_plan": {
+    "source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+    "task_ids": [
+      "story-vibepro-explicit-run-attribution-lineage-01-arch-guarded-run-agent-runtime-adapter-lineage-envelope-authority-provider-observation-mismatch-contract-session-efficiency-audit-module-architecture-spec",
+      "story-vibepro-explicit-run-attribution-lineage-02-core-dispatch-action-evidence-recorder-lineage-append-only",
+      "story-vibepro-explicit-run-attribution-lineage-03-audit-session-cost-run-resolver-story-attributed-shared-parent-other-story-unattributed-replayed-context",
+      "story-vibepro-explicit-run-attribution-lineage-04-handoff-context-capsule-pr-decision-surface-bounded-lineage-summary-ref",
+      "story-vibepro-explicit-run-attribution-lineage-05-qa-run-mixed-parent-provider-id-stale-head-vibe-pro-session-fresh-process-handoff-unit-e2-e-fixture"
+    ],
+    "documentation_task_id": "DOC-ERAL-001",
+    "documentation_boundary": "Story/Architecture/Spec/config/task-plan documentation only; runtime source and tests are out of scope."
+  },
   "diagrams": [
     {
       "kind": "threat_model",
