@@ -103,19 +103,21 @@ export async function runSafeActionPlan(state, options = {}) {
   const executionState = profile === 'legacy' ? state : { ...state, action_profile: profile };
   let current = executionState;
   const seenActionIds = new Set();
-  for (const action of plan) {
-    const key = actionKey(state, action.id, profile);
+  let activePlan = plan;
+  for (let index = 0; index < activePlan.length; index += 1) {
+    const action = activePlan[index];
+    const key = actionKey(current, action.id, profile);
     const policyDenied = new Set(options.policyDeniedActionIds ?? []).has(action.id);
-    if (!isCanonicalAction(action, state, key, profile)
+    if (!isCanonicalAction(action, current, key, profile)
       || seenActionIds.has(action.id)
-      || !dependenciesCompleted(current, action, executionState, profile)
+      || !dependenciesCompleted(current, action, current, profile)
       || policyDenied
       || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
     seenActionIds.add(action.id);
-    const completed = hasCompletedCheckpoint(current, action.id, executionState, profile);
+    const completed = hasCompletedCheckpoint(current, action.id, current, profile);
     if (completed) continue;
     try {
       const rawResult = await options.runners[action.id]({ state: current, action });
@@ -123,6 +125,10 @@ export async function runSafeActionPlan(state, options = {}) {
         ? { ...(rawResult ?? {}), status: 'continue' }
         : rawResult;
       assertActionResult(result);
+      const resolvedHead = result.output_head_sha
+        ?? await options.resolveCurrentHead?.({ state: current, action, result })
+        ?? current.current_head_sha;
+      const boundResult = { ...result, output_head_sha: resolvedHead };
       if (result.status === 'pr_ready' && profile === 'autonomous' && action.id !== 'final_prepare') {
         throw new Error(`Only autonomous final_prepare may return pr_ready: ${action.id}`);
       }
@@ -130,7 +136,13 @@ export async function runSafeActionPlan(state, options = {}) {
         ? (result.status === 'failed' ? 'failed' : 'completed')
         : (['continue', 'pr_ready'].includes(result.status) ? 'completed' : 'failed');
       const lineage = resolveActionLineage(current, action.lineage, `action-${action.id}`);
-      const journal = append(current, action, key, journalStatus, { ...result, lineage });
+      let journal = append(current, action, key, journalStatus, { ...boundResult, lineage });
+      if (resolvedHead !== current.current_head_sha) {
+        journal = { ...journal, current_head_sha: resolvedHead };
+        const canonical = buildSafeActionPlan(journal, { profile });
+        const actionPosition = canonical.findIndex((entry) => entry.id === action.id);
+        activePlan = [...activePlan.slice(0, index + 1), ...canonical.slice(actionPosition + 1)];
+      }
       if (result?.status === 'pr_ready') {
         current = transition(journal, 'pr_ready', null);
         break;
@@ -184,12 +196,14 @@ function dependenciesCompleted(current, action, state, profile = state.action_pr
 
 function hasCompletedCheckpoint(current, actionId, state, profile = state.action_profile ?? 'legacy') {
   const key = actionKey(state, actionId, profile);
-  return current.action_journal.some((entry) => entry.idempotency_key === key
+  return current.action_journal.some((entry) => (entry.idempotency_key === key
+      || (entry.output_head_sha === state.current_head_sha
+        && entry.idempotency_key === actionKey({ ...state, current_head_sha: entry.input_head_sha }, actionId, profile)))
     && entry.status === 'completed'
     && entry.action_id === actionId
     && entry.node_id === actionId
     && (profile === 'legacy' || entry.action_profile === profile)
-    && entry.input_head_sha === state.current_head_sha);
+    && (entry.input_head_sha === state.current_head_sha || entry.output_head_sha === state.current_head_sha));
 }
 
 function isCanonicalAction(action, state, expectedKey, profile) {

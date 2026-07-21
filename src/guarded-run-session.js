@@ -360,6 +360,11 @@ async function orchestrateRun(deps, repoRoot, options) {
     profile: decisionState.action_profile ?? 'legacy',
     policyDeniedActionIds: options.policyDeniedActionIds,
     plan: selectedPlan,
+    resolveCurrentHead: async () => (await resolveIdentity(
+      deps,
+      loaded.state.execution_context.root_realpath,
+      'worktree_mismatch'
+    )).head_sha,
     onProgress: async (progress) => {
       const checkpoint = {
         ...decisionState,
@@ -378,6 +383,7 @@ async function orchestrateRun(deps, repoRoot, options) {
   });
   let next = {
     ...decisionState,
+    current_head_sha: result.state.current_head_sha,
     action_journal: result.state.action_journal,
     ...resumeCursorPatch(result.state, decisionState)
   };

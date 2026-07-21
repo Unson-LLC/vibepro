@@ -49,7 +49,7 @@ Guarded Run dependencyはcanonical autonomous node名だけを受け付ける閉
 
 ## S-003 Resume and HEAD binding
 
-完了checkpointはrun id、profile、action id、input HEADから生成したkeyで照合する。同一HEAD再開では再実行せず、mutationでHEADが変われば後続iterationは新keyで評価する。異なるprofileのjournalは完了根拠に使わない。
+完了checkpointはrun id、profile、action id、input HEADから生成したkeyで照合する。同一HEAD再開では再実行しない。mutationでHEADが変われば、そのmutation nodeのoutput HEADをdependency境界として保持し、同じiteration内の残りsuffixを直ちに新HEAD keyで再評価する。異なるprofileのjournalは完了根拠に使わない。
 
 ## S-004 Result contract
 

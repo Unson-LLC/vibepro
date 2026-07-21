@@ -244,6 +244,42 @@ test('AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD', 
   assert.equal(resumed.state.action_journal.length, plan.length);
 });
 
+test('AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix', async () => {
+  const oldHead = state.current_head_sha;
+  const newHead = 'bbb';
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const calls = [];
+  const runners = Object.fromEntries(buildSafeActionPlan(autonomousState).map(({ id }) => [id, async () => {
+    calls.push(id);
+    if (id === 'implement') return { status: 'continue', output_head_sha: newHead };
+    return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
+  }]));
+
+  const result = await runSafeActionPlan(autonomousState, { runners });
+
+  assert.equal(result.state.status, 'pr_ready');
+  assert.equal(result.state.current_head_sha, newHead);
+  assert.deepEqual(calls, [
+    'diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'
+  ]);
+  assert.deepEqual(
+    result.state.action_journal.map((entry) => [entry.action_id, entry.input_head_sha, entry.output_head_sha]),
+    [
+      ['diagnose', oldHead, oldHead],
+      ['prepare_artifacts', oldHead, oldHead],
+      ['implement', oldHead, newHead],
+      ['verify', newHead, newHead],
+      ['review', newHead, newHead],
+      ['repair', newHead, newHead],
+      ['final_prepare', newHead, newHead]
+    ]
+  );
+  assert.notEqual(
+    result.state.action_journal.find((entry) => entry.action_id === 'implement').idempotency_key,
+    result.state.action_journal.find((entry) => entry.action_id === 'verify').idempotency_key
+  );
+});
+
 test('AAD-S-3 autonomous profile rejects missing runners and forged plans', async () => {
   const autonomousState = { ...state, action_profile: 'autonomous' };
   const missing = await runSafeActionPlan(autonomousState, { runners: {} });

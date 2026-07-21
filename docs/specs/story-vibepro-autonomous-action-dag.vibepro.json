@@ -23,9 +23,9 @@
     {
       "id": "AAD-S-3",
       "type": "scenario",
-      "statement": "Completed autonomous checkpoints are keyed by Run, node, profile, and input HEAD, so the same HEAD resumes without replay and a recreated session preserves the checkpoint boundary.",
+      "statement": "Completed autonomous checkpoints are keyed by Run, node, profile, and input HEAD. Same-HEAD resume skips replay, while a HEAD-changing mutation preserves that node as the dependency boundary and immediately rebinds the remaining suffix to new-HEAD keys.",
       "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-3"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "actionKey"}, {"file": "src/safe-action-orchestrator.js", "anchor": "hasCompletedCheckpoint"}]},
-      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session"}]}
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD"}, {"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately"}]}
     },
     {
       "id": "AAD-S-4",

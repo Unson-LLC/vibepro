@@ -72,6 +72,42 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   assert.equal(result.state.action_profile, 'autonomous');
 });
 
+test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const oldHead = fixture.identity(fixture.source).head_sha;
+  const newHead = 'changed-autonomous-head';
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
+  const calls = [];
+  const session = fixture.session({
+    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    actionRunners: Object.fromEntries(ids.map((id) => [id, async () => {
+      calls.push(id);
+      if (id === 'implement') fixture.setHead(fixture.source, newHead);
+      return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
+    }]))
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'pr_ready');
+  assert.equal(result.state.current_head_sha, newHead);
+  assert.deepEqual(calls, ids);
+  const entries = Object.fromEntries(result.state.action_journal.map((entry) => [entry.action_id, entry]));
+  assert.equal(entries.implement.input_head_sha, oldHead);
+  assert.equal(entries.implement.output_head_sha, newHead);
+  for (const id of ['verify', 'review', 'repair', 'final_prepare']) {
+    assert.equal(entries[id].input_head_sha, newHead);
+    assert.equal(entries[id].output_head_sha, newHead);
+  }
+});
+
 test('AAD-S-5 Guarded Run records explicit autonomous disable as the legacy profile', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const state = await fixture.session().run(fixture.source, {
