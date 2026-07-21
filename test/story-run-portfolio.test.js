@@ -150,7 +150,7 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
     ],
     usage_accounting: { total_tokens: 42, cost_usd: null, status: 'partial' },
     action_journal: [
-      { action_id: 'full_suite', status: 'completed', measurements: { full_suite_count: 1, evidence_invalidation_count: 0 }, result_summary: 'full suite passed' },
+      { action_id: 'full_suite', status: 'completed', measurements: { full_suite_count: 1, evidence_invalidation_count: 0, accepted_defect_count: 2, risk_reduction_count: 3 }, result_summary: 'full suite passed with accepted defect and risk reduction evidence' },
       { action_id: 'evidence_reuse', status: 'completed', measurements: { evidence_reuse_count: 1 }, result_summary: 'evidence reuse hit' },
       { action_id: 'evidence_reuse', status: 'completed', measurements: { evidence_reuse_count: 1 }, result_summary: 'evidence reuse hit' }
     ],
@@ -159,7 +159,7 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
   const state = await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });
   const output = renderStoryRunPortfolioSummary(state);
   assert.match(output, /trusted_pr_ready_ms=unknown active_ms=1700 wait_ms=300 tokens=42/);
-  assert.match(output, /full_suite=1 evidence_reuse=2 evidence_invalidations=0 human_interruptions=1 accepted_defects=unknown risk_reductions=unknown/);
+  assert.match(output, /full_suite=1 evidence_reuse=2 evidence_invalidations=0 human_interruptions=1 accepted_defects=2 risk_reductions=3/);
   await assert.rejects(fixture.controller.advance(fixture.root, {
     portfolioId: 'portfolio-cost', costAttribution: {
       story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id, total_tokens: 999

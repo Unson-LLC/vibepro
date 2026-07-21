@@ -243,6 +243,59 @@ test('GAH-S-2 fresh CLI recovers quota, timeout, CI pending, and review timeout 
   }
 });
 
+test('GAH-S-7 fresh CLI replays the complete operational stop matrix without over-green states', async (t) => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-guarded-matrix-e2e-'));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro E2E']);
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Guarded operational matrix E2E' }] },
+    execution: { managed_worktree: 'disabled' }
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Guarded operational matrix E2E\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initialize guarded operational matrix fixture']);
+
+  const scenarios = [
+    ['success', 'pr_ready', null],
+    ['human_decision', 'waiting_for_human', 'human_decision_required'],
+    ['repair_convergence', 'blocked', 'repair_converged'],
+    ['no_progress', 'blocked', 'no_progress'],
+    ['quota', 'blocked', 'runtime_quota'],
+    ['timeout', 'blocked', 'runtime_timeout'],
+    ['ci_pending', 'blocked', 'ci_pending'],
+    ['critical_gate', 'blocked', 'critical_gate_blocked']
+  ];
+  for (const [name, status, code] of scenarios) {
+    const created = await runJson(repo, ['execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json']);
+    const stateFile = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
+    const replayState = {
+      ...created,
+      status,
+      stop_reason: code ? { code, message: `${name} fixture`, details: {} } : null,
+      transitions: [...created.transitions, {
+        sequence: created.transitions.length + 1,
+        from: 'running',
+        to: status,
+        reason: code ?? 'trusted_pr_ready',
+        timestamp: created.updated_at
+      }]
+    };
+    await writeFile(stateFile, `${JSON.stringify(replayState, null, 2)}\n`);
+    const replayed = await runJson(repo, ['execute', 'status', repo, '--story-id', STORY_ID, '--run-id', created.run_id, '--json']);
+    assert.equal(replayed.status, status, name);
+    assert.equal(replayed.stop_reason?.code ?? null, code, name);
+  }
+
+  const cancellable = await runJson(repo, ['execute', 'run', repo, '--story-id', STORY_ID, '--target', 'pr_ready', '--json']);
+  const cancelled = await runJson(repo, ['execute', 'cancel', repo, '--story-id', STORY_ID, '--run-id', cancellable.run_id, '--json']);
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(cancelled.transitions.at(-1).reason, 'operator_cancelled');
+});
+
 async function git(cwd, args) {
   return execFileAsync('git', args, { cwd, encoding: 'utf8' });
 }

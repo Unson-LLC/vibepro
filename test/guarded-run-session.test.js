@@ -567,7 +567,7 @@ test('GAH-S-10 efficiency metrics use only typed completed measurements and pres
     action_journal: [
       { status: 'completed', action_id: 'full_suite evidence_reuse', result_summary: 'mentions only' },
       { status: 'failed', measurements: { full_suite_count: 9, evidence_reuse_count: 8 } },
-      { status: 'completed', measurements: { full_suite_count: 1, evidence_reuse_count: 2, evidence_invalidation_count: 1 } }
+      { status: 'completed', measurements: { full_suite_count: 1, evidence_reuse_count: 2, evidence_invalidation_count: 1, accepted_defect_count: 2, risk_reduction_count: 3 } }
     ]
   };
   assert.deepEqual(deriveRunEfficiencyMetrics({ ...state, action_journal: [] }), {
@@ -589,6 +589,8 @@ test('GAH-S-10 efficiency metrics use only typed completed measurements and pres
   assert.equal(metrics.full_suite_count, 1);
   assert.equal(metrics.evidence_reuse_count, 2);
   assert.equal(metrics.evidence_invalidation_count, 1);
+  assert.equal(metrics.accepted_defect_count, 2);
+  assert.equal(metrics.risk_reduction_count, 3);
 });
 
 test('GAH-S-2 CLI rejects guarded policy options outside execute run', async (t) => {

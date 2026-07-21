@@ -604,8 +604,8 @@ export function deriveRunEfficiencyMetrics(state) {
     evidence_reuse_count: measuredCount('evidence_reuse_count'),
     evidence_invalidation_count: measuredCount('evidence_invalidation_count'),
     human_interruption_count: Array.isArray(state.human_decision_journal) ? state.human_decision_journal.length : null,
-    accepted_defect_count: null,
-    risk_reduction_count: null
+    accepted_defect_count: measuredCount('accepted_defect_count'),
+    risk_reduction_count: measuredCount('risk_reduction_count')
   };
 }
 
