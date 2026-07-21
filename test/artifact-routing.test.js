@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { access, mkdtemp, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -934,7 +934,7 @@ test('Story Architecture Spec Task Graphify Review Gate PR status migration use 
   await assert.rejects(access(path.join(root, '.vibepro/pr/story-routing-lifecycle/pr-prepare.json')));
 });
 
-test('named profile Graphify review and PR producers write only routed lifecycle paths', async () => {
+test('named profile Graphify review and PR producers leave the removed legacy directory absent', async () => {
   const storyId = 'story-named-producer-routing';
   const featureSlug = 'named-producer-routing';
   const root = await repo();
@@ -964,6 +964,7 @@ test('named profile Graphify review and PR producers write only routed lifecycle
   await writeFile(path.join(graphSource, 'graph.json'), '{"nodes":[],"edges":[]}\n');
   await writeFile(path.join(graphSource, 'GRAPH_REPORT.md'), '# Graph\n');
   await importGraphifyArtifacts(root, { storyId, sourceDir: 'graph-source' });
+  await rm(path.join(root, '.vibepro/graphify'), { recursive: true, force: true });
   await execFileAsync('git', ['add', '.'], { cwd: root });
   await execFileAsync('git', ['commit', '-m', 'chore: named routing fixture'], { cwd: root });
   await execFileAsync('git', ['switch', '-c', 'feature/named-routing'], { cwd: root });
@@ -974,16 +975,31 @@ test('named profile Graphify review and PR producers write only routed lifecycle
   const io = { stdout: { write: (v) => { output += v; } }, stderr: { write: (v) => { output += v; } } };
   const review = await runCli(['review', 'prepare', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json'], io);
   assert.equal(review.exitCode, 0, output);
+  const start = await runCli([
+    'review', 'start', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk',
+    '--agent-system', 'codex', '--agent-id', 'routing-test-agent', '--json'
+  ], io);
+  assert.equal(start.exitCode, 0, output);
   const prepare = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', storyId, '--allow-extra-files', '--evidence-depth', 'full', '--evidence-depth-reason', 'named routing regression', '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'], io);
   assert.equal(prepare.exitCode, 0, output);
   await access(path.join(root, `.vibepro/packets/${featureSlug}/graphify/graph.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/reviews/architecture_spec/review-plan.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/gate-dag.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/pr-prepare.json`));
-  await assert.rejects(access(path.join(root, '.vibepro/graphify/graph.json')));
+  await assert.rejects(access(path.join(root, '.vibepro/graphify')));
   await assert.rejects(access(path.join(root, `.vibepro/reviews/${storyId}`)));
   await assert.rejects(access(path.join(root, `.vibepro/pr/${storyId}/gate-dag.json`)));
   await assert.rejects(access(path.join(root, `.vibepro/pr/${storyId}/pr-prepare.json`)));
+
+  let migrationOutput = '';
+  const migration = await runCli(['artifacts', 'migrate', root, '--id', storyId, '--dry-run', '--json'], {
+    stdout: { write: (v) => { migrationOutput += v; } },
+    stderr: { write: (v) => { migrationOutput += v; } }
+  });
+  assert.equal(migration.exitCode, 0, migrationOutput);
+  const migrationPlan = JSON.parse(migrationOutput);
+  assert.equal(migrationPlan.status, 'ready', migrationOutput);
+  assert.deepEqual(migrationPlan.unresolved, []);
 });
 
 test('story derive binds global Graphify import to the configured current Story under schema 0.2', async () => {
