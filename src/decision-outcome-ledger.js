@@ -21,7 +21,7 @@ const SENSITIVE_KEY_PATTERN = /(?:authorization|api[_-]?key|password|secret|toke
 const SUMMARY_VALUE_KEYS = 8;
 const SUMMARY_ARRAY_ITEMS = 5;
 const SUMMARY_TEXT_LENGTH = 240;
-const LEDGER_STORY_ID_PATTERN = /^story-[a-z0-9][a-z0-9._-]*$/;
+const LEDGER_STORY_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 export function getDecisionOutcomeLedgerPath(repoRoot, storyId) {
   return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', requireLedgerStoryId(storyId), 'decision-outcome-ledger.json');

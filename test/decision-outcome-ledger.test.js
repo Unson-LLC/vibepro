@@ -37,6 +37,12 @@ import { readReviewResultForDecisionOutcome, renderDecisionOutcomeReviewInput } 
 import { atomicReplaceFile } from '../src/atomic-file.js';
 
 const STORY_ID = 'story-decision-outcome';
+
+test('decision outcome ledger accepts existing safe Story ID conventions', () => {
+  for (const storyId of ['STR-047', 'US-002', STORY_ID]) {
+    assert.doesNotThrow(() => getDecisionOutcomeLedgerPath('/tmp/repo', storyId));
+  }
+});
 const execFileAsync = promisify(execFile);
 
 test('GDL-CONTRACT-009 remote and PR identity comparison fails closed and supports GitHub Enterprise', () => {
