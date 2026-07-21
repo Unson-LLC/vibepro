@@ -1348,6 +1348,10 @@ function appendRetryAudit(state, resumedAt) {
 function enforceRetryPolicy(state, resumedAt) {
   if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return;
   if (state.migration_compatibility?.retry_policy_enforcement === 'legacy_advisory') return;
+  const policyManaged = state.stop_reason.details?.retry_policy_enforced === true
+    || state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code)
+    || /^(runtime_|ci_|review_|action_)/.test(state.stop_reason.code);
+  if (!policyManaged) return;
   const retryable = state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code) ?? false;
   if (!retryable) {
     throw contractError('retry_not_allowed', `Stop ${state.stop_reason.code} is not retryable by the persisted policy.`, {

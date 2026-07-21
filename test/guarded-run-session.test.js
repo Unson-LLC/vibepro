@@ -531,7 +531,7 @@ test('GAH-S-2 persisted retry policy governs arbitrary configured stop codes', a
     runId: RUN_ID,
     to: 'blocked',
     reason: 'custom_permanent',
-    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: {} }
+    stopReason: { code: 'vendor_permanent', message: 'do not retry', details: { retry_policy_enforced: true } }
   });
   await assert.rejects(
     secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),

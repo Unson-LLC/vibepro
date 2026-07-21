@@ -150,9 +150,9 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
     ],
     usage_accounting: { total_tokens: 42, cost_usd: null, status: 'partial' },
     action_journal: [
-      { action_id: 'full_suite', result_summary: 'full suite passed' },
-      { action_id: 'evidence_reuse', result_summary: 'evidence reuse hit' },
-      { action_id: 'evidence_reuse', result_summary: 'evidence reuse hit' }
+      { action_id: 'full_suite', status: 'completed', measurements: { full_suite_count: 1, evidence_invalidation_count: 0 }, result_summary: 'full suite passed' },
+      { action_id: 'evidence_reuse', status: 'completed', measurements: { evidence_reuse_count: 1 }, result_summary: 'evidence reuse hit' },
+      { action_id: 'evidence_reuse', status: 'completed', measurements: { evidence_reuse_count: 1 }, result_summary: 'evidence reuse hit' }
     ],
     human_decision_journal: [{ decision_id: 'decision-1' }]
   });
