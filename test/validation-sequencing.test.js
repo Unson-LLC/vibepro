@@ -113,12 +113,13 @@ test('auth-only plan emits a canonical producible aggregate review', () => {
   const targeted = recordValidationPhase(state, { phase: 'targeted_validation', ...binding });
   const action = evaluateValidationSequence(targeted, { currentHeadSha: 'abc123' }).next_required_action;
   assert.match(action.command, /--stage architecture_spec --role architecture_boundary/);
-  assert.equal(action.ordered_actions.length, 5);
-  assert.match(action.ordered_actions[1], /review start/);
-  assert.match(action.ordered_actions[2], /review close/);
-  assert.match(action.ordered_actions[3], /review record .*--summary .*--agent-transcript .*--agent-close-evidence/);
-  assert.match(action.ordered_actions[3], /risk_surfaces=auth_boundary/);
-  assert.match(action.ordered_actions[4], /sequence record/);
+  assert.equal(action.ordered_actions.length, 6);
+  assert.match(action.ordered_actions[1], /review authorize/);
+  assert.match(action.ordered_actions[2], /review start .*--dispatch-authorization/);
+  assert.match(action.ordered_actions[3], /review close/);
+  assert.match(action.ordered_actions[4], /review record .*--summary .*--agent-transcript .*--agent-close-evidence/);
+  assert.match(action.ordered_actions[4], /risk_surfaces=auth_boundary/);
+  assert.match(action.ordered_actions[5], /sequence record/);
 });
 
 test('advisory preflight never satisfies final review and freeze waits for its disposition', () => {
@@ -358,11 +359,12 @@ test('pending final review at the frozen current HEAD recommends final review wi
   assert.deepEqual(evaluation.blocking_phases, ['final_review', 'final_review_binding']);
   assert.equal(evaluation.next_required_action.phase, 'final_review');
   assert.match(evaluation.next_required_action.command, /review prepare .*--stage implementation --role runtime_contract/);
-  assert.equal(evaluation.next_required_action.ordered_actions.length, 5);
-  assert.match(evaluation.next_required_action.ordered_actions[1], /review start/);
-  assert.match(evaluation.next_required_action.ordered_actions[2], /review close/);
-  assert.match(evaluation.next_required_action.ordered_actions[3], /review record .*--strict-head-binding/);
-  assert.match(evaluation.next_required_action.ordered_actions[4], /sequence record .*--phase final_review .*--source agent_review/);
+  assert.equal(evaluation.next_required_action.ordered_actions.length, 6);
+  assert.match(evaluation.next_required_action.ordered_actions[1], /review authorize/);
+  assert.match(evaluation.next_required_action.ordered_actions[2], /review start .*--dispatch-authorization/);
+  assert.match(evaluation.next_required_action.ordered_actions[3], /review close/);
+  assert.match(evaluation.next_required_action.ordered_actions[4], /review record .*--strict-head-binding/);
+  assert.match(evaluation.next_required_action.ordered_actions[5], /sequence record .*--phase final_review .*--source agent_review/);
   assert.doesNotMatch(evaluation.next_required_action.command, /sequence invalidate/);
 });
 

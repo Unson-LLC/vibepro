@@ -20,6 +20,9 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - Build an idempotency key from Story/stage/role/HEAD/surface.
 - Distinguish `preflight` from `final`; final dispatch requires source, Spec, tests, and review surface to be frozen.
 - Reuse or block duplicate running, uncollected, or completed-pass lifecycle state instead of spawning.
+- `review authorize` runs before provider spawn under a Story-level dispatch lock. It counts every stage lifecycle plus active reservation, enforces the intended model policy, and persists a short-lived binding authorization only for `dispatch`.
+- `review start` cannot create a lifecycle under an efficiency policy without consuming that exact authorization. Story, stage, role, HEAD, surface digest, model, reasoning effort, and cost tier must still match; an authorization is single-use.
+- `review record` cannot synthesize missing lifecycle evidence while the policy is enabled; a result without a consumed authorization is rejected instead of retroactively legitimizing an already-spawned agent.
 
 ### Lifecycle debt
 
@@ -43,7 +46,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 ## Data flow
 
 1. Story/Run policy and current measurements enter the pure guardrail evaluator.
-2. Before review dispatch, current freeze binding, lifecycle snapshots, decision value, and remaining budget produce `dispatch`, `reuse`, or a typed `stop`.
+2. Before provider spawn, a Story-level lock evaluates current freeze binding, all stage lifecycles, active reservations, intended model, decision value, and remaining budget. Only `dispatch` creates a reservation; `review start` consumes it after the runtime returns a real agent id.
 3. On HEAD mutation, `agent-review` derives an orphaned stop from the stale lifecycle; explicit close persists the obsolete terminal state and binding evidence.
 4. Repair findings are converted into compatible batches; each batch receives one targeted verification and one independent re-review.
 5. `pr-manager` and portfolio surfaces consume the persisted lifecycle, repair, policy, and measurement records and display correctness readiness and efficiency debt independently.
@@ -53,6 +56,7 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 - Required/critical Gates, independent final review, current-HEAD binding, and fail-closed behavior cannot be relaxed by an efficiency decision.
 - Unknown is not zero, free, pass, or waiver.
 - The dispatch idempotency key includes Story, stage, role, HEAD, and surface digest.
+- Provider spawn is never permitted by the workflow before a current, unconsumed authorization exists; parallel reservations count against the same Story budget.
 - Final review never starts before the exact source/Spec/test/review surface binding is frozen.
 - Provider-specific cancellation is out of scope; unconfirmed cancellation is an orphaned-agent stop.
 - A caller assertion is not provider confirmation unless it is explicit and evidence-bound; HEAD mutation never auto-sets `cancel_confirmed`.

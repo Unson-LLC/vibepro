@@ -24,14 +24,18 @@
     {
       "id": "C-002",
       "type": "contract",
-      "statement": "Review dispatch records risk closure, expected judgment delta, reusable evidence and budget; final dispatch requires a frozen source, Spec, test and review surface, and the Story-stage-role-HEAD-surface binding is idempotent across running, uncollected and completed-pass states.",
+      "statement": "Before provider spawn, review authorization records intended model, risk closure, expected judgment delta, reusable evidence and a Story-wide budget snapshot under one lock; final dispatch requires a frozen source, Spec, test and review surface. Active reservations and running, uncollected or completed-pass lifecycles make the Story-stage-role-HEAD-surface binding idempotent, and review start consumes one matching authorization exactly once.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }, { "kind": "acceptance_criteria", "index": 3 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Review dispatch decision" }],
-        "code_refs": [{ "file": "src/delivery-efficiency-guardrail.js", "anchor": "buildReviewDispatchDecision" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "buildReviewDispatchDecision" },
+          { "file": "src/agent-review.js", "anchor": "authorizeAgentReviewDispatch" }
+        ],
         "test_refs": [
           { "file": "test/delivery-efficiency-guardrail.test.js", "case": "final review waits for an exact frozen surface while preflight remains available" },
-          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "same binding dispatch is idempotent for running, uncollected, and completed pass lifecycles" }
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "same binding dispatch is idempotent for running, uncollected, and completed pass lifecycles" },
+          { "file": "test/review-inspection-first.test.js", "case": "review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks" }
         ]
       }
     },
