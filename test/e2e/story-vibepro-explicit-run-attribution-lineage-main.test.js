@@ -223,6 +223,21 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
     assert.ok(Object.hasOwn(event, 'source_artifact'));
   }
 
+  const cliAvailableHuman = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--run-id', created.run_id,
+    '--session-id', SESSION_ID,
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff'
+  ]);
+  assert.ok([0, 2].includes(cliAvailableHuman.exitCode));
+  assert.match(
+    cliAvailableHuman.stdout,
+    new RegExp(`- lineage_attribution: status=available method=canonical_run_artifact_preferred run_id=${created.run_id} source=guarded-run-authority-artifact\\+codex-session-jsonl confidence=\\S+`)
+  );
+
   const cliUnavailable = await runAuditCli(authorityRoot, [
     '--story-id', STORY_ID,
     '--run-id', 'run-missing-from-canonical-state',
@@ -238,6 +253,21 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   assert.equal(cliUnavailableResult.lineage_attribution.status, 'unavailable');
   assert.equal(cliUnavailableResult.lineage_attribution.canonical_run.status, 'unavailable');
   assert.match(cliUnavailableResult.lineage_attribution.canonical_run.reason, /not found/);
+
+  const cliUnavailableHuman = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--run-id', 'run-missing-from-canonical-state',
+    '--session-id', SESSION_ID,
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff'
+  ]);
+  assert.equal(cliUnavailableHuman.exitCode, 2);
+  assert.match(
+    cliUnavailableHuman.stdout,
+    /- lineage_attribution: status=unavailable method=canonical_run_authority_required run_id=run-missing-from-canonical-state source=guarded-run-authority-artifact confidence=\S+ reason=canonical Guarded Run state artifact was not found/
+  );
 
   const ambiguousSessionId = '019f-eral-e2e-ambiguous-session';
   await writeSessionFile(codexHome, ambiguousSessionId, [
@@ -260,6 +290,21 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   assert.equal(cliAmbiguousResult.session_id, null);
   assert.equal(cliAmbiguousResult.lineage_attribution.status, 'unavailable');
   assert.match(cliAmbiguousResult.session_selection.reason, /same top score|ambiguous|confidence/i);
+
+  const cliAmbiguousHuman = await runAuditCli(authorityRoot, [
+    '--story-id', STORY_ID,
+    '--session-id', 'auto',
+    '--infer-session',
+    '--codex-home', codexHome,
+    '--window-start', '2026-07-21T01:02:00.000Z',
+    '--window-end', '2026-07-21T01:04:00.000Z',
+    '--no-worktree-diff'
+  ]);
+  assert.equal(cliAmbiguousHuman.exitCode, 2);
+  assert.match(
+    cliAmbiguousHuman.stdout,
+    /- lineage_attribution: status=ambiguous method=session_selection run_id=- source=codex-session-jsonl confidence=ambiguous reason=multiple session candidates had the same top score/
+  );
 });
 
 async function runAuditCli(repoRoot, args) {

@@ -191,9 +191,11 @@
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md", "section": "Integration boundaries" }],
         "code_refs": [
           { "file": "src/run-lineage.js", "anchor": "export function resolveRunAttribution" },
+          { "file": "src/session-efficiency-audit.js", "anchor": "resolveCanonicalRunLineage" },
           { "file": "src/session-efficiency-audit.js", "anchor": "import { resolveRunAttribution, validateRunLineageEnvelope }" }
         ],
         "test_refs": [
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "AC-11 session efficiency audit consumes canonical Run resolution and validation from run-lineage" },
           { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit accepts the run_id alias without changed-line allocation" },
           { "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" }
         ]

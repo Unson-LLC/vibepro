@@ -360,6 +360,7 @@ export function renderSessionEfficiencyAudit(result) {
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
     `- observed_worktree: ${result.observed_worktree} (${result.observed_worktree_source})`,
+    renderLineageAttribution(result),
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
     `- session_jsonl_parse: ${result.session.parse_diagnostics?.status ?? 'unknown'} malformed_rows=${result.session.parse_diagnostics?.malformed_row_count ?? '未確認'} confidence=${result.session.parse_diagnostics?.confidence ?? '未確認'}`,
     `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
@@ -383,6 +384,43 @@ export function renderSessionEfficiencyAudit(result) {
     ''
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function renderLineageAttribution(result) {
+  const lineage = result.lineage_attribution ?? {};
+  const selection = result.session_selection ?? {};
+  const status = selection.status === 'ambiguous'
+    ? 'ambiguous'
+    : normalizeOptionalText(lineage.status) ?? 'unavailable';
+  const method = status === 'ambiguous'
+    ? 'session_selection'
+    : normalizeOptionalText(lineage.mode)
+      ?? (uniqueStrings((lineage.events ?? []).map((event) => event?.method)).join(',') || '-');
+  const runId = normalizeOptionalText(lineage.filter?.run_id)
+    ?? normalizeOptionalText(lineage.canonical_run?.authority?.run_id)
+    ?? normalizeOptionalText(lineage.canonical_run?.run_id)
+    ?? normalizeOptionalText((lineage.events ?? []).find((event) => event?.run_id)?.run_id)
+    ?? '-';
+  const source = status === 'ambiguous'
+    ? normalizeOptionalText(selection.source) ?? normalizeOptionalText(lineage.source) ?? '-'
+    : normalizeOptionalText(lineage.source) ?? normalizeOptionalText(selection.source) ?? '-';
+  const eventConfidences = uniqueStrings((lineage.events ?? []).map((event) => event?.confidence));
+  const confidence = eventConfidences.join(',')
+    || normalizeOptionalText(lineage.confidence)
+    || normalizeOptionalText(selection.confidence)
+    || (status === 'unavailable' ? 'unavailable' : '-');
+  const reason = status === 'available'
+    ? null
+    : status === 'ambiguous'
+      ? normalizeOptionalText(selection.reason)
+        ?? normalizeOptionalText(lineage.reason)
+        ?? 'lineage attribution was ambiguous'
+      : normalizeOptionalText(lineage.reason)
+        ?? normalizeOptionalText(lineage.canonical_run?.reason)
+        ?? normalizeOptionalText(selection.reason)
+        ?? 'lineage attribution was not available';
+  const reasonSuffix = reason ? ` reason=${reason.replace(/\s+/g, ' ')}` : '';
+  return `- lineage_attribution: status=${status} method=${method} run_id=${runId} source=${source} confidence=${confidence}${reasonSuffix}`;
 }
 
 async function readProcessMetadata(codexHome, sessionId) {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -13,6 +13,26 @@ const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-vibepro-explicit-run-attribution-lineage';
 const SESSION_ID = '019f-lineage-session';
 const HEAD_SHA = 'a'.repeat(40);
+
+test('AC-11 session efficiency audit consumes canonical Run resolution and validation from run-lineage', async () => {
+  const source = await readFile(new URL('../src/session-efficiency-audit.js', import.meta.url), 'utf8');
+
+  assert.match(
+    source,
+    /import\s*{[\s\S]*resolveCanonicalRunLineage[\s\S]*validateRunLineageEnvelope[\s\S]*}\s*from\s*['"]\.\/run-lineage\.js['"]/,
+    'session-efficiency-audit must consume the canonical Run boundary from run-lineage'
+  );
+  assert.doesNotMatch(
+    source,
+    /\b(?:async\s+)?function\s+(?:resolveCanonicalRunLineage|validateRunLineageEnvelope|validateCanonicalRunAuthority|readCanonicalRunState|resolveRunRepository)\s*\(/,
+    'canonical Run resolution/validation functions must not be reintroduced here'
+  );
+  assert.doesNotMatch(
+    source,
+    /\b(?:const|let|var)\s+(?:resolveCanonicalRunLineage|validateRunLineageEnvelope|validateCanonicalRunAuthority|readCanonicalRunState|resolveRunRepository)\s*=/,
+    'canonical Run resolution/validation functions must remain owned by run-lineage'
+  );
+});
 
 async function git(cwd, args) {
   return execFileAsync('git', args, { cwd, encoding: 'utf8' });

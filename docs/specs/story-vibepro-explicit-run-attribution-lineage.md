@@ -66,7 +66,7 @@ Run-aware attributionは各結果に以下を返す。
 | ERAL-S-8 | `test/session-efficiency-run-lineage.test.js`: run_id alias compatibility; `test/agent-runtime-adapter-lineage.test.js`: polling preserves lineage and observations |
 | ERAL-S-9 | `test/run-context-capsule-lineage.test.js`: bounded Story→Run→dispatch→provider observation projection and bounded many-dispatch projection |
 | ERAL-S-10 | Focused unit coverage plus `test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js`, which exercises Guarded Run→dispatch→evidence→canonical Run session-cost→transcript-free handoff and all attribution buckets |
-| ERAL-S-11 | `src/run-lineage.js` resolver boundary, `src/session-efficiency-audit.js` consumer import, plus existing audit compatibility and bucket reconciliation tests; Graphify boundary is recorded in readiness artifact |
+| ERAL-S-11 | `src/run-lineage.js` resolver boundary, `src/session-efficiency-audit.js` consumer import, and focused AC-11 source-boundary test (`test/session-efficiency-run-lineage.test.js`); existing audit compatibility and bucket reconciliation tests; Graphify boundary is recorded in readiness artifact |
 
 ## Rollback and privacy
 
