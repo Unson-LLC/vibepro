@@ -486,6 +486,12 @@ test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
   assert.equal(blocked.status, 'blocked');
   assert.equal(blocked.stop_reason.code, 'gate_recheck_required');
   assert.deepEqual(blocked.stop_reason.details.recovery.required_actions, ['record evidence']);
+  const blockedHuman = capture();
+  await runCli([
+    'execute', 'status', blockedFixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: blockedHuman, stderr: capture(), guardedRunDependencies: blockedFixture.dependencies() });
+  assert.match(blockedHuman.text(), /status: blocked/);
+  assert.match(blockedHuman.text(), /required_action: record evidence/);
 
   const readyFixture = await createFixture(t, { mode: 'disabled' });
   const readyOut = capture();
@@ -501,6 +507,12 @@ test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
     })
   });
   assert.equal(JSON.parse(readyOut.text()).state.status, 'pr_ready');
+  const readyHuman = capture();
+  await runCli([
+    'execute', 'status', readyFixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: readyHuman, stderr: capture(), guardedRunDependencies: readyFixture.dependencies() });
+  assert.match(readyHuman.text(), /status: pr_ready/);
+  assert.match(readyHuman.text(), /stop_reason: none/);
 });
 
 test('AAD-S-7 autonomous composition preserves canonical owner artifact references', async (t) => {
