@@ -381,6 +381,128 @@ test('AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run ses
   assert.equal(prepareCalls, 2);
 });
 
+test('AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without replaying implement', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const newHead = 'changed-before-restart-head';
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  let implementCalls = 0;
+  let verifyCalls = 0;
+  const firstSession = fixture.session({
+    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    actionRunners: {
+      diagnose: async () => ({ status: 'continue' }),
+      prepare_artifacts: async () => ({ status: 'continue' }),
+      implement: async () => {
+        implementCalls += 1;
+        fixture.setHead(fixture.source, newHead);
+        return { status: 'continue' };
+      },
+      verify: async () => {
+        verifyCalls += 1;
+        return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+      }
+    }
+  });
+  await firstSession.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const stopped = await firstSession.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.current_head_sha, newHead);
+  assert.equal(stopped.state.action_journal.find((entry) => entry.action_id === 'implement')?.output_head_sha, newHead);
+
+  const suffixCalls = [];
+  const restartedSession = fixture.session({
+    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    actionRunners: {
+      diagnose: async () => { throw new Error('diagnose replayed'); },
+      prepare_artifacts: async () => { throw new Error('prepare_artifacts replayed'); },
+      implement: async () => { implementCalls += 1; return { status: 'continue' }; },
+      verify: async () => { verifyCalls += 1; suffixCalls.push('verify'); return { status: 'continue' }; },
+      review: async () => { suffixCalls.push('review'); return { status: 'continue' }; },
+      repair: async () => { suffixCalls.push('repair'); return { status: 'continue' }; },
+      final_prepare: async () => { suffixCalls.push('final_prepare'); return { status: 'pr_ready' }; }
+    }
+  });
+  const resumed = await restartedSession.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(resumed.state.status, 'pr_ready', JSON.stringify(resumed.state.stop_reason));
+  assert.equal(resumed.state.current_head_sha, newHead);
+  assert.equal(implementCalls, 1);
+  assert.equal(verifyCalls, 2);
+  assert.deepEqual(suffixCalls, ['verify', 'review', 'repair', 'final_prepare']);
+  for (const entry of resumed.state.action_journal.filter((item) => ['verify', 'review', 'repair', 'final_prepare'].includes(item.action_id))) {
+    assert.equal(entry.input_head_sha, newHead);
+  }
+});
+
+test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes', async (t) => {
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const prefixIds = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
+  const prefixRunners = Object.fromEntries(prefixIds.map((id) => [id, async () => ({ status: 'continue' })]));
+
+  const missingFixture = await createFixture(t, { mode: 'disabled' });
+  const missingOut = capture();
+  await runCli([
+    'execute', 'run', missingFixture.source, '--story-id', STORY_ID,
+    '--action-profile', 'autonomous', '--until', 'pr-ready', '--json'
+  ], {
+    stdout: missingOut,
+    stderr: capture(),
+    guardedRunDependencies: missingFixture.dependencies({ actionRunners: prefixRunners })
+  });
+  const missing = JSON.parse(missingOut.text()).state;
+  assert.equal(missing.status, 'waiting_for_runtime');
+  assert.equal(missing.stop_reason.code, 'runtime_required');
+  assert.equal(missing.stop_reason.details.recovery.missing_action_runner, 'final_prepare');
+  const missingHuman = capture();
+  await runCli([
+    'execute', 'status', missingFixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: missingHuman, stderr: capture(), guardedRunDependencies: missingFixture.dependencies() });
+  assert.match(missingHuman.text(), /status: waiting_for_runtime/);
+  assert.match(missingHuman.text(), /final_prepare/);
+
+  const blockedFixture = await createFixture(t, { mode: 'disabled' });
+  const blockedOut = capture();
+  await runCli([
+    'execute', 'run', blockedFixture.source, '--story-id', STORY_ID,
+    '--action-profile', 'autonomous', '--until', 'pr-ready', '--json'
+  ], {
+    stdout: blockedOut,
+    stderr: capture(),
+    guardedRunDependencies: blockedFixture.dependencies({
+      preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } } }),
+      actionRunners: { ...prefixRunners, final_prepare: async () => ({ status: 'pr_ready' }) }
+    })
+  });
+  const blocked = JSON.parse(blockedOut.text()).state;
+  assert.equal(blocked.status, 'blocked');
+  assert.equal(blocked.stop_reason.code, 'gate_recheck_required');
+  assert.deepEqual(blocked.stop_reason.details.recovery.required_actions, ['record evidence']);
+
+  const readyFixture = await createFixture(t, { mode: 'disabled' });
+  const readyOut = capture();
+  await runCli([
+    'execute', 'run', readyFixture.source, '--story-id', STORY_ID,
+    '--action-profile', 'autonomous', '--until', 'pr-ready', '--json'
+  ], {
+    stdout: readyOut,
+    stderr: capture(),
+    guardedRunDependencies: readyFixture.dependencies({
+      preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+      actionRunners: { ...prefixRunners, final_prepare: async () => ({ status: 'pr_ready' }) }
+    })
+  });
+  assert.equal(JSON.parse(readyOut.text()).state.status, 'pr_ready');
+});
+
 test('AAD-S-7 autonomous composition preserves canonical owner artifact references', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;

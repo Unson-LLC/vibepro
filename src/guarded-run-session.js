@@ -516,6 +516,11 @@ function hasCompletedResumeCheckpoint(state, resumeNodeId) {
 }
 
 function resumeCursorPatch(progress, source) {
+  if (progress.action_profile === 'autonomous'
+      && ['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(progress.status)) {
+    const stoppedAction = progress.action_journal.findLast((entry) => entry.status === 'failed');
+    if (stoppedAction?.node_id) return { resume_from_node_id: stoppedAction.node_id };
+  }
   if (!Object.hasOwn(source, 'resume_from_node_id')) return {};
   return {
     resume_from_node_id: hasCompletedResumeCheckpoint(progress, source.resume_from_node_id)
