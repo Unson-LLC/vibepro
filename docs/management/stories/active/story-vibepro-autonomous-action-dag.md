@@ -32,7 +32,7 @@ updated_at: 2026-07-21
 
 - [ ] AAD-S-1: `diagnose`、`prepare_artifacts`、`implement`、`verify`、`review`、`repair`、`final_prepare`が閉じたAction registryにあり、各Actionは既存owner APIを注入する薄いcomposition portである。
 - [ ] AAD-S-2: dependency未完了、policy禁止、未知Actionは実行されない。
-- [ ] AAD-S-3: Run/node/HEAD単位のidempotencyとprocess restart resumeが成立する。
+- [ ] AAD-S-3: Run/node/HEAD単位のidempotencyとprocess restart resumeが成立し、Action後にrepositoryから再取得した権威HEADだけがsuffixを再bindできる。runner申告HEADとの不一致はdependent Actionや`pr_ready`の前にfail closedする。
 - [ ] AAD-S-4: Action結果は次node、型付き停止、または`pr_ready`だけへ遷移する。
 - [ ] AAD-S-5: legacy二段planとの互換・feature disable経路があり、新規・既存Runのrequested/effective profileとfallback理由が永続化・表示される。
 - [ ] AAD-S-6: 全transitionと禁止組合せのcontract testがある。
