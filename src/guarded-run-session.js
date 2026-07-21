@@ -589,6 +589,7 @@ async function createRun(deps, repoRoot, options) {
     });
   }
   const storyId = requireStoryId(options.storyId);
+  const creationRequestId = options.creationRequestId == null ? null : requireCreationRequestId(options.creationRequestId);
   const caller = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
   await assertRegisteredStory(deps, caller.root_realpath, storyId);
   const initialLegacy = await readLegacyState(deps, caller.root_realpath, storyId);
@@ -633,9 +634,13 @@ async function createRun(deps, repoRoot, options) {
       binding = await resolveCreationBinding(deps, caller, legacy, { newlyBootstrapped: true });
     }
 
+    if (creationRequestId) {
+      const existing = await findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId);
+      if (existing) return existing;
+    }
     const createdAt = toIso(deps.now());
     const runId = generateRunId(createdAt, deps.randomBytes);
-    const state = buildInitialState({ storyId, runId, createdAt, binding });
+    const state = buildInitialState({ storyId, runId, createdAt, binding, creationRequestId });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
       ? getRunStatePath(binding.mirror.root_realpath, storyId, runId)
@@ -645,6 +650,49 @@ async function createRun(deps, repoRoot, options) {
   } finally {
     await deps.artifactIo.rm(lockPath, { recursive: true, force: true });
   }
+}
+
+async function findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId) {
+  const runsRoot = getRunsRoot(binding.authority.root_realpath, storyId);
+  let entries;
+  try {
+    entries = await deps.artifactIo.readdir(runsRoot);
+  } catch (cause) {
+    if (cause.code === 'ENOENT' || cause.code === 'ENOTDIR') return null;
+    throw cause;
+  }
+  const matches = [];
+  for (const runId of entries.filter((entry) => RUN_ID_PATTERN.test(entry))) {
+    const file = getRunStatePath(binding.authority.root_realpath, storyId, runId);
+    const raw = await readOptionalFile(deps, file);
+    if (raw === null) {
+      throw contractError('creation_request_scan_blocked', 'A guarded Run disappeared while resolving a creation request identity.', {
+        story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file, cause: 'run_state_missing'
+      });
+    }
+    let state;
+    try {
+      state = migrateRunState(JSON.parse(raw)).state;
+      await validateAuthorityBinding(deps, caller, state, binding.authority, {
+        storyId, runId, expectedAuthorityKind: binding.authorityKind
+      });
+    } catch (cause) {
+      if (cause instanceof SyntaxError || isGuardedRunError(cause)) {
+        throw contractError('creation_request_scan_blocked', 'A guarded Run cannot be validated while resolving a creation request identity.', {
+          story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file,
+          cause: cause.code ?? cause.message
+        });
+      }
+      throw cause;
+    }
+    if (state.creation_request_id === creationRequestId) matches.push(state);
+  }
+  if (matches.length > 1) {
+    throw contractError('creation_request_ambiguous', 'Multiple guarded Runs share one creation request identity.', {
+      story_id: storyId, creation_request_id: creationRequestId, run_ids: matches.map((state) => state.run_id)
+    });
+  }
+  return matches[0] ?? null;
 }
 
 async function resolveCreationLockRoot(deps, caller, legacy) {
@@ -1094,11 +1142,12 @@ async function validateAuthorityBinding(deps, caller, state, authorityIdentity, 
   }
 }
 
-function buildInitialState({ storyId, runId, createdAt, binding }) {
+function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null }) {
   return {
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     run_id: runId,
     story_id: storyId,
+    ...(creationRequestId ? { creation_request_id: creationRequestId } : {}),
     target: GUARDED_RUN_TARGET,
     autonomy_mode: GUARDED_AUTONOMY_MODE,
     created_at: createdAt,
@@ -1290,6 +1339,7 @@ function validateRunShape(state) {
   }
   requireRunId(state.run_id);
   requireStoryId(state.story_id);
+  if (state.creation_request_id != null) requireCreationRequestId(state.creation_request_id);
   if (state.target !== GUARDED_RUN_TARGET || state.autonomy_mode !== GUARDED_AUTONOMY_MODE) {
     throw contractError('invalid_state', 'Guarded Run target or autonomy mode is invalid.', {
       run_id: state.run_id
@@ -1414,6 +1464,13 @@ function validateRunShape(state) {
       && typeof state.resume_from_node_id !== 'string') {
     throw contractError('invalid_state', 'Guarded Run resume_from_node_id is invalid.', { run_id: state.run_id });
   }
+}
+
+function requireCreationRequestId(value) {
+  if (typeof value !== 'string' || !/^portfolio-[0-9a-f]{24}$/.test(value)) {
+    throw contractError('invalid_creation_request_id', 'A valid Portfolio creation request identity is required.', { creation_request_id: value ?? null });
+  }
+  return value;
 }
 
 function isBoundedDecisionRecord(decision) {

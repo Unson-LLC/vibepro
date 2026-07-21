@@ -76,8 +76,20 @@
         "started_at": "2026-07-15",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-story-run-portfolio-controller",
+        "title": "複数Storyを混載しないStory Run Portfolio Controller",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "product"
       }
     ],
-    "current_story_id": "story-vibepro-review-finding-repair-loop"
+    "current_story_id": "story-vibepro-story-run-portfolio-controller"
   }
 }
