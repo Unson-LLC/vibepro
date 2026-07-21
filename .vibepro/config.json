@@ -364,6 +364,18 @@
         "started_at": "2026-07-21",
         "due_at": null,
         "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+        "title": "Summary depthのCanonical Audit Replayを欠損なく引き継ぐ",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
       }
     ],
     "current_story_id": "story-vibepro-routing-profiles-rendered-projections"
