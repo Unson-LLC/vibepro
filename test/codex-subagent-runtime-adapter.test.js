@@ -60,6 +60,28 @@ test('CDI-S-2 completion emitted during spawn is subscribed first and persisted 
   assert.equal(host.metrics().spawns, 1);
 });
 
+test('CDI-S-4 concurrent starts for one dispatch share the in-flight spawn', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-concurrent-start-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const originalSpawn = host.spawn;
+  let releaseSpawn;
+  const spawnGate = new Promise((resolve) => { releaseSpawn = resolve; });
+  host.spawn = async (request) => {
+    await spawnGate;
+    return originalSpawn(request);
+  };
+  const adapter = createCodexSubagentRuntimeAdapter({ repoRoot, host });
+  const request = { ...reviewRequest(repoRoot), dispatch_id: 'dispatch-concurrent-start' };
+  const first = adapter.start(request);
+  const second = adapter.start(request);
+  releaseSpawn();
+  const [firstStarted, secondStarted] = await Promise.all([first, second]);
+  assert.deepEqual(secondStarted, firstStarted);
+  assert.equal(host.metrics().lifecycleOrder.filter((item) => item === 'subscribe').length, 1);
+  assert.equal(host.metrics().spawns, 1);
+});
+
 function reviewRequest(repoRoot) {
   return {
     adapter_id: 'codex-subagent', task_id: 'agent-review', role: 'review', reviewer_identity: 'reviewer-codex',
@@ -177,6 +199,19 @@ test('CDI-S-6 CDI-S-7 recovery reuses completed judgments and invalidates only c
   assert.deepEqual(plan.reusable_judgments.map((item) => item.judgment_id), ['runtime']);
   assert.deepEqual(plan.invalidated_judgments, ['docs']);
   assert.deepEqual(plan.remaining_judgments.map((item) => item.judgment_id), ['docs', 'new']);
+});
+
+test('CDI-S-7 changed surface without a path diff invalidates completed judgments fail-closed', () => {
+  const plan = planJudgmentRecovery({
+    previous: [{ judgment_id: 'runtime', verdict: 'pass' }],
+    requested: [{ judgment_id: 'runtime', surface_paths: ['src/runtime'] }],
+    previousSurfaceHash: 'surface-a',
+    currentSurfaceHash: 'surface-b',
+    changedPaths: []
+  });
+  assert.deepEqual(plan.reusable_judgments, []);
+  assert.deepEqual(plan.invalidated_judgments, ['runtime']);
+  assert.deepEqual(plan.remaining_judgments.map((item) => item.judgment_id), ['runtime']);
 });
 
 test('CDI-S-1 monitor polling automatically detaches at the ten-minute boundary without shutdown', async (t) => {
@@ -311,6 +346,25 @@ test('CDI-S-7 completion for a different surface is contained and cannot close r
   const contained = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.notEqual(contained.dispatch.status, 'completed');
   assert.equal(contained.dispatch.stop_reason.code, 'invalid_runtime_result');
+});
+
+test('CDI-S-6 CDI-S-7 partial judgments from a different surface are not reused', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-partial-surface-mismatch-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
+  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
+  await host.emit({
+    event_id: 'wrong-partial', kind: 'partial_result', surface_hash: 'surface-b',
+    payload: { judgment_id: 'security', verdict: 'pass' }
+  });
+  await host.emit({ event_id: 'right-completion', kind: 'completed', surface_hash: 'surface-a', result: {
+    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'right surface', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed'
+  } });
+  const completed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(completed.dispatch.status, 'completed');
+  assert.deepEqual(completed.dispatch.result.partial_results, []);
+  assert.deepEqual(completed.dispatch.result.judgments, []);
 });
 
 test('CDI-S-8 malformed persisted Inbox data remains fail-closed and recoverable in detached state', async (t) => {

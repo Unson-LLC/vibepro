@@ -24,6 +24,8 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   let completionHandler;
   let spawns = 0;
   let shutdowns = 0;
+  let wakeHandler;
+  let pushResume;
   const lifecycle = [];
   const reviews = [];
   const host = {
@@ -32,7 +34,11 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
     async spawn({ idempotency_key }) { lifecycle.push('spawn'); spawns += 1; return { provider_run_id: `codex-${idempotency_key}`, agent_identity: 'codex-reviewer', thread_id: 'codex-thread' }; },
     async status() { return { status: 'running', attempts: 1, usage_accounting: { cost_usd: 0.1 } }; },
     async shutdown() { shutdowns += 1; return { status: 'cancelled' }; },
-    async wake({ event_id }) { lifecycle.push(`wake:${event_id}`); },
+    async wake(notification) {
+      lifecycle.push(`wake:${notification.event_id}`);
+      pushResume = wakeHandler?.({ story_id: STORY_ID, run_id: RUN_ID, ...notification });
+      return pushResume;
+    },
     async detach() { lifecycle.push('detach'); }
   };
   const legacy = {
@@ -71,14 +77,15 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   assert.equal(shutdowns, 0);
   assert.equal((await parent.session.status(repoRoot, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
 
+  const successor = createBridge();
+  wakeHandler = (notification) => successor.resumeFromWake(notification);
   await completionHandler({
     event_id: 'e2e-completion', kind: 'completed', surface_hash: 'surface-e2e',
     result: { completion_status: 'completed', changed_files: [], head_sha: headSha, test_suggestions: [], summary: 'E2E review complete', agent_identity: 'codex-reviewer', thread_id: 'codex-thread', lifecycle: 'closed' }
   });
   assert.ok(lifecycle.includes('wake:e2e-completion'));
 
-  const successor = createBridge();
-  const closed = await successor.session.reconcileRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  const closed = await pushResume;
   assert.equal(closed.dispatch.result.review_provenance.lifecycle, 'closed');
   const recorded = await successor.session.recordRuntimeReview(repoRoot, {
     storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,

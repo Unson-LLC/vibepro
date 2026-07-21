@@ -18,5 +18,18 @@ export function createCodexGuardedRunBridge({
     agentRuntimeCoordinator: coordinator,
     recordAgentReview: recordAgentReview ?? guardedRunDependencies.recordAgentReview
   });
-  return Object.freeze({ inbox, adapter, coordinator, session });
+  const resumeFromWake = ({ story_id: storyIdSnake, storyId, run_id: runIdSnake, runId, dispatch_id: dispatchIdSnake, dispatchId } = {}) => {
+    const resolvedStoryId = storyId ?? storyIdSnake;
+    const resolvedRunId = runId ?? runIdSnake;
+    const resolvedDispatchId = dispatchId ?? dispatchIdSnake;
+    if (!resolvedStoryId || !resolvedRunId || !resolvedDispatchId) {
+      throw new TypeError('Codex wake resume requires story_id, run_id, and dispatch_id');
+    }
+    return session.reconcileRuntime(repoRoot, {
+      storyId: resolvedStoryId,
+      runId: resolvedRunId,
+      dispatchId: resolvedDispatchId
+    });
+  };
+  return Object.freeze({ inbox, adapter, coordinator, session, resumeFromWake });
 }

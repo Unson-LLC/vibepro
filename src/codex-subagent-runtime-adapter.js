@@ -6,6 +6,71 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
   assertHost(host);
   const persistentInbox = inbox ?? createAgentCompletionInbox({ repoRoot, now });
   const dispatches = new Map();
+  const starting = new Map();
+
+  async function startDispatch(request) {
+    const recoveryPlan = planJudgmentRecovery({
+      previous: request.previous_judgments,
+      requested: request.requested_judgments,
+      previousSurfaceHash: request.previous_surface_hash,
+      currentSurfaceHash: request.inspection_surface_hash,
+      changedPaths: request.changed_paths
+    });
+    const effectiveRequest = {
+      ...request,
+      requested_judgments: recoveryPlan.remaining_judgments,
+      recovery_plan: recoveryPlan,
+      idempotency_key: request.dispatch_id
+    };
+    let started = null;
+    const pendingBeforeStart = [];
+    let deliveryChain = Promise.resolve();
+    const persistAndWake = async (providerEvent) => {
+      const event = toInboxEvent(request, started, providerEvent, now);
+      await persistentInbox.append(event);
+      try {
+        await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
+      } catch {
+        // Inbox persistence is authoritative; reconcile recovers a lost push.
+      }
+    };
+    const onEvent = (providerEvent) => {
+      if (!started) {
+        pendingBeforeStart.push(providerEvent);
+        return Promise.resolve();
+      }
+      deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
+      return deliveryChain;
+    };
+    let subscription;
+    try {
+      subscription = await host.subscribeCompletion({
+        provider_run_id: null,
+        dispatch_id: request.dispatch_id,
+        onEvent
+      });
+      started = await host.spawn(effectiveRequest);
+      const record = {
+        request: effectiveRequest,
+        started,
+        subscription,
+        started_at: now().toISOString(),
+        awaitDelivery: () => deliveryChain
+      };
+      dispatches.set(request.dispatch_id, record);
+      for (const providerEvent of pendingBeforeStart.splice(0)) {
+        deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
+      }
+      await deliveryChain;
+    } catch (error) {
+      dispatches.delete(request.dispatch_id);
+      if (started?.provider_run_id) {
+        await host.shutdown({ provider_run_id: started.provider_run_id, force: true, reason: 'completion_delivery_unavailable' });
+      }
+      throw error;
+    }
+    return started;
+  }
 
   return {
     id: 'codex-subagent',
@@ -16,67 +81,15 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     async start(request) {
       const existing = dispatches.get(request.dispatch_id);
       if (existing) return existing.started;
-      const recoveryPlan = planJudgmentRecovery({
-        previous: request.previous_judgments,
-        requested: request.requested_judgments,
-        previousSurfaceHash: request.previous_surface_hash,
-        currentSurfaceHash: request.inspection_surface_hash,
-        changedPaths: request.changed_paths
-      });
-      const effectiveRequest = {
-        ...request,
-        requested_judgments: recoveryPlan.remaining_judgments,
-        recovery_plan: recoveryPlan,
-        idempotency_key: request.dispatch_id
-      };
-      let started = null;
-      const pendingBeforeStart = [];
-      let deliveryChain = Promise.resolve();
-      const persistAndWake = async (providerEvent) => {
-        const event = toInboxEvent(request, started, providerEvent, now);
-        await persistentInbox.append(event);
-        try {
-          await host.wake({ dispatch_id: request.dispatch_id, provider_run_id: started.provider_run_id, event_id: event.event_id });
-        } catch {
-          // Inbox persistence is authoritative; reconcile recovers a lost push.
-        }
-      };
-      const onEvent = (providerEvent) => {
-        if (!started) {
-          pendingBeforeStart.push(providerEvent);
-          return Promise.resolve();
-        }
-        deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
-        return deliveryChain;
-      };
-      let subscription;
+      const inFlight = starting.get(request.dispatch_id);
+      if (inFlight) return inFlight;
+      const pending = startDispatch(request);
+      starting.set(request.dispatch_id, pending);
       try {
-        subscription = await host.subscribeCompletion({
-          provider_run_id: null,
-          dispatch_id: request.dispatch_id,
-          onEvent
-        });
-        started = await host.spawn(effectiveRequest);
-        const record = {
-          request: effectiveRequest,
-          started,
-          subscription,
-          started_at: now().toISOString(),
-          awaitDelivery: () => deliveryChain
-        };
-        dispatches.set(request.dispatch_id, record);
-        for (const providerEvent of pendingBeforeStart.splice(0)) {
-          deliveryChain = deliveryChain.then(() => persistAndWake(providerEvent));
-        }
-        await deliveryChain;
-      } catch (error) {
-        dispatches.delete(request.dispatch_id);
-        if (started?.provider_run_id) {
-          await host.shutdown({ provider_run_id: started.provider_run_id, force: true, reason: 'completion_delivery_unavailable' });
-        }
-        throw error;
+        return await pending;
+      } finally {
+        if (starting.get(request.dispatch_id) === pending) starting.delete(request.dispatch_id);
       }
-      return started;
     },
     async status({ provider_run_id }) {
       const record = findByProviderRun(dispatches, provider_run_id);
@@ -97,15 +110,16 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       const reconciled = await persistentInbox.reconcile(dispatch_id);
       if (reconciled.completion) return completionStatus(reconciled.completion);
       const providerStatus = await host.status({ provider_run_id });
+      const partialResults = matchingPartialResults(reconciled, record?.request.inspection_surface_hash ?? dispatch?.inspection_surface_hash);
       if (!record) {
-        return { ...providerStatus, partial_results: reconciled.partial_results, latest_event: reconciled.latest };
+        return { ...providerStatus, partial_results: partialResults, latest_event: reconciled.latest };
       }
       const stalled = evaluateProgressBounds(record, reconciled, providerStatus, now());
       if (stalled) {
         await host.shutdown({ provider_run_id, force: true, reason: stalled.stop_reason.code });
         return stalled;
       }
-      return { ...providerStatus, partial_results: reconciled.partial_results, latest_event: reconciled.latest };
+      return { ...providerStatus, partial_results: partialResults, latest_event: reconciled.latest };
     },
     async cancel({ provider_run_id, force = false }) {
       return host.shutdown({ provider_run_id, force, reason: 'explicit_runtime_cancel' });
@@ -117,11 +131,12 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       if (!logicalDispatchId) throw new Error(`unknown Codex provider run: ${provider_run_id}`);
       const reconciled = await persistentInbox.reconcile(logicalDispatchId);
       if (reconciled.completion?.kind !== 'completed') throw new Error('Codex completion result is not present in the persistent inbox');
+      const partialResults = matchingPartialResults(reconciled, record?.request.inspection_surface_hash ?? dispatch?.inspection_surface_hash);
       await persistentInbox.acknowledge(logicalDispatchId, reconciled.completion.event_id);
       return {
         ...reconciled.completion.payload,
         completion_status: 'completed',
-        partial_results: reconciled.partial_results,
+        partial_results: partialResults,
         judgments: mergeJudgments(
           record?.request.recovery_plan?.reusable_judgments ?? planJudgmentRecovery({
             previous: record?.request.previous_judgments,
@@ -130,7 +145,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
             currentSurfaceHash: record?.request.inspection_surface_hash,
             changedPaths: record?.request.changed_paths
           }).reusable_judgments,
-          reconciled.partial_results,
+          partialResults,
           reconciled.completion.payload?.judgments
         ),
         surface_hash: reconciled.completion.surface_hash
@@ -142,6 +157,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
 export function planJudgmentRecovery({ previous = [], requested = [], previousSurfaceHash, currentSurfaceHash, changedPaths = [] } = {}) {
   const completed = new Map(previous.filter((item) => item?.judgment_id).map((item) => [item.judgment_id, item]));
   const sameSurface = previousSurfaceHash === currentSurfaceHash;
+  const surfaceChangedWithoutDiff = !sameSurface && changedPaths.length === 0;
   const invalidated = [];
   const reusable = [];
   const remaining = [];
@@ -151,7 +167,7 @@ export function planJudgmentRecovery({ previous = [], requested = [], previousSu
       remaining.push(judgment);
       continue;
     }
-    const affected = !sameSurface && intersects(judgment.surface_paths ?? [], changedPaths);
+    const affected = !sameSurface && (surfaceChangedWithoutDiff || intersects(judgment.surface_paths ?? [], changedPaths));
     if (affected) {
       invalidated.push(judgment.judgment_id);
       remaining.push(judgment);
@@ -160,6 +176,12 @@ export function planJudgmentRecovery({ previous = [], requested = [], previousSu
     }
   }
   return { reusable_judgments: reusable, remaining_judgments: remaining, invalidated_judgments: invalidated };
+}
+
+function matchingPartialResults(reconciled, expectedSurfaceHash) {
+  return reconciled.events
+    .filter((event) => event.kind === 'partial_result' && event.surface_hash === expectedSurfaceHash)
+    .map((event) => event.payload);
 }
 
 function assertHost(host) {

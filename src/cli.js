@@ -156,6 +156,7 @@ import {
   renderGuardedRunSummary
 } from './guarded-run-session.js';
 import { composeProductionRuntimeDependencies } from './agent-runtime-connectors.js';
+import { createCodexGuardedRunBridge } from './codex-runtime-bridge.js';
 import {
   StoryRunPortfolioError,
   createStoryRunPortfolioController,
@@ -2420,10 +2421,17 @@ export async function runCli(argv, io = {}) {
           || subcommand === 'cancel'
           || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
         const jsonOutput = hasFlag(rest, '--json');
-        const guardedRun = createGuardedRunSession(composeProductionRuntimeDependencies(
-          io.guardedRunDependencies ?? {},
-          { env: io.env ?? process.env }
-        ));
+        const guardedRun = io.codexSubagentHost
+          ? createCodexGuardedRunBridge({
+            repoRoot,
+            host: io.codexSubagentHost,
+            guardedRunDependencies: io.guardedRunDependencies ?? {},
+            recordAgentReview: io.guardedRunDependencies?.recordAgentReview
+          }).session
+          : createGuardedRunSession(composeProductionRuntimeDependencies(
+            io.guardedRunDependencies ?? {},
+            { env: io.env ?? process.env }
+          ));
         try {
           const guardedPolicyFlags = [
             '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
