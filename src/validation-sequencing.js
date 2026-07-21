@@ -272,7 +272,19 @@ export async function validatePreflightReviewEvidence(repoRoot, evidencePath, { 
   if (!planned || !provenance.inspection_summary.includes(coverageMarker)) {
     throw new Error(`preflight_review requires canonical inspection coverage metadata: ${coverageMarker}`);
   }
+  validatePreflightInspectionInputs(provenance.inspection_inputs);
   return { evidenceValidation: { status: 'verified' }, reviewProvenance: provenance };
+}
+
+export function validatePreflightInspectionInputs(inputs = []) {
+  const normalized = [...new Set(inputs.map((input) => String(input).replaceAll('\\', '/').replace(/^\.\//, '')))].filter(Boolean);
+  const hasDesignInput = normalized.some((input) => /^(docs\/management\/stories|docs\/architecture|docs\/specs)\//.test(input));
+  const hasRuntimeInput = normalized.some((input) => /^(src|bin|lib|app|apps|packages)\//.test(input));
+  const hasTestInput = normalized.some((input) => /^(test|tests|__tests__)\//.test(input) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(input));
+  if (!hasDesignInput || !hasRuntimeInput || !hasTestInput) {
+    throw new Error('preflight_review inspection inputs must cover design, runtime, and test surfaces; generated review artifacts or marker text alone are insufficient');
+  }
+  return normalized;
 }
 
 function assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId, headSha }) {

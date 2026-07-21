@@ -12,7 +12,8 @@ import {
   invalidateValidationSequence,
   reconcileValidationSequenceState,
   recordValidationPhase,
-  validateValidationPhaseEvidence
+  validateValidationPhaseEvidence,
+  validatePreflightInspectionInputs
 } from '../src/validation-sequencing.js';
 import { recordImportedCiVerification } from '../src/ci-evidence.js';
 import { getValidationSequencePath, readValidationSequence, writeValidationSequence } from '../src/validation-sequencing.js';
@@ -99,6 +100,20 @@ test('high-risk plan schedules one canonical aggregate boundary preflight before
     surfaces: ['core_workflow_state', 'auth_boundary']
   }]);
   assert.ok(state.plan.phases.indexOf('preflight_review') < state.plan.phases.indexOf('expensive_verification'));
+});
+
+test('aggregate preflight inspection inputs fail closed without design runtime and test coverage', () => {
+  assert.throws(
+    () => validatePreflightInspectionInputs(['.vibepro/reviews/story/stage/review-request.md']),
+    /must cover design, runtime, and test surfaces/
+  );
+  assert.throws(
+    () => validatePreflightInspectionInputs(['docs/specs/story.md', 'src/runtime.js']),
+    /must cover design, runtime, and test surfaces/
+  );
+  assert.deepEqual(validatePreflightInspectionInputs([
+    'docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js'
+  ]), ['docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js']);
 });
 
 test('auth-only plan emits a canonical producible aggregate review', () => {
