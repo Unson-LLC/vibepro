@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { appendProviderObservation, createRunLineageEnvelope } from './run-lineage.js';
 
 export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 
@@ -101,6 +102,7 @@ async function dispatch(registry, now, runState, input = {}) {
       result: null,
       stop_reason: null
     };
+    dispatchRecord.lineage = appendRuntimeObservation(dispatchRecord.lineage, adapter.id, started, dispatchRecord);
     if (request.role === 'review' &&
         (started.agent_identity !== request.reviewer_identity || started.agent_identity === request.implementation_identity)) {
       return containUncertainRuntime(registry, now, upsertDispatch(runState, dispatchRecord), dispatchRecord,
@@ -155,6 +157,7 @@ async function poll(registry, now, runState, dispatchId) {
   }
   if (!TERMINAL_STATUSES.has(observed.status)) {
     const next = { ...current, status: observed.status, updated_at: iso(now), stop_reason: observed.stop_reason ?? null };
+    next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
     return { state: { ...upsertDispatch(runState, next), status: 'running', stop_reason: null }, dispatch: next, reused: false };
   }
   if (observed.status !== 'completed') {
@@ -168,6 +171,7 @@ async function poll(registry, now, runState, dispatchId) {
       'runtime_result_timeout'
     ), current);
     const next = { ...current, status: result.completion_status, result, updated_at: iso(now), completed_at: iso(now), stop_reason: null };
+    next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, result, next);
     return { state: upsertDispatch(runState, next), dispatch: next, reused: false };
   } catch (error) {
     const code = error.code === 'runtime_result_timeout' ? error.code : 'invalid_runtime_result';
@@ -278,8 +282,9 @@ function normalizeRequest(state, input) {
   if (role === 'review' && !capabilities.includes('review')) {
     throw new AgentRuntimeError('review_capability_required', 'review runtime must request the review capability');
   }
+  const dispatchId = `dispatch-${createHash('sha256').update(`${runId}:${adapterId}:${taskId}:${role}:${headSha}:${reviewerIdentity ?? ''}:${input.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
   return {
-    dispatch_id: `dispatch-${createHash('sha256').update(`${runId}:${adapterId}:${taskId}:${role}:${headSha}:${reviewerIdentity ?? ''}:${input.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`,
+    dispatch_id: dispatchId,
     run_id: runId,
     story_id: requireText(state?.story_id, 'runState.story_id'),
     input_head_sha: headSha,
@@ -289,6 +294,7 @@ function normalizeRequest(state, input) {
     reviewer_identity: reviewerIdentity,
     implementation_identity: input.implementation_identity ?? null,
     implementation_session_id: input.implementation_session_id ?? null,
+    lineage: createDispatchLineage(state, input, dispatchId, runId, headSha),
     requirements: {
       capabilities,
       timeout_ms: positiveInteger(input.requirements?.timeout_ms, 'timeout_ms'),
@@ -313,8 +319,14 @@ function normalizeStarted(value) {
   return {
     provider_run_id: requireText(value.provider_run_id, 'provider_run_id'),
     agent_identity: requireText(value.agent_identity, 'agent_identity'),
+    provider: value.provider ?? null,
     session_id: value.session_id ?? null,
-    thread_id: value.thread_id ?? null
+    thread_id: value.thread_id ?? null,
+    provider_session_id: value.provider_session_id ?? null,
+    story_id: value.story_id ?? null,
+    run_id: value.run_id ?? null,
+    dispatch_id: value.dispatch_id ?? null,
+    head_sha: value.head_sha ?? null
   };
 }
 
@@ -322,7 +334,20 @@ function normalizeStatus(value) {
   if (!value || typeof value !== 'object') throw new AgentRuntimeError('invalid_runtime_status', 'status result must be an object');
   const status = requireText(value.status, 'runtime status');
   if (!RUNTIME_STATUSES.has(status)) throw new AgentRuntimeError('invalid_runtime_status', `unsupported runtime status: ${status}`);
-  return { status, message: value.message ?? null, stop_reason: value.stop_reason ?? null };
+  return {
+    status,
+    message: value.message ?? null,
+    stop_reason: value.stop_reason ?? null,
+    provider: value.provider ?? null,
+    provider_run_id: value.provider_run_id ?? null,
+    provider_session_id: value.provider_session_id ?? null,
+    session_id: value.session_id ?? null,
+    thread_id: value.thread_id ?? null,
+    story_id: value.story_id ?? null,
+    run_id: value.run_id ?? null,
+    dispatch_id: value.dispatch_id ?? null,
+    head_sha: value.head_sha ?? null
+  };
 }
 
 function normalizeResult(value, dispatchRecord) {
@@ -420,6 +445,35 @@ function failed(state, current, code, message, now, providerTerminalStatus = nul
 function upsertDispatch(state, record) {
   const entries = Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : [];
   return { ...state, runtime_dispatches: [...entries.filter((item) => item.dispatch_id !== record.dispatch_id), record] };
+}
+
+function createDispatchLineage(state, input, dispatchId, runId, headSha) {
+  const worktreeRoot = state?.worktree_root ?? state?.root_realpath ?? state?.execution_context?.root_realpath ?? input.requirements?.managed_worktree;
+  const branch = state?.branch ?? state?.current_branch ?? input.branch;
+  // Legacy callers may not yet expose the complete Guarded Run binding. Keep
+  // their existing dispatch shape while fully binding newer Run states.
+  if (!worktreeRoot || !branch || !/^[0-9a-f]{40}$/i.test(headSha)) return null;
+  const authority = { story_id: state.story_id, run_id: runId, worktree_root: worktreeRoot, branch, head_sha: headSha };
+  return createRunLineageEnvelope({ authority, ...(input.lineage ?? {}), dispatch_id: dispatchId });
+}
+
+function appendRuntimeObservation(lineage, provider, observation, record) {
+  if (!lineage) return null;
+  try {
+    return appendProviderObservation(lineage, {
+      provider: observation.provider ?? provider,
+      provider_run_id: observation.provider_run_id ?? record.provider_run_id,
+      provider_session_id: observation.provider_session_id ?? observation.session_id ?? record.session_id,
+      thread_id: observation.thread_id ?? record.thread_id,
+      story_id: observation.story_id,
+      run_id: observation.run_id,
+      dispatch_id: observation.dispatch_id,
+      head_sha: observation.head_sha
+    });
+  } catch (error) {
+    if (error?.code) throw new AgentRuntimeError(error.code, error.message, error.details);
+    throw error;
+  }
 }
 
 function findDispatch(state, dispatchId) {
