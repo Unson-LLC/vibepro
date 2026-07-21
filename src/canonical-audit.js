@@ -24,6 +24,10 @@ const PR_AUDIT_FILES = [
   ['traceability.json', 'traceability'],
   ['verification-evidence.json', 'verification_evidence']
 ];
+const SUMMARY_GATE_AUDIT_FILES = [
+  ['evidence-plan.json', 'evidence_plan'],
+  ['decision-index.json', 'decision_index']
+];
 const REVIEW_AUDIT_FILES = [/^review-summary\.json$/, /^review-result-.+\.json$/, /^lifecycle\.json$/];
 const REVIEW_HANDOFF_FILES = [/^review-request-.+\.md$/];
 const VIBEPRO_REFERENCE_RE = /\.vibepro\/[A-Za-z0-9_./:@-]+/g;
@@ -564,7 +568,7 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
   const artifacts = [];
   const missing_artifacts = [...inventory.missing_artifacts];
 
-  for (const [fileName, kind] of PR_AUDIT_FILES) {
+  for (const [fileName, kind] of inventory.pr_audit_files) {
     await copyJsonArtifact({
       root,
       sourcePath: await resolvePrArtifactFile(root, storyId, fileName),
@@ -1145,8 +1149,12 @@ function summarizeReplayArtifact(artifact) {
 async function collectAuditSourceInventory(root, storyId, canonicalDir) {
   const artifacts = [];
   const missing_artifacts = [];
+  const summaryGateContract = await hasSummaryDepthFinalGateContract(root, storyId);
+  const prAuditFiles = summaryGateContract
+    ? [...PR_AUDIT_FILES.filter(([fileName]) => fileName !== 'gate-dag.json'), ...SUMMARY_GATE_AUDIT_FILES]
+    : PR_AUDIT_FILES;
 
-  for (const [fileName, kind] of PR_AUDIT_FILES) {
+  for (const [fileName, kind] of prAuditFiles) {
     const sourcePath = await resolvePrArtifactFile(root, storyId, fileName);
     const targetPath = path.join(canonicalDir, 'pr', fileName);
     const artifact = await readAuditSourceArtifact(root, { sourcePath, targetPath, kind, type: 'json' });
@@ -1154,6 +1162,13 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
       artifacts.push(artifact);
     } else {
       missing_artifacts.push({ kind, source: toWorkspaceRelative(root, sourcePath) });
+    }
+  }
+
+  if (summaryGateContract) {
+    const skippedGateDag = `.vibepro/pr/${storyId}/gate-dag.json`;
+    for (const artifact of artifacts) {
+      artifact.source_references = artifact.source_references.filter((reference) => reference !== skippedGateDag);
     }
   }
 
@@ -1193,8 +1208,28 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
   return {
     artifacts,
     missing_artifacts,
+    pr_audit_files: prAuditFiles,
     artifact_line_count: artifacts.reduce((sum, artifact) => sum + artifact.line_count, 0)
   };
+}
+
+async function hasSummaryDepthFinalGateContract(root, storyId) {
+  const evidencePlanPath = await resolvePrArtifactFile(root, storyId, 'evidence-plan.json');
+  const decisionIndexPath = await resolvePrArtifactFile(root, storyId, 'decision-index.json');
+  const evidencePlan = await readJsonIfExists(evidencePlanPath);
+  const decisionIndex = await readJsonIfExists(decisionIndexPath);
+  if (!evidencePlan || !decisionIndex) return false;
+  if (evidencePlan.evidence_depth !== 'summary' || decisionIndex.evidence_depth !== 'summary') return false;
+  if (decisionIndex.story_id && decisionIndex.story_id !== storyId) return false;
+
+  const generatedArtifacts = new Set(evidencePlan.generated_artifacts ?? evidencePlan.artifact_policy?.generated_artifacts ?? []);
+  const skippedArtifacts = new Set(evidencePlan.skipped_artifacts ?? evidencePlan.artifact_policy?.skipped_artifacts ?? []);
+  const gateDagExplicitlySkipped = evidencePlan.artifact_policy?.write_full_gate_dag_dump === false
+    || skippedArtifacts.has('gate-dag.json');
+  if (!gateDagExplicitlySkipped) return false;
+  if (!generatedArtifacts.has('evidence-plan.json') || !generatedArtifacts.has('decision-index.json')) return false;
+
+  return Boolean(decisionIndex.gate_summary && decisionIndex.engineering_judgment);
 }
 
 async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, type, stage = null }) {
