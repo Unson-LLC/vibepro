@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "updated_at": "2026-07-18T17:20:46.585Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "EN/JA docsとCLI契約を更新し、fresh対象回帰33/33およびcurrent-head証拠で実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.584Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "既存human decision pathを維持しつつcritical waiverを拒否する回帰を実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.399Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "真正v1だけmigrationしlegacy unsoundをblocker化、v2偽装とlegacy marker forgeryを拒否",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.217Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "append-only eventsと明示lineage解決、duplicate/multiple/cycleのfail-closedを実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:46.049Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "fresh sound/pass、unsound/fail、needs_human/accepted decisionの三分岐を実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.874Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "correction後はfresh別judgeまでneeds_evidence、same judgeとstale HEADを拒否",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.704Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "同story/item/HEAD参照、premise差分、reason、replacement evidenceとsymlink境界を検証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.552Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "classifier_premise_unsoundは正規correction responseまでfailedを維持する状態遷移を実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.392Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "implementation_unsoundをcritical blockerとしてdecision/waiver/correctionで解除不可とする負例を実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.199Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "cause・reason・provenanceを必須化しunknown/欠落をfail-closed、unit/real CLI E2Eで実証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/test_plan_gate_security",
+        "session_ref": "6581d330-cpr-fresh"
+      },
+      "head_commit": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "recorded_at": "2026-07-18T17:20:45.042Z"
+    }
+  ]
+}

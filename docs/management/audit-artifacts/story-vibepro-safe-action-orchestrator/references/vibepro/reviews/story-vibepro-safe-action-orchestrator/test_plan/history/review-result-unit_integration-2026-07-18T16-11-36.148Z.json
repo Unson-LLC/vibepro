@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "pass",
+  "summary": "test_plan:unit_integration passed at exact HEAD 462f28ce with no findings",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected test/vibepro-cli.test.js and exact-head evidence; mandatory test_plan:unit_integration lenses are satisfied.",
+    "evidence": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json",
+    "inputs": [
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial uncertainty resolved to pass because independent review, exact-head tests, and inspected content agree."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+    "expected_head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+    "current_head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-safe-action-orchestrator-v2",
+      "branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "actual_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "current_head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T16:11:36.148Z",
+  "git_context": {
+    "head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+    "current_branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T16:11:36.145Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Bind final review to exact release candidate HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+    "surface_files": [
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "254edcc3b08fea1cc3dec99ed0a687201ca33335eb4db7b4edf5ae4fb7138f3d",
+        "size": 1077374
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d703c28719a2a3f4391ac1ef41aa51c91536dda580a97beba39b0a369a52455e"
+  },
+  "source_fingerprint": "2bafadf97a0a5901c962fc6c7abb2b1c057b7424b8290233c521f338dd5cf789",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "sao_final_test_adjudication_462f28ce",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/test_plan/review-request-unit_integration.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-test.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

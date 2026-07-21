@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "created_at": "2026-07-20T10:31:41.848Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-risk-adaptive-validation-sequencing/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-risk-adaptive-validation-sequencing/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-risk-adaptive-validation-sequencing/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-risk-adaptive-validation-sequencing/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-risk-adaptive-validation-sequencing.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 9,
+      "open": 0,
+      "by_type": {
+        "waiver": 1,
+        "needs_review": 7,
+        "noise": 1
+      },
+      "by_status": {
+        "accepted": 9
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+          "expected_root": null,
+          "expected_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+          "current_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784543055311-e8adff4d",
+        "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "source_status": "needs_evidence",
+        "summary": "Waive two orphaned historical lifecycle rows after verified replacement reviews.",
+        "reason": "All PR-final and checkpoint reviews are current, pass, independently recorded, and closed at HEAD 29b87d38; the only remaining lifecycle counts are two obsolete running rows whose newer duplicate lifecycles are replaced/closed, while review close selects the newer rows and cannot target lifecycle_id. This waiver applies only to those historical rows, not to any review or verification requirement.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-risk-adaptive-validation-sequencing/pr-prepare.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/full-regression-29b87d38-results.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/typecheck-29b87d38.txt",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/post-freeze-focused-29b87d38-results.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/full-regression-29b87d38-results.json",
+              "type": "integration",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+            "expected_root": null,
+            "expected_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+            "current_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+          "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-20T10:24:15.309Z"
+        },
+        "recorded_at": "2026-07-20T10:24:15.311Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-20T10:31:39.763Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "1abd721ea2948c9ae3cf5839f1e79a139dfcc055",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

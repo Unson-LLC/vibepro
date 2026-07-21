@@ -11,6 +11,7 @@ import { collectGitContext, compareFingerprintContexts, fingerprintHashForContex
 import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
+import { assertArtifactWritePath, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -216,7 +217,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const language = await resolveHumanOutputLanguage(root, options);
   const reviewPolicy = await readAgentReviewPolicy(root);
   const roles = normalizeRequestedRoles(reviewPolicy, stage, options.roles);
-  const reviewDir = getReviewStageDir(root, storyId, stage);
+  const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
 
   const gitContext = await collectGitContext(root);
@@ -227,7 +228,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     gitContext,
     verificationEvidence
   });
-  const prPrepareArtifact = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
+  const prPrepareArtifact = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const boundedArtifactHandoff = buildBoundedArtifactHandoff(prPrepareArtifact?.artifact_budget);
   const plan = {
     schema_version: '0.1.0',
@@ -335,7 +336,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     commandName: 'review record'
   });
 
-  const reviewDir = getReviewStageDir(root, storyId, stage);
+  const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectGitContext(root);
   const inspection = buildInspectionBlock(options);
@@ -488,7 +489,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     stage,
     role
   });
-  const reviewDir = getReviewStageDir(root, storyId, stage);
+  const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const now = new Date().toISOString();
   const entry = {
@@ -538,7 +539,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   await assertInitializedWorkspace(root, 'review close');
   const reviewPolicy = await readAgentReviewPolicy(root);
   const role = requireRole(reviewPolicy, stage, options.role, 'review close');
-  const reviewDir = getReviewStageDir(root, storyId, stage);
+  const reviewDir = await getReviewStageDir(root, storyId, stage);
   const closeReason = normalizeCloseReason(options.closeReason);
   let match = null;
   const gitContext = await collectGitContext(root);
@@ -579,7 +580,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   for (const stage of stages) {
     stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
-  const latestPrPrepare = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
+  const latestPrPrepare = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries);
   const views = buildReviewStatusViews({
     storyId,
@@ -1006,7 +1007,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     unmet_required_reviews: allUnmetRequiredReviews,
     unmet_checkpoint_reviews: allUnmetCheckpointReviews,
     stages: stageSummaries,
-    parallel_dispatch: buildParallelDispatchSummary(root, storyId, stageSummaries, [
+    parallel_dispatch: await buildParallelDispatchSummary(root, storyId, stageSummaries, [
       ...requiredReviews,
       ...checkpointRequiredReviews
     ]),
@@ -2081,7 +2082,7 @@ function orderReviewStagesForDispatch(requiredReviews) {
   ];
 }
 
-function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
+async function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
   const requiredStages = orderReviewStagesForDispatch(requiredReviews);
   const stageStatusLookup = new Map(requiredStages.map((stage) => {
     const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
@@ -2102,8 +2103,8 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
       max_parallel_subagents_per_stage: maxParallelSubagentsPerStage,
       barrier: 'A later review stage must not be dispatched until the current stage has closed and recorded every required role.'
     },
-    required_stages: requiredStages.map((stage, index) => {
-      const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+    required_stages: await Promise.all(requiredStages.map(async (stage, index) => {
+      const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
       const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
       const stageStatus = stageStatusLookup.get(stage) ?? 'missing';
@@ -2127,7 +2128,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
         prepare_command: buildReviewPrepareCommand({ storyId, stage, roles }),
         dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
       };
-    })
+    }))
   };
 }
 
@@ -2150,7 +2151,7 @@ function renderParallelDispatchPrRows(parallelDispatch) {
 }
 
 async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, reviewPolicy, roles: summaryRoles = null }) {
-  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
@@ -2930,8 +2931,10 @@ async function assertInitializedWorkspace(repoRoot, commandName) {
   }
 }
 
-function getReviewStageDir(repoRoot, storyId, stage) {
-  return path.join(getWorkspaceDir(repoRoot), 'reviews', storyId, stage);
+async function getReviewStageDir(repoRoot, storyId, stage) {
+  const route = await resolveArtifactRoute(repoRoot, 'review', { storyId });
+  const root = await assertArtifactWritePath(repoRoot, route.canonical.relative_path);
+  return path.join(root, stage);
 }
 
 function getReviewRequestPath(reviewDir, role) {
@@ -2976,7 +2979,8 @@ async function listReviewResultHistoryArtifacts(repoRoot, reviewDir, role) {
 }
 
 async function listExistingReviewStages(repoRoot, storyId) {
-  const dir = path.join(getWorkspaceDir(repoRoot), 'reviews', storyId);
+  const route = await resolveArtifactRoute(repoRoot, 'review', { storyId });
+  const dir = route.canonical.absolute_path;
   try {
     const entries = await readdir(dir, { withFileTypes: true });
     return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
@@ -3008,7 +3012,7 @@ async function writeJson(filePath, value) {
 }
 
 async function readLifecycle(repoRoot, storyId, stage) {
-  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
   const existing = await readJsonIfExists(getLifecyclePath(reviewDir));
   if (existing?.entries && Array.isArray(existing.entries)) return existing;
   return {
@@ -3020,7 +3024,7 @@ async function readLifecycle(repoRoot, storyId, stage) {
 }
 
 async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
-  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
   await writeJson(getLifecyclePath(reviewDir), {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -3031,7 +3035,7 @@ async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
 }
 
 async function updateLifecycle(repoRoot, storyId, stage, updater, afterWrite = null) {
-  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const lockDir = path.join(reviewDir, '.lifecycle.lock');
   await withDirectoryLock(lockDir, async () => {

@@ -5,7 +5,20 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
-import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication } from './adjudication.js';
+import {
+  buildValidationSequencePlan,
+  createValidationSequenceState,
+  evaluateValidationSequence,
+  fingerprintValidationCommand,
+  invalidateValidationSequence,
+  readValidationSequence,
+  readFinalReviewProvenance,
+  recordValidationPhase,
+  validatePreflightReviewEvidence,
+  validateValidationPhaseEvidence,
+  writeValidationSequence
+} from './validation-sequencing.js';
+import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
@@ -19,6 +32,7 @@ import {
   renderExploreStatusSummary
 } from './explore-evidence.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { ArtifactRoutingError, buildArtifactMigrationPlan, resolveArtifactRoute, resolveArtifactRoutes } from './artifact-routing.js';
 import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import {
@@ -111,6 +125,13 @@ import {
   renderAgentReviewStatusSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
+import {
+  dispatchFindingRepairFromRepo,
+  getFindingRepairStatus,
+  planFindingRepair,
+  pollFindingRepairFromRepo,
+  recordFindingRepair
+} from './review-finding-repair-loop.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
   getExecutionNext,
@@ -132,6 +153,12 @@ import {
   renderGuardedRunError,
   renderGuardedRunSummary
 } from './guarded-run-session.js';
+import {
+  StoryRunPortfolioError,
+  createStoryRunPortfolioController,
+  renderStoryRunPortfolioError,
+  renderStoryRunPortfolioSummary
+} from './story-run-portfolio.js';
 import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
@@ -301,13 +328,20 @@ Review record migration:
   VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
 
 Guarded Run sessions:
-  vibepro execute run <repo> --story-id <id>
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
-      This command only persists state; it does not dispatch agents or execute actions.
+      Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
+      resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      Coordinate isolated one-Story Runs sequentially; stopped entries require an explicit typed decision.
       watch returns one current snapshot and exits; it does not stream.
       Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -415,7 +449,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -440,19 +474,22 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
   vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role> [--review <file> --acceptance-clause <id> --code-scope <path> --test-scope <path>] [--result <file>] [--adapter <id> --capability <name> --timeout-ms <n> --managed-worktree <path>] [--max-attempts <n>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
@@ -480,6 +517,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
+  vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
@@ -546,13 +585,20 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 Guarded Runセッション:
-  vibepro execute run <repo> --story-id <id>
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
-      このコマンドは状態を永続化するだけで、agentやactionを実行しません。
+      --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
       Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
+      resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      1 Run = 1 Storyを保ったまま逐次実行し、停止したStoryの継続・skip・retryには型付き判断を要求します。
       watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
       guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -668,7 +714,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -693,13 +739,15 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -941,6 +989,7 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[0] ?? process.cwd();
       const sourceDir = getOption(rest, '--from');
       const result = await importGraphifyArtifacts(repoRoot, {
+        storyId: getOption(rest, '--id') ?? 'story-default',
         sourceDir,
         runGraphify: hasFlag(rest, '--run-graphify'),
         env: io.env
@@ -1161,6 +1210,7 @@ export async function runCli(argv, io = {}) {
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           graphifyOut: getOption(rest, '--from'),
+          storyId: getOption(rest, '--story-id'),
           language
         });
         write(stdout, hasFlag(rest, '--json')
@@ -1635,6 +1685,7 @@ export async function runCli(argv, io = {}) {
           storyId,
           pr: getOption(rest, '--pr'),
           checks: getOptions(rest, '--check'),
+          coverage: getOptions(rest, '--coverage'),
           env: io.env,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
@@ -1652,12 +1703,135 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'sequence') {
+      const subcommand = rest[0];
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderSequenceHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+      if (!storyId) throw new Error('sequence requires --id <story-id>');
+      const headSha = getOption(rest, '--head') ?? await resolveGitHead(repoRoot);
+      let state;
+      if (subcommand === 'plan') {
+        const commandValue = getOption(rest, '--command');
+        const targets = getOptions(rest, '--target');
+        const plan = buildValidationSequencePlan({
+          storyId,
+          riskProfile: getOption(rest, '--risk-profile') ?? 'light',
+          riskSurfaces: getOptions(rest, '--surface')
+        });
+        state = createValidationSequenceState({
+          plan,
+          headSha,
+          testFingerprint: getOption(rest, '--test-fingerprint') ?? (commandValue ? fingerprintValidationCommand(commandValue, targets) : null),
+          verificationCommand: commandValue
+        });
+      } else {
+        state = await readValidationSequence(repoRoot, storyId);
+        if (!state) throw new Error(`validation sequence not planned for ${storyId}; run vibepro sequence plan first`);
+        if (subcommand === 'record') {
+          const proposed = state.proposed_binding ?? {};
+          const phase = getOption(rest, '--phase');
+          const evidence = getOption(rest, '--evidence');
+          let reviewProvenance = phase === 'final_review'
+            ? await readFinalReviewProvenance(repoRoot, evidence)
+            : null;
+          const status = getOption(rest, '--status') ?? 'passed';
+          const preflightEvidence = phase === 'preflight_review' && ['passed', 'dispositioned'].includes(status)
+            ? await validatePreflightReviewEvidence(repoRoot, evidence, {
+              storyId,
+              headSha,
+              roles: state.plan?.preflight_roles ?? [],
+              reviews: state.plan?.preflight_reviews ?? []
+            })
+            : null;
+          if (preflightEvidence) reviewProvenance = preflightEvidence.reviewProvenance;
+          const evidenceValidation = preflightEvidence?.evidenceValidation ?? (status === 'passed' && ['targeted_validation', 'expensive_verification'].includes(phase)
+            ? await validateValidationPhaseEvidence(repoRoot, evidence, {
+                storyId,
+                phase,
+                headSha,
+                verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+                testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+                notBefore: phase === 'expensive_verification' ? state.phases?.code_frozen?.recorded_at : null
+              })
+            : null);
+          state = recordValidationPhase(state, {
+            phase,
+            status,
+            headSha,
+            testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+            verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+            evidence,
+            evidenceValidation,
+            reviewProvenance,
+            findings: getOptions(rest, '--finding').map((id) => ({ id })),
+            dispositions: getOptions(rest, '--disposition').map(parseValidationDisposition),
+            reason: getOption(rest, '--reason'),
+            source: getOption(rest, '--source') ?? 'local'
+          });
+        } else if (subcommand === 'invalidate') {
+          state = invalidateValidationSequence(state, {
+            changedSurfaces: getOptions(rest, '--surface'),
+            changedFiles: getOptions(rest, '--file'),
+            reason: getOption(rest, '--reason') ?? 'working tree mutated'
+          });
+        } else if (subcommand !== 'status') {
+          throw new Error(`Unknown sequence command: ${subcommand ?? ''}`);
+        }
+      }
+      if (subcommand !== 'status') await writeValidationSequence(repoRoot, state);
+      const result = { state, evaluation: evaluateValidationSequence(state, { currentHeadSha: headSha }) };
+      write(stdout, `${JSON.stringify(result, null, 2)}\n`);
+      return { exitCode: 0, command, subcommand, result };
+    }
+
     if (command === 'review') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || (subcommand !== 'finding-repair' && (hasFlag(rest, '--help') || hasFlag(rest, '-h')))) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'finding-repair') {
+        const action = rest[1];
+        const repairRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        const options = {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'), role: getOption(rest, '--role')
+        };
+        await assertManagedWorktreeCommandAllowed(repairRepoRoot, {
+          storyId: options.storyId, commandName: `review finding-repair ${action ?? ''}`
+        });
+        if (!action || action === '--help' || action === '-h' || hasFlag(rest.slice(2), '--help') || hasFlag(rest.slice(2), '-h')) {
+          write(stdout, 'Usage: vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role>\n\nplan: create a bounded plan from --review. dispatch/poll: run via the injected Agent Runtime coordinator. record: consume --result plus canonical verification/pr-prepare artifacts. status: show state and next action.\n');
+          return { exitCode: 0, command, subcommand, action: 'help' };
+        }
+        let result;
+        if (action === 'plan') result = await planFindingRepair(repairRepoRoot, {
+          ...options, reviewPath: getOption(rest, '--review'), maxAttempts: parseNumberOption(rest, '--max-attempts') ?? 3,
+          acceptanceClause: getOption(rest, '--acceptance-clause'), codeScope: getOptions(rest, '--code-scope'),
+          testScope: getOptions(rest, '--test-scope')
+        });
+        else if (action === 'dispatch') result = await dispatchFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator,
+          runState: io.findingRepairRunState ?? { story_id: options.storyId, runtime_dispatches: [] },
+          adapterId: getOption(rest, '--adapter'), implementationIdentity: getOption(rest, '--implementation-identity'),
+          requirements: { capabilities: getOptions(rest, '--capability'), timeout_ms: parseNumberOption(rest, '--timeout-ms') ?? 600000,
+            managed_worktree: getOption(rest, '--managed-worktree') ?? repairRepoRoot }
+        });
+        else if (action === 'poll') result = await pollFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator
+        });
+        else if (action === 'record') result = await recordFindingRepair(repairRepoRoot, {
+          ...options, resultPath: getOption(rest, '--result')
+        });
+        else if (action === 'status') result = await getFindingRepairStatus(repairRepoRoot, options);
+        else throw new Error(`Unknown review finding-repair command: ${action ?? ''}`);
+        write(stdout, `${JSON.stringify(hasFlag(rest, '--json') ? result : result.summary, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, action, result };
       }
       if (subcommand === 'prepare') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
@@ -1957,6 +2131,8 @@ export async function runCli(argv, io = {}) {
             storyId: getOption(rest, '--id'),
             itemId: getOption(rest, '--item'),
             verdict: getOption(rest, '--verdict'),
+            unsoundCause: getOption(rest, '--unsound-cause'),
+            correctionId: getOption(rest, '--correction-id'),
             reason: getOption(rest, '--reason'),
             agentSystem: getOption(rest, '--agent-system'),
             agentId: getOption(rest, '--agent-id'),
@@ -1964,7 +2140,7 @@ export async function runCli(argv, io = {}) {
           });
           write(stdout, hasFlag(rest, '--json')
             ? `${JSON.stringify(result, null, 2)}\n`
-            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} (${result.artifact})\n`);
+            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})\n`);
           return { exitCode: 0, command, subcommand, result };
         }
         const result = await recordAdjudication(repoRoot, {
@@ -1979,6 +2155,27 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'correct') {
+        if (!hasFlag(rest, '--judgment')) {
+          throw new Error('adjudicate correct requires --judgment');
+        }
+        const result = await recordPremiseCorrection(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          itemId: getOption(rest, '--item'),
+          originalVerdictId: getOption(rest, '--original-verdict-id'),
+          incorrectPremise: getOption(rest, '--incorrect-premise'),
+          correctedPremise: getOption(rest, '--corrected-premise'),
+          reason: getOption(rest, '--reason'),
+          replacementEvidence: getOptions(rest, '--replacement-evidence'),
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
+          sessionRef: getOption(rest, '--session-ref')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown adjudicate command: ${subcommand ?? ''}\n\n${renderHelp()}`);
@@ -2123,11 +2320,18 @@ export async function runCli(argv, io = {}) {
       const runOptions = {
         ...executionOptions,
         runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
-        repairLinkedCopy: hasFlag(rest, '--repair-linked-copy')
+        repairLinkedCopy: hasFlag(rest, '--repair-linked-copy'),
+        until: getOption(rest, '--until'),
+        dryRun: hasFlag(rest, '--dry-run'),
+        decisionId: getOption(rest, '--decision'),
+        answer: getOption(rest, '--answer'),
+        answeredBy: getOption(rest, '--answered-by'),
+        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? []
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',
-        'start', 'next', 'reconcile', 'merge'
+        'start', 'next', 'reconcile', 'merge',
+        'portfolio-create', 'portfolio-status', 'portfolio-advance', 'portfolio-decide', 'portfolio-promote'
       ]);
       if (runOptions.repairLinkedCopy
           && knownExecuteSubcommands.has(subcommand)
@@ -2158,14 +2362,31 @@ export async function runCli(argv, io = {}) {
               { target: executionOptions.target, supported_target: 'pr_ready' }
             );
           }
+          if ((subcommand === 'run' || subcommand === 'resume') && runOptions.until && runOptions.until !== 'pr-ready') {
+            throw new GuardedRunError('invalid_until', 'Guarded Run supports only --until pr-ready.', { until: runOptions.until });
+          }
           const result = subcommand === 'run'
-            ? await guardedRun.run(repoRoot, runOptions)
+            ? runOptions.until
+              ? runOptions.dryRun
+                ? await guardedRun.orchestrate(repoRoot, runOptions)
+                : await guardedRun.orchestrate(repoRoot, {
+                    ...runOptions,
+                    runId: (await guardedRun.run(repoRoot, runOptions)).run_id
+                  })
+              : await guardedRun.run(repoRoot, runOptions)
             : subcommand === 'status'
               ? await guardedRun.status(repoRoot, runOptions)
               : subcommand === 'watch'
                 ? await guardedRun.watch(repoRoot, runOptions)
                 : subcommand === 'resume'
-                  ? await guardedRun.resume(repoRoot, runOptions)
+                  ? runOptions.until
+                    ? await guardedRun.orchestrate(repoRoot, {
+                        ...runOptions,
+                        runId: (await guardedRun.status(repoRoot, runOptions)).status === 'running'
+                          ? runOptions.runId
+                          : (await guardedRun.resume(repoRoot, runOptions)).run_id
+                      })
+                    : await guardedRun.resume(repoRoot, runOptions)
                   : await guardedRun.cancel(repoRoot, runOptions);
           write(stdout, jsonOutput
             ? `${JSON.stringify(result, null, 2)}\n`
@@ -2177,6 +2398,50 @@ export async function runCli(argv, io = {}) {
             ? `${JSON.stringify(error.toJSON(), null, 2)}\n`
             : renderGuardedRunError(error, { repoRoot }));
           return { exitCode: 2, command, subcommand, result: error.toJSON() };
+        }
+      }
+      if (subcommand?.startsWith('portfolio-')) {
+        const jsonOutput = hasFlag(rest, '--json');
+        const controller = createStoryRunPortfolioController(io.storyRunPortfolioDependencies ?? {});
+        const portfolioOptions = {
+          portfolioId: getOption(rest, '--portfolio-id'),
+          storyIds: getOption(rest, '--stories')?.split(',').map((item) => item.trim()).filter(Boolean),
+          mode: getOption(rest, '--mode'),
+          storyId: getOption(rest, '--story-id'),
+          decision: getOption(rest, '--decision'),
+          policyType: getOption(rest, '--policy-type'),
+          reason: getOption(rest, '--reason'),
+          decisionId: getOption(rest, '--human-decision-id'),
+          answer: getOption(rest, '--answer'),
+          answeredBy: getOption(rest, '--answered-by'),
+          reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean),
+          sourceStoryId: getOption(rest, '--source-story-id'),
+          consumerStoryId: getOption(rest, '--consumer-story-id'),
+          artifactPath: getOption(rest, '--artifact'),
+          digest: getOption(rest, '--digest'),
+          rawTranscript: hasFlag(rest, '--raw-transcript')
+        };
+        try {
+          const operation = subcommand.slice('portfolio-'.length);
+          const result = operation === 'create'
+            ? await controller.create(repoRoot, portfolioOptions)
+            : operation === 'status'
+              ? await controller.status(repoRoot, portfolioOptions)
+              : operation === 'advance'
+                ? await controller.advance(repoRoot, portfolioOptions)
+                : operation === 'decide'
+                  ? await controller.decide(repoRoot, portfolioOptions)
+                  : operation === 'promote'
+                    ? await controller.promote(repoRoot, portfolioOptions)
+                    : null;
+          if (!result) throw new StoryRunPortfolioError('unknown_portfolio_command', `Unknown Portfolio command: ${subcommand}.`);
+          write(stdout, jsonOutput ? `${JSON.stringify(result, null, 2)}\n` : renderStoryRunPortfolioSummary(result));
+          return { exitCode: 0, command, subcommand, result };
+        } catch (error) {
+          if (!(error instanceof StoryRunPortfolioError)) throw error;
+          const payload = error.toJSON();
+          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : renderStoryRunPortfolioError(error));
+          return { exitCode: 2, command, subcommand, result: payload };
         }
       }
       if (subcommand === 'start') {
@@ -2449,6 +2714,7 @@ export async function runCli(argv, io = {}) {
         const story = await selectStory(repoRoot, getOption(rest, '--id'));
         write(stdout, `Story selected: ${story.story_id}\n`);
         const graph = await importGraphifyArtifacts(repoRoot, {
+          storyId: story.story_id,
           sourceDir: getOption(rest, '--from'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           env: io.env
@@ -2468,7 +2734,19 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'derive') {
         let graph = null;
         if (hasFlag(rest, '--run-graphify') || getOption(rest, '--from')) {
+          const deriveStoryId = getOption(rest, '--id');
+          if (!deriveStoryId) {
+            const graphifyRoute = await resolveArtifactRoute(repoRoot, 'graphify', { storyId: 'story-default' });
+            if (/\{(?:story_id|feature_slug)\}/.test(graphifyRoute.canonical.template)) {
+              throw new ArtifactRoutingError(
+                'unstable_routing_context',
+                'story derive requires --id when the Graphify canonical uses {story_id} or {feature_slug}',
+                { kind: 'graphify', template: graphifyRoute.canonical.template }
+              );
+            }
+          }
           graph = await importGraphifyArtifacts(repoRoot, {
+            storyId: deriveStoryId ?? 'story-default',
             sourceDir: getOption(rest, '--from'),
             runGraphify: hasFlag(rest, '--run-graphify'),
             env: io.env
@@ -2778,6 +3056,7 @@ export async function runCli(argv, io = {}) {
           pr: getOption(rest, '--pr'),
           importCi: hasFlag(rest, '--import-ci'),
           ciChecks: getOptions(rest, '--check'),
+          ciCoverage: getOptions(rest, '--coverage'),
           dryRun: hasFlag(rest, '--dry-run'),
           env: io.env
         });
@@ -2901,6 +3180,33 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'artifacts') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id');
+      if (!storyId) throw new Error('--id <story-id> is required for artifacts commands');
+      const options = { storyId, featureSlug: getOption(rest, '--feature-slug') };
+      if (subcommand === 'resolve') {
+        const result = await resolveArtifactRoutes(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactRoutes(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'migrate') {
+        if (!hasFlag(rest, '--dry-run')) {
+          throw new Error('artifacts migrate currently requires --dry-run; tracked files are never moved implicitly');
+        }
+        const result = await buildArtifactMigrationPlan(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactMigrationPlan(result));
+        return { exitCode: result.status === 'blocked' ? 2 : 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown artifacts command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
+    }
+
     if (command === 'architecture') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -2941,7 +3247,7 @@ export async function runCli(argv, io = {}) {
         const readiness = final
           ? await assertArchitectureReadinessForFinal(repoRoot, storyId)
           : null;
-        const outputPath = getOption(rest, '--output') ?? defaultArchitectureFinalPath(storyId);
+        const outputPath = getOption(rest, '--output');
         const artifact = draft
           ? await writeDraftArchitecture(repoRoot, storyId, raw)
           : await writeFinalArchitecture(repoRoot, storyId, raw, { outputPath });
@@ -3186,6 +3492,47 @@ export async function runCli(argv, io = {}) {
   }
 }
 
+function parseValidationDisposition(value) {
+  const separator = String(value).indexOf(':');
+  if (separator <= 0 || separator === String(value).length - 1) {
+    throw new Error(`sequence record --disposition must be finding-id:status, got: ${value}`);
+  }
+  const status = String(value).slice(separator + 1);
+  const terminalStatuses = new Set(['accepted', 'rejected', 'duplicate', 'deferred', 'false_positive', 'resolved']);
+  if (!terminalStatuses.has(status)) {
+    throw new Error(`sequence record --disposition status must be terminal (${[...terminalStatuses].join('|')}), got: ${status}`);
+  }
+  return {
+    finding_id: String(value).slice(0, separator),
+    status
+  };
+}
+
+function renderArtifactRoutes(result) {
+  const lines = [`Artifact routes resolved for ${result.variables.story_id}:`];
+  for (const [kind, route] of Object.entries(result.routes ?? {})) {
+    lines.push(`- ${kind}: ${route.canonical.relative_path}`);
+    for (const projection of route.projections ?? []) {
+      lines.push(`  projection (generated): ${projection.relative_path}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function renderArtifactMigrationPlan(result) {
+  const lines = [
+    `Artifact migration plan for ${result.story_id}: ${result.status}`,
+    `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
+  ];
+  for (const item of result.items ?? []) {
+    lines.push(`- ${item.kind}: ${item.action} (${item.source ?? '-'} -> ${item.destination ?? '-'})`);
+  }
+  for (const unresolved of result.unresolved ?? []) {
+    lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
 function resolveDiagnosisPhaseOption(args) {
   if (hasFlag(args, '--pre-architecture')) return 'design-input';
   return getOption(args, '--phase');
@@ -3217,6 +3564,11 @@ function renderAuditMemoryResult(result) {
 
 function renderHelp(language = null) {
   return normalizeOutputLanguage(language) === 'en' ? HELP_EN : HELP_JA;
+}
+
+function renderSequenceHelp(language = null) {
+  if (normalizeOutputLanguage(language) === 'en') return `VibePro validation sequence\n\nUsage:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\nPhase order:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\nFor targeted_validation and post-freeze expensive_verification, run vibepro verify record with --artifact, --target, --scenario, --observed test_fingerprint=<sha>, --observed validation_phase=<phase>, and --strict-head-binding; then pass .vibepro/pr/<story-id>/verification-evidence.json to sequence record. Preflight requires a closed, passing canonical Agent Review for a planned role, not self-observed review metadata. final_review requires --source agent_review and a canonical current-head review result. sequence status returns the producer command first and follow_up_command second.\n`;
+  return `VibePro validation sequence\n\n使い方:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\n実行順:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\ntargeted_validationとfreeze後のexpensive_verificationでは、vibepro verify recordへ--artifact・--target・--scenario・--observed test_fingerprint=<sha>・--observed validation_phase=<phase>・--strict-head-bindingを渡し、その後に正規verification-evidenceをsequence recordへ渡します。preflightには自己申告metadataではなく、計画済みroleのclose済みpassing Agent Reviewが必要です。sequence statusは証拠生成commandを先に、follow_up_commandを次に返します。\n`;
 }
 
 function renderCheckpointList(result) {
@@ -3423,6 +3775,11 @@ function buildStartupOptions(args) {
 
 function write(stream, text) {
   if (stream) stream.write(text);
+}
+
+async function resolveGitHead(repoRoot) {
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' });
+  return stdout.trim();
 }
 
 async function readStdin(stream) {

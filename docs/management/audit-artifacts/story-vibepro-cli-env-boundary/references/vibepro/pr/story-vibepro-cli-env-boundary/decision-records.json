@@ -1,0 +1,305 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-cli-env-boundary",
+  "updated_at": "2026-07-18T16:07:37.731Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+      "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+      "expected_root": null,
+      "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+      "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784390857730-5d6c2033",
+      "story_id": "story-vibepro-cli-env-boundary",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewed as one CLI environment injection boundary",
+      "reason": "Review owner is cli-maintainer. The only runtime delta is env: process.env at bin/vibepro.js; all other paths are its contract test and required Story/Architecture/Spec/Design SSOT lineage.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+          "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+          "expected_root": null,
+          "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "current_branch": "codex/story-vibepro-cli-env-boundary",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T16:07:37.729Z"
+      },
+      "recorded_at": "2026-07-18T16:07:37.731Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784390857142-2dc5b571",
+      "story_id": "story-vibepro-cli-env-boundary",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Reject mechanical lane split for this atomic six-file contract",
+      "reason": "A single CLI maintainer owns all changed surfaces and can review the behavior, executable contract, and lineage together; no independent deploy or rollback boundary exists between the proposed lanes.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+          "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+          "expected_root": null,
+          "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "current_branch": "codex/story-vibepro-cli-env-boundary",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T16:07:37.141Z"
+      },
+      "recorded_at": "2026-07-18T16:07:37.142Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784390856432-5c29629b",
+      "story_id": "story-vibepro-cli-env-boundary",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundle one atomic entrypoint boundary change with its Story, Spec, architecture, Design SSOT registration, and focused contract test",
+      "reason": "The six paths form one reviewable contract: bin/vibepro.js is the behavior, test/bin-entrypoint.test.js proves it, the three docs define it, and design-ssot.json registers their lineage. Splitting would create intermediate PRs with either undocumented behavior or documentation without executable proof.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+          "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+          "expected_root": null,
+          "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "current_branch": "codex/story-vibepro-cli-env-boundary",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T16:07:36.430Z"
+      },
+      "recorded_at": "2026-07-18T16:07:36.432Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+        "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+        "expected_root": null,
+        "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784390857730-5d6c2033",
+      "story_id": "story-vibepro-cli-env-boundary",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewed as one CLI environment injection boundary",
+      "reason": "Review owner is cli-maintainer. The only runtime delta is env: process.env at bin/vibepro.js; all other paths are its contract test and required Story/Architecture/Spec/Design SSOT lineage.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-cli-env-boundary/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-cli-env-boundary",
+          "actual_root": "/private/tmp/vibepro-cli-env-boundary",
+          "expected_root": null,
+          "expected_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "current_head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00929ef18ebe1a58a32ac0fc2be246ec632ab5b0",
+        "current_branch": "codex/story-vibepro-cli-env-boundary",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T16:07:37.729Z"
+      },
+      "recorded_at": "2026-07-18T16:07:37.731Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/decision-records.json"
+}

@@ -1,0 +1,281 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "updated_at": "2026-07-20T23:42:10.769Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784590930769-0e7ca552",
+      "story_id": "story-vibepro-story-run-portfolio-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "The final diff is reviewable as one responsibility boundary.",
+      "reason": "The portfolio controller is the sole new responsibility; Guarded Run changes only expose the creation identity needed to prove ownership, and the focused tests trace every acceptance clause.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+        "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T23:42:10.768Z"
+      },
+      "recorded_at": "2026-07-20T23:42:10.769Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784590928817-8e74fd26",
+      "story_id": "story-vibepro-story-run-portfolio-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Keep runtime evidence under .vibepro and commit only product SSOT.",
+      "reason": "Generated VibePro evidence remains ignored diagnostic state. The committed surface is limited to implementation, tests, Story, Architecture, Spec, test plan, and registered configuration required to reproduce the contract.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+        "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T23:42:08.816Z"
+      },
+      "recorded_at": "2026-07-20T23:42:08.817Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784590926841-593ec79a",
+      "story_id": "story-vibepro-story-run-portfolio-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_split",
+      "summary": "Resolve the proposed split by retaining one atomic Story boundary.",
+      "reason": "All changed source and documentation is owned by the same gate-evidence reviewer and rolls back as one controller feature; no subset is independently releasable without weakening the Story acceptance contract.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+        "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T23:42:06.840Z"
+      },
+      "recorded_at": "2026-07-20T23:42:06.841Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784590925000-f754c099",
+      "story_id": "story-vibepro-story-run-portfolio-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep the portfolio controller Story as one reviewable contract.",
+      "reason": "The public CLI orchestration, child Run identity binding, persistence, promotion policy, and tests jointly enforce one invariant. Splitting would publish a partial control surface without an independently verifiable safety boundary.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+        "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T23:42:04.996Z"
+      },
+      "recorded_at": "2026-07-20T23:42:05.000Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784590930769-0e7ca552",
+      "story_id": "story-vibepro-story-run-portfolio-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "The final diff is reviewable as one responsibility boundary.",
+      "reason": "The portfolio controller is the sole new responsibility; Guarded Run changes only expose the creation identity needed to prove ownership, and the focused tests trace every acceptance clause.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+        "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T23:42:10.768Z"
+      },
+      "recorded_at": "2026-07-20T23:42:10.769Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/decision-records.json"
+}

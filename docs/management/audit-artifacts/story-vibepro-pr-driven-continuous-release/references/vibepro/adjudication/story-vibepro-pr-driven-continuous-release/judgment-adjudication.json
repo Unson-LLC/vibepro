@@ -1,0 +1,508 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "updated_at": "2026-07-19T00:17:28.765Z",
+  "events": [
+    {
+      "event_id": "203c9463-be0e-47e8-aff8-6c4e38dfeee4",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent and 17 acceptance checks map directly to implementation surfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:55.592Z"
+    },
+    {
+      "event_id": "39c8a047-b0fd-48f3-b08b-52537ffcfde2",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact-HEAD focused replay passes 24/24 and supports implementation readiness; live publication remains post-merge observation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:55.820Z"
+    },
+    {
+      "event_id": "6ce039f8-28f3-4070-9205-60a875ce2403",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Merge-SHA binding, version gate, immutable gitHead, monotonic tags, idempotency, retries, and lease timing are specified and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:56.039Z"
+    },
+    {
+      "event_id": "ffda2f28-2c49-401a-96ee-ace4e87f4b30",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Trusted default-branch workflow, escaped PR prose, merge-SHA package build, secret isolation, and latest-main docs projection are separated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:56.264Z"
+    },
+    {
+      "event_id": "47d0c882-0950-486b-b87d-d6194f400089",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Replay covers duplicates, stale registry reads, invalid metadata, tag regression, interleaving, push retry, fork trust, and unchanged versions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:56.488Z"
+    },
+    {
+      "event_id": "cabc6626-b7c1-4696-ae9b-c9976c7f789c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The exact-HEAD 24-test focused suite directly validates the pre-merge implementation contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:56.719Z"
+    },
+    {
+      "event_id": "64802387-e2f2-4def-bdd1-d8fbb94b985d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stable additive PR sections, empty normalization, existing CLI compatibility, and unchanged-version behavior are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:56.946Z"
+    },
+    {
+      "event_id": "b6c263fc-55df-4509-aee4-3b72253270fb",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Reversible automation and docs boundaries are documented while npm immutability is verified before reconciliation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:57.199Z"
+    },
+    {
+      "event_id": "93eb301b-128e-4678-9af8-a12a420313cd",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The no-split decision is justified because all 23 files form one atomic release chain.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:57.407Z"
+    },
+    {
+      "event_id": "1b5bde7c-7790-4620-8415-cb89d85ef002",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Zero-action normal operation, summaries, rerun recovery, and rollback paths are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:57.626Z"
+    },
+    {
+      "event_id": "2d1020a4-ff33-4a8d-b64a-8952f5f6e73f",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is unsound: event, package, npm metadata, SemVer, date, and Markdown parsing are applicable and must not be marked not_required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:57.855Z"
+    },
+    {
+      "event_id": "5a4a02af-6d2d-49a7-9d3c-8cf8aa36bc2c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is unsound: this change does not modify VibePro gate or evidence lifecycle, and unrelated responsibility tests are not coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:58.087Z"
+    },
+    {
+      "event_id": "3f9171b3-64a8-4b7f-91bd-3ff025ed1918",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Applicable workflow states are covered by conditional transitions, replay convergence, mismatch failure, retries, lease serialization, ordering, skip, and reprojection tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_ae09",
+        "session_ref": "/root/final_judgment_ae09"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:07:58.311Z"
+    },
+    {
+      "event_id": "e887b526-3605-4446-b569-0735f8b8a0da",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "2d1020a4-ff33-4a8d-b64a-8952f5f6e73f",
+      "wrong_premise": "parse_failure is not required",
+      "corrected_premise": "parse_failure is applicable and is covered by fail-closed parsing and malformed-input release tests",
+      "reason": "The implementation parses event, package, registry metadata, SemVer, dates, and stable Markdown sections.",
+      "replacement_evidence": [
+        {
+          "artifact": "scripts/post-merge-release.mjs",
+          "sha256": "701977eb6dcbf1368b17c843cd5a56a08b2cab2c7d315a6d6bf8545ff616456e"
+        },
+        {
+          "artifact": "test/post-merge-release.test.js",
+          "sha256": "9361c919d120662f28b7d29433259f63f9428c2dda1768392b7574fab4d13ec1"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:08:21.054Z"
+    },
+    {
+      "event_id": "ed240782-85d3-4977-b018-811ca3bdf792",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "5a4a02af-6d2d-49a7-9d3c-8cf8aa36bc2c",
+      "wrong_premise": "responsibility tests cover an evidence lifecycle change",
+      "corrected_premise": "The release change does not modify Gate review or evidence lifecycle state, so this failure mode is not applicable.",
+      "reason": "Changed production surfaces are PR rendering and post-merge release delivery, not lifecycle persistence or transitions.",
+      "replacement_evidence": [
+        {
+          "artifact": "src/pr-manager.js",
+          "sha256": "f5c2a87b6b13dce3db2f07dbc95825edcbd293cd2deb0ae66854c5a4bd5ace56"
+        },
+        {
+          "artifact": ".github/workflows/post-merge-release.yml",
+          "sha256": "0a3aea2b251e68a615e05267bde9cbb22e43321713e9efc9b64f7e8f8e20b44d"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": null
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:08:21.277Z"
+    },
+    {
+      "event_id": "3588f635-f471-43b5-95a5-26e12fa6bfda",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "e887b526-3605-4446-b569-0735f8b8a0da",
+      "reason": "Parse failure is applicable across event package SemVer date registry JSON and Markdown parsing; implementation fails closed with focused negative-path coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/gate_review_b86d",
+        "session_ref": "/root/gate_review_b86d"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:10:54.578Z"
+    },
+    {
+      "event_id": "b86ba2e6-face-4eee-a38a-1a80047d06e7",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "ed240782-85d3-4977-b018-811ca3bdf792",
+      "reason": "The diff changes release-note rendering and post-merge delivery only and does not alter gate review evidence persistence or lifecycle transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/gate_review_b86d",
+        "session_ref": "/root/gate_review_b86d"
+      },
+      "head_commit": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "recorded_at": "2026-07-18T20:10:54.791Z"
+    },
+    {
+      "event_id": "0aa0f197-b70e-4616-bc3c-f1077e44bda3",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent maps concretely to PR notes, deterministic docs projection, version gate, npm and GitHub release, and recovery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:25.670Z"
+    },
+    {
+      "event_id": "fc8adb9b-b891-4f53-8142-30de971a23df",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current workflow paths and merge SHA binding were inspected; 24 focused tests pass and live publication is correctly deferred to post-merge observation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:25.871Z"
+    },
+    {
+      "event_id": "77f17db1-817e-446c-b5d9-862be252c10a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Merge SHA, increasing SemVer, immutable gitHead, monotonic tags, idempotent PR markers, bounded retry, and lease TTL invariants align across spec code and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:26.103Z"
+    },
+    {
+      "event_id": "bec937b9-f0c3-4e40-9c8b-7c84db6de7ee",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Trusted default-branch pull_request_target execution is separated from accepted merge-SHA package build and latest-main docs projection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:26.348Z"
+    },
+    {
+      "event_id": "803994a3-a868-4153-ae1e-a46698d2d97b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed inputs, gitHead mismatch, registry faults, convergence lag, stale metadata, tag regression, lease contention, docs conflicts, duplicate events, and unchanged versions are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:26.609Z"
+    },
+    {
+      "event_id": "1f0d7259-a9d2-46cb-a14c-4983250e9830",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused flow and artifact replay suite passes 24 of 24 and evidence artifact is bound to 6086ea0a.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:26.860Z"
+    },
+    {
+      "event_id": "e572e201-9fde-4262-bc52-a2fe4ab8fedd",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Three stable PR sections are additive, blank normalization and unchanged-version compatibility hold, and untrusted markup is escaped.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:27.142Z"
+    },
+    {
+      "event_id": "d481f28b-15c0-4e3f-95f2-d45d898e36e0",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Workflow disable, docs revert, last-known-good deploy, immutable npm boundary, and idempotent rerun recovery are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:27.400Z"
+    },
+    {
+      "event_id": "1b7e2406-3c76-4278-b962-b8246d904579",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All 23 files form one atomic release chain; splitting creates incomplete intermediate states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:27.675Z"
+    },
+    {
+      "event_id": "597e465e-4544-467e-8c45-ebf9d3104382",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Release notes, user action, Actions summary, retry, rollback, and manual recovery paths support zero-touch normal operation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:27.916Z"
+    },
+    {
+      "event_id": "acdc3106-e949-47d0-abb9-a2216ab07b52",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Corrected premise applies: event, package, registry, SemVer, date, and Markdown parsing fail closed; negative paths and uppercase SCRIPT sanitization are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:28.222Z"
+    },
+    {
+      "event_id": "4709c8a9-2767-4fdd-87f8-12c802e0f063",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Corrected premise applies: delivery surfaces change but evidence persistence and lifecycle state transitions do not, so this failure mode is not applicable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:28.545Z"
+    },
+    {
+      "event_id": "78b8c8b0-269d-4d4a-9291-853411f2a5b5",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Conditional publish, skip, failure suppression, lease serialization, reprojection retry, idempotency, and recovery summary cover stale and partial states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-6086",
+        "session_ref": "/root/judgment_6086"
+      },
+      "head_commit": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "recorded_at": "2026-07-19T00:17:28.764Z"
+    }
+  ]
+}

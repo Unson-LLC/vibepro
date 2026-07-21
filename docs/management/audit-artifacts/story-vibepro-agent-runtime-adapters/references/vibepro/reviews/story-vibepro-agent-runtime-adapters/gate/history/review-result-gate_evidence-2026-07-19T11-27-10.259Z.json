@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Fresh evidence passes focused tests, but runtime integration and fail-closed identity/permission behavior need changes.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "review-identity-result-not-validated",
+      "detail": "Actual review agent identity is not checked against requested reviewer and implementer identities."
+    },
+    {
+      "severity": "medium",
+      "id": "permission-wait-not-typed-stop",
+      "detail": "Polling permission_wait leaves the Run running without a typed stop."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independent reviewer inspected runtime source, contract tests, Story, Architecture, Spec, and current verification evidence at HEAD 2b598737.",
+    "evidence": ".vibepro/pr/story-vibepro-agent-runtime-adapters/verification-evidence.json",
+    "inputs": [
+      "src/agent-runtime-adapter.js",
+      "test/agent-runtime-adapter.test.js",
+      "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
+      "docs/specs/story-vibepro-agent-runtime-adapters.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial pass from fresh tests -> needs_changes after read-only probes showed identity and permission-wait gaps"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "expected_root": null,
+    "expected_head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+    "current_head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "expected_root": null,
+      "expected_head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+      "current_head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T11:27:10.259Z",
+  "git_context": {
+    "head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+    "current_branch": "codex/story-vibepro-agent-runtime-adapters",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T11:27:10.251Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2b5987379e011a2c1dcd4f991775efe3b6827d89",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
+        "sha256": "da2149518c00ce0f7fee5c710b7932fada8b8ede31d48b46c49f889472233a6e",
+        "size": 3892
+      },
+      {
+        "path": "docs/specs/story-vibepro-agent-runtime-adapters.vibepro.json",
+        "sha256": "51780956be38ebddce55104bc9d55dde2987614ad439bd98733986c6c0861845",
+        "size": 4161
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "6886b4328c22a06cd00e6fb2b3ff2f8ddb0a84d7e4bb5d269f9c5efbfee0c569",
+        "size": 13126
+      },
+      {
+        "path": "test/agent-runtime-adapter.test.js",
+        "sha256": "be4ac3d9c50955b4e5fba49330856fe42c9ffe54bd6dd1b46c3ea63a5ca705ed",
+        "size": 6742
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4cf9464979f131b72913992a09ead0dede11e3f64d415fb9a84140e15fb69e13"
+  },
+  "source_fingerprint": "410a91f738515f7fb2dbe59c742130f434f0b97b2de620315fb287b1301054c1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story6_gate_review",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

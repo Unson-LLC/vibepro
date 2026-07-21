@@ -1,0 +1,155 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Live-owner lease expiry is resolved by 90-minute caps on both two-hour lease consumers",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "npm-release-lease-expiry-with-live-owner",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".github/workflows/post-merge-release.yml"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected correction delta, both workflows, lease script, Story/Architecture/Spec, and reran 21 focused tests",
+    "evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-2b34c6aa.md",
+    "inputs": [
+      ".github/workflows/post-merge-release.yml",
+      ".github/workflows/npm-publish.yml",
+      "scripts/npm-release-lock.mjs",
+      "test/post-merge-release.test.js",
+      "docs/specs/vibepro-pr-driven-continuous-release.md"
+    ]
+  },
+  "judgment_delta": [
+    "Live-owner expiry blocker resolved because both two-hour lease consumers stop at 90 minutes with regression assertions"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_head_sha": "2b34c6aa6e580ffa682531cb77202d734bce4748",
+    "current_head_sha": "2b34c6aa6e580ffa682531cb77202d734bce4748",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "actual_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "current_head_sha": "2b34c6aa6e580ffa682531cb77202d734bce4748",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T19:46:30.945Z",
+  "git_context": {
+    "head_sha": "2b34c6aa6e580ffa682531cb77202d734bce4748",
+    "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T19:46:30.937Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "gate evidence inspects head-bound release and lease artifacts"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2b34c6aa6e580ffa682531cb77202d734bce4748",
+    "surface_files": [
+      {
+        "path": ".github/workflows/npm-publish.yml",
+        "sha256": "10f176c91a87cb7a75cea33a847b4e5dce023d1ad97a2b5b5fbca61df5354fbc",
+        "size": 1289
+      },
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "234b93fcd8e339a71706e3231cfac61764e534f71c79d7b8b25926984d45cdc8",
+        "size": 5199
+      },
+      {
+        "path": "docs/specs/vibepro-pr-driven-continuous-release.md",
+        "sha256": "c0c51721bb6d11beff2d169951b2dafee91549738559bebfd21e30a0341c916c",
+        "size": 3359
+      },
+      {
+        "path": "scripts/npm-release-lock.mjs",
+        "sha256": "998d46f039b50fea9ad7cdf19c6df134c324f3ab72318d7c1df43bf08689f0c5",
+        "size": 3322
+      },
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "05f237badcf7a0c9d8740625c0e6365c5d28e968cdf071324544450764e006a6",
+        "size": 13926
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8b5950f3ad8c6443a10d909b6cbb22d3e410e849b760f36f4f05dbbef149f939"
+  },
+  "source_fingerprint": "ab851e6a12ed8bdd597cf4183be1acc593ec966b47d6b3f5c357c869a865caed",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_d628",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-2b34c6aa.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-driven-continuous-release/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-2b34c6aa.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

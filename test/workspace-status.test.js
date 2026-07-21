@@ -34,6 +34,41 @@ test('parseWorktreePorcelain preserves branch and detached state', () => {
   ]);
 });
 
+test('workspace status reads configured PR canonical instead of legacy scan root', async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), 'vibepro-workspace-status-routed-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await git(root, ['init', '-b', 'main']);
+  await git(root, ['config', 'user.email', 'test@example.com']);
+  await git(root, ['config', 'user.name', 'Test']);
+  await writeFile(path.join(root, 'README.md'), 'initial\n');
+  await git(root, ['add', 'README.md']);
+  await git(root, ['commit', '-m', 'initial']);
+  const linked = path.join(root, 'linked-routed');
+  await git(root, ['worktree', 'add', '-b', 'feature/routed', linked]);
+  const head = (await git(linked, ['rev-parse', 'HEAD'])).stdout.trim();
+  await mkdir(path.join(linked, '.vibepro'), { recursive: true });
+  await writeFile(path.join(linked, '.vibepro', 'config.json'), JSON.stringify({
+    artifact_routing: {
+      schema_version: '0.1.0',
+      artifacts: { pr: { canonical: 'features/{feature_slug}/pr-prepare.json' } }
+    },
+    brainbase: { stories: [{ story_id: 'story-routed-status' }] }
+  }));
+  const artifactPath = path.join(linked, 'features', 'routed-status', 'pr-prepare.json');
+  await mkdir(path.dirname(artifactPath), { recursive: true });
+  await writeFile(artifactPath, JSON.stringify({
+    story: { story_id: 'story-routed-status', title: 'Routed' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    artifact_freshness: { artifact_head_sha: head }
+  }));
+
+  const result = await collectWorkspaceStatus(root);
+  const routed = result.worktrees.find((worktree) => worktree.branch === 'feature/routed');
+  assert.equal(routed.stories[0].story_id, 'story-routed-status');
+  assert.equal(routed.stories[0].status, 'active_ready');
+  assert.equal(routed.stories[0].artifact_path, await realpath(artifactPath));
+});
+
 test('workspace status derives readiness per worktree without trusting canonical health', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'vibepro-workspace-status-'));
   const linked = path.join(root, 'linked-日本語');

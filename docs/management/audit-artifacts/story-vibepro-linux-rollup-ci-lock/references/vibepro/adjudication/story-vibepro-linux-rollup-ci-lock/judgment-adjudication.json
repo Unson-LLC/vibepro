@@ -1,0 +1,232 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "updated_at": "2026-07-19T01:59:09.489Z",
+  "events": [
+    {
+      "event_id": "eed61d23-5990-422e-a864-353f98863cf5",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent and four acceptance criteria map directly to the root optional dependency, lock entry, public link normalization, and regression tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:06.231Z"
+    },
+    {
+      "event_id": "a51ee2f2-136f-4be6-8d3a-fcb3b057f863",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failing Actions run, missing module, failure position, and pre-fix lock omission establish the observed current reality.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:06.510Z"
+    },
+    {
+      "event_id": "28354308-5598-4751-8b3f-934d451afb61",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact 4.62.2 version alignment, optional semantics, and Linux x64 constraints are encoded and directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:06.753Z"
+    },
+    {
+      "event_id": "7f85faa0-2a95-4584-a30d-cc7542d491c6",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is limited to dependency resolution and release-note projection; npm publication, Cloudflare auth, CLI, API, DB, and runtime contracts are unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:07.026Z"
+    },
+    {
+      "event_id": "a5d3f807-42e8-4ee6-9bbc-36e3395ed297",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Native artifact absence, incompatible platforms, dead projected links, and external Cloudflare credentials are separated and fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:07.256Z"
+    },
+    {
+      "event_id": "2d52b8e3-c107-4cc5-8b43-d5d3b4bb162d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current artifact-bound focused tests, typecheck, and 192-file docs build pass; final Ubuntu workflow observation remains a post-PR CI and post-merge verification point.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:07.531Z"
+    },
+    {
+      "event_id": "69e7fd5b-6a56-42e6-b3ea-6c66d8eb76f6",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The dependency is optional and platform-constrained and the public link repair is backward-compatible across three output surfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:07.772Z"
+    },
+    {
+      "event_id": "ceed43f5-579b-44d4-9c6d-488a84c44fb0",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The atomic dependency and projector recovery can be reverted without stored objects, migrations, feature gates, or downgrade state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:08.001Z"
+    },
+    {
+      "event_id": "86db01d1-d578-4d0f-b69e-428693d5f8e0",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All changes close one post-merge VitePress failure chain and are traceable through four Spec clauses and focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:08.246Z"
+    },
+    {
+      "event_id": "a86fe70a-0a1d-4c98-9a9b-57ad3e32f7fc",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The merged-main workflow is automatic, exposes GitHub Actions results, requires no operator action, and has an explicit revert-and-rerun rollback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:08.483Z"
+    },
+    {
+      "event_id": "3a88d1c8-b2f3-4dd3-b0e0-42d77828e4a3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The string normalization adds no parser and preserves existing HTML and Vue neutralization with focused coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:08.747Z"
+    },
+    {
+      "event_id": "05dafa2d-65a6-4006-9c45-b9c0aa2b8879",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "npm and Cloudflare failures remain external fail-closed boundaries and are not converted to green states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:08.980Z"
+    },
+    {
+      "event_id": "f63134a1-416d-4575-8dc5-a68a4b45a066",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No review or evidence lifecycle implementation changes are present and current evidence is strict-head-bound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:09.248Z"
+    },
+    {
+      "event_id": "462fcac9-461b-44f1-8c1f-4242396e6666",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Workflow state transitions are unchanged; only install artifact resolution and projected links are repaired.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_judgment_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:59:09.488Z"
+    }
+  ]
+}

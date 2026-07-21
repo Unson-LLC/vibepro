@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-safe-action-orchestrator",
+      "decision_id": "decision-1784389720015-d90c83cc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story, typed Action registry, guarded Run integration, Spec scenarios, and Gate traceability fix form one safety contract; splitting would separate execution behavior from its fail-closed evidence.",
+      "artifact": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/gate/transcripts/d9044e50-gate.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T15:49:21.658Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

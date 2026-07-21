@@ -4,11 +4,17 @@ import path from 'node:path';
 
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
-import { evaluateGateReadiness as defaultReadGateReadiness } from './pr-manager.js';
+import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
+import {
+  evaluateGateReadiness as defaultReadGateReadiness,
+  preparePullRequest as defaultPreparePullRequest,
+  safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
+} from './pr-manager.js';
+import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
-export const GUARDED_RUN_SCHEMA_VERSION = '0.1.0';
+export const GUARDED_RUN_SCHEMA_VERSION = '0.2.0';
 export const GUARDED_RUN_TARGET = 'pr_ready';
 export const GUARDED_AUTONOMY_MODE = 'guarded';
 
@@ -37,7 +43,11 @@ const DEPENDENCY_KEYS = new Set([
   'readGateReadiness',
   'refreshContextCapsule',
   'artifactIo',
-  'resolveGitIdentity'
+  'resolveGitIdentity',
+  'preparePullRequest',
+  'safeAutopilotPullRequest',
+  'agentRuntimeCoordinator',
+  'recordAgentReview'
 ]);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
 
@@ -73,6 +83,10 @@ export function createGuardedRunSession(dependencies = {}) {
     readGateReadiness: dependencies.readGateReadiness ?? defaultReadGateReadiness,
     refreshContextCapsule: dependencies.refreshContextCapsule ?? defaultRefreshContextCapsule,
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
+    preparePullRequest: dependencies.preparePullRequest ?? defaultPreparePullRequest,
+    safeAutopilotPullRequest: dependencies.safeAutopilotPullRequest ?? defaultSafeAutopilotPullRequest,
+    agentRuntimeCoordinator: dependencies.agentRuntimeCoordinator ?? null,
+    recordAgentReview: dependencies.recordAgentReview ?? null,
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
 
@@ -82,7 +96,399 @@ export function createGuardedRunSession(dependencies = {}) {
     watch: (repoRoot, options = {}) => watchRun(deps, repoRoot, options),
     resume: (repoRoot, options = {}) => resumeRun(deps, repoRoot, options),
     cancel: (repoRoot, options = {}) => cancelRun(deps, repoRoot, options),
-    transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options)
+    transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options),
+    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options),
+    dispatchRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'dispatch'),
+    pollRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'poll'),
+    cancelRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'cancel'),
+    recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
+  };
+}
+
+async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
+  if (!deps.agentRuntimeCoordinator) {
+    throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
+  const managedRoot = loaded.state.execution_context?.root_realpath;
+  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== managedRoot) {
+    throw new GuardedRunError('worktree_mismatch', 'runtime dispatch must target the Guarded Run managed worktree', {
+      expected: managedRoot,
+      actual: options.request?.requirements?.managed_worktree ?? null
+    });
+  }
+  const currentDispatch = operation === 'dispatch'
+    ? null
+    : (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
+  if (operation !== 'dispatch' && !currentDispatch) {
+    throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
+  }
+  const identityBefore = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+  if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
+      expected_head_sha: loaded.state.current_head_sha,
+      actual_head_sha: identityBefore.head_sha
+    });
+  }
+  let result = operation === 'dispatch'
+    ? await deps.agentRuntimeCoordinator.dispatch(loaded.state, options.request)
+    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId);
+  if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
+    const actualIdentity = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+    if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
+      throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
+        reported_head_sha: result.dispatch.result?.head_sha ?? null,
+        actual_head_sha: actualIdentity.head_sha
+      });
+    }
+    result = { ...result, state: { ...result.state, current_head_sha: actualIdentity.head_sha } };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    result.state,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    `agent_runtime_${operation}`
+  );
+  return result;
+}
+
+async function recordRuntimeReview(deps, repoRoot, options) {
+  if (!deps.recordAgentReview) {
+    throw new GuardedRunError('review_runtime_unavailable', 'Guarded Run has no Agent Review recording boundary');
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
+  const dispatch = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
+  const provenance = validateRuntimeReviewDispatch(dispatch, loaded.state.current_head_sha);
+  const review = await deps.recordAgentReview(loaded.state.execution_context.root_realpath, {
+    ...(options.review ?? {}),
+    storyId: loaded.state.story_id,
+    agentSystem: options.review?.agentSystem ?? 'codex',
+    executionMode: 'parallel_subagent',
+    agentId: provenance.agent_identity,
+    agentThreadId: provenance.thread_id,
+    agentSessionId: provenance.session_id,
+    agentClosed: true,
+    reviewerIdentity: 'separate_session',
+    implementationSessionId: dispatch.implementation_session_id
+  });
+  return { dispatch, review };
+}
+
+function validateRuntimeReviewDispatch(dispatch, currentHeadSha) {
+  const result = dispatch?.result;
+  const provenance = result?.review_provenance;
+  const expectedDispatchId = dispatch && `dispatch-${createHash('sha256').update(`${dispatch.run_id}:${dispatch.adapter_id}:${dispatch.task_id}:${dispatch.role}:${dispatch.input_head_sha}:${dispatch.reviewer_identity ?? ''}:${dispatch.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
+  const correlatedRuntime = Boolean(dispatch?.session_id || dispatch?.thread_id)
+    && provenance?.session_id === dispatch?.session_id
+    && provenance?.thread_id === dispatch?.thread_id;
+  const separateRuntime = correlatedRuntime
+    && ![provenance?.session_id, provenance?.thread_id].includes(dispatch?.implementation_session_id);
+  const valid = dispatch?.role === 'review'
+    && dispatch.dispatch_id === expectedDispatchId
+    && dispatch.status === 'completed'
+    && dispatch.sandbox === 'read-only'
+    && Array.isArray(dispatch.requirements?.capabilities)
+    && dispatch.requirements.capabilities.includes('review')
+    && !dispatch.requirements.capabilities.includes('workspace_write')
+    && Array.isArray(result?.changed_files)
+    && result.changed_files.length === 0
+    && dispatch.input_head_sha === currentHeadSha
+    && result.head_sha === currentHeadSha
+    && provenance?.execution_mode === 'parallel_subagent'
+    && provenance.agent_identity === dispatch.reviewer_identity
+    && provenance.agent_identity === dispatch.agent_identity
+    && provenance.agent_identity !== dispatch.implementation_identity
+    && provenance.lifecycle === 'closed'
+    && separateRuntime;
+  if (!valid) {
+    throw new GuardedRunError('invalid_runtime_review', 'only a current-HEAD, read-only, separately identified closed review dispatch can enter the Agent Review Gate');
+  }
+  return provenance;
+}
+
+async function orchestrateRun(deps, repoRoot, options) {
+  if (options.dryRun) {
+    const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
+    const preview = {
+      run_id: 'dry-run',
+      story_id: requireStoryId(options.storyId),
+      current_head_sha: identity.head_sha,
+      status: 'running',
+      attempt: 1,
+      action_journal: [],
+      next_best_action_decisions: []
+    };
+    const decision = selectControllerCheckpoint(preview, options);
+    return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
+  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human') {
+    return { plan: [], state: loaded.state };
+  }
+  const previousDecision = loaded.state.next_best_action_decisions?.at(-1) ?? null;
+  const decision = selectControllerCheckpoint(loaded.state, options, previousDecision);
+  const resumePlan = buildResumeSafeActionPlan(loaded.state);
+  const decisionState = {
+    ...loaded.state,
+    next_best_action_decisions: [...(loaded.state.next_best_action_decisions ?? []), decision]
+  };
+  const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
+  if (!resumePlan && controllerEnabled && isEscapeDecision(decision)) {
+    const escaped = await applyControllerEscape(deps, loaded.state.execution_context.root_realpath, decisionState, decision, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
+    return { plan: [decision.selected_action_id], decision, state: escaped };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    decisionState,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    'next_best_action_checkpoint'
+  );
+  const selectedPlan = resumePlan ?? (!controllerEnabled
+    ? undefined
+    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
+  const result = await runSafeActionPlan(decisionState, {
+    plan: selectedPlan,
+    onProgress: async (progress) => {
+      const checkpoint = {
+        ...decisionState,
+        action_journal: progress.action_journal,
+        ...resumeCursorPatch(progress, decisionState)
+      };
+      await persistAuthorityThenMirror(
+        deps,
+        checkpoint,
+        loaded.authorityFile,
+        loaded.mirrorFile,
+        'safe_action_checkpoint'
+      );
+    },
+    runners: {
+      pr_prepare: async () => {
+        const prepared = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+          storyId: loaded.state.story_id,
+          baseRef: options.baseRef
+        });
+        return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
+      },
+      pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(
+        loaded.state.execution_context.root_realpath,
+        { storyId: loaded.state.story_id, baseRef: options.baseRef }
+      )
+    }
+  });
+  let next = {
+    ...decisionState,
+    action_journal: result.state.action_journal,
+    ...resumeCursorPatch(result.state, decisionState)
+  };
+  let outcomeStatus = result.state.status;
+  let outcomeStopReason = result.state.stop_reason;
+  const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
+  if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
+    const reboundAt = toIso(deps.now());
+    next = {
+      ...next,
+      current_head_sha: currentIdentity.head_sha,
+      action_journal: [
+        ...next.action_journal,
+        buildSystemActionEntry(next, 'rebind_head', loaded.state.current_head_sha, currentIdentity.head_sha, reboundAt)
+      ]
+    };
+    await persistAuthorityThenMirror(
+      deps,
+      next,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'safe_action_head_rebind_checkpoint'
+    );
+    let currentPrepare = null;
+    try {
+      currentPrepare = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
+        storyId: loaded.state.story_id,
+        baseRef: options.baseRef
+      });
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now())
+        )]
+      };
+    } catch (error) {
+      next = {
+        ...next,
+        action_journal: [...next.action_journal, buildSystemActionEntry(
+          next,
+          'pr_prepare_current_head',
+          currentIdentity.head_sha,
+          currentIdentity.head_sha,
+          toIso(deps.now()),
+          'failed',
+          error.message
+        )]
+      };
+      outcomeStatus = 'failed';
+      outcomeStopReason = {
+        code: 'gate_recheck_failed',
+        message: 'Current HEAD Gate recheck failed before readiness could be established.',
+        details: {
+          recovery: {
+            failure: error.message,
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
+      };
+    }
+    if (currentPrepare && currentPrepare.preparation?.gate_status?.ready_for_pr_create !== true) {
+      outcomeStatus = 'blocked';
+      outcomeStopReason = {
+        code: 'gate_recheck_required',
+        message: 'Current HEAD must satisfy the Gate DAG before pr_ready.',
+        details: {
+          current_head_sha: currentIdentity.head_sha,
+          recovery: {
+            required_actions: currentPrepare.preparation?.gate_status?.next_required_actions ?? [],
+            next_command: `vibepro execute resume ${shellQuoteCommandArg(next.execution_context.root_realpath)} --story-id ${next.story_id} --run-id ${next.run_id} --until pr-ready`
+          }
+        }
+      };
+    }
+  }
+  if (outcomeStatus !== loaded.state.status) {
+    next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
+  }
+  await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
+  return { plan: result.plan, state: next };
+}
+
+function hasCompletedResumeCheckpoint(state, resumeNodeId) {
+  if (resumeNodeId == null) return false;
+  return state.action_journal.some((entry) => entry.node_id === resumeNodeId
+    && entry.input_head_sha === state.current_head_sha
+    && entry.status === 'completed');
+}
+
+function resumeCursorPatch(progress, source) {
+  if (!Object.hasOwn(source, 'resume_from_node_id')) return {};
+  return {
+    resume_from_node_id: hasCompletedResumeCheckpoint(progress, source.resume_from_node_id)
+      ? null
+      : source.resume_from_node_id
+  };
+}
+
+function buildResumeSafeActionPlan(state) {
+  if (state.resume_from_node_id == null) return null;
+  const plan = buildSafeActionPlan(state);
+  const start = plan.findIndex((action) => action.node_id === state.resume_from_node_id);
+  if (start < 0) {
+    throw contractError('invalid_resume_node', `Run cannot resume from unknown node: ${state.resume_from_node_id}.`, {
+      run_id: state.run_id,
+      resume_from_node_id: state.resume_from_node_id
+    });
+  }
+  return plan.slice(start);
+}
+
+function isEscapeDecision(decision) {
+  return ['ask', 'split', 'wait', 'stop', 'rediagnose'].includes(decision.selected_action_id);
+}
+
+function buildSelectedSafeActionPlan(state, actionId) {
+  const plan = buildSafeActionPlan(state);
+  const selectedIndex = plan.findIndex((action) => action.id === actionId);
+  return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
+}
+
+async function applyControllerEscape(deps, repoRoot, state, decision, timestamp) {
+  const actionId = decision.selected_action_id;
+  let humanDecision;
+  try {
+    humanDecision = await createHumanDecision(repoRoot, state, {
+      type: actionId === 'split' ? 'scope_split' : 'clarification',
+      question: `How should VibePro continue after the controller selected ${actionId}?`,
+      material_reason: `The autonomous controller stopped after repeated no progress and selected ${actionId}.`,
+      impact_scope: ['guarded_run', 'next_best_action'],
+      source_refs: [`run:${state.run_id}`, `controller_action:${actionId}`]
+    }, { now: deps.now });
+  } catch (error) {
+    if (!(error instanceof HumanDecisionError)) throw error;
+    throw contractError(error.code, error.message, error.details);
+  }
+  const stopReason = {
+    code: 'next_best_action_escape',
+    message: `Controller selected ${actionId} after repeated no progress.`,
+    details: {
+      recovery: {
+        required_actions: [`resolve controller escape action: ${actionId}`],
+        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --decision ${humanDecision.decision_id} --answer <answer> --until pr-ready`
+      }
+    }
+  };
+  return applyTransition(state, 'waiting_for_human', 'next_best_action_escape', timestamp, {
+    stop_reason: stopReason,
+    pending_decision: {
+      decision_id: humanDecision.decision_id,
+      type: humanDecision.type,
+      artifact: path.join('.vibepro', 'executions', state.story_id, 'runs', state.run_id, 'decisions', `${humanDecision.decision_id}.json`),
+      stop_node_id: 'pr_prepare'
+    }
+  });
+}
+
+function selectControllerCheckpoint(state, options = {}, previousDecision = null) {
+  const explicitNoProgress = Number.isInteger(options.noProgressCount);
+  const base = {
+    checkpointReason: options.checkpointReason ?? 'run_started',
+    noProgressCount: explicitNoProgress ? options.noProgressCount : 0,
+    stateDelta: options.stateDelta,
+    metrics: options.actionMetrics,
+    escapeActionIds: options.escapeActionIds ?? [],
+    previousDecision
+  };
+  const probe = selectSafeActionCandidate(state, base);
+  if (explicitNoProgress) {
+    return selectSafeActionCandidate(state, {
+      ...base,
+      escapeActionIds: options.escapeActionIds
+        ?? (options.noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+    });
+  }
+  const unchangedCheckpoints = (state.next_best_action_decisions ?? [])
+    .slice()
+    .reverse()
+    .findIndex((item) => item.state_fingerprint !== probe.state_fingerprint);
+  const trailingMatches = unchangedCheckpoints === -1
+    ? (state.next_best_action_decisions ?? []).length
+    : unchangedCheckpoints;
+  const noProgressCount = trailingMatches > 0 ? trailingMatches + 1 : 0;
+  if (noProgressCount < 2) return probe;
+  return selectSafeActionCandidate(state, {
+    ...base,
+    checkpointReason: 'no_progress',
+    noProgressCount,
+    escapeActionIds: options.escapeActionIds ?? ['rediagnose', 'split', 'ask', 'stop']
+  });
+}
+
+function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
+  return {
+    action_id: actionId,
+    node_id: actionId,
+    input_head_sha: inputHead,
+    output_head_sha: outputHead,
+    idempotency_key: createHash('sha256').update(`${state.run_id}:${actionId}:${inputHead}`).digest('hex'),
+    status,
+    artifact: null,
+    result_summary: summary,
+    started_at: timestamp,
+    completed_at: timestamp
   };
 }
 
@@ -90,17 +496,46 @@ export function isGuardedRunError(error) {
   return error instanceof GuardedRunError;
 }
 
-export function renderGuardedRunSummary(state) {
+export function renderGuardedRunSummary(value) {
+  const state = value?.state ?? value;
+  const plan = value?.state ? value.plan ?? [] : [];
   const stop = state.stop_reason
     ? `${state.stop_reason.code}: ${state.stop_reason.message}`
     : 'none';
   const binding = state.execution_context
     ? `${state.execution_context.authority_kind} ${state.execution_context.root_realpath} @ ${state.current_head_sha}`
     : 'unknown';
-  const transitions = state.transitions
+  const transitions = (state.transitions ?? [])
     .map((item) => `  ${item.sequence}. ${item.from ?? 'created'} -> ${item.to} (${item.reason}) at ${item.timestamp}`)
     .join('\n');
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  const latestAction = state.action_journal?.at(-1);
+  const latestActionSummary = latestAction
+    ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
+    : 'none';
+  const latestDecision = state.next_best_action_decisions?.at(-1);
+  const latestDecisionSummary = latestDecision
+    ? `${latestDecision.selected_action_id ?? 'none'} (${[
+        latestDecision.outcome,
+        latestDecision.selection_reason,
+        `checkpoint=${latestDecision.checkpoint_reason}`,
+        `no_progress=${latestDecision.no_progress_count}`
+      ].filter(Boolean).join('; ')})`
+    : 'none';
+  const plannedActions = plan.length > 0
+    ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
+    : '  none';
+  const recovery = state.stop_reason?.details?.recovery;
+  const recoveryLines = recovery
+    ? [
+        ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
+        ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
+        ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
+        ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
+        recovery.failure ? `- failure: ${recovery.failure}` : null,
+        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
+      ].filter(Boolean).join('\n')
+    : 'none';
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
 
 function shellQuoteCommandArg(value) {
@@ -154,6 +589,7 @@ async function createRun(deps, repoRoot, options) {
     });
   }
   const storyId = requireStoryId(options.storyId);
+  const creationRequestId = options.creationRequestId == null ? null : requireCreationRequestId(options.creationRequestId);
   const caller = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
   await assertRegisteredStory(deps, caller.root_realpath, storyId);
   const initialLegacy = await readLegacyState(deps, caller.root_realpath, storyId);
@@ -198,9 +634,13 @@ async function createRun(deps, repoRoot, options) {
       binding = await resolveCreationBinding(deps, caller, legacy, { newlyBootstrapped: true });
     }
 
+    if (creationRequestId) {
+      const existing = await findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId);
+      if (existing) return existing;
+    }
     const createdAt = toIso(deps.now());
     const runId = generateRunId(createdAt, deps.randomBytes);
-    const state = buildInitialState({ storyId, runId, createdAt, binding });
+    const state = buildInitialState({ storyId, runId, createdAt, binding, creationRequestId });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
       ? getRunStatePath(binding.mirror.root_realpath, storyId, runId)
@@ -210,6 +650,49 @@ async function createRun(deps, repoRoot, options) {
   } finally {
     await deps.artifactIo.rm(lockPath, { recursive: true, force: true });
   }
+}
+
+async function findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId) {
+  const runsRoot = getRunsRoot(binding.authority.root_realpath, storyId);
+  let entries;
+  try {
+    entries = await deps.artifactIo.readdir(runsRoot);
+  } catch (cause) {
+    if (cause.code === 'ENOENT' || cause.code === 'ENOTDIR') return null;
+    throw cause;
+  }
+  const matches = [];
+  for (const runId of entries.filter((entry) => RUN_ID_PATTERN.test(entry))) {
+    const file = getRunStatePath(binding.authority.root_realpath, storyId, runId);
+    const raw = await readOptionalFile(deps, file);
+    if (raw === null) {
+      throw contractError('creation_request_scan_blocked', 'A guarded Run disappeared while resolving a creation request identity.', {
+        story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file, cause: 'run_state_missing'
+      });
+    }
+    let state;
+    try {
+      state = migrateRunState(JSON.parse(raw)).state;
+      await validateAuthorityBinding(deps, caller, state, binding.authority, {
+        storyId, runId, expectedAuthorityKind: binding.authorityKind
+      });
+    } catch (cause) {
+      if (cause instanceof SyntaxError || isGuardedRunError(cause)) {
+        throw contractError('creation_request_scan_blocked', 'A guarded Run cannot be validated while resolving a creation request identity.', {
+          story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file,
+          cause: cause.code ?? cause.message
+        });
+      }
+      throw cause;
+    }
+    if (state.creation_request_id === creationRequestId) matches.push(state);
+  }
+  if (matches.length > 1) {
+    throw contractError('creation_request_ambiguous', 'Multiple guarded Runs share one creation request identity.', {
+      story_id: storyId, creation_request_id: creationRequestId, run_ids: matches.map((state) => state.run_id)
+    });
+  }
+  return matches[0] ?? null;
 }
 
 async function resolveCreationLockRoot(deps, caller, legacy) {
@@ -279,10 +762,37 @@ async function resumeRun(deps, repoRoot, options) {
       to: 'running'
     });
   }
+  let resolvedDecision = null;
+  if (loaded.state.status === 'waiting_for_human') {
+    try {
+      resolvedDecision = await resolveHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, {
+        decisionId: options.decisionId,
+        answer: options.answer,
+        answeredBy: options.answeredBy,
+        reflectedIn: options.reflectedIn
+      }, { now: deps.now, allowResolvedReplay: true });
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
   const next = applyTransition(loaded.state, 'running', 'operator_resume', toIso(deps.now()), {
     attempt: loaded.state.attempt + 1,
     stop_reason: null,
-    pending_decision: null
+    pending_decision: null,
+    resume_from_node_id: resolvedDecision
+      ? loaded.state.pending_decision?.stop_node_id ?? null
+      : loaded.state.resume_from_node_id ?? null,
+    human_decision_journal: resolvedDecision
+      ? [...(loaded.state.human_decision_journal ?? []), {
+          decision_id: resolvedDecision.decision_id,
+          answer: resolvedDecision.answer,
+          answered_by: resolvedDecision.answered_by,
+          answered_at: resolvedDecision.answered_at,
+          reflected_in: resolvedDecision.reflected_in,
+          stop_node_id: loaded.state.pending_decision?.stop_node_id ?? null
+        }]
+      : (loaded.state.human_decision_journal ?? [])
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'run_resumed');
   return next;
@@ -313,8 +823,8 @@ async function transitionRun(deps, repoRoot, options) {
   const to = options.to;
   if (!STATUS_VALUES.has(to)) throw contractError('unknown_status', `Unknown Run status: ${to}.`, { status: to });
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  if (loaded.state.status === 'failed' && to === 'running') {
-    throw contractError('invalid_transition', 'A failed Run can return to running only through execute resume.', {
+  if ((loaded.state.status === 'failed' || loaded.state.status === 'waiting_for_human') && to === 'running') {
+    throw contractError('invalid_transition', `A ${loaded.state.status} Run can return to running only through execute resume.`, {
       run_id: loaded.state.run_id,
       from: loaded.state.status,
       to
@@ -341,14 +851,36 @@ async function transitionRun(deps, repoRoot, options) {
       });
     }
   }
+  if (!isAllowedTransition(loaded.state.status, to, options.reason ?? 'run_transition')) {
+    throw contractError('invalid_transition', `Run cannot transition from ${loaded.state.status} to ${to}.`, {
+      run_id: loaded.state.run_id,
+      from: loaded.state.status,
+      to
+    });
+  }
   const timestamp = toIso(deps.now());
+  let pendingDecision = options.pendingDecision ?? loaded.state.pending_decision;
+  if (to === 'waiting_for_human') {
+    try {
+      const decision = await createHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, pendingDecision, { now: deps.now });
+      pendingDecision = {
+        decision_id: decision.decision_id,
+        type: decision.type,
+        artifact: path.join('.vibepro', 'executions', loaded.state.story_id, 'runs', loaded.state.run_id, 'decisions', `${decision.decision_id}.json`),
+        stop_node_id: pendingDecision.stop_node_id ?? null
+      };
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
   const next = applyTransition(loaded.state, to, options.reason ?? 'run_transition', timestamp, {
     stop_reason: RECOVERABLE_STATUSES.has(to)
       ? options.stopReason
       : (to === 'running' || to === 'pr_ready'
           ? null
           : (options.stopReason ?? loaded.state.stop_reason)),
-    pending_decision: options.pendingDecision ?? loaded.state.pending_decision
+    pending_decision: pendingDecision
   });
   if (next === loaded.state) return next;
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, classifyCapsuleReason(next, options.reason));
@@ -610,11 +1142,12 @@ async function validateAuthorityBinding(deps, caller, state, authorityIdentity, 
   }
 }
 
-function buildInitialState({ storyId, runId, createdAt, binding }) {
+function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null }) {
   return {
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     run_id: runId,
     story_id: storyId,
+    ...(creationRequestId ? { creation_request_id: creationRequestId } : {}),
     target: GUARDED_RUN_TARGET,
     autonomy_mode: GUARDED_AUTONOMY_MODE,
     created_at: createdAt,
@@ -634,6 +1167,9 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
       git_dir_realpath: binding.authority.git_dir_realpath
     },
     managed_worktree: binding.managedWorktree,
+    action_journal: [],
+    next_best_action_decisions: [],
+    human_decision_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -761,13 +1297,20 @@ function migrateRunState(state) {
     validateRunShape(state);
     return { changed: false, state };
   }
-  if (state.schema_version !== undefined && state.schema_version !== '0.0.0') {
+  if (state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
     throw contractError('unsupported_schema', `Unsupported guarded Run schema: ${state.schema_version}.`, {
       run_id: state.run_id ?? null,
       schema_version: state.schema_version ?? null
     });
   }
-  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION };
+  const migrated = {
+    ...state,
+    schema_version: GUARDED_RUN_SCHEMA_VERSION,
+    action_journal: state.action_journal ?? [],
+    next_best_action_decisions: state.next_best_action_decisions ?? [],
+    human_decision_journal: state.human_decision_journal ?? [],
+    resume_from_node_id: state.resume_from_node_id ?? null
+  };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
 }
@@ -779,7 +1322,7 @@ function validateRunShape(state) {
   const required = [
     'schema_version', 'run_id', 'story_id', 'target', 'autonomy_mode', 'created_at', 'updated_at',
     'status', 'stop_reason', 'attempt', 'iteration', 'budget', 'deadline', 'last_progress_at',
-    'pending_decision', 'current_head_sha', 'execution_context', 'managed_worktree', 'transitions'
+    'pending_decision', 'current_head_sha', 'execution_context', 'managed_worktree', 'action_journal', 'transitions'
   ];
   const missing = required.filter((key) => !Object.prototype.hasOwnProperty.call(state, key));
   if (missing.length > 0) {
@@ -796,6 +1339,7 @@ function validateRunShape(state) {
   }
   requireRunId(state.run_id);
   requireStoryId(state.story_id);
+  if (state.creation_request_id != null) requireCreationRequestId(state.creation_request_id);
   if (state.target !== GUARDED_RUN_TARGET || state.autonomy_mode !== GUARDED_AUTONOMY_MODE) {
     throw contractError('invalid_state', 'Guarded Run target or autonomy mode is invalid.', {
       run_id: state.run_id
@@ -842,6 +1386,42 @@ function validateRunShape(state) {
   if (!Array.isArray(state.transitions) || state.transitions.length === 0) {
     throw contractError('invalid_state', 'Guarded Run transition history is invalid.', { run_id: state.run_id });
   }
+  if (!Array.isArray(state.action_journal)) {
+    throw contractError('invalid_state', 'Guarded Run action journal is invalid.', { run_id: state.run_id });
+  }
+  if (state.next_best_action_decisions !== undefined) {
+    if (!Array.isArray(state.next_best_action_decisions)
+        || state.next_best_action_decisions.some((decision) => !isBoundedDecisionRecord(decision))) {
+      throw contractError('invalid_state', 'Guarded Run next-best-action decision history is invalid.', {
+        run_id: state.run_id
+      });
+    }
+  }
+  if (state.human_decision_journal !== undefined
+      && (!Array.isArray(state.human_decision_journal)
+        || state.human_decision_journal.some((item) => !isPlainRecord(item)
+          || typeof item.decision_id !== 'string'
+          || typeof item.answer !== 'string'
+          || typeof item.answered_by !== 'string'
+          || !isIsoTimestamp(item.answered_at)
+          || !Array.isArray(item.reflected_in)))) {
+    throw contractError('invalid_state', 'Guarded Run human decision journal is invalid.', { run_id: state.run_id });
+  }
+  for (const entry of state.action_journal) {
+    if (!entry || typeof entry !== 'object'
+        || typeof entry.action_id !== 'string'
+        || typeof entry.node_id !== 'string'
+        || typeof entry.input_head_sha !== 'string'
+        || typeof entry.output_head_sha !== 'string'
+        || typeof entry.idempotency_key !== 'string'
+        || !['completed', 'failed', 'forbidden'].includes(entry.status)
+        || !isIsoTimestamp(entry.started_at)
+        || !isIsoTimestamp(entry.completed_at)) {
+      throw contractError('invalid_state', 'Guarded Run action journal contains an invalid entry.', {
+        run_id: state.run_id
+      });
+    }
+  }
   for (let index = 0; index < state.transitions.length; index += 1) {
     const transition = state.transitions[index];
     const previous = index === 0 ? null : state.transitions[index - 1];
@@ -879,6 +1459,81 @@ function validateRunShape(state) {
   if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
     throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
   }
+  if (state.resume_from_node_id !== undefined
+      && state.resume_from_node_id !== null
+      && typeof state.resume_from_node_id !== 'string') {
+    throw contractError('invalid_state', 'Guarded Run resume_from_node_id is invalid.', { run_id: state.run_id });
+  }
+}
+
+function requireCreationRequestId(value) {
+  if (typeof value !== 'string' || !/^portfolio-[0-9a-f]{24}$/.test(value)) {
+    throw contractError('invalid_creation_request_id', 'A valid Portfolio creation request identity is required.', { creation_request_id: value ?? null });
+  }
+  return value;
+}
+
+function isBoundedDecisionRecord(decision) {
+  const allowedKeys = new Set([
+    'schema_version', 'policy_version', 'checkpoint_reason', 'state_delta', 'state_fingerprint',
+    'no_progress_count', 'outcome', 'selected_action_id', 'selection_reason', 'selected_score',
+    'candidates', 'rejected', 'reused'
+  ]);
+  return Boolean(decision && typeof decision === 'object' && !Array.isArray(decision))
+    && Object.keys(decision).every((key) => allowedKeys.has(key))
+    && decision.schema_version === '0.1.0'
+    && typeof decision.policy_version === 'string'
+    && typeof decision.checkpoint_reason === 'string'
+    && typeof decision.state_fingerprint === 'string'
+    && Number.isInteger(decision.no_progress_count)
+    && typeof decision.outcome === 'string'
+    && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
+    && typeof decision.selection_reason === 'string'
+    && (decision.selected_score === null || (typeof decision.selected_score === 'number' && Number.isFinite(decision.selected_score)))
+    && (!Object.hasOwn(decision, 'state_delta') || isBoundedJson(decision.state_delta))
+    && Array.isArray(decision.candidates)
+    && decision.candidates.every(isBoundedCandidate)
+    && Array.isArray(decision.rejected)
+    && decision.rejected.every(isBoundedRejection)
+    && (!Object.hasOwn(decision, 'reused') || typeof decision.reused === 'boolean')
+    && Buffer.byteLength(JSON.stringify(decision)) <= 16384;
+}
+
+function isBoundedCandidate(candidate) {
+  const keys = new Set(['action_id', 'classification', 'metrics', 'score']);
+  const metricKeys = new Set([
+    'expected_progress', 'uncertainty_reduction', 'risk_reduction', 'evidence_reuse', 'estimated_time',
+    'estimated_tokens_or_cost', 'invalidation_risk', 'rework_risk', 'confidence'
+  ]);
+  return isPlainRecord(candidate)
+    && Object.keys(candidate).every((key) => keys.has(key))
+    && typeof candidate.action_id === 'string'
+    && typeof candidate.classification === 'string'
+    && typeof candidate.score === 'number' && Number.isFinite(candidate.score)
+    && isPlainRecord(candidate.metrics)
+    && Object.keys(candidate.metrics).length === metricKeys.size
+    && Object.keys(candidate.metrics).every((key) => metricKeys.has(key))
+    && Object.values(candidate.metrics).every((value) => value === 'unknown' || (typeof value === 'number' && Number.isFinite(value)));
+}
+
+function isBoundedRejection(rejection) {
+  return isPlainRecord(rejection)
+    && Object.keys(rejection).every((key) => ['action_id', 'score', 'reason_code'].includes(key))
+    && Object.keys(rejection).length === 3
+    && typeof rejection.action_id === 'string'
+    && typeof rejection.score === 'number' && Number.isFinite(rejection.score)
+    && rejection.reason_code === 'lower_rank';
+}
+
+function isBoundedJson(value, depth = 0) {
+  if (depth > 8) return false;
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.length <= 100 && value.every((item) => isBoundedJson(item, depth + 1));
+  if (!isPlainRecord(value)) return false;
+  const forbidden = /(transcript|chain[_-]?of[_-]?thought|hidden[_-]?reasoning|raw[_-]?(prompt|response|message))/i;
+  return Object.keys(value).length <= 100
+    && Object.entries(value).every(([key, item]) => !forbidden.test(key) && isBoundedJson(item, depth + 1));
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {

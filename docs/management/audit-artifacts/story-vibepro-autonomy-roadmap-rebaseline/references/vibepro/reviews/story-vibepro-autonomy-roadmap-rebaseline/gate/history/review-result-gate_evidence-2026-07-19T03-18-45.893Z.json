@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current integration evidence covers all changed surfaces and AC-1 through AC-6.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected refreshed verification, QA artifact, three changed files, clean state, and reran the focused test.",
+    "evidence": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/verification-evidence.json",
+    "inputs": [
+      "test/autonomy-roadmap-rebaseline.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Stale integration binding -> strict-HEAD evidence was re-recorded at 61bca219"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+    "expected_head_sha": "61bca21999c808e82477a3a96681fda22bcc497b",
+    "current_head_sha": "61bca21999c808e82477a3a96681fda22bcc497b",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+      "branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+      "actual_branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+      "current_head_sha": "61bca21999c808e82477a3a96681fda22bcc497b",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-19T03:18:45.893Z",
+  "git_context": {
+    "head_sha": "61bca21999c808e82477a3a96681fda22bcc497b",
+    "current_branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T03:18:45.887Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve current HEAD freshness"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "61bca21999c808e82477a3a96681fda22bcc497b",
+    "surface_files": [
+      {
+        "path": "test/autonomy-roadmap-rebaseline.test.js",
+        "sha256": "e2672dedd64c303b2fc4d3f9179fce6add7047b4345f38904ddea94f8b9038ce",
+        "size": 1046
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d71c0c968d83bc7efe8caecacf2bbfc56357a861e395045e5145911bba7e78b5"
+  },
+  "source_fingerprint": "1c132b6f9ada416c9ded39859a953748f76ec5290c0a131c351cc6d955acf2e6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/roadmap_gate_evidence",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/roadmap_gate_evidence",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-gate_evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/roadmap_gate_evidence",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

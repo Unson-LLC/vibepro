@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "updated_at": "2026-07-19T01:58:46.106Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "The pre-fix-sensitive fixture asserts both install-contract surfaces and all three projector outputs; 26 focused tests pass",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_evidence_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:58:46.105Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "The projector normalizes docs links to canonical GitHub URLs across English, Japanese, and CHANGELOG outputs; integration assertions reject the old relative target and VitePress builds 192 files",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_evidence_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:58:45.951Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "package-lock.json contains the root declaration and concrete resolved Linux/x64 package entry at 4.62.2 with registry metadata, directly asserted by the test",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_evidence_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:58:45.818Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "package.json pins the root optional Linux x64 GNU Rollup dependency exactly to 4.62.2 and the focused test asserts it",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/head4_evidence_adjudicator",
+        "session_ref": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication-request.md"
+      },
+      "head_commit": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "recorded_at": "2026-07-19T01:58:45.691Z"
+    }
+  ]
+}

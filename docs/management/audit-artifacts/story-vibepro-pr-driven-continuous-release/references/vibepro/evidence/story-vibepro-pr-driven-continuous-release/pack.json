@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "head_commit": "48f610ddda234a876a1f6c7ff7ff02f0e418cec9",
+  "command": "env NPM_CONFIG_CACHE=/private/tmp/vibepro-npm-cache npm run pack:dry-run",
+  "package": "vibepro@0.2.0-beta.1",
+  "files": 167
+}

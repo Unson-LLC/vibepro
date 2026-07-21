@@ -23,7 +23,7 @@ import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { recordVerificationEvidence } from './verification-evidence.js';
-import { getSpecFile } from './spec-store.js';
+import { resolveAcceptedSpecFile } from './spec-store.js';
 
 export const PREFLIGHT_SCHEMA_VERSION = '0.1.0';
 
@@ -403,7 +403,7 @@ function isGenericUnboundRecord(command) {
 }
 
 async function resolveContractClauseId(repoRoot, storyId) {
-  const spec = await readJsonIfExists(getSpecFile(repoRoot, storyId));
+  const spec = await readJsonIfExists(await resolveAcceptedSpecFile(repoRoot, storyId));
   const specClauses = Array.isArray(spec?.clauses)
     ? spec.clauses.filter((clause) => clause?.type === 'contract' && clause?.id).map((clause) => clause.id)
     : [];
@@ -521,7 +521,7 @@ export function extractSpecDocDiagramKinds(raw) {
 }
 
 async function readFinalSpecDiagramKinds(repoRoot, storyId) {
-  const spec = await readJsonIfExists(getSpecFile(repoRoot, storyId));
+  const spec = await readJsonIfExists(await resolveAcceptedSpecFile(repoRoot, storyId));
   if (!Array.isArray(spec?.diagrams)) return [];
   return [...new Set(spec.diagrams.map((diagram) => diagram?.kind).filter(Boolean))];
 }

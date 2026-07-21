@@ -178,6 +178,8 @@ npx vibepro spec readiness /path/to/repo --id story-internal-beta --base <base-b
 npx vibepro spec write /path/to/repo --id story-internal-beta --final --input spec.json
 ```
 
+Repository-native Story, Architecture, accepted Spec, and Task paths can be declared without creating a second editable source of truth. See [Artifact output routing](docs/guide/artifact-output-routing.md).
+
 Use `spec write --draft` for exploratory Spec drafts that are not ready to drive implementation or PR gates.
 
 Prepare PR evidence:
@@ -238,7 +240,27 @@ npx vibepro adjudicate record /path/to/repo \
   --agent-id judge-1
 ```
 
-Verdicts are `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold), or `needs_human_judgment` (closed by an accepted decision record with `--source gate:judgment_dag_adjudication:<item-id>`). Requires a prior `vibepro pr prepare` run (the judgment DAG must exist first). Opt out with `judgment_adjudication.enabled: false` in `.vibepro/config.json`.
+Verdicts are `judged_sound`, `judged_unsound` (tokens present but the judgment does not hold), or `needs_human_judgment` (closed by an accepted decision record with `--source gate:judgment_dag_adjudication:<item-id>`). Every new `judged_unsound` record must classify its cause with `--unsound-cause implementation_unsound|classifier_premise_unsound`. Missing causes in legacy artifacts safely default to `implementation_unsound`.
+
+Only `classifier_premise_unsound` can use the premise-correction recovery path. The original verdict stays in the append-only history; the correction must name the wrong and corrected premises, attach readable workspace-relative replacement evidence, and then receive a linked verdict from a different fresh-context judge:
+
+```bash
+npx vibepro adjudicate correct /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --original-verdict-id <verdict-event-id> \
+  --incorrect-premise "the public output changed" \
+  --corrected-premise "the public output is unchanged" \
+  --reason "the compatibility artifact proves the corrected premise" \
+  --replacement-evidence docs/compatibility-proof.md \
+  --agent-system codex --agent-id operator-1
+npx vibepro adjudicate record /path/to/repo \
+  --id story-internal-beta --judgment --item axis:public_contract \
+  --correction-id <correction-event-id> --verdict judged_sound \
+  --reason "fresh review confirms the corrected premise" \
+  --agent-system claude_code --agent-id judge-2
+```
+
+An `implementation_unsound` verdict stays failed until the implementation or evidence changes and a new HEAD is adjudicated. A premise correction is not a generic waiver. This flow requires a prior `vibepro pr prepare` run (the judgment DAG must exist first). The existing whole-gate opt-out remains `judgment_adjudication.enabled: false` in `.vibepro/config.json`.
 
 Run a checkpoint before treating implementation as ready:
 
@@ -459,11 +481,16 @@ After the PR exists, keep the lifecycle evidence current before merge:
 
 ```bash
 gh pr checks <pr-number> --watch
-npx vibepro verify import-ci /path/to/repo --id <story-id> --pr <pr-number>
+npx vibepro verify import-ci /path/to/repo --id <story-id> --pr <pr-number> \
+  --coverage 'test (20)=npm test::full-suite-node20'
 npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
 npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
 npx vibepro execute merge /path/to/repo --story-id <story-id> --pr <pr-number> --strategy squash
 ```
+
+`--coverage` is required to advance a frozen validation sequence from CI. It selects an exact mapping committed at the same HEAD in `.github/vibepro-ci-coverage.json`; caller input alone is never coverage proof. The successful workflow, check, frozen command, and test fingerprint must all match that repository-controlled contract. Check kind or a same-name check from another workflow is not treated as command coverage. Local sequence phases accept only the Story's canonical `.vibepro/pr/<story-id>/verification-evidence.json`, not an arbitrary repository-local assertion JSON.
+
+For high-risk changes, `vibepro sequence` makes the required order explicit: `targeted_validation` -> `preflight_review` -> `code_frozen` -> `expensive_verification` -> `final_review`. Passing validation phases require readable, repository-contained JSON evidence bound to the Story, HEAD, command, and test fingerprint. Final review accepts only a current passing result resolved through VibePro's canonical Agent Review lifecycle. Run `vibepro sequence --help` for plan/record/status/invalidate usage and terminal preflight dispositions. Changing the frozen HEAD, test fingerprint, or command invalidates downstream evidence.
 
 The second `pr create` call refreshes an existing open PR instead of creating a duplicate when base/head match. `execute merge` is the VibePro merge boundary: it verifies readiness, merges through GitHub, writes `pr-merge.json`, and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
 

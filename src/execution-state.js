@@ -14,6 +14,7 @@ import {
   refreshManagedWorktree
 } from './managed-worktree.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { resolveArtifactRoute, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 
 const SCHEMA_VERSION = '0.1.0';
 const DEFAULT_TARGET = 'pr_create';
@@ -321,12 +322,15 @@ async function buildExecutionState(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'execution state');
   const now = new Date().toISOString();
+  const prPreparePath = await resolvePrArtifactFile(root, storyId);
+  const prDir = path.dirname(prPreparePath);
+  const gateDagPath = await resolveGateArtifactFile(root, storyId);
   const [prPrepare, verificationEvidence, prCreate, prMerge, gateDagArtifact, agentReview] = await Promise.all([
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json')),
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json')),
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-create.json')),
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json')),
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'gate-dag.json')),
+    readJsonIfExists(prPreparePath),
+    readJsonIfExists(path.join(prDir, 'verification-evidence.json')),
+    readJsonIfExists(path.join(prDir, 'pr-create.json')),
+    readJsonIfExists(path.join(prDir, 'pr-merge.json')),
+    readJsonIfExists(gateDagPath),
     getAgentReviewStatus(root, { storyId }).catch(() => null)
   ]);
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
@@ -435,7 +439,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     required_commands: requiredCommands,
     managed_worktree: managedWorktree,
     execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha, prMerge: currentPrMerge }),
-    last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
+    last_pr_prepare: prPrepare ? await summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
     pr_url: currentPrCreate?.pr_url ?? currentPrMerge?.pr?.url ?? null
@@ -527,9 +531,10 @@ function routeActionThroughManagedWorktree(action, wrap) {
   return text.replace(/`(vibepro\s+[^`]+)`/g, (_match, command) => `\`${wrap(command)}\``);
 }
 
-function summarizePrPrepare(root, prPrepare) {
+async function summarizePrPrepare(root, prPrepare) {
+  const storyId = prPrepare.story?.story_id ?? prPrepare.story_id ?? 'unknown';
   return {
-    artifact: toWorkspaceRelative(root, path.join(getWorkspaceDir(root), 'pr', prPrepare.story?.story_id ?? prPrepare.story_id ?? 'unknown', 'pr-prepare.json')),
+    artifact: toWorkspaceRelative(root, await resolvePrArtifactFile(root, storyId, 'pr-prepare.json')),
     created_at: prPrepare.created_at ?? null,
     overall_status: prPrepare.gate_status?.overall_status ?? prPrepare.pr_context?.gate_dag?.overall_status ?? null,
     ready_for_pr_create: prPrepare.gate_status?.ready_for_pr_create === true,
@@ -597,6 +602,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'validation_sequencing_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
       'agent_review_dispatch_batch_gate',
@@ -818,10 +824,11 @@ async function collectMergedStoryDocs(root) {
 }
 
 async function collectMergedReconcileEvidence(root, storyId) {
+  const reviewRoot = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
   const candidates = [
-    ['pr_create', path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-create.json')],
-    ['pr_merge', path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json')],
-    ['review_summary', path.join(getWorkspaceDir(root), 'reviews', storyId, 'gate', 'review-summary.json')],
+    ['pr_create', await resolvePrArtifactFile(root, storyId, 'pr-create.json')],
+    ['pr_merge', await resolvePrArtifactFile(root, storyId, 'pr-merge.json')],
+    ['review_summary', path.join(reviewRoot, 'gate', 'review-summary.json')],
     ['canonical_pr_create', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-create.json')],
     ['canonical_pr_merge', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-merge.json')],
     ['canonical_bundle', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-bundle.json')]

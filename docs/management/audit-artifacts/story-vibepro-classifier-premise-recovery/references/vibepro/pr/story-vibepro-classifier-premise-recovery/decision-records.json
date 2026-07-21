@@ -1,0 +1,306 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "updated_at": "2026-07-18T15:31:45.198Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784388705198-57ab7ceb",
+      "story_id": "story-vibepro-classifier-premise-recovery",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "active_needs_evidence",
+      "summary": "One reviewer can evaluate the bundled recovery contract",
+      "reason": "The diff follows a single lineage from verdict schema through reference-driven resolution to CLI and Gate projections; the same reviewer owns the compatibility, fail-closed, and rollback judgment.",
+      "reviewer": "/root/judgment_adjudicator_340",
+      "artifact": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/build-status.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+        "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:31:45.196Z"
+      },
+      "recorded_at": "2026-07-18T15:31:45.198Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784388701154-41f51e6f",
+      "story_id": "story-vibepro-classifier-premise-recovery",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:scope_boundary",
+      "source_status": "needs_scope_correction",
+      "summary": "Design SSOT registry belongs to the Story boundary",
+      "reason": "design-ssot.json only registers this Story's architecture root and Story/Spec children, and is required by the repository self-dogfood lineage contract.",
+      "reviewer": "/root/judgment_adjudicator_340",
+      "artifact": "design-ssot.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/build-status.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+        "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:31:41.152Z"
+      },
+      "recorded_at": "2026-07-18T15:31:41.154Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784388698739-43d0581c",
+      "story_id": "story-vibepro-classifier-premise-recovery",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep the recovery contract bundled",
+      "reason": "The independent scope review found the changed surfaces inseparable for a coherent compatibility and rollback boundary; no independent deployable split exists.",
+      "reviewer": "/root/judgment_adjudicator_340",
+      "artifact": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/build-status.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+        "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:31:38.737Z"
+      },
+      "recorded_at": "2026-07-18T15:31:38.739Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784388696307-0db29458",
+      "story_id": "story-vibepro-classifier-premise-recovery",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Classifier premise recovery is one reviewable intent",
+      "reason": "Schema, resolver, CLI recorders, Gate and PR projections, contracts, docs, and tests are one append-only recovery contract; splitting them would leave an unusable or unauditable intermediate state.",
+      "reviewer": "/root/judgment_adjudicator_340",
+      "artifact": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/build-status.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+        "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:31:36.303Z"
+      },
+      "recorded_at": "2026-07-18T15:31:36.308Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784388705198-57ab7ceb",
+      "story_id": "story-vibepro-classifier-premise-recovery",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "active_needs_evidence",
+      "summary": "One reviewer can evaluate the bundled recovery contract",
+      "reason": "The diff follows a single lineage from verdict schema through reference-driven resolution to CLI and Gate projections; the same reviewer owns the compatibility, fail-closed, and rollback judgment.",
+      "reviewer": "/root/judgment_adjudicator_340",
+      "artifact": "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/integration-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-classifier-premise-recovery/preflight-artifacts/build-status.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+        "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T15:31:45.196Z"
+      },
+      "recorded_at": "2026-07-18T15:31:45.198Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-classifier-premise-recovery/decision-records.json"
+}

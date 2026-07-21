@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
 
 export async function createStoryTasks(repoRoot, { story, evidence, runId, gateStatus }) {
   const root = path.resolve(repoRoot);
@@ -13,13 +14,24 @@ export async function createStoryTasks(repoRoot, { story, evidence, runId, gateS
   const outputDir = shouldPreserveCanonicalTasks(existingTaskState)
     ? path.join(getWorkspaceDir(root), 'stories', story.story_id, 'diagnostics', safeRunId(runId))
     : tasksDir;
-  await mkdir(outputDir, { recursive: true });
-
   const tasksJsonPath = path.join(outputDir, 'tasks.json');
-  const tasksMarkdownPath = path.join(outputDir, 'tasks.md');
+  const taskPlanRoute = await resolveArtifactRoute(root, 'task_plan', { storyId: story.story_id });
+  const canonicalTaskPlan = taskPlanRoute.canonical.relative_path;
+  if (outputDir === tasksDir) {
+    await preflightArtifactWrites(root, taskPlanRoute, {
+      additionalPaths: [toWorkspaceRelative(root, path.join(tasksDir, 'tasks.json'))]
+    });
+  }
+  await mkdir(outputDir, { recursive: true });
+  const tasksMarkdownPath = outputDir === tasksDir
+    ? await assertArtifactWritePath(root, canonicalTaskPlan)
+    : path.join(outputDir, 'tasks.md');
 
   await writeFile(tasksJsonPath, `${JSON.stringify(taskState, null, 2)}\n`);
-  await writeFile(tasksMarkdownPath, renderStoryTasks(taskState));
+  await mkdir(path.dirname(tasksMarkdownPath), { recursive: true });
+  const markdown = renderStoryTasks(taskState);
+  await writeFile(tasksMarkdownPath, markdown);
+  if (outputDir === tasksDir) await writeArtifactProjections(root, taskPlanRoute, markdown);
 
   return {
     taskState,

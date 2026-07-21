@@ -1,0 +1,930 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-19T23:48:39.043Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:6fac47caad7eef332fce8d6f7e997fe584e11b58ada6473c5be81ea1af67e06a",
+    "compressed_hash": "sha256:d20023fa272d73f0c14d48662b4a52639e30190226949c9677984232e9887fde",
+    "expanded_bytes": 14976,
+    "compressed_bytes": 3179,
+    "expanded_line_count": 399,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-agent-runtime-adapters",
+    "cost": {
+      "compressed_bytes": 3179,
+      "expanded_bytes": 14976,
+      "expanded_line_count": 399,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/360",
+    "merge_commit_sha": "9a89bb07198f2882628e087ab5f73cd92396612a",
+    "merged_at": "2026-07-19T23:48:37Z",
+    "current_head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...2800e8be37dca4e26c52873898b152f865433524"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 63,
+    "copied_reference_count": 51,
+    "unresolved_reference_count": 8,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-agent-runtime-adapters"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:6fac47caad7eef332fce8d6f7e997fe584e11b58ada6473c5be81ea1af67e06a"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:bb85254cebae806c9d1cc431c11816ea3a3e86b70d7d252ca59eaacda4b63823",
+      "audit_digest": "sha256:bb85254cebae806c9d1cc431c11816ea3a3e86b70d7d252ca59eaacda4b63823",
+      "line_count": 195,
+      "raw_line_count": 195,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:f6d017af9b1f12edc39f2ff87e37f4dbaa09d9b732bf63e6ba023e295672045e",
+      "audit_digest": "sha256:ed9c4fea54d29c69bf14895de2dcf46af264e0089ef6b6469fed711b29376d03",
+      "line_count": 4267,
+      "raw_line_count": 29770,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:34af4f52d5ad51fb724d55711390a089ce3ec0a851130193776064f30fdf22a3",
+      "audit_digest": "sha256:e7be12fb03d96b62723f0f899c747c09bb11b03f14493a5a86f45cab0c21acef",
+      "line_count": 1565,
+      "raw_line_count": 3780,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:041979bafbe75194865295ad0c8e076fa8d8d14d3556f460c8dc9800552034c6",
+      "audit_digest": "sha256:92c71d716fea98b69fd247dcfb00fb23f1562ebf32793a983624a06feb213221",
+      "line_count": 40,
+      "raw_line_count": 640,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:a8c098fcadc7698da0c40f8d42af28e5d80b30ee3e8ff8566146132f824ce512",
+      "audit_digest": "sha256:44db5f4bd90361096c3a072613a260a43fdcbe2e161851c931385a48a09c2135",
+      "line_count": 1604,
+      "raw_line_count": 3858,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:1323c36019bf4ff61e851e8a92472d4fa1e76cd48fe94afaadd200d23d2ac9c1",
+      "audit_digest": "sha256:1323c36019bf4ff61e851e8a92472d4fa1e76cd48fe94afaadd200d23d2ac9c1",
+      "line_count": 468,
+      "raw_line_count": 468,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:b01b369bb39ca5429a2659e4c9ffbdf4a8895ebdee508183b6681bb67e900631",
+      "audit_digest": "sha256:1b8acae6f867546388fecbcdfdf726c06bcdab5a3e56d6ff977012dc157b9081",
+      "line_count": 52,
+      "raw_line_count": 349,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:0e7e8112345c5949ff2c5eb11921a36c328f3cfdbabe9d99562186c177145cdc",
+      "audit_digest": "sha256:0e7e8112345c5949ff2c5eb11921a36c328f3cfdbabe9d99562186c177145cdc",
+      "line_count": 609,
+      "raw_line_count": 609,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:1063cfe2e9e85df0c09085cbec0d644882e72edf9e1bb228ba9f15beeaa17501",
+      "audit_digest": "sha256:1063cfe2e9e85df0c09085cbec0d644882e72edf9e1bb228ba9f15beeaa17501",
+      "line_count": 134,
+      "raw_line_count": 134,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-pr_split_scope.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:4f8e5bc857fd2a3ced68fcd2b48362cdd7fb164314de0c650a3b37652fb92df9",
+      "audit_digest": "sha256:4f8e5bc857fd2a3ced68fcd2b48362cdd7fb164314de0c650a3b37652fb92df9",
+      "line_count": 134,
+      "raw_line_count": 134,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:52b8e31ecfe876fb23a5881fb3f49caa6a33af4033de92805dd1a7f204294f02",
+      "audit_digest": "sha256:52b8e31ecfe876fb23a5881fb3f49caa6a33af4033de92805dd1a7f204294f02",
+      "line_count": 134,
+      "raw_line_count": 134,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:5d610b7f32b5e386bf81202edb18d2cedec25985bdc7a15caf19058806252e6c",
+      "audit_digest": "sha256:5d610b7f32b5e386bf81202edb18d2cedec25985bdc7a15caf19058806252e6c",
+      "line_count": 128,
+      "raw_line_count": 128,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-pr_split_scope.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:5b520683d1f542b31cbc9c17a7c7e051e7a92ee8dce98cb6478c8c5ffbd17176",
+      "audit_digest": "sha256:5b520683d1f542b31cbc9c17a7c7e051e7a92ee8dce98cb6478c8c5ffbd17176",
+      "line_count": 128,
+      "raw_line_count": 128,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:b09d363c8ed6b2896a88c705ec94b36641a5f0a3619a3593b7e2d353d20dc0ef",
+      "audit_digest": "sha256:b09d363c8ed6b2896a88c705ec94b36641a5f0a3619a3593b7e2d353d20dc0ef",
+      "line_count": 128,
+      "raw_line_count": 128,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/audit-replay-bundle.json.gz",
+      "digest": "sha256:b48c59d6a34a292a59aa4da6d6c00187764579f85137b97403f9f1d7c3ac30be",
+      "audit_digest": "sha256:b48c59d6a34a292a59aa4da6d6c00187764579f85137b97403f9f1d7c3ac30be",
+      "line_count": 1113,
+      "raw_line_count": 1113,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/gate-dag.json"
+    }
+  ],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-agent-runtime-adapters/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/adjudication/story-vibepro-agent-runtime-adapters/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-agent-runtime-adapters/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/adjudication/story-vibepro-agent-runtime-adapters/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-27-10.259Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-27-10.259Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-38-38.083Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-38-38.083Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-11-00.263Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-11-00.263Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-33-10.989Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-33-10.989Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-34-19.623Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-34-19.623Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-01.720Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-01.720Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-21.045Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-21.045Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-43-11.865Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-43-11.865Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-01.743Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-01.743Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-21.847Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-21.847Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-43-12.658Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-43-12.658Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-01.645Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-01.645Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-22.689Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-22.689Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-43-13.454Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-43-13.454Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-request-pr_split_scope.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-pr_split_scope.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-result-pr_split_scope.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-final-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-final-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-release-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-release-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-split-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-split-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-agent-runtime-adapters/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/adjudication/story-vibepro-agent-runtime-adapters/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-agent-runtime-adapters/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/adjudication/story-vibepro-agent-runtime-adapters/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/diagnostics/2026-07-19T111136Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-agent-runtime-adapters/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/pr/story-vibepro-agent-runtime-adapters/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-27-10.259Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-27-10.259Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-38-38.083Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T11-38-38.083Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-11-00.263Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-11-00.263Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-33-10.989Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-33-10.989Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-34-19.623Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T12-34-19.623Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-01.720Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-01.720Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-21.045Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-35-21.045Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-43-11.865Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-gate_evidence-2026-07-19T23-43-11.865Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-01.743Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-01.743Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-21.847Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-35-21.847Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-43-12.658Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-pr_split_scope-2026-07-19T23-43-12.658Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-01.645Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-01.645Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-22.689Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-35-22.689Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-43-13.454Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/history/review-result-release_risk-2026-07-19T23-43-13.454Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-final-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-final-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-release-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-release-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-split-review-2800e8be.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/story6-split-review-2800e8be.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-agent-runtime-adapters/references/vibepro/stories/story-vibepro-agent-runtime-adapters/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5967179
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T111136Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 971861
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5738665
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-agent-runtime-adapters/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-agent-runtime-adapters/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cli-env-boundary",
+      "decision_id": "decision-1784390857730-5d6c2033",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Review owner is cli-maintainer. The only runtime delta is env: process.env at bin/vibepro.js; all other paths are its contract test and required Story/Architecture/Spec/Design SSOT lineage.",
+      "artifact": ".vibepro/pr/story-vibepro-cli-env-boundary/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-18T16:07:46.614Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

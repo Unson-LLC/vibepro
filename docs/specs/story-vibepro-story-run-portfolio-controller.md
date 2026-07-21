@@ -1,0 +1,61 @@
+---
+title: "Story Run Portfolio Controller Spec"
+status: accepted
+created_at: 2026-07-20
+updated_at: 2026-07-20
+related_stories:
+  - story-vibepro-story-run-portfolio-controller
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
+---
+
+# Story Run Portfolio Controller Spec
+
+## Contract
+
+`createStoryRunPortfolioController(dependencies)` exposes `create`, `status`, `advance`, `decide`, and `promote`. A portfolio id is a safe `portfolio-*` path segment and Story ids are safe `story-*` values. Creation rejects duplicates and all modes except `sequential`.
+
+An entry contains `story_id`, zero-based `order`, `run_id`, `status`, `worktree`, `head_sha`, `cost_attribution`, and `stop_reason`. A newly created Portfolio is `queued`; `running` requires exactly one running entry, and `completed` requires every entry to be `pr_ready` or explicitly `skipped`. Persisted state validation also correlates entry status with Run identity, scope binding, stop reason, and typed decision journal. An initial child rejected for scope contamination may be explicitly skipped before Run adoption; its creation-request identity remains auditable in a closed terminal binding. Cost attribution input must identify the same `story_id` and `run_id` before its measurements can be merged; a mismatch is persisted as `scope_contamination`. Attribution separately represents Trusted PR-ready milliseconds, active/wait milliseconds, tokens/cost, Full Suite count, evidence reuse count, and human interruption count. Unknown measurements are `null` in JSON and `unknown` in human output.
+
+`advance` starts at most one child. The initial child response must return the requested Story and creation-request identity plus a non-empty Run id before the controller adopts it. If a child is active, it observes and verifies that child first. Mutation and evidence artifacts exposed by the Run require the same Story and Run attribution; a missing or foreign identity is contamination. A running or stopped child returns without starting another child. A `pr_ready` child permits the next child. A cancelled child leaves the portfolio stopped unless the operator records an explicit typed decision.
+
+`decide` accepts only `continue`, `retry`, or `skip`, plus `policy_type` and `reason`. Continue/retry delegate to Guarded Run resume. Skip creates an auditable `explicit_skip` stop reason and permits later advancement. Mutations acquire a portfolio-scoped lock before reading state or starting a child Run. `promote` accepts an earlier source Story, later consumer Story, non-transcript artifact path, SHA-256 digest, and reason; it resolves the artifact realpath, reads the artifact, computes its digest, and rejects a supplied mismatch.
+
+## Invariants
+
+- `INV-SRP-1`: one Portfolio entry owns one Story and at most one child Run.
+- `INV-SRP-2`: later mutation cannot begin until prior entries are `pr_ready` or explicitly `skipped`.
+- `INV-SRP-3`: stopped and cancelled child states are not success.
+- `INV-SRP-4`: Story, Run, worktree, branch, mutation, evidence, review, or session mismatch fails as `scope_contamination`.
+- `INV-SRP-5`: no raw transcript crosses a Story boundary.
+- `INV-SRP-6`: unavailable cost and time remain unknown.
+- `INV-SRP-7`: every mutation, including create, owns the Portfolio lock; dead-owner recovery is serialized by a recovery mutex and unverifiable owners fail closed.
+- `INV-SRP-8`: child creation persists `starting` plus a creation request identity before the external Run side effect; Guarded Run creates or returns only the Run bound to that identity.
+
+Stopped human summaries expose the typed `portfolio-decide` continuation shape so the persisted stop is actionable after restart.
+
+## Threat Model
+
+```mermaid
+flowchart LR
+  Operator["Authenticated operator"] -->|typed portfolio mutation| CLI["VibePro CLI"]
+  CLI -->|validate Story, policy, and safe paths| Controller["Portfolio Controller"]
+  Controller -->|owner token checked| Lock["Portfolio lock"]
+  Lock -->|exclusive mutation| State["Canonical portfolio state"]
+  Controller -->|creation request identity| GuardedRun["Guarded Run"]
+  GuardedRun -->|matching request only| Run["One Story Run"]
+  Artifact["Promoted artifact"] -->|realpath and digest verification| Controller
+  Transcript["Transcript or authority mismatch"] -->|reject: scope_contamination| Controller
+  Corrupt["Corrupt or unverifiable owner/candidate"] -->|fail closed: recovery required| Controller
+```
+
+Trust boundaries are the operator-to-CLI input boundary, the Portfolio lock ownership
+boundary, Guarded Run creation identity, and cross-Story artifact promotion. The
+controller never treats an unrelated historical Run as the requested child, never
+promotes transcripts, checks the resolved artifact path and digest, and does not
+steal a live or unverifiable mutation/recovery owner. Recovery details shown to a
+human are allowlisted and exclude owner tokens.
+
+## Verification
+
+`test/story-run-portfolio.test.js` covers the closed entry schema, a six-Story sequence, concurrent mutation and create rejection, serialized dead-owner lock recovery, token-safe release, exception cleanup, pre-create failure with a historical Run, post-Run publish failure identity reconciliation, every stopped status with typed continue/retry/skip, digest/realpath-safe context promotion including internal transcript symlinks, Story/Run/worktree/branch/mutation/evidence/review/session and attribution contamination, summary attribution, parallel rejection, and every portfolio CLI mutation plus JSON/human error surfaces.

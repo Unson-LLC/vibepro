@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "summary": "Current-HEAD evidence demonstrates the durable Human Checkpoint contract, including repaired restart reconstruction, typed controller escapes, recorded stop nodes, and fail-closed waiting behavior.",
+  "inspection_summary": "Inspected HEAD c4454c26, Story, Spec, implementation, focused tests, verification records, and QA artifact; independently reran the focused command with 68/68 passing.",
+  "inspection_evidence": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+  "judgment_delta": "Initial AC-6 and stale-evidence concern became pass after a fresh session joined the persisted index, full decision JSON, and Run journal; all five types, controller escape typing, stop_node_id, zero waiting runner calls, and negative paths were also asserted.",
+  "findings": []
+}

@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Prior identity-validation and permission-wait findings are resolved; Guarded Run integration, timeout, force-cancel, and current-HEAD evidence are sufficient.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "permission-wait-not-typed-stop",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/agent-runtime-adapter.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "review-identity-result-not-validated",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/agent-runtime-adapter.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected adapter, Guarded Run bridge, Story/Spec, current verification artifacts, and prior findings at HEAD 28e69147; reran 78 focused tests with all passing.",
+    "evidence": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js",
+    "inputs": [
+      "src/agent-runtime-adapter.js",
+      "src/guarded-run-session.js",
+      "test/agent-runtime-adapter.test.js",
+      "test/guarded-run-session.test.js",
+      "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
+      "docs/specs/story-vibepro-agent-runtime-adapters.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "Previous needs_changes became pass because collected identity is now validated and separated, permission_wait produces a typed Run stop, Guarded Run persists authority-first, and cancellation/timeout paths fail closed at current HEAD."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "expected_root": null,
+    "expected_head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+    "current_head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "expected_root": null,
+      "expected_head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+      "current_head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T11:38:38.083Z",
+  "git_context": {
+    "head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+    "current_branch": "codex/story-vibepro-agent-runtime-adapters",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T11:38:38.074Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve the recorded strict HEAD freshness policy during recovery"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "28e69147b07840fb24aed933c1f4ca9ca92948a9",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-agent-runtime-adapters.md",
+        "sha256": "da2149518c00ce0f7fee5c710b7932fada8b8ede31d48b46c49f889472233a6e",
+        "size": 3892
+      },
+      {
+        "path": "docs/specs/story-vibepro-agent-runtime-adapters.vibepro.json",
+        "sha256": "508180a88e70666e9d955dfade6c61f253397fe8a5b835d658b5d8d46af26bbc",
+        "size": 4787
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "de837b3f13a3ebb9b9724cd643b03f48bb719ee2c6fe3bfaa9afdbd53ed01c85",
+        "size": 15757
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "38f09c621cd20f192be0082c539e09b5c273bd9f3955ee24918db3af60cfd91b",
+        "size": 71178
+      },
+      {
+        "path": "test/agent-runtime-adapter.test.js",
+        "sha256": "cb194538e56f682681475dcf2101546a6c70ba7853fd83f8fb27ef963b5ae73b",
+        "size": 10034
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "48c16aa43fc11fd33472f934a792ca5abb8b6fb5d8f90bb0d6cd71686ae243fa",
+        "size": 117235
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "95919d8181008afb3c28d3f72e66cd680663a80d845714ffecfedb5d90a5e5b7"
+  },
+  "source_fingerprint": "ae8bd00918a61f9a3883f98575665bfc626791c87e5a2b6fdf68009cd8e4f729",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story6_gate_rereview",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f77de-2c2c-7790-ac56-20b3e6d0129a",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "independent-rereview-result",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f77de-2c2c-7790-ac56-20b3e6d0129a",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

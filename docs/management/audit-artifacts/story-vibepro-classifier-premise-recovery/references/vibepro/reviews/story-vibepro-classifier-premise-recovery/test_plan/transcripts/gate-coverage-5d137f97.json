@@ -1,0 +1,1 @@
+{"story_id":"story-vibepro-classifier-premise-recovery","stage":"test_plan","role":"gate_coverage","head_commit":"5d137f9785238c91ae43a4c02efc75c07e354e57","agent_id":"test_plan_gate_security","status":"pass","summary":"AC 10/10, judgment recovery, Design SSOT, responsibility authority, and fail-closed Gate/PR summary coverage pass; focused tests passed 33/33."}

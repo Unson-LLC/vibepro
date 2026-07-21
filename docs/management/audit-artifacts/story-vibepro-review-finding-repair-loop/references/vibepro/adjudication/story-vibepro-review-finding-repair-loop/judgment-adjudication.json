@@ -1,0 +1,744 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "updated_at": "2026-07-20T14:45:24.935Z",
+  "events": [
+    {
+      "event_id": "52e3dd73-f03d-45aa-809c-aa2b9a133823",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story acceptance criteria trace consistently through spec implementation and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:45.783Z"
+    },
+    {
+      "event_id": "091130d2-7806-49b1-9a80-217c702bf728",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "public CLI runtime coordinator and persisted artifact paths are exercised at current HEAD",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:45.968Z"
+    },
+    {
+      "event_id": "5b6f8a97-7056-446b-88e3-20492d965dd1",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "immutable verdict append-only attempts current evidence independent rereview and all-finding convergence are enforced",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:46.187Z"
+    },
+    {
+      "event_id": "194801f7-2777-48f5-9295-d3906d31eec0",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "repair human runtime evidence and reviewer boundaries fail closed",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:46.376Z"
+    },
+    {
+      "event_id": "0c6c1739-6647-4693-a727-da14d1df9cbb",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "terminal outcomes receipt uncertainty schema damage stale evidence repetition and ceilings are handled",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:46.591Z"
+    },
+    {
+      "event_id": "e3aae7d3-0ef0-454d-8e24-482ac6e3150b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "strict current-head targeted 49 and full 1444 evidence pass without conflating PR readiness",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:46.808Z"
+    },
+    {
+      "event_id": "3f4d6465-54fb-4f64-83b8-45fa2d3ec584",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive CLI inputs outputs docs and tests preserve existing contracts",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:47.037Z"
+    },
+    {
+      "event_id": "4bb7c67f-8b3f-4ce6-a49e-3e76cbcbe241",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "pre-dispatch intent terminal normalization and uncertain receipt stop prevent duplicate execution",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:47.234Z"
+    },
+    {
+      "event_id": "89a403cc-35e7-4105-88d9-541ae2d5b91c",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "the changed files form one coherent reviewable vertical slice",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:47.430Z"
+    },
+    {
+      "event_id": "cd395cc7-e0f3-45b4-bb34-7b60d727203c",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "public state boundaries validate exact schema version and structural invariants",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:47.654Z"
+    },
+    {
+      "event_id": "63db3ad6-5c2e-447a-ad72-485facb62c43",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatch and poll terminal outcomes normalize and uncertain receipt forbids automatic retry",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:47.863Z"
+    },
+    {
+      "event_id": "8e0b210f-f9f2-4e6d-b1d5-764aa3f7684d",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "no new auth boundary is introduced and runtime rejection remains visible and stopped",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:48.069Z"
+    },
+    {
+      "event_id": "8df80a9f-511d-452a-8c74-9b717b25da9f",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "atomic pre-dispatch persistence and fail-closed uncertainty remove the duplicate side-effect window",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:48.286Z"
+    },
+    {
+      "event_id": "85a83210-10f7-4815-be4f-53382d892596",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "canonical current-head evidence and closed independent rereview are convergence requirements",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:48.505Z"
+    },
+    {
+      "event_id": "7ff0b754-9301-4c1a-805e-69e7db8b6793",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "validated bounded transitions and regression tests prevent stale or prematurely green state",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story7_runtime_rereview",
+        "session_ref": null
+      },
+      "head_commit": "acf78949871c520892b1043d53e6815b9b0549d8",
+      "recorded_at": "2026-07-20T13:28:48.786Z"
+    },
+    {
+      "event_id": "2361af57-c78b-4472-b2ef-54f16be15fdb",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Implementation follows all seven Story outcomes without rewriting the originating review.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:45.819Z"
+    },
+    {
+      "event_id": "12ba29e4-6784-47ce-9d16-60e18eb3ce5f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests exercise the in-memory state machine and persisted public CLI dispatch, poll, and status paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:46.033Z"
+    },
+    {
+      "event_id": "a7f9f3d8-c982-4161-9690-57018f6b795a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable history, bounded attempts, canonical current-HEAD evidence, and independent rereview are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:46.241Z"
+    },
+    {
+      "event_id": "2d0d15d6-31fd-4678-816b-c381069e20dc",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime execution, human checkpoint, canonical evidence, and independent-review ownership are separated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:46.449Z"
+    },
+    {
+      "event_id": "ea57b1d1-39c3-4293-b0c8-3a696c5e91c6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale evidence, no-progress, exhaustion, terminal failure, uncertain receipt, malformed persistence, and provenance failure are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:46.654Z"
+    },
+    {
+      "event_id": "fe0a4a6c-cddd-4b5d-b283-a4ff352d6c9a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The missing multi-attempt observation exists and artifacts bind 50 targeted and 1445 full-suite passes to current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:46.862Z"
+    },
+    {
+      "event_id": "796dee8e-f088-4cc3-a199-2cb258007451",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The additive CLI is documented in both reference variants and exercised through injected coordinator paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:47.072Z"
+    },
+    {
+      "event_id": "37f40619-777b-4c6f-8d42-5b8f5341b149",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Pre-dispatch persistence prevents blind redispatch and running, completed, terminal polling, and rereview handoff are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:47.285Z"
+    },
+    {
+      "event_id": "88961c0e-35cc-4023-a0d4-a24025361ca6",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The changed files form one cohesive finding-repair capability with traceable Story, architecture, Spec, and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:47.486Z"
+    },
+    {
+      "event_id": "803f9fc7-5bfe-4442-a8e6-56e4774a4dae",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unsupported and structurally partial persisted states and incomplete task inputs are rejected.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:47.707Z"
+    },
+    {
+      "event_id": "ad25feef-3e82-40f6-b582-f10066c38570",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Uncertain receipt, terminal outcomes, polling, duplicate prevention, and bounded retry behavior are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:47.921Z"
+    },
+    {
+      "event_id": "b1937dbd-7a6a-4999-9280-a92fe535ee53",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new authorization decision is introduced and provider auth remains at the tested Agent Runtime Adapter boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:48.121Z"
+    },
+    {
+      "event_id": "dbf65a91-330e-45f7-91bc-42b529d5da4f",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Writes are atomic, intent precedes provider invocation, and malformed or absent canonical artifacts fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:48.333Z"
+    },
+    {
+      "event_id": "a330d3b7-8e16-4d68-95f5-8464711e8bd9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This relevant risk is covered by immutable verdicts, stale evidence rejection, canonical current-HEAD artifacts, and closed independent rereview.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:48.543Z"
+    },
+    {
+      "event_id": "9a076036-df9b-4134-b9c0-2164dc5f5c4f",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests cover planned through converged and no-progress transitions including the new second-attempt path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8_fix_rereview",
+        "session_ref": "249f85b3-77d3-43e9-9d72-2169319523a5"
+      },
+      "head_commit": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+      "recorded_at": "2026-07-20T14:22:48.755Z"
+    },
+    {
+      "event_id": "79f9467a-bfc8-46e8-ad64-d55ec942af13",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent maps directly to the bounded repair loop implementation and seven acceptance clauses.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:21.674Z"
+    },
+    {
+      "event_id": "4034da54-283b-4faf-9df5-d6c12e179970",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current implementation, complete diff, canonical artifacts, and 59 current-head tests were inspected.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:21.890Z"
+    },
+    {
+      "event_id": "a316238d-59a3-439f-aeb2-30b04c9e3b5f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable original review, bounded attempts, current evidence, and independent rereview are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:22.107Z"
+    },
+    {
+      "event_id": "082a8435-9c45-48ca-bfb4-2031fcd8d0d7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime, human decision, persistence, and Design SSOT parent boundaries are explicit and reconciled.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:22.312Z"
+    },
+    {
+      "event_id": "9117afbb-041a-4109-8213-e43cfcc1f8bf",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale evidence, malformed state, uncertain dispatch, terminal failure, and no progress fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:22.519Z"
+    },
+    {
+      "event_id": "d33d82f7-cd43-40f2-932d-5f7b22d6d0f1",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Design reconciliation passes with zero actions and current-head focused verification is complete.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:22.727Z"
+    },
+    {
+      "event_id": "d82088c2-7cdf-4533-9c24-eaaab5379127",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Additive plan, dispatch, poll, record, and status CLI contracts are documented and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:22.993Z"
+    },
+    {
+      "event_id": "9c408988-9ac7-4bd4-8aa4-53464230acb4",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Attempts progress serially through runtime dispatch, polling, verification, and independent rereview.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:23.208Z"
+    },
+    {
+      "event_id": "d9cd6fdf-4e06-4800-9565-a05a884e1a8b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is one cohesive vertical slice and final fix is frontmatter-only.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:23.419Z"
+    },
+    {
+      "event_id": "1f2e72b8-7814-4c3c-983a-e765d422fb8b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persisted JSON is parsed and schema validated before use; invalid state fails closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:23.635Z"
+    },
+    {
+      "event_id": "85ab303c-9cd2-40a3-a10c-b610cde364b3",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unsupported and structurally partial persisted schemas are rejected by tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:23.846Z"
+    },
+    {
+      "event_id": "8bfef677-cc75-4bf0-80a4-b62c6c0ebccc",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Dispatch uncertainty and terminal poll outcomes stop visibly without unsafe retry.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:24.122Z"
+    },
+    {
+      "event_id": "916f85a8-b94c-4b88-9197-d720505979fe",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime auth denial remains a typed resumable stop and cannot become completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:24.324Z"
+    },
+    {
+      "event_id": "8b996f3c-15f4-4264-afca-0b30db00b2bd",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Dispatch intent is atomically persisted before side effects and uncertain receipts stop.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:24.528Z"
+    },
+    {
+      "event_id": "ae4ee990-1aca-421b-b06a-6105d59ad1fd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical current-head evidence and a closed independent rereview are mandatory.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:24.728Z"
+    },
+    {
+      "event_id": "ced6faec-7a38-4d10-9de4-34bfc70b5f27",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "State transitions are schema checked and bounded by terminal and no-progress guards.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:24.934Z"
+    }
+  ]
+}

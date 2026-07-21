@@ -1,0 +1,10 @@
+{
+  "status": "not_completed",
+  "summary": "review turn was interrupted by policy classification before inspection",
+  "inspection_summary": "no review conclusion was recorded",
+  "inspection_inputs": [],
+  "commands": [],
+  "resolved_findings": [],
+  "findings": [],
+  "judgment_delta": []
+}

@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "created_at": "2026-07-21T02:49:38.208Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-story-run-portfolio-controller.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-story-run-portfolio-controller.md, docs/specs/story-vibepro-story-run-portfolio-controller.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784590930769-0e7ca552",
+        "story_id": "story-vibepro-story-run-portfolio-controller",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_review",
+        "summary": "The final diff is reviewable as one responsibility boundary.",
+        "reason": "The portfolio controller is the sole new responsibility; Guarded Run changes only expose the creation identity needed to prove ownership, and the focused tests trace every acceptance clause.",
+        "reviewer": "codex",
+        "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-story-run-portfolio-controller/verification-evidence.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+          "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-20T23:42:10.768Z"
+        },
+        "recorded_at": "2026-07-20T23:42:10.769Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T02:49:35.080Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

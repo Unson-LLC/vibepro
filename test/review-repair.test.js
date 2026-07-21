@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { createUsageReport } from '../src/usage-report.js';
+import { buildReviewRepairPlan } from '../src/review-repair.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -108,6 +109,30 @@ async function setupRepairRepo() {
   await writeReviewSummary(root, 'story-repair-healthy', 'gate', [healthyRole('gate_evidence')]);
   return root;
 }
+
+test('review repair reads the configured review canonical for an explicit story', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-review-repair-routed-'));
+  const storyId = 'story-routed-review';
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), `${JSON.stringify({
+    artifact_routing: {
+      schema_version: '0.1.0',
+      artifacts: { review: { canonical: 'artifacts/{feature_slug}/review-evidence' } }
+    }
+  }, null, 2)}\n`);
+  const stageDir = path.join(root, 'artifacts', 'routed-review', 'review-evidence', 'gate');
+  await mkdir(stageDir, { recursive: true });
+  await writeFile(path.join(stageDir, 'review-summary.json'), `${JSON.stringify({
+    story_id: storyId,
+    stage: 'gate',
+    roles: [role('gate_evidence')]
+  }, null, 2)}\n`);
+
+  const plan = await buildReviewRepairPlan(root, { storyId, dryRun: true });
+  assert.equal(plan.candidates.length, 1);
+  assert.equal(plan.candidates[0].story_id, storyId);
+  assert.equal(plan.candidates[0].role, 'gate_evidence');
+});
 
 function findCandidate(result, storyId, roleName) {
   return result.candidates.find((item) => item.story_id === storyId && item.role === roleName);

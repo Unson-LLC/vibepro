@@ -1,6 +1,6 @@
 {
   "name": "vibepro",
-  "version": "0.2.0-beta.0",
+  "version": "0.2.0-beta.1",
   "description": "Product-intent gates and review evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
@@ -52,6 +52,9 @@
   },
   "devDependencies": {
     "vitepress": "1.6.4"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.62.2"
   },
   "engines": {
     "node": ">=20"

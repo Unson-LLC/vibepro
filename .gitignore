@@ -2,6 +2,8 @@
 .vibepro/**/raw/
 .vibepro/**/secrets*
 .vibepro/**/*.log
-.vibepro/
+.vibepro/*
+!.vibepro/config.json
 .worktrees/vibepro/
+node_modules/
 docs/.vitepress/dist/

@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "block",
+  "summary": "focused testsは通過したが、required Gateが不正なv2 artifactをfail closedせずpassedにできるためrelease-blocking。",
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "gate-artifact-validation-bypass",
+      "detail": "resolveCurrentJudgmentStateが消費するv2 artifactを十分に検証していない。validateReplacementEvidenceはartifact文字列の非空とSHA形式しか確認せず、../../outside-proof.mdを受理する。またverdictのreason/provenance/agent_systemを検証しない。focused probeでは、workspace外replacement evidenceを持つ correction lineageも、provenance欠落・reason欠落・未知agent systemの単独judged_soundもbuildJudgmentDagAdjudicationGateがpassedを返した。これはSpec INV-CPR-4のinvalid-evidence fail-closed、SC-CPR-3のworkspace-relative evidence/provenance、Storyのprovenance必須契約、およびcritical Gateの成果測定を破る。CLI happy pathだけでなく、artifact consumerへmalformed v2 fixturesを直接渡し、Gate/summary/requestがfailedまたは明示invalid_historyになる回帰テストと実装検証が必要。"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "current HEAD/clean state、Story/Spec、adjudication resolverとCLI、PR/verification artifact、unit/E2E fixturesを確認し、focused 18 testsを実行。さらに手書きv2 artifactのfail-closed probeでGate bypassを再現した。",
+    "evidence": "src/adjudication.js:410-570; test/judgment-adjudication.test.js:348-629; .vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json; focused command outputs in agent transcript",
+    "inputs": [
+      "git rev-parse HEAD && git status --short --branch",
+      "git diff origin/main...HEAD",
+      "docs/management/stories/active/story-vibepro-classifier-premise-recovery.md",
+      "docs/specs/story-vibepro-classifier-premise-recovery.vibepro.json",
+      "docs/architecture/story-vibepro-classifier-premise-recovery.md",
+      "src/adjudication.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "test/judgment-adjudication.test.js",
+      "test/e2e/story-vibepro-classifier-premise-recovery-main.test.js",
+      "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js",
+      ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-classifier-premise-recovery/pr-prepare.json",
+      "node --test test/judgment-adjudication.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.test.js",
+      "node --input-type=module fail-closed probes for traversal evidence path and missing/unknown verdict provenance"
+    ]
+  },
+  "judgment_delta": [
+    "Evidence reuseはstaleだったが、current verification-evidence.jsonはHEAD 8e8ecb2f30f83c75c2bdf723633e53f6398fb473、clean stateにbindingされ、focused 18 testsもpassした -> CLI生成happy pathと関連回帰は確認できた。",
+    "regression_guardは既存judgment adjudication testsを維持しているため当初pass候補 -> Gate consumerへ直接入るmalformed v2 artifactが未検証でcritical Gateを通過するためblock。",
+    "path_surface_coverageはCLI、generated request、summary、Gateの主要面を覆う -> artifact read/normalization surfaceではworkspace外replacement evidence、reason/provenance欠落、未知agent systemがsilentにacceptedされるため未達。"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T10:51:25.896Z",
+  "git_context": {
+    "head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T10:51:25.894Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8e8ecb2f30f83c75c2bdf723633e53f6398fb473",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "7ab4c538088c8948c2c722130d19b68d2e7b00a41b0c5d84732ad5a429376784",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/test_plan_gate",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/gate_coverage.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/gate_coverage.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

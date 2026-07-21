@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "summary": "公開CLIの反復resumeから永続状態ベースのno-progress checkpointへ到達し、canonical escapeのみを推奨する経路とhuman summary表示を確認。終端状態の非変更性も維持されている。",
+  "inspection_summary": "Exact HEAD 50d5b538でStory/Architecture/Spec、controller・orchestrator・CLI差分、永続化/terminal tests、strict-head verification evidenceを確認し、関連85テストを再実行して全件passを確認した。",
+  "judgment_delta": "当初はpublic resumeが内部checkpoint入力へ到達せずhuman出力も推奨を隠す懸念があった -> CLIがrunning状態を再resumeせずorchestrateへ進め、selectControllerCheckpointがpersisted decision fingerprintsから連続無進捗を導出し、human statusが最新decisionを表示するため解消。",
+  "findings": [],
+  "resolved_prior_findings": [
+    "regression-risk-public-no-progress-path-unreachable",
+    "regression-risk-human-summary-hides-next-action",
+    "regression-risk-production-checkpoint-coverage"
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "needs_changes",
+  "summary": "legacy artifactの追記移行でprovenance互換が失われる",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "legacy-migration-provenance-marker-loss",
+      "detail": "legacy verdictを含むartifactへ追記後、再読込でinvalid_historyになる"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "adjudication-recorder-unknown-provenance",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/judgment-adjudication.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-symlink-escape",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/judgment-adjudication.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "現HEADのCPR-S-001〜009と既存回帰を確認し、legacy migration round-tripを実再現",
+    "evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/unit_integration.json",
+    "inputs": [
+      "src/adjudication.js",
+      "test/judgment-adjudication.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "対象テスト成功 -> migration write/read境界に未検証の互換欠陥を再現"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "e11bd65e4d1915eb101a3c7f05fe3976a02616a7",
+    "current_head_sha": "e11bd65e4d1915eb101a3c7f05fe3976a02616a7",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "e11bd65e4d1915eb101a3c7f05fe3976a02616a7",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T13:04:20.854Z",
+  "git_context": {
+    "head_sha": "e11bd65e4d1915eb101a3c7f05fe3976a02616a7",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T13:04:20.847Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e11bd65e4d1915eb101a3c7f05fe3976a02616a7",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "aab4bc0142540c9218fc16d0efe9ed0e91b9ca2142d9065b4982ac3dbe990d86",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/test_plan_unit_security",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/unit_integration.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-unit_integration.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/unit_integration.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

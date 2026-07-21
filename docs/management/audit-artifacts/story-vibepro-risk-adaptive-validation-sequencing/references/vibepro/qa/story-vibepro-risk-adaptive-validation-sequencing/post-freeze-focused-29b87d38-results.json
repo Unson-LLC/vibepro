@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+  "status": "pass",
+  "tests": 63,
+  "passed": 63,
+  "failed": 0,
+  "duration_ms": 96177.369375,
+  "test_fingerprint": "story7-focused-63-29b87d38",
+  "validation_phase": "expensive_verification",
+  "command": "node --test test/validation-sequencing.test.js test/risk-adaptive-gate.test.js test/ci-evidence-import.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+}

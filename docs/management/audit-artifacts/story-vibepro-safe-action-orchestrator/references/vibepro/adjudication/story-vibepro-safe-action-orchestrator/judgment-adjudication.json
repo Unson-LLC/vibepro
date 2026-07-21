@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-dag-adjudication-v1",
+  "story_id": "story-vibepro-safe-action-orchestrator",
+  "updated_at": "2026-07-18T16:12:57.744Z",
+  "verdicts": [
+    {
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:57.740Z"
+    },
+    {
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:57.455Z"
+    },
+    {
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:57.162Z"
+    },
+    {
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:56.834Z"
+    },
+    {
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:56.505Z"
+    },
+    {
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:56.274Z"
+    },
+    {
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:56.037Z"
+    },
+    {
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:55.799Z"
+    },
+    {
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:55.559Z"
+    },
+    {
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:55.321Z"
+    },
+    {
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:55.093Z"
+    },
+    {
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:54.885Z"
+    },
+    {
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:54.642Z"
+    },
+    {
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "reason": "Final gate review confirmed this judgment item is explicit, covered, and consistent at HEAD 462f28ce.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "sao_final_gate_judgment_462f28ce",
+        "session_ref": ".vibepro/reviews/story-vibepro-safe-action-orchestrator/transcripts/462f28ce-gate.json"
+      },
+      "head_commit": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "recorded_at": "2026-07-18T16:12:54.403Z"
+    }
+  ]
+}

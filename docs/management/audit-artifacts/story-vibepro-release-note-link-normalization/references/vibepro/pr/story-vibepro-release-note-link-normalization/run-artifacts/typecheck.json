@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --check scripts/post-merge-release.mjs",
+  "observed": {
+    "entrypoint": "scripts/post-merge-release.mjs",
+    "syntax_check": "pass",
+    "head": "cd21e65a"
+  }
+}

@@ -14,6 +14,7 @@ import {
 import { renderPrMergeHtml } from './html-report.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
+import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -25,12 +26,14 @@ export async function executeMerge(repoRoot, options = {}) {
   const storyId = options.storyId;
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
 
-  const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
+  const prPreparePath = await resolvePrArtifactFile(root, storyId);
+  const prDir = path.dirname(prPreparePath);
+  const gateDagPath = await resolveGateArtifactFile(root, storyId);
   const [prPrepare, prCreate, executionState, gateDagArtifact] = await Promise.all([
-    readJsonIfExists(path.join(prDir, 'pr-prepare.json')),
+    readJsonIfExists(prPreparePath),
     readJsonIfExists(path.join(prDir, 'pr-create.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
-    readJsonIfExists(path.join(prDir, 'gate-dag.json'))
+    readJsonIfExists(gateDagPath)
   ]);
   const strategy = normalizeMergeStrategy(options.strategy);
   const deleteBranch = options.deleteBranch === true;

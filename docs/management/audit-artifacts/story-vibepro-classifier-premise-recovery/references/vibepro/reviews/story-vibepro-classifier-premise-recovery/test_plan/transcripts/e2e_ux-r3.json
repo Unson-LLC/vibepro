@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "CLIの回復導線は明示的な失敗表示と監査可能なevent idを持ち、legacy・fallback・Gate・human-decision・documentation面まで回帰試験されている。",
+  "inspection_summary": "Story/Spec、CLI・PR summary差分、CPR E2Eと既存JDA E2E、verification-evidenceを確認し、対象E2E 12/12を現行HEADで再実行した。",
+  "inspection_evidence": "node --test test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js => 12 pass, 0 fail",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-classifier-premise-recovery.md", "docs/specs/story-vibepro-classifier-premise-recovery.md", "src/cli.js", "src/pr-manager.js", "src/adjudication.js", "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts", "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js", ".vibepro/pr/story-vibepro-classifier-premise-recovery/verification-evidence.json"],
+  "judgment_delta": ["別出力面が未検証という懸念は原因必須、provenance拒否、implementation failure、symlink拒否、pending correction、stale HEAD、3分岐、legacy migration、日英READMEのE2Eで解消", "stale reuseには依存せず現HEADで対象E2Eを再実行"],
+  "findings": []
+}

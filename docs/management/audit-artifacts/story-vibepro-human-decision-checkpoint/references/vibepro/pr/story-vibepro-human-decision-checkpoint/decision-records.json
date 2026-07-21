@@ -1,0 +1,674 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "updated_at": "2026-07-19T10:55:25.725Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "expected_root": null,
+      "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784458525725-c4fcf2dd",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Commit canonical Story registration only",
+      "reason": ".vibepro/config.json is tracked canonical repository configuration required by the self-dogfood Story registration contract; transient generated QA and review artifacts remain ignored and uncommitted.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:55:25.724Z"
+      },
+      "recorded_at": "2026-07-19T10:55:25.725Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784458125490-6d4b4a2b",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Registered final scope is one reviewable execution contract",
+      "reason": "All changed paths belong to typed checkpoint persistence, discovery, CLI answer/resume, compatibility, regression tests, or Story acceptance.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:48:45.489Z"
+      },
+      "recorded_at": "2026-07-19T10:48:45.490Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784458124648-f6820c6d",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep one cohesive Human Checkpoint PR at registered final HEAD",
+      "reason": "Source, registered Story config, CLI wiring, Run persistence, fail-closed fixes and acceptance replay form one atomic contract. Splitting leaves the contract or proof incomplete.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:48:44.647Z"
+      },
+      "recorded_at": "2026-07-19T10:48:44.648Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784457863882-d664d71b",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Final bundled scope is one reviewable execution contract",
+      "reason": "Every changed path is required for typed checkpoint persistence, CLI answer/resume, strict decision binding, compatibility migration, regression tests, or direct Story acceptance.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+          "current_head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:44:23.881Z"
+      },
+      "recorded_at": "2026-07-19T10:44:23.882Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784457863184-39b60160",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep one cohesive Human Checkpoint PR at final HEAD",
+      "reason": "Source, CLI wiring, Run persistence, fail-closed fixes, Story and acceptance replay form one atomic public contract. Splitting would leave the contract or its proof incomplete; no unrelated production concern is bundled.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+          "current_head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6f5cd07651b65386f8958dc15e8649550abf7743",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:44:23.183Z"
+      },
+      "recorded_at": "2026-07-19T10:44:23.185Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784457534382-fbde4674",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundled scope is the reviewable split unit",
+      "reason": "All changed paths belong to typed Human Checkpoint creation, persistence, CLI answer/resume, regression protection, or direct Story acceptance binding. Review ownership remains one execution-contract reviewer and rollback is removal of the additive contract.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+          "current_head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:38:54.381Z"
+      },
+      "recorded_at": "2026-07-19T10:38:54.382Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784457533636-b793d22b",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep one cohesive Human Checkpoint PR",
+      "reason": "The source, CLI wiring, Run persistence, focused tests, Story, Spec, and Story acceptance replay implement one atomic public contract. Splitting the acceptance replay from the contract would make either PR unverifiable; no unrelated production concern is bundled.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+          "current_head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d42918de201cf5c658dcf093725c8594c712b0a3",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:38:53.634Z"
+      },
+      "recorded_at": "2026-07-19T10:38:53.636Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784456119902-026f8d35",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Human Decision Checkpoint is one coherent review unit",
+      "reason": "Decision artifact, guarded Run cursor, CLI resume, HEAD-bound identity, docs, and tests form one atomic stop-answer-resume contract; splitting would leave incomplete persistence or execution semantics.",
+      "reviewer": "coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+          "current_head_sha": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:15:19.898Z"
+      },
+      "recorded_at": "2026-07-19T10:15:19.902Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784453166738-ba18140e",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Human Decision Checkpoint is one coherent review unit",
+      "reason": "The ten changed files implement and document one typed checkpoint contract across persistence, Guarded Run integration, CLI, tests, and Design SSOT. Splitting would separate the public resume path from its atomic persistence and fail-closed evidence. The gate_evidence reviewer owns the final cross-surface review.",
+      "reviewer": "coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "46e5670eb358fc35c10e430ba28cdc0b8f230304",
+          "current_head_sha": "46e5670eb358fc35c10e430ba28cdc0b8f230304",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "46e5670eb358fc35c10e430ba28cdc0b8f230304",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T09:26:06.737Z"
+      },
+      "recorded_at": "2026-07-19T09:26:06.738Z"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6,
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 9
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+        "expected_root": null,
+        "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784458525725-c4fcf2dd",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Commit canonical Story registration only",
+      "reason": ".vibepro/config.json is tracked canonical repository configuration required by the self-dogfood Story registration contract; transient generated QA and review artifacts remain ignored and uncommitted.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/e2e-final.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/human-decision-checkpoint/unit-integration-final.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+          "expected_root": null,
+          "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+        "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T10:55:25.724Z"
+      },
+      "recorded_at": "2026-07-19T10:55:25.725Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/decision-records.json"
+}

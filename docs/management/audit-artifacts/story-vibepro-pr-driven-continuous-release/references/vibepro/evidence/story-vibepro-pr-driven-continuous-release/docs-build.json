@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "head_commit": "48f610ddda234a876a1f6c7ff7ff02f0e418cec9",
+  "command": "npm run docs:build",
+  "vitepress_version": "1.6.4",
+  "public_manual_files": 192
+}

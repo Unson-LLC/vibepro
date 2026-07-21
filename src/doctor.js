@@ -4,7 +4,7 @@ import path from 'node:path';
 import { buildRuntimeDoctorCheck, collectRuntimeInfo } from './runtime-info.js';
 import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 
-const REQUIRED_GITIGNORE_LINE = `${WORKSPACE_DIR}/`;
+const REQUIRED_GITIGNORE_LINES = [`${WORKSPACE_DIR}/*`, `!${WORKSPACE_DIR}/config.json`];
 
 export async function runDoctor(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -232,7 +232,7 @@ export async function runDoctor(repoRoot, options = {}) {
       status: options.fix ? 'fixed' : 'fixable',
       fixable: true,
       detail: gitignoreState.exists
-        ? `.gitignore に ${REQUIRED_GITIGNORE_LINE} が含まれていない。`
+        ? `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} が含まれていない。`
         : '.gitignore が存在せず .vibepro/ が無視されない。',
       recommendation: 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/ を追記する。',
       next_actions: [buildAction({
@@ -241,13 +241,13 @@ export async function runDoctor(repoRoot, options = {}) {
         expected_after: 'VP-DOCTOR-GITIGNORE-MISSING が消える。',
         safe_to_run: true
       })],
-      items: [{ path: '.gitignore', required_line: REQUIRED_GITIGNORE_LINE }]
+      items: [{ path: '.gitignore', required_lines: REQUIRED_GITIGNORE_LINES }]
     });
     if (options.fix) {
       await applyGitignoreFix(root, gitignoreState);
       result.repairs.push({
         id: 'ensure-gitignore-vibepro',
-        detail: `.gitignore に ${REQUIRED_GITIGNORE_LINE} を追記した。`,
+        detail: `.gitignore に ${REQUIRED_GITIGNORE_LINES.join(' と ')} を設定した。`,
         path: '.gitignore'
       });
     }
@@ -324,15 +324,20 @@ async function checkGitignore(repoRoot) {
     return { exists: false, content: '', needs_update: true };
   }
   const lines = content.split(/\r?\n/).map((line) => line.trim());
-  const hasRequired = lines.includes(REQUIRED_GITIGNORE_LINE);
+  const hasRequired = REQUIRED_GITIGNORE_LINES.every((line) => lines.includes(line));
   return { exists: true, content, needs_update: !hasRequired };
 }
 
 async function applyGitignoreFix(repoRoot, state) {
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  const existing = state.content ?? '';
+  const existing = (state.content ?? '')
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== `${WORKSPACE_DIR}/`)
+    .join('\n');
+  const lines = existing.split(/\r?\n/).map((line) => line.trim());
+  const missing = REQUIRED_GITIGNORE_LINES.filter((line) => !lines.includes(line));
   const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
-  await writeFile(gitignorePath, `${prefix}${REQUIRED_GITIGNORE_LINE}\n`);
+  await writeFile(gitignorePath, `${prefix}${missing.join('\n')}\n`);
 }
 
 async function readJsonIfExists(filePath) {

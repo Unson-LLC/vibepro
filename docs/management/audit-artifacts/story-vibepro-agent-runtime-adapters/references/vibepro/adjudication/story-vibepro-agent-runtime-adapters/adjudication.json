@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "updated_at": "2026-07-19T23:43:21.929Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Fake adapter contract and all S-002 paths are Story-bound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:21.929Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Failures and malformed results never become completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:21.739Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Duplicate cancellation timeout and orphan containment are executable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:21.530Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Qualified read-only separate review dispatch is executable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:21.341Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Structured result fields are executable and Story-bound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:21.159Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Capability recovery and typed runtime waits are executable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:20.976Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Provider-neutral contract and quota pre-start behavior are executable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:20.791Z"
+    }
+  ]
+}

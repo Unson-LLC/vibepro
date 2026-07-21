@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Exact optional Linux Rollup artifact is lock-bound and incompatible platforms safely omit it",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected workflow ordering, package and lock contracts, projector, Story boundaries, and focused tests",
+    "evidence": "test/post-merge-release.test.js",
+    "inputs": [
+      "package.json",
+      "package-lock.json",
+      ".github/workflows/post-merge-release.yml",
+      "scripts/post-merge-release.mjs"
+    ]
+  },
+  "judgment_delta": [
+    "The exact Linux x64 artifact matches Rollup 4.62.2 and runtime contracts outside release installation remain unchanged"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "expected_root": null,
+    "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "expected_root": null,
+      "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T01:55:17.254Z",
+  "git_context": {
+    "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T01:55:17.247Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind the independent review to the final clean recovery HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "surface_files": [
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "0a3aea2b251e68a615e05267bde9cbb22e43321713e9efc9b64f7e8f8e20b44d",
+        "size": 5353
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "2dd5000109751aaba658cb99a292ba2652eb1ee9ff1544f00fd6260f12722f51",
+        "size": 96489
+      },
+      {
+        "path": "package.json",
+        "sha256": "a0f7aaba0a65c7ef1fa44ff7739f4b0019b95545f4288837acf8ac52c7795435",
+        "size": 1692
+      },
+      {
+        "path": "scripts/post-merge-release.mjs",
+        "sha256": "d01ed89d51ff362f3345d3b02d4e45835f03f78b68373724fc1fcaf8999f8286",
+        "size": 14657
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "7ddb8ba61c4d4ed0d37781ebe388554d7cb7acb4546e59a38b279d0278a18c6f"
+  },
+  "source_fingerprint": "42532813c4f5804d38e7c576452219e0adbb7438751082858f33327205ed0819",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/head4_runtime_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-runtime.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-agent-runtime-adapters",
+      "decision_id": "decision-1784463577496-246fa81f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Story Architecture Spec code tests config registration and Design SSOT lineage jointly define one runtime authority boundary; separating lineage would break traceability and the generated split plan omits .vibepro/config.json",
+      "artifact": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T12:23:32.011Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-agent-runtime-adapters",
+      "decision_id": "decision-1784464434259-761d0f36",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The generated split plan is stale, separates mandatory design lineage, and omits config registration; the ten-file change is one atomic contract",
+      "artifact": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T12:33:57.472Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

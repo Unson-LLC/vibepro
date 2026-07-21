@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { WORKSPACE_DIR } from './workspace.js';
+import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
 
 export const SPEC_SCHEMA_VERSION = '0.1.0';
 const HISTORY_KEEP = 10;
@@ -14,6 +15,10 @@ export function getSpecDir(repoRoot, storyId) {
 
 export function getSpecFile(repoRoot, storyId) {
   return path.join(getSpecDir(repoRoot, storyId), 'spec.json');
+}
+
+export async function resolveAcceptedSpecFile(repoRoot, storyId) {
+  return (await resolveArtifactRoute(repoRoot, 'accepted_spec', { storyId })).canonical.absolute_path;
 }
 
 export function getSpecDraftFile(repoRoot, storyId) {
@@ -45,7 +50,7 @@ export async function ensureSpecDir(repoRoot, storyId) {
 export async function readInferredSpec(repoRoot, storyId) {
   if (!storyId) return null;
   try {
-    return JSON.parse(await readFile(getSpecFile(repoRoot, storyId), 'utf8'));
+    return JSON.parse(await readFile(await resolveAcceptedSpecFile(repoRoot, storyId), 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;
@@ -82,9 +87,14 @@ export async function readSuppressions(repoRoot, storyId) {
 }
 
 export async function writeInferredSpec(repoRoot, storyId, spec) {
+  const route = await resolveArtifactRoute(repoRoot, 'accepted_spec', { storyId });
+  await preflightArtifactWrites(repoRoot, route);
   await ensureSpecDir(repoRoot, storyId);
-  const specPath = getSpecFile(repoRoot, storyId);
-  await writeFile(specPath, `${JSON.stringify(spec, null, 2)}\n`);
+  const specPath = await assertArtifactWritePath(repoRoot, route.canonical.relative_path);
+  await mkdir(path.dirname(specPath), { recursive: true });
+  const content = `${JSON.stringify(spec, null, 2)}\n`;
+  await writeFile(specPath, content);
+  await writeArtifactProjections(repoRoot, route, content);
 
   const historyDir = path.join(getSpecDir(repoRoot, storyId), 'spec.history');
   const stamp = spec.generated_at?.replace(/[:.]/g, '-') ?? new Date().toISOString().replace(/[:.]/g, '-');

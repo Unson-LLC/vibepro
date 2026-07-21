@@ -1,0 +1,119 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "canonical Story E2E discovery now recognizes and executes AC1-AC10 and both scenarios",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "e2e-story-coverage-not-consumed",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "HEAD 78c8f4b Story E2E, QA status, and pr-prepare coverage were inspected; focused E2E passes 12/12",
+    "evidence": ".vibepro/pr/story-vibepro-classifier-premise-recovery/pr-prepare.json",
+    "inputs": [
+      "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+      ".vibepro/qa/story-vibepro-classifier-premise-recovery/e2e-status.json"
+    ]
+  },
+  "judgment_delta": [
+    "discovery mismatch -> .spec.ts is matched, executable, and Gate-linked"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "78c8f4bee822e4c889b6b035830641bc664e4a97",
+    "current_head_sha": "78c8f4bee822e4c889b6b035830641bc664e4a97",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "78c8f4bee822e4c889b6b035830641bc664e4a97",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T12:27:26.074Z",
+  "git_context": {
+    "head_sha": "78c8f4bee822e4c889b6b035830641bc664e4a97",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T12:27:26.072Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "78c8f4bee822e4c889b6b035830641bc664e4a97",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "ab3f964961f6e3a6537bebbf45871adee757b7636a24df97b9dfdf45eef6194f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/test_plan_e2e_final",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e_ux.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e_ux.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

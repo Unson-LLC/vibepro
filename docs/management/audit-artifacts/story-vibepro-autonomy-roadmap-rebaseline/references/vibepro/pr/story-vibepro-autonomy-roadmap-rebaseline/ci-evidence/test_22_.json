@@ -2,18 +2,18 @@
   "schema_version": "0.1.0",
   "status": "pass",
   "exit_code": 0,
-  "head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+  "head_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
   "observed": {
     "check": "test (22)",
     "conclusion": "SUCCESS",
-    "run_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29628170256/job/88036573782",
-    "head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594"
+    "run_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29671986578/job/88152611409",
+    "head_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc"
   },
   "ci_check": {
     "name": "test (22)",
     "status": "COMPLETED",
     "conclusion": "SUCCESS",
     "workflow_name": "CI",
-    "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29628170256/job/88036573782"
+    "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/29671986578/job/88152611409"
   }
 }

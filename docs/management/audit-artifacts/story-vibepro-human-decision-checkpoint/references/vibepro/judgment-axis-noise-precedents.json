@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "decision_id": "decision-1784453166738-ba18140e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The ten changed files implement and document one typed checkpoint contract across persistence, Guarded Run integration, CLI, tests, and Design SSOT. Splitting would separate the public resume path from its atomic persistence and fail-closed evidence. The gate_evidence reviewer owns the final cross-surface review.",
+      "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/split-plan.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T09:34:41.296Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1777|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "decision_id": "decision-1784456119902-026f8d35",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Decision artifact, guarded Run cursor, CLI resume, HEAD-bound identity, docs, and tests form one atomic stop-answer-resume contract; splitting would leave incomplete persistence or execution semantics.",
+      "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1777",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T10:19:59.820Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-human-decision-checkpoint",
+      "decision_id": "decision-1784456119902-026f8d35",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Decision artifact, guarded Run cursor, CLI resume, HEAD-bound identity, docs, and tests form one atomic stop-answer-resume contract; splitting would leave incomplete persistence or execution semantics.",
+      "artifact": ".vibepro/pr/story-vibepro-human-decision-checkpoint/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T10:32:06.844Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Current-HEAD implementation aligns with Story Architecture and Spec; prior identity gaps are resolved.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, Story, Architecture, Spec, cumulative diff, portfolio and Guarded Run ownership code, CLI surfaces, and regression fixtures.",
+    "evidence": "node --test test/story-run-portfolio.test.js test/guarded-run-session.test.js: 87 passed, 0 failed",
+    "inputs": [
+      "src/story-run-portfolio.js",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "test/story-run-portfolio.test.js",
+      "test/guarded-run-session.test.js",
+      "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "docs/specs/story-vibepro-story-run-portfolio-controller.md"
+    ]
+  },
+  "judgment_delta": [
+    "Restart identity under-validation -> pass because story request and run identities are checked before adoption with negative restart fixtures.",
+    "Missing review/session run attribution -> pass because exact run attribution is required with regression fixtures."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_head_sha": "2d52ade3f725a9a633ccdb7a1bd7d44f3325cd56",
+    "current_head_sha": "2d52ade3f725a9a633ccdb7a1bd7d44f3325cd56",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+      "branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "actual_branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "current_head_sha": "2d52ade3f725a9a633ccdb7a1bd7d44f3325cd56",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-20T23:55:26.732Z",
+  "git_context": {
+    "head_sha": "2d52ade3f725a9a633ccdb7a1bd7d44f3325cd56",
+    "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T23:55:26.718Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "workflow-critical identity contract remediation requires exact HEAD review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2d52ade3f725a9a633ccdb7a1bd7d44f3325cd56",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "45996a071da814712eb28572e7db8a485dcb122c74bde362ca6ca18183dea8a3",
+        "size": 4449
+      },
+      {
+        "path": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "987600509812924a1a52c15b8bb2063cfd7d3e5f87dd6f11c243817404197ed8",
+        "size": 5085
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "0701fc2ad1047dcb5cedfd3042fc668ad27899047ae739936515da754d5b17a3",
+        "size": 210078
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "e02d2ad12d71146a4dc568838542f57bc306d447814de47e906dec3d2c5b50fc",
+        "size": 77013
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "f75f2f7cc19fb53975a51f509132075f7c6d78c9c21803c96a3482f36fd30249",
+        "size": 27674
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "7538ba525ab368b5599b7de65a001858d3dfe9465938f8e30deef26fa142799d",
+        "size": 125769
+      },
+      {
+        "path": "test/story-run-portfolio.test.js",
+        "sha256": "4edb762fb137b5b9ad967b183050b124add5dde2fbdcbf6a99eaec9d8db35bad",
+        "size": 29250
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "7edfbc2587dd62fc63209a413f849707eed1fe45c24db528370cb684cb924263"
+  },
+  "source_fingerprint": "7026fa12629a72a9a69e3d6ee9891279c56dafcec802db974a639df60c929894",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story9_code_spec_postfix",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-run-portfolio-controller/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "test/story-run-portfolio.test.js",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

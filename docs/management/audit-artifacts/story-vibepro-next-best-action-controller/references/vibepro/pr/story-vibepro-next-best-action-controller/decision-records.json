@@ -1,0 +1,219 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "updated_at": "2026-07-19T02:20:48.254Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784427648254-09be74e2",
+      "story_id": "story-vibepro-next-best-action-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Focused single-reviewer scope confirmed after rebase",
+      "reason": "The 12-file diff is one coherent Story-to-Architecture-to-Spec-to-controller integration lane with direct focused and E2E coverage; splitting would sever the public contract from its runtime and tests.",
+      "reviewer": "/root/nba_judgment_adjudication",
+      "artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-judgment-c2536e99.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+        "current_branch": "codex/story-vibepro-next-best-action-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T02:20:48.252Z"
+      },
+      "recorded_at": "2026-07-19T02:20:48.254Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784420779791-16595116",
+      "story_id": "story-vibepro-next-best-action-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_split",
+      "summary": "Bundle requirements SSOT and runtime behavior in one atomic PR",
+      "reason": "The Story, architecture, Spec clauses, runtime controller, persistence integration, and executable acceptance tests define one authority-bound behavior. Splitting documentation from runtime would leave each PR without independently reviewable traceability and would stale head-bound evidence; the seven focused commits are historical construction steps, not separable release intents.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/next-best-action-typecheck.log",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/next-best-action-unit.log",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/next-best-action-tests.log",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "28327336fd5f61a0b540e549b5090e5d7894262b",
+        "current_branch": "codex/story-vibepro-next-best-action-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:26:19.789Z"
+      },
+      "recorded_at": "2026-07-19T00:26:19.792Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784420777710-6c59976c",
+      "story_id": "story-vibepro-next-best-action-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundle requirements SSOT and runtime behavior in one atomic PR",
+      "reason": "The Story, architecture, Spec clauses, runtime controller, persistence integration, and executable acceptance tests define one authority-bound behavior. Splitting documentation from runtime would leave each PR without independently reviewable traceability and would stale head-bound evidence; the seven focused commits are historical construction steps, not separable release intents.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/next-best-action-typecheck.log",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/next-best-action-unit.log",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/next-best-action-tests.log",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "28327336fd5f61a0b540e549b5090e5d7894262b",
+        "current_branch": "codex/story-vibepro-next-best-action-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:26:17.706Z"
+      },
+      "recorded_at": "2026-07-19T00:26:17.710Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784427648254-09be74e2",
+      "story_id": "story-vibepro-next-best-action-controller",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Focused single-reviewer scope confirmed after rebase",
+      "reason": "The 12-file diff is one coherent Story-to-Architecture-to-Spec-to-controller integration lane with direct focused and E2E coverage; splitting would sever the public contract from its runtime and tests.",
+      "reviewer": "/root/nba_judgment_adjudication",
+      "artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-judgment-c2536e99.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+        "current_branch": "codex/story-vibepro-next-best-action-controller",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T02:20:48.252Z"
+      },
+      "recorded_at": "2026-07-19T02:20:48.254Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json"
+}

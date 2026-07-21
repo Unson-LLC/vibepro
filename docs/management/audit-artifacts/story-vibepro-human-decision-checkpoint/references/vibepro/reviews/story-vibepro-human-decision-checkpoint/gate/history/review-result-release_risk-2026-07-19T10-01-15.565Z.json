@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Crash/restart, historical checkpoint, index repair, and CLI compatibility have no unresolved release risk",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current-HEAD runtime paths and focused 72/72 evidence covering failure, restart, replay, and compatibility.",
+    "evidence": ".vibepro/qa/human-decision-checkpoint/targeted-tests.json",
+    "inputs": [
+      "src/guarded-run-session.js",
+      "src/human-decision-checkpoint.js",
+      "src/cli.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Cursor loss and partial replay risks -> resolved through current-HEAD checkpoint binding, cursor preservation, index-before-resume repair, and regression tests."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+    "expected_root": null,
+    "expected_head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+    "current_head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "expected_root": null,
+      "expected_head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+      "current_head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T10:01:15.565Z",
+  "git_context": {
+    "head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+    "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T10:01:15.555Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Release review binds crash-recovery judgment to the final implementation HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "7a78c943186e8d32e72f6d6b686610769cfdaf2a",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "d3e0d7513ea63166a48f565f3ebf1b7194d1d3f10168e17b18319db5bb740f2d",
+        "size": 193308
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "15bcd6e8d90aa5bb3a74dd49b0ad1cefa775c5d5e088fe25af4383dec283cfa6",
+        "size": 68161
+      },
+      {
+        "path": "src/human-decision-checkpoint.js",
+        "sha256": "471aebb3dfc7b592da091c976c47b2fb4cff671e4bfbf0c9c3f1c8e6522a94e3",
+        "size": 7148
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "b732bcdf3edd9d24d10d3e382e5c5f5064ff039688717579edcef7f671e6b85d",
+        "size": 112985
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8455fa8e47eeee7d40054b73a12bb1803d70eb20f6d05df86d29a5b74e7f351f"
+  },
+  "source_fingerprint": "505c2217bfcb78c6e5fc7fd3f4d1c5acd9e5995456f62e70c1bc9dca5c61280c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story5_release_final",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-human-decision-checkpoint/gate/story5-release-7a78c943.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-human-decision-checkpoint/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

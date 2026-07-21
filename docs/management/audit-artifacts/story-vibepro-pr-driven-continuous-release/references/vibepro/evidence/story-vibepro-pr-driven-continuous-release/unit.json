@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "head_commit": "48f610ddda234a876a1f6c7ff7ff02f0e418cec9",
+  "command": "env NPM_CONFIG_CACHE=/private/tmp/vibepro-npm-cache node --test test/post-merge-release.test.js test/public-release-notes.test.js",
+  "tests": 12,
+  "passed": 12,
+  "failed": 0
+}

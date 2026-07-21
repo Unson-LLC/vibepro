@@ -14,6 +14,12 @@ import {
 } from './requirement-consistency.js';
 import { renderGateDagHtml, renderPrCreateHtml, renderPrMergeHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { classifyChangeRisk } from './change-risk-classifier.js';
+import {
+  evaluateValidationSequence,
+  reconcileValidationSequenceState,
+  readValidationSequence,
+  writeValidationSequence
+} from './validation-sequencing.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
@@ -86,6 +92,7 @@ import {
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
+import { assertArtifactWritePath, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -307,16 +314,21 @@ export async function preparePullRequest(repoRoot, options = {}) {
     storySource: prContext.story_source,
     decisionRecords
   });
-  const prRoot = workspace.initialized
-    ? getWorkspaceDir(root)
+  const prRoute = workspace.initialized
+    ? await resolveArtifactRoute(root, 'pr', { storyId: story.story_id })
+    : null;
+  const gateRoute = workspace.initialized
+    ? await resolveArtifactRoute(root, 'gate', { storyId: story.story_id })
+    : null;
+  const prDir = workspace.initialized
+    ? path.dirname(await assertArtifactWritePath(root, prRoute.canonical.relative_path))
     : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
-  const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
   const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
   const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
   const evidenceDrilldownLogPath = path.join(prDir, 'evidence-drilldown-log.json');
   const decisionIndexPath = path.join(prDir, 'decision-index.json');
-  const jsonPath = path.join(prDir, 'pr-prepare.json');
+  const jsonPath = prRoute?.canonical.absolute_path ?? path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
   const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
   const humanReviewPath = path.join(prDir, 'human-review.json');
@@ -326,7 +338,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const designSsotPath = path.join(prDir, 'design-ssot-reconciliation.json');
   const seniorGapJudgmentPath = path.join(prDir, 'senior-gap-judgment.json');
   const refTopologyPath = path.join(prDir, 'ref-topology.json');
-  const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
+  const gateDagJsonPath = gateRoute
+    ? await assertArtifactWritePath(root, gateRoute.canonical.relative_path)
+    : path.join(prDir, 'gate-dag.json');
+  await mkdir(path.dirname(gateDagJsonPath), { recursive: true });
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
@@ -405,9 +420,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
       decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.judgment_dag_adjudication = summarizeJudgmentAdjudicationForPr({
+      storyId: story.story_id,
       items: judgmentItems,
       adjudication: judgmentRecords,
-      headSha: reviewGit.head_sha
+      headSha: reviewGit.head_sha,
+      decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.gate_dag.nodes.push(judgmentGate);
     prContext.gate_dag.summary.judgment_dag_adjudication = {
@@ -881,11 +898,15 @@ export async function evaluateGateReadiness(repoRoot, options = {}) {
   }
 
   const workspaceDir = getWorkspaceDir(root);
-  const prDir = path.join(workspaceDir, 'pr', storyId);
+  const prRoute = await resolveArtifactRoute(root, 'pr', { storyId });
+  const gateRoute = await resolveArtifactRoute(root, 'gate', { storyId });
+  const prDir = path.dirname(prRoute.canonical.absolute_path);
+  const gateDir = path.dirname(gateRoute.canonical.absolute_path);
   const gateOutcomesDir = path.join(workspaceDir, 'gate-outcomes');
   const snapshotRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gate-check-snapshot-'));
   const snapshots = [
     { targetPath: prDir, snapshotPath: path.join(snapshotRoot, 'pr'), existedBefore: existsSync(prDir) },
+    ...(gateDir === prDir ? [] : [{ targetPath: gateDir, snapshotPath: path.join(snapshotRoot, 'gate'), existedBefore: existsSync(gateDir) }]),
     { targetPath: gateOutcomesDir, snapshotPath: path.join(snapshotRoot, 'gate-outcomes'), existedBefore: existsSync(gateOutcomesDir) }
   ];
 
@@ -1670,6 +1691,7 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       storyId: preparation.story.story_id,
       pr: options.pr,
       checks: options.ciChecks,
+      coverage: options.ciCoverage,
       env: options.env
     });
     operations.push({
@@ -1799,6 +1821,83 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
     options
   });
 }
+
+export function createSafeAutopilotPullRequest(dependencies = {}) {
+  const prepare = dependencies.preparePullRequest ?? preparePullRequest;
+  const resolveCommands = dependencies.resolveCommands ?? resolveAutopilotVerificationCommands;
+  const readEvidence = dependencies.readEvidence ?? readVerificationEvidenceIfExists;
+  const bindEvidence = dependencies.bindEvidence ?? bindVerificationEvidenceToGit;
+  return async function safeAutopilot(repoRoot, options = {}) {
+  if (options.importCi === true || options.pr || options.ciChecks || options.env) {
+    return {
+      status: 'waiting_for_human',
+      stop_reason: 'approval_required',
+      reason: 'external autopilot options are not repo-local'
+    };
+  }
+  const root = path.resolve(repoRoot);
+  const prepareResult = await prepare(root, options);
+  const artifact = prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null;
+  const commands = await resolveCommands(root, {
+    rawVerifyCommands: options.verifyCommands,
+    preparation: prepareResult.preparation
+  });
+  const existing = await bindEvidence(
+    root,
+    await readEvidence(root, prepareResult.preparation.story.story_id),
+    prepareResult.preparation.git
+  );
+  const currentEvidence = (existing?.commands ?? []).filter((item) => item.binding?.status === 'current');
+  const passing = new Set(currentEvidence
+    .filter((item) => isPassingVerificationStatus(item.status) && item.binding?.status === 'current')
+    .map((item) => item.kind));
+  const failed = new Set(currentEvidence
+    .filter((item) => !isPassingVerificationStatus(item.status))
+    .map((item) => item.kind));
+  if (commands.some((item) => failed.has(item.kind))) {
+    const failedKinds = commands.filter((item) => failed.has(item.kind)).map((item) => item.kind);
+    return {
+      status: 'blocked',
+      stop_reason: 'verification_failed',
+      artifact,
+      recovery: { failed_kinds: failedKinds },
+      preparation: prepareResult.preparation
+    };
+  }
+  if (commands.some((item) => !passing.has(item.kind))) {
+    const missingKinds = commands.filter((item) => !passing.has(item.kind)).map((item) => item.kind);
+    return {
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact,
+      recovery: { missing_kinds: missingKinds },
+      preparation: prepareResult.preparation
+    };
+  }
+  const gate = prepareResult.preparation.gate_status
+    ?? buildPrPrepareGateStatus(prepareResult.preparation.pr_context?.gate_dag, prepareResult.preparation.pr_context?.completion_quality);
+  if (gate.ready_for_pr_create === true) return { status: 'pr_ready', artifact, preparation: prepareResult.preparation };
+  if ((gate.human_judgments_required ?? []).length > 0) {
+    return {
+      status: 'waiting_for_human',
+      stop_reason: 'human_judgment_required',
+      artifact,
+      recovery: { judgments: gate.human_judgments_required },
+      preparation: prepareResult.preparation
+    };
+  }
+  const critical = (gate.unresolved_gates ?? []).find((item) => item.severity === 'critical' || item.critical === true);
+  return {
+    status: 'blocked',
+    stop_reason: critical?.id ?? gate.stop_reason ?? 'gate_blocked',
+    artifact,
+    recovery: { required_actions: gate.next_required_actions ?? [] },
+    preparation: prepareResult.preparation
+  };
+  };
+}
+
+export const safeAutopilotPullRequest = createSafeAutopilotPullRequest();
 
 export function renderPrAutopilotSummary(result) {
   const autopilot = result.autopilot;
@@ -1972,6 +2071,7 @@ function buildAutopilotImportCiCommand(storyId, options = {}) {
   const args = ['vibepro verify import-ci .', '--id', shellQuote(storyId)];
   if (options.pr) args.push('--pr', shellQuote(options.pr));
   for (const check of options.ciChecks ?? []) args.push('--check', shellQuote(check));
+  for (const coverage of options.ciCoverage ?? []) args.push('--coverage', shellQuote(coverage));
   return args.join(' ');
 }
 
@@ -3644,6 +3744,9 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     ?? source.policy
     ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。'));
   const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
+  const releaseSummary = solution || 'なし';
+  const compatibility = source.compatibility ?? source.compatibility_impact ?? 'なし';
+  const userAction = source.user_action ?? source.migration ?? 'なし';
   const decisionIndexHandoff = resolveHandoffArtifact(artifactBudget, 'decision-index.json', evidenceDir);
   const decisionIndexLine = decisionIndexHandoff.is_summary
     ? `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatRepoPathLink(decisionIndexHandoff.full_path)}）`
@@ -3675,6 +3778,17 @@ ${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 
 ## 解決
 - ${solution}
+
+## Release Notes
+
+### Change Summary
+${releaseSummary}
+
+### Compatibility
+${compatibility}
+
+### User Action
+${userAction}
 
 ## レビュー観点
 - Gate: ${gateNote}
@@ -4786,7 +4900,7 @@ function formatPrDeltaStatus(status) {
 
 async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prContext, suggestedBranch }) {
   const graphContext = prContext.graph_context
-    ?? await buildGraphImpactContext(repoRoot, git.changed_files);
+    ?? await buildGraphImpactContext(repoRoot, git.changed_files, story.story_id);
   const lanes = buildSplitLanes({
     fileGroups,
     scope,
@@ -4815,12 +4929,13 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
   };
 }
 
-async function buildGraphImpactContext(repoRoot, changedFiles) {
+async function buildGraphImpactContext(repoRoot, changedFiles, storyId = 'story-default') {
   return buildSplitGraphContext(
     repoRoot,
     changedFiles
       .map((file) => typeof file === 'string' ? file : file.path)
-      .filter((file) => file && !isWorkspaceArtifactPath(file))
+      .filter((file) => file && !isWorkspaceArtifactPath(file)),
+    storyId
   );
 }
 
@@ -5122,8 +5237,8 @@ function collectLaneGraphInvestigationFiles(files, graphContext) {
   return [...related].sort().slice(0, 12);
 }
 
-async function buildSplitGraphContext(repoRoot, changedFiles) {
-  const graphPath = path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json');
+async function buildSplitGraphContext(repoRoot, changedFiles, storyId) {
+  const graphPath = await resolveGraphifyArtifactFile(repoRoot, storyId);
   let graph = null;
   try {
     graph = JSON.parse(await readFile(graphPath, 'utf8'));
@@ -5303,7 +5418,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     verificationEvidence: boundVerificationEvidence
   });
   const specDrift = await readDrift(repoRoot, story.story_id);
-  const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity });
+  const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity, storyId: story.story_id });
   const changeClassification = classifyChangeRisk({
     fileGroups,
     storySource: primaryStory,
@@ -5311,13 +5426,24 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     regressionRisk,
     diffStats: git.diff_line_stats ?? null
   });
+  const persistedValidationSequence = await readValidationSequence(repoRoot, story.story_id);
+  const validationSequence = reconcileValidationSequenceState(persistedValidationSequence, {
+    storyId: story.story_id,
+    riskProfile: changeClassification.profile,
+    riskSurfaces: changeClassification.risk_surfaces,
+    headSha: git.head_sha
+  });
+  if (validationSequence.plan.required && validationSequence !== persistedValidationSequence) {
+    await writeValidationSequence(repoRoot, validationSequence);
+  }
+  const validationSequenceEvaluation = evaluateValidationSequence(validationSequence, { currentHeadSha: git.head_sha });
   const prRoute = buildPrRouteClassification({
     git,
     fileGroups,
     scope,
     changeClassification
   });
-  const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
+  const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files, story.story_id);
   const codeTopologyContext = await buildCodeTopologyContext(repoRoot, {
     changedFiles: git.changed_files,
     headSha: git.head_sha,
@@ -5425,6 +5551,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
     change_classification: changeClassification,
+    validation_sequencing: {
+      state: validationSequence,
+      evaluation: validationSequenceEvaluation,
+      artifact: `.vibepro/validation-sequencing/${story.story_id}/state.json`
+    },
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
     change_summary: buildChangeSummary(fileGroups),
@@ -5497,7 +5628,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     designSsotReconciliation: context.design_ssot_reconciliation,
     journeyMap,
     managedWorktreeContext,
-    managedWorktreeGate
+    managedWorktreeGate,
+    validationSequenceEvaluation
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -6753,6 +6885,8 @@ function parseStoryDoc(file, content) {
     root_cause: extractSectionText(content, ['根本原因', '原因', 'Root Cause', 'Cause']),
     solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
+    compatibility: extractSectionText(content, ['互換性', 'Compatibility', 'Compatibility Impact']),
+    user_action: extractSectionText(content, ['利用者に必要な操作', '利用者操作', 'User Action', 'Migration']),
     impact_scope: extractImpactScopeStatement(content),
     acceptance_criteria: extractAcceptanceCriteria(content),
     related_stories: normalizeFrontmatterList(
@@ -10339,7 +10473,8 @@ function buildGateDag({
   codeTopologyContext = null,
   journeyMap = null,
   managedWorktreeContext = null,
-  managedWorktreeGate = null
+  managedWorktreeGate = null,
+  validationSequenceEvaluation = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -10562,6 +10697,17 @@ function buildGateDag({
     required: true,
     reason: 'DAG connectivity has not been evaluated yet'
   };
+  const validationSequenceGate = {
+    id: 'gate:validation_sequencing',
+    type: 'validation_sequencing_gate',
+    label: 'Risk-adaptive Validation Sequencing Gate',
+    status: validationSequenceEvaluation?.status ?? 'not_applicable',
+    required: validationSequenceEvaluation?.status !== 'not_applicable',
+    reason: validationSequenceEvaluation?.ready_for_final_gate
+      ? 'Targeted validation, advisory preflight, frozen expensive verification, and final current-head review are complete'
+      : `Validation sequence is incomplete: ${(validationSequenceEvaluation?.blocking_phases ?? []).join(', ')}`,
+    blocking_phases: validationSequenceEvaluation?.blocking_phases ?? []
+  };
   const nodes = [
     storyGate,
     storySourceIntegrityGate,
@@ -10609,6 +10755,7 @@ function buildGateDag({
     ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
     ...workflowHeavyGates,
+    validationSequenceGate,
     ...(fastLaneGate ? [fastLaneGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
@@ -10759,7 +10906,8 @@ function buildGateDag({
     { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
     { from: 'gate:review_inspection_required', to: 'gate:definition_of_done' },
     { from: 'gate:definition_of_done', to: 'gate:artifact_consistency' },
-    { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
+    { from: 'gate:artifact_consistency', to: 'gate:validation_sequencing' },
+    { from: 'gate:validation_sequencing', to: 'gate:dag_connectivity' },
     { from: 'gate:dag_connectivity', to: 'pr' }
   ];
 
@@ -10807,6 +10955,7 @@ function buildGateDag({
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
+    validationSequenceGate,
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
@@ -10840,6 +10989,7 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
+      scenario_clauses: extractScenarioCoverageClauses(inferredSpec),
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       journey_context_status: journeyContextGate?.status ?? null,
       design_ssot_reconciliation_status: designSsotGate.status,
@@ -12003,7 +12153,10 @@ function buildWorkflowHeavyGates({ repoRoot, changeClassification, inferredSpec,
   const flowEvidence = resolveWorkflowFlowEvidence({ repoRoot, flowVerification, e2eCoverage, verificationEvidence });
   const hasPassingFlowEvidence = flowEvidence.passed;
   const flowEvidenceActions = flowEvidence.required_actions ?? [];
-  const clauses = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [];
+  const clauses = [
+    ...(Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : []),
+    ...(Array.isArray(inferredSpec?.scenario_clauses) ? inferredSpec.scenario_clauses : [])
+  ];
   const scenarioCount = clauses.filter(isWorkflowStateScenarioClause).length;
   const blockerQuestions = (inferredSpec?.open_questions ?? []).filter((item) => item?.blocker === true);
   const stateMachineStatus = scenarioCount > 0 && blockerQuestions.length === 0 ? 'passed' : 'needs_evidence';
@@ -14045,6 +14198,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'validation_sequencing_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
       'agent_review_dispatch_batch_gate',

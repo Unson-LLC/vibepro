@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-classifier-premise-recovery",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "CLIのrecovery、fail-closed遷移、legacy/malformed経路、日英案内を含む利用者経路を検証した",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "実CLI経路とfocused 33/33、README、adjudication実装を確認し、回復不能時に成功表示しないことを確認した",
+    "evidence": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+    "inputs": [
+      "src/adjudication.js",
+      "src/cli.js",
+      "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+      "test/judgment-adjudication.test.js",
+      "README.md"
+    ]
+  },
+  "judgment_delta": [
+    "主要な利用者経路に加えてlegacy、malformed、bilingual failure guidanceが実テストで覆われたためPASS"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/private/tmp/vibepro-340-recovery",
+    "actual_root": "/private/tmp/vibepro-340-recovery",
+    "expected_root": "/private/tmp/vibepro-340-recovery",
+    "expected_head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+    "current_head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+    "managed_worktree": {
+      "source_repo": "/private/tmp/vibepro-340-recovery-bootstrap",
+      "path": "/private/tmp/vibepro-340-recovery",
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "actual_branch": "codex/story-vibepro-classifier-premise-recovery",
+      "current_head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T15:52:47.815Z",
+  "git_context": {
+    "head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+    "current_branch": "codex/story-vibepro-classifier-premise-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T15:52:47.805Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final independent review is bound to the complete current HEAD after responsibility evidence correction"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "5d137f9785238c91ae43a4c02efc75c07e354e57",
+    "surface_files": [
+      {
+        "path": "README.md",
+        "sha256": "ddd700802aaca8ea2fa31842c64cd0e77a2ae777f6e635437be9e081f8678da5",
+        "size": 40107
+      },
+      {
+        "path": "src/adjudication.js",
+        "sha256": "a736aeb2f6fcb80ab921a9b147333f3ce40c71b4e6a1505596be3b184e491da6",
+        "size": 59249
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "530a3e60ed67ed20773961fcfc368e22099cc18d23661e3133d137b9b331f6b1",
+        "size": 187729
+      },
+      {
+        "path": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+        "sha256": "d7729521094182d7c10fb669fe898000edab33e6fae61f0e124cbcc7d21a88d9",
+        "size": 19258
+      },
+      {
+        "path": "test/judgment-adjudication.test.js",
+        "sha256": "8e58b0ba0d8e2dc0afd45ec7fca7edd9bade253a296154e6883034461dc4dfe5",
+        "size": 41897
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "08c0f2d722e0e56ebe62fd8815d28dae6f9199b6129164c184ca62724a7dbe56"
+  },
+  "source_fingerprint": "0aed642cbe9f0aa23226148c92e7531cdd6f0f5a2df01683eba07aa54ff847b3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "test_plan_e2e_security",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e-ux-5d137f97.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-classifier-premise-recovery/test_plan/transcripts/e2e-ux-5d137f97.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

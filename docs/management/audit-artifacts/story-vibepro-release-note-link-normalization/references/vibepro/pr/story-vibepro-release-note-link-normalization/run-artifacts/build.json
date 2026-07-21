@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "npm run docs:build",
+  "observed": {
+    "public_manual_files": 192,
+    "vitepress": "pass",
+    "dead_link_check": "pass",
+    "head": "cd21e65a"
+  }
+}

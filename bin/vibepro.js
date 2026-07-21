@@ -1,9 +1,21 @@
 #!/usr/bin/env node
+import { pathToFileURL } from 'node:url';
 import { runCli } from '../src/cli.js';
 
-const result = await runCli(process.argv.slice(2), {
-  stdout: process.stdout,
-  stderr: process.stderr
-});
+export function createEntrypointIo(runtime = process) {
+  return {
+    stdout: runtime.stdout,
+    stderr: runtime.stderr,
+    env: runtime.env
+  };
+}
 
-process.exitCode = result.exitCode;
+export async function main(argv = process.argv.slice(2), runtime = process) {
+  const result = await runCli(argv, createEntrypointIo(runtime));
+  runtime.exitCode = result.exitCode;
+  return result;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main();
+}

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, readdir, realpath, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -11,10 +11,13 @@ import {
   GuardedRunError,
   buildBootstrapBindingFingerprint,
   createGuardedRunSession,
-  renderGuardedRunError
+  renderGuardedRunError,
+  renderGuardedRunSummary
 } from '../src/guarded-run-session.js';
 import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
+import { createHumanDecision } from '../src/human-decision-checkpoint.js';
+import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -24,6 +27,15 @@ const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
 
 function stopReason(label) {
   return { code: label, message: `${label} message`, details: {} };
+}
+
+function fixtureHumanDecision() {
+  return {
+    type: 'clarification',
+    question: 'Choose the fixture boundary?',
+    material_reason: 'The answer changes the fixture execution boundary.',
+    impact_scope: ['fixture']
+  };
 }
 
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
@@ -51,7 +63,13 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
     to: 'waiting_for_human',
     reason: 'decision_required',
     stopReason: stopReason('decision_required'),
-    pendingDecision: { id: 'decision-1', prompt: 'Continue?' }
+    pendingDecision: {
+      type: 'clarification',
+      question: 'Continue?',
+      material_reason: 'The answer changes the selected implementation boundary.',
+      impact_scope: ['implementation'],
+      stop_node_id: 'spec_boundary'
+    }
   });
 
   assert.deepEqual(events, [
@@ -60,13 +78,268 @@ test('RCC-S-4 guarded Run persistence emits capsule refresh events after authori
   ]);
 });
 
+test('ARA-S-1 ARA-S-3 ARA-S-4 Guarded Run persists adapter state and bridges completed review provenance into Agent Review', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const reviews = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { return { provider_run_id: 'provider-review', agent_identity: 'reviewer-2', session_id: 'review-session', thread_id: 'review-thread' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { runtimeStatus = 'cancelled'; },
+    async collect_result() {
+      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'review pass', agent_identity: 'reviewer-2', lifecycle: 'closed' };
+    }
+  }] });
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: 'pass' }; }
+  });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const managedWorktree = run.execution_context.root_realpath;
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'fixture-runtime', task_id: 'review-runtime', role: 'review',
+      reviewer_identity: 'reviewer-2', implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session',
+      requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: managedWorktree }
+    }
+  });
+  assert.equal(started.state.runtime_dispatches[0].status, 'running');
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.result.review_provenance.lifecycle, 'closed');
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.runtime_dispatches[0].status, 'completed');
+  const gated = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'runtime review' }
+  });
+  assert.equal(gated.review.status, 'pass');
+  assert.equal(reviews[0].repo, managedWorktree);
+  assert.equal(reviews[0].review.executionMode, 'parallel_subagent');
+  assert.equal(reviews[0].review.agentId, 'reviewer-2');
+  assert.equal(reviews[0].review.agentClosed, true);
+  assert.equal(reviews[0].review.implementationSessionId, 'implementation-session');
+  assert.equal(run.current_head_sha, persisted.current_head_sha);
+});
+
+test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const nextHead = 'b'.repeat(40);
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+    async start() { return { provider_run_id: 'provider-implementation', agent_identity: 'implementer-1', session_id: 'implementation-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: ['src/change.js'], head_sha: nextHead, test_suggestions: ['node --test'], summary: 'implemented' }; }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+    }
+  });
+  fixture.setHead(fixture.source, nextHead);
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.result.head_sha, nextHead);
+  assert.equal(completed.state.current_head_sha, nextHead);
+  assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).current_head_sha, nextHead);
+});
+
+test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write' }; },
+    async start() { return { provider_run_id: 'provider-implementation', agent_identity: 'implementer-1' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: ['src/change.js'], head_sha: 'c'.repeat(40), test_suggestions: [], summary: 'implemented' }; }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+  });
+  fixture.setHead(fixture.source, 'b'.repeat(40));
+  runtimeStatus = 'completed';
+  await assert.rejects(session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id }), errorWithCode('runtime_head_mismatch'));
+});
+
+test('ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let runtimeStatus = 'running';
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only' }; },
+    async start() { return { provider_run_id: 'provider-review', agent_identity: 'reviewer-2', session_id: 'review-session' }; },
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', lifecycle: 'closed' }; }
+  }] });
+  let recordCalls = 0;
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator, recordAgentReview: async () => { recordCalls += 1; return { status: 'pass' }; } });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const started = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID,
+    request: { adapter_id: 'fixture-runtime', task_id: 'review-runtime', role: 'review', reviewer_identity: 'reviewer-2', implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+  });
+  runtimeStatus = 'completed';
+  await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  const stateFile = fixture.runFile(fixture.source, RUN_ID);
+  const validState = JSON.parse(await readFile(stateFile, 'utf8'));
+  const corruptions = [
+    (dispatch) => { dispatch.sandbox = 'workspace-write'; },
+    (dispatch) => { dispatch.requirements.capabilities.push('workspace_write'); },
+    (dispatch) => { dispatch.result.changed_files = ['src/forged.js']; },
+    (dispatch) => { dispatch.result.head_sha = 'f'.repeat(40); },
+    (dispatch) => { dispatch.result.review_provenance.execution_mode = 'manual_review'; },
+    (dispatch) => { dispatch.result.review_provenance.agent_identity = 'implementer-1'; },
+    (dispatch) => { dispatch.result.review_provenance.session_id = 'implementation-session'; },
+    (dispatch) => {
+      dispatch.reviewer_identity = 'forged-reviewer';
+      dispatch.agent_identity = 'forged-reviewer';
+      dispatch.result.review_provenance.agent_identity = 'forged-reviewer';
+    },
+    (dispatch) => {
+      dispatch.result.review_provenance.session_id = 'substituted-review-session';
+      dispatch.result.review_provenance.thread_id = 'substituted-review-thread';
+    }
+  ];
+  for (const corrupt of corruptions) {
+    const forged = structuredClone(validState);
+    corrupt(forged.runtime_dispatches[0]);
+    await writeFile(stateFile, `${JSON.stringify(forged, null, 2)}\n`);
+    await assert.rejects(session.recordRuntimeReview(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id, review: { status: 'pass' } }), errorWithCode('invalid_runtime_review'));
+  }
+  assert.equal(recordCalls, 0);
+});
+
+test('HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: { ...fixtureHumanDecision(), stop_node_id: 'pr_prepare' }
+  });
+  await assert.rejects(session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('decision_answer_required'));
+  const unchanged = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(unchanged.status, 'waiting_for_human');
+  const resumed = await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: waiting.pending_decision.decision_id,
+    answer: 'keep the boundary',
+    answeredBy: 'operator',
+    reflectedIn: ['docs/specs/example.md']
+  });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).decision_id, waiting.pending_decision.decision_id);
+  assert.equal(resumed.human_decision_journal.at(-1).stop_node_id, 'pr_prepare');
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+  assert.deepEqual(resumed.human_decision_journal.at(-1).reflected_in, ['docs/specs/example.md']);
+});
+
+test('HDC-S-3 waiting Run is side-effect free until the human decision is answered', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => { autopilotCalls += 1; return {}; }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: fixtureHumanDecision()
+  });
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.deepEqual(result.plan, []);
+  assert.deepEqual(result.state, waiting);
+  assert.equal(prepareCalls, 0);
+  assert.equal(autopilotCalls, 0);
+});
+
+test('HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = fixture.dependencies();
+  const session = createGuardedRunSession(dependencies);
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const waiting = await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'waiting_for_human',
+    reason: 'material_scope_decision',
+    stopReason: stopReason('material_scope_decision'),
+    pendingDecision: fixtureHumanDecision()
+  });
+  const stdout = capture();
+
+  const result = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--decision', waiting.pending_decision.decision_id,
+    '--answer', 'keep the current boundary', '--answered-by', 'operator',
+    '--reflected-in', 'docs/specs/example.md,docs/architecture/example.md', '--json'
+  ], { stdout, stderr: capture(), guardedRunDependencies: dependencies });
+
+  assert.equal(result.exitCode, 0);
+  const resumed = JSON.parse(stdout.text());
+  assert.equal(resumed.run_id, RUN_ID);
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).decision_id, waiting.pending_decision.decision_id);
+  assert.deepEqual(resumed.human_decision_journal.at(-1).reflected_in, [
+    'docs/specs/example.md',
+    'docs/architecture/example.md'
+  ]);
+
+  const restarted = createGuardedRunSession(dependencies);
+  const persistedRun = await restarted.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const decisionsDir = path.join(fixture.source, '.vibepro', 'executions', STORY_ID, 'runs', RUN_ID, 'decisions');
+  const index = JSON.parse(await readFile(path.join(decisionsDir, 'index.json'), 'utf8'));
+  const indexed = index.decisions.find((item) => item.decision_id === waiting.pending_decision.decision_id);
+  const persistedDecision = JSON.parse(await readFile(path.join(decisionsDir, `${indexed.decision_id}.json`), 'utf8'));
+  const journalEntry = persistedRun.human_decision_journal.find((item) => item.decision_id === indexed.decision_id);
+
+  assert.equal(indexed.status, 'resolved');
+  assert.equal(persistedDecision.question, fixtureHumanDecision().question);
+  assert.equal(persistedDecision.answer, 'keep the current boundary');
+  assert.equal(journalEntry.answered_by, 'operator');
+  assert.equal(journalEntry.answered_at, persistedDecision.answered_at);
+  assert.deepEqual(journalEntry.reflected_in, persistedDecision.reflected_in);
+});
+
 test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
   const created = await session.run(fixture.source, { storyId: STORY_ID });
 
   assert.deepEqual(created, {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     run_id: RUN_ID,
     story_id: STORY_ID,
     target: 'pr_ready',
@@ -88,6 +361,9 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
       git_dir_realpath: fixture.identity(fixture.source).git_dir_realpath
     },
     managed_worktree: fixture.disabledBinding,
+    action_journal: [],
+    next_best_action_decisions: [],
+    human_decision_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -127,6 +403,35 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact 
   assert.equal(repairAfter.updated_at, repairBefore.updated_at);
   assert.deepEqual(repairAfter.transitions, repairBefore.transitions);
   await assert.rejects(stat(fixture.runFile(fixture.managed, RUN_ID)), { code: 'ENOENT' });
+});
+
+test('Portfolio creation request identity returns the same guarded Run exactly once', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const creationRequestId = 'portfolio-0123456789abcdef01234567';
+  const created = await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  const retried = await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  assert.equal(created.run_id, retried.run_id);
+  assert.equal(retried.creation_request_id, creationRequestId);
+  const entries = await readdir(path.dirname(fixture.runFile(fixture.source, created.run_id)));
+  assert.ok(entries.includes('state.json'));
+});
+
+test('Portfolio creation request fails closed when any Run candidate is corrupt', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const creationRequestId = 'portfolio-0123456789abcdef01234567';
+  await session.run(fixture.source, { storyId: STORY_ID, creationRequestId });
+  const corruptRunId = 'run-20260715T010204Z-05060708';
+  const corruptFile = fixture.runFile(fixture.source, corruptRunId);
+  await mkdir(path.dirname(corruptFile), { recursive: true });
+  await writeFile(corruptFile, '{not-json\n');
+  await assert.rejects(
+    session.run(fixture.source, { storyId: STORY_ID, creationRequestId }),
+    (cause) => cause.code === 'creation_request_scan_blocked'
+      && cause.details.run_id === corruptRunId
+      && cause.details.artifact === corruptFile
+  );
 });
 
 test('GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority', async (t) => {
@@ -902,7 +1207,7 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
   const allows = (from, to) => {
     if (from === 'pr_ready') return to === 'pr_ready';
     if (from === 'cancelled') return false;
-    if (from === 'failed' && to === 'running') return false;
+    if ((from === 'failed' || from === 'waiting_for_human') && to === 'running') return false;
     if (from === 'running') return recoverable.has(to) || to === 'cancelled' || to === 'pr_ready';
     return to === 'running'
       || (recoverable.has(to) && to !== from)
@@ -922,7 +1227,8 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
           runId: RUN_ID,
           to: from,
           reason: `fixture_to_${from}`,
-          ...(setupStopReason ? { stopReason: setupStopReason } : {})
+          ...(setupStopReason ? { stopReason: setupStopReason } : {}),
+          ...(from === 'waiting_for_human' ? { pendingDecision: fixtureHumanDecision() } : {})
         });
       }
       const artifact = fixture.runFile(fixture.source, RUN_ID);
@@ -934,7 +1240,8 @@ test('GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transitio
           runId: RUN_ID,
           to,
           reason: 'fixture_matrix',
-          ...(recoverable.has(to) ? { stopReason: expectedStopReason } : {})
+          ...(recoverable.has(to) ? { stopReason: expectedStopReason } : {}),
+          ...(to === 'waiting_for_human' ? { pendingDecision: fixtureHumanDecision() } : {})
         });
         assert.equal(result.status, to, `${from} -> ${to}`);
         if (recoverable.has(to) || to === 'running' || to === 'pr_ready') {
@@ -1165,6 +1472,7 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(created);
   delete predecessor.schema_version;
+  delete predecessor.action_journal;
   predecessor.attempt = 7;
   predecessor.budget = { max_attempts: 2, max_iterations: 8 };
   predecessor.deadline = '2026-08-01T00:00:00.000Z';
@@ -1182,7 +1490,8 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   });
   await writeFile(artifact, `${JSON.stringify(predecessor, null, 2)}\n`);
   const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
-  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.schema_version, '0.2.0');
+  assert.deepEqual(migrated.action_journal, []);
   assert.equal(migrated.attempt, 7);
   assert.deepEqual(migrated.budget, predecessor.budget);
   assert.equal(migrated.deadline, predecessor.deadline);
@@ -1209,11 +1518,13 @@ test('GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing f
   const artifact = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(canonicalCancelled);
   predecessor.schema_version = '0.0.0';
+  delete predecessor.action_journal;
   const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
   await writeFile(artifact, predecessorRaw);
 
   const migrated = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
-  assert.equal(migrated.schema_version, '0.1.0');
+  assert.equal(migrated.schema_version, '0.2.0');
+  assert.deepEqual(migrated.action_journal, []);
   assert.equal(migrated.updated_at, predecessor.updated_at);
   assert.deepEqual(migrated.transitions, predecessor.transitions);
   const canonicalRaw = await readFile(artifact, 'utf8');
@@ -1238,6 +1549,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
   const mirrorFile = fixture.runFile(fixture.source, RUN_ID);
   const predecessor = structuredClone(created);
   delete predecessor.schema_version;
+  delete predecessor.action_journal;
   const predecessorRaw = `${JSON.stringify(predecessor, null, 2)}\n`;
   await Promise.all([writeFile(authorityFile, predecessorRaw), writeFile(mirrorFile, predecessorRaw)]);
 
@@ -1257,7 +1569,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
     failing.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
     errorWithCode('linked_copy_sync_failed')
   );
-  assert.equal(JSON.parse(await readFile(authorityFile, 'utf8')).schema_version, '0.1.0');
+  assert.equal(JSON.parse(await readFile(authorityFile, 'utf8')).schema_version, '0.2.0');
   assert.equal(await readFile(mirrorFile, 'utf8'), predecessorRaw);
 
   const session = fixture.session();
@@ -1270,7 +1582,7 @@ test('GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority onc
     runId: RUN_ID,
     repairLinkedCopy: true
   });
-  assert.equal(repaired.schema_version, '0.1.0');
+  assert.equal(repaired.schema_version, '0.2.0');
   assert.equal(await readFile(authorityFile, 'utf8'), await readFile(mirrorFile, 'utf8'));
   assert.deepEqual(repaired.transitions, created.transitions);
 });
@@ -1391,6 +1703,9 @@ test('GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition', 
   const mirrorAfter = await readFile(mirrorFile, 'utf8');
   assert.equal(authorityAfter, mirrorAfter);
   assert.deepEqual(JSON.parse(authorityAfter), completed);
+  const terminalReplay = await ready.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(terminalReplay.state.status, 'pr_ready');
+  assert.deepEqual(terminalReplay.state.next_best_action_decisions, []);
 });
 
 test('GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON', async (t) => {
@@ -1535,7 +1850,9 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
-  assert.match(stdout.text(), /このコマンドは状態を永続化するだけで、agentやactionを実行しません/);
+  assert.match(stdout.text(), /--until 未指定時は状態の永続化だけ/);
+  assert.match(stdout.text(), /--until pr-ready 指定時はallowlist済みrepo-local Actionだけ/);
+  assert.match(stdout.text(), /resumeは--until pr-readyを受け付け.*未完了のallowlist済みActionだけを再試行/);
   assert.match(stdout.text(), /watchは現在値を1回返して終了するsnapshotです/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
   assert.match(stdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1554,7 +1871,9 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(englishStdout.text(), /Without --run-id, execute status keeps the legacy status contract/);
   assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
-  assert.match(englishStdout.text(), /This command only persists state; it does not dispatch agents or execute actions/);
+  assert.match(englishStdout.text(), /Without --until this command only persists state/);
+  assert.match(englishStdout.text(), /--until pr-ready executes only allowlisted repo-local Actions/);
+  assert.match(englishStdout.text(), /resume accepts --until pr-ready to retry only incomplete allowlisted Actions/);
   assert.match(englishStdout.text(), /watch returns one current snapshot and exits; it does not stream/);
   assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
   assert.match(englishStdout.text(), /vibepro execute watch \[repo\].*--repair-linked-copy/);
@@ -1724,9 +2043,559 @@ test('GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes 
   assert.match(humanCancel.stdout, /status: cancelled/);
 });
 
-test('GRS-S-9 INV-004 guarded Run source surface excludes action/runtime/waiver/merge imports and service replacement', async () => {
+test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(prepareCalls, 1);
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.deepEqual(result.state.stop_reason.details.recovery.missing_kinds, ['unit']);
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
+  assert.equal(result.state.next_best_action_decisions.length, 1);
+  assert.equal(result.state.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal(JSON.stringify(result.state.next_best_action_decisions).includes('transcript'), false);
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+  assert.deepEqual((await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(cancelled.action_journal, result.state.action_journal);
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const cancelledBytes = await readFile(artifact, 'utf8');
+  assert.deepEqual((await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).action_journal, result.state.action_journal);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+  const cancelledReplay = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(cancelledReplay.state.status, 'cancelled');
+  assert.equal(prepareCalls, 1);
+  assert.equal(await readFile(artifact, 'utf8'), cancelledBytes);
+});
+
+test('NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+
+  const decision = result.state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(result.state.status, 'waiting_for_human');
+  assert.match(result.state.pending_decision.decision_id, /^decision-[0-9a-f]{16}$/);
+  assert.equal(result.state.pending_decision.stop_node_id, 'pr_prepare');
+  assert.equal(result.state.pending_decision.type, decision.selected_action_id === 'split' ? 'scope_split' : 'clarification');
+  assert.equal(result.state.stop_reason.code, 'next_best_action_escape');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /--decision decision-[0-9a-f]{16} --answer <answer>/);
+  assert.equal(result.state.action_journal.length, 0);
+  assert.equal(prepareCalls, 0);
+  assert.deepEqual(
+    (await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }))
+      .next_best_action_decisions.at(-1),
+    decision
+  );
+  const resumed = await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: result.state.pending_decision.decision_id,
+    answer: 'continue with the selected recovery action'
+  });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.human_decision_journal.at(-1).stop_node_id, 'pr_prepare');
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+
+  const continued = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.plan[0].node_id, 'pr_prepare');
+  assert.equal(continued.state.resume_from_node_id, null);
+  assert.equal(prepareCalls, 1);
+});
+
+test('HDC-S-3 resume rejects a different pending decision without mutating the waiting Run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const escaped = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+  const unrelated = await createHumanDecision(fixture.source, escaped.state, {
+    ...fixtureHumanDecision(),
+    type: 'external_side_effect',
+    material_reason: 'An unrelated external side effect requires separate approval.'
+  });
+
+  await assert.rejects(session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: unrelated.decision_id,
+    answer: 'approve unrelated decision'
+  }), { code: 'decision_pending_mismatch' });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.status, 'waiting_for_human');
+  assert.equal(persisted.pending_decision.decision_id, escaped.state.pending_decision.decision_id);
+  assert.deepEqual(persisted.human_decision_journal, []);
+});
+
+test('HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const failing = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      throw new Error('simulated crash before action checkpoint');
+    }
+  });
+  await failing.run(fixture.source, { storyId: STORY_ID });
+  const escaped = await failing.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+  const resumed = await failing.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: escaped.state.pending_decision.decision_id,
+    answer: 'retry the canonical action'
+  });
+  assert.equal(resumed.resume_from_node_id, 'pr_prepare');
+
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const withHistoricalCheckpoint = JSON.parse(await readFile(artifact, 'utf8'));
+  withHistoricalCheckpoint.action_journal.push({
+    action_id: 'pr_prepare',
+    node_id: 'pr_prepare',
+    input_head_sha: 'historical-head',
+    output_head_sha: 'historical-head',
+    idempotency_key: 'historical-checkpoint',
+    status: 'completed',
+    artifact: 'historical-prepare.json',
+    result_summary: 'completed on an older HEAD',
+    started_at: FIRST_TIME,
+    completed_at: FIRST_TIME
+  });
+  await writeFile(artifact, `${JSON.stringify(withHistoricalCheckpoint, null, 2)}\n`);
+
+  const failed = await failing.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(failed.state.status, 'failed');
+  assert.equal(failed.state.resume_from_node_id, 'pr_prepare');
+  assert.equal(prepareCalls, 1);
+
+  const restarted = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      return { artifacts: { json: 'prepare.json' } };
+    },
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  const retry = await restarted.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(retry.resume_from_node_id, 'pr_prepare');
+  const continued = await restarted.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.plan[0].node_id, 'pr_prepare');
+  assert.equal(continued.state.resume_from_node_id, null);
+  assert.equal(prepareCalls, 2);
+});
+
+test('NBA persisted legacy decisions omit additive fields while malformed present fields fail closed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({ status: 'continue', artifact: 'prepare.json' })
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const legacy = structuredClone(result.state);
+  delete legacy.next_best_action_decisions[0].state_delta;
+  delete legacy.next_best_action_decisions[0].reused;
+  await writeFile(artifact, `${JSON.stringify(legacy, null, 2)}\n`);
+
+  const readback = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(readback.next_best_action_decisions[0].selected_action_id, 'pr_prepare');
+  assert.equal('state_delta' in readback.next_best_action_decisions[0], false);
+  assert.equal('reused' in readback.next_best_action_decisions[0], false);
+
+  for (const mutate of [
+    (decision) => { decision.state_delta = { raw_transcript: 'forbidden' }; },
+    (decision) => { decision.reused = 'yes'; }
+  ]) {
+    const malformed = structuredClone(legacy);
+    mutate(malformed.next_best_action_decisions[0]);
+    const malformedBytes = `${JSON.stringify(malformed, null, 2)}\n`;
+    await writeFile(artifact, malformedBytes);
+    await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }));
+    assert.equal(await readFile(artifact, 'utf8'), malformedBytes);
+  }
+});
+
+test('NBA rollback switch ignores escape handling and restores the complete canonical plan', async (t) => {
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return { artifacts: { json: 'prepare.json' } }; },
+    safeAutopilotPullRequest: async () => { autopilotCalls += 1; return { status: 'continue', artifact: 'prepare.json' }; }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+
+  const result = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2
+  });
+
+  assert.equal(result.state.next_best_action_decisions.at(-1).selection_reason, 'no_progress_escape');
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 1);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.notEqual(result.state.status, 'waiting_for_human');
+});
+
+test('SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail', () => {
+  const summary = renderGuardedRunSummary({
+    run_id: RUN_ID,
+    story_id: STORY_ID,
+    target: 'pr_ready',
+    autonomy_mode: 'guarded',
+    status: 'waiting_for_human',
+    attempt: 1,
+    iteration: 0,
+    current_head_sha: 'a'.repeat(40),
+    execution_context: { authority_kind: 'repository', root_realpath: '/tmp/repo with space' },
+    action_journal: [],
+    next_best_action_decisions: [{
+      selected_action_id: 'ask',
+      checkpoint_reason: 'no_progress',
+      no_progress_count: 2
+    }],
+    transitions: [],
+    stop_reason: {
+      code: 'human_judgment_required',
+      message: 'human_judgment_required',
+      details: {
+        recovery: {
+          failed_kinds: ['integration'],
+          judgments: [{ kind: 'scope', reason: 'choose a boundary' }],
+          required_actions: ['record current evidence'],
+          failure: 'autopilot interrupted',
+          next_command: `vibepro execute resume '/tmp/repo with space' --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
+        }
+      }
+    }
+  });
+
+  assert.match(summary, /judgment: scope - choose a boundary/);
+  assert.match(summary, /failed: integration/);
+  assert.match(summary, /required_action: record current evidence/);
+  assert.match(summary, /failure: autopilot interrupted/);
+  assert.match(summary, /next_command: vibepro execute resume '\/tmp\/repo with space' .*--until pr-ready/);
+  assert.match(summary, /next_best_action: ask \(checkpoint=no_progress; no_progress=2\)/);
+});
+
+test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({ artifacts: { json: 'prepare.json' } }),
+    safeAutopilotPullRequest: async () => ({
+      status: 'waiting_for_runtime',
+      stop_reason: 'runtime_required',
+      artifact: 'prepare.json',
+      recovery: { missing_kinds: ['unit'] }
+    })
+  };
+  const started = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(started.exitCode, 0);
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const escaped = capture();
+  const escapedError = capture();
+  const escapedResult = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: escaped, stderr: escapedError, guardedRunDependencies: dependencies });
+  assert.equal(escapedResult.exitCode, 0, escapedError.text());
+
+  const decision = JSON.parse(escaped.text()).state.next_best_action_decisions.at(-1);
+  assert.equal(decision.checkpoint_reason, 'no_progress');
+  assert.equal(decision.no_progress_count, 2);
+  assert.equal(decision.selection_reason, 'no_progress_escape');
+  assert.equal(['rediagnose', 'split', 'ask', 'stop'].includes(decision.selected_action_id), true);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /status: waiting_for_human/);
+  assert.match(human.text(), /required_action: resolve controller escape action:/);
+  assert.equal(human.text().includes(`next_command: vibepro execute resume ${fixture.source}`), true);
+  assert.match(human.text(), /next_best_action: .*checkpoint=no_progress; no_progress=2/);
+});
+
+test('SAO-S-5 verification block persists failed kinds for public JSON and human status', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => ({}),
+    safeAutopilotPullRequest: async () => ({
+      status: 'blocked',
+      stop_reason: 'verification_failed',
+      recovery: { failed_kinds: ['integration'] }
+    })
+  };
+  const json = capture();
+  await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: json, stderr: capture(), guardedRunDependencies: dependencies });
+  const state = JSON.parse(json.text()).state;
+  assert.equal(state.stop_reason.code, 'verification_failed');
+  assert.deepEqual(state.stop_reason.details.recovery.failed_kinds, ['integration']);
+
+  const human = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: human, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(human.text(), /failed: integration/);
+  assert.match(human.text(), /next_command: vibepro execute resume .*--until pr-ready/);
+});
+
+test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const dependencies = {
+    ...fixture.dependencies(),
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return {
+        status: 'waiting_for_runtime',
+        stop_reason: 'runtime_required',
+        recovery: { missing_kinds: ['unit'] }
+      };
+    }
+  };
+  const runOut = capture();
+  const first = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: runOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(first.exitCode, 0);
+  assert.equal(JSON.parse(runOut.text()).state.status, 'failed');
+
+  const resumeOut = capture();
+  const resumed = await runCli([
+    'execute', 'resume', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--until', 'pr-ready', '--json'
+  ], { stdout: resumeOut, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(resumed.exitCode, 0);
+  const result = JSON.parse(resumeOut.text()).state;
+  assert.equal(result.status, 'waiting_for_runtime');
+  assert.equal(result.stop_reason.code, 'runtime_required');
+  assert.equal(result.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(result.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
+  const humanStatus = capture();
+  await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: humanStatus, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.match(humanStatus.text(), /missing: unit/);
+  assert.match(humanStatus.text(), new RegExp(`execute resume ${fixture.source.replaceAll('/', '\\/')} .*--until pr-ready`));
+});
+
+test('SAO-S-2 action checkpoint survives a later action failure', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session({
+    preparePullRequest: async () => ({}),
+    safeAutopilotPullRequest: async () => { throw new Error('autopilot interrupted'); }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'failed');
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.status), ['completed', 'failed']);
+  assert.deepEqual(await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), result.state);
+});
+
+test('SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  let autopilotCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => { prepareCalls += 1; return {}; },
+    safeAutopilotPullRequest: async () => {
+      autopilotCalls += 1;
+      if (autopilotCalls === 1) throw new Error('transient interruption');
+      return { status: 'waiting_for_runtime', stop_reason: 'runtime_required' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const failed = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(failed.state.status, 'failed');
+
+  await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const retried = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(retried.state.status, 'waiting_for_runtime');
+  assert.equal(retried.state.attempt, 2);
+  assert.equal(prepareCalls, 1);
+  assert.equal(autopilotCalls, 2);
+  assert.deepEqual(retried.state.action_journal.map((entry) => entry.status), [
+    'completed', 'failed', 'completed'
+  ]);
+  assert.match(renderGuardedRunSummary(retried.state), /pr_autopilot_safe \(completed\): runtime_required/);
+});
+
+test('SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      return prepareCalls === 1
+        ? {}
+        : { preparation: { gate_status: { ready_for_pr_create: false } } };
+    },
+    safeAutopilotPullRequest: async () => {
+      fixture.setHead(fixture.source, 'changed-head');
+      return { status: 'pr_ready' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(prepareCalls, 2);
+  assert.equal(result.state.current_head_sha, 'changed-head');
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_required');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.stop_reason.details.recovery.required_actions, []);
+  assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), [
+    'pr_prepare', 'pr_autopilot_safe', 'rebind_head', 'pr_prepare_current_head'
+  ]);
+});
+
+test('SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      if (prepareCalls === 2) throw new Error('Gate storage unavailable');
+      return {};
+    },
+    safeAutopilotPullRequest: async () => {
+      fixture.setHead(fixture.source, 'changed-head');
+      return { status: 'pr_ready' };
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'failed');
+  assert.equal(result.state.current_head_sha, 'changed-head');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_failed');
+  assert.equal(result.state.stop_reason.details.recovery.failure, 'Gate storage unavailable');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.deepEqual(result.state.action_journal.map((entry) => [entry.action_id, entry.status]), [
+    ['pr_prepare', 'completed'],
+    ['pr_autopilot_safe', 'completed'],
+    ['rebind_head', 'completed'],
+    ['pr_prepare_current_head', 'failed']
+  ]);
+  assert.deepEqual(persisted, result.state);
+});
+
+test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let bootstrapCalls = 0;
+  let actionCalls = 0;
+  const dependencies = {
+    ...fixture.dependencies(),
+    startExecution: async () => { bootstrapCalls += 1; },
+    preparePullRequest: async () => { actionCalls += 1; },
+    safeAutopilotPullRequest: async () => { actionCalls += 1; }
+  };
+  const stdout = capture();
+  const result = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--dry-run', '--json'
+  ], { stdout, stderr: capture(), guardedRunDependencies: dependencies });
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(JSON.parse(stdout.text()).plan.map((item) => item.id), ['pr_prepare', 'pr_autopilot_safe']);
+  assert.equal(bootstrapCalls, 0);
+  assert.equal(actionCalls, 0);
+  await assert.rejects(access(fixture.runFile(fixture.source, RUN_ID)));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'execution-state.json')));
+  await assert.rejects(access(path.join(fixture.source, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json')));
+
+  const human = capture();
+  const humanError = capture();
+  const humanResult = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'pr-ready', '--dry-run'
+  ], { stdout: human, stderr: humanError, guardedRunDependencies: dependencies });
+  assert.equal(humanResult.exitCode, 0, humanError.text());
+  assert.match(human.text(), /Planned Actions/);
+  assert.match(human.text(), /pr_prepare \(repo_local_safe\)/);
+  assert.match(human.text(), /pr_autopilot_safe \(repo_local_safe\)/);
+
+  const stderr = capture();
+  const invalid = await runCli([
+    'execute', 'run', fixture.source, '--story-id', STORY_ID,
+    '--until', 'merge', '--json'
+  ], { stdout: capture(), stderr, guardedRunDependencies: dependencies });
+  assert.equal(invalid.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'invalid_until');
+  assert.equal(bootstrapCalls, 0);
+});
+
+test('GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement', async () => {
   const source = await readFile(new URL('../src/guarded-run-session.js', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager|action).*['"]/i);
+  assert.doesNotMatch(source, /from ['"].*(agent|runtime|waiver|merge-manager).*['"]/i);
+  assert.match(source, /from ['"].*safe-action-orchestrator\.js['"]/i);
   assert.doesNotMatch(source, /guardedRunSession|guardedRunService/);
   assert.match(source, /artifactIo/);
   assert.match(source, /readdir/);

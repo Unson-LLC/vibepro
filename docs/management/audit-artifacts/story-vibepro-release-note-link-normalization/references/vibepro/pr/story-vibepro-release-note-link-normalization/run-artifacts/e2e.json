@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js test/post-merge-release.test.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js",
+  "observed": {
+    "pr_350_shaped_projection": "canonical_blob_url across EN, JA, and CHANGELOG",
+    "dead_link_check": "pass",
+    "head": "cd21e65a",
+    "tests": 32,
+    "failed": 0,
+    "ge_005": "existing continuous-release E2E accepts the strengthened merged/main canonical GitHub event contract",
+    "flow_replay": "story-bound PR #350 projection, real project/reproject/release-body subprocesses, malformed payload rejection, and the existing continuous-release E2E pass together",
+    "artifact_replay": "three temporary projected release surfaces, two temporary indexes, then the committed 192-file public manual",
+    "scenario_clause_e2e": "AC-1 AC-2 AC-3 AC-4 RNLN-001 RNLN-003 RNLN-005",
+    "release_note": "PR #350-shaped release note is projected into English, Japanese, and CHANGELOG surfaces",
+    "rollout_plan": "merge-triggered projection runs on main with docs build as the release guard",
+    "rollback_instruction": "revert the normalizer and reproject a trusted live merged-PR payload through the docs-only command",
+    "observability_evidence": "32 passing assertions observe all projection CLI paths, CI output isolation, backslash-safe serialization, positive-integer PR rejection, normalized links, protected destinations, three release surfaces, and idempotent PR markers"
+  }
+}

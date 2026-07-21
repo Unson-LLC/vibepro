@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "tests": 1445,
+  "pass": 1445,
+  "fail": 0,
+  "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+  "artifact": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite.tap",
+  "execution_context": "unsandboxed: socket bind and user npm cache required by existing regression tests"
+}

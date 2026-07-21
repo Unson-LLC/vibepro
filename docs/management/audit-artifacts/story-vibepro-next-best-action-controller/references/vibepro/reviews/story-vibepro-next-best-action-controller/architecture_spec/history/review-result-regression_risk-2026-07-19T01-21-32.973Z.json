@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Execution contract, rollback, atomic escape, and additive compatibility pass on exact HEAD",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected architecture/spec, controller, guarded-run persistence and rollback paths; focused 85 tests passed",
+    "evidence": null,
+    "inputs": [
+      "docs/architecture/story-vibepro-next-best-action-controller.md",
+      "docs/specs/story-vibepro-next-best-action-controller.md",
+      "src/guarded-run-session.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior contract and rollback findings -> resolved by aligned suffix/escape contract, pre-escape off switch, atomic escape commit, and legacy additive-field compatibility"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller",
+    "expected_head_sha": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+    "current_head_sha": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-next-best-action-controller",
+      "branch": "codex/story-vibepro-next-best-action-controller",
+      "actual_branch": "codex/story-vibepro-next-best-action-controller",
+      "current_head_sha": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-19T01:21:32.973Z",
+  "git_context": {
+    "head_sha": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+    "current_branch": "codex/story-vibepro-next-best-action-controller",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T01:21:32.966Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final implementation head review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ee5ec31ca070a03abe8f4e0564acde6aaf41709a",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-next-best-action-controller.md",
+        "sha256": "7c0ff13eec296c7114e500f76eebf4ac898a512b6d3afb7a46291b00b7cbd4c9",
+        "size": 3623
+      },
+      {
+        "path": "docs/specs/story-vibepro-next-best-action-controller.md",
+        "sha256": "a0c04d9cdadf54a1fc55011f583923d6aecad6eccacb469b91846fdabe0f85f1",
+        "size": 4216
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "e26efb7c6beae07e62359c7df4e186c9cb5b734c3f45d5eaa97c9214bf7db770",
+        "size": 62375
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a116790190ebe6b6aec4c5bbf6839ee38a79369df32a2b5c54276b4027b70c75"
+  },
+  "source_fingerprint": "553659368817ac6c32b7c58cb1fedb03270cbeb1d44593ecc0c9cecd9ef492e1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_arch_regression_v3",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

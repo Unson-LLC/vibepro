@@ -1,0 +1,597 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+  "updated_at": "2026-07-19T01:11:58.676Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "expected_root": null,
+      "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784423518676-c607d7ff",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Recovery has a deterministic operator-visible rollout and rollback path",
+      "reason": "No pre-merge operator action is required. The workflow publishes its outcome in GitHub Actions; post-merge rollout is explicitly observed there, failure is rerunnable, and rollback is the single recovery commit. Cloudflare credentials are an external repository precondition, not hidden implementation state.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-8d9acc3e.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+          "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:11:58.665Z"
+      },
+      "recorded_at": "2026-07-19T01:11:58.676Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422632332-b32ef824",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Independent scope reviewer confirms one-reviewer coherence",
+      "reason": "All six paths implement and prove one clean-source recovery boundary; independent pr_split_scope review passed at current HEAD.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "current_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:57:12.331Z"
+      },
+      "recorded_at": "2026-07-19T00:57:12.332Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422631599-396052d3",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Accept Story-local design lineage for focused recovery",
+      "reason": "The Story is registered in .vibepro config and its dedicated Architecture and Spec are linked by story id; no shared Design SSOT root is changed or contradicted.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-post-merge-docs-clean-worktree.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "current_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:57:11.598Z"
+      },
+      "recorded_at": "2026-07-19T00:57:11.600Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422630872-a2bc0a80",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep recovery as one atomic PR",
+      "reason": "The exact ignore rule, its regression proof, and Story/Architecture/Spec traceability form one deploy-safety change; splitting creates incomplete intermediate states.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "current_head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "19b5b8cac33d33c31d977185d1d539be6c2ae5fb",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:57:10.870Z"
+      },
+      "recorded_at": "2026-07-19T00:57:10.872Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422197492-e7f61746",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path is GitHub Actions summary plus deterministic rerun",
+      "reason": "The Story documents rollout, rollback, observed failure, recovery summary, and the external Cloudflare credential precondition; npm and GitHub Release reconciliation are unchanged.",
+      "reviewer": "docs_recovery_release_risk",
+      "artifact": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "current_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:49:57.490Z"
+      },
+      "recorded_at": "2026-07-19T00:49:57.492Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422196776-9e2569f3",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "Roll out by merge and roll back by reverting the single recovery commit",
+      "reason": "The change is one additive ignore rule plus tests/docs; no stored state, feature gate, API, npm version, or migration changes.",
+      "reviewer": "docs_recovery_review",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "current_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:49:56.774Z"
+      },
+      "recorded_at": "2026-07-19T00:49:56.776Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784422196118-12874889",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep the clean-source fix, regression test, and Story/Spec in one atomic PR",
+      "reason": "Independent scope review found splitting .gitignore from its regression proof and traceability would create incomplete intermediate PRs; all six paths serve one recovery invariant.",
+      "reviewer": "docs_recovery_scope",
+      "artifact": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "current_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T00:49:56.117Z"
+      },
+      "recorded_at": "2026-07-19T00:49:56.118Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "open": 0,
+    "by_type": {
+      "needs_review": 7
+    },
+    "by_status": {
+      "accepted": 7
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "expected_root": null,
+        "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+        "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784423518676-c607d7ff",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Recovery has a deterministic operator-visible rollout and rollback path",
+      "reason": "No pre-merge operator action is required. The workflow publishes its outcome in GitHub Actions; post-merge rollout is explicitly observed there, failure is rerunnable, and rollback is the single recovery commit. Cloudflare credentials are an external repository precondition, not hidden implementation state.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-8d9acc3e.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+          "expected_root": null,
+          "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+          "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+        "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:11:58.665Z"
+      },
+      "recorded_at": "2026-07-19T01:11:58.676Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-post-merge-docs-clean-worktree/decision-records.json"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "tests": 59,
+  "passed": 59,
+  "failed": 0,
+  "command": "node --test test/review-finding-repair-loop.test.js test/agent-runtime-adapter.test.js test/design-ssot.test.js",
+  "head_sha": "0a3aa7a5"
+}
