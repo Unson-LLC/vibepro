@@ -167,8 +167,8 @@
     {
       "id": "S-005",
       "type": "scenario",
-      "statement": "The focused implementation tests cover identity validation, mismatch handling, mixed-parent bucket partitioning, unattributed retention, evidence propagation, session-cost attribution, and bounded handoff lineage.",
-      "rationale": "ERAL-S-10 acceptance criterion; no separate ERAL E2E test exists in the repository.",
+      "statement": "Focused tests and an end-to-end fixture cover identity validation, mismatch handling, mixed-parent bucket partitioning, unattributed retention, Guarded Run dispatch, evidence propagation, canonical Run session-cost attribution, and transcript-free bounded handoff lineage.",
+      "rationale": "ERAL-S-10 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }],
         "code_refs": [{ "file": "src/run-lineage.js", "anchor": "RunLineageError" }],
@@ -176,7 +176,8 @@
           { "file": "test/run-lineage.test.js", "case": "rejects malformed and mismatched bindings with typed errors" },
           { "file": "test/run-lineage-evidence-propagation.test.js", "case": "authoritative evidence recorders inherit validated Run lineage additively" },
           { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed" },
-          { "file": "test/run-context-capsule-lineage.test.js", "case": "ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage" }
+          { "file": "test/run-context-capsule-lineage.test.js", "case": "ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage" },
+          { "file": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js", "case": "ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction" }
         ]
       }
     },
