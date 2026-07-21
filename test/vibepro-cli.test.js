@@ -20259,11 +20259,11 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--json'
   ])).exitCode, 0);
   const keywordOnlyPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
-  assert.notEqual(
+  assert.equal(
     keywordOnlyPrepare.result.preparation.pr_context.gate_dag.nodes
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'parse_failure').status,
-    'covered',
+    'not_required',
     'a mode ID without a concrete malformed-input assertion must not masquerade as an executed negative-path assertion'
   );
 
@@ -20280,11 +20280,11 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--json'
   ])).exitCode, 0);
   const happyPathPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
-  assert.notEqual(
+  assert.equal(
     happyPathPrepare.result.preparation.pr_context.gate_dag.nodes
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'parse_failure').status,
-    'covered',
+    'not_required',
     'a successful malformed-input claim must not be interpreted as rejection coverage'
   );
 
@@ -20301,12 +20301,54 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--json'
   ])).exitCode, 0);
   const negatedParsePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
-  assert.notEqual(
+  assert.equal(
     negatedParsePrepare.result.preparation.pr_context.gate_dag.nodes
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'parse_failure').status,
-    'covered',
+    'not_required',
     'a negated rejecting outcome must not close parse failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'equivalent negation forms',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', "malformed json didn't reject; invalid input never throws; corrupt input fails to reject; partial input was accepted without throwing",
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const equivalentNegationPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    equivalentNegationPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'not_required',
+    'contractions, never, without, and fails-to-reject forms must not close parse failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'mixed assertion clauses',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'valid input does not throw and malformed json rejects with parse error',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const mixedClausePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    mixedClausePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a negative happy-path clause must not suppress an independent malformed-input rejection clause'
   );
 
   assert.equal((await runCli([
@@ -20322,11 +20364,11 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--json'
   ])).exitCode, 0);
   const schemaMarkerPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
-  assert.notEqual(
+  assert.equal(
     schemaMarkerPrepare.result.preparation.pr_context.gate_dag.nodes
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'schema_failure').status,
-    'covered',
+    'not_required',
     'a schema mode ID without a concrete invalid-payload assertion must not close coverage'
   );
 
@@ -20343,12 +20385,33 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--json'
   ])).exitCode, 0);
   const negatedSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
-  assert.notEqual(
+  assert.equal(
     negatedSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
       .find((node) => node.id === 'gate:failure_mode_coverage')
       .modes.find((mode) => mode.id === 'schema_failure').status,
-    'covered',
+    'not_required',
     'a negated rejecting outcome must not close schema failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated observed schema value',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'schema regression observation',
+    '--observed', "schema_failure=invalid schema wasn't rejected",
+    '--json'
+  ])).exitCode, 0);
+  const negatedObservedSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    negatedObservedSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'not_required',
+    'a negated structured observed value must not close schema failure coverage'
   );
 
   assert.equal((await runCli([

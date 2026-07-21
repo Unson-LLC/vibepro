@@ -12560,17 +12560,24 @@ function scoreFailureModeEvidence(mode, evidenceText) {
     .map((keyword) => String(keyword).toLowerCase())
     .filter(Boolean);
   if (modeId === 'parse_failure' || modeId === 'schema_failure') {
-    const assertionText = normalizedText.replaceAll(modeId, ' ');
+    // Evaluate polarity from the authored assertion, before canonical token
+    // expansion can detach outcome words from their negation context.
+    const assertionText = String(evidenceText ?? '').toLowerCase().replaceAll(modeId, ' ');
     const invalidInputTokens = ['malformed', 'invalid', 'corrupt', 'partial', 'missing', 'negative'];
     const rejectingOutcomeTokens = ['reject', 'throw', 'error', 'fail'];
     const nonRejectingOutcomePattern = /\b(?:(?:parse|parsed|validate|validated|accept|accepted|complete|completed) successfully|successfully (?:parse|parsed|validate|validated|accept|accepted|complete|completed)|no errors?|without errors?)\b/;
-    const negatedRejectingOutcomePattern = /\b(?:(?:did|does|do|was|were|is|are|will|would|could|should|can|cannot)\s+)?not\s+(?:\w+\s+){0,2}(?:reject(?:ed|s|ing)?|throw(?:s|ing)?|threw|errors?|fail(?:ed|s|ing)?)\b/;
-    if (nonRejectingOutcomePattern.test(assertionText) || negatedRejectingOutcomePattern.test(assertionText)) return 0;
-    const hasInvalidInput = invalidInputTokens
-      .some((token) => assertionText.includes(token));
-    const hasRejectingOutcome = rejectingOutcomeTokens
-      .some((token) => assertionText.includes(token));
-    if (!hasInvalidInput || !hasRejectingOutcome) return 0;
+    const negatedRejectingOutcomePattern = /(?:\b(?:not|never|cannot|without)\b|\b(?:did|does|do|was|were|is|are|will|would|could|should|can)n['’]t\b)(?:\s+\w+){0,3}\s+(?:reject(?:ed|s|ing|ion)?|throw(?:s|ing)?|threw|errors?|fail(?:ed|s|ing)?)\b|\b(?:fail(?:ed|s|ing)?|unable)\s+to\s+(?:reject|throw|fail)\b|\bno\s+(?:rejection|errors?|failure)\b/;
+    const assertionClauses = assertionText
+      .split(/(?:[;\n]+|\s+(?:but|while|whereas)\s+|\s+and\s+(?=(?:malformed|invalid|corrupt|partial|missing|negative)\b))/)
+      .map((clause) => clause.trim())
+      .filter(Boolean);
+    const hasConcreteFailureClause = assertionClauses.some((clause) => {
+      if (nonRejectingOutcomePattern.test(clause) || negatedRejectingOutcomePattern.test(clause)) return false;
+      const hasInvalidInput = invalidInputTokens.some((token) => clause.includes(token));
+      const hasRejectingOutcome = rejectingOutcomeTokens.some((token) => clause.includes(token));
+      return hasInvalidInput && hasRejectingOutcome;
+    });
+    if (!hasConcreteFailureClause) return 0;
     if (modeId && normalizedText.includes(modeId)) return 100;
     const strongKeywords = modeId === 'parse_failure'
       ? keywords.filter((keyword) => keyword !== 'json')
