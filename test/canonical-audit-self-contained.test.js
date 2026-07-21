@@ -57,6 +57,22 @@ test('canonical audit ignores compatibility markdown directly under the story re
   await assert.doesNotReject(() => promoteCanonicalAuditArtifacts(root, { storyId }));
 });
 
+test('canonical audit surfaces an expected review stage replaced by a file', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-review-stage-file-'));
+  const storyId = 'story-canonical-review-stage-file';
+  await mkdir(path.join(root, '.vibepro', 'reviews', storyId), { recursive: true });
+  await writeFile(
+    path.join(root, '.vibepro', 'reviews', storyId, 'gate'),
+    'corrupt stage path\n',
+    { encoding: 'utf8' }
+  );
+
+  await assert.rejects(
+    () => promoteCanonicalAuditArtifacts(root, { storyId }),
+    (error) => error?.code === 'ENOTDIR'
+  );
+});
+
 function argvFromReplayCommand(command) {
   assert.match(command, /^vibepro audit replay \. --story-id [A-Za-z0-9._-]+$/);
   return command.split(/\s+/).slice(1);
