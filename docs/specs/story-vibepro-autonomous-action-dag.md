@@ -58,3 +58,11 @@ runner結果は`continue`、`pr_ready`、`waiting_for_human`、`waiting_for_runt
 ## S-005 Safety and compatibility
 
 任意shell、merge、waiver、deploy、未知Actionはcanonical planに入らない。既存Runとprofile未指定呼出しはlegacy挙動を保つ。autonomous profileの無効化は新規・既存Runの双方をlegacyへ明示fallbackし、requested profile、effective profile、typed fallback reasonを永続stateとsummaryへ残してsilent downgradeを行わない。
+
+## S-006 Transition contract
+
+各canonical nodeは`continue`で次nodeへ進むか、`waiting_for_human`、`waiting_for_runtime`、`blocked`、`failed`の型付き停止で以降のdependencyを止める。`pr_ready`はautonomousの`final_prepare`だけが返せ、その他のnode、dependency未完了suffix、policy禁止、forged planは実行前にfail closedする。
+
+## S-007 Owner artifact and Gate authority
+
+composition portはcanonical ownerが返したartifact参照だけをjournalへ保存し、owner未接続は`waiting_for_runtime`と`missing_action_runner`で止める。autonomousの`verify`はlegacy `safeAutopilotPullRequest`へfallbackしない。`final_prepare`のownerが`pr_ready`を返しても、current HEADの`preparePullRequest` Gate SSOTが`ready_for_pr_create: true`である場合だけ`pr_ready`へ昇格できる。

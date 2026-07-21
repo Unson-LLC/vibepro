@@ -50,6 +50,10 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   const calls = [];
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
   const session = fixture.session({
+    preparePullRequest: async () => ({
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
     actionRunners: Object.fromEntries(ids.map((id) => [id, async () => {
       calls.push(id);
       return { status: id === 'final_prepare' ? 'pr_ready' : 'continue' };
@@ -219,6 +223,62 @@ test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async
   assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'diagnose');
 });
 
+test('AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let legacyAutopilotCalls = 0;
+  const session = fixture.session({
+    safeAutopilotPullRequest: async () => {
+      legacyAutopilotCalls += 1;
+      return { status: 'pr_ready' };
+    },
+    actionRunners: {
+      diagnose: async () => ({ status: 'continue' }),
+      prepare_artifacts: async () => ({ status: 'continue' }),
+      implement: async () => ({ status: 'continue' })
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(legacyAutopilotCalls, 0);
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'verify');
+});
+
+test('AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
+  let prepareCalls = 0;
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      prepareCalls += 1;
+      return { preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } }, artifacts: { json: '.vibepro/pr/blocked.json' } };
+    },
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
+      final_prepare: async () => ({ status: 'pr_ready', artifact: '.vibepro/forged-ready.json' })
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(prepareCalls, 1);
+  assert.equal(result.state.status, 'blocked');
+  assert.equal(result.state.stop_reason.code, 'gate_recheck_required');
+  assert.equal(result.state.action_journal.at(-1).artifact, '.vibepro/forged-ready.json');
+});
+
 test('AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
@@ -259,6 +319,10 @@ test('AAD-S-7 autonomous composition preserves canonical owner artifact referenc
   });
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
   const session = fixture.session({
+    preparePullRequest: async () => ({
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
     actionRunners: Object.fromEntries(ids.map((id) => [id, async () => ({
       status: id === 'final_prepare' ? 'pr_ready' : 'continue',
       artifact: `.vibepro/owners/${id}.json`

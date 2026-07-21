@@ -475,22 +475,22 @@ function buildActionRunners(deps, loaded, options) {
     recovery: { missing_action_runner: actionId }
   });
   const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
-  autonomous.verify = injected.verify ?? (async () => deps.safeAutopilotPullRequest(repoRoot, {
-    storyId,
-    baseRef: options.baseRef
-  }));
-  autonomous.final_prepare = injected.final_prepare ?? (async () => {
+  autonomous.final_prepare = async () => {
+    const ownerResult = injected.final_prepare
+      ? await injected.final_prepare()
+      : { status: 'pr_ready' };
+    if (ownerResult.status !== 'pr_ready') return ownerResult;
     const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
     if (prepared.preparation?.gate_status?.ready_for_pr_create === true) {
-      return { status: 'pr_ready', artifact: prepared.artifacts?.json ?? null };
+      return { ...ownerResult, artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null };
     }
     return {
       status: 'blocked',
       stop_reason: 'gate_recheck_required',
-      artifact: prepared.artifacts?.json ?? null,
+      artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null,
       recovery: { required_actions: prepared.preparation?.gate_status?.next_required_actions ?? [] }
     };
-  });
+  };
   if ((loaded.state.action_profile ?? 'legacy') === 'autonomous') return autonomous;
   return {
     pr_prepare: async () => {
