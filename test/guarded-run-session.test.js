@@ -70,6 +70,11 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   assert.equal(result.state.status, 'pr_ready');
   assert.deepEqual(calls, ids);
   assert.equal(result.state.action_profile, 'autonomous');
+  assert.deepEqual(result.state.action_profile_resolution, {
+    requested: 'autonomous',
+    effective: 'autonomous',
+    fallback_reason: null
+  });
 });
 
 test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately', async (t) => {

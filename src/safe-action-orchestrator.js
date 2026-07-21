@@ -132,6 +132,9 @@ export async function runSafeActionPlan(state, options = {}) {
       if (result.status === 'pr_ready' && profile === 'autonomous' && action.id !== 'final_prepare') {
         throw new Error(`Only autonomous final_prepare may return pr_ready: ${action.id}`);
       }
+      if (profile === 'autonomous' && action.id === 'final_prepare' && result.status === 'continue') {
+        throw new Error('Autonomous final_prepare must return pr_ready or a typed stop');
+      }
       const journalStatus = profile === 'legacy'
         ? (result.status === 'failed' ? 'failed' : 'completed')
         : (['continue', 'pr_ready'].includes(result.status) ? 'completed' : 'failed');

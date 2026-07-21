@@ -314,7 +314,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       status: 'running',
       attempt: 1,
       action_profile: profileResolution.effective,
-      ...(profileResolution.fallback_reason ? { action_profile_resolution: profileResolution } : {}),
+      ...(profileResolution.requested === 'autonomous' ? { action_profile_resolution: profileResolution } : {}),
       action_journal: [],
       next_best_action_decisions: []
     };
@@ -705,7 +705,7 @@ export function renderGuardedRunSummary(value) {
     : 'none';
   const profileResolution = state.action_profile_resolution;
   const profileSummary = profileResolution
-    ? `${profileResolution.requested} -> ${profileResolution.effective} (${profileResolution.fallback_reason})`
+    ? `${profileResolution.requested} -> ${profileResolution.effective}${profileResolution.fallback_reason ? ` (${profileResolution.fallback_reason})` : ' (no fallback)'}`
     : `${state.action_profile ?? 'legacy'} (no fallback)`;
   return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- action_profile: ${profileSummary}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- active_ms: ${efficiency.active_ms ?? 'unknown'}\n- wait_ms: ${efficiency.wait_ms ?? 'unknown'}\n- trusted_pr_ready_ms: ${efficiency.trusted_pr_ready_ms ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- full_suite_runs: ${efficiency.full_suite_count ?? 'unknown'}\n- evidence_reuse: ${efficiency.evidence_reuse_count ?? 'unknown'}\n- evidence_invalidations: ${efficiency.evidence_invalidation_count ?? 'unknown'}\n- accepted_defects: ${efficiency.accepted_defect_count ?? 'unknown'}\n- risk_reductions: ${efficiency.risk_reduction_count ?? 'unknown'}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- efficiency_basis: trusted_pr_ready+accepted_defects+risk_reductions_vs_active_wait_token_cost\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Pending Decision\n\n${pendingDecisionLines}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
 }
@@ -866,7 +866,7 @@ async function createRun(deps, repoRoot, options) {
       creationRequestId,
       policy: buildGuardedPolicy(options, createdAt),
       actionProfile: profileResolution.effective,
-      actionProfileResolution: profileResolution.fallback_reason ? profileResolution : null
+      actionProfileResolution: profileResolution.requested === 'autonomous' ? profileResolution : null
     });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror

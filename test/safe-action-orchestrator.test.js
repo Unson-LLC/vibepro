@@ -326,21 +326,37 @@ test('AAD-S-4 only final_prepare may produce pr_ready', async () => {
   assert.match(result.state.stop_reason.details.recovery.failure, /Only autonomous final_prepare/);
 });
 
-for (const terminalStatus of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']) {
-  test(`AAD-S-6 ${terminalStatus} stops before dependent autonomous nodes`, async () => {
+test('AAD-S-4 final_prepare cannot continue past the terminal DAG node', async () => {
+  const autonomousState = { ...state, action_profile: 'autonomous' };
+  const runners = Object.fromEntries(buildSafeActionPlan(autonomousState).map(({ id }) => [
+    id,
+    async () => ({ status: 'continue' })
+  ]));
+  const result = await runSafeActionPlan(autonomousState, { runners });
+  assert.equal(result.state.status, 'failed');
+  assert.match(result.state.stop_reason.details.recovery.failure, /final_prepare must return pr_ready or a typed stop/);
+});
+
+for (const actionId of ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare']) {
+  for (const terminalStatus of ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']) {
+    test(`AAD-S-6 ${actionId} ${terminalStatus} stops before dependent autonomous nodes`, async () => {
     const autonomousState = { ...state, action_profile: 'autonomous' };
-    let dependentCalls = 0;
+    const calls = [];
+    const runners = Object.fromEntries(buildSafeActionPlan(autonomousState).map(({ id }) => [id, async () => {
+      calls.push(id);
+      return id === actionId
+        ? { status: terminalStatus, stop_reason: `${terminalStatus}_reason` }
+        : { status: 'continue' };
+    }]));
     const result = await runSafeActionPlan(autonomousState, {
-      runners: {
-        diagnose: async () => ({ status: terminalStatus, stop_reason: `${terminalStatus}_reason` }),
-        prepare_artifacts: async () => { dependentCalls += 1; return { status: 'continue' }; }
-      }
+      runners
     });
-    assert.equal(dependentCalls, 0);
+    assert.equal(calls.at(-1), actionId);
     assert.equal(result.state.status, terminalStatus);
-    assert.equal(result.state.action_journal.length, 1);
+    assert.equal(result.state.action_journal.length, calls.length);
     assert.equal(result.state.stop_reason.code, `${terminalStatus}_reason`);
-  });
+    });
+  }
 }
 
 test('AAD-S-5 explicitly selecting legacy keeps the two-node rollback path', () => {
