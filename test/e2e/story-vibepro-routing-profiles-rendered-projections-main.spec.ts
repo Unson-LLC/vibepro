@@ -99,13 +99,19 @@ test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout r
     assert.equal(migration.status, 'ready');
 
     // These are production CLI writers, deliberately not resolver/projection imports.
+    await invoke(['story', 'diagnose', checkout, '--id', story.story_id, '--run-graphify', '--json']);
     await invoke(['review', 'prepare', checkout, '--id', story.story_id, '--stage', 'architecture_spec', '--role', 'regression_risk', '--json']);
     await invoke(['pr', 'prepare', checkout, '--base', 'main', '--story-id', story.story_id, '--allow-extra-files', '--json']);
     const status = await invoke(['story', 'status', checkout, '--id', story.story_id, '--json']);
     assert.match(status.stdout, new RegExp(`projection: ownership=generated; path=docs/(?:features|governance)/${story.feature_slug}/`));
 
     assert.match(resolved.routes.gate.projections[0].relative_path, new RegExp(`^docs/${story.artifact_profile === 'feature_packet' ? 'features' : 'governance'}/${story.feature_slug}/`));
+    const evidenceProjection = await readFile(resolved.routes.evidence.projections[0].absolute_path, 'utf8');
+    assert.match(evidenceProjection, /ownership=generated/);
+    assert.match(evidenceProjection, new RegExp(`source=.vibepro/evidence/${story.story_id}/evidence\\.json`));
+    assert.match(evidenceProjection, /# Evidence Summary/);
     await Promise.all([
+      access(resolved.routes.evidence.projections[0].absolute_path),
       access(resolved.routes.gate.projections[0].absolute_path),
       access(resolved.routes.pr.projections[0].absolute_path)
     ]);

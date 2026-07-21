@@ -38,7 +38,7 @@ schema `0.2.0`の各profileは全artifact kindを自己完結して定義し、p
 | accepted_spec | profileのAccepted Spec JSON | spec write | canonical JSON | `functional_spec_markdown@1` / `generated` | lineage一致時だけ再生成可 |
 | task_plan | `.vibepro/stories/{story_id}/tasks/tasks.json` | task create/update | canonical JSON | `tasks_markdown@1` / `generated` | lineage一致時だけ再生成可 |
 | graphify | profileのgraph JSON/directory | graphify | canonical | rendererなし / `generated` | projectionなし |
-| evidence | profileのevidence directory | verify record | canonical evidence | `evidence_summary_markdown@1` / `generated` | lineage一致時だけ再生成可 |
+| evidence | profileのevidence directory | story diagnose（diagnostic workflow） | canonical evidence | `evidence_summary_markdown@1` / `generated` | lineage一致時だけ再生成可 |
 | test_plan | profileのtest-plan JSON | checkpoint/test planning | canonical JSON | `test_plan_markdown@1` / `generated` | lineage一致時だけ再生成可 |
 | review | profileのreview JSON/directory | review lifecycle | canonical | `review_summary_markdown@1` / `generated`または`curated` | `generated`のみ再生成可 |
 | gate | profileのgate JSON | pr prepare/gate | canonical | `gate_summary_markdown@1` / `generated` | lineage一致時だけ再生成可 |
