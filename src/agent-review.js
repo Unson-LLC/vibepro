@@ -349,11 +349,15 @@ export async function recordAgentReview(repoRoot, options = {}) {
   const inspection = buildInspectionBlock(options);
   const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
   const freshnessPolicy = resolveReviewFreshnessPolicy(reviewPolicy, role, options);
+  const generatedProjectionPaths = freshnessPolicy.effective_mode === 'content_surface'
+    ? await collectCurrentGeneratedProjectionPaths(root, { storyId })
+    : [];
   const contentBinding = await buildContentBinding(root, {
     gitContext,
     strictHead: freshnessPolicy.effective_mode === 'strict_head',
     inspectionInputs: inspection.inputs,
-    artifacts
+    artifacts,
+    excludeSurfacePaths: generatedProjectionPaths
   });
   const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
   const result = {
@@ -2377,6 +2381,22 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
   const contentBinding = await evaluateContentBinding(repoRoot, result.content_binding, currentGitContext);
   const recordedContentBinding = contentBinding?.content_binding ?? result.content_binding ?? null;
   if (contentBinding?.status === 'current') {
+    // Content-surface reviews intentionally survive unrelated commits.  They
+    // must not, however, survive an author edit to a generated projection that
+    // was omitted from that surface. collectReviewGitContext excludes only an
+    // exact current projection, so this comparison is stable across a
+    // deterministic re-render and fails closed for hand edits or invalid
+    // lineage/profile/renderer/source/hash.
+    const comparison = compareFingerprintContexts(recorded, currentGitContext);
+    if (!comparison.matches) {
+      return {
+        status: 'stale',
+        reason: comparison.usingUserFingerprint
+          ? 'review was recorded with a different user dirty worktree fingerprint'
+          : 'review was recorded with a different dirty worktree fingerprint',
+        content_binding: recordedContentBinding
+      };
+    }
     return contentBinding;
   }
   if (contentBinding?.status === 'stale') {

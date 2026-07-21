@@ -3973,6 +3973,11 @@ test('pr prepare keeps a current generated projection out of artifact consistenc
     ownership: 'generated',
     renderer: { id: 'functional_spec_markdown', version: '1' }
   }];
+  artifacts.review.projections = [{
+    path: 'docs/features/{feature_slug}/08_review.md',
+    ownership: 'generated',
+    renderer: { id: 'review_summary_markdown', version: '1' }
+  }];
   config.brainbase.stories = config.brainbase.stories.map((story) => story.story_id === storyId
     ? { ...story, artifact_profile: 'feature_packet', feature_slug: 'projection-freshness' }
     : story);
@@ -4017,6 +4022,46 @@ test('pr prepare keeps a current generated projection out of artifact consistenc
   const generatedGate = generatedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(generatedGate.status, 'passed');
   assert.equal(generatedGate.current.status_fingerprint_hash, generatedGate.current.user_status_fingerprint_hash);
+
+  // The first record produces the review projection. The replacement review
+  // genuinely inspects that rendered handoff as well as its real source input.
+  // Recording and PR preparation re-render it, but that must not turn the
+  // content-surface review stale merely because it observed its own view.
+  await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract']);
+  const initialReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'initial rendered review projection',
+    '--inspection-summary', 'inspected the runtime input before the projection existed',
+    '--inspection-input', 'index.html',
+    '--judgment-delta', 'pending -> pass after inspecting the runtime input',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-initial', '--agent-closed'
+  ]);
+  assert.equal(initialReview.exitCode, 0);
+  const reviewProjectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '08_review.md');
+  assert.equal(await pathExists(reviewProjectionPath), true);
+
+  const projectionReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'review includes the generated handoff projection',
+    '--inspection-summary', 'inspected the runtime input and its generated review handoff',
+    '--inspection-input', 'index.html', '--inspection-input', 'docs/features/projection-freshness/08_review.md',
+    '--judgment-delta', 'initial pass -> confirmed after inspecting the generated review handoff',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-current', '--agent-closed'
+  ]);
+  assert.equal(projectionReview.exitCode, 0);
+  assert.deepEqual(projectionReview.result.review.content_binding.surface_files.map((file) => file.path), ['index.html']);
+
+  const projectionPrepared = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(projectionPrepared.exitCode, 0);
+  const currentProjectionReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const currentProjectionRole = currentProjectionReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(currentProjectionRole.binding_status, 'current');
+
+  await writeFile(reviewProjectionPath, `${await readFile(reviewProjectionPath, 'utf8')}hand edit\n`);
+  const handEditedReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const handEditedRole = handEditedReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(handEditedRole.binding_status, 'stale');
+  assert.match(handEditedRole.stale_reason, /different user dirty worktree fingerprint/);
 
   const projectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '02_functional_spec.md');
   await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}hand edit\n`);
