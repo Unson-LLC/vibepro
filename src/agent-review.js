@@ -12,7 +12,7 @@ import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evi
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
-import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, isCurrentGeneratedProjection, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -221,7 +221,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
 
-  const gitContext = await collectGitContext(root);
+  const gitContext = await collectReviewGitContext(root, storyId);
   const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
   const verificationEvidence = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json'));
   const evidenceReuse = evaluateEvidenceReuseForReview({
@@ -337,7 +337,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     commandName: 'review record'
   });
 
-  const gitContext = await collectGitContext(root);
+  const gitContext = await collectReviewGitContext(root, storyId);
   const lineage = resolveRecorderLineage(options, {
     story_id: storyId,
     worktree_root: root,
@@ -544,7 +544,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
-  const gitContext = await collectGitContext(root);
+  const gitContext = await collectReviewGitContext(root, storyId);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     lifecycle.entries.push(entry);
@@ -569,7 +569,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const closeReason = normalizeCloseReason(options.closeReason);
   let match = null;
-  const gitContext = await collectGitContext(root);
+  const gitContext = await collectReviewGitContext(root, storyId);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     match = findLifecycleEntry(lifecycle.entries, {
@@ -601,7 +601,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review status');
   const reviewPolicy = await readAgentReviewPolicy(root);
-  const currentGitContext = await collectGitContext(root);
+  const currentGitContext = await collectReviewGitContext(root, storyId);
   const stages = options.stage ? [requireStage(options.stage, 'review status')] : getConfiguredStages(reviewPolicy);
   const stageSummaries = [];
   for (const stage of stages) {
@@ -639,6 +639,20 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
       stale: stageSummaries.filter((stage) => stage.stale_count > 0).length
     }
   };
+}
+
+async function collectReviewGitContext(repoRoot, storyId) {
+  const resolved = await resolveArtifactRoutes(repoRoot, { storyId });
+  const generatedProjectionPaths = [];
+  for (const route of Object.values(resolved.routes)) {
+    for (const projection of route.projections ?? []) {
+      if (projection.ownership !== 'generated') continue;
+      if (await isCurrentGeneratedProjection(repoRoot, route, projection)) {
+        generatedProjectionPaths.push(projection.relative_path);
+      }
+    }
+  }
+  return collectGitContext(repoRoot, { userExcludePaths: generatedProjectionPaths });
 }
 
 function buildReviewStatusViews({
@@ -940,9 +954,10 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
   const storyId = options.storyId;
   if (!storyId) return null;
   const root = path.resolve(repoRoot);
+  const projectionAwareGitContext = await collectReviewGitContext(root, storyId);
   const currentGitContext = options.git
-    ? normalizeGitContext(options.git)
-    : await collectGitContext(root);
+    ? normalizeGitContext(options.git, projectionAwareGitContext)
+    : projectionAwareGitContext;
   const reviewPolicy = await readAgentReviewPolicy(root);
   const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy });
   const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy });
@@ -3213,15 +3228,15 @@ function normalizeCloseReason(value) {
   return ['completed', 'timeout', 'replaced', 'manual_shutdown'].includes(normalized) ? normalized : 'completed';
 }
 
-function normalizeGitContext(git) {
+function normalizeGitContext(git, fingerprints = git) {
   return {
     head_sha: git.head_sha ?? null,
     current_branch: git.current_branch ?? null,
-    dirty: git.dirty === true,
-    raw_dirty: git.raw_dirty === true ? true : undefined,
-    status_fingerprint_hash: git.status_fingerprint_hash ?? null,
-    user_status_fingerprint_hash: git.user_status_fingerprint_hash ?? null,
-    fingerprint_scope: git.fingerprint_scope ?? null,
+    dirty: fingerprints.dirty === true,
+    raw_dirty: fingerprints.raw_dirty === true ? true : undefined,
+    status_fingerprint_hash: fingerprints.status_fingerprint_hash ?? null,
+    user_status_fingerprint_hash: fingerprints.user_status_fingerprint_hash ?? null,
+    fingerprint_scope: fingerprints.fingerprint_scope ?? null,
     recorded_at: new Date().toISOString()
   };
 }

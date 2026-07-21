@@ -982,10 +982,38 @@ test('named profile Graphify review and PR producers leave the removed legacy di
   assert.equal(start.exitCode, 0, output);
   const prepare = await runCli(['pr', 'prepare', root, '--base', 'main', '--story-id', storyId, '--allow-extra-files', '--evidence-depth', 'full', '--evidence-depth-reason', 'named routing regression', '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'], io);
   assert.equal(prepare.exitCode, 0, output);
+  const record = await runCli([
+    'review', 'record', root, '--id', storyId, '--stage', 'architecture_spec', '--role', 'regression_risk',
+    '--status', 'pass', '--summary', 'generated projections do not stale their own review',
+    '--inspection-summary', 'inspected routed producer changes and generated projections',
+    '--inspection-input', 'src/index.js', '--judgment-delta', 'pending -> pass after routed producer inspection',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'routing-test-agent',
+    '--agent-thread-id', 'routing-test-thread',
+    '--agent-closed', '--strict-head-binding', '--strict-head-reason', 'projection freshness regression', '--json'
+  ], io);
+  assert.equal(record.exitCode, 0, output);
+  const freshStatus = await runCli(['review', 'status', root, '--id', storyId, '--stage', 'architecture_spec', '--json']);
+  assert.equal(freshStatus.exitCode, 0);
+  const freshRole = freshStatus.result.stages[0].roles.find((role) => role.role === 'regression_risk');
+  assert.equal(freshRole.effective_status, 'pass');
+  assert.equal(freshRole.binding_status, 'current');
+
+  const reviewProjection = path.join(root, `docs/features/${featureSlug}/08_review.md`);
+  await writeFile(reviewProjection, `${await readFile(reviewProjection, 'utf8')}\nmanual edit\n`);
+  const editedStatus = await runCli(['review', 'status', root, '--id', storyId, '--stage', 'architecture_spec', '--json']);
+  assert.equal(editedStatus.exitCode, 0);
+  const editedRole = editedStatus.result.stages[0].roles.find((role) => role.role === 'regression_risk');
+  assert.equal(editedRole.effective_status, 'stale');
+  assert.equal(editedRole.binding_status, 'stale');
+  assert.match(editedRole.stale_reason, /different user dirty worktree fingerprint/);
   await access(path.join(root, `.vibepro/packets/${featureSlug}/graphify/graph.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/reviews/architecture_spec/review-plan.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/gate-dag.json`));
   await access(path.join(root, `.vibepro/packets/${featureSlug}/pr-prepare.json`));
+  const prArtifact = JSON.parse(await readFile(path.join(root, `.vibepro/packets/${featureSlug}/pr-prepare.json`), 'utf8'));
+  assert.equal(prArtifact.pr_context.agent_reviews.current_git_context.head_sha, prArtifact.git.head_sha);
+  assert.equal(prArtifact.pr_context.agent_reviews.current_git_context.current_branch, prArtifact.git.current_branch);
+  assert.ok(prArtifact.pr_context.agent_reviews.current_git_context.fingerprint_scope.user_excludes.includes(`docs/features/${featureSlug}/08_review.md`));
   await assert.rejects(access(path.join(root, '.vibepro/graphify')));
   await assert.rejects(access(path.join(root, `.vibepro/reviews/${storyId}`)));
   await assert.rejects(access(path.join(root, `.vibepro/pr/${storyId}/gate-dag.json`)));

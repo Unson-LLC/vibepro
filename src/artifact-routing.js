@@ -80,6 +80,42 @@ export async function writeArtifactProjections(repoRoot, route, content) {
   return written;
 }
 
+export async function isCurrentGeneratedProjection(repoRoot, route, projection) {
+  if (projection.ownership !== 'generated' || !projection.renderer) return false;
+  let projectionBytes;
+  try {
+    projectionBytes = await readFile(projection.absolute_path);
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+  const firstLine = projectionBytes.toString('utf8').split('\n', 1)[0];
+  const match = firstLine.match(/^<!-- vibepro-projection (.+) -->$/);
+  if (!match) return false;
+  const fields = Object.fromEntries(match[1].split(' ').map((part) => {
+    const separator = part.indexOf('=');
+    return [part.slice(0, separator), part.slice(separator + 1)];
+  }));
+  const expected = {
+    story_id: route.story_id,
+    feature_slug: route.feature_slug,
+    ownership: 'generated',
+    profile: route.profile ?? 'legacy',
+    renderer: `${projection.renderer.id}@${projection.renderer.version}`,
+    direct_edit: 'false'
+  };
+  if (Object.entries(expected).some(([key, value]) => fields[key] !== String(value))) return false;
+  const canonicalBytes = await readCanonicalBytesForRoute(path.resolve(repoRoot), route, fields.source);
+  if (!canonicalBytes) return false;
+  const sourcePath = path.resolve(repoRoot, fields.source);
+  const projectionRoute = {
+    ...route,
+    canonical_container_relative_path: route.canonical_container_relative_path ?? route.canonical.relative_path,
+    canonical: { ...route.canonical, absolute_path: sourcePath, relative_path: fields.source }
+  };
+  return Buffer.compare(projectionBytes, Buffer.from(renderProjection(projectionRoute, projection, canonicalBytes))) === 0;
+}
+
 export async function preflightArtifactProjectionWrites(repoRoot, route, content) {
   const targets = await preflightArtifactWrites(repoRoot, route, { canonical: false }); const prepared = [];
   for (let i = 0; i < targets.length; i += 1) {
@@ -207,6 +243,10 @@ function isCanonicalLineageSource(route, sourcePath) {
   return sourcePath.startsWith(`${canonicalDirectory}/`) && !sourcePath.includes('../');
 }
 async function hashCanonicalForRoute(root, route, sourcePath) {
+  const content = await readCanonicalBytesForRoute(root, route, sourcePath);
+  return content ? createHash('sha256').update(content).digest('hex') : null;
+}
+async function readCanonicalBytesForRoute(root, route, sourcePath) {
   if (!isCanonicalLineageSource(route, sourcePath)) return null;
   try {
     const absolute = path.resolve(root, sourcePath);
@@ -216,7 +256,7 @@ async function hashCanonicalForRoute(root, route, sourcePath) {
     assertRealPathInside(rootReal, await realpath(ancestor), `${route.kind} lineage source`);
     await lstat(absolute);
     assertRealPathInside(rootReal, await realpath(absolute), `${route.kind} lineage source`);
-    return createHash('sha256').update(await readFile(absolute)).digest('hex');
+    return readFile(absolute);
   } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
