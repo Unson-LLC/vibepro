@@ -155,6 +155,29 @@ test('Run lineage module exposes canonical repository resolution for audit consu
   assert.match(unavailable.reason, /not found/);
 });
 
+test('canonical Run resolution fails closed on a malformed authoritative candidate without fallback', async () => {
+  const { root } = await fixture();
+  const fallback = await mkdtemp(path.join(os.tmpdir(), 'vibepro-run-lineage-fallback-'));
+  await writeCanonicalRun(fallback, {
+    authority: { worktree_root: fallback, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+  const statePath = path.join(root, '.vibepro', 'executions', STORY_ID, 'runs', 'run-alpha', 'state.json');
+  await mkdir(path.dirname(statePath), { recursive: true });
+  await writeFile(statePath, '{ malformed json\n');
+
+  const resolved = await resolveCanonicalRunLineage(root, fallback, {
+    storyId: STORY_ID,
+    runId: 'run-alpha'
+  });
+
+  assert.equal(resolved.status, 'unavailable');
+  assert.match(resolved.reason, /malformed or unreadable/);
+  assert.equal(resolved.authority_failure.status, 'degraded');
+  assert.equal(resolved.authority_failure.code, 'canonical_run_artifact_corrupt');
+  assert.match(resolved.authority_failure.detail, /JSON/);
+  assert.match(resolved.source_artifact, /\.vibepro\/executions\/.*run-alpha\/state\.json/);
+});
+
 test('canonical lineage rejects partial current managed authority instead of promoting legacy fields', async () => {
   const { root } = await fixture();
   await writeCanonicalRun(root, {
@@ -382,6 +405,38 @@ test('canonical Run lineage fails closed on provider identities duplicated acros
   assert.equal(result.lineage_attribution.status, 'unavailable');
   assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
   assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.code, 'provider_identity_conflict');
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
+});
+
+test('canonical Run lineage reports a degraded provider scan when an expected runs path is a file', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA }
+  });
+  const brokenRunsRoot = path.join(root, '.vibepro', 'executions', 'broken-story', 'runs');
+  await mkdir(path.dirname(brokenRunsRoot), { recursive: true });
+  await writeFile(brokenRunsRoot, 'not a directory\n');
+  await writeSessionFile(codexHome, SESSION_ID, [{
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+  }]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.status, 'degraded');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.code, 'provider_identity_scan_blocked');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.details.cause, 'ENOTDIR');
   assert.equal(result.lineage_attribution.authoritative_event_count, 0);
   assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
 });

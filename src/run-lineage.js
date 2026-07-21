@@ -303,8 +303,20 @@ export async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
     try {
       state = JSON.parse(await readFile(mirrorPath, 'utf8'));
     } catch (error) {
-      if (error.code !== 'ENOENT' && !firstUnavailable) firstUnavailable = { path: mirrorPath, reason: `could not read canonical Run artifact: ${error.message}` };
-      continue;
+      if (error.code === 'ENOENT') continue;
+      return {
+        status: 'unavailable',
+        reason: 'canonical Run state artifact is malformed or unreadable; authority resolution stopped',
+        source_artifact: toWorkspaceRelative(candidateRoot, mirrorPath),
+        requested: { story_id: storyId, run_id: runId },
+        authority_failure: {
+          status: 'degraded',
+          code: 'canonical_run_artifact_corrupt',
+          artifact: toWorkspaceRelative(candidateRoot, mirrorPath),
+          cause: error.code ?? error.name ?? 'read_error',
+          detail: error.message
+        }
+      };
     }
     if (state.story_id !== storyId || state.run_id !== runId) {
       return {
@@ -477,7 +489,7 @@ async function scanPersistedProviderIdentityRecords(root) {
     try {
       runEntries = await readdir(runsRoot);
     } catch (error) {
-      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      if (error.code === 'ENOENT') continue;
       throw providerIdentityScanError(runsRoot, error);
     }
     for (const runId of runEntries.filter((entry) => typeof entry === 'string').sort()) {
