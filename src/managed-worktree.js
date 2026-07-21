@@ -588,10 +588,15 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
 }
 
 async function readConfig(repoRoot) {
+  const filePath = path.join(getWorkspaceDir(repoRoot), 'config.json');
   try {
-    return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    return JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
+    if (error instanceof SyntaxError) {
+      // repoRoot may be a managed worktree's source repo, so name the file absolutely.
+      throw new Error(`config JSON is invalid: ${filePath}: ${error.message}`);
+    }
     throw error;
   }
 }
