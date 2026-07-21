@@ -39,7 +39,7 @@ test('story-vibepro-artifact-output-routing ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 a
   assert.equal(resolved.configured, true);
   assert.deepEqual(
     Object.keys(resolved.routes).sort(),
-    ['accepted_spec', 'architecture', 'gate', 'graphify', 'pr', 'review', 'story', 'task_plan'],
+    ['accepted_spec', 'architecture', 'evidence', 'gate', 'graphify', 'pr', 'review', 'story', 'task_plan', 'test_plan'],
     'AC-3 exposes one shared resolver result for every lifecycle artifact kind'
   );
   assert.equal(resolved.routes.architecture.projections[0].relative_path, 'docs/generated/story-checkout/architecture.md', 'AC-4 expands stable story_id and feature_slug variables');
@@ -107,7 +107,7 @@ test('story-vibepro-artifact-output-routing ac:2 ac:7 scenario:2 human CLI outpu
     cli, 'artifacts', 'resolve', target, '--id', 'story-checkout'
   ], { cwd: repoRoot });
   assert.match(resolved.stdout, /Artifact routes resolved for story-checkout/);
-  assert.match(resolved.stdout, /story: docs\/features\/checkout\/story\.md/);
+  assert.match(resolved.stdout, /story: ownership=legacy; canonical=docs\/features\/checkout\/story\.md; canonical-writer=owner; read-authority=docs\/features\/checkout\/story\.md/);
 
   const migration = await execFileAsync(process.execPath, [
     cli, 'artifacts', 'migrate', target, '--id', 'story-checkout', '--dry-run'

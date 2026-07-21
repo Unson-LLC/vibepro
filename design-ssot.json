@@ -5824,12 +5824,28 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
           {
             "kind": "spec",
             "path": "docs/specs/story-vibepro-artifact-output-routing.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -5845,8 +5861,22 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-artifact-output-routing.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -5913,5 +5943,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-21T05:21:00.600Z"
+  "updated_at": "2026-07-21T06:38:15.840Z"
 }

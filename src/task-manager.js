@@ -6,7 +6,7 @@ import { getStoryStatus } from './story-manager.js';
 import { readStoryTasks, renderStoryTasks } from './story-task-generator.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { localizedText } from './language.js';
-import { assertArtifactWritePath, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
+import { assertArtifactWritePath, preflightArtifactProjectionWrites, preflightArtifactWrites, resolveArtifactRoute, writeArtifactProjections } from './artifact-routing.js';
 
 export async function listTasks(repoRoot, options = {}) {
   const context = await loadTaskContext(repoRoot, options.storyId);
@@ -40,19 +40,23 @@ export async function createTasksFromPlan(repoRoot, options = {}) {
   for (const [storyId, candidates] of Object.entries(byStory)) {
     const story = resolvePlanStory(plan, storyId);
     const taskState = buildPlanTaskState({ story, plan, candidates, allowedPaths: options.allowedPaths });
-    const tasksDir = path.join(getWorkspaceDir(root), 'stories', storyId, 'tasks');
-    const jsonPath = path.join(tasksDir, 'tasks.json');
     const route = await resolveArtifactRoute(root, 'task_plan', { storyId });
+    const tasksDir = path.join(getWorkspaceDir(root), 'stories', storyId, 'tasks');
+    const jsonPath = route.canonical.relative_path.endsWith('.json') ? route.canonical.absolute_path : path.join(tasksDir, 'tasks.json');
     await preflightArtifactWrites(root, route, {
-      additionalPaths: [toWorkspaceRelative(root, jsonPath)]
+      additionalPaths: route.canonical.relative_path.endsWith('.json') ? [] : [toWorkspaceRelative(root, jsonPath)]
     });
-    await mkdir(tasksDir, { recursive: true });
-    const markdownPath = await assertArtifactWritePath(root, route.canonical.relative_path);
+    await mkdir(path.dirname(jsonPath), { recursive: true });
+    const markdownPath = await assertArtifactWritePath(root, route.canonical.relative_path.endsWith('.json')
+      ? (route.projections[0]?.relative_path ?? route.canonical.relative_path.replace(/\.json$/, '.md'))
+      : route.canonical.relative_path);
     await mkdir(path.dirname(markdownPath), { recursive: true });
-    await writeFile(jsonPath, `${JSON.stringify(taskState, null, 2)}\n`);
+    const taskStateJson = `${JSON.stringify(taskState, null, 2)}\n`;
     const markdown = renderStoryTasks(taskState);
-    await writeFile(markdownPath, markdown);
-    await writeArtifactProjections(root, route, markdown);
+    await preflightArtifactProjectionWrites(root, route, route.canonical.relative_path.endsWith('.json') ? taskStateJson : markdown);
+    await writeFile(jsonPath, taskStateJson);
+    if (!route.canonical.relative_path.endsWith('.json')) await writeFile(markdownPath, markdown);
+    await writeArtifactProjections(root, route, route.canonical.relative_path.endsWith('.json') ? taskStateJson : markdown);
     manifest.stories = {
       ...(manifest.stories ?? {}),
       [storyId]: {

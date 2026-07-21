@@ -11,7 +11,7 @@ import { collectGitContext, compareFingerprintContexts, fingerprintHashForContex
 import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
-import { assertArtifactWritePath, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -2521,6 +2521,8 @@ async function getChangedFilesBetween(repoRoot, fromRef, toRef) {
 async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
   await writeJson(path.join(reviewDir, 'review-summary.json'), summary);
   await writeFile(path.join(reviewDir, 'review-summary.md'), renderReviewSummaryMarkdown(summary));
+  if (summary.story_id) await projectArtifact(repoRoot, 'review', { storyId: summary.story_id, content: summary, canonicalAbsolutePath: path.join(reviewDir, 'review-summary.json') });
+  if (summary.story_id && summary.stage === 'test_plan') await projectArtifact(repoRoot, 'test_plan', { storyId: summary.story_id, content: summary, writeCanonical: true });
 }
 
 function renderReviewSummaryMarkdown(summary) {
