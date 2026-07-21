@@ -32,7 +32,7 @@ function fakeCodexHost() {
       spawns += 1;
       lastSpawnRequest = request;
       if (completionDuringSpawn) await callback(completionDuringSpawn);
-      return { provider_run_id: 'codex-provider-1', agent_identity: 'reviewer-codex', thread_id: 'thread-codex' };
+      return { provider_run_id: `codex-provider-${spawns}`, agent_identity: 'reviewer-codex', thread_id: 'thread-codex' };
     },
     async status() { return { status, ...statusDetails }; },
     async shutdown(input) { shutdowns += 1; lastShutdownReason = input.reason; status = 'cancelled'; return { status }; },
@@ -131,6 +131,51 @@ test('CDI-S-5 heartbeat without checkpoint cannot extend no-progress deadline', 
   const stalled = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.equal(stalled.dispatch.stop_reason.code, 'runtime_stalled');
   assert.equal(host.metrics().shutdowns, 1);
+});
+
+test('CDI-S-5 CDI-S-6 bounded recovery resumes only unfinished judgments and reaches completion', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-bounded-recovery-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const request = reviewRequest(repoRoot);
+  request.requirements.no_progress_deadline_ms = 1000;
+  request.requirements.max_attempts = 2;
+  request.requested_judgments = [
+    { judgment_id: 'security', surface_paths: ['src/security'] },
+    { judgment_id: 'correctness', surface_paths: ['src/runtime'] }
+  ];
+  const started = await coordinator.dispatch(baseState, request);
+  await host.emit({
+    event_id: 'partial-security', kind: 'partial_result', observed_at: clock.toISOString(), surface_hash: 'surface-a',
+    payload: { judgment_id: 'security', verdict: 'pass' }
+  });
+  clock = new Date('2026-07-22T01:00:02.000Z');
+  host.setStatus('running', { attempts: 1 });
+  const resumed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
+  assert.equal(resumed.dispatch.status, 'running_detached');
+  assert.equal(resumed.dispatch.provider_run_id, 'codex-provider-2');
+  assert.equal(host.metrics().spawns, 2);
+  assert.equal(host.metrics().shutdowns, 1);
+  assert.deepEqual(host.metrics().lastSpawnRequest.requested_judgments.map((item) => item.judgment_id), ['correctness']);
+  assert.equal(host.metrics().lastSpawnRequest.idempotency_key, `${started.dispatch.dispatch_id}:attempt:2`);
+
+  await host.emit({
+    event_id: 'completion-correctness', provider_run_id: 'codex-provider-2', kind: 'completed',
+    observed_at: clock.toISOString(), surface_hash: 'surface-a',
+    result: {
+      changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'recovered unfinished judgment',
+      agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed',
+      judgments: [{ judgment_id: 'correctness', verdict: 'pass' }]
+    }
+  });
+  const completed = await coordinator.reconcile(resumed.state, resumed.dispatch.dispatch_id);
+  assert.equal(completed.dispatch.status, 'completed');
+  assert.deepEqual(completed.dispatch.result.judgments.map((item) => item.judgment_id).sort(), ['correctness', 'security']);
+  assert.equal(host.metrics().spawns, 2);
 });
 
 test('CDI-S-3 lost wake notification still reconciles the inbox result', async (t) => {

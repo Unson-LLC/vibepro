@@ -300,10 +300,16 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
     const next = {
       ...current,
       status: observed.status,
+      provider_run_id: observed.provider_run_id ?? current.provider_run_id,
+      provider_session_id: observed.provider_session_id ?? current.provider_session_id ?? null,
+      session_id: observed.session_id ?? current.session_id ?? null,
+      thread_id: observed.thread_id ?? current.thread_id ?? null,
       updated_at: iso(now),
       stop_reason: observed.stop_reason ?? null,
       progress_checkpoint: observed.progress_checkpoint ?? current.progress_checkpoint ?? null,
-      partial_results: observed.partial_results ?? current.partial_results ?? []
+      partial_results: observed.partial_results ?? current.partial_results ?? [],
+      attempts: observed.attempts ?? current.attempts ?? 1,
+      recovery_plan: observed.recovery_plan ?? current.recovery_plan ?? null
     };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
     assertProviderIdentityUniqueness([
@@ -545,7 +551,10 @@ function normalizeStatus(value) {
     story_id: value.story_id ?? null,
     run_id: value.run_id ?? null,
     dispatch_id: value.dispatch_id ?? null,
-    head_sha: value.head_sha ?? null
+    head_sha: value.head_sha ?? null,
+    attempts: Number.isInteger(value.attempts) ? value.attempts : null,
+    partial_results: Array.isArray(value.partial_results) ? value.partial_results : null,
+    recovery_plan: value.recovery_plan ?? null
   };
 }
 

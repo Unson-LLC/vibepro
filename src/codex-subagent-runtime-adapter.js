@@ -7,6 +7,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
   const persistentInbox = inbox ?? createAgentCompletionInbox({ repoRoot, now });
   const dispatches = new Map();
   const starting = new Map();
+  const recovering = new Map();
 
   async function startDispatch(request) {
     const recoveryPlan = planJudgmentRecovery({
@@ -61,8 +62,10 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         request: effectiveRequest,
         started,
         subscription,
-        started_at: now().toISOString(),
-        awaitDelivery: () => deliveryChain
+        logical_started_at: now().toISOString(),
+        attempt_started_at: now().toISOString(),
+        awaitDelivery: () => deliveryChain,
+        setStarted(next) { started = next; this.started = next; }
       };
       dispatches.set(request.dispatch_id, record);
       for (const providerEvent of pendingBeforeStart.splice(0)) {
@@ -123,6 +126,18 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       }
       const stalled = evaluateProgressBounds(record, reconciled, providerStatus, now());
       if (stalled) {
+        const attempts = providerStatus.attempts ?? record.recovery_attempts ?? 1;
+        if (attempts < record.request.requirements.max_attempts) {
+          const inFlight = recovering.get(dispatch_id);
+          if (inFlight) return inFlight;
+          const recovery = resumeIncomplete(record, reconciled, attempts);
+          recovering.set(dispatch_id, recovery);
+          try {
+            return await recovery;
+          } finally {
+            if (recovering.get(dispatch_id) === recovery) recovering.delete(dispatch_id);
+          }
+        }
         await host.shutdown({ provider_run_id, force: true, reason: stalled.stop_reason.code });
         return stalled;
       }
@@ -165,6 +180,41 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       return event;
     }
   };
+
+  async function resumeIncomplete(record, reconciled, attempts) {
+    await host.shutdown({ provider_run_id: record.started.provider_run_id, force: true, reason: 'bounded_incomplete_recovery' });
+    const partialJudgments = matchingPartialResults(reconciled, record.request.inspection_surface_hash);
+    const recoveryPlan = planJudgmentRecovery({
+      previous: mergeJudgments(record.request.recovery_plan?.reusable_judgments, partialJudgments),
+      requested: record.request.requested_judgments,
+      previousSurfaceHash: record.request.inspection_surface_hash,
+      currentSurfaceHash: record.request.inspection_surface_hash,
+      changedPaths: []
+    });
+    const recoveryRequest = {
+      ...record.request,
+      previous_judgments: recoveryPlan.reusable_judgments,
+      requested_judgments: recoveryPlan.remaining_judgments,
+      recovery_plan: recoveryPlan,
+      recovery_attempt: attempts + 1,
+      idempotency_key: `${record.request.dispatch_id}:attempt:${attempts + 1}`
+    };
+    const restarted = await host.spawn(recoveryRequest);
+    record.request = recoveryRequest;
+    record.recovery_attempts = attempts + 1;
+    record.attempt_started_at = now().toISOString();
+    record.setStarted(restarted);
+    return {
+      status: 'running_detached',
+      provider_run_id: restarted.provider_run_id,
+      provider_session_id: restarted.provider_session_id ?? null,
+      session_id: restarted.session_id ?? null,
+      thread_id: restarted.thread_id ?? null,
+      attempts: attempts + 1,
+      partial_results: partialJudgments,
+      recovery_plan: recoveryPlan
+    };
+  }
 }
 
 export function planJudgmentRecovery({ previous = [], requested = [], previousSurfaceHash, currentSurfaceHash, changedPaths = [] } = {}) {
@@ -242,8 +292,8 @@ function completionStatus(event) {
 
 function evaluateProgressBounds(record, reconciled, providerStatus, observedNow) {
   const requirements = record.request.requirements;
-  const elapsed = observedNow.getTime() - Date.parse(record.started_at);
-  const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.started_at);
+  const elapsed = observedNow.getTime() - Date.parse(record.logical_started_at);
+  const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.attempt_started_at);
   const noProgressElapsed = observedNow.getTime() - Date.parse(lastProgressAt);
   const attempts = providerStatus.attempts ?? 1;
   const cost = providerStatus.usage_accounting?.cost_usd ?? 0;
@@ -282,7 +332,8 @@ function reconstructRecord(dispatch) {
   return {
     request: dispatch,
     started: { provider_run_id: dispatch.provider_run_id },
-    started_at: dispatch.started_at
+    logical_started_at: dispatch.started_at,
+    attempt_started_at: dispatch.updated_at ?? dispatch.started_at
   };
 }
 
