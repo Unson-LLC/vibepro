@@ -13,6 +13,8 @@ related_stories:
   - story-vibepro-session-attribution-inference
   - story-vibepro-guarded-run-session-contract
   - story-vibepro-run-context-capsule
+parent_design:
+  - vibepro-explicit-run-attribution-lineage
 created_at: 2026-07-21
 updated_at: 2026-07-21
 reason: "alternatives considered: require operators to create one Codex Thread per Story (not enforceable and Thread-to-session mapping is not a public contract), keep heuristic inference plus mixed-parent warnings only (honest but cannot establish positive lineage), or propagate VibePro-owned Story/Run identity through dispatch, evidence, and audit artifacts; selected explicit Run lineage with heuristic fallback. compatibility impact: existing session-cost and execution fields remain additive-compatible; sessions outside VibePro continue to report inferred, ambiguous, or unavailable attribution. rollback plan: remove the additive lineage envelope, dispatch/evidence propagation, and run-aware audit resolver while retaining existing guarded Run state and mixed-parent detection. boundary and scope: VibePro may authoritatively identify only work it dispatched or recorded under a validated Run; Thread ids and provider session ids are observations, never authority. shared parent and unmatched activity remain explicit buckets and are never silently assigned to a Story. accepted followups: provider-specific adapters may add stronger observation links without changing the lineage contract."

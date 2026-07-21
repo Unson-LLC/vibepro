@@ -6029,6 +6029,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-explicit-run-attribution-lineage.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -6037,6 +6046,13 @@
           "path": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
           "required": true,
           "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-explicit-run-attribution-lineage.md",
+          "required": true,
+          "relationship": "specifies",
           "last_reviewed_root_hash": null
         }
       ],
