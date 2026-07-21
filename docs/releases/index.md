@@ -85,3 +85,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:367:start -->
 - [PR #367](https://github.com/Unson-LLC/vibepro/pull/367) — [2026-07](/releases/2026-07): feat(artifact-routing): add profile-based projections
 <!-- vibepro-release-index-pr:367:end -->
+
+<!-- vibepro-release-index-pr:368:start -->
+- [PR #368](https://github.com/Unson-LLC/vibepro/pull/368) — [2026-07](/releases/2026-07): story-vibepro-canonical-audit-gate-dag-replay - Summary depthのCanonical Audit Replayを欠損なく引き継ぐ
+<!-- vibepro-release-index-pr:368:end -->

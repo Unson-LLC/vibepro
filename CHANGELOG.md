@@ -342,3 +342,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-guarded-auto
 なし
 
 <!-- vibepro-release-pr:367:end -->
+
+<!-- vibepro-release-pr:368:start -->
+## [#368](https://github.com/Unson-LLC/vibepro/pull/368) story-vibepro-canonical-audit-gate-dag-replay - Summary depthのCanonical Audit Replayを欠損なく引き継ぐ
+
+- Author: @sintariran
+- Merged: 2026-07-21T08:41:12Z
+- Commit: `181831acbd1a92e33e1ed5486a7733b1e6453c45`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:368:end -->
