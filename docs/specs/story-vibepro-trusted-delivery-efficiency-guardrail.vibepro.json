@@ -85,7 +85,7 @@
     {
       "id": "C-005",
       "type": "contract",
-      "statement": "Story metrics separate Trusted PR-ready elapsed, observed work, tool wait, union review wall-clock, summed agent consumption, subagent and role dispatch counts, repair and verification counters, evidence reuse or invalidation, fresh and total tokens and cost; missing values remain unknown.",
+      "statement": "Story metrics separate Trusted PR-ready elapsed, observed work, active wait, tool wait, union review wall-clock, summed agent consumption, subagent and role dispatch counts, repair and verification counters, evidence reuse or invalidation, fresh and total tokens and cost; missing values remain unknown.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }, { "kind": "acceptance_criteria", "index": 9 }],
         "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Story efficiency metrics" }],
@@ -187,7 +187,7 @@
     {
       "id": "S-009",
       "type": "scenario",
-      "statement": "Given overlapping parallel reviews and partial usage data, when Story metrics are aggregated, then union wait, summed agent consumption, counters, tokens, cost, and unknown fields remain distinct.",
+      "statement": "Given overlapping parallel reviews and partial usage data, when Story metrics are aggregated, then active wait, tool wait, union review wait, summed agent consumption, counters, tokens, cost, and unknown fields remain distinct.",
       "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-12" }] }
     },
     {

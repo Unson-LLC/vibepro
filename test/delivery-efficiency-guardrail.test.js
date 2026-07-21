@@ -194,6 +194,8 @@ test('metrics separate review union wall clock from parallel agent consumption a
     run_started_at: '2026-07-21T00:00:00.000Z',
     trusted_pr_ready_at: '2026-07-21T00:10:00.000Z',
     observed_work_ms: 120_000,
+    active_wait_ms: 180_000,
+    tool_wait_ms: 60_000,
     reviews: [
       { role: 'runtime', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:06:00.000Z' },
       { role: 'runtime', started_at: '2026-07-21T00:03:00.000Z', finished_at: '2026-07-21T00:08:00.000Z' }
@@ -204,6 +206,8 @@ test('metrics separate review union wall clock from parallel agent consumption a
     full_suite_count: 1
   });
   assert.equal(metrics.trusted_pr_ready_ms, 600_000);
+  assert.equal(metrics.active_wait_ms, 180_000);
+  assert.equal(metrics.tool_wait_ms, 60_000);
   assert.equal(metrics.review_wait_ms, 420_000);
   assert.equal(metrics.subagent_wall_clock_ms, 420_000);
   assert.equal(metrics.agent_consumption_ms, 600_000);
@@ -212,6 +216,28 @@ test('metrics separate review union wall clock from parallel agent consumption a
   assert.equal(metrics.fresh_input_tokens, null);
   assert.equal(metrics.tokens_per_accepted_finding.total, 500);
   assert.equal(metrics.tokens_per_accepted_finding.fresh_input, null);
+});
+
+test('active wait remains independently budgeted and unknown is never converted to zero', () => {
+  const within = evaluateDeliveryBudget(
+    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
+    aggregateDeliveryMetrics({ active_wait_ms: 1_100_000 })
+  );
+  assert.equal(within.dimensions.active_wait_ms.status, 'within_budget');
+  assert.equal(within.remaining.active_wait_ms, 100_000);
+
+  const exceeded = evaluateDeliveryBudget(
+    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
+    aggregateDeliveryMetrics({ active_wait_ms: 1_300_000 })
+  );
+  assert.deepEqual(exceeded.stop, { type: 'stop', reason: 'budget_exceeded', dimensions: ['active_wait_ms'] });
+
+  const unknown = evaluateDeliveryBudget(
+    normalizeEfficiencyPolicy({ max_active_wait_ms: 1_200_000 }),
+    aggregateDeliveryMetrics({ active_wait_ms: null })
+  );
+  assert.equal(unknown.dimensions.active_wait_ms.status, 'unknown');
+  assert.equal(unknown.remaining.active_wait_ms, null);
 });
 
 test('metrics preserve unknown review timing while any dispatched review is still open', () => {

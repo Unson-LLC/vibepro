@@ -267,6 +267,7 @@
     "delivery_efficiency": {
       "max_elapsed_ms": 2700000,
       "max_observed_work_ms": 900000,
+      "max_active_wait_ms": 1200000,
       "max_tool_wait_ms": 1200000,
       "max_total_tokens": null,
       "max_fresh_input_tokens": null,
@@ -285,8 +286,8 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
-        "max_subagent_count": 12,
-        "amendment_reason": "Six review lifecycles predate pre-spawn authorization; allow two bounded evidence-repair preflight replacements plus the required preflight and two independent final risk-adaptive reviews without weakening the default Story budget."
+        "max_subagent_count": 13,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization; allow two bounded evidence-repair preflight replacements, the required preflight, two independent final risk-adaptive reviews, and one current-HEAD replacement after the final reviewer found the Story-declared active_wait_ms contract missing. The default Story budget remains unchanged."
       }
     }
   },

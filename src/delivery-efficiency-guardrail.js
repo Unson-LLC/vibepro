@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 const LIMITS = {
   max_elapsed_ms: 'trusted_pr_ready_ms',
   max_observed_work_ms: 'observed_work_ms',
+  max_active_wait_ms: 'active_wait_ms',
   max_tool_wait_ms: 'tool_wait_ms',
   max_total_tokens: 'total_tokens',
   max_fresh_input_tokens: 'fresh_input_tokens',
@@ -210,6 +211,7 @@ export function aggregateDeliveryMetrics(input = {}) {
   return {
     trusted_pr_ready_ms: elapsed(input.run_started_at, input.trusted_pr_ready_at),
     observed_work_ms: nullableMeasurement(input.observed_work_ms, 'observed_work_ms'),
+    active_wait_ms: nullableMeasurement(input.active_wait_ms, 'active_wait_ms'),
     tool_wait_ms: nullableMeasurement(input.tool_wait_ms, 'tool_wait_ms'),
     review_wait_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,
     subagent_wall_clock_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,

@@ -359,6 +359,7 @@ function emptyCostAttribution() {
     active_ms: null,
     wait_ms: null,
     observed_work_ms: null,
+    active_wait_ms: null,
     tool_wait_ms: null,
     review_wait_ms: null,
     subagent_wall_clock_ms: null,
@@ -756,7 +757,7 @@ export function renderStoryRunPortfolioSummary(state) {
     const cost = entry.cost_attribution;
     lines.push(`${entry.order + 1}. ${entry.story_id}: ${entry.status} run=${entry.run_id ?? '-'} worktree=${entry.worktree ?? '-'} head=${entry.head_sha ?? '-'}`);
     lines.push(`   trusted_pr_ready_ms=${cost.trusted_pr_ready_ms ?? 'unknown'} active_ms=${cost.active_ms ?? 'unknown'} wait_ms=${cost.wait_ms ?? 'unknown'} tokens=${cost.total_tokens ?? 'unknown'} cost_usd=${cost.cost_usd ?? 'unknown'} full_suite=${cost.full_suite_count ?? 'unknown'} evidence_reuse=${cost.evidence_reuse_count ?? 'unknown'} evidence_invalidations=${cost.evidence_invalidation_count ?? 'unknown'} human_interruptions=${cost.human_interruption_count ?? 'unknown'} accepted_defects=${cost.accepted_defect_count ?? 'unknown'} risk_reductions=${cost.risk_reduction_count ?? 'unknown'}`);
-    lines.push(`   observed_work_ms=${cost.observed_work_ms ?? 'unknown'} tool_wait_ms=${cost.tool_wait_ms ?? 'unknown'} review_wait_ms=${cost.review_wait_ms ?? 'unknown'} subagent_wall_clock_ms=${cost.subagent_wall_clock_ms ?? 'unknown'} agent_consumption_ms=${cost.agent_consumption_ms ?? 'unknown'}`);
+    lines.push(`   observed_work_ms=${cost.observed_work_ms ?? 'unknown'} active_wait_ms=${cost.active_wait_ms ?? 'unknown'} tool_wait_ms=${cost.tool_wait_ms ?? 'unknown'} review_wait_ms=${cost.review_wait_ms ?? 'unknown'} subagent_wall_clock_ms=${cost.subagent_wall_clock_ms ?? 'unknown'} agent_consumption_ms=${cost.agent_consumption_ms ?? 'unknown'}`);
     lines.push(`   subagents=${cost.subagent_count ?? 'unknown'} review_dispatches=${cost.review_dispatch_count ?? 'unknown'} accepted_findings=${cost.accepted_finding_count ?? 'unknown'} repair_batches=${cost.repair_batch_count ?? 'unknown'} expensive_verification=${cost.expensive_verification_count ?? 'unknown'} fresh_input_tokens=${cost.fresh_input_tokens ?? 'unknown'} evidence_invalidation=${cost.evidence_invalidation_count ?? 'unknown'} efficiency_debt=${cost.efficiency_debt_count ?? 'unknown'}`);
     if (entry.stop_reason) {
       lines.push(`   stop_reason=${entry.stop_reason.code}: ${entry.stop_reason.message}`);

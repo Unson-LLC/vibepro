@@ -50,7 +50,7 @@ The host coordinator owns the provider API call, completion notification deliver
 
 ### Story efficiency metrics
 
-- Aggregate Trusted PR-ready elapsed, observed work, wait union, subagent wall-clock, agent consumption, dispatch/accepted-finding/full-suite/evidence-reuse counters, fresh/total token, and cost.
+- Aggregate Trusted PR-ready elapsed, observed work, active wait, tool wait, review wait union, subagent wall-clock, agent consumption, dispatch/accepted-finding/full-suite/evidence-reuse counters, fresh/total token, and cost.
 - Parallel review wall-clock is represented separately from summed agent consumption.
 - `story-run-portfolio` runs the shared aggregator over raw run timestamps, overlapping review intervals, dispatch records, and attribution input before storing and summarizing the expanded attribution shape. Explicit measurements are retained when no aggregate can be derived.
 
