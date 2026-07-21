@@ -1,0 +1,439 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-explicit-run-attribution-lineage",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "evidence_catalog": {
+    "binding": {
+      "head_sha_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha",
+      "verification_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "graphify_source": ".vibepro/graphify/graph.json",
+      "rule": "Evidence is current only when the referenced artifact head_sha equals pr-prepare.git.head_sha; refresh pr prepare after any commit."
+    },
+    "failure_mode_ids": [
+      "FM-ERAL-001-invalid-or-incomplete-lineage",
+      "FM-ERAL-002-provider-identity-conflict-or-cross-run-rebind",
+      "FM-ERAL-003-stale-head-binding",
+      "FM-ERAL-004-unattributed-or-mixed-parent-overassignment",
+      "FM-ERAL-005-transcript-leakage-or-unbounded-handoff"
+    ],
+    "done_evidence_ids": [
+      "DE-ERAL-001-current-head-verification",
+      "DE-ERAL-002-current-head-graphify-boundary",
+      "DE-ERAL-003-scope-reviewability-decision"
+    ]
+  },
+  "gate_evidence": {
+    "source_of_truth": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+    "current_head_rule": "These references are admissible only after the canonical artifacts are refreshed and their head_sha matches pr-prepare.git.head_sha; no item below is a waiver.",
+    "common_judgment_spine": {
+      "required_kinds": ["flow_replay", "artifact_replay", "scenario_clause_e2e"],
+      "focused_tap_refs": [
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-lineage-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
+      ],
+      "canonical_store": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "status": "requires_current_head_refresh_and_structured_observation_fields"
+    },
+    "bug_physics": {
+      "class": "observability",
+      "probe_evidence": ["signal_availability", "authoritative_signal_source", "monitoring"],
+      "authoritative_signal_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "status": "requires_probe_and_current_monitoring_evidence"
+    },
+    "path_surface_matrix": {
+      "review_surface": {
+        "status": "requires_current_verification",
+        "target_paths": [
+          "src/run-lineage.js",
+          "src/run-context-capsule.js",
+          "src/session-efficiency-audit.js"
+        ],
+        "required_observation": {
+          "scenario": "path_surface:review_surface",
+          "observed": "surface=review_surface"
+        },
+        "focused_tap_refs": [
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
+        ]
+      }
+    },
+    "responsibility_authority": {
+      "registry_sources": ["responsibility-authority.json", "docs/contracts/vibepro-core-responsibilities.json", "docs/contracts/vibepro-responsibility-authority.json"],
+      "registry_entry": "vibepro.run_lineage.explicit_attribution",
+      "primary_authority": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture",
+      "owned_paths": [
+        "src/human-decision-checkpoint.js",
+        "src/run-context-capsule.js",
+        "src/run-lineage.js"
+      ],
+      "required_evidence": ["unit_regression", "integration_runtime_path", "negative_path", "current_head_verification"],
+      "status": "registered; required evidence remains current-head bound"
+    },
+    "requirement": {
+      "structured_inherited_behavior": "clauses[].inherited_behavior or clauses[].inherited_behaviors",
+      "coverage": "all observed legacy inherited/existing/unchanged branches and entry.type === 'session_meta' are declared on owning clauses",
+      "status": "structured_metadata_added"
+    },
+    "validation_sequencing": {
+      "state_artifact": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
+      "phases": ["targeted_validation", "preflight_review", "code_frozen", "expensive_verification", "final_review"],
+      "focused_tap_refs": [
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit-lineage-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration-current-head.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e-lineage-current-head.tap"
+      ],
+      "status": "requires_phase_records_at_final_head"
+    }
+  },
+  "failure_modes": [
+    {
+      "id": "FM-ERAL-001-invalid-or-incomplete-lineage",
+      "failure": "Malformed, incomplete, or mismatched Story/Run/worktree lineage is persisted or accepted.",
+      "expected_behavior": "Reject before the authoritative write with invalid_run_lineage or run_lineage_mismatch.",
+      "clause_refs": ["C-001", "S-001", "C-002"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/run-lineage-evidence-propagation.test.js"]
+    },
+    {
+      "id": "FM-ERAL-002-provider-identity-conflict-or-cross-run-rebind",
+      "failure": "A provider identity is rebound to another Story/Run or silently replaces Run authority.",
+      "expected_behavior": "Fail closed with provider_observation_conflict and preserve authoritative fields.",
+      "clause_refs": ["S-001", "C-001"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/agent-runtime-adapter-lineage.test.js"]
+    },
+    {
+      "id": "FM-ERAL-003-stale-head-binding",
+      "failure": "An evidence or dispatch record is written against a stale HEAD.",
+      "expected_behavior": "Reject with stale_run_lineage_head without mutating the record.",
+      "clause_refs": ["S-001", "C-002"],
+      "evidence_refs": ["test/run-lineage.test.js", ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json"]
+    },
+    {
+      "id": "FM-ERAL-004-unattributed-or-mixed-parent-overassignment",
+      "failure": "Shared, other-Story, unattributed, or replayed context is allocated to Story-attributed totals.",
+      "expected_behavior": "Partition exactly once and preserve non-attributed buckets without changed-line or path-majority allocation.",
+      "clause_refs": ["S-002", "INV-001", "S-003"],
+      "evidence_refs": ["test/run-lineage.test.js", "test/session-efficiency-run-lineage.test.js"]
+    },
+    {
+      "id": "FM-ERAL-005-transcript-leakage-or-unbounded-handoff",
+      "failure": "Context capsule or handoff stores transcript, prompt, tool output, hidden reasoning, or unbounded observations.",
+      "expected_behavior": "Expose only bounded lineage identity, refs, method, confidence, and bucket summaries.",
+      "clause_refs": ["S-004", "S-006"],
+      "evidence_refs": ["test/run-context-capsule-lineage.test.js", "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js"]
+    }
+  ],
+  "done_evidence": [
+    {
+      "id": "DE-ERAL-001-current-head-verification",
+      "kind": "current_verification",
+      "head_binding": "pr-prepare.git.head_sha",
+      "artifact": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "required_checks": ["unit", "integration", "e2e"],
+      "refresh_command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-explicit-run-attribution-lineage --summary-json"
+    },
+    {
+      "id": "DE-ERAL-002-current-head-graphify-boundary",
+      "kind": "graph_impact_scope",
+      "head_binding": "pr-prepare.git.head_sha",
+      "artifact": ".vibepro/graphify/graph.json",
+      "purpose": "Confirm the lineage resolver boundary and changed/related file scope before adjudication."
+    },
+    {
+      "id": "DE-ERAL-003-scope-reviewability-decision",
+      "kind": "scope_reviewed",
+      "head_binding": "review_result.git_context.head_sha",
+      "review_role": "pr_split_scope",
+      "verdict": "pass",
+      "review_request": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-pr_split_scope.md",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "review_lifecycle": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/lifecycle.json",
+      "refresh_rule": "Resolve review_result.git_context.head_sha at read time; never encode a historical SHA in this SSOT.",
+      "decision": "One coherent Run-attribution contract; no unrelated independently reviewable boundary was found."
+    }
+  ],
+  "scope_reviewability": {
+    "status": "reviewable",
+    "scope_reviewed": "DE-ERAL-003-scope-reviewability-decision",
+    "review_owner_map": {
+      "owner": "single pr_split_scope reviewer",
+      "review_role": "pr_split_scope",
+      "review_request": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-request-pr_split_scope.md",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json"
+    },
+    "split_plan": {
+      "status": "advisory",
+      "artifact": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/split-plan.json",
+      "interpretation": "split_plan.status=split_recommended is advisory and is not the PR split decision."
+    },
+    "authoritative_decision": {
+      "source": "current_independent_pr_split_scope_result",
+      "review_result": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "review_lifecycle": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/lifecycle.json",
+      "pr_count": 1,
+      "rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
+    },
+    "decision_record": "DE-ERAL-003-scope-reviewability-decision",
+    "blast_radius_source": ".vibepro/graphify/graph.json",
+    "adjudication_rule": "An agent must treat the current independent pr_split_scope result as authoritative for this Story, use split_plan only as advisory context, and refresh the request/result/lifecycle evidence when its review surface is stale."
+  },
+  "task_plan": {
+    "source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+    "task_ids": [
+      "story-vibepro-explicit-run-attribution-lineage-01-arch-guarded-run-agent-runtime-adapter-lineage-envelope-authority-provider-observation-mismatch-contract-session-efficiency-audit-module-architecture-spec",
+      "story-vibepro-explicit-run-attribution-lineage-02-core-dispatch-action-evidence-recorder-lineage-append-only",
+      "story-vibepro-explicit-run-attribution-lineage-03-audit-session-cost-run-resolver-story-attributed-shared-parent-other-story-unattributed-replayed-context",
+      "story-vibepro-explicit-run-attribution-lineage-04-handoff-context-capsule-pr-decision-surface-bounded-lineage-summary-ref",
+      "story-vibepro-explicit-run-attribution-lineage-05-qa-run-mixed-parent-provider-id-stale-head-vibe-pro-session-fresh-process-handoff-unit-e2-e-fixture"
+    ],
+    "documentation_task_id": "DOC-ERAL-001",
+    "documentation_boundary": "Story/Architecture/Spec/config/task-plan documentation only; runtime source and tests are out of scope."
+  },
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Run lineage trust and authority boundaries",
+      "mermaid": "flowchart LR\n  Run[Guarded Run authority] --> Envelope[Versioned lineage envelope]\n  Envelope --> Dispatch[Agent dispatch]\n  Envelope --> Evidence[Review and verification evidence]\n  Envelope --> Audit[Session attribution audit]\n  Envelope --> Capsule[Bounded context capsule]\n  Provider[Provider thread and session observations] -. append-only observation .-> Envelope\n  Conflict[Cross-Run conflict or stale HEAD] --> Reject[Typed fail-closed rejection]\n  Envelope --> Reject\n  Hidden[Transcript and hidden reasoning] -. excluded .-> Capsule"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "A Guarded Run dispatch persists a versioned lineage envelope containing the authoritative Story, Run, dispatch, worktree, branch, and HEAD binding.",
+      "inherited_behaviors": [
+        { "condition": "authorityPath !== mirrorPath", "classification": "unchanged", "files": ["src/run-lineage.js"] },
+        { "condition": "authorityError", "classification": "unchanged", "files": ["src/run-lineage.js"] },
+        { "condition": "request.role === 'review' && !started.session_id && !started.thread_id", "classification": "unchanged", "files": ["src/agent-runtime-adapter.js"] },
+        { "condition": "observed.status !== 'cancelled'", "classification": "unchanged", "files": ["src/agent-runtime-adapter.js"] }
+      ],
+      "rationale": "ERAL-S-1 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md", "section": "Artifact contract" }],
+        "code_refs": [
+          { "file": "src/run-lineage.js", "anchor": "createRunLineageEnvelope" },
+          { "file": "src/agent-runtime-adapter.js", "anchor": "createDispatchLineage" }
+        ],
+        "test_refs": [
+          { "file": "test/run-lineage.test.js", "case": "creates and validates a version 0.1.0 envelope from Run authority" },
+          { "file": "test/agent-runtime-adapter-lineage.test.js", "case": "persists Run authority and provider observations while preserving compatibility fields" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/run-lineage.test.js", "must_cover": "creates and validates a version 0.1.0 envelope from Run authority" }]
+      }
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Provider observations append to the same dispatch lineage, deduplicate idempotently, and fail closed on provider identity conflict, cross-Run rebinding, or stale HEAD binding.",
+      "inherited_behavior": {
+        "condition": "loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human'",
+        "classification": "unchanged",
+        "files": ["src/guarded-run-session.js"]
+      },
+      "rationale": "ERAL-S-2 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "code_refs": [
+          { "file": "src/run-lineage.js", "anchor": "appendProviderObservation" },
+          { "file": "src/run-lineage.js", "anchor": "stale_run_lineage_head" }
+        ],
+        "test_refs": [
+          { "file": "test/run-lineage.test.js", "case": "rejects malformed and mismatched bindings with typed errors" },
+          { "file": "test/run-lineage.test.js", "case": "provider observations merge append-only, deduplicate, and reject rebind/conflict" },
+          { "file": "test/agent-runtime-adapter-lineage.test.js", "case": "provider identity cannot replace authoritative Story or Run lineage" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/run-lineage.test.js", "must_cover": "provider observations merge append-only, deduplicate, and reject rebind/conflict" }]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Verification, review, decision, and action records inherit a validated active Run lineage, while an explicit Story or Run mismatch is rejected before the verification write.",
+      "inherited_behaviors": [
+        { "condition": "!supplied && !runAuthority", "classification": "unchanged", "files": ["src/agent-review.js", "src/verification-evidence.js"] },
+        { "condition": "state.status === 'cancelled'", "classification": "unchanged", "files": ["src/human-decision-checkpoint.js"] }
+      ],
+      "rationale": "ERAL-S-3 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "code_refs": [
+          { "file": "src/verification-evidence.js", "anchor": "recordVerificationEvidence" },
+          { "file": "src/agent-review.js", "anchor": "recordAgentReview" },
+          { "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" },
+          { "file": "src/safe-action-orchestrator.js", "anchor": "buildSafeActionPlan" }
+        ],
+        "test_refs": [
+          { "file": "test/run-lineage-evidence-propagation.test.js", "case": "authoritative evidence recorders inherit validated Run lineage additively" },
+          { "file": "test/run-lineage-evidence-propagation.test.js", "case": "explicit Story or Run lineage mismatch fails before verification write" }
+        ]
+      }
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "Run-aware session-cost attribution prioritizes explicit Run lineage and returns bucket, method, source_artifact, confidence, and run_id without treating a Thread-only observation as Story authority. The verification-evidence artifact is the authoritative signal source; signal availability and monitoring are checked before review-surface conclusions.",
+      "inherited_behaviors": [
+        { "condition": "!sessionSelection.session_id && !inferSession && sessionId !== 'auto'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] },
+        { "condition": "!inferSession && requestedSessionId !== 'auto'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] },
+        { "condition": "entry.type === 'session_meta'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] }
+      ],
+      "rationale": "ERAL-S-4 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "code_refs": [
+          { "file": "src/run-lineage.js", "anchor": "resolveRunAttribution" },
+          { "file": "src/session-efficiency-audit.js", "anchor": "buildLineageAttribution" }
+        ],
+        "test_refs": [
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed" },
+          { "file": "test/run-lineage.test.js", "case": "thread-only observations never become authoritative story attribution" }
+        ]
+      }
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Mixed-parent events are partitioned exactly once into story_attributed, shared_parent, other_story, unattributed, or replayed_context and bucket totals reconcile to the input event and token totals.",
+      "rationale": "ERAL-S-5 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "AC-5", "index": 4 }],
+        "code_refs": [{ "file": "src/run-lineage.js", "anchor": "ATTRIBUTION_BUCKETS" }],
+        "test_refs": [{ "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" }],
+        "machine_links": {
+          "scenario_clause": "S-002",
+          "evidence_refs": ["test/run-lineage.test.js", "test/session-efficiency-run-lineage.test.js"]
+        }
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/run-lineage.test.js", "must_cover": "resolves five attribution buckets with bounded provenance and reconciled totals" }]
+      }
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Shared-parent, unattributed, and replayed-context events remain in their own buckets and are not allocated into the target Story's attributed event or token totals.",
+      "rationale": "ERAL-S-6 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "code_refs": [{ "file": "src/run-lineage.js", "anchor": "return ['shared_parent', 'explicit_run_lineage'" }],
+        "test_refs": [
+          { "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" },
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit accepts the run_id alias without changed-line allocation" }
+        ]
+      }
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "A VibePro-external or Thread-only session continues through inference and reports unavailable attribution when no authoritative lineage exists, without requiring Thread separation.",
+      "rationale": "ERAL-S-7 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "code_refs": [{ "file": "src/run-lineage.js", "anchor": "return ['unattributed', 'unavailable'" }],
+        "test_refs": [{ "file": "test/run-lineage.test.js", "case": "thread-only observations never become authoritative story attribution" }]
+      }
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Existing session-cost run_id and session-id paths, Guarded Run readers, and Agent Runtime Adapter callers retain additive compatibility when lineage is absent or present.",
+      "rationale": "ERAL-S-8 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }],
+        "code_refs": [
+          { "file": "src/session-efficiency-audit.js", "anchor": "collectSessionEfficiencyAudit" },
+          { "file": "src/agent-runtime-adapter.js", "anchor": "Legacy callers may not yet expose" }
+        ],
+        "test_refs": [
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit accepts the run_id alias without changed-line allocation" },
+          { "file": "test/agent-runtime-adapter-lineage.test.js", "case": "poll retains the same authoritative lineage and append-only observation" }
+        ]
+      }
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "A fresh process can reconstruct bounded Story-to-Run-to-dispatch-to-provider-observation lineage from the Run context capsule without transcript content.",
+      "inherited_behavior": {
+        "condition": "!options.authorityFile || path.resolve(authorityFile",
+        "classification": "unchanged",
+        "files": ["src/run-context-capsule.js"]
+      },
+      "rationale": "ERAL-S-9 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],
+        "code_refs": [
+          { "file": "src/run-context-capsule.js", "anchor": "buildLineageProjection" },
+          { "file": "src/run-context-capsule.js", "anchor": "boundedProviderObservations" }
+        ],
+        "test_refs": [
+          { "file": "test/run-context-capsule-lineage.test.js", "case": "ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage" },
+          { "file": "test/run-context-capsule-lineage.test.js", "case": "lineage projection remains bounded when the Run owns many dispatches" }
+        ]
+      }
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "Focused tests and an end-to-end fixture cover identity validation, mismatch handling, mixed-parent bucket partitioning, unattributed retention, Guarded Run dispatch, evidence propagation, canonical Run session-cost attribution, and transcript-free bounded handoff lineage.",
+      "rationale": "ERAL-S-10 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "AC-10", "index": 9 }],
+        "code_refs": [{ "file": "src/run-lineage.js", "anchor": "RunLineageError" }],
+        "test_refs": [
+          { "file": "test/run-lineage.test.js", "case": "rejects malformed and mismatched bindings with typed errors" },
+          { "file": "test/run-lineage-evidence-propagation.test.js", "case": "authoritative evidence recorders inherit validated Run lineage additively" },
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit attributes embedded lineage and leaves thread-only observations unattributed" },
+          { "file": "test/run-context-capsule-lineage.test.js", "case": "ERAL-S-9 capsule projects bounded Story to Run to dispatch to provider observation lineage" },
+          { "file": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js", "case": "ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction" }
+        ],
+        "machine_links": {
+          "acceptance_criterion": "AC-10",
+          "scenario_clause_alias": "S-006",
+          "evidence_refs": [
+            "test/run-lineage.test.js",
+            "test/run-lineage-evidence-propagation.test.js",
+            "test/session-efficiency-run-lineage.test.js",
+            "test/run-context-capsule-lineage.test.js",
+            "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js"
+          ]
+        },
+        "verifiable_by": {
+          "test_pattern": [
+            { "file_glob": "test/run-lineage.test.js", "must_cover": "rejects malformed and mismatched bindings with typed errors" },
+            { "file_glob": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js", "must_cover": "ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcript-free handoff reconstruction" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Lineage schema and attribution resolution remain in src/run-lineage.js while session-efficiency-audit.js consumes the resolver and preserves existing audit output compatibility.",
+      "rationale": "ERAL-S-11 acceptance criterion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md", "section": "Integration boundaries" }],
+        "code_refs": [
+          { "file": "src/run-lineage.js", "anchor": "export function resolveRunAttribution" },
+          { "file": "src/session-efficiency-audit.js", "anchor": "resolveCanonicalRunLineage" },
+          { "file": "src/session-efficiency-audit.js", "anchor": "import { resolveRunAttribution, validateRunLineageEnvelope }" }
+        ],
+        "test_refs": [
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "AC-11 session efficiency audit consumes canonical Run resolution and validation from run-lineage" },
+          { "file": "test/session-efficiency-run-lineage.test.js", "case": "session efficiency audit accepts the run_id alias without changed-line allocation" },
+          { "file": "test/run-lineage.test.js", "case": "resolves five attribution buckets with bounded provenance and reconciled totals" }
+        ]
+      }
+    }
+  ]
+}

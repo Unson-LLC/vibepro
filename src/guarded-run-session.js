@@ -12,6 +12,7 @@ import {
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
 import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
+import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -111,10 +112,17 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
-  const managedRoot = loaded.state.execution_context?.root_realpath;
-  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== managedRoot) {
+  const dispatchAuthority = runtimeDispatchAuthority(loaded.state);
+  if (operation === 'dispatch' && dispatchAuthority.error) {
+    throw contractError('worktree_mismatch', dispatchAuthority.error, {
+      run_id: loaded.state.run_id,
+      expected_authority_kind: loaded.state.execution_context?.authority_kind ?? null
+    });
+  }
+  const authorityRoot = dispatchAuthority.root_realpath;
+  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== authorityRoot) {
     throw new GuardedRunError('worktree_mismatch', 'runtime dispatch must target the Guarded Run managed worktree', {
-      expected: managedRoot,
+      expected: authorityRoot,
       actual: options.request?.requirements?.managed_worktree ?? null
     });
   }
@@ -124,16 +132,17 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   if (operation !== 'dispatch' && !currentDispatch) {
     throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
   }
-  const identityBefore = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+  const identityBefore = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
   if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
     throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
       expected_head_sha: loaded.state.current_head_sha,
       actual_head_sha: identityBefore.head_sha
     });
   }
+  const providerIdentityRecords = await readPersistedProviderIdentityRecords(deps, loaded.authorityIdentity.root_realpath);
   let result = operation === 'dispatch'
-    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request)
-    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId);
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request, { providerIdentityRecords })
+    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
     result = {
@@ -148,14 +157,29 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     };
   }
   if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
-    const actualIdentity = await resolveIdentity(deps, managedRoot, 'worktree_mismatch');
+    const actualIdentity = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
     if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
       throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
         reported_head_sha: result.dispatch.result?.head_sha ?? null,
         actual_head_sha: actualIdentity.head_sha
       });
     }
-    result = { ...result, state: { ...result.state, current_head_sha: actualIdentity.head_sha } };
+    const reboundLineage = result.dispatch.lineage
+      ? { ...result.dispatch.lineage, head_sha: actualIdentity.head_sha }
+      : null;
+    const reboundDispatch = reboundLineage
+      ? { ...result.dispatch, lineage: reboundLineage }
+      : result.dispatch;
+    result = {
+      ...result,
+      dispatch: reboundDispatch,
+      state: {
+        ...result.state,
+        current_head_sha: actualIdentity.head_sha,
+        runtime_dispatches: (result.state.runtime_dispatches ?? []).map((dispatch) =>
+          dispatch.dispatch_id === reboundDispatch.dispatch_id ? reboundDispatch : dispatch)
+      }
+    };
   }
   if (operation === 'poll' && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
     result = {
@@ -180,6 +204,24 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   return result;
 }
 
+function runtimeDispatchAuthority(state) {
+  const kind = state?.execution_context?.authority_kind;
+  const managed = state?.managed_worktree;
+  if (kind === 'managed') {
+    if (!managed?.path || !managed?.branch) {
+      return { root_realpath: null, error: 'Guarded Run managed worktree authority is incomplete' };
+    }
+    return { root_realpath: managed.path, branch: managed.branch, error: null };
+  }
+  if (kind === 'repository' || kind === 'source_fallback') {
+    if (!state?.execution_context?.root_realpath) {
+      return { root_realpath: null, error: 'Guarded Run repository authority is incomplete' };
+    }
+    return { root_realpath: state.execution_context.root_realpath, branch: null, error: null };
+  }
+  return { root_realpath: null, error: 'Guarded Run authority kind is incomplete' };
+}
+
 const FALLBACK_RUNTIME_STOP_CODES = new Set([
   'runtime_unavailable',
   'quota_exceeded',
@@ -188,13 +230,13 @@ const FALLBACK_RUNTIME_STOP_CODES = new Set([
   'review_readonly_unavailable'
 ]);
 
-async function dispatchRuntimeWithFallbacks(coordinator, state, request) {
+async function dispatchRuntimeWithFallbacks(coordinator, state, request, options = {}) {
   const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
     .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
   let currentState = state;
   let result = null;
   for (const adapterId of adapterIds) {
-    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId });
+    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId }, options);
     currentState = result.state;
     const fallbackAllowed = result.dispatch?.provider_run_id === null
       && FALLBACK_RUNTIME_STOP_CODES.has(result.dispatch?.stop_reason?.code);
@@ -846,6 +888,51 @@ function resolveRepositorySharedLockRoot(identity) {
 async function readRun(deps, repoRoot, options) {
   const loaded = await loadSelectedRun(deps, repoRoot, options);
   return loaded.state;
+}
+
+async function readPersistedProviderIdentityRecords(deps, repoRoot) {
+  const executionsRoot = path.join(getWorkspaceDir(repoRoot), 'executions');
+  let storyEntries;
+  try {
+    storyEntries = await deps.artifactIo.readdir(executionsRoot);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
+    throw error;
+  }
+  const records = [];
+  for (const storyId of [...storyEntries].filter((entry) => typeof entry === 'string').sort()) {
+    const runsRoot = path.join(executionsRoot, storyId, 'runs');
+    let runEntries;
+    try {
+      runEntries = await deps.artifactIo.readdir(runsRoot);
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw error;
+    }
+    for (const runId of [...runEntries].filter((entry) => RUN_ID_PATTERN.test(entry)).sort()) {
+      const artifact = getRunStatePath(repoRoot, storyId, runId);
+      const raw = await readOptionalFile(deps, artifact);
+      if (raw === null) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state disappeared during provider identity validation.', {
+          artifact
+        });
+      }
+      let state;
+      try {
+        state = migrateRunState(JSON.parse(raw)).state;
+      } catch (error) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state cannot be read during provider identity validation.', {
+          artifact,
+          cause: error.code ?? error.message
+        });
+      }
+      for (const dispatch of state.runtime_dispatches ?? []) {
+        records.push({ ...dispatch, source_artifact: artifact });
+      }
+    }
+  }
+  assertProviderIdentityUniqueness(records);
+  return records;
 }
 
 async function watchRun(deps, repoRoot, options) {

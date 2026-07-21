@@ -129,8 +129,94 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(run.current_head_sha, persisted.current_head_sha);
 });
 
-test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {
+test('Guarded Run rejects provider identities already persisted in a separate Run artifact', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const foreignRunId = 'run-20260715T010204Z-01020305';
+  const foreignDispatch = {
+    adapter_id: 'fixture-runtime',
+    dispatch_id: 'dispatch-foreign',
+    run_id: foreignRunId,
+    provider_run_id: 'provider-foreign',
+    provider_session_id: 'session-foreign',
+    thread_id: 'thread-foreign'
+  };
+  await mkdir(path.dirname(fixture.runFile(fixture.source, foreignRunId)), { recursive: true });
+  await writeFile(fixture.runFile(fixture.source, foreignRunId), `${JSON.stringify({
+    ...run,
+    run_id: foreignRunId,
+    runtime_dispatches: [foreignDispatch]
+  }, null, 2)}\n`);
+  assert.equal((JSON.parse(await readFile(fixture.runFile(fixture.source, foreignRunId), 'utf8'))
+    .runtime_dispatches[0].lineage), undefined);
+
+  let starts = 0;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start() {
+      starts += 1;
+      return { provider_run_id: 'provider-foreign', agent_identity: 'agent-1', session_id: 'session-foreign', thread_id: 'thread-foreign' };
+    },
+    async status() { return { status: 'cancelled' }; },
+    async cancel() {},
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, summary: 'unused' }; }
+  }] });
+  const guarded = fixture.session({ agentRuntimeCoordinator: coordinator });
+  await assert.rejects(guarded.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: run.run_id,
+    request: {
+      adapter_id: 'fixture-runtime',
+      task_id: 'cross-run-conflict',
+      role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+    }
+  }), { code: 'provider_identity_conflict' });
+
+  assert.equal(starts, 1);
+  assert.deepEqual((await guarded.status(fixture.source, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches ?? [], []);
+});
+
+test('Guarded Run reuses the same persisted legacy dispatch identity within one Run and dispatch', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start() {
+      starts += 1;
+      return { provider_run_id: 'provider-same-run', agent_identity: 'agent-1', session_id: 'session-same-run', thread_id: 'thread-same-run' };
+    },
+    async status() { return { status: 'running' }; },
+    async cancel() {},
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, summary: 'unused' }; }
+  }] });
+  const firstSession = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await firstSession.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'fixture-runtime',
+    task_id: 'same-dispatch-retry',
+    role: 'implementation',
+    requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+  };
+  const first = await firstSession.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: run.run_id, request });
+  const persisted = JSON.parse(await readFile(fixture.runFile(fixture.source, run.run_id), 'utf8'));
+  assert.equal(persisted.runtime_dispatches[0].provider_run_id, 'provider-same-run');
+
+  const reloadedSession = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const retry = await reloadedSession.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: run.run_id, request });
+
+  assert.equal(starts, 1);
+  assert.equal(retry.reused, true);
+  assert.equal(retry.dispatch.dispatch_id, first.dispatch.dispatch_id);
+  assert.equal(retry.dispatch.provider_run_id, first.dispatch.provider_run_id);
+  assert.equal((await reloadedSession.status(fixture.source, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches.length, 1);
+});
+
+test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   const nextHead = 'b'.repeat(40);
   let runtimeStatus = 'running';
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
@@ -148,19 +234,21 @@ test('ARA-S-3 Guarded Run collects an implementation result after the managed wo
     runId: RUN_ID,
     request: {
       adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation',
-      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.managed_worktree.path }
     }
   });
-  fixture.setHead(fixture.source, nextHead);
+  fixture.setHead(fixture.managed, nextHead);
   runtimeStatus = 'completed';
   const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.ok(completed.dispatch.result, JSON.stringify(completed));
   assert.equal(completed.dispatch.result.head_sha, nextHead);
+  assert.equal(completed.dispatch.lineage.head_sha, nextHead);
   assert.equal(completed.state.current_head_sha, nextHead);
   assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).current_head_sha, nextHead);
 });
 
 test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree', async (t) => {
-  const fixture = await createFixture(t, { mode: 'disabled' });
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
   let runtimeStatus = 'running';
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
     id: 'fixture-runtime',
@@ -174,11 +262,36 @@ test('ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD d
   const run = await session.run(fixture.source, { storyId: STORY_ID });
   const started = await session.dispatchRuntime(fixture.source, {
     storyId: STORY_ID, runId: RUN_ID,
-    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath } }
+    request: { adapter_id: 'fixture-runtime', task_id: 'implementation-runtime', role: 'implementation', requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: run.managed_worktree.path } }
   });
-  fixture.setHead(fixture.source, 'b'.repeat(40));
+  fixture.setHead(fixture.managed, 'b'.repeat(40));
   runtimeStatus = 'completed';
   await assert.rejects(session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id }), errorWithCode('runtime_head_mismatch'));
+});
+
+test('Guarded Run rejects dispatch when managed authority is partial even with execution_context present', async (t) => {
+  const fixture = await createFixture(t, { mode: 'preferred', managedStatus: 'created' });
+  const session = fixture.session({ agentRuntimeCoordinator: createAgentRuntimeCoordinator({ adapters: [] }) });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const partial = {
+    ...run,
+    managed_worktree: { ...run.managed_worktree, path: null, branch: null },
+    worktree_root: fixture.source,
+    branch: 'caller-observed-branch'
+  };
+  await Promise.all([fixture.managed, fixture.source].map((root) => writeFile(fixture.runFile(root, run.run_id), `${JSON.stringify(partial, null, 2)}\n`)));
+
+  await assert.rejects(
+    session.dispatchRuntime(fixture.source, {
+      storyId: STORY_ID,
+      runId: run.run_id,
+      request: {
+        adapter_id: 'fixture-runtime', task_id: 'partial-authority', role: 'implementation',
+        requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+      }
+    }),
+    errorWithCode('worktree_mismatch')
+  );
 });
 
 test('ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed', async (t) => {

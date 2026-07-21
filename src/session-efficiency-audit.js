@@ -9,6 +9,11 @@ import {
   parseNumstat,
   summarizeDiffLineStats
 } from './evidence-cost-budget.js';
+import {
+  resolveRunAttribution,
+  resolveCanonicalRunLineage,
+  validateRunLineageEnvelope
+} from './run-lineage.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -114,6 +119,8 @@ const SESSION_EXPOSURE_SIGNALS = [
 export async function collectSessionEfficiencyAudit(repoRoot, {
   storyId,
   sessionId,
+  runId = null,
+  run_id = null,
   inferSession = false,
   codexHome = null,
   automationMemoryPath = null,
@@ -127,6 +134,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   if (!storyId) throw new Error('audit session-cost requires --story-id <id>');
 
   const root = path.resolve(repoRoot);
+  const requestedRunId = normalizeOptionalText(runId ?? run_id);
   const resolvedCodexHome = path.resolve(codexHome ?? process.env.CODEX_HOME ?? path.join(os.homedir(), '.codex'));
   const automationMemory = await resolveAutomationMemoryWindow(automationMemoryPath, { now });
   const effectiveWindowStart = windowStart ?? automationMemory.window_start ?? null;
@@ -150,9 +158,9 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const sessionFiles = selectedSessionId
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
-  const session = selectedSessionId && sessionFiles.length > 0
-    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
-    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
+  let session = selectedSessionId && sessionFiles.length > 0
+    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, runId: requestedRunId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, { storyId, runId: requestedRunId });
   const sessionAttribution = selectedSessionId && sessionFiles.length > 0
     ? await buildSessionAttribution(sessionFiles, {
       repoRoot: root,
@@ -165,6 +173,26 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
+  if (requestedRunId) {
+    const canonicalRun = await resolveCanonicalRunLineage(root, observedRoot, {
+      storyId,
+      runId: requestedRunId,
+      sessionCwd: session.cwd,
+      processCwd: processMetadata?.cwd,
+      sessionEvents: session.lineage_attribution?.events ?? []
+    });
+    session = {
+      ...session,
+      lineage_attribution: mergeCanonicalRunAttribution(session.lineage_attribution, canonicalRun, {
+        storyId,
+        runId: requestedRunId,
+        sessionId: selectedSessionId,
+        filePaths: sessionFiles,
+        windowStart: effectiveWindowStart,
+        windowEnd: effectiveWindowEnd
+      })
+    };
+  }
   const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
   const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId, {
     sessionFiles
@@ -193,6 +221,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
     observed_worktree_matches_repo: observedWorktreeMatchesRepo,
     attribution: sessionAttribution,
+    lineage_attribution: session.lineage_attribution,
     session,
     process_manager: processMetadata ? {
       status: 'available',
@@ -331,7 +360,9 @@ export function renderSessionEfficiencyAudit(result) {
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
     `- observed_worktree: ${result.observed_worktree} (${result.observed_worktree_source})`,
+    renderLineageAttribution(result),
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
+    `- session_jsonl_parse: ${result.session.parse_diagnostics?.status ?? 'unknown'} malformed_rows=${result.session.parse_diagnostics?.malformed_row_count ?? '未確認'} confidence=${result.session.parse_diagnostics?.confidence ?? '未確認'}`,
     `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
@@ -353,6 +384,43 @@ export function renderSessionEfficiencyAudit(result) {
     ''
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function renderLineageAttribution(result) {
+  const lineage = result.lineage_attribution ?? {};
+  const selection = result.session_selection ?? {};
+  const status = selection.status === 'ambiguous'
+    ? 'ambiguous'
+    : normalizeOptionalText(lineage.status) ?? 'unavailable';
+  const method = status === 'ambiguous'
+    ? 'session_selection'
+    : normalizeOptionalText(lineage.mode)
+      ?? (uniqueStrings((lineage.events ?? []).map((event) => event?.method)).join(',') || '-');
+  const runId = normalizeOptionalText(lineage.filter?.run_id)
+    ?? normalizeOptionalText(lineage.canonical_run?.authority?.run_id)
+    ?? normalizeOptionalText(lineage.canonical_run?.run_id)
+    ?? normalizeOptionalText((lineage.events ?? []).find((event) => event?.run_id)?.run_id)
+    ?? '-';
+  const source = status === 'ambiguous'
+    ? normalizeOptionalText(selection.source) ?? normalizeOptionalText(lineage.source) ?? '-'
+    : normalizeOptionalText(lineage.source) ?? normalizeOptionalText(selection.source) ?? '-';
+  const eventConfidences = uniqueStrings((lineage.events ?? []).map((event) => event?.confidence));
+  const confidence = eventConfidences.join(',')
+    || normalizeOptionalText(lineage.confidence)
+    || normalizeOptionalText(selection.confidence)
+    || (status === 'unavailable' ? 'unavailable' : '-');
+  const reason = status === 'available'
+    ? null
+    : status === 'ambiguous'
+      ? normalizeOptionalText(selection.reason)
+        ?? normalizeOptionalText(lineage.reason)
+        ?? 'lineage attribution was ambiguous'
+      : normalizeOptionalText(lineage.reason)
+        ?? normalizeOptionalText(lineage.canonical_run?.reason)
+        ?? normalizeOptionalText(selection.reason)
+        ?? 'lineage attribution was not available';
+  const reasonSuffix = reason ? ` reason=${reason.replace(/\s+/g, ' ')}` : '';
+  return `- lineage_attribution: status=${status} method=${method} run_id=${runId} source=${source} confidence=${confidence}${reasonSuffix}`;
 }
 
 async function readProcessMetadata(codexHome, sessionId) {
@@ -974,7 +1042,7 @@ async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
 }
 
 async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const buckets = {
@@ -1027,6 +1095,7 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
     mixed_parent: [...storyRefs].some((ref) => ref !== currentStory),
     detected_story_refs: [...storyRefs].sort(),
     session_cwd_matches_repo: sessionCwdMatchesRepo,
+    parse_diagnostics,
     note: 'Advisory attribution only; mixed sessions are surfaced but do not block audit readiness.'
   };
 }
@@ -1106,14 +1175,15 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, windowStart, windowEnd } = {}) {
-  const entries = await readCodexSessionEntries(filePaths);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd } = {}) {
+  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
   const taskStartedEvents = [];
   const finalAnswerEvents = [];
   const exposureEvents = [];
+  const lineageEvents = [];
   const inWindowEventTimestamps = [];
   let cwd = null;
   let firstEventAt = null;
@@ -1137,6 +1207,33 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
       timestampMs: eventAt
     });
     if (exposure) exposureEvents.push(exposure);
+    const embeddedLineage = extractEmbeddedRunLineage(entry);
+    if (embeddedLineage) {
+      lineageEvents.push({
+        ...exposure,
+        id: `${sourcePath}:${line}`,
+        lineage: embeddedLineage,
+        tokens: exposure?.estimated_tokens ?? 0,
+        time_ms: 0,
+        source_path: sourcePath,
+        line,
+        timestamp: entry.timestamp ?? null,
+        entry_type: entry.type ?? null
+      });
+    } else if (hasLineageObservation(entry)) {
+      lineageEvents.push({
+        ...exposure,
+        id: `${sourcePath}:${line}`,
+        thread_id: extractThreadId(entry),
+        ...extractExplicitAttributionObservation(entry),
+        tokens: exposure?.estimated_tokens ?? 0,
+        time_ms: 0,
+        source_path: sourcePath,
+        line,
+        timestamp: entry.timestamp ?? null,
+        entry_type: entry.type ?? null
+      });
+    }
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
       if (usage) tokenEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, usage });
@@ -1163,6 +1260,14 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
     ? subtractUsage(lastToken.usage, firstToken.usage)
     : null;
   const artifactTokenAccounting = buildArtifactTokenAccounting(exposureEvents, tokenDelta, {
+    sessionId,
+    filePaths,
+    windowStart,
+    windowEnd
+  });
+  const lineageAttribution = buildLineageAttribution(lineageEvents, {
+    storyId,
+    runId,
     sessionId,
     filePaths,
     windowStart,
@@ -1215,6 +1320,8 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, wind
       reason: 'no token_count events were found in the selected session window'
     },
     artifact_token_accounting: artifactTokenAccounting,
+    lineage_attribution: lineageAttribution,
+    parse_diagnostics,
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
       status: finalAnswerEvents.length > 0 || windowEnd ? 'available' : 'partial',
       elapsed_ms: Math.max(0, windowFinishedAt - windowStartedAt),
@@ -1243,18 +1350,26 @@ async function parseCodexSessionJsonl(filePath, options = {}) {
 
 async function readCodexSessionEntries(filePaths) {
   const entries = [];
+  const malformedRows = [];
+  let physicalLineCount = 0;
   for (const sourcePath of filePaths) {
     const text = await readFile(sourcePath, 'utf8');
-    const lines = text.split('\n').filter(Boolean);
+    const lines = text.split('\n');
     for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].trim()) continue;
+      physicalLineCount += 1;
       try {
         entries.push({
           entry: JSON.parse(lines[index]),
           sourcePath,
           line: index + 1
         });
-      } catch {
-        // Ignore malformed JSONL rows; other rows in the session may still carry usable accounting.
+      } catch (error) {
+        malformedRows.push({
+          source_path: sourcePath,
+          line: index + 1,
+          reason: error.message
+        });
       }
     }
   }
@@ -1263,7 +1378,232 @@ async function readCodexSessionEntries(filePaths) {
     || a.sourcePath.localeCompare(b.sourcePath)
     || a.line - b.line
   ));
-  return entries;
+  return {
+    entries,
+    parse_diagnostics: {
+      status: malformedRows.length > 0 ? 'degraded' : 'clean',
+      confidence: malformedRows.length > 0 ? 'degraded' : 'high',
+      physical_row_count: physicalLineCount,
+      parsed_row_count: entries.length,
+      malformed_row_count: malformedRows.length,
+      dropped_row_count: malformedRows.length,
+      malformed_rows: malformedRows,
+      reason: malformedRows.length > 0
+        ? 'one or more JSONL rows could not be parsed; audit totals may be incomplete'
+        : null
+    }
+  };
+}
+
+function normalizeOptionalText(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized || null;
+}
+
+function embeddedLineageCandidates(entry) {
+  return [
+    entry?.lineage,
+    entry?.run_lineage,
+    entry?.payload?.lineage,
+    entry?.payload?.run_lineage,
+    entry?.payload?.data?.lineage,
+    entry?.payload?.artifact_binding?.lineage
+  ].filter((candidate) => candidate && typeof candidate === 'object' && !Array.isArray(candidate));
+}
+
+function extractEmbeddedRunLineage(entry) {
+  for (const candidate of embeddedLineageCandidates(entry)) {
+    try {
+      return validateRunLineageEnvelope(candidate);
+    } catch {
+      // An unvalidated or stale envelope is not authoritative evidence.
+    }
+  }
+  return null;
+}
+
+function extractThreadId(entry) {
+  return normalizeOptionalText(
+    entry?.thread_id
+    ?? entry?.threadId
+    ?? entry?.payload?.thread_id
+    ?? entry?.payload?.threadId
+    ?? entry?.payload?.provider_observation?.thread_id
+  );
+}
+
+function hasThreadOnlyObservation(entry) {
+  return Boolean(extractThreadId(entry)) && !extractEmbeddedRunLineage(entry);
+}
+
+function extractExplicitAttributionObservation(entry) {
+  const candidates = [entry, entry?.payload, entry?.payload?.data]
+    .filter((candidate) => candidate && typeof candidate === 'object' && !Array.isArray(candidate));
+  const observation = {};
+  for (const candidate of candidates) {
+    for (const field of ['shared_parent', 'run_ids', 'parent_run_ids', 'story_ids', 'run_story_ids', 'replayed_context', 'provenance_bucket']) {
+      if (candidate[field] !== undefined && observation[field] === undefined) observation[field] = candidate[field];
+    }
+  }
+  return observation;
+}
+
+function hasLineageObservation(entry) {
+  return hasThreadOnlyObservation(entry) || Object.keys(extractExplicitAttributionObservation(entry)).length > 0;
+}
+
+function mergeCanonicalRunAttribution(sessionAttribution, canonicalRun, {
+  storyId,
+  runId,
+  sessionId,
+  filePaths,
+  windowStart,
+  windowEnd
+} = {}) {
+  if (canonicalRun?.status !== 'available') {
+    const observations = (sessionAttribution?.events ?? []).map((event) => ({
+      timestamp: event.timestamp ?? null,
+      source_path: event.source_path ?? null,
+      line: event.line ?? null,
+      entry_type: event.entry_type ?? null,
+      payload_type: event.payload_type ?? null,
+      thread_id: event.thread_id ?? null,
+      tokens: event.tokens ?? event.estimated_tokens ?? event.token_count ?? 0,
+      time_ms: event.time_ms ?? event.duration_ms ?? event.elapsed_ms ?? 0,
+      value: event.value ?? event.amount ?? 0
+    }));
+    const attribution = resolveRunAttribution(observations, { story_id: storyId, run_id: runId });
+    return {
+      ...attribution,
+      schema_version: '0.1.0',
+      status: 'unavailable',
+      mode: 'canonical_run_authority_required',
+      source: 'guarded-run-authority-artifact',
+      filter: { run_id: runId, run_id_filter_applied: true },
+      authoritative_event_count: 0,
+      thread_only_event_count: observations.filter((event) => event.thread_id).length,
+      session_id: sessionId,
+      window: {
+        session_id: sessionId,
+        source_path: filePaths[0] ?? null,
+        source_paths: filePaths,
+        requested_start: windowStart ?? null,
+        requested_end: windowEnd ?? null,
+        scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+      },
+      canonical_run: canonicalRun ?? { status: 'unavailable', reason: 'canonical Run resolver returned no result' },
+      reason: canonicalRun?.reason ?? 'canonical Run resolver returned no result'
+    };
+  }
+  const sessionEvents = sessionAttribution?.events ?? [];
+  const deduplication = deduplicateCanonicalAndSessionEvents(canonicalRun.events, sessionEvents);
+  const events = deduplication.events;
+  const attribution = resolveRunAttribution(events, { story_id: storyId, run_id: runId });
+  const threadOnlyEvents = sessionEvents.filter((event) => event?.thread_id && !event?.lineage);
+  return {
+    ...attribution,
+    schema_version: '0.1.0',
+    status: 'available',
+    mode: 'canonical_run_artifact_preferred',
+    source: 'guarded-run-authority-artifact+codex-session-jsonl',
+    filter: { run_id: runId, run_id_filter_applied: true },
+    authoritative_event_count: events.filter((event) => event?.lineage).length,
+    thread_only_event_count: threadOnlyEvents.length,
+    session_id: sessionId,
+    window: {
+      session_id: sessionId,
+      source_path: filePaths[0] ?? null,
+      source_paths: filePaths,
+      requested_start: windowStart ?? null,
+      requested_end: windowEnd ?? null,
+      scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+    },
+    canonical_run: canonicalRun,
+    deduplication: deduplication.summary,
+    reason: null
+  };
+}
+
+function deduplicateCanonicalAndSessionEvents(canonicalEvents, sessionEvents) {
+  const remainingSessionEvents = [...sessionEvents];
+  const removed = [];
+  const events = [];
+  for (const canonicalEvent of canonicalEvents) {
+    events.push(canonicalEvent);
+    const canonicalKey = lineageDispatchKey(canonicalEvent);
+    if (!canonicalKey) continue;
+    const duplicateIndex = remainingSessionEvents.findIndex((event) => lineageDispatchKey(event) === canonicalKey);
+    if (duplicateIndex === -1) continue;
+    const [duplicate] = remainingSessionEvents.splice(duplicateIndex, 1);
+    removed.push({
+      method: 'canonical_dispatch_id_preferred',
+      canonical_event_id: canonicalEvent.id ?? null,
+      session_event_id: duplicate.id ?? null,
+      dispatch_id: canonicalKey
+    });
+  }
+  events.push(...remainingSessionEvents);
+  return {
+    events,
+    summary: {
+      status: removed.length > 0 ? 'applied' : 'not_needed',
+      method: 'canonical_dispatch_id_preferred_once_per_dispatch',
+      input_event_count: canonicalEvents.length + sessionEvents.length,
+      output_event_count: events.length,
+      duplicate_event_count: removed.length,
+      removed
+    }
+  };
+}
+
+function lineageDispatchKey(event) {
+  return normalizeOptionalText(event?.lineage?.dispatch_id);
+}
+
+function buildLineageAttribution(events, {
+  storyId,
+  runId = null,
+  sessionId = null,
+  filePaths = [],
+  windowStart = null,
+  windowEnd = null
+} = {}) {
+  const authoritativeEvents = events.filter((event) => event?.lineage);
+  const threadOnlyEvents = events.filter((event) => event?.thread_id && !event?.lineage);
+  const targetRunId = runId ?? [...new Set(
+    authoritativeEvents
+      .filter((event) => event.lineage.story_id === storyId)
+      .map((event) => event.lineage.run_id)
+  )][0] ?? null;
+  const attribution = resolveRunAttribution(events, {
+    story_id: storyId,
+    run_id: targetRunId
+  });
+  return {
+    ...attribution,
+    schema_version: '0.1.0',
+    status: events.length > 0 ? 'available' : 'unavailable',
+    mode: 'authoritative_embedded_lineage',
+    source: 'codex-session-jsonl-embedded-lineage',
+    filter: {
+      run_id: runId,
+      run_id_filter_applied: Boolean(runId)
+    },
+    authoritative_event_count: authoritativeEvents.length,
+    thread_only_event_count: threadOnlyEvents.length,
+    session_id: sessionId,
+    window: {
+      session_id: sessionId,
+      source_path: filePaths[0] ?? null,
+      source_paths: filePaths,
+      requested_start: windowStart ?? null,
+      requested_end: windowEnd ?? null,
+      scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+    },
+    reason: events.length > 0
+      ? null
+      : 'no embedded lineage or thread-only observations were found in the selected session window'
+  };
 }
 
 function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, timestampMs }) {
@@ -1494,7 +1834,7 @@ function formatRatio(value) {
   return value === null || value === undefined ? '未確認' : `${value}%`;
 }
 
-function missingSessionAccounting(sessionId, windowStart, windowEnd) {
+function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId = null, runId = null } = {}) {
   return {
     status: 'unavailable',
     source_path: null,
@@ -1540,7 +1880,14 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       unmatched_estimated_tokens: 0,
       window: { session_id: sessionId },
       reason: 'codex session jsonl was not found'
-    }
+    },
+    lineage_attribution: buildLineageAttribution([], {
+      storyId,
+      runId,
+      sessionId,
+      windowStart,
+      windowEnd
+    })
   };
 }
 
@@ -1975,7 +2322,8 @@ function buildAuditReadiness({ session, processMetadata, observedWorktreeMatches
     !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
     observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
     !isUsableArtifactInventory(artifactInventory) ? artifactInventoryBlocker(artifactInventory) : null,
-    git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
+    git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null,
+    session.parse_diagnostics?.status === 'degraded' ? 'session_jsonl_parse_loss' : null
   ].filter(Boolean);
   return {
     status: blockers.length === 0 ? 'ready' : 'partial',

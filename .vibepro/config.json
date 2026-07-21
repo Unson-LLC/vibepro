@@ -376,8 +376,29 @@
         "started_at": "2026-07-21",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-explicit-run-attribution-lineage",
+        "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product",
+        "judgment_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+        "gate_evidence_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json#/gate_evidence",
+        "validation_sequence_state": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
+        "task_plan_source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "reviewability_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+        "reviewability_authority": "current_independent_pr_split_scope_result",
+        "split_plan_authority": "advisory_only",
+        "pr_decision": "one_pr",
+        "pr_decision_rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
       }
     ],
-    "current_story_id": "story-vibepro-routing-profiles-rendered-projections"
+    "current_story_id": "story-vibepro-explicit-run-attribution-lineage"
   }
 }

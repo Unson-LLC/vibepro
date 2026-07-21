@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 
 import { classifyChangeRisk } from '../src/change-risk-classifier.js';
 import { runCli } from '../src/cli.js';
+import { bugPhysicsVerificationText } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -426,6 +427,28 @@ Session switching is intermittent and looks like a race condition with async orp
   assert.equal(triage.status, 'needs_evidence');
   assert.deepEqual(triage.classes, ['timing']);
   assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
+});
+
+test('bug physics verification text includes structured observation scenarios and values', () => {
+  const text = bugPhysicsVerificationText({
+    commands: [{
+      kind: 'integration',
+      status: 'pass',
+      command: 'node --test lineage.test.js',
+      summary: 'verification passed',
+      observation: {
+        scenarios: ['authoritative_signal_source is verification-evidence store'],
+        values: {
+          signal_availability: 'available',
+          monitoring: 'current-head monitoring evidence'
+        }
+      }
+    }]
+  });
+
+  assert.match(text, /authoritative_signal_source is verification-evidence store/);
+  assert.match(text, /signal_availability available/);
+  assert.match(text, /monitoring current-head monitoring evidence/);
 });
 
 test('pr prepare reuses same-head passing verification for low-risk evidence changes only', async () => {

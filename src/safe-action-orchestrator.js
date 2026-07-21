@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { selectNextBestAction } from './next-best-action-controller.js';
+import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
 const REGISTRY = Object.freeze([
   Object.freeze({ id: 'pr_prepare', classification: 'repo_local_safe', depends_on: [] }),
@@ -14,14 +15,18 @@ const ESCAPE_REGISTRY = Object.freeze([
 ]);
 
 export function buildSafeActionPlan(state) {
-  return REGISTRY.map((action) => ({
-    ...action,
-    node_id: action.id,
-    input_head_sha: state.current_head_sha,
-    idempotency_key: createHash('sha256')
-      .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
-      .digest('hex')
-  }));
+  return REGISTRY.map((action) => {
+    const lineage = resolveActionLineage(state, state.lineage ?? state.run_lineage, `action-${action.id}`);
+    return {
+      ...action,
+      ...(lineage ? { lineage } : {}),
+      node_id: action.id,
+      input_head_sha: state.current_head_sha,
+      idempotency_key: createHash('sha256')
+        .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
+        .digest('hex')
+    };
+  });
 }
 
 export function selectSafeActionCandidate(state, options = {}) {
@@ -103,7 +108,8 @@ export async function runSafeActionPlan(state, options = {}) {
     if (completed) continue;
     try {
       const result = await options.runners[action.id]({ state: current, action });
-      const journal = append(current, action, key, result?.status === 'failed' ? 'failed' : 'completed', result);
+      const lineage = resolveActionLineage(current, action.lineage, `action-${action.id}`);
+      const journal = append(current, action, key, result?.status === 'failed' ? 'failed' : 'completed', { ...result, lineage });
       if (result?.status === 'pr_ready') {
         current = transition(journal, 'pr_ready', null);
         break;
@@ -179,6 +185,7 @@ function isCanonicalAction(action, state, expectedKey) {
 
 function append(state, action, key, status, result = {}) {
   const now = new Date().toISOString();
+  const lineage = result.lineage ?? resolveActionLineage(state, action.lineage, `action-${action.id}`);
   return {
     ...state,
     action_journal: [...state.action_journal, {
@@ -190,10 +197,34 @@ function append(state, action, key, status, result = {}) {
       status,
       artifact: result.artifact ?? null,
       result_summary: result.summary ?? result.stop_reason ?? result.status ?? null,
+      ...(lineage ? { lineage } : {}),
       started_at: now,
       completed_at: now
     }]
   };
+}
+
+function resolveActionLineage(state, supplied, dispatchId) {
+  const source = state.runAuthority ?? state.activeRun ?? state.run ?? state;
+  const authority = {
+    ...source,
+    story_id: source.story_id ?? source.storyId,
+    run_id: source.run_id ?? source.runId,
+    worktree_root: source.worktree_root ?? source.root_realpath ?? source.execution_context?.root_realpath,
+    branch: source.branch ?? source.current_branch ?? source.execution_context?.branch,
+    head_sha: source.head_sha ?? source.current_head_sha
+  };
+  if (!supplied && !['story_id', 'run_id', 'worktree_root', 'branch', 'head_sha'].every((field) => authority[field])) return null;
+  const lineage = supplied
+    ? assertRunLineageBinding(supplied, authority)
+    : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
+  return assertRunLineageBinding(lineage, {
+    story_id: state.story_id,
+    run_id: state.run_id,
+    worktree_root: state.execution_context?.root_realpath,
+    branch: state.branch ?? state.current_branch ?? state.execution_context?.branch,
+    head_sha: state.current_head_sha
+  });
 }
 
 function transition(state, status, code, details = {}) {
