@@ -167,6 +167,12 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   assert.equal(attribution.buckets.shared_parent.event_count, 1);
   assert.equal(attribution.buckets.other_story.event_count, 1);
   assert.equal(attribution.buckets.unattributed.event_count, 1);
+  for (const event of attribution.events) {
+    assert.equal(typeof event.method, 'string');
+    assert.ok(Object.hasOwn(event, 'source_artifact'));
+    assert.equal(typeof event.confidence, 'string');
+    assert.ok(Object.hasOwn(event, 'run_id'));
+  }
   const providerOnly = attribution.events.find((event) => event.thread_id === providerThreadId && !event.lineage);
   assert.equal(providerOnly.bucket, 'unattributed');
   assert.equal(providerOnly.run_id, null);
