@@ -135,6 +135,7 @@ test('auth-only plan emits a canonical producible aggregate review', () => {
   assert.match(action.ordered_actions[2], /--agent-thread-id '<agent-thread-id>'.*--agent-session-id '<agent-session-id>'/);
   assert.match(action.ordered_actions[3], /review close/);
   assert.match(action.ordered_actions[4], /review record .*--summary .*--agent-transcript .*--agent-close-evidence/);
+  assert.match(action.ordered_actions[4], /--inspection-input '<design-story-spec-path>' .*--inspection-input '<runtime-source-path>' .*--inspection-input '<test-path>'/);
   assert.match(action.ordered_actions[4], /--agent-session-id '<agent-session-id>'.*--implementation-session-id '<implementation-session-id>'.*--reviewer-identity separate_session/);
   assert.match(action.ordered_actions[4], /risk_surfaces=auth_boundary/);
   assert.match(action.ordered_actions[5], /sequence record/);
