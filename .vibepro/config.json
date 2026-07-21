@@ -376,8 +376,20 @@
         "started_at": "2026-07-21",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-explicit-run-attribution-lineage",
+        "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product"
       }
     ],
-    "current_story_id": "story-vibepro-routing-profiles-rendered-projections"
+    "current_story_id": "story-vibepro-explicit-run-attribution-lineage"
   }
 }
