@@ -268,6 +268,33 @@ test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async
   assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'diagnose');
 });
 
+test('AAD-S-7 missing final_prepare owner cannot synthesize pr_ready', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let gatePrepareCalls = 0;
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
+  const session = fixture.session({
+    preparePullRequest: async () => {
+      gatePrepareCalls += 1;
+      return { preparation: { gate_status: { ready_for_pr_create: true } } };
+    },
+    actionRunners: Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })]))
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_required');
+  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'final_prepare');
+  assert.equal(gatePrepareCalls, 0);
+});
+
 test('AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let legacyAutopilotCalls = 0;
