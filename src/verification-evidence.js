@@ -162,8 +162,12 @@ export function assertCommandMatchesVerificationKind(kind, command, status, obse
   const observedTestCount = ['numTotalTests', 'numPassedTests']
     .map((key) => Number(artifactObservedValues?.[key]))
     .find((value) => Number.isFinite(value) && value > 0);
+  const observedTapTestCount = ['tests', 'pass']
+    .map((key) => Number(artifactObservedValues?.[key]))
+    .find((value) => Number.isFinite(value) && value > 0);
   const nativeTestCheck = /^node\s+--test\b(?=[^\r\n]*(?:--test-name-pattern(?:=|\s)|\s(?!-)\S+))/i.test(normalized)
-    || (bareNativeTest && artifactCheck?.format === 'vitest_jest' && observedTestCount !== undefined);
+    || (bareNativeTest && artifactCheck?.format === 'vitest_jest' && observedTestCount !== undefined)
+    || (bareNativeTest && artifactCheck?.format === 'tap' && observedTapTestCount !== undefined);
   const genericUnitCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test|check|unit)\b|npx\s+(?:vitest|jest)\b|pytest\b|cargo\s+test\b|go\s+test\b|make\s+(?:test|check|unit)\b)/i;
   const integrationCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test:)?integration\b|node\s+--test\b[^\r\n]*\bintegration\b|npx\s+(?:vitest|jest)\b[^\r\n]*\bintegration\b|pytest\b[^\r\n]*\bintegration\b|make\s+integration\b)/i;
   const e2eCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test:)?e2e\b|node\s+--test\b[^\r\n]*\be2e\b|npx\s+(?:playwright|cypress)\b|make\s+e2e\b)/i;

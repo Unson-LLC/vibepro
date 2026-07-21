@@ -191,7 +191,7 @@ test('malformed TAPは推測せず_unrecognizedとして記録される', async 
   await writeFile(path.join(repo, 'tap-results.txt'), 'TAP version 13\nok 1 - missing plan\n');
 
   const result = await recordVerificationEvidence(repo, {
-    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'node --test', artifact: 'tap-results.txt'
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'node --test test/example.test.js', artifact: 'tap-results.txt'
   });
 
   assert.equal(latestCommand(result).artifact_check.status, 'unrecognized');
