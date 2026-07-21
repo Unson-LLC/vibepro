@@ -13087,12 +13087,17 @@ test('execute merge dry-run keeps absent and unreadable cost accounting explicit
   assert.equal(unreadable.result.merge.cost_accounting_collection.status, 'unavailable');
   assert.equal(unreadable.result.merge.cost_accounting.token_accounting.total_tokens, null);
   assert.equal(unreadable.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.estimated_tokens, null);
   assert.match(unreadable.result.merge.cost_accounting_collection.reason, /ENOENT/);
   assert.equal(unreadable.result.merge.warnings.some((warning) => warning.includes('Cost accounting file could not be read')), true);
 
   const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
   assert.equal(artifact.cost_accounting.status, 'unavailable');
   assert.equal(artifact.cost_accounting.token_accounting.total_tokens, null);
+  assert.equal(artifact.cost_accounting.artifact_token_accounting.status, 'unavailable');
 });
 
 test('execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros', async () => {
