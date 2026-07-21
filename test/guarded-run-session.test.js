@@ -19,7 +19,6 @@ import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
 import { createHumanDecision } from '../src/human-decision-checkpoint.js';
 import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
-import { appendProviderObservation, createRunLineageEnvelope } from '../src/run-lineage.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -135,31 +134,22 @@ test('Guarded Run rejects provider identities already persisted in a separate Ru
   const session = fixture.session();
   const run = await session.run(fixture.source, { storyId: STORY_ID });
   const foreignRunId = 'run-20260715T010204Z-01020305';
-  const foreignLineage = appendProviderObservation(createRunLineageEnvelope({
-    story_id: STORY_ID,
-    run_id: foreignRunId,
+  const foreignDispatch = {
+    adapter_id: 'fixture-runtime',
     dispatch_id: 'dispatch-foreign',
-    worktree_root: fixture.source,
-    branch: 'codex/story-guarded-run-test',
-    head_sha: run.current_head_sha
-  }), {
-    provider: 'fixture-runtime',
+    run_id: foreignRunId,
     provider_run_id: 'provider-foreign',
     provider_session_id: 'session-foreign',
     thread_id: 'thread-foreign'
-  });
+  };
   await mkdir(path.dirname(fixture.runFile(fixture.source, foreignRunId)), { recursive: true });
   await writeFile(fixture.runFile(fixture.source, foreignRunId), `${JSON.stringify({
     ...run,
     run_id: foreignRunId,
-    runtime_dispatches: [{
-      adapter_id: 'fixture-runtime',
-      provider_run_id: 'provider-foreign',
-      session_id: 'session-foreign',
-      thread_id: 'thread-foreign',
-      lineage: foreignLineage
-    }]
+    runtime_dispatches: [foreignDispatch]
   }, null, 2)}\n`);
+  assert.equal((JSON.parse(await readFile(fixture.runFile(fixture.source, foreignRunId), 'utf8'))
+    .runtime_dispatches[0].lineage), undefined);
 
   let starts = 0;
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
@@ -187,6 +177,42 @@ test('Guarded Run rejects provider identities already persisted in a separate Ru
 
   assert.equal(starts, 1);
   assert.deepEqual((await guarded.status(fixture.source, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches ?? [], []);
+});
+
+test('Guarded Run reuses the same persisted legacy dispatch identity within one Run and dispatch', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start() {
+      starts += 1;
+      return { provider_run_id: 'provider-same-run', agent_identity: 'agent-1', session_id: 'session-same-run', thread_id: 'thread-same-run' };
+    },
+    async status() { return { status: 'running' }; },
+    async cancel() {},
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, summary: 'unused' }; }
+  }] });
+  const firstSession = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await firstSession.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'fixture-runtime',
+    task_id: 'same-dispatch-retry',
+    role: 'implementation',
+    requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+  };
+  const first = await firstSession.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: run.run_id, request });
+  const persisted = JSON.parse(await readFile(fixture.runFile(fixture.source, run.run_id), 'utf8'));
+  assert.equal(persisted.runtime_dispatches[0].provider_run_id, 'provider-same-run');
+
+  const reloadedSession = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const retry = await reloadedSession.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: run.run_id, request });
+
+  assert.equal(starts, 1);
+  assert.equal(retry.reused, true);
+  assert.equal(retry.dispatch.dispatch_id, first.dispatch.dispatch_id);
+  assert.equal(retry.dispatch.provider_run_id, first.dispatch.provider_run_id);
+  assert.equal((await reloadedSession.status(fixture.source, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches.length, 1);
 });
 
 test('ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority', async (t) => {

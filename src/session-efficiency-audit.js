@@ -1470,7 +1470,7 @@ async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
         observed: { story_id: state.story_id ?? null, run_id: state.run_id ?? null }
       };
     }
-    return buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
+    return await buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
       storyId,
       runId,
       sessionCwd,
@@ -1486,7 +1486,7 @@ async function resolveCanonicalRunLineage(repoRoot, observedRoot, {
   };
 }
 
-function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
+async function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
   storyId,
   runId,
   sessionCwd = null,
@@ -1516,21 +1516,6 @@ function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
       requested: { story_id: storyId, run_id: runId }
     };
   }
-  try {
-    assertProviderIdentityUniqueness(state.runtime_dispatches ?? []);
-  } catch (error) {
-    return {
-      status: 'unavailable',
-      reason: `canonical Run provider identity uniqueness validation failed: ${error.message}`,
-      source_artifact: sourceArtifact,
-      requested: { story_id: storyId, run_id: runId },
-      provider_identity_validation: {
-        status: 'degraded',
-        code: error.code ?? 'provider_identity_conflict',
-        details: error.details ?? null
-      }
-    };
-  }
   const events = [];
   const invalidDispatches = [];
   for (const dispatch of Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : []) {
@@ -1556,6 +1541,37 @@ function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
       invalidDispatches.push({ dispatch_id: dispatch.dispatch_id ?? null, reason: error.message, code: error.code ?? null });
     }
   }
+  if (invalidDispatches.length > 0) {
+    return {
+      status: 'unavailable',
+      reason: `canonical Run dispatch lineage validation failed: ${invalidDispatches.length} invalid dispatch(es)`,
+      source_artifact: sourceArtifact,
+      requested: { story_id: storyId, run_id: runId },
+      dispatch_count: Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches.length : 0,
+      validated_dispatch_count: events.filter((event) => event.event_kind === 'runtime_dispatch').length,
+      invalid_dispatches: invalidDispatches,
+      provider_identity_validation: {
+        status: 'degraded',
+        code: 'invalid_dispatch_lineage',
+        details: invalidDispatches
+      }
+    };
+  }
+  try {
+    assertProviderIdentityUniqueness(await scanPersistedProviderIdentityRecords(authorityRoot));
+  } catch (error) {
+    return {
+      status: 'unavailable',
+      reason: `canonical Run provider identity uniqueness validation failed: ${error.message}`,
+      source_artifact: sourceArtifact,
+      requested: { story_id: storyId, run_id: runId },
+      provider_identity_validation: {
+        status: 'degraded',
+        code: error.code ?? 'provider_identity_conflict',
+        details: error.details ?? null
+      }
+    };
+  }
   if (events.length === 0) {
     events.push({
       id: `run:${runId}:authority`,
@@ -1580,6 +1596,66 @@ function buildCanonicalRunLineage(state, authorityRoot, authorityPath, {
     invalid_dispatches: invalidDispatches,
     reason: null
   };
+}
+
+async function scanPersistedProviderIdentityRecords(root) {
+  const executionsRoot = path.join(root, '.vibepro', 'executions');
+  let storyEntries;
+  try {
+    storyEntries = await readdir(executionsRoot);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
+    throw providerIdentityScanError(executionsRoot, error);
+  }
+  const records = [];
+  for (const storyId of storyEntries.filter((entry) => typeof entry === 'string').sort()) {
+    const runsRoot = path.join(executionsRoot, storyId, 'runs');
+    let runEntries;
+    try {
+      runEntries = await readdir(runsRoot);
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw providerIdentityScanError(runsRoot, error);
+    }
+    for (const runId of runEntries.filter((entry) => typeof entry === 'string').sort()) {
+      const artifact = path.join(runsRoot, runId, 'state.json');
+      let state;
+      try {
+        state = JSON.parse(await readFile(artifact, 'utf8'));
+      } catch (error) {
+        throw providerIdentityScanError(artifact, error);
+      }
+      if (state.runtime_dispatches !== undefined && !Array.isArray(state.runtime_dispatches)) {
+        throw providerIdentityScanError(artifact, new Error('runtime_dispatches must be an array'));
+      }
+      const dispatches = Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : [];
+      records.push(...dispatches.map((dispatch) => ({ ...dispatch, source_artifact: artifact })));
+      const legacyIdentity = ['provider_run_id', 'provider_session_id', 'thread_id']
+        .some((field) => state[field] !== undefined && state[field] !== null && state[field] !== '');
+      if (legacyIdentity) {
+        const matchingDispatch = dispatches.find((dispatch) =>
+          ['provider_run_id', 'provider_session_id', 'thread_id']
+            .some((field) => state[field] && dispatch?.[field] === state[field]));
+        records.push({
+          ...Object.fromEntries(['adapter_id', 'provider_run_id', 'provider_session_id', 'thread_id']
+            .filter((field) => state[field] !== undefined)
+            .map((field) => [field, state[field]])),
+          story_id: state.story_id ?? storyId,
+          run_id: state.run_id ?? runId,
+          dispatch_id: state.dispatch_id ?? matchingDispatch?.dispatch_id ?? `legacy-${storyId}-${runId}`,
+          source_artifact: artifact
+        });
+      }
+    }
+  }
+  return records;
+}
+
+function providerIdentityScanError(artifact, error) {
+  const wrapped = new Error(`provider identity scan blocked for ${artifact}: ${error.message}`);
+  wrapped.code = 'provider_identity_scan_blocked';
+  wrapped.details = { artifact, cause: error.code ?? error.message };
+  return wrapped;
 }
 
 function validateCanonicalRunAuthority(authority, authorityRoot, {

@@ -247,7 +247,7 @@ test('canonical Run lineage fails closed on conflicting persisted provider ident
         provider_run_id: 'provider-run-conflict',
         provider_session_id: 'provider-session-beta',
         thread_id: 'provider-thread-beta',
-        lineage: lineage('run-beta', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+        lineage: { ...lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' }), dispatch_id: 'dispatch-run-beta' }
       }
     ]
   });
@@ -275,6 +275,92 @@ test('canonical Run lineage fails closed on conflicting persisted provider ident
   assert.equal(result.lineage_attribution.authoritative_event_count, 0);
   assert.equal(result.lineage_attribution.buckets.story_attributed.event_count, 0);
   assert.equal(result.lineage_attribution.buckets.other_story.event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
+});
+
+test('canonical Run lineage fails closed on provider identities duplicated across persisted Runs', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA },
+    runtimeDispatches: [{
+      dispatch_id: 'dispatch-run-alpha',
+      adapter_id: 'fixture-runtime',
+      provider_run_id: 'provider-run-cross-run',
+      lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+    }]
+  });
+  await writeCanonicalRun(root, {
+    runId: 'run-beta',
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA },
+    runtimeDispatches: [{
+      dispatch_id: 'dispatch-run-beta',
+      adapter_id: 'fixture-runtime',
+      provider_run_id: 'provider-run-cross-run',
+      lineage: lineage('run-beta', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+    }]
+  });
+  await writeSessionFile(codexHome, SESSION_ID, [{
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+  }]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.code, 'provider_identity_conflict');
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
+  assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
+});
+
+test('canonical Run lineage fails closed when one dispatch is valid and another has invalid lineage', async () => {
+  const { root, codexHome } = await fixture();
+  await writeCanonicalRun(root, {
+    authority: { worktree_root: root, branch: 'codex/lineage', current_head_sha: HEAD_SHA },
+    runtimeDispatches: [
+      {
+        dispatch_id: 'dispatch-run-alpha-valid',
+        adapter_id: 'fixture-runtime',
+        provider_run_id: 'provider-run-valid',
+        lineage: { ...lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' }), dispatch_id: 'dispatch-run-alpha-valid' }
+      },
+      {
+        dispatch_id: 'dispatch-run-alpha-invalid',
+        adapter_id: 'fixture-runtime',
+        provider_run_id: 'provider-run-invalid',
+        lineage: { ...lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' }), dispatch_id: 'dispatch-run-alpha-invalid', head_sha: undefined }
+      }
+    ]
+  });
+  await writeSessionFile(codexHome, SESSION_ID, [{
+    timestamp: '2026-07-21T01:00:00.000Z',
+    type: 'event_msg',
+    lineage: lineage('run-alpha', STORY_ID, { worktree_root: root, branch: 'codex/lineage' })
+  }]);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId: STORY_ID,
+    sessionId: SESSION_ID,
+    runId: 'run-alpha',
+    codexHome,
+    windowStart: '2026-07-21T00:59:00.000Z',
+    windowEnd: '2026-07-21T01:01:00.000Z'
+  });
+
+  assert.equal(result.lineage_attribution.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.status, 'unavailable');
+  assert.equal(result.lineage_attribution.canonical_run.provider_identity_validation.code, 'invalid_dispatch_lineage');
+  assert.equal(result.lineage_attribution.canonical_run.validated_dispatch_count, 1);
+  assert.equal(result.lineage_attribution.canonical_run.invalid_dispatches.length, 1);
+  assert.equal(result.lineage_attribution.authoritative_event_count, 0);
   assert.equal(result.lineage_attribution.buckets.unattributed.event_count, 1);
 });
 
