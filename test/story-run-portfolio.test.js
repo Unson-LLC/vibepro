@@ -16,6 +16,8 @@ test('SRP-S-1 SRP-S-2 creates closed one-Story entries with explicit attribution
   assert.equal(state.entries.length, 6);
   assert.deepEqual(Object.keys(state.entries[0]), ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason']);
   assert.equal(state.entries[0].cost_attribution.total_tokens, null);
+  assert.equal(state.entries[0].cost_attribution.full_suite_count, null);
+  assert.match(renderStoryRunPortfolioSummary(state), /full_suite=unknown evidence_reuse=unknown human_interruptions=unknown/);
   await assert.rejects(
     fixture.controller.create(fixture.root, { portfolioId: 'portfolio-duplicate', storyIds: [STORIES[0], STORIES[0]] }),
     errorCode('duplicate_story')
@@ -174,6 +176,7 @@ test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mo
 
   const cases = [
     ['run', { run_id: 'foreign-run' }],
+    ['creation-request', { creation_request_id: 'portfolio-foreign-request' }],
     ['worktree', { execution_context: { root_realpath: '/worktrees/foreign-story', branch_name: `codex/${STORIES[0]}` } }],
     ['branch', { execution_context: { root_realpath: `/worktrees/${STORIES[0]}`, branch_name: 'foreign-branch' } }],
     ['mutation-story', { mutation_artifacts: [{ story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id }] }],
@@ -264,6 +267,28 @@ test('malformed Portfolio state fails closed as invalid_portfolio_state', async 
     fixture.controller.status(fixture.root, { portfolioId }),
     errorCode('invalid_portfolio_state')
   );
+});
+
+test('parseable semantic corruption in Portfolio state fails the closed schema', async (t) => {
+  const cases = [
+    ['duplicate-story', (state) => { state.entries[1].story_id = state.entries[0].story_id; }],
+    ['unknown-entry-status', (state) => { state.entries[0].status = 'succeeded'; }],
+    ['unknown-portfolio-status', (state) => { state.status = 'succeeded'; }],
+    ['foreign-scope-binding', (state) => { state.scope_bindings['story-foreign'] = { creation_request_id: 'portfolio-foreign' }; }],
+    ['invalid-cost', (state) => { state.entries[0].cost_attribution.full_suite_count = -1; }],
+    ['fractional-count', (state) => { state.entries[0].cost_attribution.full_suite_count = 0.5; }],
+    ['extra-entry-field', (state) => { state.entries[0].unexpected = true; }],
+    ['invalid-promoted-context', (state) => { state.promoted_context.push({ source_story_id: STORIES[0] }); }],
+    ['invalid-decision-journal', (state) => { state.decision_journal.push({ story_id: STORIES[0], decision: 'continue' }); }]
+  ];
+  for (const [kind, corrupt] of cases) {
+    const fixture = await createFixture(t);
+    const portfolioId = `portfolio-semantic-${kind}`;
+    const state = await fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 2) });
+    corrupt(state);
+    await writeFile(path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json`), JSON.stringify(state));
+    await assert.rejects(fixture.controller.status(fixture.root, { portfolioId }), errorCode('invalid_portfolio_state'));
+  }
 });
 
 test('malformed Portfolio lock owner fails closed with recovery_required', async (t) => {

@@ -11,7 +11,15 @@ const PORTFOLIO_ID = /^portfolio-[a-z0-9][a-z0-9._-]*$/;
 const STORY_ID = /^story-[a-z0-9][a-z0-9._-]*$/;
 const TERMINAL = new Set(['pr_ready']);
 const STOPPED = new Set(['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed', 'cancelled']);
+const ENTRY_STATUSES = new Set(['queued', 'starting', 'running', 'pr_ready', 'skipped', ...STOPPED]);
+const PORTFOLIO_STATUSES = new Set(['starting', 'running', 'completed', 'stopped', 'skipped', ...STOPPED]);
 const DECISIONS = new Set(['continue', 'skip', 'retry']);
+const STATE_KEYS = ['schema_version', 'portfolio_id', 'mode', 'status', 'created_at', 'updated_at', 'entries', 'promoted_context', 'decision_journal', 'scope_bindings'];
+const ENTRY_KEYS = ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason'];
+const COST_KEYS = Object.keys(emptyCostAttribution());
+const COUNT_COST_KEYS = new Set(['full_suite_count', 'evidence_reuse_count', 'human_interruption_count']);
+const PROMOTED_CONTEXT_KEYS = ['source_story_id', 'artifact_path', 'digest', 'consumer_story_id', 'reason', 'promoted_at'];
+const DECISION_JOURNAL_KEYS = ['story_id', 'decision', 'policy_type', 'reason', 'decided_at'];
 const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm', 'isProcessAlive']);
 let lockNonce = 0;
 
@@ -268,6 +276,7 @@ async function promoteContext(deps, repoRoot, options = {}) {
 
 function buildScopeBinding(run) {
   return {
+    creation_request_id: run.creation_request_id,
     branch: run.execution_context?.branch ?? run.execution_context?.branch_name ?? null,
     worktree: run.execution_context?.root_realpath ?? null
   };
@@ -281,6 +290,8 @@ function assertRunOwnership(entry, run, binding = {}) {
   const mixedSessions = hasMixedAttribution(run.session_attribution, entry);
   const contaminated = run.story_id !== entry.story_id
     || run.run_id !== entry.run_id
+    || !binding.creation_request_id
+    || run.creation_request_id !== binding.creation_request_id
     || (entry.worktree && run.execution_context?.root_realpath !== entry.worktree)
     || (binding.worktree && run.execution_context?.root_realpath !== binding.worktree)
     || (binding.branch && branch !== binding.branch)
@@ -290,8 +301,8 @@ function assertRunOwnership(entry, run, binding = {}) {
     || mixedSessions;
   if (contaminated) {
     throw error('scope_contamination', 'Guarded Run identity does not match its Portfolio entry.', {
-      expected: { story_id: entry.story_id, run_id: entry.run_id, worktree: entry.worktree, head_sha: entry.head_sha },
-      actual: { story_id: run.story_id, run_id: run.run_id, worktree: run.execution_context?.root_realpath, branch, head_sha: run.current_head_sha, mixed_mutations: mixedMutations, mixed_evidence: mixedEvidence, mixed_reviews: mixedReviews, mixed_sessions: mixedSessions }
+      expected: { story_id: entry.story_id, run_id: entry.run_id, creation_request_id: binding.creation_request_id ?? null, worktree: entry.worktree, head_sha: entry.head_sha },
+      actual: { story_id: run.story_id, run_id: run.run_id, creation_request_id: run.creation_request_id ?? null, worktree: run.execution_context?.root_realpath, branch, head_sha: run.current_head_sha, mixed_mutations: mixedMutations, mixed_evidence: mixedEvidence, mixed_reviews: mixedReviews, mixed_sessions: mixedSessions }
     });
   }
 }
@@ -334,15 +345,15 @@ function emptyCostAttribution() {
     wait_ms: null,
     total_tokens: null,
     cost_usd: null,
-    full_suite_count: 0,
-    evidence_reuse_count: 0,
-    human_interruption_count: 0
+    full_suite_count: null,
+    evidence_reuse_count: null,
+    human_interruption_count: null
   };
 }
 
 function mergeCostAttribution(current, next, entry) {
   if (!next) return current;
-  const allowed = Object.keys(emptyCostAttribution());
+  const allowed = COST_KEYS;
   const identity = ['story_id', 'run_id'];
   if (Object.keys(next).some((key) => !allowed.includes(key) && !identity.includes(key))) {
     throw error('invalid_cost_attribution', 'Unknown cost attribution field.');
@@ -354,6 +365,9 @@ function mergeCostAttribution(current, next, entry) {
     });
   }
   const measurements = Object.fromEntries(Object.entries(next).filter(([key]) => allowed.includes(key)));
+  if (Object.entries(measurements).some(([key, value]) => !validCostMeasurement(key, value))) {
+    throw error('invalid_cost_attribution', 'Cost attribution measurements must be non-negative numbers, integer counts, or null.');
+  }
   return { ...current, ...measurements };
 }
 
@@ -371,14 +385,68 @@ async function readPortfolio(deps, repoRoot, options = {}) {
 }
 
 function validateState(state, portfolioId) {
-  if (state.schema_version !== STORY_RUN_PORTFOLIO_SCHEMA_VERSION || state.portfolio_id !== portfolioId || state.mode !== 'sequential' || !Array.isArray(state.entries) || !state.scope_bindings || typeof state.scope_bindings !== 'object') {
+  if (!hasExactKeys(state, STATE_KEYS) || state.schema_version !== STORY_RUN_PORTFOLIO_SCHEMA_VERSION || state.portfolio_id !== portfolioId || state.mode !== 'sequential' || !PORTFOLIO_STATUSES.has(state.status) || !isIsoTimestamp(state.created_at) || !isIsoTimestamp(state.updated_at) || !Array.isArray(state.entries) || state.entries.length === 0 || !Array.isArray(state.promoted_context) || !Array.isArray(state.decision_journal) || !isRecord(state.scope_bindings)) {
     throw error('invalid_portfolio_state', 'Portfolio state does not match the closed schema.');
   }
+  const storyIds = new Set();
   for (const [order, entry] of state.entries.entries()) {
-    if (entry.order !== order || !STORY_ID.test(entry.story_id) || !Object.hasOwn(entry, 'cost_attribution') || !Object.hasOwn(entry, 'stop_reason')) {
+    const cost = entry.cost_attribution;
+    if (!hasExactKeys(entry, ENTRY_KEYS) || entry.order !== order || !STORY_ID.test(entry.story_id) || storyIds.has(entry.story_id) || !ENTRY_STATUSES.has(entry.status) || (entry.run_id !== null && !nonEmptyString(entry.run_id)) || (entry.worktree !== null && !nonEmptyString(entry.worktree)) || (entry.head_sha !== null && !nonEmptyString(entry.head_sha)) || !hasExactKeys(cost, COST_KEYS) || Object.entries(cost).some(([key, value]) => !validCostMeasurement(key, value)) || !validStopReason(entry.stop_reason)) {
       throw error('invalid_portfolio_state', 'Portfolio entry does not match the closed schema.');
     }
+    storyIds.add(entry.story_id);
+    const binding = state.scope_bindings[entry.story_id];
+    if (entry.status === 'queued' && (entry.run_id !== null || binding !== undefined)) {
+      throw error('invalid_portfolio_state', 'Queued Portfolio entry cannot own Run identity.');
+    }
+    const startingBinding = binding?.status === 'starting';
+    const expectedBindingKeys = startingBinding ? ['status', 'creation_request_id'] : ['creation_request_id', 'branch', 'worktree'];
+    if (binding !== undefined && (!hasExactKeys(binding, expectedBindingKeys) || !nonEmptyString(binding.creation_request_id) || (startingBinding && binding.status !== 'starting') || (!startingBinding && ((binding.branch !== null && !nonEmptyString(binding.branch)) || (binding.worktree !== null && !nonEmptyString(binding.worktree)))))) {
+      throw error('invalid_portfolio_state', 'Portfolio scope binding is invalid.');
+    }
+    if (entry.run_id !== null && (!binding || (binding.worktree ?? null) !== entry.worktree)) {
+      throw error('invalid_portfolio_state', 'Portfolio Run identity does not match its scope binding.');
+    }
   }
+  if (Object.keys(state.scope_bindings).some((storyId) => !storyIds.has(storyId))) {
+    throw error('invalid_portfolio_state', 'Portfolio scope binding references an unknown Story.');
+  }
+  for (const item of state.promoted_context) {
+    if (!hasExactKeys(item, PROMOTED_CONTEXT_KEYS) || !storyIds.has(item.source_story_id) || !storyIds.has(item.consumer_story_id) || state.entries.find((entry) => entry.story_id === item.source_story_id).order >= state.entries.find((entry) => entry.story_id === item.consumer_story_id).order || !nonEmptyString(item.artifact_path) || !/^[a-f0-9]{64}$/.test(item.digest) || !nonEmptyString(item.reason) || !isIsoTimestamp(item.promoted_at)) {
+      throw error('invalid_portfolio_state', 'Promoted context does not match the closed schema.');
+    }
+  }
+  for (const item of state.decision_journal) {
+    if (!hasExactKeys(item, DECISION_JOURNAL_KEYS) || !storyIds.has(item.story_id) || !DECISIONS.has(item.decision) || !nonEmptyString(item.policy_type) || !nonEmptyString(item.reason) || !isIsoTimestamp(item.decided_at)) {
+      throw error('invalid_portfolio_state', 'Decision journal does not match the closed schema.');
+    }
+  }
+}
+
+function hasExactKeys(value, keys) {
+  return isRecord(value) && Object.keys(value).sort().join(',') === [...keys].sort().join(',');
+}
+
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function nonEmptyString(value) {
+  return typeof value === 'string' && value.length > 0;
+}
+
+function isIsoTimestamp(value) {
+  return nonEmptyString(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString() === value;
+}
+
+function validCostMeasurement(key, value) {
+  if (value === null) return true;
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return false;
+  return !COUNT_COST_KEYS.has(key) || Number.isInteger(value);
+}
+
+function validStopReason(value) {
+  return value === null || (isRecord(value) && nonEmptyString(value.code) && nonEmptyString(value.message) && (!Object.hasOwn(value, 'details') || isRecord(value.details)) && Object.keys(value).every((key) => ['code', 'message', 'details'].includes(key)));
 }
 
 async function persist(deps, repoRoot, state, options = {}) {
@@ -568,7 +636,7 @@ export function renderStoryRunPortfolioSummary(state) {
   for (const entry of state.entries) {
     const cost = entry.cost_attribution;
     lines.push(`${entry.order + 1}. ${entry.story_id}: ${entry.status} run=${entry.run_id ?? '-'} worktree=${entry.worktree ?? '-'} head=${entry.head_sha ?? '-'}`);
-    lines.push(`   trusted_pr_ready_ms=${cost.trusted_pr_ready_ms ?? 'unknown'} active_ms=${cost.active_ms ?? 'unknown'} wait_ms=${cost.wait_ms ?? 'unknown'} tokens=${cost.total_tokens ?? 'unknown'} cost_usd=${cost.cost_usd ?? 'unknown'} full_suite=${cost.full_suite_count} evidence_reuse=${cost.evidence_reuse_count} human_interruptions=${cost.human_interruption_count}`);
+    lines.push(`   trusted_pr_ready_ms=${cost.trusted_pr_ready_ms ?? 'unknown'} active_ms=${cost.active_ms ?? 'unknown'} wait_ms=${cost.wait_ms ?? 'unknown'} tokens=${cost.total_tokens ?? 'unknown'} cost_usd=${cost.cost_usd ?? 'unknown'} full_suite=${cost.full_suite_count ?? 'unknown'} evidence_reuse=${cost.evidence_reuse_count ?? 'unknown'} human_interruptions=${cost.human_interruption_count ?? 'unknown'}`);
     if (entry.stop_reason) {
       lines.push(`   stop_reason=${entry.stop_reason.code}: ${entry.stop_reason.message}`);
       lines.push(`   next_action=vibepro execute portfolio-decide . --portfolio-id ${state.portfolio_id} --story-id ${entry.story_id} --decision <continue|retry|skip> --policy-type <type> --reason <reason>`);
