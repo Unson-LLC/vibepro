@@ -75,7 +75,7 @@ The resolver works at the smallest event/exposure unit available. If one indivis
 
 ## Compatibility and failure contract
 
-All public additions are additive. Existing `audit session-cost --session-id`, Guarded Run readers, runtime adapter callers, and evidence recorders remain valid without lineage arguments. New typed failures include `invalid_run_lineage`, `run_lineage_mismatch`, `stale_run_lineage_head`, and `provider_observation_conflict`. These errors are non-mutating and include the conflicting field without copying provider transcript content.
+All public additions are additive. Existing `audit session-cost --session-id`, Guarded Run readers, runtime adapter callers, and evidence recorders remain valid when no managed lineage authority exists. Once a managed authority artifact exists, malformed JSON, partial authority fields, or invalid provider identity values fail closed instead of falling back to legacy inference. New typed failures include `invalid_run_lineage`, `run_lineage_mismatch`, `stale_run_lineage_head`, and `provider_observation_conflict`. These errors are non-mutating and include the conflicting field without copying provider transcript content.
 
 VibePro-external sessions continue through inference. A Thread id alone never raises confidence to authoritative. Missing Run artifacts, multiple candidate Runs, or an unresolved mixed parent produce honest ambiguous/unavailable or independent buckets.
 

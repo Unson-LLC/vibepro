@@ -12,7 +12,7 @@ parent_design:
 
 VibePro-owned dispatchはGuarded Run authorityから`0.1.0` lineage envelopeを生成する。必須fieldは`story_id`、`run_id`、`dispatch_id`、`worktree_root`、`branch`、`head_sha`である。`provider_run_id`、`provider_session_id`、`thread_id`はoptional observationであり、単独ではStory authorityにならない。
 
-lineage付きrecordはauthority bindingをvalidateしてから書く。field不一致は`invalid_run_lineage`、`run_lineage_mismatch`、`stale_run_lineage_head`、`provider_observation_conflict`のいずれかで非破壊的に失敗する。lineageなしの既存callerは従来どおり動作する。
+lineage付きrecordはauthority bindingをvalidateしてから書く。field不一致は`invalid_run_lineage`、`run_lineage_mismatch`、`stale_run_lineage_head`、`provider_observation_conflict`のいずれかで非破壊的に失敗する。authority artifactが存在するのに破損・部分欠落している場合や、provider observationのidentityが空白・非文字列・不正な場合もtyped errorでfail closedとし、legacy inferenceへ降格しない。lineageなしの既存callerに限り従来どおり動作する。
 
 ## Public output
 

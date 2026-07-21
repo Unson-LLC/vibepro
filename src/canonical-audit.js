@@ -580,7 +580,7 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
   }
 
   const reviewRoot = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
-  for (const stage of await safeReaddir(reviewRoot)) {
+  for (const stage of await safeReaddirDirectories(reviewRoot)) {
     const stageDir = path.join(reviewRoot, stage);
     for (const entry of await safeReaddir(stageDir)) {
       if (REVIEW_AUDIT_FILES.some((pattern) => pattern.test(entry))) {
@@ -1173,7 +1173,7 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
   }
 
   const reviewRoot = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
-  for (const stage of await safeReaddir(reviewRoot)) {
+  for (const stage of await safeReaddirDirectories(reviewRoot)) {
     const stageDir = path.join(reviewRoot, stage);
     for (const entry of await safeReaddir(stageDir)) {
       if (REVIEW_AUDIT_FILES.some((pattern) => pattern.test(entry))) {
@@ -2650,6 +2650,23 @@ async function safeReaddir(dir) {
     if (error.code === 'ENOENT') return [];
     throw error;
   }
+}
+
+async function safeReaddirDirectories(dir) {
+  const entries = await safeReaddir(dir);
+  const directories = [];
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry);
+    if ((await stat(entryPath)).isDirectory()) {
+      directories.push(entry);
+      continue;
+    }
+    if (/^[A-Za-z0-9_-]+-final\.md$/.test(entry)) continue;
+    const error = new Error(`expected review stage directory: ${entryPath}`);
+    error.code = 'ENOTDIR';
+    throw error;
+  }
+  return directories;
 }
 
 async function readJsonIfExists(filePath) {
