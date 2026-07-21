@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-// Runtime acceptance behavior is executed end to end (real git repos + worktrees)
-// in test/managed-worktree-policy-resync.test.js. This spec pins Story acceptance
-// and scenario-clause coverage markers for the production path matrix.
+// Coverage-marker spec only (repo convention for the production path matrix): the
+// assertions below are traceability pins, not behavioral evidence. Runtime acceptance
+// behavior is executed end to end (real git repos + worktrees) in
+// test/managed-worktree-policy-resync.test.js, and the composed CLI flow
+// (gate check -> reconcile) in test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js.
 
 test('story-vibepro-managed-worktree-policy-resync acceptance and scenario coverage', () => {
   // story-vibepro-managed-worktree-policy-resync ac:1

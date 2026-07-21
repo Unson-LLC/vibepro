@@ -14,6 +14,8 @@ Managed worktreeの `.vibepro/config.json` コピーは、役割の異なる2種
 
 同期結果は `policy_sync` フィールド（`synced` / `unchanged` / `skipped` / `failed` + `sections_updated`）としてrefresh結果に載り、execution stateへ流れて監査可能になる。親configの欠如・破損は `policy_sync.status` に記録するだけでrefresh自体は成功させる（fail-soft）。refreshはstatus判定経路であり、ポリシー配布の一時的不整合で保護コマンドを壊してはならないため。
 
+refreshは1つのCLIコマンド内で複数回走り得る（保護コマンドはgate/context check（`buildManagedWorktreeGate` / `evaluateManagedWorktreeCommandContext`）が先にrefreshし、その後execution-state reconcileが自身のrefresh結果を永続化する）。実際の同期書き込みを行うのは最初のrefreshだけで、後続のrefreshは収束済みconfigをdiffして `unchanged` を返す。このため同期イベントは**同期実行時点で**worktree側の `.vibepro/policy-sync.json` へ永続スタンプし（`recordPolicySyncEvent`）、以降のどのrefreshも `policy_sync.last_event`（status / sections_updated / synced_at）としてこれを載せる。どのrefreshがexecution stateへ永続化されても、最後に実際に起きた同期イベントが監査可能に残る。
+
 ## Boundary model
 
 ```mermaid
