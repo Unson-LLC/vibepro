@@ -294,6 +294,18 @@
         "feature_slug": "routing-profiles-rendered-projections"
       },
       {
+        "story_id": "story-vibepro-session-attribution-boundary-guard",
+        "title": "Session cost attributionを構造的なworktree境界に限定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-18",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
         "story_id": "story-vibepro-human-decision-checkpoint",
         "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
         "ssot": "local",

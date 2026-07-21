@@ -56,6 +56,12 @@ const SESSION_EXPOSURE_PROVENANCE_BUCKETS = [
   'world_state',
   'mixed_tool_output'
 ];
+const SEMANTIC_EXPOSURE_BUCKET_PRECEDENCE = new Map([
+  ['audit_evidence', 0],
+  ['story_spec_architecture_docs', 1],
+  ['test', 2],
+  ['src_code', 3]
+]);
 // Codex session JSONL emits a top-level `type: "compacted"` entry when the
 // runtime compacts context; its payload.replacement_history re-quotes prior
 // goal/permissions/system text so the model can resume. That re-quoted text is
@@ -147,10 +153,6 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     windowStart: effectiveWindowStart,
     windowEnd: effectiveWindowEnd
   });
-  if (!sessionSelection.session_id && !inferSession && sessionId !== 'auto') {
-    throw new Error('audit session-cost requires --session-id <id> or --infer-session');
-  }
-
   const selectedSessionId = sessionSelection.session_id;
   const processMetadata = selectedSessionId
     ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
@@ -158,18 +160,43 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const sessionFiles = selectedSessionId
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
-  let session = selectedSessionId && sessionFiles.length > 0
-    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, runId: requestedRunId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
-    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, { storyId, runId: requestedRunId });
-  const sessionAttribution = selectedSessionId && sessionFiles.length > 0
-    ? await buildSessionAttribution(sessionFiles, {
-      repoRoot: root,
+  let session;
+  let sessionAttribution;
+  if (selectedSessionId && sessionFiles.length > 0) {
+    try {
+      const sessionEntries = await readCodexSessionEntries(sessionFiles);
+      session = await parseCodexSessionJsonlFiles(sessionFiles, {
+        sessionId: selectedSessionId,
+        storyId,
+        runId: requestedRunId,
+        windowStart: effectiveWindowStart,
+        windowEnd: effectiveWindowEnd,
+        sessionEntries
+      });
+      sessionAttribution = await buildSessionAttribution(sessionFiles, {
+        repoRoot: root,
+        storyId,
+        windowStart: effectiveWindowStart,
+        windowEnd: effectiveWindowEnd,
+        sessionCwd: processMetadata?.cwd ?? session.cwd,
+        sessionEntries
+      });
+    } catch (error) {
+      const reason = `session JSONL read failed: ${error.message}`;
+      session = missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, {
+        storyId,
+        runId: requestedRunId,
+        reason
+      });
+      sessionAttribution = buildUnavailableSessionAttribution(selectedSessionId, reason, storyId);
+    }
+  } else {
+    session = missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd, {
       storyId,
-      windowStart: effectiveWindowStart,
-      windowEnd: effectiveWindowEnd,
-      sessionCwd: session.cwd
-    })
-    : buildUnavailableSessionAttribution(selectedSessionId);
+      runId: requestedRunId
+    });
+    sessionAttribution = buildUnavailableSessionAttribution(selectedSessionId, null, storyId);
+  }
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
@@ -242,6 +269,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     cost_breakdown: costBreakdown,
     audit_readiness: buildAuditReadiness({
       session,
+      attribution: sessionAttribution,
       processMetadata,
       observedWorktreeMatchesRepo,
       artifactInventory,
@@ -356,6 +384,9 @@ export function renderSessionEfficiencyAudit(result) {
   const token = result.session.token_accounting;
   const exposure = result.session.artifact_token_accounting;
   const elapsed = result.session.elapsed_time_accounting;
+  const attribution = result.attribution ?? {};
+  const auditReadiness = result.audit_readiness ?? {};
+  const attributionReason = attribution.reason ? ` reason=${attribution.reason}` : '';
   const lines = [
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
@@ -364,7 +395,13 @@ export function renderSessionEfficiencyAudit(result) {
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
     `- session_jsonl_parse: ${result.session.parse_diagnostics?.status ?? 'unknown'} malformed_rows=${result.session.parse_diagnostics?.malformed_row_count ?? '未確認'} confidence=${result.session.parse_diagnostics?.confidence ?? '未確認'}`,
     `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
+    `- exposure_dedup: unique=${exposure.unique_estimated_tokens ?? '未確認'} duplicate=${exposure.duplicate_estimated_tokens ?? '未確認'}`,
+    `- carryover_control: ${exposure.carryover_control?.status ?? 'unavailable'} replayed_context_tokens=${exposure.carryover_control?.replayed_context_estimated_tokens ?? '未確認'} duplicate_over_unique=${exposure.carryover_control?.duplicate_over_unique ?? '未確認'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
+    `- attribution: ${attribution.status ?? 'unavailable'} strict=${attribution.primary?.event_count ?? '未確認'} associated=${attribution.upper_bound?.event_count ?? '未確認'} strict_over_associated=${attribution.strict_over_associated ?? '未確認'} risk=${attribution.attribution_risk ?? 'unknown'} mixed_parent=${attribution.mixed_parent === true}${attributionReason}`,
+    `- attribution_parse_coverage: ${attribution.parse_coverage?.status ?? 'unavailable'} malformed_rows=${attribution.parse_coverage?.malformed_row_count ?? '未確認'} reason=${attribution.parse_coverage?.reason ?? '-'}`,
+    `- attribution_detected_story_ids: ${(attribution.detected_story_ids ?? []).join(',') || '-'}`,
+    `- audit_readiness: ${auditReadiness.status ?? 'unknown'} blockers=${(auditReadiness.blockers ?? []).join(',') || '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
     `- story_artifact_lines: ${result.story_artifacts.total_lines} files=${result.story_artifacts.file_count}`,
     `- story_artifact_lineage: ${result.story_artifacts.lineage?.status ?? 'unknown'} source=${result.story_artifacts.lineage?.effective_source ?? '-'}`,
@@ -374,6 +411,13 @@ export function renderSessionEfficiencyAudit(result) {
     ...SESSION_EXPOSURE_BUCKETS.map((bucket) => {
       const value = exposure.buckets?.[bucket.id] ?? null;
       return `| ${bucket.label} | ${value?.estimated_tokens ?? 0} | ${formatRatio(value?.ratio_of_classified_exposure)} | ${formatRatio(value?.ratio_of_session_tokens)} | ${value?.event_count ?? 0} |`;
+    }),
+    '',
+    '| provenance | estimated tokens | unique | duplicate | events | digests |',
+    '| --- | ---: | ---: | ---: | ---: | ---: |',
+    ...SESSION_EXPOSURE_PROVENANCE_BUCKETS.map((bucketId) => {
+      const value = exposure.provenance_buckets?.[bucketId] ?? null;
+      return `| ${bucketId} | ${value?.estimated_tokens ?? '未確認'} | ${value?.unique_estimated_tokens ?? '未確認'} | ${value?.duplicate_estimated_tokens ?? '未確認'} | ${value?.event_count ?? '未確認'} | ${value?.unique_digest_count ?? '未確認'} |`;
     }),
     '',
     '| changed-line参考区分 | changed lines |',
@@ -1041,8 +1085,8 @@ async function writeAuditMemoryArtifact(repoRoot, action, result, checkedAt) {
   return toWorkspaceRelative(repoRoot, filePath);
 }
 
-async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null } = {}) {
-  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
+async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowStart = null, windowEnd = null, sessionCwd = null, sessionEntries = null } = {}) {
+  const { entries, parse_diagnostics } = sessionEntries ?? await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const buckets = {
@@ -1053,8 +1097,8 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
   };
   const storyRefs = new Set();
   const currentStory = String(storyId ?? '');
+  const currentStoryKey = currentStory.toLowerCase();
   const repoPath = path.resolve(repoRoot);
-  const repoName = path.basename(repoPath);
   const sessionCwdMatchesRepo = sessionCwd ? await matchesRepo(sessionCwd, repoRoot) : false;
 
   for (const { entry, sourcePath, line } of entries) {
@@ -1063,49 +1107,111 @@ async function buildSessionAttribution(filePaths, { repoRoot, storyId, windowSta
     const text = JSON.stringify(entry);
     const refs = extractStoryRefs(text);
     for (const ref of refs) storyRefs.add(ref);
+    const hasCurrentStory = Boolean(currentStory && refs.some((ref) => ref.toLowerCase() === currentStoryKey));
+    const otherStoryRefs = refs.filter((ref) => ref.toLowerCase() !== currentStoryKey);
+    const transcriptText = extractSessionTranscriptText(entry).join('\n').trim();
     const item = {
       source_path: sourcePath,
       line,
       timestamp: entry.timestamp ?? null,
-      type: entry.type ?? null
+      type: entry.type ?? null,
+      estimated_tokens: transcriptText ? estimateTextTokens(transcriptText) : 0
     };
-    if (currentStory && refs.includes(currentStory)) {
+    if (entry.type === 'malformed_jsonl') {
+      buckets.unclassified.push(item);
+    } else if (hasCurrentStory && otherStoryRefs.length > 0) {
+      buckets.unclassified.push({ ...item, story_refs: refs, reason: 'mixed_story_refs' });
+    } else if (hasCurrentStory) {
       buckets.strict.push(item);
-    } else if (refs.some((ref) => ref !== currentStory)) {
+    } else if (otherStoryRefs.length > 0) {
       buckets.other_story.push({ ...item, story_refs: refs });
-    } else if (sessionCwdMatchesRepo || text.includes(repoPath) || text.includes(repoName)) {
+    } else if (sessionCwdMatchesRepo || text.includes(repoPath)) {
       buckets.worktree_associated.push(item);
     } else {
       buckets.unclassified.push(item);
     }
   }
 
+  for (const malformed of parse_diagnostics?.malformed_rows ?? []) {
+    buckets.unclassified.push({
+      source_path: malformed.source_path,
+      line: malformed.line,
+      timestamp: null,
+      type: 'malformed_jsonl',
+      estimated_tokens: 0,
+      reason: malformed.reason ?? malformed.error ?? 'malformed_jsonl'
+    });
+  }
+
   const counts = Object.fromEntries(Object.entries(buckets).map(([key, value]) => [key, value.length]));
+  const estimatedTokens = Object.fromEntries(Object.entries(buckets).map(([key, value]) => [
+    key,
+    value.reduce((sum, item) => sum + item.estimated_tokens, 0)
+  ]));
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
   const associated = counts.strict + counts.worktree_associated;
+  const strictOverAssociated = associated === 0
+    ? null
+    : Number((counts.strict / associated).toFixed(3));
   const divergence = total === 0 ? 0 : Number(((counts.other_story + counts.unclassified) / total).toFixed(3));
+  const mixedParent = [...storyRefs].some((ref) => ref.toLowerCase() !== currentStoryKey);
+  const riskThreshold = 0.5;
+  const attributionRisk = strictOverAssociated === null
+    ? 'unknown'
+    : strictOverAssociated < riskThreshold
+      ? 'high'
+      : 'low';
+  const detectedStoryRefs = [...storyRefs].sort();
+  const detectedOtherStoryIds = detectedStoryRefs.filter((ref) => ref.toLowerCase() !== currentStoryKey);
+  const partialParse = (parse_diagnostics?.malformed_row_count ?? 0) > 0;
   return {
     schema_version: '0.1.0',
     status: total > 0 ? 'available' : 'unavailable',
-    mode: 'advisory',
+    mode: 'strict_primary_with_worktree_upper_bound',
+    target_story_id: currentStory || null,
     event_count: total,
     categories: counts,
+    events: {
+      strict_story: counts.strict,
+      worktree_associated: counts.worktree_associated,
+      other_story: counts.other_story,
+      unclassified: counts.unclassified
+    },
+    estimated_tokens: {
+      strict_story: estimatedTokens.strict,
+      worktree_associated: estimatedTokens.worktree_associated,
+      other_story: estimatedTokens.other_story,
+      unclassified: estimatedTokens.unclassified
+    },
     associated_event_count: associated,
+    primary: { basis: 'strict_story_cues', event_count: counts.strict },
+    upper_bound: { basis: 'strict_plus_worktree_associated', event_count: associated },
+    strict_over_associated: strictOverAssociated,
+    risk_threshold: riskThreshold,
+    attribution_risk: attributionRisk,
     divergence_ratio: divergence,
-    mixed_parent: [...storyRefs].some((ref) => ref !== currentStory),
-    detected_story_refs: [...storyRefs].sort(),
+    mixed_parent: mixedParent,
+    detected_story_ids: detectedOtherStoryIds,
+    detected_story_refs: detectedStoryRefs,
     session_cwd_matches_repo: sessionCwdMatchesRepo,
     parse_diagnostics,
-    note: 'Advisory attribution only; mixed sessions are surfaced but do not block audit readiness.'
+    parse_coverage: {
+      status: partialParse ? 'partial' : 'complete',
+      malformed_row_count: parse_diagnostics?.malformed_row_count ?? 0,
+      reason: partialParse ? parse_diagnostics?.reason ?? null : null
+    },
+    reason: total > 0 ? null : 'No events were found within the selected session window for attribution.',
+    note: 'Strict story attribution is primary; worktree-associated attribution is an upper bound. Mixed-parent attribution degrades audit readiness.'
   };
 }
 
-function buildUnavailableSessionAttribution(sessionId) {
+function buildUnavailableSessionAttribution(sessionId, reason = null, storyId = null) {
   return {
     schema_version: '0.1.0',
     status: 'unavailable',
-    mode: 'advisory',
+    mode: 'strict_primary_with_worktree_upper_bound',
     session_id: sessionId ?? null,
+    target_story_id: storyId,
     event_count: 0,
     categories: {
       strict: 0,
@@ -1113,11 +1219,30 @@ function buildUnavailableSessionAttribution(sessionId) {
       other_story: 0,
       unclassified: 0
     },
+    events: {
+      strict_story: 0,
+      worktree_associated: 0,
+      other_story: 0,
+      unclassified: 0
+    },
+    estimated_tokens: {
+      strict_story: 0,
+      worktree_associated: 0,
+      other_story: 0,
+      unclassified: 0
+    },
     associated_event_count: 0,
+    primary: { basis: 'strict_story_cues', event_count: 0 },
+    upper_bound: { basis: 'strict_plus_worktree_associated', event_count: 0 },
+    strict_over_associated: null,
+    risk_threshold: 0.5,
+    attribution_risk: 'unknown',
     divergence_ratio: 0,
     mixed_parent: false,
+    detected_story_ids: [],
     detected_story_refs: [],
-    note: 'No selected session JSONL files were available for attribution.'
+    reason: reason ?? 'No selected session JSONL files were available for attribution.',
+    note: reason ?? 'No selected session JSONL files were available for attribution.'
   };
 }
 
@@ -1175,8 +1300,8 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd } = {}) {
-  const { entries, parse_diagnostics } = await readCodexSessionEntries(filePaths);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runId = null, windowStart, windowEnd, sessionEntries = null } = {}) {
+  const { entries, parse_diagnostics } = sessionEntries ?? await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
@@ -1244,6 +1369,24 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, runI
     if (entry.type === 'event_msg' && entry.payload?.type === 'final_answer') {
       finalAnswerEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt });
     }
+  }
+
+  for (const malformed of parse_diagnostics?.malformed_rows ?? []) {
+    exposureEvents.push({
+      matched: false,
+      bucket_id: 'unattributed',
+      bucket_label: SESSION_EXPOSURE_BUCKET_BY_ID.unattributed.label,
+      estimated_tokens: 0,
+      matched_signals: [],
+      provenance_bucket: null,
+      content_digest: null,
+      timestamp: null,
+      source_path: malformed.source_path,
+      line: malformed.line,
+      entry_type: 'malformed_jsonl',
+      payload_type: null,
+      sample: null
+    });
   }
 
   const firstToken = tokenEvents[0] ?? null;
@@ -1389,7 +1532,7 @@ async function readCodexSessionEntries(filePaths) {
       dropped_row_count: malformedRows.length,
       malformed_rows: malformedRows,
       reason: malformedRows.length > 0
-        ? 'one or more JSONL rows could not be parsed; audit totals may be incomplete'
+        ? `session JSONL partially parsed; malformed rows retained as unattributed; ${malformedRows.length} malformed row(s) found`
         : null
     }
   };
@@ -1617,6 +1760,9 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
     ? { bucket_id: 'replayed_context', matched_signals: ['compaction_replacement_history'] }
     : classifySessionExposureText(text, { storyId });
   const provenanceBucket = classification ? classifyExposureProvenance(entry, classification) : null;
+  const semanticSegments = classification && provenanceBucket === 'mixed_tool_output'
+    ? buildSemanticExposureSegments(text, { storyId })
+    : [];
   return {
     matched: Boolean(classification),
     bucket_id: classification?.bucket_id ?? 'unattributed',
@@ -1624,6 +1770,7 @@ function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, times
     estimated_tokens: estimatedTokens,
     char_count: text.length,
     matched_signals: classification?.matched_signals ?? [],
+    semantic_segments: semanticSegments,
     provenance_bucket: provenanceBucket,
     content_digest: digestExposureText(text),
     timestamp: timestampMs === null ? null : new Date(timestampMs).toISOString(),
@@ -1657,6 +1804,169 @@ function isToolExposure(entry) {
 function digestExposureText(text) {
   const normalized = String(text).replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
   return createHash('sha256').update(normalized).digest('hex');
+}
+
+function buildSemanticExposureSegments(text, { storyId } = {}) {
+  const normalized = String(text).replace(/\\/g, '/');
+  const classification = classifySessionExposureText(normalized, { storyId });
+  if (!classification || classification.matched_bucket_ids.length < 2) return [];
+
+  const anchors = collectSemanticExposureAnchors(normalized, { storyId })
+    .filter((anchor) => classification.matched_bucket_ids.includes(anchor.bucket_id));
+  if (new Set(anchors.map((anchor) => anchor.bucket_id)).size < 2) return [];
+
+  const ordered = resolveSemanticExposureAnchorOverlaps(anchors).sort((left, right) => (
+    left.center - right.center
+    || left.start - right.start
+    || right.end - left.end
+    || left.bucket_id.localeCompare(right.bucket_id)
+  ));
+  const segmentRows = ordered.map((anchor, index) => {
+    const previous = ordered[index - 1];
+    const next = ordered[index + 1];
+    const start = previous
+      ? Math.floor((previous.end + anchor.start) / 2)
+      : 0;
+    const end = next
+      ? Math.floor((anchor.end + next.start) / 2)
+      : normalized.length;
+    return {
+      bucket_id: anchor.bucket_id,
+      start: Math.max(0, Math.min(start, normalized.length)),
+      end: Math.max(0, Math.min(end, normalized.length)),
+      matched_signals: anchor.matched_signals
+    };
+  }).filter((segment) => segment.end > segment.start);
+
+  const byBucket = new Map();
+  for (const segment of segmentRows) {
+    const current = byBucket.get(segment.bucket_id) ?? {
+      bucket_id: segment.bucket_id,
+      char_count: 0,
+      matched_signals: [],
+      ranges: []
+    };
+    current.char_count += segment.end - segment.start;
+    current.matched_signals.push(...segment.matched_signals);
+    const previousRange = current.ranges[current.ranges.length - 1];
+    if (previousRange?.end === segment.start) previousRange.end = segment.end;
+    else current.ranges.push({ start: segment.start, end: segment.end });
+    byBucket.set(segment.bucket_id, current);
+  }
+
+  return [...byBucket.values()].map((segment) => ({
+    ...segment,
+    matched_signals: uniqueStrings(segment.matched_signals),
+    sample: segment.ranges
+      .map(({ start, end }) => normalized.slice(start, end).trim())
+      .filter(Boolean)
+      .join(' … ')
+      .slice(0, 200)
+  }));
+}
+
+function resolveSemanticExposureAnchorOverlaps(anchors) {
+  const boundaries = [...new Set(anchors.flatMap((anchor) => [anchor.start, anchor.end]))]
+    .sort((left, right) => left - right);
+  const resolved = [];
+  for (let index = 1; index < boundaries.length; index += 1) {
+    const start = boundaries[index - 1];
+    const end = boundaries[index];
+    if (end <= start) continue;
+    const covering = anchors.filter((anchor) => anchor.start < end && anchor.end > start);
+    if (covering.length === 0) continue;
+    const winner = covering.sort((left, right) => (
+      (SEMANTIC_EXPOSURE_BUCKET_PRECEDENCE.get(left.bucket_id) ?? Number.MAX_SAFE_INTEGER)
+      - (SEMANTIC_EXPOSURE_BUCKET_PRECEDENCE.get(right.bucket_id) ?? Number.MAX_SAFE_INTEGER)
+      || (left.end - left.start) - (right.end - right.start)
+      || left.bucket_id.localeCompare(right.bucket_id)
+    ))[0];
+    const previous = resolved[resolved.length - 1];
+    if (previous?.bucket_id === winner.bucket_id && previous.end === start) {
+      previous.end = end;
+      previous.center = (previous.start + previous.end) / 2;
+      previous.matched_signals = uniqueStrings([...previous.matched_signals, ...winner.matched_signals]);
+    } else {
+      resolved.push({ ...winner, start, end, center: (start + end) / 2 });
+    }
+  }
+  return resolved;
+}
+
+function collectSemanticExposureAnchors(text, { storyId } = {}) {
+  const byBucket = new Map();
+  for (const { bucketId, patterns } of SESSION_EXPOSURE_SIGNALS) {
+    const matches = [];
+    for (const pattern of patterns) {
+      const flags = pattern.flags.replace(/[gy]/g, '');
+      const matcher = new RegExp(pattern.source, `${flags}g`);
+      for (const match of text.matchAll(matcher)) {
+        if (!match[0]) continue;
+        let span = expandSemanticExposureAnchor(text, match.index, match.index + match[0].length);
+        if (bucketId === 'test' && /\b(?:test|spec)\.[cm]?[jt]sx?\b/.test(match[0])) {
+          span = expandSemanticTestFilenameAnchor(text, span);
+        }
+        matches.push({ start: span.start, end: span.end, matched_signal: pattern.source });
+      }
+    }
+    if (storyId && bucketId === 'audit_evidence' && text.includes('.vibepro/')) {
+      let start = text.indexOf(storyId);
+      while (start >= 0) {
+        matches.push({ start, end: start + storyId.length, matched_signal: `story:${storyId}+.vibepro` });
+        start = text.indexOf(storyId, start + storyId.length);
+      }
+    }
+    if (matches.length === 0) continue;
+    const sorted = matches.sort((left, right) => left.start - right.start || left.end - right.end);
+    const merged = [];
+    for (const match of sorted) {
+      const previous = merged[merged.length - 1];
+      if (previous && match.start <= previous.end) {
+        previous.end = Math.max(previous.end, match.end);
+        previous.matched_signals.push(match.matched_signal);
+      } else merged.push({ ...match, matched_signals: [match.matched_signal] });
+    }
+    byBucket.set(bucketId, merged);
+  }
+  return [...byBucket.entries()].flatMap(([bucketId, ranges]) => ranges.map((range) => ({
+    bucket_id: bucketId,
+    start: range.start,
+    end: range.end,
+    center: (range.start + range.end) / 2,
+    matched_signals: uniqueStrings(range.matched_signals)
+  })));
+}
+
+function expandSemanticTestFilenameAnchor(text, span) {
+  let start = span.start;
+  while (start > 0 && !/[\s\/"'`()\[\]{}<>,;]/.test(text[start - 1])) start -= 1;
+  return { start, end: span.end };
+}
+
+function expandSemanticExposureAnchor(text, start, end) {
+  let expandedStart = start;
+  let expandedEnd = end;
+  while (expandedStart < expandedEnd && /\s/.test(text[expandedStart])) expandedStart += 1;
+  const matchedText = text.slice(expandedStart, expandedEnd);
+  if (!matchedText.includes('/')) return { start: expandedStart, end: expandedEnd };
+  while (expandedStart > 0 && !/[\s"'`()\[\]{}<>,;]/.test(text[expandedStart - 1])) expandedStart -= 1;
+  while (expandedEnd < text.length && !/[\s"'`()\[\]{}<>,;]/.test(text[expandedEnd])) expandedEnd += 1;
+  return { start: expandedStart, end: expandedEnd };
+}
+
+function allocateSemanticSegmentTokens(event) {
+  if (!Array.isArray(event.semantic_segments) || event.semantic_segments.length === 0) {
+    return [{ bucket_id: event.bucket_id, estimated_tokens: event.estimated_tokens, matched_signals: event.matched_signals, sample: event.sample }];
+  }
+  const totalWeight = event.semantic_segments.reduce((sum, segment) => sum + segment.char_count, 0);
+  let allocated = 0;
+  return event.semantic_segments.map((segment, index) => {
+    const estimatedTokens = index === event.semantic_segments.length - 1
+      ? event.estimated_tokens - allocated
+      : Math.floor(event.estimated_tokens * segment.char_count / totalWeight);
+    allocated += estimatedTokens;
+    return { ...segment, estimated_tokens: estimatedTokens };
+  });
 }
 
 function extractSessionTranscriptText(entry) {
@@ -1743,10 +2053,12 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
     bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0 ? 0 : null;
   }
   for (const event of matchedEvents) {
-    const bucket = buckets[event.bucket_id] ?? buckets.unattributed;
-    bucket.estimated_tokens += event.estimated_tokens;
-    bucket.event_count += 1;
-    bucket.matched_signals = uniqueStrings([...bucket.matched_signals, ...event.matched_signals]).slice(0, 12);
+    for (const allocation of allocateSemanticSegmentTokens(event)) {
+      const bucket = buckets[allocation.bucket_id] ?? buckets.unattributed;
+      bucket.estimated_tokens += allocation.estimated_tokens;
+      bucket.event_count += 1;
+      bucket.matched_signals = uniqueStrings([...bucket.matched_signals, ...allocation.matched_signals]).slice(0, 12);
+    }
     const provenance = provenanceBuckets[event.provenance_bucket] ?? provenanceBuckets.fresh_read;
     const duplicate = seenDigests.has(event.content_digest);
     provenance.estimated_tokens += event.estimated_tokens;
@@ -1758,6 +2070,12 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
       provenance.unique_digest_count += 1;
     }
   }
+  const uniqueEstimatedTokens = Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.unique_estimated_tokens, 0);
+  const duplicateEstimatedTokens = Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.duplicate_estimated_tokens, 0);
+  const replayedContextTokens = provenanceBuckets.replayed_context.estimated_tokens;
+  const duplicateOverUnique = uniqueEstimatedTokens > 0
+    ? Number((duplicateEstimatedTokens / uniqueEstimatedTokens).toFixed(3))
+    : null;
   for (const bucket of Object.values(buckets)) {
     bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0
       ? ratio(bucket.estimated_tokens, classifiedEstimatedTokens)
@@ -1777,8 +2095,17 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
     coverage: 'signal-matched transcript entries only',
     buckets,
     provenance_buckets: provenanceBuckets,
-    unique_estimated_tokens: Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.unique_estimated_tokens, 0),
-    duplicate_estimated_tokens: Object.values(provenanceBuckets).reduce((sum, bucket) => sum + bucket.duplicate_estimated_tokens, 0),
+    unique_estimated_tokens: uniqueEstimatedTokens,
+    duplicate_estimated_tokens: duplicateEstimatedTokens,
+    carryover_control: {
+      status: replayedContextTokens > 0 || (duplicateOverUnique !== null && duplicateOverUnique > 1)
+        ? 'review_required'
+        : 'within_budget',
+      replayed_context_estimated_tokens: replayedContextTokens,
+      duplicate_estimated_tokens: duplicateEstimatedTokens,
+      duplicate_over_unique: duplicateOverUnique,
+      duplicate_over_unique_threshold: 1
+    },
     top_exposures: matchedEvents
       .sort((a, b) => b.estimated_tokens - a.estimated_tokens || a.source_path.localeCompare(b.source_path) || a.line - b.line)
       .slice(0, 10)
@@ -1789,6 +2116,7 @@ function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
         matched_signals: event.matched_signals.slice(0, 8),
         provenance_bucket: event.provenance_bucket,
         content_digest: event.content_digest,
+        semantic_segments: allocateSemanticSegmentTokens(event),
         timestamp: event.timestamp,
         source_path: event.source_path,
         line: event.line,
@@ -1822,6 +2150,18 @@ function emptyExposureBuckets(totalSessionTokens) {
   }]));
 }
 
+function unavailableExposureBuckets() {
+  return Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, {
+    id: bucket.id,
+    label: bucket.label,
+    estimated_tokens: null,
+    event_count: null,
+    ratio_of_classified_exposure: null,
+    ratio_of_session_tokens: null,
+    matched_signals: []
+  }]));
+}
+
 function sumTokens(events) {
   return events.reduce((sum, event) => sum + (event.estimated_tokens ?? 0), 0);
 }
@@ -1834,7 +2174,8 @@ function formatRatio(value) {
   return value === null || value === undefined ? '未確認' : `${value}%`;
 }
 
-function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId = null, runId = null } = {}) {
+function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId = null, runId = null, reason = null } = {}) {
+  const unavailableReason = reason ?? 'codex session jsonl was not found';
   return {
     status: 'unavailable',
     source_path: null,
@@ -1855,7 +2196,7 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId =
       reasoning_output_tokens: null,
       source: 'codex-session-jsonl',
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     },
     elapsed_time_accounting: {
       status: 'unavailable',
@@ -1864,7 +2205,7 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId =
       finished_at: null,
       source: 'codex-session-jsonl',
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     },
     artifact_token_accounting: {
       status: 'unavailable',
@@ -1874,12 +2215,29 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd, { storyId =
       source: 'codex-session-jsonl-text-estimate',
       estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
       coverage: 'signal-matched transcript entries only',
-      buckets: emptyExposureBuckets(null),
+      buckets: unavailableExposureBuckets(),
+      provenance_buckets: Object.fromEntries(SESSION_EXPOSURE_PROVENANCE_BUCKETS.map((id) => [id, {
+        id,
+        estimated_tokens: null,
+        unique_estimated_tokens: null,
+        duplicate_estimated_tokens: null,
+        event_count: null,
+        unique_digest_count: null
+      }])),
+      unique_estimated_tokens: null,
+      duplicate_estimated_tokens: null,
+      carryover_control: {
+        status: 'unavailable',
+        replayed_context_estimated_tokens: null,
+        duplicate_estimated_tokens: null,
+        duplicate_over_unique: null,
+        duplicate_over_unique_threshold: 1
+      },
       top_exposures: [],
-      unmatched_event_count: 0,
-      unmatched_estimated_tokens: 0,
+      unmatched_event_count: null,
+      unmatched_estimated_tokens: null,
       window: { session_id: sessionId },
-      reason: 'codex session jsonl was not found'
+      reason: unavailableReason
     },
     lineage_attribution: buildLineageAttribution([], {
       storyId,
@@ -2315,12 +2673,18 @@ function buildCostBreakdown({ changedLines, tokenAccounting }) {
   };
 }
 
-function buildAuditReadiness({ session, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
+function buildAuditReadiness({ session, attribution, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
   const blockers = [
     session.token_accounting.status !== 'available' ? 'token_count_unavailable' : null,
     session.elapsed_time_accounting.status === 'unavailable' ? 'elapsed_time_unavailable' : null,
     !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
     observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
+    attribution?.status !== 'available' ? 'session_attribution_unavailable' : null,
+    attribution?.status === 'available' && attribution.associated_event_count === 0
+      ? 'session_attribution_no_associated_evidence'
+      : null,
+    attribution?.parse_coverage?.status === 'partial' ? 'session_attribution_partial_parse' : null,
+    attribution?.mixed_parent === true ? 'mixed_parent_session_attribution' : null,
     !isUsableArtifactInventory(artifactInventory) ? artifactInventoryBlocker(artifactInventory) : null,
     git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null,
     session.parse_diagnostics?.status === 'degraded' ? 'session_jsonl_parse_loss' : null

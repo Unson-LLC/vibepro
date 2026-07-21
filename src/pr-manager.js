@@ -3277,7 +3277,7 @@ function buildUsedForDecisionSummary({
   };
 }
 
-function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
+export function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
   const sessionId = env?.VIBEPRO_SESSION_ID ?? env?.CODEX_SESSION_ID ?? env?.CLAUDE_SESSION_ID ?? null;
   return {
     schema_version: '0.1.0',
@@ -5370,7 +5370,8 @@ function normalizeGraphPath(filePath) {
 
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, preImplementationStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
-  let primaryStory = pickPrimaryStory(storyDocs, story);
+  const authoritativeStoryDocs = storyDocs.filter((doc) => !isCanonicalAuditSnapshotPath(doc?.path));
+  let primaryStory = pickPrimaryStory(authoritativeStoryDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
     const filesystemStory = await findStorySource(repoRoot, story);
     if (filesystemStory?.path) {
@@ -7140,7 +7141,7 @@ function canonicalStoryBindingSlug(value) {
 
 function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
   const changedDocs = changedStoryDocs
-    .filter((doc) => doc?.path)
+    .filter((doc) => doc?.path && !isCanonicalAuditSnapshotPath(doc.path))
     .map((doc) => ({
       path: doc.path,
       story_id: doc.story_id ?? null,
@@ -7184,6 +7185,10 @@ function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
       ? 'Resolved and changed Story documents match the selected Story, or no changed Story document needs binding.'
       : reasons.join('; ')
   };
+}
+
+function isCanonicalAuditSnapshotPath(filePath) {
+  return normalizeGraphPath(filePath ?? '').startsWith('docs/management/audit-artifacts/');
 }
 
 function resolveArchitectureDecision(storyDoc, fileGroups) {
