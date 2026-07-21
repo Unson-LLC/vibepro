@@ -6,6 +6,11 @@ export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 const REQUIRED_METHODS = Object.freeze(['probe', 'start', 'status', 'cancel', 'collect_result']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled', 'timed_out']);
 const RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES]);
+const RUNTIME_TRANSITIONS = new Map([
+  ['queued', new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES])],
+  ['running', new Set(['running', 'permission_wait', ...TERMINAL_STATUSES])],
+  ['permission_wait', new Set(['permission_wait', 'running', ...TERMINAL_STATUSES])]
+]);
 const WAIT_REASONS = new Set(['runtime_unavailable', 'quota_exceeded', 'permission_wait', 'auth_denied', 'runtime_probe_timeout']);
 const ROLES = new Set(['implementation', 'review']);
 
@@ -177,6 +182,10 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
   if (TERMINAL_STATUSES.has(current.status)) return { state: runState, dispatch: current, reused: true };
   if (!current.provider_run_id) throw new AgentRuntimeError('runtime_not_started', 'waiting runtime dispatch must be retried through dispatch()');
   const adapter = requireAdapter(registry, current.adapter_id);
+  if (current.input_head_sha !== runState.current_head_sha) {
+    return containUncertainRuntime(registry, now, runState, current,
+      'stale_head', 'runtime dispatch input HEAD no longer matches the authoritative Run HEAD');
+  }
   let observed;
   try {
     observed = normalizeStatus(await withTimeout(
@@ -188,6 +197,10 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
     return containUncertainRuntime(registry, now, runState, current,
       error.code === 'runtime_status_timeout' || error.code === 'provider_identity_conflict' || error.code === 'provider_observation_conflict'
         ? error.code : 'runtime_status_failed', error.message);
+  }
+  if (!isAllowedRuntimeTransition(current.status, observed.status)) {
+    return containUncertainRuntime(registry, now, runState, current,
+      'invalid_runtime_transition', `runtime status cannot transition from ${current.status} to ${observed.status}`);
   }
   if (observed.status === 'permission_wait') {
     return waitingExisting(runState, current, 'permission_wait', observed.message ?? 'runtime requires permission', now);
@@ -224,6 +237,10 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
     const code = error.code === 'runtime_result_timeout' ? error.code : 'invalid_runtime_result';
     return containUncertainRuntime(registry, now, runState, current, code, error.message);
   }
+}
+
+function isAllowedRuntimeTransition(currentStatus, nextStatus) {
+  return RUNTIME_TRANSITIONS.get(currentStatus)?.has(nextStatus) === true;
 }
 
 async function containUncertainRuntime(registry, now, runState, current, failureCode, failureMessage) {

@@ -156,3 +156,56 @@ test('fails closed on a provider identity rebound across persisted Run envelopes
   assert.equal(rebound.dispatch.stop_reason.code, 'provider_identity_conflict');
   assert.equal(starts, 2);
 });
+
+test('proves workflow state remains fail-closed for stale HEAD and invalid transitions while preserving pending semantics', async () => {
+  let cancelCalls = 0;
+  let runtimeStatus = 'running';
+  const runtime = adapter({
+    async status() { return { status: runtimeStatus }; },
+    async cancel() { cancelCalls += 1; runtimeStatus = 'cancelled'; }
+  });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [runtime] });
+
+  const started = await coordinator.dispatch(state, request);
+  const stale = await coordinator.poll({ ...started.state, current_head_sha: 'b'.repeat(40) }, started.dispatch.dispatch_id);
+  assert.equal(stale.state.status, 'failed');
+  assert.equal(stale.dispatch.stop_reason.code, 'stale_head');
+  assert.equal(cancelCalls, 1);
+
+  runtimeStatus = 'queued';
+  const invalidTransition = await coordinator.poll({
+    ...started.state,
+    runtime_dispatches: [{ ...started.dispatch, status: 'running' }]
+  }, started.dispatch.dispatch_id);
+  assert.equal(invalidTransition.state.status, 'failed');
+  assert.equal(invalidTransition.dispatch.stop_reason.code, 'invalid_runtime_transition');
+  assert.equal(cancelCalls, 2);
+
+  const pending = await coordinator.dispatch({ ...state, runtime_dispatches: [] }, {
+    ...request,
+    adapter_id: 'missing-provider'
+  });
+  assert.equal(pending.state.status, 'waiting_for_runtime');
+  assert.equal(pending.dispatch.stop_reason.code, 'runtime_unavailable');
+  assert.equal(pending.dispatch.provider_run_id, null);
+
+  let available = false;
+  const recoverableRuntime = adapter({
+    async probe() {
+      return {
+        available,
+        capabilities: available ? ['workspace_write'] : [],
+        sandbox: 'workspace-write',
+        approval_policy: 'managed',
+        reason: 'runtime_unavailable'
+      };
+    }
+  });
+  const recoverableCoordinator = createAgentRuntimeCoordinator({ adapters: [recoverableRuntime] });
+  const waiting = await recoverableCoordinator.dispatch(state, request);
+  assert.equal(waiting.dispatch.status, 'waiting_for_runtime');
+  available = true;
+  const resumed = await recoverableCoordinator.dispatch(waiting.state, request);
+  assert.equal(resumed.state.status, 'running');
+  assert.equal(resumed.reused, false);
+});
