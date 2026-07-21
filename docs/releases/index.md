@@ -89,3 +89,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:368:start -->
 - [PR #368](https://github.com/Unson-LLC/vibepro/pull/368) — [2026-07](/releases/2026-07): story-vibepro-canonical-audit-gate-dag-replay - Summary depthのCanonical Audit Replayを欠損なく引き継ぐ
 <!-- vibepro-release-index-pr:368:end -->
+
+<!-- vibepro-release-index-pr:369:start -->
+- [PR #369](https://github.com/Unson-LLC/vibepro/pull/369) — [2026-07](/releases/2026-07): feat: add explicit Run attribution lineage
+<!-- vibepro-release-index-pr:369:end -->
