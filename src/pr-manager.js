@@ -12409,8 +12409,9 @@ function buildFailureModeCoverageGate({ storyId = null, storySource = null, file
   const testTarget = fileGroups?.tests?.files?.[0] ?? 'test';
   const sourceTarget = fileGroups?.source?.files?.[0] ?? testTarget;
   const verificationKind = isE2eTestPath(testTarget) ? 'e2e' : 'unit';
-  const verificationCommand = `vibepro verify record . --id ${JSON.stringify(storyId ?? 'unknown-story')} --kind ${verificationKind} --status pass --command ${JSON.stringify(`node --test ${JSON.stringify(testTarget)}`)} --target ${JSON.stringify(sourceTarget)} --scenario ${JSON.stringify(`${missing[0]?.id ?? 'failure_mode'}: invalid input is rejected`)} --observed ${JSON.stringify('result=rejected')} --strict-head-binding`;
-  const prepareCommand = `vibepro pr prepare . --story-id ${JSON.stringify(storyId ?? 'unknown-story')} --view blocking-gates`;
+  const testCommand = `node --test ${shellQuote(testTarget)}`;
+  const verificationCommand = `vibepro verify record . --id ${shellQuote(storyId ?? 'unknown-story')} --kind ${verificationKind} --status pass --command ${shellQuote(testCommand)} --target ${shellQuote(sourceTarget)} --scenario ${shellQuote(`${missing[0]?.id ?? 'failure_mode'}: invalid input is rejected`)} --observed ${shellQuote('result=rejected')} --strict-head-binding`;
+  const prepareCommand = `vibepro pr prepare . --story-id ${shellQuote(storyId ?? 'unknown-story')} --view blocking-gates`;
   return {
     id: 'gate:failure_mode_coverage',
     type: 'failure_mode_coverage_gate',
