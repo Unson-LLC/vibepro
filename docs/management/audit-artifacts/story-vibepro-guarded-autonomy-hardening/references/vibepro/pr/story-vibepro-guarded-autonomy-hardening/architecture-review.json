@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "created_at": "2026-07-21T07:07:57.876Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-guarded-autonomy-hardening.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-guarded-autonomy-hardening.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "10 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T07:07:51.774Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "9eaf61f14e44d72e1081a4367c0fb5249aadc430",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Story Architecture Spec code and tests align at the final implementation head",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "runtime-stop-code-contract",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/guarded-run-session.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Canonical recoverable runtime stop codes and direct C-002 timeout test lineage close the prior contract gap",
+    "evidence": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/implementation/transcript-code_spec_alignment-1c7.md",
+    "inputs": [
+      "src/guarded-stop-codes.js",
+      "src/guarded-run-session.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "remaining retry vocabulary and C-002 lineage gaps -> resolved by shared code contract and four direct test references"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+    "current_head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "actual_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "current_head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T06:44:31.676Z",
+  "git_context": {
+    "head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+    "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:44:31.666Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final implementation contract review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "62d72968719fb77df4258a24fcae792ec6861bbd035ea7433695392bc1f317e6",
+        "size": 96877
+      },
+      {
+        "path": "src/guarded-stop-codes.js",
+        "sha256": "eb95a48876431bd61e5c9a49118a7c024ba5ccc7f3bf8ed5c618c5da4f14e52e",
+        "size": 282
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "c1af9b5ffd2cb7b0050af0e43d0c28a190e9b5dfd1359e3b2d7f2b884827f0c9",
+        "size": 147153
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "86fd073b017099d108b2207d663d6605af11012da978c364b3e07844f4587c20"
+  },
+  "source_fingerprint": "b52d07f04f005a5675e3eaa688c7ad3889812cd48abf10c833890dbbc1b9f886",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story10_impl_spec_1c7",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/implementation/transcript-code_spec_alignment-1c7.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent-result:/root/story10_impl_spec_1c7",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

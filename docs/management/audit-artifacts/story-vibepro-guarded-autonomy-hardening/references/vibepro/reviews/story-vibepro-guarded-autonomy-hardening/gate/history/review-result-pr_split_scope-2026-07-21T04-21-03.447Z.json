@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "2コミットはGuarded Autonomy Hardeningの単一契約を実装・補完する一連の変更であり、分割すると受入契約が不完全になるため1 Story / 1 PRが妥当",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "現HEAD 1b984ef4でStory、architecture、全差分、各実装面と回帰テストを確認。変更は同一のpolicy→永続化・停止→usage→operator/Story集計データフローに限定。",
+    "evidence": "node --test test/guarded-run-session.test.js test/story-run-portfolio.test.js test/agent-runtime-adapter.test.js test/safe-action-orchestrator.test.js test/e2e/story-vibepro-guarded-run-session-contract-main.test.js: exit 0 at 1b984ef4",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/review-request-pr_split_scope.md",
+      "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
+      "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+      "src/guarded-run-session.js",
+      "src/agent-runtime-adapter.js",
+      "src/cli.js",
+      "src/story-run-portfolio.js"
+    ]
+  },
+  "judgment_delta": [
+    "分割可能性を検討したが、retry enforcement、legacy migration、efficiency metricsはいずれも同じStoryのGAH-S-1/2/8-10を成立させる補完で統合維持が適切",
+    "複数モジュールに跨るが、全て同じpolicy/usage dataflowに属し無関係変更なし",
+    "legacy/fallback/output surfaceも現HEAD focused suiteで確認済み"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_head_sha": "1b984ef480a2219f0e183d375a5529c09efb4674",
+    "current_head_sha": "1b984ef480a2219f0e183d375a5529c09efb4674",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "actual_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "current_head_sha": "1b984ef480a2219f0e183d375a5529c09efb4674",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T04:21:03.447Z",
+  "git_context": {
+    "head_sha": "1b984ef480a2219f0e183d375a5529c09efb4674",
+    "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T04:21:03.398Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve the recorded strict HEAD freshness policy during recovery"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1b984ef480a2219f0e183d375a5529c09efb4674",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+        "sha256": "bd80f37d6f2ec7764f88315c6b469bda310b95d7e07328f28bf802b01363898a",
+        "size": 4122
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
+        "sha256": "a347fd79c430cd721514b3c627de2cfff67feff04398def57a98dd0ae3b20b7c",
+        "size": 5519
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "3ed82f8da5b280a70c5b066992b79668c5afd450288d7d57cddc6697a8963d41",
+        "size": 23575
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "0503bf3d55792d407af19439a22bab1c795df6230001c4c68754f1bdcb0045e3",
+        "size": 212218
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "0de48e9e70e294044ce06bcbe85a37d346a5d271556dffcd998bb39fee05a0a6",
+        "size": 92888
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "87042c15be0d8a05e34f6f11f67c993bcdf654b97d54420b33e237e37871795c",
+        "size": 38006
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e81ef0ca4f999d2c480a4ba2870353b15f6f41ac4c3b3d67716799dd8b0ccde7"
+  },
+  "source_fingerprint": "f713ddbbc47f7cface3a5f270b35dc5623dc1f5adc77b9e0554818fce2577710",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story10_pr_scope_r2",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent-result:/root/story10_pr_scope_r2",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "root",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

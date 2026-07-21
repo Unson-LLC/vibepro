@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "The 15-file current-HEAD change is reviewable and atomic as one Guarded Autonomy hardening contract; no unrelated implementation is mixed in.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, test plan, design/config SSOT, all main...HEAD files and commits, runtime/CLI/Portfolio changes, current-head evidence, split plan, and decision record.",
+    "evidence": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
+      "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+      "src/guarded-run-session.js",
+      "src/story-run-portfolio.js"
+    ]
+  },
+  "judgment_delta": [
+    "Mechanical split concern -> changes form one authority, migration, runtime safety, operator surface, and evidence contract",
+    "Separate documentation/test-plan PR -> rejected because it would break requirement-to-code traceability and create an unsafe intermediate state",
+    "Unrelated-change risk -> no separate Story, dependency, or repo-control changes found"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+    "expected_head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+    "current_head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-guarded-autonomy-hardening",
+      "branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "actual_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+      "current_head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T06:07:02.264Z",
+  "git_context": {
+    "head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+    "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:07:02.250Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final PR scope judgment is bound to exact reviewed HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-guarded-autonomy-hardening.md",
+        "sha256": "3d69f4a931d5d3c72942aa130a4f54370722535fc2c4a1636dfbcec9cbdd8019",
+        "size": 4815
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-guarded-autonomy-hardening.md",
+        "sha256": "4d10d5c3c367335bf5c77cc4a3a2ffcd31ec4190f7c6d5f4d6c37e1f4aa6e16e",
+        "size": 5952
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "d0077ac64c212176579549e8aa1e3f86eedd81b4d181135c9eb65a25d322a431",
+        "size": 95335
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "87042c15be0d8a05e34f6f11f67c993bcdf654b97d54420b33e237e37871795c",
+        "size": 38006
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3a39c643883d3fd3fcbf1895345b140e4b021df9adfb99db6f407af195e5449e"
+  },
+  "source_fingerprint": "319a218c16bda8149b895b506e92cfdf86b385c21b558cc93c88e7fbe719d069",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story10_split_final_e6",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/transcript-pr_split_scope-e6.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent-result:/root/story10_split_final_e6",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

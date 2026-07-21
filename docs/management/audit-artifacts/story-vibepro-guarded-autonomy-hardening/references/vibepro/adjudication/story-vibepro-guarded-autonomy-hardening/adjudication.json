@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "updated_at": "2026-07-21T06:50:47.168Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Efficiency uses typed trusted outcome defect and risk measurements against cost and preserves unknown rather than zero.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:47.167Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Cockpit and Portfolio preserve per-Story selection reason active wait unknown cost suite reuse invalidation and interruptions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:46.929Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Human summary exposes automated steps pending decision cost elapsed stop reason and safe recovery action.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:46.672Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Direct process replay covers success human decision repair no-progress quota timeout CI critical gate and cancel.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:46.415Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "HEAD changes trigger rebind and current-head pr prepare; false readiness cannot become pr_ready.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:46.148Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Fresh CLI processes restore and resume the same persisted guarded Run through typed stops.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:45.864Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Closed safe-action registry rejects forged external waiver critical-gate and merge automation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:45.584Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Separate read-only review provenance is required and missing same-session or corrupt provenance fails closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:45.339Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Persisted retry allow deny backoff audit and fresh-process runtime timeout quota CI and review recovery are directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:45.075Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Typed max-attempt deadline and usage budget stops persist as blocked and never become Gate success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_acceptance_1c7",
+        "session_ref": "subagent:/root/story10_acceptance_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:50:44.729Z"
+    }
+  ]
+}

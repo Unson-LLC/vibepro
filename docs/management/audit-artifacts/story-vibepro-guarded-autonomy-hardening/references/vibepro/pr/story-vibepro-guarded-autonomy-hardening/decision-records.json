@@ -1,0 +1,190 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "updated_at": "2026-07-21T06:14:50.472Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784614490472-a80b32fb",
+      "story_id": "story-vibepro-guarded-autonomy-hardening",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep the guarded-autonomy hardening vertical slice atomic",
+      "reason": "Independent pr_split_scope review found that policy schema, migration, runtime fallback, operator metrics, Portfolio attribution, and their evidence form one authority contract; splitting would create inconsistent intermediate HEADs and reduce traceability.",
+      "reviewer": "/root/story10_split_final_e6",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/transcript-pr_split_scope-e6.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+        "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T06:14:50.470Z"
+      },
+      "recorded_at": "2026-07-21T06:14:50.472Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784611908182-eedc0452",
+      "story_id": "story-vibepro-guarded-autonomy-hardening",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Commit only VibePro configuration registration; keep generated evidence ignored",
+      "reason": "The tracked .vibepro/config.json change registers the hand-written Story and is product configuration. Generated review, verification, PR, and QA artifacts remain ignored and are not part of the commit.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "daa59cda1e826c29ccfabcde4109bce539b41783",
+        "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:31:48.154Z"
+      },
+      "recorded_at": "2026-07-21T05:31:48.201Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784611904669-e2bbe0b1",
+      "story_id": "story-vibepro-guarded-autonomy-hardening",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Keep the guarded-autonomy hardening as one reviewable Story",
+      "reason": "The Story, Architecture, runtime state machine, safe-action boundary, Portfolio attribution, and acceptance matrix form one atomic guarded-autonomy contract. Splitting these lanes would sever traceability and leave intermediate commits with incomplete safety invariants; the independent pr_split_scope review found no unrelated intent.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/review-result-pr_split_scope.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "daa59cda1e826c29ccfabcde4109bce539b41783",
+        "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T05:31:44.666Z"
+      },
+      "recorded_at": "2026-07-21T05:31:44.669Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1,
+      "waiver": 2
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784614490472-a80b32fb",
+      "story_id": "story-vibepro-guarded-autonomy-hardening",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep the guarded-autonomy hardening vertical slice atomic",
+      "reason": "Independent pr_split_scope review found that policy schema, migration, runtime fallback, operator metrics, Portfolio attribution, and their evidence form one authority contract; splitting would create inconsistent intermediate HEADs and reduce traceability.",
+      "reviewer": "/root/story10_split_final_e6",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/transcript-pr_split_scope-e6.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-result.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+        "current_branch": "codex/story-vibepro-guarded-autonomy-hardening",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T06:14:50.470Z"
+      },
+      "recorded_at": "2026-07-21T06:14:50.472Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-guarded-autonomy-hardening/decision-records.json"
+}

@@ -1,0 +1,520 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "updated_at": "2026-07-21T06:51:07.446Z",
+  "events": [
+    {
+      "event_id": "ab2ff904-47e2-4037-bba4-225524e8facf",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The ten acceptance clauses and implementation converge on one bounded, auditable PR-ready autonomy objective while merge, deployment, and waiver stay out of scope.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:26.506Z"
+    },
+    {
+      "event_id": "4e1b16ff-dd35-4284-9af3-0c8c6eaef9eb",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The design extends existing Run authority, safe actions, runtime adapters, and Portfolio state, with real persistence and fresh-process replay rather than a hypothetical topology.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:27.211Z"
+    },
+    {
+      "event_id": "0ee48e37-b935-4826-bcec-6a3447f81c8d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed stops cannot become success, only resume can recover blocked runs, unknown usage stays unknown, and pr_ready requires current gate readiness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:28.143Z"
+    },
+    {
+      "event_id": "1db6fd70-4910-4867-be8b-9085455a8144",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority, runtime telemetry, review identity, safe-action authority, and per-Story Portfolio attribution are explicitly validated at their interfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:29.098Z"
+    },
+    {
+      "event_id": "5e0615af-a333-41bf-beb8-a1e4f723aba9",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Budget, retry, provider, human wait, no-progress, critical gate, cancellation, restart, HEAD drift, and corruption have typed negative-path handling.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:30.058Z"
+    },
+    {
+      "event_id": "c44be38a-eb2c-4be9-bcbb-cc2657425f4b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD focused verification, production transition persistence, fresh-process replay, and authority roundtrips demonstrate completion beyond document wording.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:31.074Z"
+    },
+    {
+      "event_id": "ec4bc4be-4603-4198-8c6c-4ec8399a9281",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI additions are scoped to execute run, legacy artifacts migrate with bounded defaults, and manual resume plus critical-gate semantics remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:31.853Z"
+    },
+    {
+      "event_id": "a2c52426-efde-4919-83e4-c1787776f50f",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Policy, action, runtime dispatch, persistence, resume journal, fallback audit, and Portfolio mutation ordering form a complete non-duplicating execution path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:32.983Z"
+    },
+    {
+      "event_id": "42983e29-74a8-42bb-bcf8-80dc75f55ae9",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The large vertical slice is one traceable Run authority contract; splitting schema, policy, metrics, and evidence would create inconsistent intermediate HEADs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:34.037Z"
+    },
+    {
+      "event_id": "0424d4e6-6896-4d26-8696-ccde30d8074e",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Deadline and runtime timeouts become typed contained stops, with persisted retry policy and fresh-process recovery coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:34.721Z"
+    },
+    {
+      "event_id": "d5ab7c71-efd1-4615-bb92-47e15c4a4249",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed authority, legacy, runtime, and Portfolio inputs fail closed or quarantine without rewriting corruption into success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:35.411Z"
+    },
+    {
+      "event_id": "67813add-f310-4aa1-90a6-ad2049ff7f60",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only pre-run typed availability failures fallback in order; all attempts are audited and started runs are not double-dispatched.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:35.870Z"
+    },
+    {
+      "event_id": "1438d97d-58cf-456b-937d-2559b55fcae6",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persisted retry policy and backoff reject premature or ineligible resume without mutation, while checkpoints prevent duplicate async actions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:36.309Z"
+    },
+    {
+      "event_id": "9afe82c3-ae38-4272-a384-e1e8c3cbf97c",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Auth and read-only capability denial remain typed recoverable or fail-closed boundaries, with fallback allowed only before provider execution begins.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:36.801Z"
+    },
+    {
+      "event_id": "5285afda-c727-4759-9aee-7005ec7cd302",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD drift invalidates readiness, review provenance is revalidated, and outcome metrics count only typed completed measurements.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:37.236Z"
+    },
+    {
+      "event_id": "429cc037-c662-46fc-8265-4e6ae864f1d4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Transition and stop schemas validate before persistence; forbidden recovery bypass and over-green states are rejected without mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_final_e6",
+        "session_ref": "subagent-result:/root/story10_judgment_final_e6"
+      },
+      "head_commit": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+      "recorded_at": "2026-07-21T06:11:37.743Z"
+    },
+    {
+      "event_id": "372c90db-d9ff-465f-a953-042e4c07e7fd",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Bounded PR-ready autonomy and explicit merge deploy waiver exclusions match the implemented diff.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:02.123Z"
+    },
+    {
+      "event_id": "b091a9de-1502-42e2-9d1a-59ea709e9d0f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD has 158 direct focused and process-replay passes plus three closed implementation reviews.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:02.417Z"
+    },
+    {
+      "event_id": "0cafc91c-e051-45ba-87ba-20649a999142",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed stops resume-only recovery separate review closed actions and unknown metrics are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:02.672Z"
+    },
+    {
+      "event_id": "424039b3-0f81-423d-87b0-139c39bf5c83",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run owns policy and accounting while external effects merge deploy and waivers remain excluded.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:03.063Z"
+    },
+    {
+      "event_id": "8d3ed1ef-6248-460b-a37d-5d546189694a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Budget quota timeout retry human wait stale HEAD critical gate cancel and no-progress are typed and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:03.477Z"
+    },
+    {
+      "event_id": "f307ede3-7c49-4181-875f-9691aafc409b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head evidence is 158 pass zero fail; wrapper memory limitation is disclosed and not counted as pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:04.209Z"
+    },
+    {
+      "event_id": "8c1606ec-ed47-424f-9cf6-40707e9944d1",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI additions are closed-validated and legacy migration help and routes remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:04.711Z"
+    },
+    {
+      "event_id": "f3b59eae-c9f9-410f-8918-ed79e8a823ad",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Transitions containment persisted retry audit and reused-poll usage idempotency hold across restart.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:05.080Z"
+    },
+    {
+      "event_id": "0bef1408-44ef-4b37-b348-d4186e364da3",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is one coherent hardening slice mapped by ten clauses and three independent review roles.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:05.416Z"
+    },
+    {
+      "event_id": "50fc602f-8d8f-48a7-a9cb-4b3191aecc20",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical probe start status and result timeout vocabulary matches default retry and containment tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:05.784Z"
+    },
+    {
+      "event_id": "d661e7c8-09be-420f-b83f-e788ad70cb9b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed state JSON and runtime results fail closed without success or persistence corruption.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:06.104Z"
+    },
+    {
+      "event_id": "52526c16-2bcd-413e-9e41-bfe1336fdeb4",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unavailable quota auth probe and fallback exhaustion remain typed ordered and auditable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:06.368Z"
+    },
+    {
+      "event_id": "3c9840e6-164a-4153-a020-8f31cb526f3a",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persisted retry backoff audit duplicate poll idempotency and containment are directly covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:06.619Z"
+    },
+    {
+      "event_id": "c1a62f77-bf83-4e93-a256-3f895da1ead0",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Auth denial is typed without granting authority or unsafe automatic default retry.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:06.889Z"
+    },
+    {
+      "event_id": "2846fdbc-bd40-4e54-9992-7d68b2c3bbeb",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current evidence binds 1c7 while stale e6 gate evidence is visibly rejected fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:07.162Z"
+    },
+    {
+      "event_id": "e142d98a-ff99-4094-8ca4-ab2eefaa7ab6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime status deltas use transitions recovery is resume-only and stale HEAD revokes readiness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story10_judgment_1c7",
+        "session_ref": "subagent:/root/story10_judgment_1c7"
+      },
+      "head_commit": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+      "recorded_at": "2026-07-21T06:51:07.446Z"
+    }
+  ]
+}

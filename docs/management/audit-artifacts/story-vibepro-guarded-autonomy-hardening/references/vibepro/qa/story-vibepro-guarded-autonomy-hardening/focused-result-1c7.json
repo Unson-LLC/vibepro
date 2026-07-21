@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-guarded-autonomy-hardening",
+  "head_sha": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+  "status": "pass",
+  "tests": 158,
+  "passed": 158,
+  "failed": 0,
+  "suites": [
+    { "command": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js", "status": "pass", "tests": 116 },
+    { "command": "node --test test/safe-action-orchestrator.test.js", "status": "pass", "tests": 16 },
+    { "command": "node --test test/story-run-portfolio.test.js", "status": "pass", "tests": 22 },
+    { "command": "node --test test/e2e/story-vibepro-guarded-run-session-contract-main.test.js", "status": "pass_by_isolated_cases", "tests": 4, "note": "The first three cases and the final operational-stop-matrix case were run separately to stay within host memory; all passed." }
+  ],
+  "acceptance_wrapper_note": "Nested acceptance wrappers were not counted because the host killed their duplicate child-suite replay under memory pressure; the underlying suites and every process-replay case they assert were executed directly and passed.",
+  "observations": {
+    "surface": "review_surface",
+    "version": "1c7c362ad3f9c67aa918242763af840fe94ce334",
+    "runtime_timeout_codes": ["runtime_probe_timeout", "runtime_start_timeout", "runtime_status_timeout", "runtime_result_timeout"],
+    "fresh_session_resume": true,
+    "usage_idempotent_after_restart": true,
+    "pending_decision_visible": true,
+    "safe_recovery_fallback_visible": true
+  }
+}
