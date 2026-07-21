@@ -86,6 +86,39 @@ test('persists Run authority and provider observations while preserving compatib
   });
 });
 
+test('does not promote caller worktree or branch when Guarded Run authority is incomplete', async () => {
+  const observedInputs = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter({
+    async start(input) {
+      observedInputs.push(input);
+      return {
+        provider_run_id: 'provider-run-1',
+        agent_identity: 'agent-1',
+        session_id: 'session-1',
+        thread_id: 'thread-1'
+      };
+    }
+  })] });
+  const incompleteState = {
+    ...state,
+    worktree_root: undefined,
+    root_realpath: undefined,
+    branch: undefined,
+    current_branch: undefined,
+    execution_context: undefined
+  };
+  const result = await coordinator.dispatch(incompleteState, {
+    ...request,
+    branch: 'caller-observed-branch',
+    requirements: { ...request.requirements, managed_worktree: '/caller-observed-worktree' }
+  });
+
+  assert.equal(result.dispatch.lineage, null);
+  assert.equal(observedInputs[0].lineage, null);
+  assert.equal(observedInputs[0].branch, undefined);
+  assert.equal(observedInputs[0].requirements.managed_worktree, '/caller-observed-worktree');
+});
+
 test('provider identity cannot replace authoritative Story or Run lineage', async () => {
   const coordinator = createAgentRuntimeCoordinator({
     adapters: [adapter({

@@ -79,6 +79,7 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   const authorityRoot = created.execution_context.root_realpath;
   const statePath = path.join(repo, '.vibepro', 'executions', STORY_ID, 'runs', created.run_id, 'state.json');
   assert.deepEqual(JSON.parse(await readFile(statePath, 'utf8')), created);
+  await writeFile(statePath, `${JSON.stringify({ ...created, worktree_root: authorityRoot, branch: 'main' }, null, 2)}\n`);
 
   const dispatched = await guardedRun.dispatchRuntime(repo, {
     storyId: STORY_ID,
@@ -87,7 +88,7 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
       adapter_id: 'fixture-provider',
       task_id: 'eral-lineage-e2e',
       role: 'implementation',
-      branch: 'main',
+      branch: 'caller-observed-branch',
       requirements: {
         capabilities: ['workspace_write'],
         timeout_ms: 1000,
@@ -98,6 +99,8 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   const dispatchLineage = dispatched.dispatch.lineage;
   assert.equal(dispatchLineage.story_id, STORY_ID);
   assert.equal(dispatchLineage.run_id, created.run_id);
+  assert.equal(dispatchLineage.worktree_root, authorityRoot);
+  assert.equal(dispatchLineage.branch, 'main');
   assert.equal(dispatchLineage.thread_id, providerThreadId);
   assert.equal(dispatchLineage.provider_observations[0].thread_id, providerThreadId);
 
