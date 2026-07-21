@@ -103,3 +103,9 @@ For current-head adjudication, follow `.vibepro/pr/story-vibepro-explicit-run-at
 ## Rollback
 
 Remove the additive envelope fields, propagation hooks, capsule projection, and Run-aware audit option, then remove `src/run-lineage.js`. Existing Guarded Run state, dispatch journals, evidence, and heuristic session-cost paths remain readable; persisted unknown lineage fields are ignored by older readers.
+
+## Final gate SSOT references
+
+The machine-readable gate map lives in `docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json#/gate_evidence`. It binds the judgment spine, observability probe, `review_surface` observation contract, responsibility registry review, structured inherited behavior declarations, and validation sequence to canonical VibePro artifacts.
+
+The focused TAP files under `.vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/` are reusable evidence inputs only. They become current proof only when imported into `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json` with the final `pr-prepare.json#/git/head_sha`. The `responsibility_authority` candidate for `src/human-decision-checkpoint.js`, `src/run-context-capsule.js`, and `src/run-lineage.js` is intentionally recorded as unresolved until the registry owner decides; no waiver or inferred authority is asserted.

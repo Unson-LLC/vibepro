@@ -150,3 +150,14 @@ VibePro-owned executionに、少なくとも次を持つversioned lineage envelo
 Accepted Spec JSON `docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json` is the machine-readable authority for adjudication. Its `failure_modes[]` identifiers are `FM-ERAL-001` through `FM-ERAL-005`; its `done_evidence[]` identifiers are `DE-ERAL-001` through `DE-ERAL-003`. Evidence is current only when the referenced artifact HEAD binding matches `.vibepro/pr/story-vibepro-explicit-run-attribution-lineage/pr-prepare.json#/git/head_sha`.
 
 The `scope_reviewability` object records the current independent `pr_split_scope` request/result/lifecycle, owner role, one-PR decision, rationale, and Graphify blast-radius source. `split_plan.status=split_recommended` is advisory and cannot override that decision. An adjudicating agent must inspect those linked artifacts and treat a stale review artifact as requiring refresh, not as a current pass.
+
+## Final gate evidence map
+
+The accepted Spec JSON is the SSOT for the final gate references in `gate_evidence`. The existing focused TAP artifacts are inputs to the canonical verification store, not standalone current-head proof. After this commit, refresh `verification-evidence.json`, Graphify, and validation-sequencing state before treating any reference as current.
+
+- `common_judgment_spine`: flow replay, artifact replay, and scenario-clause E2E must be recorded against the three focused TAP lanes.
+- `bug_physics_observability_signal_source`: the verification-evidence store is the single authoritative signal source; monitoring and signal availability remain explicit checks.
+- `path_surface_matrix`: the `review_surface` row requires `path_surface:review_surface` and `surface=review_surface` observations for the changed lineage paths.
+- `responsibility_authority`: registry sources and the unregistered lineage candidate paths are named; `no_registered_authority` remains an owner decision, never a waiver.
+- `requirement`: legacy behavior is declared on owning Spec clauses through structured `inherited_behavior` metadata, including the `session_meta` branch.
+- `validation_sequencing`: phase evidence is bound to the final HEAD through the canonical validation-sequencing state artifact.

@@ -25,6 +25,68 @@
       "DE-ERAL-003-scope-reviewability-decision"
     ]
   },
+  "gate_evidence": {
+    "source_of_truth": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+    "current_head_rule": "These references are admissible only after the canonical artifacts are refreshed and their head_sha matches pr-prepare.git.head_sha; no item below is a waiver.",
+    "common_judgment_spine": {
+      "required_kinds": ["flow_replay", "artifact_replay", "scenario_clause_e2e"],
+      "focused_tap_refs": [
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+      ],
+      "canonical_store": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "status": "requires_current_head_refresh_and_structured_observation_fields"
+    },
+    "bug_physics": {
+      "class": "observability",
+      "probe_evidence": ["signal_availability", "authoritative_signal_source", "monitoring"],
+      "authoritative_signal_source": ".vibepro/pr/story-vibepro-explicit-run-attribution-lineage/verification-evidence.json",
+      "status": "requires_probe_and_current_monitoring_evidence"
+    },
+    "path_surface_matrix": {
+      "review_surface": {
+        "status": "requires_current_verification",
+        "target_paths": [
+          "src/run-lineage.js",
+          "src/run-context-capsule.js",
+          "src/session-efficiency-audit.js"
+        ],
+        "required_observation": {
+          "scenario": "path_surface:review_surface",
+          "observed": "surface=review_surface"
+        },
+        "focused_tap_refs": [
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
+          ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+        ]
+      }
+    },
+    "responsibility_authority": {
+      "registry_sources": ["responsibility-authority.json", "docs/contracts/vibepro-core-responsibilities.json", "docs/contracts/vibepro-responsibility-authority.json"],
+      "unregistered_candidate_paths": [
+        "src/human-decision-checkpoint.js",
+        "src/run-context-capsule.js",
+        "src/run-lineage.js"
+      ],
+      "status": "needs_registry_owner_decision; no_registered_authority is not waived"
+    },
+    "requirement": {
+      "structured_inherited_behavior": "clauses[].inherited_behavior or clauses[].inherited_behaviors",
+      "coverage": "all observed legacy inherited/existing/unchanged branches and entry.type === 'session_meta' are declared on owning clauses",
+      "status": "structured_metadata_added"
+    },
+    "validation_sequencing": {
+      "state_artifact": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
+      "phases": ["targeted_validation", "preflight_review", "code_frozen", "expensive_verification", "final_review"],
+      "focused_tap_refs": [
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/unit.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/integration.tap",
+        ".vibepro/evidence-artifacts/story-vibepro-explicit-run-attribution-lineage/e2e.tap"
+      ],
+      "status": "requires_phase_records_at_final_head"
+    }
+  },
   "failure_modes": [
     {
       "id": "FM-ERAL-001-invalid-or-incomplete-lineage",
@@ -140,6 +202,12 @@
       "id": "C-001",
       "type": "contract",
       "statement": "A Guarded Run dispatch persists a versioned lineage envelope containing the authoritative Story, Run, dispatch, worktree, branch, and HEAD binding.",
+      "inherited_behaviors": [
+        { "condition": "authorityPath !== mirrorPath", "classification": "unchanged", "files": ["src/run-lineage.js"] },
+        { "condition": "authorityError", "classification": "unchanged", "files": ["src/run-lineage.js"] },
+        { "condition": "request.role === 'review' && !started.session_id && !started.thread_id", "classification": "unchanged", "files": ["src/agent-runtime-adapter.js"] },
+        { "condition": "observed.status !== 'cancelled'", "classification": "unchanged", "files": ["src/agent-runtime-adapter.js"] }
+      ],
       "rationale": "ERAL-S-1 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
@@ -161,6 +229,11 @@
       "id": "S-001",
       "type": "scenario",
       "statement": "Provider observations append to the same dispatch lineage, deduplicate idempotently, and fail closed on provider identity conflict, cross-Run rebinding, or stale HEAD binding.",
+      "inherited_behavior": {
+        "condition": "loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human'",
+        "classification": "unchanged",
+        "files": ["src/guarded-run-session.js"]
+      },
       "rationale": "ERAL-S-2 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
@@ -182,6 +255,10 @@
       "id": "C-002",
       "type": "contract",
       "statement": "Verification, review, decision, and action records inherit a validated active Run lineage, while an explicit Story or Run mismatch is rejected before the verification write.",
+      "inherited_behaviors": [
+        { "condition": "!supplied && !runAuthority", "classification": "unchanged", "files": ["src/agent-review.js", "src/verification-evidence.js"] },
+        { "condition": "state.status === 'cancelled'", "classification": "unchanged", "files": ["src/human-decision-checkpoint.js"] }
+      ],
       "rationale": "ERAL-S-3 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
@@ -200,7 +277,12 @@
     {
       "id": "C-003",
       "type": "contract",
-      "statement": "Run-aware session-cost attribution prioritizes explicit Run lineage and returns bucket, method, source_artifact, confidence, and run_id without treating a Thread-only observation as Story authority.",
+      "statement": "Run-aware session-cost attribution prioritizes explicit Run lineage and returns bucket, method, source_artifact, confidence, and run_id without treating a Thread-only observation as Story authority. The verification-evidence artifact is the authoritative signal source; signal availability and monitoring are checked before review-surface conclusions.",
+      "inherited_behaviors": [
+        { "condition": "!sessionSelection.session_id && !inferSession && sessionId !== 'auto'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] },
+        { "condition": "!inferSession && requestedSessionId !== 'auto'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] },
+        { "condition": "entry.type === 'session_meta'", "classification": "unchanged", "files": ["src/session-efficiency-audit.js"] }
+      ],
       "rationale": "ERAL-S-4 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
@@ -278,6 +360,11 @@
       "id": "S-004",
       "type": "scenario",
       "statement": "A fresh process can reconstruct bounded Story-to-Run-to-dispatch-to-provider-observation lineage from the Run context capsule without transcript content.",
+      "inherited_behavior": {
+        "condition": "!options.authorityFile || path.resolve(authorityFile",
+        "classification": "unchanged",
+        "files": ["src/run-context-capsule.js"]
+      },
       "rationale": "ERAL-S-9 acceptance criterion.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],

@@ -389,6 +389,8 @@
         "due_at": null,
         "category": "product",
         "judgment_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+        "gate_evidence_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json#/gate_evidence",
+        "validation_sequence_state": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
         "task_plan_source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
         "reviewability_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
         "reviewability_authority": "current_independent_pr_split_scope_result",
