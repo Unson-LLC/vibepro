@@ -468,3 +468,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-session-attr
 なし
 
 <!-- vibepro-release-pr:373:end -->
+
+<!-- vibepro-release-pr:375:start -->
+## [#375](https://github.com/Unson-LLC/vibepro/pull/375) fix: policy_syncレビュー残課題3件を解消（#374 フォローアップ）
+
+- Author: @sintariran
+- Merged: 2026-07-21T23:17:49Z
+- Commit: `4b15c508535f1156deb38f97bde853a7c8888b61`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:375:end -->

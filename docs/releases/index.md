@@ -109,3 +109,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:373:start -->
 - [PR #373](https://github.com/Unson-LLC/vibepro/pull/373) — [2026-07](/releases/2026-07): story-vibepro-routing-profiles-rendered-projections - Story別routing profileとlineage付きprojectionでfeature packetを正本化する
 <!-- vibepro-release-index-pr:373:end -->
+
+<!-- vibepro-release-index-pr:375:start -->
+- [PR #375](https://github.com/Unson-LLC/vibepro/pull/375) — [2026-07](/releases/2026-07): fix: policy_syncレビュー残課題3件を解消（#374 フォローアップ）
+<!-- vibepro-release-index-pr:375:end -->
