@@ -658,11 +658,31 @@ function normalizeRuntimeReviewRecord(value) {
   return {
     status,
     summary: requireText(value.summary, 'review_record.summary'),
-    findings: requireStringArray(value.findings ?? [], 'review_record.findings'),
+    findings: normalizeRuntimeReviewFindings(value.findings ?? []),
     inspection_summary: requireText(value.inspection_summary, 'review_record.inspection_summary'),
     inspection_evidence: requireText(value.inspection_evidence, 'review_record.inspection_evidence'),
     judgment_deltas: requireStringArray(value.judgment_deltas, 'review_record.judgment_deltas')
   };
+}
+
+function normalizeRuntimeReviewFindings(value) {
+  if (!Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review_record.findings must be an array');
+  }
+  return value.map((finding, index) => {
+    if (!finding || typeof finding !== 'object' || Array.isArray(finding)) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review_record.findings[${index}] must be an object`);
+    }
+    const unknown = Object.keys(finding).filter((key) => !['id', 'severity', 'detail'].includes(key));
+    if (unknown.length > 0) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review_record.findings[${index}] contains unsupported fields: ${unknown.join(', ')}`);
+    }
+    return {
+      id: requireText(finding.id, `review_record.findings[${index}].id`),
+      severity: requireText(finding.severity, `review_record.findings[${index}].severity`),
+      detail: requireText(finding.detail, `review_record.findings[${index}].detail`)
+    };
+  });
 }
 function normalizeUsageAccounting(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {

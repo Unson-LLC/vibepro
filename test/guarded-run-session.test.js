@@ -840,6 +840,36 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(run.current_head_sha, persisted.current_head_sha);
 });
 
+test('CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitly unchanged rebase surface', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { starts += 1; return { provider_run_id: 'provider-rebase', agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase' }; },
+    async status() { return { status: 'running' }; }, async cancel() {}, async collect_result() { return {}; }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'fixture-runtime', task_id: 'review-rebase', role: 'review', reviewer_identity: 'reviewer-rebase',
+    implementation_identity: 'implementer', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-stable',
+    requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+  };
+  const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  const rebasedHead = 'b'.repeat(40);
+  fixture.setHead(fixture.source, rebasedHead);
+  const rebound = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, request: { ...request, surface_unchanged_after_rebase: true }
+  });
+  assert.equal(rebound.reused, true);
+  assert.equal(rebound.dispatch.dispatch_id, started.dispatch.dispatch_id);
+  assert.equal(rebound.dispatch.input_head_sha, rebasedHead);
+  assert.equal(rebound.dispatch.surface_rebound_from_head_sha, run.current_head_sha);
+  assert.equal(rebound.state.current_head_sha, rebasedHead);
+  assert.equal(starts, 1);
+});
+
 test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let starts = 0;

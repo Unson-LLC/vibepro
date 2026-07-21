@@ -3,6 +3,8 @@ import { link, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promi
 import path from 'node:path';
 
 const EVENT_KINDS = new Set(['progress', 'partial_result', 'completed', 'failed', 'cancelled']);
+const MAX_EVENT_BYTES = 262144;
+const MAX_TEXT_LENGTH = 65536;
 const PAYLOAD_KEYS = Object.freeze({
   progress: new Set(['heartbeat', 'message', 'progress_percent']),
   partial_result: new Set(['judgment_id', 'verdict', 'reason', 'summary', 'findings', 'surface_paths', 'judgments']),
@@ -114,39 +116,57 @@ function normalizeEvent(input, now) {
   if (!EVENT_KINDS.has(kind)) throw new TypeError(`unsupported completion inbox event kind: ${kind}`);
   const observedAt = input.observed_at ?? now().toISOString();
   if (Number.isNaN(Date.parse(observedAt))) throw new TypeError('observed_at must be an ISO timestamp');
-  const payload = input.payload && typeof input.payload === 'object' && !Array.isArray(input.payload) ? input.payload : {};
+  if (input.payload !== undefined) assertRecord(input.payload, 'payload');
+  const payload = input.payload ?? {};
   validatePayload(kind, payload);
   const eventId = input.event_id ?? `event-${createHash('sha256').update(`${dispatchId}:${kind}:${observedAt}:${stableJson(payload)}`).digest('hex').slice(0, 24)}`;
-  return {
+  const event = {
     schema_version: '1.0.0',
     event_id: requireText(eventId, 'event_id'),
     dispatch_id: dispatchId,
-    provider_run_id: input.provider_run_id ?? null,
+    provider_run_id: optionalText(input.provider_run_id, 'provider_run_id'),
     kind,
     observed_at: observedAt,
-    checkpoint_id: input.checkpoint_id ?? null,
-    surface_hash: input.surface_hash ?? null,
+    checkpoint_id: optionalText(input.checkpoint_id, 'checkpoint_id'),
+    surface_hash: optionalText(input.surface_hash, 'surface_hash'),
     payload
   };
+  if (Buffer.byteLength(stableJson(event), 'utf8') > MAX_EVENT_BYTES) throw new TypeError('completion inbox event exceeds maximum size');
+  return event;
 }
 
 function validatePayload(kind, payload) {
   assertAllowedKeys(payload, PAYLOAD_KEYS[kind], `${kind} payload`);
+  for (const key of ['message', 'error_code', 'head_sha', 'completion_status', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'judgment_id', 'verdict', 'reason']) {
+    if (payload[key] !== undefined) requireText(payload[key], key);
+  }
+  for (const key of ['changed_files', 'test_suggestions', 'surface_paths']) validateStringArray(payload[key], key);
+  if (payload.heartbeat !== undefined && typeof payload.heartbeat !== 'boolean') throw new TypeError('heartbeat must be a boolean');
+  if (payload.progress_percent !== undefined && (!Number.isFinite(payload.progress_percent) || payload.progress_percent < 0 || payload.progress_percent > 100)) {
+    throw new TypeError('progress_percent must be between 0 and 100');
+  }
   if (payload.review_record !== undefined) {
     assertRecord(payload.review_record, 'review_record');
     assertAllowedKeys(payload.review_record, NESTED_KEYS.review_record, 'review_record');
+    for (const key of ['status', 'summary', 'inspection_summary', 'inspection_evidence']) requireText(payload.review_record[key], `review_record.${key}`);
+    validateStringArray(payload.review_record.judgment_deltas, 'review_record.judgment_deltas');
     validateFindings(payload.review_record.findings);
   }
   validateFindings(payload.findings);
   if (payload.usage_accounting !== undefined) {
     assertRecord(payload.usage_accounting, 'usage_accounting');
     assertAllowedKeys(payload.usage_accounting, NESTED_KEYS.usage_accounting, 'usage_accounting');
+    for (const [key, value] of Object.entries(payload.usage_accounting)) {
+      if (!Number.isFinite(value) || value < 0) throw new TypeError(`usage_accounting.${key} must be a non-negative number`);
+    }
   }
   const judgments = payload.judgments ?? (payload.judgment_id ? [payload] : []);
   if (!Array.isArray(judgments)) throw new TypeError('judgments must be an array');
   for (const judgment of judgments) {
     assertRecord(judgment, 'judgment');
     assertAllowedKeys(judgment, NESTED_KEYS.judgment, 'judgment');
+    for (const key of ['judgment_id', 'verdict', 'reason', 'summary']) if (judgment[key] !== undefined) requireText(judgment[key], `judgment.${key}`);
+    validateStringArray(judgment.surface_paths, 'judgment.surface_paths');
     validateFindings(judgment.findings);
   }
 }
@@ -157,7 +177,18 @@ function validateFindings(findings) {
   for (const finding of findings) {
     assertRecord(finding, 'finding');
     assertAllowedKeys(finding, NESTED_KEYS.finding, 'finding');
+    for (const key of ['id', 'severity', 'detail']) requireText(finding[key], `finding.${key}`);
   }
+}
+
+function validateStringArray(value, name) {
+  if (value === undefined) return;
+  if (!Array.isArray(value)) throw new TypeError(`${name} must be an array`);
+  value.forEach((item, index) => requireText(item, `${name}[${index}]`));
+}
+
+function optionalText(value, name) {
+  return value === undefined || value === null ? null : requireText(value, name);
 }
 
 function assertRecord(value, name) {
@@ -185,5 +216,6 @@ function stableJson(value) {
 
 function requireText(value, name) {
   if (typeof value !== 'string' || value.trim() === '') throw new TypeError(`${name} is required`);
+  if (value.length > MAX_TEXT_LENGTH) throw new TypeError(`${name} exceeds maximum length`);
   return value.trim();
 }

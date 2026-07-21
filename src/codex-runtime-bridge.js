@@ -47,7 +47,7 @@ export function createCodexGuardedRunBridge({
         role: binding.role,
         status: record.status,
         summary: record.summary,
-        findings: record.findings,
+        findings: record.findings.map((finding) => `${finding.severity}:${finding.id}:${finding.detail}`),
         inspectionSummary: record.inspection_summary,
         inspectionEvidence: record.inspection_evidence,
         inspectionInputs: binding.inspection_inputs,

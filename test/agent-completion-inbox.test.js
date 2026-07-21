@@ -67,3 +67,18 @@ test('CDI-S-2 Inbox rejects provider payload fields outside the VibePro-owned sc
   }), /unsupported fields: provider_token/);
   assert.equal((await inbox.reconcile('dispatch-secret')).events.length, 0);
 });
+
+test('CDI-S-2 Inbox rejects nested objects and oversize text hidden inside allowed scalar fields', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-runtime-inbox-deep-schema-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const inbox = createAgentCompletionInbox({ repoRoot });
+  await assert.rejects(inbox.append({
+    event_id: 'nested-secret', dispatch_id: 'dispatch-deep', provider_run_id: 'provider-deep', kind: 'completed',
+    payload: { review_record: { status: 'pass', summary: 'summary', findings: [], inspection_summary: 'inspected', inspection_evidence: { raw_transcript: 'SECRET' }, judgment_deltas: [] } }
+  }), /inspection_evidence is required/);
+  await assert.rejects(inbox.append({
+    event_id: 'oversize-secret', dispatch_id: 'dispatch-deep', provider_run_id: 'provider-deep', kind: 'failed',
+    payload: { message: 'x'.repeat(65537) }
+  }), /exceeds maximum length/);
+  assert.deepEqual((await inbox.reconcile('dispatch-deep')).events, []);
+});

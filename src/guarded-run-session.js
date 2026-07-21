@@ -122,7 +122,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   if (!deps.agentRuntimeCoordinator) {
     throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
   }
-  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
+  const loaded = await loadSelectedRun(deps, repoRoot, options);
   const dispatchAuthority = runtimeDispatchAuthority(loaded.state);
   if (operation === 'dispatch' && dispatchAuthority.error) {
     throw contractError('worktree_mismatch', dispatchAuthority.error, {
@@ -144,6 +144,26 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
   }
   const identityBefore = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
+  let runtimeState = loaded.state;
+  if (operation === 'dispatch' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    const candidateId = deriveDispatchIdentity({
+      run_id: loaded.state.run_id,
+      adapter_id: options.request?.adapter_id,
+      task_id: options.request?.task_id,
+      role: options.request?.role,
+      inspection_surface_hash: options.request?.inspection_surface_hash,
+      reviewer_identity: options.request?.reviewer_identity ?? null,
+      implementation_session_id: options.request?.implementation_session_id ?? null
+    });
+    const existing = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === candidateId);
+    if (!existing || options.request?.surface_unchanged_after_rebase !== true || existing.inspection_surface_hash !== options.request?.inspection_surface_hash) {
+      throw new GuardedRunError('stale_head', 'Runtime dispatch across a HEAD change requires an existing logical dispatch and an explicit unchanged-surface assertion', {
+        expected_head_sha: loaded.state.current_head_sha,
+        actual_head_sha: identityBefore.head_sha
+      });
+    }
+    runtimeState = { ...loaded.state, current_head_sha: identityBefore.head_sha };
+  }
   if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
     throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
       expected_head_sha: loaded.state.current_head_sha,
@@ -152,7 +172,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   }
   const providerIdentityRecords = await readPersistedProviderIdentityRecords(deps, loaded.authorityIdentity.root_realpath);
   let result = operation === 'dispatch'
-    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request, { providerIdentityRecords })
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, runtimeState, options.request, { providerIdentityRecords })
     : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
