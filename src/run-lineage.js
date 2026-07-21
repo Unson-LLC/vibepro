@@ -181,12 +181,11 @@ export function assertProviderIdentityUniqueness(records = []) {
       fail('invalid_run_lineage', 'persisted dispatch record must be an object', { field: 'runtime_dispatch' });
     }
     const envelope = record.lineage;
-    if (!envelope) continue;
-    const validated = validateRunLineageEnvelope(envelope);
-    const provider = text(record.adapter_id) ?? validated.provider_observations?.[0]?.provider ?? 'unknown';
-    const observations = validated.provider_observations ?? [];
+    const validated = envelope ? validateRunLineageEnvelope(envelope) : null;
+    const provider = text(record.adapter_id) ?? validated?.provider_observations?.[0]?.provider ?? 'unknown';
+    const observations = validated?.provider_observations ?? [];
     const values = Object.fromEntries(OBSERVATION_FIELDS
-      .map((field) => [field, text(record[field]) ?? text(validated[field])])
+      .map((field) => [field, text(record[field]) ?? text(validated?.[field])])
       .filter(([, value]) => value));
     for (const observation of observations) {
       for (const field of OBSERVATION_FIELDS) {
@@ -200,23 +199,24 @@ export function assertProviderIdentityUniqueness(records = []) {
       const current = bindings.get(key);
       if (!current) {
         bindings.set(key, {
-          dispatch_id: validated.dispatch_id,
-          run_id: validated.run_id,
-          story_id: validated.story_id,
+          dispatch_id: validated?.dispatch_id ?? text(record.dispatch_id),
+          run_id: validated?.run_id ?? text(record.run_id),
+          story_id: validated?.story_id ?? text(record.story_id),
           provider,
           field,
           value
         });
         continue;
       }
-      if (current.dispatch_id === validated.dispatch_id && current.run_id === validated.run_id) continue;
+      if (current.dispatch_id === (validated?.dispatch_id ?? text(record.dispatch_id))
+          && current.run_id === (validated?.run_id ?? text(record.run_id))) continue;
       fail('provider_identity_conflict', 'provider identity is already bound to another dispatch or Run', {
         field, value, provider,
         existing: current,
         attempted: {
-          dispatch_id: validated.dispatch_id,
-          run_id: validated.run_id,
-          story_id: validated.story_id
+          dispatch_id: validated?.dispatch_id ?? text(record.dispatch_id),
+          run_id: validated?.run_id ?? text(record.run_id),
+          story_id: validated?.story_id ?? text(record.story_id)
         }
       });
     }

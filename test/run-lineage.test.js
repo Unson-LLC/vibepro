@@ -81,6 +81,38 @@ test('provider identities cannot be rebound across persisted dispatch or Run env
   ]), true);
 });
 
+test('legacy dispatch records cannot rebind provider identities across Runs or dispatches', () => {
+  for (const field of ['provider_run_id', 'provider_session_id', 'thread_id']) {
+    const identity = {
+      adapter_id: 'codex',
+      dispatch_id: 'dispatch-legacy-a',
+      run_id: 'run-legacy-a',
+      [field]: `legacy-${field}`
+    };
+
+    assert.throws(() => assertProviderIdentityUniqueness([
+      identity,
+      { ...identity, dispatch_id: 'dispatch-legacy-b', run_id: 'run-legacy-b' }
+    ]), errorCode('provider_identity_conflict'), field);
+  }
+});
+
+test('repeated legacy dispatch records with the same Run and dispatch are idempotent', () => {
+  const record = {
+    adapter_id: 'codex',
+    dispatch_id: 'dispatch-legacy',
+    run_id: 'run-legacy',
+    provider_run_id: 'legacy-provider-run',
+    provider_session_id: 'legacy-provider-session',
+    thread_id: 'legacy-thread'
+  };
+
+  assert.equal(assertProviderIdentityUniqueness([
+    record,
+    { ...record }
+  ]), true);
+});
+
 test('resolves five attribution buckets with bounded provenance and reconciled totals', () => {
   const events = [
     { id: 'a', run_id: 'run-alpha', story_id: 'story-alpha', tokens: 10, source_artifact: '.vibepro/run/a.json' },
