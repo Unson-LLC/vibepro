@@ -84,6 +84,8 @@ test('story-vibepro-routing-profiles-rendered-projections ac:13 fresh checkout r
   await execFileAsync('git', ['commit', '-m', 'test: routed packet fixture'], { cwd: fixture });
   await execFileAsync('git', ['clone', '--quiet', fixture, checkout]);
   await execFileAsync(process.execPath, [cli, 'init', checkout], { cwd: repoRoot });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: checkout });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro E2E'], { cwd: checkout });
   await execFileAsync('git', ['switch', '-c', 'feature/routed-checkout'], { cwd: checkout });
   await writeFile(path.join(checkout, 'src/index.js'), 'export const fixture = 2;\n');
   await execFileAsync('git', ['add', 'src/index.js'], { cwd: checkout });
