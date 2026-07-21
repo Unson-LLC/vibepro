@@ -17,7 +17,11 @@ const DECISIONS = new Set(['continue', 'skip', 'retry']);
 const STATE_KEYS = ['schema_version', 'portfolio_id', 'mode', 'status', 'created_at', 'updated_at', 'entries', 'promoted_context', 'decision_journal', 'scope_bindings'];
 const ENTRY_KEYS = ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason'];
 const COST_KEYS = Object.keys(emptyCostAttribution());
-const COUNT_COST_KEYS = new Set(['full_suite_count', 'evidence_reuse_count', 'evidence_invalidation_count', 'human_interruption_count', 'accepted_defect_count', 'risk_reduction_count']);
+const COUNT_COST_KEYS = new Set([
+  'subagent_count', 'review_dispatch_count', 'accepted_finding_count', 'repair_batch_count', 'full_suite_count',
+  'expensive_verification_count', 'evidence_reuse_count', 'evidence_invalidation_count',
+  'human_interruption_count', 'efficiency_debt_count', 'accepted_defect_count', 'risk_reduction_count'
+]);
 const PROMOTED_CONTEXT_KEYS = ['source_story_id', 'artifact_path', 'digest', 'consumer_story_id', 'reason', 'promoted_at'];
 const DECISION_JOURNAL_KEYS = ['story_id', 'decision', 'policy_type', 'reason', 'decided_at'];
 const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm', 'isProcessAlive']);
@@ -352,14 +356,26 @@ function emptyCostAttribution() {
     trusted_pr_ready_ms: null,
     active_ms: null,
     wait_ms: null,
+    observed_work_ms: null,
+    tool_wait_ms: null,
+    review_wait_ms: null,
+    subagent_wall_clock_ms: null,
+    agent_consumption_ms: null,
+    subagent_count: null,
+    review_dispatch_count: null,
+    accepted_finding_count: null,
+    repair_batch_count: null,
     total_tokens: null,
+    fresh_input_tokens: null,
     cost_usd: null,
     full_suite_count: null,
+    expensive_verification_count: null,
     evidence_reuse_count: null,
     evidence_invalidation_count: null,
     human_interruption_count: null,
     accepted_defect_count: null,
-    risk_reduction_count: null
+    risk_reduction_count: null,
+    efficiency_debt_count: null
   };
 }
 
@@ -386,7 +402,7 @@ function mergeCostAttribution(current, next, entry) {
 async function readPortfolio(deps, repoRoot, options = {}) {
   const portfolioId = requirePortfolioId(options.portfolioId);
   try {
-    const state = JSON.parse(await deps.readFile(statePath(repoRoot, portfolioId), 'utf8'));
+    const state = normalizePersistedCostAttribution(JSON.parse(await deps.readFile(statePath(repoRoot, portfolioId), 'utf8')));
     validateState(state, portfolioId);
     return state;
   } catch (cause) {
@@ -394,6 +410,15 @@ async function readPortfolio(deps, repoRoot, options = {}) {
     if (cause instanceof StoryRunPortfolioError) throw cause;
     throw error('invalid_portfolio_state', `Portfolio state is invalid: ${cause.message}.`);
   }
+}
+
+function normalizePersistedCostAttribution(state) {
+  if (!Array.isArray(state?.entries)) return state;
+  for (const entry of state.entries) {
+    if (!isRecord(entry?.cost_attribution)) continue;
+    entry.cost_attribution = { ...emptyCostAttribution(), ...entry.cost_attribution };
+  }
+  return state;
 }
 
 function validateState(state, portfolioId) {
@@ -716,6 +741,8 @@ export function renderStoryRunPortfolioSummary(state) {
     const cost = entry.cost_attribution;
     lines.push(`${entry.order + 1}. ${entry.story_id}: ${entry.status} run=${entry.run_id ?? '-'} worktree=${entry.worktree ?? '-'} head=${entry.head_sha ?? '-'}`);
     lines.push(`   trusted_pr_ready_ms=${cost.trusted_pr_ready_ms ?? 'unknown'} active_ms=${cost.active_ms ?? 'unknown'} wait_ms=${cost.wait_ms ?? 'unknown'} tokens=${cost.total_tokens ?? 'unknown'} cost_usd=${cost.cost_usd ?? 'unknown'} full_suite=${cost.full_suite_count ?? 'unknown'} evidence_reuse=${cost.evidence_reuse_count ?? 'unknown'} evidence_invalidations=${cost.evidence_invalidation_count ?? 'unknown'} human_interruptions=${cost.human_interruption_count ?? 'unknown'} accepted_defects=${cost.accepted_defect_count ?? 'unknown'} risk_reductions=${cost.risk_reduction_count ?? 'unknown'}`);
+    lines.push(`   observed_work_ms=${cost.observed_work_ms ?? 'unknown'} tool_wait_ms=${cost.tool_wait_ms ?? 'unknown'} review_wait_ms=${cost.review_wait_ms ?? 'unknown'} subagent_wall_clock_ms=${cost.subagent_wall_clock_ms ?? 'unknown'} agent_consumption_ms=${cost.agent_consumption_ms ?? 'unknown'}`);
+    lines.push(`   subagents=${cost.subagent_count ?? 'unknown'} review_dispatches=${cost.review_dispatch_count ?? 'unknown'} accepted_findings=${cost.accepted_finding_count ?? 'unknown'} repair_batches=${cost.repair_batch_count ?? 'unknown'} expensive_verification=${cost.expensive_verification_count ?? 'unknown'} fresh_input_tokens=${cost.fresh_input_tokens ?? 'unknown'} evidence_invalidation=${cost.evidence_invalidation_count ?? 'unknown'} efficiency_debt=${cost.efficiency_debt_count ?? 'unknown'}`);
     if (entry.stop_reason) {
       lines.push(`   stop_reason=${entry.stop_reason.code}: ${entry.stop_reason.message}`);
       lines.push(`   next_action=vibepro execute portfolio-decide . --portfolio-id ${state.portfolio_id} --story-id ${entry.story_id} --decision <continue|retry|skip> --policy-type <type> --reason <reason>`);

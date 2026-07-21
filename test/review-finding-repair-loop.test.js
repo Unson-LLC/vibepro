@@ -142,17 +142,37 @@ test('RFR-S-5 rejects missing provenance and a different review role', () => {
   assert.throws(() => recordFindingRepairAttempt(state, { ...base, rereview: rereview({ role: 'security' }) }), /same stage and role/);
 });
 
-test('RFR-S-5 multiple repairable findings do not converge before all attempts pass', () => {
+test('TDEG-S-5 compatible repairable findings share one dispatch, verification, and re-review batch', () => {
   let state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review('needs_changes', [
     review().findings[0], { ...review().findings[0], id: 'second', detail: 'second repair' }
   ]) });
+  assert.equal(state.repair_batches.length, 1);
+  assert.deepEqual(state.repair_batches[0].finding_ids, ['missing-regression', 'second']);
+  assert.equal(state.next_action.task.runtime_request.finding_fingerprints.length, 2);
   const evidence = { headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
     verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' }, rereview: rereview() };
   state = recordFindingRepairAttempt(state, evidence);
-  assert.equal(state.status, 'planned');
-  assert.equal(state.next_action.task.task_id, state.attempts[1].task.task_id);
-  state = recordFindingRepairAttempt(state, { ...evidence, implementationSessionId: 'impl-session-2', rereview: rereview({ session_id: 'review-session-2' }) });
   assert.equal(state.status, 'converged');
+  assert.equal(state.attempts.every((attempt) => attempt.outcome.implementation.session_id === 'impl-session'), true);
+  assert.equal(summarizeFindingRepairState(state).repair_batch_count, 1);
+});
+
+test('TDEG-S-5 legacy repair artifacts keep separate finding dispatches when no batch metadata exists', () => {
+  let state = createFindingRepairPlan({ storyId: 'story-1', stage: 'runtime', role: 'runtime', review: review('needs_changes', [
+    review().findings[0], { ...review().findings[0], id: 'second', detail: 'second legacy repair' }
+  ]) });
+  delete state.repair_batches;
+  for (const attempt of state.attempts) delete attempt.batch_id;
+
+  const evidence = { headSha: 'head-2', implementationIdentity: 'impl', implementationSessionId: 'impl-session',
+    verification: { status: 'pass', head_sha: 'head-2' }, prPrepare: { status: 'ready', head_sha: 'head-2' }, rereview: rereview() };
+  state = recordFindingRepairAttempt(state, evidence);
+
+  assert.equal(state.status, 'planned');
+  assert.equal(state.attempts[0].outcome.implementation.session_id, 'impl-session');
+  assert.equal(state.attempts[1].outcome, null);
+  assert.equal(state.repair_batches.length, 2);
+  assert.equal(state.repair_batches.every((batch) => batch.migrated_from_legacy), true);
 });
 
 test('RFR-S-2 public persisted dispatch path records runtime state atomically', async () => {

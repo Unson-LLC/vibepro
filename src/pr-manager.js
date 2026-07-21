@@ -6,6 +6,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { formatCounts } from './refactoring-delta-reporter.js';
+import { summarizeEfficiencyDebt } from './delivery-efficiency-guardrail.js';
 import {
   buildRequirementConsistency,
   findStorySource,
@@ -10978,6 +10979,7 @@ function buildGateDag({
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
+  const efficiency = buildAgentReviewEfficiencySummary(agentReviews, needsEvidence.length === 0);
   const suppressedJudgmentAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   return {
     schema_version: '0.1.0',
@@ -11018,11 +11020,33 @@ function buildGateDag({
       decision_record_status: decisionRecordGate.status,
       review_inspection_required_status: reviewInspectionRequiredGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
-      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
+      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null,
+      correctness_ready: efficiency.correctness_ready,
+      efficiency_debt: efficiency
     },
     nodes: allNodes,
     edges
   };
+}
+
+export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady = false) {
+  const lifecycles = [];
+  let duplicateDispatchCount = 0;
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      const lifecycle = role.lifecycle ?? {};
+      for (let index = 0; index < (lifecycle.timed_out_count ?? 0); index += 1) lifecycles.push({ status: 'timed_out' });
+      if (['obsolete', 'orphaned_agent'].includes(lifecycle.effective_status)) {
+        lifecycles.push({ status: lifecycle.effective_status });
+      }
+      duplicateDispatchCount += Math.max(0, (lifecycle.running_count ?? 0) - 1);
+    }
+  }
+  return summarizeEfficiencyDebt({
+    correctness_ready: correctnessReady,
+    lifecycles,
+    duplicate_dispatch_count: duplicateDispatchCount
+  });
 }
 
 function buildAgentReviewProcessDag(agentReviews) {

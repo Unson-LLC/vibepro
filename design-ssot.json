@@ -6057,6 +6057,47 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-trusted-delivery-efficiency-guardrail",
+      "title": "Trusted Delivery Efficiency Guardrail",
+      "root_doc": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md",
+      "owner": "VibePro",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-trusted-delivery-efficiency-guardrail.md",
+            "required": true,
+            "relationship": "governs",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-trusted-delivery-efficiency-guardrail.md",
+          "required": true,
+          "relationship": "governs",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
   "updated_at": "2026-07-21T06:38:15.840Z"

@@ -263,7 +263,26 @@
     }
   },
   "budgets": {
-    "pr_artifact_bytes": 16384
+    "pr_artifact_bytes": 16384,
+    "delivery_efficiency": {
+      "max_elapsed_ms": 2700000,
+      "max_observed_work_ms": 900000,
+      "max_tool_wait_ms": 1200000,
+      "max_total_tokens": null,
+      "max_fresh_input_tokens": null,
+      "max_cost_usd": null,
+      "max_subagent_count": 6,
+      "max_agent_consumption_ms": 1800000,
+      "max_repair_batches": 3,
+      "max_expensive_verification_count": 1,
+      "max_review_dispatches_by_role": {
+        "architecture": 1,
+        "implementation": 1,
+        "runtime": 1,
+        "security": 1
+      },
+      "require_known_attribution": false
+    }
   },
   "brainbase": {
     "stories": [
@@ -409,8 +428,133 @@
         "started_at": "2026-07-21",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-trusted-delivery-efficiency-guardrail",
+        "title": "Trusted PR-readyまでの総コストを制御するDelivery Efficiency Guardrail",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality",
+        "performanceMetrics": [
+          {
+            "schema_version": "0.1.0",
+            "metricId": "review-wait",
+            "userStory": "Agent Reviewの品質を維持しながらReview待機wall-clockを削減したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Storyの最初のReview lifecycleがstartされる",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "当該Storyのrequired Review lifecycleが全てterminalになる",
+              "kind": "custom"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          },
+          {
+            "schema_version": "0.1.0",
+            "metricId": "observed-work",
+            "userStory": "Storyに関連する実作業とtool waitの観測時間を削減したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Storyに関連する最初のtoken、tool、agent eventが観測される",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "Trusted PR-readyまたは型付き停止までの関連event集計が完了する",
+              "kind": "api_completed"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          },
+          {
+            "schema_version": "0.1.0",
+            "metricId": "trusted-pr-ready-elapsed",
+            "userStory": "Trusted PR-readyまでの総経過時間を、品質Gateを維持したまま短縮したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Story Runが作成され、最初のmutating actionを開始できる",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "current HEADでrequired Gateが通りready_for_pr_create=trueになる、または型付き停止になる",
+              "kind": "custom"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          }
+        ]
       }
     ],
-    "current_story_id": "story-vibepro-content-scoped-evidence-reuse-key"
+    "current_story_id": "story-vibepro-trusted-delivery-efficiency-guardrail"
   }
 }
