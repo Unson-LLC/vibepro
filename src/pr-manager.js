@@ -11241,6 +11241,7 @@ function buildGateDag({
   });
   const decisionRecordGate = buildDecisionRecordGate(decisionRecords);
   const failureModeCoverageGate = buildFailureModeCoverageGate({
+    storyId: story.story_id,
     storySource,
     fileGroups,
     changeClassification,
@@ -12388,7 +12389,7 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
   return artifacts;
 }
 
-function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, inferredSpec = null } = {}) {
+function buildFailureModeCoverageGate({ storyId = null, storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, inferredSpec = null } = {}) {
   const modes = deriveFailureModeCandidates({ storySource, fileGroups, changeClassification, inferredSpec });
   const highRisk = storySource?.pr_scope_strategy === 'atomic_single_pr'
     || changeClassification?.profile === 'workflow_heavy'
@@ -12405,8 +12406,11 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
   const status = missing.length === 0 ? 'passed' : 'missing_coverage';
   const acceptedCanonicalTerms = acceptedCanonicalEvidenceTermsForModes(missing.map((mode) => mode.id));
-  const verificationCommand = `vibepro verify record . --id <story-id> --kind <unit|integration|e2e> --status pass --command "<executable test command>" --target "<tested path>" --scenario "${missing[0]?.id ?? '<failure-mode>'}: invalid input is rejected" --observed "result=rejected" --strict-head-binding`;
-  const prepareCommand = 'vibepro pr prepare . --story-id <story-id> --view blocking-gates';
+  const testTarget = fileGroups?.tests?.files?.[0] ?? 'test';
+  const sourceTarget = fileGroups?.source?.files?.[0] ?? testTarget;
+  const verificationKind = isE2eTestPath(testTarget) ? 'e2e' : 'unit';
+  const verificationCommand = `vibepro verify record . --id ${JSON.stringify(storyId ?? 'unknown-story')} --kind ${verificationKind} --status pass --command ${JSON.stringify(`node --test ${JSON.stringify(testTarget)}`)} --target ${JSON.stringify(sourceTarget)} --scenario ${JSON.stringify(`${missing[0]?.id ?? 'failure_mode'}: invalid input is rejected`)} --observed ${JSON.stringify('result=rejected')} --strict-head-binding`;
+  const prepareCommand = `vibepro pr prepare . --story-id ${JSON.stringify(storyId ?? 'unknown-story')} --view blocking-gates`;
   return {
     id: 'gate:failure_mode_coverage',
     type: 'failure_mode_coverage_gate',

@@ -18690,7 +18690,11 @@ pr_scope_dependency_boundaries:
     'typed atomic metadata is a real schema boundary and must fail closed without negative-path evidence'
   );
   assert.match(failureModeGate.primary_next_command, /vibepro verify record/);
+  assert.match(failureModeGate.primary_next_command, /--id "story-pr-prepare"/);
+  assert.match(failureModeGate.primary_next_command, /node --test/);
+  assert.doesNotMatch(failureModeGate.primary_next_command, /<[^>]+>/);
   assert.equal(failureModeGate.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+  assert.equal(failureModeGate.next_commands.every((command) => !/<[^>]+>/.test(command)), true);
   assert.equal(
     failureModeGate.modes.some((mode) => mode.id === 'auth_denied'),
     false,
