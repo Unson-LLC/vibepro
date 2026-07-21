@@ -62,6 +62,43 @@ async function startCloseable(root) {
   });
 }
 
+test('review start enforces delivery dispatch evidence, freeze barriers, budget, and idempotency at the lifecycle owner', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence', 'release_risk'], language: 'en' });
+
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'missing-evidence'
+  }), /closes_risks must not be empty/);
+
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'not-frozen',
+    reviewKind: 'final', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Confirm current release evidence.',
+    freeze: ['source', 'spec', 'review_surface']
+  }), /review dispatch stop: finalization_incomplete/);
+
+  const started = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'preflight-1',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
+    reusableEvidence: ['targeted:test']
+  });
+  assert.equal(started.dispatch_decision.action, 'dispatch');
+  assert.equal(started.lifecycle.dispatch_decision.idempotency_key, started.dispatch_decision.idempotency_key);
+
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'preflight-duplicate',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
+    reusableEvidence: ['targeted:test']
+  }), /review dispatch await_result: running/);
+
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'release_risk', agentSystem: 'codex', agentId: 'over-budget',
+    reviewKind: 'preflight', closesRisks: ['release risk'], expectedJudgmentDelta: 'Confirm no remaining release blocker.'
+  }), /review dispatch stop: budget_exceeded/);
+});
+
 test('HEAD mutation remains orphaned until explicit cancellation confirmation persists obsolete', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

@@ -13,7 +13,12 @@ import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
-import { planLifecycleTerminalization } from './delivery-efficiency-guardrail.js';
+import {
+  aggregateDeliveryMetrics,
+  buildReviewDispatchDecision,
+  evaluateDeliveryBudget,
+  planLifecycleTerminalization
+} from './delivery-efficiency-guardrail.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -429,6 +434,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     entry.close_reason = 'completed';
     entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
     entry.result_artifact = toWorkspaceRelative(root, resultPath);
+    entry.result_status = result.status;
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
@@ -520,6 +526,12 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectGitContext(root);
+  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root);
+  const reviewKind = normalizeNullable(options.reviewKind);
+  const closesRisks = options.closesRisks ?? [];
+  const expectedJudgmentDelta = normalizeNullable(options.expectedJudgmentDelta);
+  const reusableEvidence = options.reusableEvidence ?? [];
+  const freeze = normalizeReviewFreeze(options.freeze);
   const now = new Date().toISOString();
   const entry = {
     schema_version: '0.1.0',
@@ -549,7 +561,48 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     result_artifact: null
   };
   let summary = null;
+  let dispatchDecision = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    if (efficiencyPolicy) {
+      const lifecycles = lifecycle.entries.map(normalizeLifecycleForDispatch);
+      const metrics = aggregateDeliveryMetrics({
+        reviews: lifecycle.entries.map((item) => ({
+          role: item.role,
+          started_at: item.started_at,
+          finished_at: item.closed_at
+        }))
+      });
+      const decisionInput = {
+        story_id: storyId,
+        stage,
+        role,
+        head_sha: gitContext.head_sha,
+        surface_digest: gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash,
+        review_kind: reviewKind,
+        closes_risks: closesRisks,
+        expected_judgment_delta: expectedJudgmentDelta,
+        reusable_evidence: reusableEvidence,
+        freeze,
+        lifecycles
+      };
+      dispatchDecision = buildReviewDispatchDecision({
+        ...decisionInput,
+        budget: evaluateDeliveryBudget(efficiencyPolicy, metrics)
+      });
+      if (dispatchDecision.action === 'dispatch') {
+        dispatchDecision = buildReviewDispatchDecision({
+          ...decisionInput,
+          budget: evaluateDeliveryBudget(efficiencyPolicy, addProspectiveReviewDispatch(metrics, role))
+        });
+      }
+      if (dispatchDecision.action !== 'dispatch') {
+        const error = new Error(`review dispatch ${dispatchDecision.action}: ${dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused'}`);
+        error.code = 'VIBEPRO_REVIEW_DISPATCH_STOP';
+        error.dispatch_decision = dispatchDecision;
+        throw error;
+      }
+      entry.dispatch_decision = dispatchDecision;
+    }
     lifecycle.entries.push(entry);
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
@@ -557,8 +610,44 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   });
   return {
     lifecycle: entry,
+    dispatch_decision: dispatchDecision,
     summary,
     artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir))
+  };
+}
+
+async function readDeliveryEfficiencyPolicy(repoRoot) {
+  try {
+    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    const policy = config?.budgets?.delivery_efficiency;
+    return policy && typeof policy === 'object' && !Array.isArray(policy) ? policy : null;
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function normalizeReviewFreeze(value) {
+  const selected = new Set(Array.isArray(value) ? value : []);
+  return Object.fromEntries(['source', 'spec', 'test', 'review_surface'].map((key) => [key, selected.has(key)]));
+}
+
+function normalizeLifecycleForDispatch(entry) {
+  let status = entry.status;
+  if (status === 'closed' && entry.result_status === 'pass') status = 'completed_pass';
+  else if (status === 'closed' && !entry.result_artifact) status = 'result_uncollected';
+  return { ...entry, status };
+}
+
+function addProspectiveReviewDispatch(metrics, role) {
+  return {
+    ...metrics,
+    subagent_count: (metrics.subagent_count ?? 0) + 1,
+    review_dispatch_count: (metrics.review_dispatch_count ?? 0) + 1,
+    review_dispatches_by_role: {
+      ...(metrics.review_dispatches_by_role ?? {}),
+      [role]: (metrics.review_dispatches_by_role?.[role] ?? 0) + 1
+    }
   };
 }
 
@@ -598,6 +687,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
       match.terminal_reason = 'head_mutated_after_dispatch';
       match.terminal_head_sha = gitContext.head_sha;
       match.cancel_confirmed = true;
+      match.cancellation_evidence = closeEvidence;
     }
     match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
     match.closed_at = new Date().toISOString();
@@ -2701,6 +2791,7 @@ function buildSyntheticLifecycleEntryFromReviewResult(result, repoRoot, resultPa
     close_evidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(repoRoot, resultPath),
     closed_at: result.recorded_at ?? new Date().toISOString(),
     result_artifact: toWorkspaceRelative(repoRoot, resultPath),
+    result_status: result.status,
     synthesized_from_result: true,
     synthesized_from_provenance: true
   };

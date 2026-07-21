@@ -94,7 +94,9 @@ export function planLifecycleTerminalization(input = {}) {
   const actions = [];
   for (const entry of input.lifecycles ?? []) {
     if (entry.status !== 'running' || entry.head_sha === currentHead) continue;
-    const confirmed = entry.cancel_confirmed === true || entry.closed === true;
+    const confirmed = entry.cancel_confirmed === true
+      && typeof entry.cancellation_evidence === 'string'
+      && entry.cancellation_evidence.trim().length > 0;
     actions.push({
       lifecycle_id: required(entry.lifecycle_id, 'lifecycle_id'),
       from_head_sha: required(entry.head_sha, 'lifecycle.head_sha'),

@@ -87,7 +87,7 @@ test('same binding dispatch is idempotent for running, uncollected, and complete
 
 test('HEAD mutation terminalizes obsolete work and fails closed when cancellation is unconfirmed', () => {
   const confirmed = planLifecycleTerminalization({ current_head_sha: 'new', lifecycles: [
-    { lifecycle_id: 'old-1', status: 'running', head_sha: 'old', cancel_confirmed: true }
+    { lifecycle_id: 'old-1', status: 'running', head_sha: 'old', cancel_confirmed: true, cancellation_evidence: 'provider-confirmed' }
   ] });
   assert.equal(confirmed.actions[0].terminal_status, 'obsolete');
   assert.equal(confirmed.stop, null);
@@ -97,6 +97,16 @@ test('HEAD mutation terminalizes obsolete work and fails closed when cancellatio
   ] });
   assert.equal(orphan.actions[0].terminal_status, 'orphaned_agent');
   assert.equal(orphan.stop.reason, 'orphaned_agent');
+
+  const parentOnlyClosure = planLifecycleTerminalization({ current_head_sha: 'new', lifecycles: [
+    { lifecycle_id: 'old-3', status: 'running', head_sha: 'old', closed: true, cancel_confirmed: false }
+  ] });
+  assert.equal(parentOnlyClosure.actions[0].terminal_status, 'orphaned_agent');
+
+  const confirmationWithoutEvidence = planLifecycleTerminalization({ current_head_sha: 'new', lifecycles: [
+    { lifecycle_id: 'old-4', status: 'running', head_sha: 'old', cancel_confirmed: true, cancellation_evidence: '' }
+  ] });
+  assert.equal(confirmationWithoutEvidence.actions[0].terminal_status, 'orphaned_agent');
 });
 
 test('compatible repairable findings batch by role and surface while human/conflicting findings remain separate', () => {
