@@ -243,6 +243,33 @@ test('CDI-S-3 a successor process reconciles a persisted completion without adap
   assert.equal(host.metrics().shutdowns, 0);
 });
 
+test('CDI-S-3 successor drains host completion from persisted managed authority', async (t) => {
+  const sourceRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-successor-source-'));
+  const managedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-successor-managed-'));
+  t.after(() => rm(sourceRoot, { recursive: true, force: true }));
+  t.after(() => rm(managedRoot, { recursive: true, force: true }));
+  const firstHost = fakeCodexHost();
+  const first = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot: sourceRoot, host: firstHost })] });
+  const started = await first.dispatch(baseState, reviewRequest(managedRoot));
+  const detached = await first.detach(started.state, started.dispatch.dispatch_id);
+  let observedRoot = null;
+  const successorHost = fakeCodexHost();
+  successorHost.drainCompletion = async ({ repo_root: repoRoot }) => {
+    observedRoot = repoRoot;
+    return [{
+      event_id: 'managed-authority-completion', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z',
+      dispatch_id: detached.dispatch.dispatch_id, provider_run_id: detached.dispatch.provider_run_id, surface_hash: 'surface-a',
+      result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'drained from managed authority', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+    }];
+  };
+  const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot: sourceRoot, host: successorHost })] });
+  const recovered = await successor.reconcile(detached.state, detached.dispatch.dispatch_id);
+  assert.equal(observedRoot, managedRoot);
+  assert.equal(recovered.dispatch.status, 'completed');
+  assert.equal(recovered.dispatch.result.summary, 'drained from managed authority');
+  assert.equal(successorHost.metrics().spawns, 0);
+});
+
 test('CDI-S-7 budget and evidence timestamps do not change logical dispatch identity while surface changes do', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-surface-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));

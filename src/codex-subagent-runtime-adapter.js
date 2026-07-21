@@ -55,6 +55,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       subscription = await host.subscribeCompletion({
         provider_run_id: null,
         dispatch_id: request.dispatch_id,
+        repo_root: request.requirements.managed_worktree,
         onEvent
       });
       started = await host.spawn(effectiveRequest);
@@ -76,7 +77,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     } catch (error) {
       dispatches.delete(request.dispatch_id);
       if (started?.provider_run_id) {
-        await host.shutdown({ provider_run_id: started.provider_run_id, force: true, reason: 'completion_delivery_unavailable' });
+        await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: request.requirements.managed_worktree, force: true, reason: 'completion_delivery_unavailable' });
       }
       throw error;
     }
@@ -102,14 +103,14 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
         if (starting.get(request.dispatch_id) === pending) starting.delete(request.dispatch_id);
       }
     },
-    async status({ provider_run_id }) {
+    async status({ provider_run_id, dispatch }) {
       const record = findByProviderRun(dispatches, provider_run_id);
       if (record) {
         await record.awaitDelivery?.();
         const reconciled = await persistentInbox.reconcile(record.request.dispatch_id);
         if (reconciled.completion) return completionStatus(reconciled.completion);
       }
-      return host.status({ provider_run_id });
+      return host.status({ provider_run_id, repo_root: dispatch?.requirements?.managed_worktree });
     },
     async detach({ provider_run_id, dispatch_id, monitor_boundary_ms }) {
       if (typeof host.detach === 'function') await host.detach({ provider_run_id, dispatch_id, monitor_boundary_ms });
@@ -118,9 +119,21 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
     async reconcile({ provider_run_id, dispatch_id, dispatch }) {
       const record = dispatches.get(dispatch_id) ?? findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
       await record?.awaitDelivery?.();
+      if (typeof host.drainCompletion === 'function') {
+        const events = await host.drainCompletion({
+          dispatch_id,
+          repo_root: record?.request?.requirements?.managed_worktree ?? dispatch?.requirements?.managed_worktree
+        });
+        for (const providerEvent of events) {
+          await persistentInbox.append(toInboxEvent(record?.request ?? dispatch, { provider_run_id }, providerEvent, now));
+        }
+      }
       const reconciled = await persistentInbox.reconcile(dispatch_id);
       if (reconciled.completion) return completionStatus(reconciled.completion);
-      const providerStatus = await host.status({ provider_run_id });
+      const providerStatus = await host.status({
+        provider_run_id,
+        repo_root: record?.request?.requirements?.managed_worktree ?? dispatch?.requirements?.managed_worktree
+      });
       const partialResults = matchingPartialResults(reconciled, record?.request.inspection_surface_hash ?? dispatch?.inspection_surface_hash);
       if (!record) {
         return { ...providerStatus, partial_results: partialResults, latest_event: reconciled.latest };
@@ -140,13 +153,23 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
             if (recovering.get(dispatch_id) === recovery) recovering.delete(dispatch_id);
           }
         }
-        await host.shutdown({ provider_run_id, force: true, reason: stalled.stop_reason.code });
+        await host.shutdown({
+          provider_run_id,
+          repo_root: record?.request?.requirements?.managed_worktree ?? dispatch?.requirements?.managed_worktree,
+          force: true,
+          reason: stalled.stop_reason.code
+        });
         return stalled;
       }
       return { ...providerStatus, partial_results: partialResults, latest_event: reconciled.latest };
     },
-    async cancel({ provider_run_id, force = false }) {
-      return host.shutdown({ provider_run_id, force, reason: 'explicit_runtime_cancel' });
+    async cancel({ provider_run_id, dispatch, force = false }) {
+      return host.shutdown({
+        provider_run_id,
+        repo_root: dispatch?.requirements?.managed_worktree,
+        force,
+        reason: 'explicit_runtime_cancel'
+      });
     },
     async collect_result({ provider_run_id, dispatch_id, dispatch }) {
       const record = findByProviderRun(dispatches, provider_run_id) ?? reconstructRecord(dispatch);
@@ -184,7 +207,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
   };
 
   async function resumeIncomplete(record, reconciled, attempts) {
-    await host.shutdown({ provider_run_id: record.started.provider_run_id, force: true, reason: 'bounded_incomplete_recovery' });
+    await host.shutdown({ provider_run_id: record.started.provider_run_id, repo_root: record.request.requirements.managed_worktree, force: true, reason: 'bounded_incomplete_recovery' });
     const partialJudgments = matchingPartialResults(reconciled, record.request.inspection_surface_hash);
     const recoveryPlan = planJudgmentRecovery({
       previous: mergeJudgments(record.request.recovery_plan?.reusable_judgments, partialJudgments),
@@ -193,7 +216,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       currentSurfaceHash: record.request.inspection_surface_hash,
       changedPaths: []
     });
-    const attemptCost = reportedCost(await host.status({ provider_run_id: record.started.provider_run_id }));
+    const attemptCost = reportedCost(await host.status({ provider_run_id: record.started.provider_run_id, repo_root: record.request.requirements.managed_worktree }));
     record.accumulated_cost_usd = (record.accumulated_cost_usd ?? 0) + attemptCost;
     const recoveryRequest = {
       ...record.request,

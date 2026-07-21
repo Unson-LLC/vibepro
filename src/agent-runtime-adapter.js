@@ -215,7 +215,7 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
   let observed;
   try {
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_status_timeout'
     ));
@@ -355,16 +355,16 @@ async function containUncertainRuntime(registry, now, runState, current, failure
   const adapter = requireAdapter(registry, current.adapter_id);
   let observed;
   try {
-    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
+    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_cancel_status_timeout'
     ));
     if (!TERMINAL_STATUSES.has(observed.status)) {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));
@@ -387,17 +387,17 @@ async function cancel(registry, now, runState, dispatchId) {
   const adapter = requireAdapter(registry, current.adapter_id);
   let observed;
   try {
-    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
+    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_cancel_status_timeout'
     ));
   } catch (error) {
     try {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));
@@ -407,9 +407,9 @@ async function cancel(registry, now, runState, dispatchId) {
   }
   if (!TERMINAL_STATUSES.has(observed.status)) {
     try {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));

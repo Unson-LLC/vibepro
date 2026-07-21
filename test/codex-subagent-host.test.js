@@ -51,6 +51,12 @@ test('production Codex host executes a detached CLI worker, dedupes spawn, and d
   await waitFor(async () => access(path.join(runsRoot, runName, 'worker-finished.json')).then(() => true, () => false));
   const persisted = await readFile(path.join(runsRoot, runName, 'completion-event.json'), 'utf8');
   assert.doesNotMatch(persisted, /raw_transcript|thread\.started/);
+
+  const successorHost = createCodexSubagentHost({ cwd: callerRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
+  const successorStatus = await successorHost.status({ provider_run_id: first.provider_run_id, repo_root: repoRoot });
+  assert.equal(successorStatus.status, 'completed');
+  const successorEvents = await successorHost.drainCompletion({ dispatch_id: request.dispatch_id, repo_root: repoRoot });
+  assert.deepEqual(successorEvents.map((event) => event.kind), ['partial_result', 'completed']);
 });
 
 function runtimeRequest(repoRoot) {
