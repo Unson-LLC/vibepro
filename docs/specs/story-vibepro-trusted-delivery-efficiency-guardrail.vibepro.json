@@ -1,0 +1,114 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-trusted-delivery-efficiency-guardrail",
+  "parent_design": ["vibepro-trusted-delivery-efficiency-guardrail"],
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Delivery policy preserves unspecified limits and unmeasured values as unknown, evaluates time, token, cost, subagent, role-dispatch, repair-batch, and verification budgets, and emits typed budget_exceeded or attribution_unknown stops.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Delivery efficiency policy" }],
+        "code_refs": [{ "file": "src/delivery-efficiency-guardrail.js", "anchor": "evaluateDeliveryBudget" }],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "policy keeps unspecified and unmeasured budgets unknown instead of zero" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "budget exceed and required attribution unknown are typed stops" }
+        ]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Review dispatch records risk closure, expected judgment delta, reusable evidence and budget; final dispatch requires a frozen source, Spec, test and review surface, and the Story-stage-role-HEAD-surface binding is idempotent across running, uncollected and completed-pass states.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }, { "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Review dispatch decision" }],
+        "code_refs": [{ "file": "src/delivery-efficiency-guardrail.js", "anchor": "buildReviewDispatchDecision" }],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "final review waits for an exact frozen surface while preflight remains available" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "same binding dispatch is idempotent for running, uncollected, and completed pass lifecycles" }
+        ]
+      }
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "Running review work superseded by a HEAD mutation becomes obsolete only after confirmed cancellation or closure; unconfirmed cancellation emits an orphaned_agent stop.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Lifecycle debt" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "planLifecycleTerminalization" },
+          { "file": "src/agent-review.js", "anchor": "closeAgentReviewLifecycle" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "HEAD mutation terminalizes obsolete work and fails closed when cancellation is unconfirmed" },
+          { "file": "test/review-inspection-first.test.js", "case": "review lifecycle fails closed on HEAD mutation and persists obsolete after explicit close" }
+        ]
+      }
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "Compatible repairable findings with one role and normalized code/test surface share one implementation dispatch, targeted verification and independent re-review; conflicts and human or split decisions remain separate.",
+      "inherited_behavior": {
+        "condition": "!rereview.agent_identity || (!rereview.session_id && !rereview.thread_id)",
+        "classification": "existing",
+        "files": ["src/review-finding-repair-loop.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Finding batch planner" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "planCompatibleFindingBatches" },
+          { "file": "src/review-finding-repair-loop.js", "anchor": "dispatchBatchAction" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "compatible repairable findings batch by role and surface while human/conflicting findings remain separate" },
+          { "file": "test/review-finding-repair-loop.test.js", "case": "TDEG-S-5 compatible repairable findings share one dispatch, verification, and re-review batch" }
+        ]
+      }
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "Story metrics separate Trusted PR-ready elapsed, observed work, tool wait, union review wall-clock, summed agent consumption, subagent and role dispatch counts, repair and verification counters, evidence reuse or invalidation, fresh and total tokens and cost; missing values remain unknown.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }, { "kind": "acceptance_criteria", "index": 9 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Story efficiency metrics" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "aggregateDeliveryMetrics" },
+          { "file": "src/story-run-portfolio.js", "anchor": "mergeCostAttribution" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "metrics separate review union wall clock from parallel agent consumption and preserve unknown" },
+          { "file": "test/story-run-portfolio.test.js", "case": "SRP-S-6 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero" },
+          { "file": "test/story-run-portfolio.test.js", "case": "portfolio aggregates overlapping review intervals before persisting closed attribution" }
+        ]
+      }
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "PR correctness readiness remains independent from visible timeout, obsolete, orphan, duplicate-dispatch and budget efficiency debt; required tests, independent review, critical Gates, current-HEAD binding and fail-closed semantics are never relaxed for efficiency.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }, { "kind": "acceptance_criteria", "index": 10 }, { "kind": "acceptance_criteria", "index": 11 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Invariants" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "summarizeEfficiencyDebt" },
+          { "file": "src/pr-manager.js", "anchor": "buildAgentReviewEfficiencySummary" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "efficiency debt stays separate from correctness readiness" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "pr gate summary exposes review lifecycle debt without changing correctness readiness" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "pr summary exposes delivery budget, attribution, dispatch, repair, and debt without changing correctness readiness" }
+        ]
+      }
+    }
+  ]
+}

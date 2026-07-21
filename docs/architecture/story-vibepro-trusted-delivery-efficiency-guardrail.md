@@ -24,8 +24,9 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 ### Lifecycle debt
 
 - Classify timed-out, obsolete, orphaned, duplicate, and budget-exceeded work separately from correctness readiness.
-- A mutated HEAD turns a running lifecycle for the prior binding into `obsolete`; confirmed closure is terminal, while unconfirmed cancellation becomes `orphaned_agent` and fail-closed.
-- `pr-manager` may display this summary without changing required Gate semantics.
+- `agent-review` captures HEAD and surface digest when a lifecycle starts. If the current HEAD no longer matches, status inspection derives `orphaned_agent` and fails closed until the provider result is explicitly collected or cancellation is confirmed.
+- Explicit close after a HEAD mutation persists `obsolete`, the terminal HEAD, the mutation reason, and cancellation confirmation; a stale running record is never silently treated as complete.
+- `pr-manager` reads persisted lifecycle and repair-loop artifacts, evaluates the configured budget, and displays efficiency debt without changing required Gate semantics.
 
 ### Finding batch planner
 
@@ -37,15 +38,15 @@ The guardrail consumes snapshots from those owners and returns deterministic dec
 
 - Aggregate Trusted PR-ready elapsed, observed work, wait union, subagent wall-clock, agent consumption, dispatch/accepted-finding/full-suite/evidence-reuse counters, fresh/total token, and cost.
 - Parallel review wall-clock is represented separately from summed agent consumption.
-- `story-run-portfolio` stores and summarizes the expanded attribution shape.
+- `story-run-portfolio` runs the shared aggregator over raw run timestamps, overlapping review intervals, dispatch records, and attribution input before storing and summarizing the expanded attribution shape. Explicit measurements are retained when no aggregate can be derived.
 
 ## Data flow
 
 1. Story/Run policy and current measurements enter the pure guardrail evaluator.
 2. Before review dispatch, current freeze binding, lifecycle snapshots, decision value, and remaining budget produce `dispatch`, `reuse`, or a typed `stop`.
-3. On HEAD mutation, lifecycle snapshots produce terminalization actions and efficiency debt.
+3. On HEAD mutation, `agent-review` derives an orphaned stop from the stale lifecycle; explicit close persists the obsolete terminal state and binding evidence.
 4. Repair findings are converted into compatible batches; each batch receives one targeted verification and one independent re-review.
-5. Gate DAG and portfolio surfaces display correctness readiness and efficiency debt independently.
+5. `pr-manager` and portfolio surfaces consume the persisted lifecycle, repair, policy, and measurement records and display correctness readiness and efficiency debt independently.
 
 ## Invariants
 

@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-trusted-delivery-efficiency-guardrail
-parent_design: vibepro-autonomy-roadmap-rebaseline
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
+  - vibepro-trusted-delivery-efficiency-guardrail
 vibepro_story_id: story-vibepro-autonomy-roadmap-rebaseline
 title: Trusted PR-readyまでの総コストを制御するDelivery Efficiency Guardrail
 status: active

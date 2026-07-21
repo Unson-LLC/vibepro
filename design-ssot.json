@@ -6068,7 +6068,8 @@
       "scope": null,
       "owned_surfaces": [],
       "required_child_kinds": [
-        "story"
+        "story",
+        "spec"
       ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
@@ -6086,6 +6087,15 @@
             "relationship": "governs",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-trusted-delivery-efficiency-guardrail.md",
+            "required": true,
+            "relationship": "constrains",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -6094,6 +6104,13 @@
           "path": "docs/management/stories/active/story-vibepro-trusted-delivery-efficiency-guardrail.md",
           "required": true,
           "relationship": "governs",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-trusted-delivery-efficiency-guardrail.md",
+          "required": true,
+          "relationship": "constrains",
           "last_reviewed_root_hash": null
         }
       ],

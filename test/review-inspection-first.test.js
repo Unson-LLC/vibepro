@@ -13,7 +13,8 @@ import {
   prepareAgentReview,
   recordAgentReview,
   getAgentReviewStatus,
-  startAgentReviewLifecycle
+  startAgentReviewLifecycle,
+  closeAgentReviewLifecycle
 } from '../src/agent-review.js';
 import { runCli } from '../src/cli.js';
 
@@ -60,6 +61,34 @@ async function startCloseable(root) {
     timeoutMs: 600000
   });
 }
+
+test('HEAD mutation fails stale running review closed and persists obsolete after cancellation confirmation', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const started = await startCloseable(root);
+  assert.ok(started.lifecycle.head_sha);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = false;\n');
+  await git(root, ['add', 'src/foo.js']);
+  await git(root, ['commit', '-m', 'mutate reviewed head']);
+
+  const stale = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const staleRole = stale.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(staleRole.lifecycle.effective_status, 'orphaned_agent');
+  assert.match(staleRole.lifecycle.latest.head_sha, /^[a-f0-9]{40}$/);
+  assert.match(stale.stages[0].next_actions.join('\n'), /Fail closed and confirm cancellation/);
+
+  const closed = await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'replaced',
+    closeEvidence: 'provider-cancellation-confirmed'
+  });
+  assert.equal(closed.lifecycle.effective_status, 'obsolete');
+  assert.equal(closed.lifecycle.cancel_confirmed, true);
+  assert.equal(closed.lifecycle.terminal_reason, 'head_mutated_after_dispatch');
+});
 
 test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-only checks', () => {
   assert.equal(typeof INVESTIGATION_GUIDELINES_BLOCK, 'string');

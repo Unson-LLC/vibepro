@@ -3,6 +3,7 @@ import { mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promis
 import path from 'node:path';
 
 import { createGuardedRunSession, deriveRunEfficiencyMetrics } from './guarded-run-session.js';
+import { aggregateDeliveryMetrics } from './delivery-efficiency-guardrail.js';
 import { getWorkspaceDir } from './workspace.js';
 
 export const STORY_RUN_PORTFOLIO_SCHEMA_VERSION = '0.1.0';
@@ -17,6 +18,7 @@ const DECISIONS = new Set(['continue', 'skip', 'retry']);
 const STATE_KEYS = ['schema_version', 'portfolio_id', 'mode', 'status', 'created_at', 'updated_at', 'entries', 'promoted_context', 'decision_journal', 'scope_bindings'];
 const ENTRY_KEYS = ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason'];
 const COST_KEYS = Object.keys(emptyCostAttribution());
+const COST_AGGREGATION_INPUT_KEYS = new Set(['run_started_at', 'trusted_pr_ready_at', 'reviews', 'review_dispatches_by_role', 'attribution_status']);
 const COUNT_COST_KEYS = new Set([
   'subagent_count', 'review_dispatch_count', 'accepted_finding_count', 'repair_batch_count', 'full_suite_count',
   'expensive_verification_count', 'evidence_reuse_count', 'evidence_invalidation_count',
@@ -383,7 +385,7 @@ function mergeCostAttribution(current, next, entry) {
   if (!next) return current;
   const allowed = COST_KEYS;
   const identity = ['story_id', 'run_id'];
-  if (Object.keys(next).some((key) => !allowed.includes(key) && !identity.includes(key))) {
+  if (Object.keys(next).some((key) => !allowed.includes(key) && !identity.includes(key) && !COST_AGGREGATION_INPUT_KEYS.has(key))) {
     throw error('invalid_cost_attribution', 'Unknown cost attribution field.');
   }
   if (next.story_id !== entry.story_id || next.run_id !== entry.run_id) {
@@ -392,7 +394,20 @@ function mergeCostAttribution(current, next, entry) {
       actual: { story_id: next.story_id ?? null, run_id: next.run_id ?? null }
     });
   }
-  const measurements = Object.fromEntries(Object.entries(next).filter(([key]) => allowed.includes(key)));
+  const supplied = Object.fromEntries(Object.entries(next).filter(([key]) => allowed.includes(key)));
+  const aggregated = aggregateDeliveryMetrics({
+    run_started_at: next.run_started_at,
+    trusted_pr_ready_at: next.trusted_pr_ready_at,
+    reviews: next.reviews,
+    review_dispatches_by_role: next.review_dispatches_by_role,
+    attribution_status: next.attribution_status,
+    ...supplied
+  });
+  const measurements = {
+    ...supplied,
+    ...Object.fromEntries(Object.entries(aggregated)
+      .filter(([key, value]) => allowed.includes(key) && value !== undefined && value !== null))
+  };
   if (Object.entries(measurements).some(([key, value]) => !validCostMeasurement(key, value))) {
     throw error('invalid_cost_attribution', 'Cost attribution measurements must be non-negative numbers, integer counts, or null.');
   }

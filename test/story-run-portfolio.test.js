@@ -182,6 +182,31 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
   assert.equal(unchanged.entries[0].stop_reason.code, 'scope_contamination');
 });
 
+test('portfolio aggregates raw review intervals before persisting the closed attribution shape', async (t) => {
+  const fixture = await createFixture(t);
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-aggregate', storyIds: STORIES.slice(0, 1) });
+  await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-aggregate' });
+  const runId = fixture.runs.get(STORIES[0]).run_id;
+  const state = await fixture.controller.advance(fixture.root, {
+    portfolioId: 'portfolio-aggregate',
+    costAttribution: {
+      story_id: STORIES[0],
+      run_id: runId,
+      run_started_at: '2026-07-21T00:00:00.000Z',
+      trusted_pr_ready_at: '2026-07-21T00:05:00.000Z',
+      reviews: [
+        { role: 'gate_evidence', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:03:00.000Z' },
+        { role: 'gate_evidence', started_at: '2026-07-21T00:02:00.000Z', finished_at: '2026-07-21T00:04:00.000Z' }
+      ]
+    }
+  });
+  assert.equal(state.entries[0].cost_attribution.trusted_pr_ready_ms, 300000);
+  assert.equal(state.entries[0].cost_attribution.review_wait_ms, 180000);
+  assert.equal(state.entries[0].cost_attribution.agent_consumption_ms, 240000);
+  assert.equal(state.entries[0].cost_attribution.review_dispatch_count, 2);
+  assert.equal(state.entries[0].cost_attribution.fresh_input_tokens, null);
+});
+
 test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode', async (t) => {
   const fixture = await createFixture(t);
   await assert.rejects(fixture.controller.create(fixture.root, {

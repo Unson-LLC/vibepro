@@ -154,8 +154,22 @@ test('pr gate summary exposes review lifecycle debt without changing correctness
   const summary = buildAgentReviewEfficiencySummary({ stages: [{ roles: [
     { lifecycle: { effective_status: 'timed_out', timed_out_count: 1, running_count: 0 } },
     { lifecycle: { effective_status: 'running', timed_out_count: 0, running_count: 2 } }
-  ] }] }, true);
+  ] }], delivery_efficiency: {
+    policy: { max_subagent_count: 1 },
+    reviews: [
+      { role: 'gate_evidence', started_at: '2026-07-21T00:00:00.000Z', finished_at: '2026-07-21T00:01:00.000Z' },
+      { role: 'gate_evidence', started_at: '2026-07-21T00:00:30.000Z', finished_at: '2026-07-21T00:02:00.000Z' }
+    ],
+    measurements: { attribution_status: 'unknown', repair_batch_count: 1 },
+    repair_batch_count: 1,
+    repair_states: [{ stage: 'gate', role: 'gate_evidence', status: 'planned', repair_batch_count: 1 }]
+  } }, true);
   assert.equal(summary.correctness_ready, true);
   assert.equal(summary.ready_for_pr_create, true);
-  assert.deepEqual(summary.debt.map((item) => item.kind), ['timed_out', 'duplicate_dispatch']);
+  assert.deepEqual(summary.debt.map((item) => item.kind), ['timed_out', 'duplicate_dispatch', 'budget_exceeded']);
+  assert.equal(summary.metrics.review_wait_ms, 120000);
+  assert.equal(summary.budget.stop.reason, 'budget_exceeded');
+  assert.equal(summary.attribution.status, 'unknown');
+  assert.equal(summary.dispatch_decision.status, 'unknown');
+  assert.equal(summary.repair.batch_count, 1);
 });

@@ -6,7 +6,11 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { formatCounts } from './refactoring-delta-reporter.js';
-import { summarizeEfficiencyDebt } from './delivery-efficiency-guardrail.js';
+import {
+  aggregateDeliveryMetrics,
+  evaluateDeliveryBudget,
+  summarizeEfficiencyDebt
+} from './delivery-efficiency-guardrail.js';
 import {
   buildRequirementConsistency,
   findStorySource,
@@ -5500,6 +5504,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     changeClassification,
     git
   });
+  if (agentReviews) {
+    agentReviews.delivery_efficiency = await buildDeliveryEfficiencyContext(repoRoot, story.story_id, agentReviews);
+  }
   const engineeringJudgment = buildEngineeringJudgmentClassification({
     fileGroups,
     storySource: primaryStory,
@@ -11042,11 +11049,87 @@ export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady
       duplicateDispatchCount += Math.max(0, (lifecycle.running_count ?? 0) - 1);
     }
   }
-  return summarizeEfficiencyDebt({
+  const delivery = agentReviews?.delivery_efficiency ?? {};
+  const metrics = aggregateDeliveryMetrics({
+    ...(delivery.measurements ?? {}),
+    reviews: delivery.reviews
+  });
+  const budget = evaluateDeliveryBudget(delivery.policy ?? {}, metrics);
+  const summary = summarizeEfficiencyDebt({
     correctness_ready: correctnessReady,
     lifecycles,
-    duplicate_dispatch_count: duplicateDispatchCount
+    duplicate_dispatch_count: duplicateDispatchCount,
+    budget
   });
+  return {
+    ...summary,
+    metrics,
+    budget,
+    attribution: {
+      status: metrics.attribution_status ?? 'unknown',
+      reason: delivery.attribution_reason ?? 'no session-cost attribution was connected to this PR preparation'
+    },
+    dispatch_decision: delivery.dispatch_decision ?? {
+      status: 'unknown',
+      reason: 'no concrete Story/stage/role/HEAD/surface dispatch request was evaluated'
+    },
+    repair: {
+      batch_count: delivery.repair_batch_count ?? null,
+      states: delivery.repair_states ?? []
+    }
+  };
+}
+
+async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
+  let policy = {};
+  try {
+    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    policy = config?.budgets?.delivery_efficiency ?? {};
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const reviews = [];
+  const repairStates = [];
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      for (const lifecycle of stage.lifecycle?.entries ?? []) {
+        if (lifecycle.role !== role.role) continue;
+        reviews.push({
+          role: role.role,
+          started_at: lifecycle.started_at,
+          finished_at: lifecycle.closed_at
+        });
+      }
+      const repairPath = path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', storyId, stage.stage, role.role, 'state.json');
+      try {
+        const state = JSON.parse(await readFile(repairPath, 'utf8'));
+        repairStates.push({
+          stage: stage.stage,
+          role: role.role,
+          status: state.status,
+          repair_batch_count: Array.isArray(state.repair_batches) ? state.repair_batches.length : null
+        });
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+  const knownRepairCounts = repairStates.map((state) => state.repair_batch_count).filter(Number.isFinite);
+  return {
+    policy,
+    reviews,
+    measurements: {
+      repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
+      attribution_status: 'unknown'
+    },
+    attribution_reason: 'PR preparation has review lifecycle timing but no bounded session-cost attribution input',
+    dispatch_decision: {
+      status: 'unknown',
+      reason: 'dispatch decisions are evaluated only for concrete current-HEAD review requests'
+    },
+    repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
+    repair_states: repairStates
+  };
 }
 
 function buildAgentReviewProcessDag(agentReviews) {

@@ -13,6 +13,7 @@ import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
+import { planLifecycleTerminalization } from './delivery-efficiency-guardrail.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -518,6 +519,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   });
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
+  const gitContext = await collectGitContext(root);
   const now = new Date().toISOString();
   const entry = {
     schema_version: '0.1.0',
@@ -526,6 +528,8 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     stage,
     role,
     status: 'running',
+    head_sha: gitContext.head_sha,
+    surface_digest: gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null,
     agent_system: normalizeReviewSystem(options.agentSystem ?? options.reviewerSystem),
     agent_id: normalizeNullable(options.agentId),
     agent_model: agentModel,
@@ -544,7 +548,6 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
-  const gitContext = await collectGitContext(root);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     lifecycle.entries.push(entry);
@@ -585,6 +588,12 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     match.closed_at = new Date().toISOString();
     match.close_reason = closeReason;
     match.close_evidence = normalizeNullable(options.closeEvidence);
+    if (match.head_sha && match.head_sha !== gitContext.head_sha) {
+      match.terminal_status = 'obsolete';
+      match.terminal_reason = 'head_mutated_after_dispatch';
+      match.terminal_head_sha = gitContext.head_sha;
+      match.cancel_confirmed = true;
+    }
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
@@ -1055,13 +1064,15 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
 function buildLifecycleUnmetReview(requirement, role) {
   const lifecycle = role?.lifecycle;
   const latest = lifecycle?.latest;
-  if (!lifecycle || !['running', 'timed_out'].includes(lifecycle.effective_status)) return [];
+  if (!lifecycle || !['running', 'timed_out', 'orphaned_agent'].includes(lifecycle.effective_status)) return [];
   return [{
     ...requirement,
     status: lifecycle.effective_status,
     detail: lifecycle.effective_status === 'timed_out'
       ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} timed out; close and replace it before PR readiness`
-      : `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} is still running; close it before PR readiness`
+      : lifecycle.effective_status === 'orphaned_agent'
+        ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} belongs to stale HEAD and cancellation is unconfirmed; fail closed, close it, and start a current-HEAD replacement`
+        : `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} is still running; close it before PR readiness`
   }];
 }
 
@@ -2184,7 +2195,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
-  const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
+  const lifecycleEntries = lifecycle.entries.map((entry) => decorateLifecycleEntry(entry, currentGitContext));
   const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles, lifecycleEntries });
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
@@ -3124,8 +3135,8 @@ function findLifecycleEntry(entries, options = {}) {
   return candidates.at(-1) ?? null;
 }
 
-function decorateLifecycleEntry(entry) {
-  const effectiveStatus = resolveLifecycleEffectiveStatus(entry);
+function decorateLifecycleEntry(entry, currentGitContext = null) {
+  const effectiveStatus = resolveLifecycleEffectiveStatus(entry, currentGitContext);
   return {
     ...entry,
     effective_status: effectiveStatus,
@@ -3134,9 +3145,17 @@ function decorateLifecycleEntry(entry) {
   };
 }
 
-function resolveLifecycleEffectiveStatus(entry) {
+function resolveLifecycleEffectiveStatus(entry, currentGitContext = null) {
+  if (entry.terminal_status) return entry.terminal_status;
   if (entry.status === 'closed' || entry.status === 'replaced') return entry.status;
   if (entry.status !== 'running') return entry.status;
+  if (entry.head_sha && currentGitContext?.head_sha && entry.head_sha !== currentGitContext.head_sha) {
+    const plan = planLifecycleTerminalization({
+      current_head_sha: currentGitContext.head_sha,
+      lifecycles: [{ ...entry, cancel_confirmed: entry.cancel_confirmed === true }]
+    });
+    return plan.actions[0]?.terminal_status ?? 'orphaned_agent';
+  }
   const elapsedMs = calculateElapsedMs(entry);
   if (Number.isFinite(elapsedMs) && elapsedMs > normalizeTimeoutMs(entry.timeout_ms)) return 'timed_out';
   return 'running';
@@ -3156,6 +3175,8 @@ function summarizeRoleLifecycle(entries, role) {
     effective_status: 'not_started',
     running_count: 0,
     timed_out_count: 0,
+    obsolete_count: 0,
+    orphaned_agent_count: 0,
     closed_count: 0,
     replaced_count: 0,
     latest: null
@@ -3165,6 +3186,8 @@ function summarizeRoleLifecycle(entries, role) {
     effective_status: latest.effective_status,
     running_count: roleEntries.filter((entry) => entry.effective_status === 'running').length,
     timed_out_count: roleEntries.filter((entry) => entry.effective_status === 'timed_out').length,
+    obsolete_count: roleEntries.filter((entry) => entry.effective_status === 'obsolete').length,
+    orphaned_agent_count: roleEntries.filter((entry) => entry.effective_status === 'orphaned_agent').length,
     closed_count: roleEntries.filter((entry) => entry.effective_status === 'closed').length,
     replaced_count: roleEntries.filter((entry) => entry.effective_status === 'replaced').length,
     latest
@@ -3176,6 +3199,8 @@ function summarizeLifecycle(entries) {
     entry_count: entries.length,
     running_count: entries.filter((entry) => entry.effective_status === 'running').length,
     timed_out_count: entries.filter((entry) => entry.effective_status === 'timed_out').length,
+    obsolete_count: entries.filter((entry) => entry.effective_status === 'obsolete').length,
+    orphaned_agent_count: entries.filter((entry) => entry.effective_status === 'orphaned_agent').length,
     closed_count: entries.filter((entry) => entry.effective_status === 'closed').length,
     replaced_count: entries.filter((entry) => entry.effective_status === 'replaced').length,
     entries
@@ -3194,6 +3219,10 @@ function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
     if (entry.effective_status === 'timed_out') {
       actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
       actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    }
+    if (entry.effective_status === 'orphaned_agent') {
+      actions.push(`Fail closed and confirm cancellation for stale-HEAD ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason replaced --close-evidence <cancellation-evidence>`);
+      actions.push(`After cancellation is confirmed, start a current-HEAD replacement for ${stage}:${entry.role} with --replacement-for ${entry.lifecycle_id}`);
     }
     if (entry.close_reason === 'manual_shutdown') {
       actions.push(`Record replacement intent for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
