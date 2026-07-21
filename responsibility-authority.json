@@ -394,6 +394,38 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.guarded_run.portfolio_coordination",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-autonomous-action-dag.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "docs/specs/story-vibepro-autonomous-action-dag.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/story-run-portfolio.js",
+          "test/story-run-portfolio.test.js"
+        ],
+        "symbols": [
+          "sequential portfolio lock",
+          "portfolio_lock_recovery_required",
+          "portfolio_busy"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.run_lineage.explicit_attribution",
       "primary_authority": {
         "kind": "architecture",
