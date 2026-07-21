@@ -13137,6 +13137,14 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'unavailable');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
   assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.label,
+    '監査証跡 / canonical audit artifacts / gate-review-verification evidence');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.ratio_of_classified_exposure, null);
+  assert.deepEqual(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.matched_signals, []);
+  assert.match(result.result.merge.cost_accounting.artifact_token_accounting.estimate_method, /ceil\(text\.length \/ 4\)/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.coverage, 'signal-matched transcript entries only');
 });
 
 test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance', async () => {

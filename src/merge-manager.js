@@ -659,7 +659,23 @@ function unavailableExecuteMergeCostAccounting({ source, reason, storyId, collec
 }
 
 function unavailableArtifactTokenAccounting(source, storyId, reason) {
-  const bucket = (id) => ({ id, estimated_tokens: null, event_count: 0 });
+  const bucketLabels = {
+    audit_evidence: '監査証跡 / canonical audit artifacts / gate-review-verification evidence',
+    story_spec_architecture_docs: 'story/spec/architecture docs',
+    src_code: 'src/ コード本体',
+    test: 'test/',
+    replayed_context: '再送された文脈（compaction後のgoal/permissions等の再掲）/ replayed carryover context after compaction',
+    unattributed: 'unattributed Codex development in daily window'
+  };
+  const bucket = (id) => ({
+    id,
+    label: bucketLabels[id],
+    estimated_tokens: null,
+    event_count: 0,
+    ratio_of_classified_exposure: null,
+    ratio_of_session_tokens: null,
+    matched_signals: []
+  });
   const provenanceBucket = (id) => ({
     id,
     estimated_tokens: null,
@@ -674,6 +690,8 @@ function unavailableArtifactTokenAccounting(source, storyId, reason) {
     classified_estimated_tokens: null,
     total_session_tokens: null,
     source,
+    estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
+    coverage: 'signal-matched transcript entries only',
     buckets: Object.fromEntries([
       'audit_evidence',
       'story_spec_architecture_docs',
