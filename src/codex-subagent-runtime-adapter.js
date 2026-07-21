@@ -327,7 +327,7 @@ function evaluateProgressBounds(record, reconciled, providerStatus, observedNow)
   const cost = (record.accumulated_cost_usd ?? 0) + reportedCost(providerStatus);
   if (elapsed > requirements.max_wall_clock_ms) return stalled('max_wall_clock_exceeded');
   if (attempts > requirements.max_attempts) return stalled('max_attempts_exceeded');
-  if (requirements.max_cost_usd > 0 && cost > requirements.max_cost_usd) return stalled('max_cost_exceeded');
+  if (requirements.max_cost_usd > 0 && cost >= requirements.max_cost_usd) return stalled('max_cost_exceeded');
   if (noProgressElapsed > requirements.no_progress_deadline_ms) return stalled('no_progress_deadline_exceeded');
   return null;
 }
