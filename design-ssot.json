@@ -3698,6 +3698,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-session-attribution-boundary-guard.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -3706,6 +3715,13 @@
           "path": "docs/management/stories/active/story-vibepro-session-attribution-boundary-guard.md",
           "required": true,
           "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-session-attribution-boundary-guard.md",
+          "required": true,
+          "relationship": "specifies",
           "last_reviewed_root_hash": null
         }
       ],
@@ -6114,5 +6130,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-21T12:08:46.610Z"
+  "updated_at": "2026-07-21T16:02:47.999Z"
 }
