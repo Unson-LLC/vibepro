@@ -2364,6 +2364,21 @@ export async function runCli(argv, io = {}) {
         const jsonOutput = hasFlag(rest, '--json');
         const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
         try {
+          const guardedPolicyFlags = [
+            '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
+            '--max-tokens', '--max-cost-usd', '--retry-backoff-ms',
+            '--retryable-stop-codes', '--provider-fallbacks'
+          ];
+          const offPathPolicyFlags = subcommand === 'run'
+            ? []
+            : guardedPolicyFlags.filter((flag) => hasFlag(rest, flag));
+          if (offPathPolicyFlags.length > 0) {
+            throw new GuardedRunError(
+              'policy_options_not_supported',
+              'Guarded autonomy policy options are supported only by execute run.',
+              { command: `execute ${subcommand}`, unsupported_options: offPathPolicyFlags, supported_command: 'execute run' }
+            );
+          }
           if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
             throw new GuardedRunError(
               'invalid_target',

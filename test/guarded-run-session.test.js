@@ -353,8 +353,8 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults a
     budget: { max_attempts: 3, max_iterations: 12, max_duration_ms: 3600000, max_tokens: null, max_cost_usd: null },
     deadline: '2026-07-15T02:02:03.000Z',
     retry_policy: {
-      retryable_stop_codes: ['runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'],
-      backoff_ms: 1000
+      retryable_stop_codes: ['runtime_required', 'runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'],
+      backoff_ms: 0
     },
     provider_fallbacks: [],
     usage_accounting: { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null },
@@ -397,11 +397,11 @@ test('GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults a
     sequence: 1,
     stop_code: 'fixture_blocked',
     retryable: false,
-    backoff_ms: 1000,
+    backoff_ms: 0,
     stopped_at: FIRST_TIME,
     resumed_at: FIRST_TIME,
     elapsed_ms: 0,
-    backoff_satisfied: false,
+    backoff_satisfied: true,
     resumed_by: 'operator'
   }]);
   const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
@@ -457,6 +457,48 @@ test('GAH-S-1 GAH-S-2 budget deadline retry and provider policy produce typed no
   assert.equal(deadline.state.stop_reason.code, 'deadline_exceeded');
 });
 
+test('GAH-S-2 persisted retry policy rejects non-retryable and interrupted backoff before resuming', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, {
+    storyId: STORY_ID,
+    retryBackoffMs: 1000,
+    retryableStopCodes: ['action_failed']
+  });
+  await session.transition(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'retryable_failure',
+    stopReason: { code: 'action_failed', message: 'retry later', details: { retry_policy_enforced: true } }
+  });
+  await assert.rejects(
+    session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_backoff_pending')
+  );
+  assert.deepEqual((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).retry_journal, []);
+  fixture.setTime('2026-07-15T01:02:05.000Z');
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.retry_journal[0].retryable, true);
+  assert.equal(resumed.retry_journal[0].backoff_satisfied, true);
+
+  const second = await createFixture(t, { mode: 'disabled' });
+  const secondSession = second.session();
+  await secondSession.run(second.source, { storyId: STORY_ID, retryableStopCodes: ['action_failed'], retryBackoffMs: 0 });
+  await secondSession.transition(second.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    to: 'blocked',
+    reason: 'non_retryable_failure',
+    stopReason: { code: 'action_denied', message: 'do not retry', details: { retry_policy_enforced: true } }
+  });
+  await assert.rejects(
+    secondSession.resume(second.source, { storyId: STORY_ID, runId: RUN_ID }),
+    errorWithCode('retry_not_allowed')
+  );
+});
+
 test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const created = await fixture.session().run(fixture.source, { storyId: STORY_ID });
@@ -465,6 +507,24 @@ test('GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it t
   assert.match(summary, /cost_usd: unknown/);
   assert.match(summary, /automated_steps: 0/);
   assert.match(summary, /human_interruptions: 0/);
+  assert.match(summary, /active_ms: 0/);
+  assert.match(summary, /wait_ms: 0/);
+  assert.match(summary, /full_suite_runs: 0/);
+  assert.match(summary, /evidence_reuse: 0/);
+  assert.match(summary, /accepted_defects: unknown/);
+  assert.match(summary, /risk_reductions: unknown/);
+  assert.match(summary, /efficiency_basis: trusted_pr_ready\+accepted_defects\+risk_reductions_vs_active_wait_token_cost/);
+});
+
+test('GAH-S-2 CLI rejects guarded policy options outside execute run', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const stderr = capture();
+  const result = await runCli([
+    'execute', 'status', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--max-attempts', '9', '--json'
+  ], { stdout: capture(), stderr, guardedRunDependencies: fixture.dependencies() });
+  assert.equal(result.exitCode, 2);
+  assert.equal(JSON.parse(stderr.text()).stop_reason.code, 'policy_options_not_supported');
 });
 
 test('GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remains typed', async (t) => {
@@ -1615,6 +1675,38 @@ test('GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt s
   await assert.rejects(session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID }), errorWithCode('corrupt_state'));
   const names = await readdir(path.dirname(artifact));
   assert.equal(names.some((name) => name.startsWith('state.json.corrupt-20260715T010203Z')), true);
+});
+
+test('GAH-S-1 existing pre-hardening 0.2.0 Run migrates advisory limits before resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const created = await session.run(fixture.source, { storyId: STORY_ID });
+  const artifact = fixture.runFile(fixture.source, RUN_ID);
+  const legacy = structuredClone(created);
+  legacy.status = 'blocked';
+  legacy.stop_reason = { code: 'legacy_operational_block', message: 'legacy stop', details: {} };
+  legacy.attempt = 1;
+  legacy.iteration = 0;
+  legacy.budget = { max_attempts: 1, max_iterations: 0 };
+  delete legacy.retry_policy;
+  delete legacy.provider_fallbacks;
+  delete legacy.usage_accounting;
+  delete legacy.retry_journal;
+  legacy.transitions.push({ sequence: 2, from: 'running', to: 'blocked', reason: 'legacy_stop', timestamp: FIRST_TIME });
+  await writeFile(artifact, `${JSON.stringify(legacy, null, 2)}\n`);
+
+  const migrated = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.deepEqual(migrated.budget, {
+    max_attempts: 3,
+    max_iterations: 12,
+    max_duration_ms: 3600000,
+    max_tokens: null,
+    max_cost_usd: null
+  });
+  assert.equal(migrated.usage_accounting.status, 'unknown');
+  const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.attempt, 2);
 });
 
 test('GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default', async (t) => {

@@ -18,7 +18,7 @@ test('SRP-S-1 SRP-S-2 creates closed one-Story entries with explicit attribution
   assert.deepEqual(Object.keys(state.entries[0]), ['story_id', 'order', 'run_id', 'status', 'worktree', 'head_sha', 'cost_attribution', 'stop_reason']);
   assert.equal(state.entries[0].cost_attribution.total_tokens, null);
   assert.equal(state.entries[0].cost_attribution.full_suite_count, null);
-  assert.match(renderStoryRunPortfolioSummary(state), /full_suite=unknown evidence_reuse=unknown human_interruptions=unknown/);
+  assert.match(renderStoryRunPortfolioSummary(state), /full_suite=unknown evidence_reuse=unknown evidence_invalidations=unknown human_interruptions=unknown accepted_defects=unknown risk_reductions=unknown/);
   await assert.rejects(
     fixture.controller.create(fixture.root, { portfolioId: 'portfolio-duplicate', storyIds: [STORIES[0], STORIES[0]] }),
     errorCode('duplicate_story')
@@ -140,15 +140,26 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
   const fixture = await createFixture(t);
   await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-cost', storyIds: STORIES.slice(0, 1) });
   await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });
-  const state = await fixture.controller.advance(fixture.root, {
-    portfolioId: 'portfolio-cost', costAttribution: {
-      story_id: STORIES[0], run_id: fixture.runs.get(STORIES[0]).run_id,
-      active_ms: 1200, wait_ms: 300, total_tokens: 42, full_suite_count: 1, evidence_reuse_count: 2, human_interruption_count: 1
-    }
+  fixture.contaminate(STORIES[0], {
+    created_at: '2026-07-20T00:00:00.000Z',
+    updated_at: '2026-07-20T00:00:02.000Z',
+    transitions: [
+      { sequence: 1, from: null, to: 'running', timestamp: '2026-07-20T00:00:00.000Z' },
+      { sequence: 2, from: 'running', to: 'blocked', timestamp: '2026-07-20T00:00:01.200Z' },
+      { sequence: 3, from: 'blocked', to: 'running', timestamp: '2026-07-20T00:00:01.500Z' }
+    ],
+    usage_accounting: { total_tokens: 42, cost_usd: null, status: 'partial' },
+    action_journal: [
+      { action_id: 'full_suite', result_summary: 'full suite passed' },
+      { action_id: 'evidence_reuse', result_summary: 'evidence reuse hit' },
+      { action_id: 'evidence_reuse', result_summary: 'evidence reuse hit' }
+    ],
+    human_decision_journal: [{ decision_id: 'decision-1' }]
   });
+  const state = await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });
   const output = renderStoryRunPortfolioSummary(state);
-  assert.match(output, /trusted_pr_ready_ms=unknown active_ms=1200 wait_ms=300 tokens=42/);
-  assert.match(output, /full_suite=1 evidence_reuse=2 human_interruptions=1/);
+  assert.match(output, /trusted_pr_ready_ms=unknown active_ms=1700 wait_ms=300 tokens=42/);
+  assert.match(output, /full_suite=1 evidence_reuse=2 evidence_invalidations=0 human_interruptions=1 accepted_defects=unknown risk_reductions=unknown/);
   await assert.rejects(fixture.controller.advance(fixture.root, {
     portfolioId: 'portfolio-cost', costAttribution: {
       story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id, total_tokens: 999

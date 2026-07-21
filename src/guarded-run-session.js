@@ -550,6 +550,7 @@ export function renderGuardedRunSummary(value) {
   const automatedSteps = state.action_journal?.filter((entry) => entry.status === 'completed').length ?? 0;
   const humanInterruptions = state.human_decision_journal?.length ?? 0;
   const usage = state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown' };
+  const efficiency = deriveRunEfficiencyMetrics(state);
   const recoveryLines = recovery
     ? [
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
@@ -560,7 +561,47 @@ export function renderGuardedRunSummary(value) {
         recovery.next_command ? `- next_command: ${recovery.next_command}` : null
       ].filter(Boolean).join('\n')
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- active_ms: ${efficiency.active_ms ?? 'unknown'}\n- wait_ms: ${efficiency.wait_ms ?? 'unknown'}\n- trusted_pr_ready_ms: ${efficiency.trusted_pr_ready_ms ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- full_suite_runs: ${efficiency.full_suite_count ?? 'unknown'}\n- evidence_reuse: ${efficiency.evidence_reuse_count ?? 'unknown'}\n- evidence_invalidations: ${efficiency.evidence_invalidation_count ?? 'unknown'}\n- accepted_defects: ${efficiency.accepted_defect_count ?? 'unknown'}\n- risk_reductions: ${efficiency.risk_reduction_count ?? 'unknown'}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- efficiency_basis: trusted_pr_ready+accepted_defects+risk_reductions_vs_active_wait_token_cost\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+}
+
+export function deriveRunEfficiencyMetrics(state) {
+  const transitions = state.transitions ?? [];
+  let activeMs = 0;
+  let waitMs = 0;
+  let hasDuration = false;
+  for (let index = 0; index < transitions.length; index += 1) {
+    const current = transitions[index];
+    const start = Date.parse(current.timestamp);
+    const end = Date.parse(transitions[index + 1]?.timestamp ?? state.updated_at);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) continue;
+    hasDuration = true;
+    const duration = end - start;
+    if (current.to === 'running') activeMs += duration;
+    else if (['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed'].includes(current.to)) waitMs += duration;
+  }
+  const actions = state.action_journal;
+  const countActions = (pattern) => Array.isArray(actions)
+    ? actions.filter((entry) => pattern.test(`${entry.action_id ?? ''} ${entry.result_summary ?? ''}`)).length
+    : null;
+  const created = Date.parse(state.created_at);
+  const updated = Date.parse(state.updated_at);
+  return {
+    story_id: state.story_id,
+    run_id: state.run_id,
+    trusted_pr_ready_ms: state.status === 'pr_ready' && Number.isFinite(created) && Number.isFinite(updated)
+      ? Math.max(0, updated - created)
+      : null,
+    active_ms: hasDuration ? activeMs : null,
+    wait_ms: hasDuration ? waitMs : null,
+    total_tokens: state.usage_accounting?.total_tokens ?? null,
+    cost_usd: state.usage_accounting?.cost_usd ?? null,
+    full_suite_count: countActions(/full[_ -]?suite/i),
+    evidence_reuse_count: countActions(/evidence[_ -]?reuse/i),
+    evidence_invalidation_count: countActions(/evidence[_ -]?(invalidate|stale)/i),
+    human_interruption_count: Array.isArray(state.human_decision_journal) ? state.human_decision_journal.length : null,
+    accepted_defect_count: null,
+    risk_reduction_count: null
+  };
 }
 
 function shellQuoteCommandArg(value) {
@@ -793,6 +834,7 @@ async function resumeRun(deps, repoRoot, options) {
     await persistAuthorityThenMirror(deps, stopped, loaded.authorityFile, loaded.mirrorFile, 'guarded_policy_stop');
     return stopped;
   }
+  enforceRetryPolicy(loaded.state, deps.now());
   let resolvedDecision = null;
   if (loaded.state.status === 'waiting_for_human') {
     try {
@@ -1230,8 +1272,8 @@ function buildGuardedPolicy(options, createdAt) {
   const maxDurationMs = positiveInteger(options.maxDurationMs, 3_600_000, 'max_duration_ms');
   const maxTokens = nullablePositiveNumber(options.maxTokens, 'max_tokens');
   const maxCostUsd = nullablePositiveNumber(options.maxCostUsd, 'max_cost_usd');
-  const retryBackoffMs = nonNegativeInteger(options.retryBackoffMs, 1_000, 'retry_backoff_ms');
-  const retryableStopCodes = options.retryableStopCodes ?? ['runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'];
+  const retryBackoffMs = nonNegativeInteger(options.retryBackoffMs, 0, 'retry_backoff_ms');
+  const retryableStopCodes = options.retryableStopCodes ?? ['runtime_required', 'runtime_quota', 'runtime_timeout', 'ci_pending', 'review_timeout', 'action_failed'];
   const providerFallbacks = options.providerFallbacks ?? [];
   if (retryableStopCodes.some((value) => typeof value !== 'string' || value.length === 0)
       || providerFallbacks.some((value) => typeof value !== 'string' || value.length === 0)) {
@@ -1296,6 +1338,36 @@ function appendRetryAudit(state, resumedAt) {
     backoff_satisfied: elapsedMs == null ? null : elapsedMs >= backoffMs,
     resumed_by: 'operator'
   }];
+}
+
+function enforceRetryPolicy(state, resumedAt) {
+  if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return;
+  const policyManaged = state.stop_reason.details?.retry_policy_enforced === true
+    || /^(runtime_|ci_|review_|action_)/.test(state.stop_reason.code);
+  if (!policyManaged) return;
+  const retryable = state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code) ?? false;
+  if (!retryable) {
+    throw contractError('retry_not_allowed', `Stop ${state.stop_reason.code} is not retryable by the persisted policy.`, {
+      run_id: state.run_id,
+      stop_code: state.stop_reason.code,
+      retryable_stop_codes: state.retry_policy?.retryable_stop_codes ?? []
+    });
+  }
+  const stoppedAtMs = Date.parse(state.updated_at);
+  const resumedAtMs = Date.parse(toIso(resumedAt));
+  const backoffMs = state.retry_policy?.backoff_ms ?? 0;
+  const elapsedMs = Number.isFinite(stoppedAtMs) && Number.isFinite(resumedAtMs)
+    ? Math.max(0, resumedAtMs - stoppedAtMs)
+    : null;
+  if (elapsedMs == null || elapsedMs < backoffMs) {
+    throw contractError('retry_backoff_pending', 'The persisted retry backoff has not elapsed.', {
+      run_id: state.run_id,
+      stop_code: state.stop_reason.code,
+      backoff_ms: backoffMs,
+      elapsed_ms: elapsedMs,
+      retry_after_ms: elapsedMs == null ? backoffMs : backoffMs - elapsedMs
+    });
+  }
 }
 
 function positiveInteger(value, fallback, name) {
@@ -1429,11 +1501,16 @@ async function parseAndMaybeQuarantine(deps, raw, filePath) {
 }
 
 function migrateRunState(state) {
-  if (state.schema_version === GUARDED_RUN_SCHEMA_VERSION) {
+  const legacyCurrentSchema = state.schema_version === GUARDED_RUN_SCHEMA_VERSION
+    && (!Object.prototype.hasOwnProperty.call(state, 'retry_policy')
+      || !Object.prototype.hasOwnProperty.call(state, 'provider_fallbacks')
+      || !Object.prototype.hasOwnProperty.call(state, 'usage_accounting')
+      || !Object.prototype.hasOwnProperty.call(state, 'retry_journal'));
+  if (state.schema_version === GUARDED_RUN_SCHEMA_VERSION && !legacyCurrentSchema) {
     validateRunShape(state);
     return { changed: false, state };
   }
-  if (state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
+  if (!legacyCurrentSchema && state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
     throw contractError('unsupported_schema', `Unsupported guarded Run schema: ${state.schema_version}.`, {
       run_id: state.run_id ?? null,
       schema_version: state.schema_version ?? null
@@ -1447,6 +1524,13 @@ function migrateRunState(state) {
     human_decision_journal: state.human_decision_journal ?? [],
     retry_journal: state.retry_journal ?? [],
     resume_from_node_id: state.resume_from_node_id ?? null,
+    budget: legacyCurrentSchema ? {
+      max_attempts: 3,
+      max_iterations: 12,
+      max_duration_ms: 3_600_000,
+      max_tokens: null,
+      max_cost_usd: null
+    } : state.budget,
     retry_policy: state.retry_policy ?? { retryable_stop_codes: ['action_failed'], backoff_ms: 0 },
     provider_fallbacks: state.provider_fallbacks ?? [],
     usage_accounting: state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null }
