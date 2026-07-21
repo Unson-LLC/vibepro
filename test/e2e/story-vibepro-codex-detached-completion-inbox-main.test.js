@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { main } from '../../bin/vibepro.js';
 import { createCodexGuardedRunBridge } from '../../src/codex-runtime-bridge.js';
 
 const STORY_ID = 'story-vibepro-codex-detached-completion-inbox';
@@ -65,38 +66,57 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   await parent.ready;
   const run = await parent.session.run(repoRoot, { storyId: STORY_ID });
   assert.equal(run.run_id, RUN_ID);
+  lifecycle.length = 0;
   const request = {
     adapter_id: 'codex-subagent', task_id: 'logical-review', role: 'review', reviewer_identity: 'codex-reviewer',
     implementation_identity: 'implementer', implementation_session_id: 'implementation-thread', inspection_surface_hash: 'surface-e2e',
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-runtime-bridge.js'], strict_head_binding: true, strict_head_reason: 'Runtime review is bound to the inspected HEAD' },
     requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
   };
-  const started = await parent.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, request });
+  const requestPath = path.join(repoRoot, 'runtime-request.json');
+  await writeFile(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const hostKey = `__vibeproCodexHost${Date.now()}`;
+  const hostModulePath = path.join(repoRoot, 'codex-host.mjs');
+  globalThis[hostKey] = host;
+  t.after(() => { delete globalThis[hostKey]; });
+  await writeFile(hostModulePath, `export default globalThis[${JSON.stringify(hostKey)}];\n`);
+  const runtime = {
+    stdout: { write() {} }, stderr: { write() {} }, exitCode: null,
+    env: { VIBEPRO_CODEX_HOST_MODULE: hostModulePath }, cwd: () => repoRoot,
+    guardedRunDependencies: { ...guardedRunDependencies, recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; } }
+  };
+  const dispatched = await main([
+    'execute', 'runtime-dispatch', repoRoot, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--request', requestPath, '--json'
+  ], runtime);
+  const started = dispatched.result;
   assert.deepEqual(lifecycle.slice(0, 3), ['register-resume', 'subscribe', 'spawn']);
 
   clock = '2026-07-22T01:12:03.000Z';
-  const detached = await parent.session.pollRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  const polled = await main([
+    'execute', 'runtime-poll', repoRoot, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--dispatch-id', started.dispatch.dispatch_id, '--json'
+  ], runtime);
+  const detached = polled.result;
   assert.equal(detached.dispatch.status, 'running_detached');
   assert.equal(shutdowns, 0);
   assert.equal((await parent.session.status(repoRoot, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
 
-  const successor = createBridge();
-  await successor.ready;
   await completionHandler({
     event_id: 'e2e-completion', kind: 'completed', surface_hash: 'surface-e2e',
-    result: { completion_status: 'completed', changed_files: [], head_sha: headSha, test_suggestions: [], summary: 'E2E review complete', agent_identity: 'codex-reviewer', thread_id: 'codex-thread', lifecycle: 'closed' }
+    result: { completion_status: 'completed', changed_files: [], head_sha: headSha, test_suggestions: [], summary: 'E2E review complete', agent_identity: 'codex-reviewer', thread_id: 'codex-thread', lifecycle: 'closed', review_record: { status: 'pass', summary: 'successor recovered persistent Inbox result', findings: [], inspection_summary: 'Inspected detached completion and review closure', inspection_evidence: 'runtime-inbox/e2e-completion', judgment_deltas: ['running_detached -> pass because the correlated completion was recovered'] } }
   });
   assert.ok(lifecycle.includes('wake:e2e-completion'));
 
   const closed = await pushResume;
   assert.equal(closed.dispatch.result.review_provenance.lifecycle, 'closed');
-  const recorded = await successor.session.recordRuntimeReview(repoRoot, {
-    storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,
-    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'successor recovered persistent Inbox result' }
-  });
-  assert.equal(recorded.review.status, 'pass');
+  assert.equal(closed.agent_review.status, 'pass');
   assert.equal(reviews[0].review.agentClosed, true);
+  assert.deepEqual(reviews[0].review.inspectionInputs, ['src/codex-runtime-bridge.js']);
 
-  const replay = await successor.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, request });
+  const replayBridge = createBridge();
+  await replayBridge.ready;
+  const replay = await replayBridge.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: RUN_ID, request });
   assert.equal(replay.reused, true);
   assert.equal(spawns, 1);
   assert.equal(shutdowns, 0);

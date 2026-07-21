@@ -13,12 +13,12 @@ parent_design:
 - `600000ms` is a parent monitoring boundary. A running provider becomes `running_detached`; detach never calls host shutdown.
 - Completion callbacks persist immutable dispatch-scoped Inbox events before wakeup. Reconcile reads the Inbox even when wakeup is lost.
 - `VIBEPRO_CODEX_HOST_MODULE` is the public repo-local CLI binding for a host-owned module. The bridge requires `registerResumeHandler({ resume })`, and missing module exports or handler registration fail closed.
-- `execute runtime-dispatch`, `runtime-poll`, and `runtime-reconcile` expose the persisted runtime lifecycle through `node bin/vibepro.js`; `resumeFromWake` is registered automatically rather than manually wired by a caller.
+- `execute runtime-dispatch`, `runtime-poll`, and `runtime-reconcile` expose the persisted runtime lifecycle through `node bin/vibepro.js`; `resumeFromWake` is registered automatically rather than manually wired by a caller. A review dispatch persists a VibePro-owned `review_binding`, and a correlated completion must carry the bounded `review_record` that push resume sends through canonical Agent Review recording.
 - A logical dispatch is keyed by Run, adapter, task, role, inspection surface, and review identity; budget and evidence timestamps do not create a replacement. A HEAD change requires an explicit unchanged-surface assertion before reuse.
 - Concurrent starts share one in-flight dispatch spawn. Partial results are reusable only when their surface hash matches the dispatch; a changed surface without a changed-path proof invalidates prior judgments fail-closed.
 - Only checkpoints and completed partial judgments count as progress. No-progress, wall-clock, attempt, and cost limits produce `stalled` and host containment.
 - Completed judgments are filtered before host spawn and merged back after completion. Surface changes invalidate judgments whose declared paths intersect changed paths; when changed paths are unavailable, prior judgments are invalidated fail-closed.
-- Guarded Run persists detach/reconcile authority-first and keeps the existing closed, separate, read-only Agent Review recording boundary.
+- Guarded Run persists detach/reconcile authority-first and keeps the existing closed, separate, read-only Agent Review recording boundary; the public host-module entrypoint injects that boundary and fails closed when a bound completion cannot close it.
 - `createCodexGuardedRunBridge` is the production composition boundary for Inbox, adapter, coordinator, Guarded Run, and the injected host implementation. Provider completion correlation must match both dispatch and provider run identity before Inbox persistence.
 
 ## Flow

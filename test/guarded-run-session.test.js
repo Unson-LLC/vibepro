@@ -908,6 +908,7 @@ test('CDI-S-8 production bridge rejects a host without push resume registration'
 test('CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const guardedRunDependencies = fixture.dependencies();
+  const reviews = [];
   const run = await fixture.session().run(fixture.source, { storyId: STORY_ID });
   let completionHandler;
   let resumeHandler;
@@ -926,9 +927,10 @@ test('CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume
   await writeFile(requestPath, `${JSON.stringify({
     adapter_id: 'codex-subagent', task_id: 'cli-review', role: 'review', reviewer_identity: 'reviewer-cli',
     implementation_identity: 'implementer-cli', implementation_session_id: 'implementation-cli', inspection_surface_hash: 'surface-cli',
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/cli.js'] },
     requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
   }, null, 2)}\n`);
-  const io = { stdout: { write() {} }, stderr: { write() {} }, codexSubagentHost: host, guardedRunDependencies };
+  const io = { stdout: { write() {} }, stderr: { write() {} }, codexSubagentHost: host, guardedRunDependencies: { ...guardedRunDependencies, recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; } } };
   const dispatched = await runCli([
     'execute', 'runtime-dispatch', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID, '--request', requestPath, '--json'
   ], io);
@@ -944,10 +946,12 @@ test('CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume
   assert.equal(polled.result.dispatch.status, 'running_detached');
   await completionHandler({
     event_id: 'cli-completion', kind: 'completed', surface_hash: 'surface-cli',
-    result: { completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'CLI review complete', agent_identity: 'reviewer-cli', thread_id: 'thread-cli', lifecycle: 'closed' }
+    result: { completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'CLI review complete', agent_identity: 'reviewer-cli', thread_id: 'thread-cli', lifecycle: 'closed', review_record: { status: 'pass', summary: 'CLI review pass', findings: [], inspection_summary: 'Inspected the public runtime path', inspection_evidence: 'runtime-inbox/cli-completion', judgment_deltas: ['detached -> pass after Inbox recovery'] } }
   });
   const persisted = await fixture.session().status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(persisted.runtime_dispatches[0].status, 'completed');
+  assert.equal(reviews.length, 1);
+  assert.equal(reviews[0].review.agentClosed, true);
 });
 
 test('Guarded Run rejects provider identities already persisted in a separate Run artifact', async (t) => {

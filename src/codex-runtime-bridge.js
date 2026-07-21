@@ -18,18 +18,47 @@ export function createCodexGuardedRunBridge({
     agentRuntimeCoordinator: coordinator,
     recordAgentReview: recordAgentReview ?? guardedRunDependencies.recordAgentReview
   });
-  const resumeFromWake = ({ story_id: storyIdSnake, storyId, run_id: runIdSnake, runId, dispatch_id: dispatchIdSnake, dispatchId } = {}) => {
+  const resumeFromWake = async ({ story_id: storyIdSnake, storyId, run_id: runIdSnake, runId, dispatch_id: dispatchIdSnake, dispatchId } = {}) => {
     const resolvedStoryId = storyId ?? storyIdSnake;
     const resolvedRunId = runId ?? runIdSnake;
     const resolvedDispatchId = dispatchId ?? dispatchIdSnake;
     if (!resolvedStoryId || !resolvedRunId || !resolvedDispatchId) {
       throw new TypeError('Codex wake resume requires story_id, run_id, and dispatch_id');
     }
-    return session.reconcileRuntime(repoRoot, {
+    const reconciled = await session.reconcileRuntime(repoRoot, {
       storyId: resolvedStoryId,
       runId: resolvedRunId,
       dispatchId: resolvedDispatchId
     });
+    const binding = reconciled.dispatch?.review_binding;
+    const record = reconciled.dispatch?.result?.review_record;
+    if (reconciled.dispatch?.status !== 'completed' || reconciled.dispatch?.role !== 'review' || !binding) {
+      return reconciled;
+    }
+    if (!record) {
+      throw new Error('Completed review dispatch is missing its bound review_record');
+    }
+    const agentReview = await session.recordRuntimeReview(repoRoot, {
+      storyId: resolvedStoryId,
+      runId: resolvedRunId,
+      dispatchId: resolvedDispatchId,
+      review: {
+        stage: binding.stage,
+        role: binding.role,
+        status: record.status,
+        summary: record.summary,
+        findings: record.findings,
+        inspectionSummary: record.inspection_summary,
+        inspectionEvidence: record.inspection_evidence,
+        inspectionInputs: binding.inspection_inputs,
+        judgmentDeltas: record.judgment_deltas,
+        strictHeadBinding: binding.strict_head_binding,
+        strictHeadReason: binding.strict_head_reason,
+        agentTranscript: record.inspection_evidence,
+        agentCloseEvidence: record.inspection_evidence
+      }
+    });
+    return { ...reconciled, agent_review: agentReview.review };
   };
   if (typeof host?.registerResumeHandler !== 'function') {
     throw new TypeError('Codex host must implement registerResumeHandler for push resume delivery');

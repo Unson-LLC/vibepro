@@ -470,6 +470,7 @@ function normalizeRequest(state, input) {
     previous_judgments: Array.isArray(input.previous_judgments) ? input.previous_judgments : [],
     previous_surface_hash: input.previous_surface_hash ?? null,
     changed_paths: Array.isArray(input.changed_paths) ? input.changed_paths.map(String) : [],
+    review_binding: normalizeReviewBinding(input.review_binding, role),
     requirements: {
       capabilities,
       timeout_ms: positiveInteger(input.requirements?.timeout_ms, 'timeout_ms'),
@@ -480,6 +481,22 @@ function normalizeRequest(state, input) {
       max_cost_usd: nonNegativeNumber(input.requirements?.max_cost_usd ?? 0, 'max_cost_usd'),
       managed_worktree: requireText(input.requirements?.managed_worktree, 'managed_worktree')
     }
+  };
+}
+
+function normalizeReviewBinding(value, role) {
+  if (value === undefined || value === null) return null;
+  if (role !== 'review' || !value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_request', 'review_binding is supported only for review dispatches');
+  }
+  return {
+    stage: requireText(value.stage, 'review_binding.stage'),
+    role: requireText(value.role, 'review_binding.role'),
+    inspection_inputs: requireStringArray(value.inspection_inputs, 'review_binding.inspection_inputs'),
+    strict_head_binding: value.strict_head_binding === true,
+    strict_head_reason: value.strict_head_binding === true
+      ? requireText(value.strict_head_reason, 'review_binding.strict_head_reason')
+      : null
   };
 }
 
@@ -588,6 +605,9 @@ function normalizeResult(value, dispatchRecord) {
       throw new AgentRuntimeError('invalid_runtime_result', 'review result requires closed lifecycle');
     }
     result.review = normalizeReviewResult(value);
+    if (dispatchRecord.review_binding) {
+      result.review_record = normalizeRuntimeReviewRecord(value.review_record);
+    }
   }
   return result;
 }
@@ -625,6 +645,24 @@ function normalizeReviewFindings(value) {
       detail: requireText(finding.detail, `review findings[${index}].detail`)
     };
   });
+}
+
+function normalizeRuntimeReviewRecord(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review result requires review_record for its persisted review binding');
+  }
+  const status = requireText(value.status, 'review_record.status');
+  if (!['pass', 'needs_changes', 'block'].includes(status)) {
+    throw new AgentRuntimeError('invalid_runtime_result', `unsupported review_record.status: ${status}`);
+  }
+  return {
+    status,
+    summary: requireText(value.summary, 'review_record.summary'),
+    findings: requireStringArray(value.findings ?? [], 'review_record.findings'),
+    inspection_summary: requireText(value.inspection_summary, 'review_record.inspection_summary'),
+    inspection_evidence: requireText(value.inspection_evidence, 'review_record.inspection_evidence'),
+    judgment_deltas: requireStringArray(value.judgment_deltas, 'review_record.judgment_deltas')
+  };
 }
 function normalizeUsageAccounting(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {

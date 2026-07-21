@@ -2437,7 +2437,7 @@ export async function runCli(argv, io = {}) {
             host: io.codexSubagentHost,
             now: io.guardedRunDependencies?.now,
             guardedRunDependencies: io.guardedRunDependencies ?? {},
-            recordAgentReview: io.guardedRunDependencies?.recordAgentReview
+            recordAgentReview: io.guardedRunDependencies?.recordAgentReview ?? recordAgentReview
           })
           : null;
         await bridge?.ready;
