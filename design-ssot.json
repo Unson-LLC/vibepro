@@ -6333,6 +6333,45 @@
       "source": "design-ssot.json"
     },
     {
+      "id": "vibepro-node20-e2e-ts-ci-visibility",
+      "title": "Node 20 e2e .ts CI visibility",
+      "root_doc": "docs/management/stories/active/story-vibepro-node20-e2e-ts-ci-visibility.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-node20-e2e-ts-ci-visibility.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-node20-e2e-ts-ci-visibility.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-target-architecture-conformance",
       "title": "VibePro Target Architecture Conformance",
       "root_doc": "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
@@ -6355,5 +6394,5 @@
       "children": {}
     }
   ],
-  "updated_at": "2026-07-22T01:18:00.000Z"
+  "updated_at": "2026-07-22T02:54:27.816Z"
 }
