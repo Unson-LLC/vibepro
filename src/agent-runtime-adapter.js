@@ -216,7 +216,8 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
     return { state: { ...upsertDispatch(runState, next), status: 'running', stop_reason: null }, dispatch: next, reused: false };
   }
   if (observed.status !== 'completed') {
-    return failed(runState, current, observed.status === 'timed_out' ? 'runtime_timeout' : `runtime_${observed.status}`,
+    return failed(runState, current, observed.stop_reason?.code
+      ?? (observed.status === 'timed_out' ? 'runtime_timeout' : `runtime_${observed.status}`),
       observed.message ?? `runtime ended with ${observed.status}`, now, observed.status);
   }
   try {

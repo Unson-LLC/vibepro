@@ -155,6 +155,7 @@ import {
   renderGuardedRunError,
   renderGuardedRunSummary
 } from './guarded-run-session.js';
+import { composeProductionRuntimeDependencies } from './agent-runtime-connectors.js';
 import {
   StoryRunPortfolioError,
   createStoryRunPortfolioController,
@@ -2411,7 +2412,10 @@ export async function runCli(argv, io = {}) {
           || subcommand === 'cancel'
           || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
         const jsonOutput = hasFlag(rest, '--json');
-        const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
+        const guardedRun = createGuardedRunSession(composeProductionRuntimeDependencies(
+          io.guardedRunDependencies ?? {},
+          { env: io.env ?? process.env }
+        ));
         try {
           const guardedPolicyFlags = [
             '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',

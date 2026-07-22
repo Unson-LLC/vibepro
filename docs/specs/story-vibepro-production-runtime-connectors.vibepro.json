@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "generated_by": { "caller": "codex", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "C-PRC-1",
+      "type": "contract",
+      "statement": "Codex and explicitly enabled Claude Code connectors implement the existing five-method runtime adapter contract and are registered only at the Guarded Run composition root.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "PRC-S-1" }, { "kind": "acceptance_criteria", "id": "PRC-S-2" }, { "kind": "acceptance_criteria", "id": "PRC-S-7" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-production-runtime-connectors.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/agent-runtime-connectors.js", "anchor": "createProductionRuntimeConnectors" }, { "file": "src/cli.js", "anchor": "composeProductionRuntimeDependencies" }],
+        "test_refs": [{ "file": "test/agent-runtime-connectors.test.js", "case": "PRC-S-1 Codex connector conforms to probe/start/status/result/cancel" }, { "file": "test/agent-runtime-connectors.test.js", "case": "PRC-S-7 production composition preserves an explicitly injected coordinator" }]
+      }
+    },
+    {
+      "id": "INV-PRC-2",
+      "type": "invariant",
+      "statement": "Implementation runs only in the managed worktree with write capability, review runs read-only with a distinct identity and session, and malformed or stale results never become completion.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "PRC-S-3" }, { "kind": "acceptance_criteria", "id": "PRC-S-4" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-production-runtime-connectors.md", "section": "Failure Boundary" }],
+        "code_refs": [{ "file": "src/agent-runtime-connectors.js", "anchor": "buildInvocation" }, { "file": "src/agent-runtime-adapter.js", "anchor": "normalizeResult" }],
+        "test_refs": [{ "file": "test/agent-runtime-connectors.test.js", "case": "PRC-S-4 review uses read-only sandbox, separate identity and a separate provider session" }, { "file": "test/agent-runtime-adapter.test.js", "case": "PRC-S-3 typed provider failure survives status normalization" }]
+      }
+    },
+    {
+      "id": "S-PRC-3",
+      "type": "scenario",
+      "statement": "Fake conformance tests cover both providers, typed failures, cancellation and structured results, while a credential-free production probe smoke verifies the installed Codex surface.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "id": "PRC-S-5" }, { "kind": "acceptance_criteria", "id": "PRC-S-6" }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-production-runtime-connectors.md", "section": "Verification" }],
+        "code_refs": [{ "file": "src/agent-runtime-connectors.js", "anchor": "createCliRuntimeConnector" }, { "file": "src/guarded-run-session.js", "anchor": "dispatchRuntimeWithFallbacks" }],
+        "test_refs": [{ "file": "test/agent-runtime-connectors.test.js", "case": "PRC-S-3 probe failures normalize auth, quota, permission and unavailable states" }, { "file": "test/agent-runtime-connectors.test.js", "case": "PRC-S-6 production smoke probe is typed and never requires credentials" }, { "file": "test/guarded-run-session.test.js", "case": "GAH-S-3 provider fallback tries persisted adapters in order and retains failed attempts for audit" }]
+      }
+    }
+  ]
+}
