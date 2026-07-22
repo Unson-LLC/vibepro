@@ -552,3 +552,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-trusted-deli
 なし
 
 <!-- vibepro-release-pr:377:end -->
+
+<!-- vibepro-release-pr:378:start -->
+## [#378](https://github.com/Unson-LLC/vibepro/pull/378) story-vibepro-target-architecture-conformance - Target Architecture SSOTとconformance dry-runを導入する
+
+- Author: @sintariran
+- Merged: 2026-07-22T06:11:28Z
+- Commit: `ed7fde3cd9ad1e67840733821d1739e5c454228c`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-architecture-conformance.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-architecture-conformance.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:378:end -->

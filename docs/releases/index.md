@@ -125,3 +125,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:377:start -->
 - [PR #377](https://github.com/Unson-LLC/vibepro/pull/377) — [2026-07](/releases/2026-07): story-vibepro-production-runtime-connectors - Agent Runtime Adapterへproduction connectorを接続する
 <!-- vibepro-release-index-pr:377:end -->
+
+<!-- vibepro-release-index-pr:378:start -->
+- [PR #378](https://github.com/Unson-LLC/vibepro/pull/378) — [2026-07](/releases/2026-07): story-vibepro-target-architecture-conformance - Target Architecture SSOTとconformance dry-runを導入する
+<!-- vibepro-release-index-pr:378:end -->
