@@ -113,6 +113,35 @@ test('PRC-S-3 cancellation confirms a terminal provider status', async () => {
   assert.equal(cancelled.status, 'cancelled');
 });
 
+test('PRC-S-3 requested timeout terminates the provider and remains typed', async () => {
+  const connector = createCliRuntimeConnector({
+    id: 'codex', command: 'codex', enabled: true, probeCommand: async () => {}, createId: () => 'timeout-1', spawnProcess: fakeProcess
+  });
+  const started = await connector.start({
+    ...implementationRequest,
+    requirements: { ...implementationRequest.requirements, timeout_ms: 5 }
+  });
+  await new Promise((resolve) => setTimeout(resolve, 15));
+  const status = await connector.status({ provider_run_id: started.provider_run_id });
+  assert.equal(status.status, 'timed_out');
+  assert.equal(status.stop_reason.code, 'timeout');
+});
+
+test('PRC-S-3 malformed provider output fails closed at result collection', async () => {
+  let child;
+  const connector = createCliRuntimeConnector({
+    id: 'codex', command: 'codex', enabled: true, probeCommand: async () => {}, createId: () => 'malformed-1',
+    spawnProcess() { child = fakeProcess(); return child; }
+  });
+  const started = await connector.start(implementationRequest);
+  child.stdout.end('{"completion_status":"completed","changed_files":');
+  child.emit('close', 0, null);
+  await assert.rejects(
+    connector.collect_result({ provider_run_id: started.provider_run_id }),
+    (error) => error.code === 'invalid_runtime_result'
+  );
+});
+
 test('PRC-S-3 provider quota failure remains typed after process start', async () => {
   let child;
   const connector = createCliRuntimeConnector({

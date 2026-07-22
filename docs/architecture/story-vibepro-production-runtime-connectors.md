@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-production-runtime-connectors
 status: active
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 ---
 
 # Production Runtime Connectors Architecture
@@ -22,4 +24,3 @@ binary/auth/capability/sandbox/quota/permission/timeoutはtyped probe/statusへ�
 - fake processによる両connectorのcontract/lifecycle/cancel/typed failureテスト
 - 実Codex binaryのcredential-free probe smoke
 - 既存Agent Runtime AdapterとGuarded Run suiteによる境界回帰
-

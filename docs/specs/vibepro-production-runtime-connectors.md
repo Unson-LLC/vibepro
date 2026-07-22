@@ -2,6 +2,8 @@
 spec_id: spec-vibepro-production-runtime-connectors
 story_id: story-vibepro-production-runtime-connectors
 status: active
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
 code_refs:
   - src/agent-runtime-connectors.js
   - src/agent-runtime-adapter.js
@@ -26,4 +28,3 @@ startはshellを介さず引数配列でprovider processを起動し、Implement
 ## Composition Contract
 
 public CLIのGuarded Run composition rootはproduction Coordinatorを既定注入する。ただしテスト・埋め込み利用者が明示したCoordinatorを優先する。fallbackはRunに永続化されたpolicy順だけで実行し、connector自身はfallback、Gate、worktree、Review lifecycle、PRを操作しない。
-

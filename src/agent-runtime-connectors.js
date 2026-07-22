@@ -182,19 +182,37 @@ function buildPrompt(request) {
 }
 
 function createRunRecord(providerRunId, request, child) {
-  return { providerRunId, request, child, status: 'queued', message: null, stopReason: null, stdout: '', stderr: '', cancelRequested: false, spawned: null, settled: null };
+  return { providerRunId, request, child, status: 'queued', message: null, stopReason: null, stdout: '', stderr: '', cancelRequested: false, timeoutRequested: false, timeoutHandle: null, spawned: null, settled: null };
 }
 
 function attachProcess(record) {
   record.spawned = new Promise((resolve, reject) => {
-    record.child.once('spawn', () => { record.status = 'running'; resolve(); });
+    record.child.once('spawn', () => {
+      record.status = 'running';
+      const timeoutMs = Number(record.request.requirements?.timeout_ms);
+      if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+        record.timeoutHandle = setTimeout(() => {
+          if (TERMINAL.has(record.status)) return;
+          record.timeoutRequested = true;
+          record.child.kill('SIGKILL');
+        }, timeoutMs);
+        record.timeoutHandle.unref?.();
+      }
+      resolve();
+    });
     record.child.once('error', (error) => { record.status = 'failed'; record.message = error.message; reject(typedStartError(error)); });
   });
   record.child.stdout?.on('data', (chunk) => { record.stdout += chunk.toString(); });
   record.child.stderr?.on('data', (chunk) => { record.stderr += chunk.toString(); });
   record.settled = new Promise((resolve) => record.child.once('close', (code, signal) => {
+    if (record.timeoutHandle) clearTimeout(record.timeoutHandle);
     if (record.cancelRequested) record.status = 'cancelled';
-    else if (signal) { record.status = signal === 'SIGKILL' ? 'timed_out' : 'failed'; record.message = `terminated by ${signal}`; }
+    else if (record.timeoutRequested) {
+      record.status = 'timed_out';
+      record.message = 'provider exceeded the requested timeout';
+      record.stopReason = { code: 'timeout', message: record.message };
+    }
+    else if (signal) { record.status = 'failed'; record.message = `terminated by ${signal}`; }
     else if (code === 0) record.status = 'completed';
     else {
       record.status = 'failed';
