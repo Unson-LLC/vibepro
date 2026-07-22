@@ -66,6 +66,14 @@ test('ARA-S-2 auth denial remains a typed resumable stop', async () => {
   assert.equal(result.dispatch.stop_reason.code, 'auth_denied');
 });
 
+test('PRC-S-3 typed provider failure survives status normalization', async () => {
+  const adapter = fakeAdapter({ async status() { return { status: 'failed', message: 'quota', stop_reason: { code: 'quota_exceeded', message: 'quota' } }; } });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
+  const started = await coordinator.dispatch(state, request);
+  const result = await coordinator.poll(started.state, started.dispatch.dispatch_id);
+  assert.equal(result.dispatch.stop_reason.code, 'quota_exceeded');
+});
+
 test('ARA-S-3 successful implementation result is structured and HEAD-bearing', async () => {
   const adapter = fakeAdapter();
   const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
