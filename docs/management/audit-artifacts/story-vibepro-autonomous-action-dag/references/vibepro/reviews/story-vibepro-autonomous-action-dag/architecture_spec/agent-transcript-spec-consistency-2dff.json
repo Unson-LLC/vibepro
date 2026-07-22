@@ -1,0 +1,11 @@
+{
+  "agent": "aad-2dff-spec-consistency",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "status": "pass",
+  "summary": "Story、Architecture、Spec、実装、公開CLI状態表示、およびテストは AAD-S-1〜7 で整合している。",
+  "inspection_summary": "閉じた7-node DAG、typed stop、HEAD再バインド／resume、legacy fallback、Gate SSOT、owner未接続時の停止、JSON・人間可読 status 出力を確認した。",
+  "inspection_evidence": "focused AAD tests 3/3 pass; combined current-head verification 136/136 and typecheck pass",
+  "judgment_delta": "stale specification evidence -> pass because current Spec, implementation, restart resume, and human status assertions agree",
+  "findings": []
+}

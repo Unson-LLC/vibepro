@@ -1,0 +1,134 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Disable fallback and dependency fail-closed contracts are release-safe on current HEAD.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/autonomous-action-dag-integration-d4a9d70d.json"
+  ],
+  "inspection": {
+    "summary": "Inspected fallback behavior, dependency stopping, story contract, E2E, typecheck, and 133-test integration evidence.",
+    "evidence": ".vibepro/qa/autonomous-action-dag-integration-d4a9d70d.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+      "src/domain/guardedRunService.js",
+      "src/domain/safeActionService.js",
+      "test/e2e/story-vibepro-autonomous-action-dag-main.spec.js"
+    ]
+  },
+  "judgment_delta": [
+    "No unresolved release-risk delta remains after fallback contract coverage."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+    "current_head_sha": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T10:36:21.059Z",
+  "git_context": {
+    "head_sha": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T10:36:21.049Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Release-risk review covers current autonomous DAG HEAD."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "sha256": "9946d4af9c3968366e659ddb8ca8c2a9d2503016f139c6f320f159109e66c15f",
+        "size": 2583
+      },
+      {
+        "path": "test/e2e/story-vibepro-autonomous-action-dag-main.spec.js",
+        "sha256": "6f8d2df5f8b3b00e221f86da9488b4f435e2fd177e3b2d5b2d66334fd34e8344",
+        "size": 1507
+      }
+    ],
+    "missing_files": [
+      "src/domain/guardedRunService.js",
+      "src/domain/safeActionService.js"
+    ],
+    "surface_hash": "1bee3294939d7837fb55163f7cd320bac81f37092c3929891e9aba494925e325"
+  },
+  "source_fingerprint": "28f487f578863fff34a70fd2b977b094f5d3025b61699bcab58c660f07df24b7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-review-aad-release-final-light",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/gate/agent-transcript-release_risk-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-autonomous-action-dag/gate/agent-transcript-release_risk-final.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

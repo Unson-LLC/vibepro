@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "preview",
+  "role": "network_runtime",
+  "status": "pass",
+  "summary": "external connectorは本Story対象外で未接続runtimeはtyped stop",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "connector責務分離、missing owner、legacy非fallthroughを確認",
+    "evidence": "focused missing-owner/Gate tests 4 pass",
+    "inputs": [
+      "docs/specs/story-vibepro-autonomous-action-dag.md",
+      "src/guarded-run-session.js"
+    ]
+  },
+  "judgment_delta": [
+    "外部接続済みを暗示する懸念 -> connector変更なし、未接続はwaiting_for_runtimeで解消"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "current_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T13:31:28.792Z",
+  "git_context": {
+    "head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T13:31:28.783Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final frozen authority HEAD bbbc2510"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-autonomous-action-dag.md",
+        "sha256": "ede42c15f4dda9e86ae0464d4f02d8827c6dd42c8d13de3d918750cdc40f538e",
+        "size": 5196
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "12b66caaaf9f18840993d1609bb35131e2dde691912db6fe1e60ea650144de57",
+        "size": 105449
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a51277a852fc3635656af93178307802abd83e4ae25a9a70bff6af79afccc702"
+  },
+  "source_fingerprint": "e442afb587cd160c692ee51474a50f61fd1743e5c0f4a013e1508ca2bef52e75",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aad-bbbc-network",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/preview/agent-transcript-network-bbbc.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/preview/review-request-network_runtime.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

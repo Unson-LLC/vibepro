@@ -1,0 +1,1 @@
+{"status":"pass","summary":"external connectorは本Story対象外で、未接続runtimeはtyped stopする。","evidence":"focused tests 4 pass","findings":[]}

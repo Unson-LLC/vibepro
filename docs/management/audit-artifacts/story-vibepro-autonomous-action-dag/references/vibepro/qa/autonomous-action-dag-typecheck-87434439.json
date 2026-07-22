@@ -1,0 +1,5 @@
+{
+  "head": "874344394f6da1f3263176f7cd58a0d289a5b776",
+  "status": "pass",
+  "command": "npm run typecheck"
+}

@@ -1,0 +1,162 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "閉じた自律DAG、legacy fallback、Portfolio lock、SSOT階層は再base後HEADで整合",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "core_workflow_stateを含む差分と現HEAD回帰を確認; risk_surfaces=core_workflow_state",
+    "evidence": ".vibepro/qa/review-transcript-architecture-5de00643.md",
+    "inputs": [
+      "design-ssot.json",
+      "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+      "docs/architecture/story-vibepro-autonomous-action-dag.md",
+      "docs/specs/story-vibepro-autonomous-action-dag.md",
+      "src/safe-action-orchestrator.js",
+      "src/guarded-run-session.js",
+      "src/story-run-portfolio.js"
+    ]
+  },
+  "judgment_delta": [
+    "rebase後もSSOT必須linkとfail-closed境界を保持"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "current_head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": []
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T23:45:20.860Z",
+  "git_context": {
+    "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T23:45:20.845Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "cc61be953a32312282097335b91c5409a1fef870e137ef316c93206b97307ea6",
+        "size": 201353
+      },
+      {
+        "path": "docs/architecture/story-vibepro-autonomous-action-dag.md",
+        "sha256": "fa8450a3c539c63e284b3778799d1b9ff610475dc7fffe4dd09b0eb34f13b926",
+        "size": 4267
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "sha256": "f6bff9485afd951c9e8e70d8bacc0e4827f1d2069ee0c47ea0b78910a02e89c6",
+        "size": 3342
+      },
+      {
+        "path": "docs/specs/story-vibepro-autonomous-action-dag.md",
+        "sha256": "84aa1d5bce3ba62f3e149ebc6f1c1c8675046f4536e97a7609efcb7f01462685",
+        "size": 5763
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "6aaf7fd9d8a8f2c3dd919325371e9b0819b786fb1545715de588c171f8789397",
+        "size": 105463
+      },
+      {
+        "path": "src/safe-action-orchestrator.js",
+        "sha256": "c7ae93f23acbfadd6dadb5791927f4d9651f6ed4929db99b5249b81935e7a450",
+        "size": 15480
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "7aac32ceecbc0880306ebc200fd8c96852b991d824bab065d1214dc990f1c624",
+        "size": 38393
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d61d9be583d71ade211bed6b59d790dc1af72c2a3596cb29088112aa20b6bd29"
+  },
+  "source_fingerprint": "9647836c86dbe04c83b222c66f584fcfc5d5a046847a9e1a8196f827b961f457",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "arch_test_audit",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": "/root/arch_test_audit",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-transcript-architecture-5de00643.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-transcript-architecture-5de00643.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/arch_test_audit",
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,1 @@
+{"agent_id":"aad-test-e2e-b998-light","head":"b998951b8a59776252d419582cd2172e45505fe2","role":"e2e_ux","status":"pass","summary":"The CLI journey exposes an auditable feature-disable transition for both new and resumed Runs, with current-head workflow replay evidence.","required_changes":[]}

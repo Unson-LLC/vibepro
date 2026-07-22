@@ -1,0 +1,12 @@
+{
+  "agent": "aad-d5-spec-consistency",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "authority_head": "e2fc3e319e30511276c41276a23152e2841923b1",
+  "status": "pass",
+  "summary": "Story、Architecture、Spec、実装、テストは閉じた7-node autonomous DAGで整合する。",
+  "inspection_summary": "AC-1〜7、終端final_prepare契約、profile resolution、全node typed stop、Gate SSOT、rebase後E2Eを確認。",
+  "inspection_evidence": "safe-action/guarded-run 97 pass; E2E replay pass; current strict-head evidence pass",
+  "judgment_delta": "unchanged pass after latest-main rebase; E2E AC-6 selector now proves terminal final_prepare stop",
+  "findings": []
+}

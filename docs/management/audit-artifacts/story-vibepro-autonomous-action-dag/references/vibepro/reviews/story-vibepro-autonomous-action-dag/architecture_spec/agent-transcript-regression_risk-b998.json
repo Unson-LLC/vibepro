@@ -1,0 +1,1 @@
+{"agent_id":"aad-arch-regression-b998-light","head":"b998951b8a59776252d419582cd2172e45505fe2","role":"regression_risk","status":"pass","summary":"New and existing autonomous Runs fall back to legacy with persisted requested/effective profiles and typed reason; the summary renders the transition.","required_changes":[]}

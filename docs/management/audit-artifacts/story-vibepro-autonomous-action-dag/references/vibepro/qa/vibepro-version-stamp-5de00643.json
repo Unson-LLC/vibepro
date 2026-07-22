@@ -1,0 +1,1 @@
+{"status":"pass","head_sha":"5de00643982bc5c1253701fd8d8abdbb6b4ca435","command":"node bin/vibepro.js --version","expected_version":"0.2.0-beta.1","running_version":"0.2.0-beta.1","exit_code":0}

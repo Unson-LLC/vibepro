@@ -1,0 +1,1 @@
+{"agent_id":"aad-impl-runtime-b998-light","head":"b998951b8a59776252d419582cd2172e45505fe2","role":"runtime_contract","status":"pass","summary":"New and existing autonomous disable paths close the legacy migration, typed audit state, and rendered summary contract.","required_changes":[]}
