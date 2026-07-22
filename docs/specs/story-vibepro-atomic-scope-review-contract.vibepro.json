@@ -230,8 +230,8 @@
       },
       "verifiable_by": {
         "test_pattern": [
-          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "a mode ID placed only in the target must not masquerade as an executed negative-path assertion" },
-          { "file_glob": "test/verification-evidence-artifact-check.test.js", "must_contain": "inspection-only command is not valid passing evidence" }
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "a mode ID without a concrete malformed-input assertion must not masquerade as an executed negative-path assertion" },
+          { "file_glob": "test/verification-evidence-artifact-check.test.js", "must_contain": "inspection-only or arbitrary command is not valid passing evidence" }
         ]
       }
     },
@@ -266,7 +266,7 @@
       },
       "verifiable_by": {
         "test_pattern": [
-          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "treats a versioned branch merge title as current Story lineage" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_contain": "accepts a versioned branch merge only when canonical remote topology resolves to a merge parent" },
           { "file_glob": "test/vibepro-cli.test.js", "must_contain": "does not trust a spoofed two-parent versioned Story merge" }
         ]
       }
@@ -276,6 +276,13 @@
     {
       "kind": "state",
       "title": "Atomic scope review lifecycle",
+      "entities": [
+        "split_recommended",
+        "rejected",
+        "accepted",
+        "cumulative_validation",
+        "ready"
+      ],
       "mermaid": "stateDiagram-v2\n  [*] --> SplitRecommended\n  SplitRecommended --> Rejected: boundary or owner evidence incomplete\n  Rejected --> Accepted: typed lanes and current-HEAD owners cover every changed path\n  Accepted --> Rejected: HEAD or review surface changes\n  Accepted --> CumulativeValidation: required commands retained\n  CumulativeValidation --> Ready: current verification and final reviews pass\n  CumulativeValidation --> Rejected: verification or final review fails"
     },
     {
