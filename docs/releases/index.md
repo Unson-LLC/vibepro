@@ -129,3 +129,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:378:start -->
 - [PR #378](https://github.com/Unson-LLC/vibepro/pull/378) — [2026-07](/releases/2026-07): story-vibepro-target-architecture-conformance - Target Architecture SSOTとconformance dry-runを導入する
 <!-- vibepro-release-index-pr:378:end -->
+
+<!-- vibepro-release-index-pr:379:start -->
+- [PR #379](https://github.com/Unson-LLC/vibepro/pull/379) — [2026-07](/releases/2026-07): story-vibepro-node20-e2e-ts-ci-visibility - Node 20 CIレーンのe2e .ts spec偽passを可視化しNode 22+必須ゲートで実行する
+<!-- vibepro-release-index-pr:379:end -->
