@@ -423,8 +423,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }
   const resultPath = getReviewResultPath(reviewDir, role);
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
-  const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null;
-  if (existingResult?.operation_idempotency_key === operationIdempotencyKey) result = existingResult;
+  const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null; if (existingResult?.operation_idempotency_key === operationIdempotencyKey) result = existingResult;
   const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   if (efficiencyPolicy && result.agent_provenance.lifecycle?.agent_closed) {
     const lifecycle = await readLifecycle(root, storyId, stage);
@@ -575,10 +574,8 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null, result_artifact: null,
     ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
   };
-  const existingLifecycle = operationIdempotencyKey ? (await readLifecycle(root, storyId, stage)).entries
-    .find((item) => item.operation_idempotency_key === operationIdempotencyKey) : null;
-  if (existingLifecycle) return { lifecycle: existingLifecycle, dispatch_decision: existingLifecycle.dispatch_decision ?? null,
-    summary: await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy }), artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir)) };
+  const existingLifecycle = operationIdempotencyKey ? (await readLifecycle(root, storyId, stage)).entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey) : null;
+  if (existingLifecycle) return { lifecycle: existingLifecycle, dispatch_decision: existingLifecycle.dispatch_decision ?? null, summary: await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy }), artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir)) };
   let summary = null;
   let dispatchDecision = null;
   const persistLifecycle = async () => updateLifecycle(root, storyId, stage, (lifecycle) => {
@@ -654,15 +651,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   await withDirectoryLock(path.join(storyReviewDir, '.dispatch.lock'), async () => {
     const authorizations = await readDispatchAuthorizations(storyReviewDir, storyId);
     expireDispatchAuthorizations(authorizations.entries, now);
-    const existing = operationIdempotencyKey ? authorizations.entries.find((item) =>
-      item.operation_idempotency_key === operationIdempotencyKey
-      && item.binding?.head_sha === gitContext.head_sha
-      && item.binding?.surface_digest === (gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash)
-    ) : null;
-    if (existing) {
-      authorization = existing;
-      return;
-    }
+    const existing = operationIdempotencyKey ? authorizations.entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey && item.binding?.head_sha === gitContext.head_sha && item.binding?.surface_digest === (gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash)) : null;
+    if (existing) return void (authorization = existing);
     const lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir);
     const activeReservations = authorizations.entries.filter((item) => item.status === 'authorized');
     const lifecycles = [
@@ -726,8 +716,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       created_at: now.toISOString(),
       expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
       consumed_at: null,
-      agent_id: null,
-      ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
+      agent_id: null, ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
     };
     authorizations.entries.push(authorization);
     await writeDispatchAuthorizations(storyReviewDir, storyId, authorizations);
