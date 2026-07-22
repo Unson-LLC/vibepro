@@ -1,0 +1,311 @@
+{
+  "schema_version": "0.1.0",
+  "status": "draft",
+  "adjudicated_by": null,
+  "adjudicated_at": null,
+  "note": "to-beモデルの正本。改訂は人間の裁定(ADR/Story)でのみ行う。自動生成・自動改訂を禁止する。",
+  "scope_roots": [
+    "src",
+    "bin"
+  ],
+  "modules": [
+    {
+      "name": "cli",
+      "responsibility": "エントリポイントとコマンドディスパッチ",
+      "paths": [
+        "bin/",
+        "src/cli.js",
+        "src/presets.js",
+        "src/doctor.js",
+        "src/runtime-info.js"
+      ]
+    },
+    {
+      "name": "workspace-infra",
+      "responsibility": "workspace・artifact routing・git・実行状態の共有カーネル",
+      "paths": [
+        "src/workspace.js",
+        "src/workspace-status.js",
+        "src/artifact-routing.js",
+        "src/repo-status.js",
+        "src/guard.js",
+        "src/git-fingerprint.js",
+        "src/git-identity.js",
+        "src/checkpoint-manager.js",
+        "src/execution-state.js",
+        "src/managed-worktree.js",
+        "src/managed-worktree-gate.js",
+        "src/merge-manager.js",
+        "src/codex-manager.js",
+        "src/run-lineage.js",
+        "src/language.js"
+      ]
+    },
+    {
+      "name": "graph",
+      "responsibility": "Graphify as-isグラフの取り込みと文脈提供",
+      "paths": [
+        "src/graphify-adapter.js",
+        "src/graph-context.js",
+        "src/environment-graph.js"
+      ]
+    },
+    {
+      "name": "story",
+      "responsibility": "StoryのSSOT管理・カタログ・外部同期",
+      "paths": [
+        "src/story-manager.js",
+        "src/story-html.js",
+        "src/story-catalog-generator.js",
+        "src/story-candidate-generator.js",
+        "src/story-run-portfolio.js",
+        "src/nocodb-story-sync.js",
+        "src/brainbase-importer.js",
+        "src/decision-records.js"
+      ]
+    },
+    {
+      "name": "task",
+      "responsibility": "StoryからのTask導出と管理",
+      "paths": [
+        "src/task-manager.js",
+        "src/story-task-generator.js"
+      ]
+    },
+    {
+      "name": "architecture",
+      "responsibility": "アーキテクチャSSOT・readiness・conformance",
+      "paths": [
+        "src/architecture-store.js",
+        "src/architecture-readiness.js",
+        "src/architecture-profiler.js",
+        "src/architecture-conformance.js",
+        "src/code-topology-provider.js"
+      ]
+    },
+    {
+      "name": "spec",
+      "responsibility": "Specの保存・検証・drift検知",
+      "paths": [
+        "src/spec-*",
+        "src/pre-spec-readiness.js",
+        "src/recipe-preflight.js"
+      ]
+    },
+    {
+      "name": "evidence",
+      "responsibility": "検証証跡の記録・再利用・コスト管理",
+      "paths": [
+        "src/verification-evidence.js",
+        "src/evidence-*",
+        "src/ci-evidence.js",
+        "src/explore-evidence.js",
+        "src/performance-evidence.js",
+        "src/performance-measurer.js",
+        "src/coverage-report.js",
+        "src/visual-verifier.js",
+        "src/flow-verifier.js"
+      ]
+    },
+    {
+      "name": "review",
+      "responsibility": "agent review・裁定・修復ループ",
+      "paths": [
+        "src/agent-review.js",
+        "src/review-repair.js",
+        "src/review-finding-repair-loop.js",
+        "src/adjudication.js",
+        "src/responsibility-authority.js"
+      ]
+    },
+    {
+      "name": "gate-pr",
+      "responsibility": "Gate DAG・PR準備・senior判断・監査",
+      "paths": [
+        "src/pr-manager.js",
+        "src/senior-gap-judgment.js",
+        "src/gate-outcome-ledger.js",
+        "src/canonical-audit.js",
+        "src/pr-artifact-budget.js",
+        "src/traceability.js",
+        "src/change-risk-classifier.js",
+        "src/authorization-scoring.js",
+        "src/validation-sequencing.js",
+        "src/playbook-exporter.js",
+        "src/report-store.js",
+        "src/report-validator.js",
+        "src/report-fingerprint.js",
+        "src/content-binding.js"
+      ]
+    },
+    {
+      "name": "run-session",
+      "responsibility": "guarded run・自律実行セッション制御",
+      "paths": [
+        "src/guarded-run-session.js",
+        "src/guarded-stop-codes.js",
+        "src/safe-action-orchestrator.js",
+        "src/next-best-action-controller.js",
+        "src/human-decision-checkpoint.js",
+        "src/agent-runtime-adapter.js",
+        "src/session-learning.js",
+        "src/run-context-capsule.js"
+      ]
+    },
+    {
+      "name": "scanners",
+      "responsibility": "個別観点の静的スキャナ群",
+      "paths": [
+        "src/agent-harness-scanner.js",
+        "src/api-boundary-scanner.js",
+        "src/code-quality-scanner.js",
+        "src/component-style-scanner.js",
+        "src/database-access-scanner.js",
+        "src/flow-design-scanner.js",
+        "src/gesture-interaction-scanner.js",
+        "src/local-dev-scanner.js",
+        "src/network-contract-scanner.js",
+        "src/oss-readiness-scanner.js",
+        "src/public-discovery-scanner.js",
+        "src/regression-risk-scanner.js",
+        "src/self-dogfood-scanner.js",
+        "src/static-site-scanner.js",
+        "src/terminal-link-scanner.js",
+        "src/lazy-pattern-detector.js",
+        "src/scan-status.js"
+      ]
+    },
+    {
+      "name": "diagnosis",
+      "responsibility": "目的別診断パックとscanner統合",
+      "paths": [
+        "src/diagnostic-engine.js",
+        "src/check-packs.js",
+        "src/requirement-consistency.js",
+        "src/refactoring-delta-reporter.js",
+        "src/refactoring-opportunity-generator.js",
+        "src/diagram-requirement-resolver.js",
+        "src/agent-harness-map.js"
+      ]
+    },
+    {
+      "name": "uiux-design",
+      "responsibility": "UI/UX設計・design SSOT・journey",
+      "paths": [
+        "src/design-*",
+        "src/uiux-*",
+        "src/journey-map.js"
+      ]
+    },
+    {
+      "name": "reporting",
+      "responsibility": "人間向けレポートと利用状況集計",
+      "paths": [
+        "src/html-report.js",
+        "src/usage-report.js",
+        "src/session-efficiency-audit.js",
+        "src/delivery-efficiency-guardrail.js"
+      ]
+    },
+    {
+      "name": "skills",
+      "responsibility": "Skill管理",
+      "paths": [
+        "src/skills-manager.js"
+      ]
+    }
+  ],
+  "allowed_dependencies": {
+    "cli": [
+      "*"
+    ],
+    "story": [
+      "workspace-infra",
+      "graph"
+    ],
+    "task": [
+      "workspace-infra",
+      "story"
+    ],
+    "architecture": [
+      "workspace-infra",
+      "graph"
+    ],
+    "spec": [
+      "workspace-infra",
+      "story"
+    ],
+    "evidence": [
+      "workspace-infra",
+      "graph"
+    ],
+    "review": [
+      "workspace-infra",
+      "evidence",
+      "story"
+    ],
+    "gate-pr": [
+      "workspace-infra",
+      "graph",
+      "story",
+      "task",
+      "spec",
+      "evidence",
+      "review",
+      "diagnosis",
+      "reporting"
+    ],
+    "run-session": [
+      "workspace-infra",
+      "task",
+      "evidence"
+    ],
+    "scanners": [
+      "workspace-infra"
+    ],
+    "diagnosis": [
+      "workspace-infra",
+      "graph",
+      "story",
+      "scanners"
+    ],
+    "uiux-design": [
+      "workspace-infra",
+      "scanners",
+      "evidence"
+    ],
+    "reporting": [
+      "workspace-infra",
+      "story",
+      "evidence",
+      "gate-pr",
+      "review",
+      "diagnosis"
+    ],
+    "skills": [
+      "workspace-infra"
+    ],
+    "graph": [
+      "workspace-infra"
+    ],
+    "workspace-infra": []
+  },
+  "budgets": {
+    "default_max_file_lines": 1500,
+    "file_line_baseline": {
+      "src/pr-manager.js": 14922,
+      "src/cli.js": 3930,
+      "src/agent-review.js": 3657,
+      "src/design-system.js": 2985,
+      "src/story-catalog-generator.js": 2815,
+      "src/session-efficiency-audit.js": 2750,
+      "src/canonical-audit.js": 2688,
+      "src/guarded-run-session.js": 2382,
+      "src/story-manager.js": 2361,
+      "src/usage-report.js": 2131,
+      "src/diagnostic-engine.js": 2030,
+      "src/journey-map.js": 1757,
+      "src/design-modernize.js": 1692
+    }
+  }
+}

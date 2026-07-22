@@ -213,6 +213,10 @@ import {
   writeFinalArchitecture
 } from './architecture-store.js';
 import {
+  renderConformanceMarkdown,
+  runArchitectureConformance
+} from './architecture-conformance.js';
+import {
   readInferredSpec,
   stabilizeClauseIds,
   writeDraftSpec,
@@ -543,6 +547,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -796,6 +801,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -3333,6 +3339,19 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result.readiness, null, 2)}\n`
           : renderArchitectureReadinessSummary(result));
         return { exitCode: result.readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
+      }
+
+      if (subcommand === 'conformance') {
+        const result = await runArchitectureConformance(repoRoot, {
+          modelPath: getOption(rest, '--model'),
+          graphPath: getOption(rest, '--graph')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderConformanceMarkdown(result));
+        const strict = hasFlag(rest, '--strict');
+        const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0;
+        return { exitCode, command, subcommand, result };
       }
 
       if (subcommand === 'write') {
