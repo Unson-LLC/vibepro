@@ -489,3 +489,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-session-attr
 なし
 
 <!-- vibepro-release-pr:375:end -->
+
+<!-- vibepro-release-pr:372:start -->
+## [#372](https://github.com/Unson-LLC/vibepro/pull/372) story-vibepro-autonomous-action-dag - Guarded Runを完全な型付き自律Action DAGへ拡張する
+
+- Author: @sintariran
+- Merged: 2026-07-22T00:06:54Z
+- Commit: `df3c5dcd7cb95f99d06c299ee963fafeea2703fb`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-autonomous-action-dag.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-action-dag.md), [docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md), [docs/management/stories/active/story-vibepro-independent-review-orchestration.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-independent-review-orchestration.md), [docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md), ...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:372:end -->

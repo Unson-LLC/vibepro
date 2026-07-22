@@ -113,3 +113,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:375:start -->
 - [PR #375](https://github.com/Unson-LLC/vibepro/pull/375) — [2026-07](/releases/2026-07): fix: policy_syncレビュー残課題3件を解消（#374 フォローアップ）
 <!-- vibepro-release-index-pr:375:end -->
+
+<!-- vibepro-release-index-pr:372:start -->
+- [PR #372](https://github.com/Unson-LLC/vibepro/pull/372) — [2026-07](/releases/2026-07): story-vibepro-autonomous-action-dag - Guarded Runを完全な型付き自律Action DAGへ拡張する
+<!-- vibepro-release-index-pr:372:end -->
