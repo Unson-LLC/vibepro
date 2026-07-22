@@ -32,7 +32,7 @@ test('IRO-S-3 restart reuses every completed journal operation exactly once', as
   assert.equal(second.stage, 'final');
 });
 
-test('IRO-S-3 persists every successful operation before the next operation and restart never redispatches', async () => {
+test('IRO-S-3 persists stopped operations, closes their lifecycle, and restart never repolls', async () => {
   const events = [];
   const checkpoints = [];
   const interrupted = boundaries({ events });
@@ -46,8 +46,8 @@ test('IRO-S-3 persists every successful operation before the next operation and 
     persistCheckpoint: async (journal) => { checkpoints.push(journal); }
   });
   assert.equal(first.status, 'waiting_for_runtime');
-  assert.equal(checkpoints.at(-1).at(-1).operation, 'dispatch');
-  assert.equal(checkpoints.at(-1).some((entry) => entry.operation === 'poll'), false);
+  assert.equal(checkpoints.at(-1).at(-1).operation, 'close');
+  assert.equal(checkpoints.at(-1).find((entry) => entry.operation === 'poll').result.status, 'waiting_for_runtime');
 
   const resumedEvents = [];
   const resumed = await orchestrateIndependentReview({
@@ -55,8 +55,45 @@ test('IRO-S-3 persists every successful operation before the next operation and 
     journal: checkpoints.at(-1),
     boundaries: boundaries({ events: resumedEvents })
   });
-  assert.equal(resumed.verdict, 'pass');
+  assert.equal(resumed.verdict, 'block');
+  assert.equal(resumed.stop_reason.code, 'runtime_timeout');
   assert.equal(resumedEvents.some((event) => event.startsWith('dispatch:')), false);
+  assert.equal(resumedEvents.some((event) => event.startsWith('poll:')), false);
+  assert.equal(events.filter((event) => event.startsWith('close:')).length, 1);
+});
+
+test('IRO-S-3 reserves dispatch before the external boundary and reconciles its idempotency key after a crash', async () => {
+  let durable = [];
+  let persistCount = 0;
+  const providerRuns = new Map();
+  const dispatchedKeys = [];
+  const firstBoundaries = boundaries();
+  firstBoundaries.dispatch = async ({ operation }) => {
+    dispatchedKeys.push(operation.idempotency_key);
+    if (!providerRuns.has(operation.idempotency_key)) providerRuns.set(operation.idempotency_key, { dispatch_id: 'provider-run-1' });
+    return providerRuns.get(operation.idempotency_key);
+  };
+  await assert.rejects(orchestrateIndependentReview({
+    stages: [{ stage: 'architecture', roles: ['architecture'] }],
+    boundaries: firstBoundaries,
+    persistCheckpoint: async (journal) => {
+      persistCount += 1;
+      if (journal.at(-1)?.operation === 'dispatch' && journal.at(-1)?.state === 'completed') throw new Error('crash after provider accepted dispatch');
+      durable = structuredClone(journal);
+    }
+  }), /crash after provider accepted dispatch/);
+  assert.equal(durable.at(-1).operation, 'dispatch');
+  assert.equal(durable.at(-1).state, 'reserved');
+
+  const resumedBoundaries = boundaries();
+  resumedBoundaries.dispatch = firstBoundaries.dispatch;
+  const resumed = await orchestrateIndependentReview({
+    stages: [{ stage: 'architecture', roles: ['architecture'] }], journal: durable, boundaries: resumedBoundaries
+  });
+  assert.equal(resumed.verdict, 'pass');
+  assert.equal(providerRuns.size, 1);
+  assert.deepEqual(dispatchedKeys, ['architecture:architecture:dispatch', 'architecture:architecture:dispatch']);
+  assert.ok(persistCount > 0);
 });
 
 test('IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win', async () => {
@@ -107,9 +144,11 @@ test('IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, work
     ['record', 'workflow_state_regression'],
     ['record', 'invalid_runtime_review']
   ]) {
-    const result = await orchestrateIndependentReview({ stages: [stages[0]], boundaries: boundaries({ stop: { [operation]: { status: 'waiting_for_runtime', stop_reason: { code, message: code } } } }) });
+    const events = [];
+    const result = await orchestrateIndependentReview({ stages: [stages[0]], boundaries: boundaries({ events, stop: { [operation]: { status: 'waiting_for_runtime', stop_reason: { code, message: code } } } }) });
     assert.equal(result.verdict, 'block');
     assert.equal(result.stop_reason.code, code);
+    if (operation === 'dispatch' || operation === 'poll') assert.equal(events.some((event) => event.startsWith('close:')), true);
   }
 });
 

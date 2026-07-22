@@ -72,7 +72,7 @@ export async function orchestrateIndependentReview(input = {}) {
   if (!nextStage) return { status: 'pass', verdict: 'pass', journal, completed: true };
 
   try {
-    const prepared = await once(journal, nextStage, '*', 'prepare', () => boundaries.prepare({ ...context, stage: nextStage.stage }), persistCheckpointInOrder);
+    const prepared = await once(journal, nextStage, '*', 'prepare', (operation) => boundaries.prepare({ ...context, stage: nextStage.stage, operation }), persistCheckpointInOrder);
     if (isStop(prepared)) return stopResult(prepared, journal, nextStage.stage);
 
     const results = await Promise.all(nextStage.roles.map((role) => runRole({ boundaries, context, journal, stage: nextStage, role, persistCheckpoint: persistCheckpointInOrder })));
@@ -196,9 +196,9 @@ export function createGuardedIndependentReviewRunner({
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
       }),
       poll: async ({ state, dispatch }) => normalizePoll(await pollRuntime(state, dispatch.dispatch?.dispatch_id)),
-      close: async ({ state, stage, role, lifecycle }) => agentReviewOps.close(repoRoot, {
+      close: async ({ state, stage, role, lifecycle, closeReason }) => agentReviewOps.close(repoRoot, {
         storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
-        closeReason: 'completed', closeEvidence: 'guarded_run_runtime_completed'
+        closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed'
       }),
       record: async ({ state, stage, role, poll }) => {
         const dispatch = poll.dispatch;
@@ -293,45 +293,66 @@ function normalizePoll(result) {
 async function runRole({ boundaries, context, journal, stage, role, persistCheckpoint }) {
   if (hasRecorded(journal, stage, role)) return recordedResult(journal, stage, role);
   const base = { ...context, stage: stage.stage, role: role.role };
-  const authorization = await once(journal, stage, role, 'authorize', () => boundaries.authorize(base), persistCheckpoint);
+  const authorization = await once(journal, stage, role, 'authorize', (operation) => boundaries.authorize({ ...base, operation }), persistCheckpoint);
   if (isStop(authorization)) return authorization;
   if (authorization.action && authorization.action !== 'dispatch') {
     return typedStop('review_dispatch_denied', authorization.stop_reason ?? 'review dispatch was not authorized');
   }
-  const lifecycle = await once(journal, stage, role, 'start', () => boundaries.start({ ...base, authorization }), persistCheckpoint);
+  const lifecycle = await once(journal, stage, role, 'start', (operation) => boundaries.start({ ...base, authorization, operation }), persistCheckpoint);
   if (isStop(lifecycle)) return lifecycle;
-  const dispatched = await once(journal, stage, role, 'dispatch', () => boundaries.dispatch({ ...base, authorization, lifecycle }), persistCheckpoint);
-  if (isStop(dispatched)) return dispatched;
-  const polled = await once(journal, stage, role, 'poll', () => boundaries.poll({ ...base, lifecycle, dispatch: dispatched }), persistCheckpoint);
-  if (isStop(polled)) return polled;
-  const closed = await once(journal, stage, role, 'close', () => boundaries.close({ ...base, lifecycle, dispatch: dispatched, poll: polled }), persistCheckpoint);
+  const dispatched = await once(journal, stage, role, 'dispatch', (operation) => boundaries.dispatch({ ...base, authorization, lifecycle, operation }), persistCheckpoint);
+  if (isStop(dispatched)) {
+    const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: dispatched, journal, stage, role, persistCheckpoint });
+    if (isStop(cleanup)) return cleanup;
+    return dispatched;
+  }
+  const polled = await once(journal, stage, role, 'poll', (operation) => boundaries.poll({ ...base, lifecycle, dispatch: dispatched, operation }), persistCheckpoint);
+  if (isStop(polled)) {
+    const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: polled, journal, stage, role, persistCheckpoint });
+    if (isStop(cleanup)) return cleanup;
+    return polled;
+  }
+  const closed = await once(journal, stage, role, 'close', (operation) => boundaries.close({ ...base, lifecycle, dispatch: dispatched, poll: polled, operation }), persistCheckpoint);
   if (isStop(closed)) return closed;
-  const recorded = await once(journal, stage, role, 'record', () => boundaries.record({ ...base, lifecycle, dispatch: dispatched, poll: polled, close: closed }), persistCheckpoint);
+  const recorded = await once(journal, stage, role, 'record', (operation) => boundaries.record({ ...base, lifecycle, dispatch: dispatched, poll: polled, close: closed, operation }), persistCheckpoint);
   if (isStop(recorded)) return recorded;
   const verdict = recorded.verdict ?? recorded.status;
   if (!VERDICTS.has(verdict)) throw new IndependentReviewOrchestrationError('invalid_review_verdict', 'review record must preserve pass, needs_changes, or block', { stage: stage.stage, role: role.role, verdict });
   return { status: 'completed', verdict, record: recorded };
 }
 
+async function closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch, stop, journal, stage, role, persistCheckpoint }) {
+  return once(journal, stage, role, 'close', (operation) => boundaries.close({
+    ...base, lifecycle, dispatch, poll: stop, closeReason: stop.stop_reason?.code ?? 'runtime_stopped', operation
+  }), persistCheckpoint);
+}
+
 async function once(journal, stage, role, operation, invoke, persistCheckpoint) {
   const existing = journal.find((entry) => entry.stage === stage.stage && entry.role === roleName(role) && entry.operation === operation);
-  if (existing) return existing.result;
+  if (existing?.state === 'completed' || (existing && !existing.state)) return existing.result;
+  const entry = existing ?? {
+    kind: 'independent_review', stage: stage.stage, role: roleName(role), operation,
+    idempotency_key: `${stage.stage}:${roleName(role)}:${operation}`, state: 'reserved', result: null
+  };
+  if (!existing) {
+    journal.push(entry);
+    // Reserve the deterministic operation key before crossing an external
+    // boundary. On restart the same reservation is reconciled with the same
+    // idempotency key instead of creating a second logical operation.
+    await persistCheckpoint?.(journal.map((item) => ({ ...item })));
+  }
   let result;
   try {
-    result = await invoke();
+    result = await invoke({ idempotency_key: entry.idempotency_key, resumed: Boolean(existing) });
   } catch (error) {
-    if (error?.code) return typedStop(error.code, error.message, error.details);
-    throw error;
+    if (error?.code) result = typedStop(error.code, error.message, error.details);
+    else throw error;
   }
-  if (isStop(result)) return result;
-  journal.push({
-    kind: 'independent_review', stage: stage.stage, role: roleName(role), operation,
-    idempotency_key: `${stage.stage}:${roleName(role)}:${operation}`, result
-  });
-  // A typed stop is returned before this point, so only successful lifecycle
-  // operations are checkpointed. Awaiting this callback establishes the
-  // crash boundary: a later operation cannot start until its predecessor is
-  // durable in the Guarded Run owner.
+  entry.state = 'completed';
+  entry.result = result;
+  // Successful and stopped attempts are both durable. This makes the journal
+  // a complete exactly-once operation ledger and prevents a restart from
+  // silently retrying a terminal poll or lifecycle transition.
   await persistCheckpoint?.(journal.map((entry) => ({ ...entry })));
   return result;
 }
@@ -355,7 +376,7 @@ function requireBoundaries(value) {
 
 function hasRecorded(journal, stage, role) { return journal.some((entry) => entry.stage === stage.stage && entry.role === roleName(role) && entry.operation === 'record'); }
 function recordedResult(journal, stage, role) { const entry = journal.find((item) => item.stage === stage.stage && item.role === roleName(role) && item.operation === 'record'); return { status: 'completed', verdict: entry.result.verdict ?? entry.result.status, record: entry.result }; }
-function roleName(role) { return role.role; }
+function roleName(role) { return typeof role === 'string' ? role : role.role; }
 function isStop(value) { return value?.status === 'waiting_for_runtime' || value?.status === 'blocked' || value?.status === 'failed' || value?.status === 'waiting_for_human'; }
 function typedStop(code, message, details = {}) { return { status: terminalStatus(code), stop_reason: { code, message, details } }; }
 function terminalStatus(code) { return TERMINAL_STOP_CODES.has(code) ? 'waiting_for_runtime' : 'blocked'; }

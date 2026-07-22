@@ -25,7 +25,7 @@ The CLI remains an outer adapter. Neither the owner nor the review/runtime modul
 
 ## State and idempotency
 
-Each role operation uses a deterministic stage/role/operation key inside the HEAD-bound guarded Run action journal. The journal persists `start`, `dispatch`, `poll`, `close`, and `record` checkpoints before the next boundary is entered. On resume, completed checkpoints are reused; a provider dispatch is not recreated and a recorded review is not duplicated.
+Each role operation uses a deterministic stage/role/operation key inside the HEAD-bound guarded Run action journal. The journal durably reserves that key before crossing an external boundary, then completes the entry with either success or a typed-stop result before the next boundary is entered. On resume, a reserved operation is reconciled through the same provider-neutral idempotency key; completed checkpoints are reused, a provider dispatch is not recreated, and a recorded review is not duplicated. A typed stop after lifecycle start closes that lifecycle before returning control to Guarded Run.
 
 Stage progression is a barrier: the next stage is not prepared until every required role in the current stage is terminal, closed, and recorded. Role dispatch within one stage uses `Promise.all` semantics, while checkpoint writes are serialized and monotonic so a slower, older snapshot cannot overwrite a newer one.
 
@@ -39,7 +39,7 @@ Stage progression is a barrier: the next stage is not prepared until every requi
 
 ## Conformance constraint
 
-After the target-architecture change from PR #378 is present, run `vibepro architecture conformance .`. The implementation must not increase the declared 68-violation baseline, must remain inside the run-session owner boundary, and must add no reverse dependency to `cli.js`.
+After the target-architecture change from PR #378 is present, run `vibepro architecture conformance .`. Compare against the current `origin/main` baseline (69 violations; 68 at PR #378 plus one inherited later-main violation). The implementation must not increase that baseline, must remain inside the run-session owner boundary, and must add no reverse dependency to `cli.js`.
 
 ## Verification
 

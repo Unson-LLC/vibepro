@@ -29,10 +29,10 @@ updated_at: 2026-07-22
 - [ ] IRO-S-5: runtime不足、auth、timeout、invalid provenanceはGate passにせず型付き停止する。
 - [ ] IRO-S-6: parallel success、needs_changes、block、same-session rejection、restartのE2Eがある。
 - [ ] IRO-S-7: `needs_changes`は既存Review LifecycleとRepair Loopへ渡し、新しいverdict/finding schemaを作らない。
-- [ ] IRO-S-8: target architecture conformance導入後のbaseline（68 violations）を悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
+- [ ] IRO-S-8: 現行`origin/main`のtarget architecture conformance baseline（69 violations。PR #378時点の68件に、後続mainで1件追加）を悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
 
 ## Non Goals
 
 - required Reviewの省略またはmanual passへの置換。
 - 実装agentをreviewerとして再利用すること。
-- target architectureの既存68 violationsをこのStory内で解消すること。
+- target architectureの既存69 violationsをこのStory内で解消すること。
