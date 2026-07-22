@@ -309,10 +309,10 @@
         "amendment_reason": "Historical repair and stale lifecycle time predates the final frozen HEAD and exhausted duration and aggregate agent-consumption limits. User explicitly authorized merge completion on 2026-07-22. Disable only historical time dimensions and allow only the current-HEAD architecture-boundary, gate-evidence, and release-risk lifecycles plus fresh-context adjudication with lightweight agents; dispatch-count limits remain enforced, and default Story budgets remain unchanged."
       },
       "story-vibepro-atomic-scope-review-contract": {
-        "max_subagent_count": 244,
+        "max_subagent_count": 245,
         "max_agent_consumption_ms": 215000000,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 54,
+          "architecture_boundary": 56,
           "e2e_ux": 24,
           "gate_coverage": 24,
           "gate_evidence": 5,
@@ -325,7 +325,7 @@
           "unit_integration": 8,
           "ux_completion": 13
         },
-        "amendment_reason": "Historical review lifecycle debt reached 236 closed or replaced entries before final closure. User explicitly authorized immediate completion on 2026-07-22. A required rebase onto origin/main invalidated prior strict bindings. The authorized final runtime review then caught a stale generated CLI reference through the required docs build, and the next architecture-boundary review caught that the global subagent allowance did not cover the four explicitly authorized current-HEAD replacement lifecycles. This final amendment raises only the global allowance by the three missing lifecycle slots, authorizes exactly one current-HEAD replacement for architecture_boundary, runtime_contract, gate_evidence, and release_risk, freezes every other role, retains all historical evidence, and leaves default Story budgets unchanged."
+        "amendment_reason": "User authorized immediate completion on 2026-07-22. Runtime review caught stale generated CLI docs; architecture review caught global underprovisioning. The recorded failing architecture lifecycle consumed one additional historical global and role slot. This amendment counts that finding lifecycle plus exactly one current-HEAD replacement each for architecture_boundary, runtime_contract, gate_evidence, and release_risk; it freezes every other role, retains all evidence, and leaves defaults unchanged."
       },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
