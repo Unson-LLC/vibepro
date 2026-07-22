@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { planCompatibleFindingBatches } from './delivery-efficiency-guardrail.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const DISPOSITIONS = new Set(['repairable', 'human_decision', 'split_required', 'non_actionable']);
@@ -20,29 +21,32 @@ export function createFindingRepairPlan(input = {}) {
   const attempts = review.findings.map((finding, index) => createAttempt({
     storyId, stage, role, review, finding, attemptNumber: 1, index
   }));
+  const repairBatches = assignRepairBatches(attempts, role);
   const blocked = attempts.find((attempt) => ['human_decision', 'split_required'].includes(attempt.disposition));
   const repairable = attempts.find((attempt) => attempt.disposition === 'repairable');
   return {
     schema_version: '0.1.0', story_id: storyId, stage, role, max_attempts: maxAttempts,
-    original_review: snapshotReview(review), attempts,
+    original_review: snapshotReview(review), attempts, repair_batches: repairBatches,
     status: blocked ? 'human_checkpoint' : repairable ? 'planned' : 'stopped',
     stop_reason: blocked ? null : repairable ? null : 'no_actionable_findings',
     next_action: blocked
       ? checkpointAction(blocked)
       : repairable
-        ? dispatchAction(repairable)
+        ? dispatchBatchAction(openBatchAttempts({ attempts }, repairable.batch_id))
         : { type: 'stop', reason: 'no_actionable_findings' }
   };
 }
 
 export function recordFindingRepairAttempt(current, input = {}) {
   const state = structuredClone(current);
+  ensureRepairBatchMetadata(state);
   if (!['planned', 'repairing', 'awaiting_rereview'].includes(state.status)) {
     throw new Error(`finding repair cannot record while status=${state.status}`);
   }
   const attemptIndex = state.attempts.findIndex((attempt) => attempt.disposition === 'repairable' && !attempt.outcome);
   if (attemptIndex < 0) throw new Error('finding repair has no open repairable attempt');
   const attempt = state.attempts[attemptIndex];
+  const batchAttempts = openBatchAttempts(state, attempt.batch_id);
   const headSha = required(input.headSha, 'headSha');
   const implementationIdentity = required(input.implementationIdentity, 'implementationIdentity');
   const implementationSessionId = required(input.implementationSessionId, 'implementationSessionId');
@@ -61,23 +65,26 @@ export function recordFindingRepairAttempt(current, input = {}) {
     throw new Error('fresh re-review must use an independent identity and session');
   }
   if (rereview.lifecycle !== 'closed') throw new Error('fresh re-review lifecycle must be closed');
-  attempt.outcome = {
-    implementation: { head_sha: headSha, agent_identity: implementationIdentity, session_id: implementationSessionId },
-    verification: structuredClone(input.verification), pr_prepare: structuredClone(input.prPrepare)
-  };
-  attempt.rereview = { ...snapshotReview(rereview), agent_identity: rereview.agent_identity,
-    session_id: rereview.session_id ?? null, thread_id: rereview.thread_id ?? null, lifecycle: rereview.lifecycle,
-    fresh_independent: true };
+  for (const batchedAttempt of batchAttempts) {
+    batchedAttempt.outcome = {
+      implementation: { head_sha: headSha, agent_identity: implementationIdentity, session_id: implementationSessionId },
+      verification: structuredClone(input.verification), pr_prepare: structuredClone(input.prPrepare)
+    };
+    batchedAttempt.rereview = { ...snapshotReview(rereview), agent_identity: rereview.agent_identity,
+      session_id: rereview.session_id ?? null, thread_id: rereview.thread_id ?? null, lifecycle: rereview.lifecycle,
+      fresh_independent: true };
+  }
 
   if (rereview.status === 'pass') {
     const remaining = state.attempts.find((item) => item.disposition === 'repairable' && !item.outcome);
     state.status = remaining ? 'planned' : 'converged';
     state.stop_reason = null;
-    state.next_action = remaining ? dispatchAction(remaining) : { type: 'complete', head_sha: headSha };
+    state.next_action = remaining ? dispatchBatchAction(openBatchAttempts(state, remaining.batch_id)) : { type: 'complete', head_sha: headSha };
     return state;
   }
   if (!['needs_changes', 'block'].includes(rereview.status)) throw new Error(`unsupported re-review status: ${rereview.status}`);
-  const repeated = rereview.findings.some((finding) => findingFingerprint(finding) === attempt.finding_fingerprint);
+  const batchFingerprints = new Set(batchAttempts.map((item) => item.finding_fingerprint));
+  const repeated = rereview.findings.some((finding) => batchFingerprints.has(findingFingerprint(finding)));
   if (repeated && headSha === attempt.input_head_sha) return stopNoProgress(state, 'repeated_finding_without_head_progress');
   const nextNumber = Math.max(...state.attempts.map((item) => item.attempt_number)) + 1;
   if (nextNumber > state.max_attempts) return stopNoProgress(state, 'max_attempts_reached');
@@ -85,12 +92,14 @@ export function recordFindingRepairAttempt(current, input = {}) {
     storyId: state.story_id, stage: state.stage, role: state.role, review: rereview,
     finding, attemptNumber: nextNumber, index
   }));
+  state.repair_batches ??= [];
+  state.repair_batches.push(...assignRepairBatches(additions, state.role));
   state.attempts.push(...additions);
   const blocked = additions.find((item) => ['human_decision', 'split_required'].includes(item.disposition));
   const repairable = additions.find((item) => item.disposition === 'repairable');
   state.status = blocked ? 'human_checkpoint' : repairable ? 'planned' : 'stopped';
   state.stop_reason = repairable || blocked ? null : 'no_actionable_findings';
-  state.next_action = blocked ? checkpointAction(blocked) : repairable ? dispatchAction(repairable) : { type: 'stop', reason: state.stop_reason };
+  state.next_action = blocked ? checkpointAction(blocked) : repairable ? dispatchBatchAction(openBatchAttempts(state, repairable.batch_id)) : { type: 'stop', reason: state.stop_reason };
   return state;
 }
 
@@ -98,6 +107,7 @@ export function summarizeFindingRepairState(state) {
   return {
     story_id: state.story_id, stage: state.stage, role: state.role, status: state.status,
     attempt_count: state.attempts.length, max_attempts: state.max_attempts,
+    repair_batch_count: state.repair_batches?.length ?? state.attempts.filter((attempt) => attempt.disposition === 'repairable').length,
     stop_reason: state.stop_reason ?? null, next_action: state.next_action
   };
 }
@@ -220,6 +230,7 @@ function assertFindingRepairState(state) {
   for (const attempt of state.attempts) {
     positiveInteger(attempt?.attempt_number, 'attempt.attempt_number');
     required(attempt?.finding_fingerprint, 'attempt.finding_fingerprint');
+    if (attempt?.batch_id !== undefined) required(attempt.batch_id, 'attempt.batch_id');
     if (!DISPOSITIONS.has(attempt?.disposition)) throw new Error(`unsupported attempt disposition: ${attempt?.disposition ?? 'missing'}`);
     if (attempt.disposition === 'repairable' && (!attempt.task || typeof attempt.task !== 'object')) throw new Error('repairable attempt.task is required');
   }
@@ -267,6 +278,79 @@ function createAttempt({ storyId, stage, role, review, finding, attemptNumber, i
     } : null,
     outcome: null, rereview: null
   };
+}
+
+function assignRepairBatches(attempts, role) {
+  const planned = planCompatibleFindingBatches(attempts.map((attempt) => ({
+    ...attempt.finding,
+    role,
+    disposition: attempt.disposition
+  })));
+  return planned.map((batch, index) => {
+    const attemptNumber = attempts.find((attempt) => batch.finding_ids.includes(attempt.finding.id))?.attempt_number ?? 1;
+    const batchId = `repair-batch-${attemptNumber}-${index + 1}-${batch.surface_digest.slice(0, 10)}`;
+    for (const attempt of attempts.filter((item) => batch.finding_ids.includes(item.finding.id))) attempt.batch_id = batchId;
+    return {
+      batch_id: batchId,
+      attempt_number: attemptNumber,
+      role: batch.role,
+      disposition: batch.disposition,
+      surface_digest: batch.surface_digest,
+      finding_ids: batch.finding_ids,
+      verification_count: batch.verification_count,
+      rereview_count: batch.rereview_count
+    };
+  });
+}
+
+function ensureRepairBatchMetadata(state) {
+  state.repair_batches ??= [];
+  const knownBatchIds = new Set(state.repair_batches.map((batch) => batch.batch_id));
+  for (const attempt of state.attempts.filter((item) => item.disposition === 'repairable' && !item.batch_id)) {
+    const batchId = `repair-batch-legacy-${attempt.attempt_number}-${attempt.finding_index + 1}-${attempt.finding_fingerprint.slice(0, 10)}`;
+    attempt.batch_id = batchId;
+    if (knownBatchIds.has(batchId)) continue;
+    state.repair_batches.push({
+      batch_id: batchId,
+      attempt_number: attempt.attempt_number,
+      role: state.role,
+      disposition: attempt.disposition,
+      surface_digest: null,
+      finding_ids: [attempt.finding.id],
+      verification_count: 1,
+      rereview_count: 1,
+      migrated_from_legacy: true
+    });
+    knownBatchIds.add(batchId);
+  }
+}
+
+function openBatchAttempts(state, batchId) {
+  return state.attempts.filter((attempt) => attempt.disposition === 'repairable' && !attempt.outcome && attempt.batch_id === batchId);
+}
+
+function dispatchBatchAction(attempts) {
+  if (attempts.length === 0) throw new Error('finding repair batch has no open repairable attempt');
+  if (attempts.length === 1) return dispatchAction(attempts[0]);
+  const first = attempts[0];
+  const taskId = `${first.batch_id}-${createHash('sha256').update(attempts.map((item) => item.finding_fingerprint).join(':')).digest('hex').slice(0, 10)}`;
+  const codeScope = [...new Set(attempts.flatMap((attempt) => attempt.task.code_scope))].sort();
+  const testScope = [...new Set(attempts.flatMap((attempt) => attempt.task.test_scope))].sort();
+  const findingFingerprints = attempts.map((attempt) => attempt.finding_fingerprint);
+  return { type: 'dispatch_implementation', task: {
+    task_id: taskId,
+    acceptance_clause: [...new Set(attempts.map((attempt) => attempt.task.acceptance_clause))].join(', '),
+    code_scope: codeScope,
+    test_scope: testScope,
+    instruction: attempts.map((attempt) => attempt.task.instruction).join('\n'),
+    runtime_request: {
+      ...first.task.runtime_request,
+      task_id: taskId,
+      repair_batch_id: first.batch_id,
+      finding_fingerprint: findingFingerprints[0],
+      finding_fingerprints: findingFingerprints
+    }
+  } };
 }
 
 function classifyFinding(reviewStatus, finding) {

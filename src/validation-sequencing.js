@@ -424,7 +424,8 @@ function buildNextRequiredAction(state, blocking) {
         command: `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id>`,
+          `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind preflight --closes-risk "${scope}" --expected-judgment-delta "identify boundary risks before freeze" --reusable-evidence <ref>`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
           `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path>`,
           `vibepro sequence record . --id ${state.story_id} --phase preflight_review --evidence ${result}`
@@ -441,7 +442,8 @@ function buildNextRequiredAction(state, blocking) {
         command: `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id>`,
+          `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind final --closes-risk "runtime contract regression" --expected-judgment-delta "confirm frozen release candidate" --freeze source,spec,test,review_surface`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
           `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path> --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
           `vibepro sequence record . --id ${state.story_id} --phase final_review --source agent_review --evidence ${result}`
