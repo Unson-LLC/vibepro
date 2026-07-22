@@ -8,15 +8,15 @@
     }
   ],
   "refs": {
-    "base_ref": "main",
+    "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "current_branch": "codex/issue-359-routing-profiles-projections",
-    "base_sha": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa",
-    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-    "merge_base_sha": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa"
+    "current_branch": "codex/graphify-read-side-effect",
+    "base_sha": "9afd73b383e492d24a65393ca039fd7370ab572f",
+    "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+    "merge_base_sha": "9afd73b383e492d24a65393ca039fd7370ab572f"
   },
   "base_selection": {
-    "ref": "main",
+    "ref": "origin/main",
     "explicit": true,
     "rule": "cli_option"
   },
@@ -136,6 +136,17 @@
       "local_sha": "ca76367c6dce46cb34156d10947a94eeb9c0c402",
       "remotes": {
         "origin": "ca76367c6dce46cb34156d10947a94eeb9c0c402"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "claude/managed-worktree-config-json-error",
+      "local_sha": "d4b46ebc41877baa4ffa4d4c11a186c0c6ed7f23",
+      "remotes": {
+        "origin": "d4b46ebc41877baa4ffa4d4c11a186c0c6ed7f23"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -319,6 +330,17 @@
       }
     },
     {
+      "branch": "codex/autonomous-action-dag-impl",
+      "local_sha": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "remotes": {
+        "origin": "874344394f6da1f3263176f7cd58a0d289a5b776"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "codex/cli-symlink-entrypoint",
       "local_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
       "remotes": {
@@ -411,6 +433,17 @@
       "local_sha": "d9c81c3b51ad9313e431c2b61ed9a3a8de848e5e",
       "remotes": {
         "origin": "d9c81c3b51ad9313e431c2b61ed9a3a8de848e5e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/graphify-read-side-effect",
+      "local_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "remotes": {
+        "origin": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -683,7 +716,7 @@
     },
     {
       "branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
-      "local_sha": "206ae93eb39fd7864ac4a534c36fddee1e318563",
+      "local_sha": "210996db46ef68beaad68181a76acd6c7ed30052",
       "remotes": {
         "origin": "cac17ea1efd17b0fb73e1a51b9306af0828a854a"
       },
@@ -697,6 +730,17 @@
       "local_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
       "remotes": {
         "origin": "e096fdb300a610e185f596dd2530dfcbe6605594"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+      "local_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "remotes": {
+        "origin": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -741,6 +785,17 @@
       "local_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
       "remotes": {
         "origin": "9828d893292d2e5de1308211b2884ef510afe88d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-explicit-run-attribution-lineage",
+      "local_sha": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "remotes": {
+        "origin": "3dd925c83a3cd52a8a586468d0e15c89785633be"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -892,9 +947,9 @@
     },
     {
       "branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
-      "local_sha": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "local_sha": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
       "remotes": {
-        "origin": "07323fcd318786c1c5b32bfa620951f55bf27d9d"
+        "origin": "afd5a8ac37491afde0963cc2b0fc4493c8becd82"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -939,6 +994,17 @@
       "local_sha": "ff99834f61772e5ed6878ddc114ad53ce45ef29d",
       "remotes": {
         "origin": "ff99834f61772e5ed6878ddc114ad53ce45ef29d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-trusted-delivery-efficiency-guardrail",
+      "local_sha": "8482c16388196112cd23f545cdbd3a3c58ad91a7",
+      "remotes": {
+        "origin": "8482c16388196112cd23f545cdbd3a3c58ad91a7"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -1903,6 +1969,17 @@
       }
     },
     {
+      "branch": "fix/policy-resync-review-followup",
+      "local_sha": "553d71eabe9cedea9bf605ae18c18329c1e6db2a",
+      "remotes": {
+        "origin": "553d71eabe9cedea9bf605ae18c18329c1e6db2a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "fix/self-dogfood-gate-enforcement",
       "local_sha": "50ed8817c77dfa221cbd71032a152d9e85aff6f4",
       "remotes": {
@@ -1937,12 +2014,12 @@
     },
     {
       "branch": "main",
-      "local_sha": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa",
+      "local_sha": "eb193c3abdd08935bce472ce2ece6310207be7bb",
       "remotes": {
-        "origin": "dee040d3a30745b5bc78eacb3ca434c5b1c024aa"
+        "origin": "9afd73b383e492d24a65393ca039fd7370ab572f"
       },
       "divergence": {
-        "local_vs_remote": false,
+        "local_vs_remote": true,
         "remote_disagreement": false
       }
     },
@@ -2127,6 +2204,17 @@
       "local_sha": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c",
       "remotes": {
         "origin": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+      "local_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "remotes": {
+        "origin": "78982951496abee40e54e05001139098241e3f8a"
       },
       "divergence": {
         "local_vs_remote": false,

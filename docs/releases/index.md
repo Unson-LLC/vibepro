@@ -97,3 +97,23 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:371:start -->
 - [PR #371](https://github.com/Unson-LLC/vibepro/pull/371) — [2026-07](/releases/2026-07): story-vibepro-explicit-run-attribution-lineage - Codex DesktopのThreadと内部sessionの対応は公開契約ではなく、利用者によるThread分離を正確な価値監査の前提にできない
 <!-- vibepro-release-index-pr:371:end -->
+
+<!-- vibepro-release-index-pr:374:start -->
+- [PR #374](https://github.com/Unson-LLC/vibepro/pull/374) — [2026-07](/releases/2026-07): story-vibepro-managed-worktree-policy-resync - Managed worktreeのポリシーconfigを凍結させず親repoから再同期する
+<!-- vibepro-release-index-pr:374:end -->
+
+<!-- vibepro-release-index-pr:345:start -->
+- [PR #345](https://github.com/Unson-LLC/vibepro/pull/345) — [2026-07](/releases/2026-07): story-vibepro-session-attribution-boundary-guard - 2026-07-09 の価値監査で親 session 019f3f8c が複数の関連 story を混載し、strict と worktree-bound の attribution 乖離（例: docs-feature-map strict 1h24m vs bound 11h24m 相当）が前回監査から横ばいのまま残った
+<!-- vibepro-release-index-pr:345:end -->
+
+<!-- vibepro-release-index-pr:373:start -->
+- [PR #373](https://github.com/Unson-LLC/vibepro/pull/373) — [2026-07](/releases/2026-07): story-vibepro-routing-profiles-rendered-projections - Story別routing profileとlineage付きprojectionでfeature packetを正本化する
+<!-- vibepro-release-index-pr:373:end -->
+
+<!-- vibepro-release-index-pr:375:start -->
+- [PR #375](https://github.com/Unson-LLC/vibepro/pull/375) — [2026-07](/releases/2026-07): fix: policy_syncレビュー残課題3件を解消（#374 フォローアップ）
+<!-- vibepro-release-index-pr:375:end -->
+
+<!-- vibepro-release-index-pr:372:start -->
+- [PR #372](https://github.com/Unson-LLC/vibepro/pull/372) — [2026-07](/releases/2026-07): story-vibepro-autonomous-action-dag - Guarded Runを完全な型付き自律Action DAGへ拡張する
+<!-- vibepro-release-index-pr:372:end -->

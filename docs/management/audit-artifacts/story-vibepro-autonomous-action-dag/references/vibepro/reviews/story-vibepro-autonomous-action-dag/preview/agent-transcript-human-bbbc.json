@@ -1,0 +1,1 @@
+{"status":"pass","summary":"human UXはprofile、fallback、typed stop、required action、recovery、pr_ready境界を表示。","evidence":"E2E 1 pass; Guarded Run 104 pass","findings":[]}

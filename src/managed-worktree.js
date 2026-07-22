@@ -171,10 +171,16 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
   const worktreePath = path.resolve(managedWorktree.path);
   const existing = await findWorktree(root, worktreePath);
   const currentHeadSha = await gitOptional(worktreePath, ['rev-parse', 'HEAD']);
-  if (currentHeadSha || existing) await ensureManagedWorktreeGitExclude(worktreePath);
+  const exists = Boolean(currentHeadSha || existing);
+  if (exists) await ensureManagedWorktreeGitExclude(worktreePath);
+  const policySync = exists
+    ? await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+      // Fail-soft, but keep the durable audit stamp attached: a failed sync must not
+      // hide the last sync that actually happened before the failure.
+      .catch((error) => withLastPolicySyncEvent(worktreePath, { status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
+    : { status: 'skipped', reason: 'managed worktree is missing', sections_updated: [] };
   const actualBranch = await gitOptional(worktreePath, ['branch', '--show-current']) || existing?.branch || null;
   const dirty = await collectDirty(worktreePath);
-  const exists = Boolean(currentHeadSha || existing);
   const branchMatch = isBranchMatch(actualBranch, managedWorktree.branch);
   const availableStatus = ['created', 'reused'].includes(managedWorktree.status)
     ? managedWorktree.status
@@ -192,7 +198,8 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
     dirty_fingerprint: dirty.fingerprint,
     raw_dirty: dirty.raw_dirty,
     raw_dirty_fingerprint: dirty.raw_fingerprint,
-    fingerprint_scope: dirty.fingerprint_scope
+    fingerprint_scope: dirty.fingerprint_scope,
+    policy_sync: policySync
   };
 }
 
@@ -399,7 +406,8 @@ export function buildManagedWorktreeCommandBinding(context) {
       dirty_fingerprint: context.managed_worktree.dirty_fingerprint ?? null,
       raw_dirty: context.managed_worktree.raw_dirty ?? null,
       raw_dirty_fingerprint: context.managed_worktree.raw_dirty_fingerprint ?? context.managed_worktree.raw_fingerprint ?? null,
-      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null
+      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null,
+      policy_sync: context.managed_worktree.policy_sync ?? null
     } : null
   };
 }
@@ -646,6 +654,88 @@ function buildManagedWorktreeContextReason({
   return issues.join('; ');
 }
 
+// Policy sections are enforcement inputs (budgets, execution mode, routing) that must follow
+// the source repo config; everything else in the worktree copy stays a creation-time snapshot.
+const POLICY_CONFIG_SECTIONS = ['budgets', 'execution', 'artifact_routing', 'output'];
+const POLICY_SYNC_AUDIT_FILE = 'policy-sync.json';
+
+async function syncWorktreePolicySections(sourceRepo, worktreePath) {
+  const source = await canonicalPath(sourceRepo);
+  const target = await canonicalPath(worktreePath);
+  if (source === target) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'skipped', reason: 'source repo and managed worktree are the same checkout', sections_updated: [] });
+  }
+  const sourceConfig = await readConfig(sourceRepo);
+  if (!sourceConfig) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'skipped', reason: 'source repo has no .vibepro/config.json', sections_updated: [] });
+  }
+  const targetPath = path.join(getWorkspaceDir(worktreePath), 'config.json');
+  let targetConfig = null;
+  try {
+    targetConfig = JSON.parse(await readFile(targetPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (!targetConfig) {
+    await mkdir(path.dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, `${JSON.stringify(sourceConfig, null, 2)}\n`);
+    const restored = {
+      status: 'synced',
+      reason: 'managed worktree config was missing; restored a full copy from the source repo',
+      sections_updated: POLICY_CONFIG_SECTIONS.filter((section) => sourceConfig[section] !== undefined)
+    };
+    await recordPolicySyncEvent(worktreePath, source, restored);
+    return withLastPolicySyncEvent(worktreePath, restored);
+  }
+  const updated = [];
+  for (const section of POLICY_CONFIG_SECTIONS) {
+    const sourceValue = sourceConfig[section];
+    if (JSON.stringify(sourceValue ?? null) === JSON.stringify(targetConfig[section] ?? null)) continue;
+    if (sourceValue === undefined) delete targetConfig[section];
+    else targetConfig[section] = sourceValue;
+    updated.push(section);
+  }
+  if (updated.length === 0) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'unchanged', reason: 'policy sections already match the source repo config', sections_updated: [] });
+  }
+  await writeFile(targetPath, `${JSON.stringify(targetConfig, null, 2)}\n`);
+  const synced = { status: 'synced', reason: 'policy sections were resynced from the source repo config', sections_updated: updated };
+  await recordPolicySyncEvent(worktreePath, source, synced);
+  return withLastPolicySyncEvent(worktreePath, synced);
+}
+
+// A refresh can run more than once per CLI command (gate/context checks refresh before the
+// execution-state reconcile persists). Only the first refresh observes 'synced'; every later
+// diff sees already-equal configs and reports 'unchanged'. The audit event therefore must be
+// captured durably at sync time, in the worktree, so any later refresh can surface it as
+// policy_sync.last_event regardless of which call performed the actual write.
+async function recordPolicySyncEvent(worktreePath, sourceRepo, outcome) {
+  const auditPath = path.join(getWorkspaceDir(worktreePath), POLICY_SYNC_AUDIT_FILE);
+  try {
+    await mkdir(path.dirname(auditPath), { recursive: true });
+    await writeFile(auditPath, `${JSON.stringify({
+      schema_version: '0.1.0',
+      status: outcome.status,
+      sections_updated: outcome.sections_updated,
+      reason: outcome.reason,
+      source_repo: sourceRepo,
+      synced_at: new Date().toISOString()
+    }, null, 2)}\n`);
+  } catch {
+    // Audit stamping is best-effort; the sync itself already succeeded.
+  }
+}
+
+async function withLastPolicySyncEvent(worktreePath, outcome) {
+  try {
+    const raw = await readFile(path.join(getWorkspaceDir(worktreePath), POLICY_SYNC_AUDIT_FILE), 'utf8');
+    const event = JSON.parse(raw);
+    return { ...outcome, last_event: { status: event.status, sections_updated: event.sections_updated, synced_at: event.synced_at } };
+  } catch {
+    return outcome;
+  }
+}
+
 async function copyWorkspaceControlFiles(repoRoot, worktreePath) {
   const targetDir = getWorkspaceDir(worktreePath);
   await mkdir(targetDir, { recursive: true });
@@ -675,6 +765,7 @@ async function ensureManagedWorktreeGitExclude(worktreePath) {
     '# VibePro managed worktree control files',
     '/.vibepro/config.json',
     `/.vibepro/${MANIFEST_FILE}`,
+    `/.vibepro/${POLICY_SYNC_AUDIT_FILE}`,
     '/.vibepro/executions/'
   ];
 

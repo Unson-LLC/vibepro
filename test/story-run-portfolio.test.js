@@ -321,6 +321,48 @@ test('Portfolio lock serializes create, recovers a dead owner, and releases afte
   assert.equal(state.entries[0].status, 'running');
 });
 
+test('Portfolio lock retries once when a concurrent owner releases before ownership can be read', async (t) => {
+  const fixture = await createFixture(t);
+  const portfolioId = 'portfolio-released-contention';
+  const lock = path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json.lock`);
+  await mkdir(lock, { recursive: true });
+  await writeFile(path.join(lock, 'owner.json'), JSON.stringify({
+    schema_version: 1,
+    pid: process.pid,
+    token: 'concurrent-owner',
+    acquired_at: '2026-07-20T00:00:00.000Z'
+  }));
+  let releaseInjected = false;
+  const controller = createStoryRunPortfolioController({
+    ...fixture.dependencies,
+    async readFile(file, options) {
+      if (!releaseInjected && String(file) === path.join(lock, 'owner.json')) {
+        releaseInjected = true;
+        await rm(lock, { recursive: true, force: true });
+        const cause = new Error('concurrent owner released the lock');
+        cause.code = 'ENOENT';
+        throw cause;
+      }
+      return readFile(file, options);
+    }
+  });
+  const state = await controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 1) });
+  assert.equal(releaseInjected, true);
+  assert.equal(state.portfolio_id, portfolioId);
+});
+
+test('Portfolio lock with a missing owner remains fail-closed', async (t) => {
+  const fixture = await createFixture(t);
+  const portfolioId = 'portfolio-missing-owner';
+  const lock = path.join(fixture.root, `.vibepro/portfolios/${portfolioId}/state.json.lock`);
+  await mkdir(lock, { recursive: true });
+  await writeFile(path.join(lock, 'unexpected-entry'), 'preserve for operator inspection');
+  await assert.rejects(
+    fixture.controller.create(fixture.root, { portfolioId, storyIds: STORIES.slice(0, 1) }),
+    errorCode('portfolio_lock_recovery_required')
+  );
+});
+
 test('malformed Portfolio state fails closed as invalid_portfolio_state', async (t) => {
   const fixture = await createFixture(t);
   const portfolioId = 'portfolio-malformed-state';

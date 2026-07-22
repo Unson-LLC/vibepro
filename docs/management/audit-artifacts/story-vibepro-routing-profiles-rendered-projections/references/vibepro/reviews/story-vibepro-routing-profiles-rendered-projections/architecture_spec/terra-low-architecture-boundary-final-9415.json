@@ -1,0 +1,1 @@
+{"status":"needs_changes","summary":"Current snapshot must be refreshed after current-head build/typecheck evidence.","inspection_evidence":"runtime_contract passed; new current build/typecheck evidence; prior pr-prepare snapshot stale.","findings":[{"id":"snapshot_refresh","severity":"low","detail":"rerun pr prepare before final preflight verdict"}]}

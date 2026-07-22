@@ -1,5 +1,5 @@
 import { createHash, randomBytes as nodeRandomBytes } from 'node:crypto';
-import { mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createGuardedRunSession, deriveRunEfficiencyMetrics } from './guarded-run-session.js';
@@ -26,7 +26,7 @@ const COUNT_COST_KEYS = new Set([
 ]);
 const PROMOTED_CONTEXT_KEYS = ['source_story_id', 'artifact_path', 'digest', 'consumer_story_id', 'reason', 'promoted_at'];
 const DECISION_JOURNAL_KEYS = ['story_id', 'decision', 'policy_type', 'reason', 'decided_at'];
-const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'rm', 'isProcessAlive']);
+const DEPENDENCY_KEYS = new Set(['now', 'randomBytes', 'guardedRun', 'guardedRunDependencies', 'readFile', 'writeFile', 'rename', 'mkdir', 'realpath', 'lstat', 'rm', 'isProcessAlive']);
 let lockNonce = 0;
 
 export class StoryRunPortfolioError extends Error {
@@ -54,6 +54,7 @@ export function createStoryRunPortfolioController(dependencies = {}) {
     rename: dependencies.rename ?? rename,
     mkdir: dependencies.mkdir ?? mkdir,
     realpath: dependencies.realpath ?? realpath,
+    lstat: dependencies.lstat ?? lstat,
     rm: dependencies.rm ?? rm,
     isProcessAlive: dependencies.isProcessAlive ?? isProcessAlive
   };
@@ -608,7 +609,7 @@ async function withPortfolioLock(deps, repoRoot, options, operation) {
   }
 }
 
-async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = false) {
+async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = false, contentionRetry = true) {
   const candidate = `${lock}.candidate-${process.pid}-${token}`;
   await deps.mkdir(candidate);
   await deps.writeFile(path.join(candidate, 'owner.json'), `${JSON.stringify({ schema_version: 1, pid: process.pid, token, acquired_at: iso(deps.now()) }, null, 2)}\n`);
@@ -624,6 +625,16 @@ async function acquirePortfolioLock(deps, lock, portfolioId, token, recovered = 
   try {
     owner = JSON.parse(await deps.readFile(path.join(lock, 'owner.json'), 'utf8'));
   } catch (cause) {
+    if (cause.code === 'ENOENT' && contentionRetry) {
+      try {
+        await deps.lstat(lock);
+      } catch (lockCause) {
+        if (lockCause.code === 'ENOENT') {
+          return acquirePortfolioLock(deps, lock, portfolioId, token, recovered, false);
+        }
+        throw lockCause;
+      }
+    }
     throw error('portfolio_lock_recovery_required', `Portfolio lock ownership cannot be verified: ${portfolioId}.`, { lock, cause: cause.code ?? cause.message });
   }
   if (!Number.isInteger(owner.pid) || !owner.token || deps.isProcessAlive(owner.pid)) {

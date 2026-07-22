@@ -1,0 +1,808 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "updated_at": "2026-07-21T15:21:26.686Z",
+  "events": [
+    {
+      "event_id": "1afef6e1-25b8-4b13-87d4-ac5b383a64a4",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story docの6 AC(MWPR-S-1〜6)とBackgroundのコード事実(ensureManagedWorktree/copyWorkspaceControlFiles/refreshManagedWorktree/ensureManagedWorktreeGitExclude)をsrc/managed-worktree.jsの実呼び出し箇所(19,168,699,717行)と独立照合。intentはboilerplateでなくdiffの実体に接地",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:31:48.514Z"
+    },
+    {
+      "event_id": "dfd7f556-b0c4-455f-8fcc-c64d29a964d3",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay/scenario_clause_e2eの引用テストを自ら実行し5/5 pass。実git init repoと実ensureManagedWorktree作成worktreeでrefreshManagedWorktreeをディスク上のconfig読み書き含めend to endに再生しており、fixture断言ではなく現行workflowの実再生",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:31:49.427Z"
+    },
+    {
+      "event_id": "339886a7-3ae3-45ad-b24c-b03681bf216f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec S-002の凍結不変条件をtest 1が親current_story_id変異後のassert.equalで直接検証（真の回帰テスト）。Architecture docのAlternatives consideredが全量resyncによる不変条件破壊を明示的に検討。備考: ENOENT経路(skipped)は未テストだがcorrupt経路はtest 5が固定しS-002自体の証拠は有効",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:31:50.373Z"
+    },
+    {
+      "event_id": "81090da5-bf87-4b8c-b69a-bf66425734c5",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "反証検討: 機械照合が引いたdecision recordはscope_reviewability用で誤帰属。ただし本項目は{architecture/spec, decision, current_verification}のいずれかで足り、Architecture docのBoundary modelセクション（policy/snapshot境界のmermaid+境界位置の代替案検討）とpassing test suiteが実質的に問いに答えている",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:31:51.329Z"
+    },
+    {
+      "event_id": "e7b4368a-7e17-41d2-a2c3-beb6a353989b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "test 5が不正JSON({not json)を実書き込みしpolicy_sync=failed+worktree config無傷+refresh成功をassert。コードトレースでreadConfigのSyntaxError再throw→syncWorktreePolicySections伝播→refreshManagedWorktreeの.catchで捕捉という実経路と一致することを確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:31:52.222Z"
+    },
+    {
+      "event_id": "89c4a2d7-62ea-4b65-944f-da7a9a51f498",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "6 ACすべてに対応するac:Nブロックマーカー付きテストが存在(ac:1,2,6→test1 / ac:3→test2 / ac:5→test3,4 / ac:4→test5)し、node --testで5/5 pass確認。各ACの文言と対応assertを突合し、キーワード一致でなく実質一致であることを確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:32:19.589Z"
+    },
+    {
+      "event_id": "a84840a6-4314-4734-92b6-be16cd19bae4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "新規面はrefresh返却のpolicy_syncフィールドのみ。全callerをgrepし出力整形はformatManagedWorktreeSummaryのみでpolicy_sync非参照、schema検証も存在せず追加フィールドは互換。worktree configの内容変化は意図した修正でありgit-excluded内部状態、公開契約面ではない",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:32:20.560Z"
+    },
+    {
+      "event_id": "db4db8d6-6333-47f1-aef2-6221a68c882a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "decision-1784637810265-68d9722e(source=gate:judgment_axis_scope_reviewability)の内容をgit diff --statと独立照合: コアは1関数追加(~55行)+新規テスト1ファイル、残りは同一Storyの機械的登録(docs/design-ssot/catalog)で全てowner=platform。1人が1passで一貫レビュー可能な粒度",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:32:21.548Z"
+    },
+    {
+      "event_id": "57229467-c1b0-42d0-a698-c07498d700e3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "test 5が不正JSONを実書き込みしgraceful degradation(policy_sync=failed、worktree config不変、throwなし)をassert。実装(stub不使用)に対して自ら実行しpass確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:32:22.568Z"
+    },
+    {
+      "event_id": "e5bdc3e2-b890-4003-bf38-9e7ff4988991",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "引用証拠は新規テストのみで狭いため、gate DAG/pr-prepare/responsibility-authority/guarded-run-sessionの広域4スイート計140テストを本diff適用状態で実行し全pass。stale/pending/over-greenなgate状態の混入がないことをトークン照合でなく実行で確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-1618ba03",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+      "recorded_at": "2026-07-21T13:32:23.512Z"
+    },
+    {
+      "event_id": "9b68e07c-72fa-45cd-9f83-20f28e48a839",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "story/spec/architecture docsは修正コミットで不変。intentは同じ6 ACへトレースされ、修正コミットのroot cause記述はMWPR-S-4の意図と整合",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:49.833Z"
+    },
+    {
+      "event_id": "7075eb01-060a-45d1-909e-ba21f75fed86",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b0b55e7aで6/6 pass再実行。新テストは実CLI-backed経路(startExecution→getExecutionStatus)を通る、従来より忠実な現行workflow再生",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:50.779Z"
+    },
+    {
+      "event_id": "abac41f7-6aee-4305-a866-1efeef5b1527",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "S-002凍結不変条件はexecution-state.jsの変更と直交。凍結assertテストが6/6内で引き続きpass、事前refresh削除で新たな不変条件違反なし",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:51.706Z"
+    },
+    {
+      "event_id": "c0b8bf6c-6988-4da4-a7d2-a02b2d375b88",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture docのBoundary modelは不変で問いに実質回答。diffはexecution-state.jsとテストのみでpolicy/snapshot境界ロジック非接触",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:52.458Z"
+    },
+    {
+      "event_id": "d2bc0742-f73d-4737-9481-a8df49a26545",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt-JSONテストはb0b55e7aで不変・pass。readConfigのSyntaxError再throwと.catchラッパも不変。修正した二重refreshバグとは直交",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:53.375Z"
+    },
+    {
+      "event_id": "4e7eb4af-3e08-4237-9384-01fef789ffe8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "本修正で実質強化された項目。旧headではMWPR-S-4がend-to-end未実証（二重refreshでsynced上書き）だったが、b0b55e7aで事前refresh削除をgit showで確認、実CLI経路を通る診断的テストを実行しpass。全6 ACが実経路にトレース",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:54.192Z"
+    },
+    {
+      "event_id": "9d54f8f5-80a5-4c2f-ac97-bc06cc3dd1df",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "事前refresh削除の他フィールドへの影響を検討: branch/HEAD/dirtyはbuildExecutionState内の1回で計算され値は不変、policy_syncの精度のみ修正。署名・出力shape不変、二重refresh挙動に依存する消費者なし(grep確認)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:55.110Z"
+    },
+    {
+      "event_id": "cf1cb772-6862-4339-85a2-9ff62ef3840d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "修正はexecution-state.js 9行+単一focused test 28行の最小単一原因fix。ブランチ全体は8files/441+/7-で機械的登録が支配的。1人1passでレビュー可能",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:55.947Z"
+    },
+    {
+      "event_id": "00db99cd-09dc-4539-9b71-f1ccb7681ea5",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src/managed-worktree.jsはb0b55e7aで非接触。corrupt-configテスト再実行しpass",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:56.797Z"
+    },
+    {
+      "event_id": "4a07cad7-0eeb-44b8-9fe1-227df98f3ab0",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "本修正がまさにこのfailure mode(policy_syncのsynced→unchanged silent regression)への対処。coordinator報告を鵜呑みにせず関連5スイート143/143を独立実行しpass(Gate DAG/pr-prepare/bug-physics/workflow E2E replay含む)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-b0b55e7a",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "b0b55e7a6c8b72d3c722edea961d493c87df7f06",
+      "recorded_at": "2026-07-21T13:50:57.725Z"
+    },
+    {
+      "event_id": "2f565272-073c-4b00-b4d8-3900da802704",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src/とdocsはb0b55e7aとbyte-identical(git diff空)。追加は同一6 ACを再掲するtraceability pin specのみでintent不変",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:54.123Z"
+    },
+    {
+      "event_id": "1709048e-d467-4f04-a0ef-e2be6e167cd4",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実テスト6/6を686a8596で再実行pass。新specはヘッダで実行時実証をtest/managed-worktree-policy-resync.test.jsへ委ねると明記した静的markerで、実replay証拠は不変のまま成立",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:54.958Z"
+    },
+    {
+      "event_id": "e890c1fc-f222-44a4-af7f-7c54d7583e02",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "invariant担持コード・テストは不変。S-002凍結不変条件は同一passing assertionが引き続き担う。新specのac:2はtautologyだが実テストが実証を保持",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:55.738Z"
+    },
+    {
+      "event_id": "ff97a88f-e845-4fb4-9237-c62401f55e88",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary model不変、新コミットはtest/e2e specのみで境界ロジック非接触。decision_record誤帰属の注記は前回同様load-bearingでない",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:56.704Z"
+    },
+    {
+      "event_id": "f7e76ed8-2bba-4198-b85c-ea1ed08cf16d",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt-JSONテスト不変・686a8596でpass。新specはfailure-mode coverageを追加も代替もしない（その役割は実テストが保持）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:57.561Z"
+    },
+    {
+      "event_id": "8bb89daa-440b-464d-95db-17dd77e6ec07",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "新specを反証的に検討: assertはtautologyで単独の行動証拠にならないが、repo既存のworkflow_heavy Story 3例と同一構造・同一免責ヘッダの確立された慣行と照合確認。実行動証拠は不変の実テスト6/6(AC-4回帰含む)が接地しており、markerは production path matrix分類器要求のtraceability scaffolding",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:58.397Z"
+    },
+    {
+      "event_id": "9f3ec06a-b863-44d9-b709-e789fa772be8",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "追加はtest-onlyファイルで出荷コード非接触。policy_syncのadditive性は前回評価から不変",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:18:59.271Z"
+    },
+    {
+      "event_id": "00a9683f-56fe-4743-873e-fe3b92fb7372",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "単一新規ファイル46行、repo確立パターンと同一のboilerplateで、慣行を知るreviewerに追加負担なし。Story diffは単一意図のまま",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:19:00.082Z"
+    },
+    {
+      "event_id": "15cc0fc1-7a4b-4683-b5bf-00458c440fb6",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src非変更。corrupt-configテストを686a8596で再確認しpass",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:19:00.844Z"
+    },
+    {
+      "event_id": "f903130c-02c5-41e7-9164-51990d8e9f48",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src/execution-state.js非変更のためb0b55e7aでの検証(実テスト6/6+広域143/143)が引き続き成立。実テストを686a8596で再実行し6/6 pass。新specのS-001/S-002はtautologyで独立証拠に不算入",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-686a8596",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "686a8596e599386be8e3b5b2da38b11a5301dbab",
+      "recorded_at": "2026-07-21T14:19:01.657Z"
+    },
+    {
+      "event_id": "0e3fb3c1-7f10-4008-a0cd-4fc5cef4a81c",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc不変でintentは同一6 AC。修正コミットのrationaleはAC MWPR-S-4を反復的に是正している証左",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:24.215Z"
+    },
+    {
+      "event_id": "047de3f1-584d-47a6-8cc5-2608e0563b01",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "fed325a0で7/7 pass。新e2eは実際の複数refresh CLIコマンド順を再生する、従来より忠実な現実replay",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:24.933Z"
+    },
+    {
+      "event_id": "597eea1c-150d-42db-b405-c8cea4808ffe",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "S-002凍結不変条件は不変・pass。永続スタンプはsynced経路のみ書き込み（diffで確認）でlast_eventの意味論も一貫",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:25.677Z"
+    },
+    {
+      "event_id": "5e61eaa9-395c-4c49-9e6a-d156614662a2",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "refresh所有権が実際に複数moduleへ分散していることを全call siteトレースで確認。fragileな単一所有者不変条件を強いる代わりに同期実行点での永続スタンプで監査を多重refresh耐性にする設計を、合成フローe2e+pre-fix revertでの実失敗で検証。残余gap: failed経路でlast_event欠落（AC対象外のminor、best-effort catchで安全）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:26.415Z"
+    },
+    {
+      "event_id": "90e5e572-efea-479a-ab2b-2b78bc10c780",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt-configテスト不変・pass。新規のaudit file書き込み/読み取りはtry/catchでbest-effort処理され新failure surfaceは防御済み",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:27.126Z"
+    },
+    {
+      "event_id": "f93f3d2d-9d38-40ee-bd8d-e60326624c73",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "コミット主張を鵜呑みにせずpre-fix版managed-worktree.jsへrevertして新e2eの実失敗（TypeError）を確認後、修正版でpassを確認。marker specヘッダ修正とdocs更新も実コードと照合。全6 ACがunit+合成CLIフローの実証拠を持つ",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:27.855Z"
+    },
+    {
+      "event_id": "c98594c8-1a5d-4a1d-a6c7-cf595a86269a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "binding出力へのpolicy_sync追加はadditiveで、shape固定assertionが存在しないことをgrep確認。policy-sync.jsonはgit-exclude追加済み。広域143/143で下流破壊なし",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:28.565Z"
+    },
+    {
+      "event_id": "fd905ec8-c053-4bba-8206-161f92c406de",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "140行/5ファイル、単一因果のfix narrative。src変更はsyncWorktreePolicySections+小ヘルパ2つ+binding 1フィールドに局所化",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:29.275Z"
+    },
+    {
+      "event_id": "44cb0afa-5f47-4f4b-bbbf-2c03115d9c39",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt-source-configテスト再実行pass。audit-stamp経路はparse-failure処理を変更しない",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:30.012Z"
+    },
+    {
+      "event_id": "9decbd50-bccc-43ee-a28a-a205997acca6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "本fixの対象そのもの（syncedがunchangedへsilent regression）。pre-fixへのrevertで新e2eの実失敗→修正でpassのbefore/after再現を裁定者自身が実施。広域143/143で新regressionなし",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-fed325a0",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "fed325a0a126a393fd1cec7f4b1eb9acd6af7bad",
+      "recorded_at": "2026-07-21T14:46:30.807Z"
+    },
+    {
+      "event_id": "b785e5ce-f32d-49a8-9890-b259fbba53ea",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs不変。修正目的（支配的経路とデフォルト出力でのpolicy_sync可視化）はAC MWPR-S-4の監査intentの直接延長",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:08.468Z"
+    },
+    {
+      "event_id": "4fba85ff-1586-4a3c-b989-a13fec96e67d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "10/10 pass。新テストは実disk書き込みの読み戻しassertと、cli.jsが実際に使うrenderExecutionStateSummaryの実出力assertで、mock/再実装なしの現実replay",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:10.304Z"
+    },
+    {
+      "event_id": "f54260f4-baa5-4b71-926b-36d91fd854f5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "S-002は非接触（src/managed-worktree.js不変）。本コミットは計算済みpolicy_syncデータのread-only表示追加のみ",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:12.103Z"
+    },
+    {
+      "event_id": "c6c5fba0-1174-41ce-92a4-3146e41adb7a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "第3のrefresh所有者buildManagedWorktreeGate（pr-manager.jsのgate-DAG構築で使用）への初のテストカバレッジをgrepで確認。fed325a0の永続スタンプ設計を第3の所有者に対して検証し境界設計を強化",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:14.185Z"
+    },
+    {
+      "event_id": "fd06826c-1fa5-4c77-9ab6-d993297b0602",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "corrupt-config failure mode自体は不変。新規なのは失敗の帰結（silentか可視か）のテスト化で、『データが正しい』と『データが見える』のギャップを閉じた",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:16.241Z"
+    },
+    {
+      "event_id": "f2c778df-907c-40ad-8a2b-b8f1bbd3fb58",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "反証検討でコミットメッセージの帰属不正確を発見: cli.jsの17箇所は実際にはevaluateManagedWorktreeCommandContext経由（fed325a0でカバー済み）で、buildManagedWorktreeGateはpr-manager.jsのgate-DAG構築で使用。ただし『buildManagedWorktreeGateのpolicy_syncカバレッジがゼロだった』という実質は事実で、新テストが実挙動（disk書き込み・実text rendering）をexerciseすることを独立検証。証拠は強化された",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:18.260Z"
+    },
+    {
+      "event_id": "3270669e-b028-4f40-a706-c8bfb43fed19",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "text出力変更は純追加（既存行不変、headline suffixはfailure時のみ）でspec S-004の文書化済み契約の履行。出力shapeを固定する他テストが存在しないことをgrep確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:20.038Z"
+    },
+    {
+      "event_id": "effd657a-96da-41d0-b823-67afce23c837",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "73行net、単一意図、1レビュワー1passで読める粒度",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:21.870Z"
+    },
+    {
+      "event_id": "a70c9a45-7888-40a7-9fd3-ef8ea684c41a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "src/managed-worktree.js不変。新テストは既存機構が生成する破損failureの下流可視性を確認するのみ",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:23.948Z"
+    },
+    {
+      "event_id": "56d986d6-5859-4069-ba6c-438a1df38036",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "新テスト2本の実在性を検証（buildManagedWorktreeGate初のテスト・実renderExecutionStateSummary使用）。帰属表現の不正確さはあるが、ゼロカバレッジだった実在の重要経路（PR-readiness gate DAG）を閉じたことはworkflow-state-regressionリスクの真の低減。src不変+既存143/143+isolated diffで回帰なしの確信",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-judgment-adjudicator-78982951",
+        "session_ref": "a1c3c3922bce3ee3e"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:21:26.678Z"
+    }
+  ]
+}

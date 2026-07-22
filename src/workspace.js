@@ -22,7 +22,6 @@ export async function initWorkspace(repoRoot, options = {}) {
   const workspaceDir = path.join(root, WORKSPACE_DIR);
   const outputLanguage = options.language === 'en' ? 'en' : 'ja';
   await mkdir(workspaceDir, { recursive: true });
-  await mkdir(path.join(workspaceDir, 'graphify'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'diagnostics'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'raw'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'spec'), { recursive: true });

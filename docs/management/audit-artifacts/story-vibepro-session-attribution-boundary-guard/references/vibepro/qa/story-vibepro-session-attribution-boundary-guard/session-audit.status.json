@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+  "command": "node --test --test-reporter=dot --test-concurrency=2 test/session-efficiency-audit.test.js",
+  "observed": { "tests": 30, "passed": 30, "failed": 0 }
+}

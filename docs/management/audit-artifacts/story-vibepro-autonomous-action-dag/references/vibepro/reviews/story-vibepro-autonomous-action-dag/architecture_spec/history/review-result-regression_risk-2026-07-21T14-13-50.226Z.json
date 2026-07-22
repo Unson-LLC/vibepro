@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "HEAD権威修正はfail-closedでlegacy互換を維持する",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "production wiring、legacy path、forged HEAD回帰を確認",
+    "evidence": "test/safe-action-orchestrator.test.js",
+    "inputs": [
+      "src/safe-action-orchestrator.js"
+    ]
+  },
+  "judgment_delta": [
+    "runner申告HEAD依存の懸念からrepository HEAD再解決を確認してpass"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "current_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T14:13:50.226Z",
+  "git_context": {
+    "head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T14:13:50.223Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "recovery review binds to frozen HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+    "surface_files": [
+      {
+        "path": "src/safe-action-orchestrator.js",
+        "sha256": "c7ae93f23acbfadd6dadb5791927f4d9651f6ed4929db99b5249b81935e7a450",
+        "size": 15480
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c30ee3e2f6420769bd2f6f291682bbdc0892ab766443ca14b102259273d915c9"
+  },
+  "source_fingerprint": "c0fa1e792af6aab1171314797e3ae9911de53994c365ce135d6af1d88d6d97ca",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aad-bbbc-reg-recovery-2",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression-bbbc.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression-bbbc.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

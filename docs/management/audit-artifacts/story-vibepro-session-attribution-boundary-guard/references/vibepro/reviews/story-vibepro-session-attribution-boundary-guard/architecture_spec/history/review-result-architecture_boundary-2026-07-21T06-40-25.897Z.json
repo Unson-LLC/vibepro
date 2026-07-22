@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Current-head architecture boundaries and partial parse readiness contract are sound",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=gate_orchestration; inspected Story Spec Architecture attribution parser primary Story selection and regression tests at exact HEAD",
+    "evidence": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+    "inputs": [
+      "src/session-efficiency-audit.js",
+      "src/pr-manager.js",
+      "test/session-efficiency-audit.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern about same-id audit snapshot authority and silent partial parsing is resolved because selection filters snapshots before authority choice and malformed-row metadata creates an explicit readiness blocker"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "managed branch mismatch: expected codex/story-vibepro-session-attribution-boundary-guard, found codex/story-vibepro-session-attribution-boundary-guard-clean",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+    "current_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+      "current_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "managed branch mismatch: expected codex/story-vibepro-session-attribution-boundary-guard, found codex/story-vibepro-session-attribution-boundary-guard-clean",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "expected_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+      "current_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+        "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+        "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+        "current_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-21T06:40:25.897Z",
+  "git_context": {
+    "head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+    "current_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:40:25.881Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-head architecture preflight after fixes"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "343bf1848371e449c2dbd861af8446cfa8856362",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "f874e9313f42ad4f2c525c18dc7bd98564790fecdacf785c71390268d196c0bf",
+        "size": 653720
+      },
+      {
+        "path": "src/session-efficiency-audit.js",
+        "sha256": "e43df22a88c1c95581376cec0a85f7a95896dba03638f0d680aaa63fd7d990ce",
+        "size": 91130
+      },
+      {
+        "path": "test/session-efficiency-audit.test.js",
+        "sha256": "4dcbf4d934520b7be670b6861e2dacf8a2a7abb222997bb1e90a46b386688eb4",
+        "size": 63608
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "884ca7ee4f18a9d5ef42a90b23f4eccc8835b72100a384d2e1ba31690a30cd4b",
+        "size": 1083599
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b3b12940ae7dcfbf8d87aeeaab401bcd55c41c153e72ab44f0178a6cdeebb10f"
+  },
+  "source_fingerprint": "e4a7b47a3fdffe8ad5b0bb46054b9ed6915cf1611c0e9497d3d8ab094d54912f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f835f-fa1d-7250-89ee-d1cd48a1e7e9",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

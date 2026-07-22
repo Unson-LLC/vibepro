@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+  "command": "npm run typecheck",
+  "observed": { "typecheck": "passed" }
+}

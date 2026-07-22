@@ -3,36 +3,36 @@
   "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
   "entries": [
     {
-      "fingerprint": "scope_reviewability|changed_files:24|graphify:related_files",
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
       "axis": "scope_reviewability",
       "story_id": "story-vibepro-routing-profiles-rendered-projections",
-      "decision_id": "decision-1784617072329-6564756a",
+      "decision_id": "decision-1784646255908-3091a497",
       "source": "gate:judgment_axis_scope_reviewability",
-      "reason": "Resolver authority, producer adoption, projections, migration compatibility, and rollback form one atomic contract; splitting would create intermediate consumers without the authoritative resolver or fail-closed publication semantics.",
-      "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "reason": "14変更ファイルはrouting profile/canonical ownership/generated projection/freshness/E2Eという単一Story契約の原子的変更で、分割するとcross-layer invariantとfresh-checkout証明が分離するため1 PRが最小の一貫したreview unit。",
+      "artifact": null,
       "activation_candidates": [
-        "changed_files:24",
+        "scope:needs_clean_branch",
         "graphify:related_files"
       ],
       "activation_precision_status": "active",
-      "recorded_at": "2026-07-21T06:57:56.110Z",
+      "recorded_at": "2026-07-21T15:05:21.443Z",
       "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
     },
     {
-      "fingerprint": "scope_reviewability|changed_files:24|graphify:related_files|scope:needs_clean_branch",
-      "axis": "scope_reviewability",
+      "fingerprint": "execution_topology|changed_path:execution_topology|surface:workflow_or_agent|text:execution_topology",
+      "axis": "execution_topology",
       "story_id": "story-vibepro-routing-profiles-rendered-projections",
-      "decision_id": "decision-1784617072329-6564756a",
-      "source": "gate:judgment_axis_scope_reviewability",
-      "reason": "Resolver authority, producer adoption, projections, migration compatibility, and rollback form one atomic contract; splitting would create intermediate consumers without the authoritative resolver or fail-closed publication semantics.",
-      "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "decision_id": "decision-1784646254981-03116ad4",
+      "source": "gate:judgment_axis_execution_topology",
+      "reason": "変更は同期的なStory resolve→canonical write→deterministic projection経路で、並列worker・分散lock・新規network topologyを導入せず、serial review barrierも維持されるため、今回差分に新しいdeadlock topologyはない。",
+      "artifact": null,
       "activation_candidates": [
-        "scope:needs_clean_branch",
-        "changed_files:24",
-        "graphify:related_files"
+        "surface:workflow_or_agent",
+        "changed_path:execution_topology",
+        "text:execution_topology"
       ],
       "activation_precision_status": "active",
-      "recorded_at": "2026-07-21T07:47:28.090Z",
+      "recorded_at": "2026-07-21T15:05:21.443Z",
       "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
     }
   ]

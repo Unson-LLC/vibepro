@@ -1,0 +1,1 @@
+{"agent_id":"aad-e2-e2e-ux","head_sha":"e2fc3e319e30511276c41276a23152e2841923b1","status":"pass","summary":"Human and JSON UX, explicit fallback, typed stops, and Gate-validated final readiness are covered.","inspection_evidence":"E2E replay passed at frozen HEAD; current-head QA and verification evidence inspected.","findings":[]}

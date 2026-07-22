@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: gate-then-reconcile command order keeps the synced policy distribution auditable in execution state
+ok 1 - gate-then-reconcile command order keeps the synced policy distribution auditable in execution state
+  ---
+  duration_ms: 10692.547709
+  type: 'test'
+  ...
+# Subtest: buildManagedWorktreeGate path performs the policy sync and surfaces policy_sync
+ok 2 - buildManagedWorktreeGate path performs the policy sync and surfaces policy_sync
+  ---
+  duration_ms: 6750.636417
+  type: 'test'
+  ...
+# Subtest: default execute status output surfaces a failed policy sync
+ok 3 - default execute status output surfaces a failed policy sync
+  ---
+  duration_ms: 5348.575084
+  type: 'test'
+  ...
+# Subtest: refreshManagedWorktree resyncs policy sections while non-policy sections stay frozen
+ok 4 - refreshManagedWorktree resyncs policy sections while non-policy sections stay frozen
+  ---
+  duration_ms: 5265.455958
+  type: 'test'
+  ...
+# Subtest: refreshManagedWorktree mirrors policy section removal from the parent config
+ok 5 - refreshManagedWorktree mirrors policy section removal from the parent config
+  ---
+  duration_ms: 3971.777291
+  type: 'test'
+  ...
+# Subtest: refreshManagedWorktree syncs from source_repo when called with the worktree as repoRoot
+ok 6 - refreshManagedWorktree syncs from source_repo when called with the worktree as repoRoot
+  ---
+  duration_ms: 3585.998125
+  type: 'test'
+  ...
+# Subtest: refreshManagedWorktree skips policy sync when the source resolves to the worktree itself
+ok 7 - refreshManagedWorktree skips policy sync when the source resolves to the worktree itself
+  ---
+  duration_ms: 3077.179167
+  type: 'test'
+  ...
+# Subtest: execution status reports policy_sync=synced instead of masking it with a second refresh
+ok 8 - execution status reports policy_sync=synced instead of masking it with a second refresh
+  ---
+  duration_ms: 7128.226417
+  type: 'test'
+  ...
+# Subtest: refreshManagedWorktree reports failed policy sync without throwing when the source config is corrupt
+ok 9 - refreshManagedWorktree reports failed policy sync without throwing when the source config is corrupt
+  ---
+  duration_ms: 3026.29825
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 27899.899167

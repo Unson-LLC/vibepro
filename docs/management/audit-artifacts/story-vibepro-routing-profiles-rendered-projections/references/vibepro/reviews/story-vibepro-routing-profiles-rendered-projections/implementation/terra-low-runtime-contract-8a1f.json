@@ -1,0 +1,18 @@
+{
+  "agent_id": "terra-low-runtime-contract-8a1f",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "status": "pass",
+  "summary": "Public story diagnose owns feature Evidence production; PR-scoped verify record remains separate, and route preflight stays fail-closed.",
+  "findings": [],
+  "inspection_summary": "frozen_head=8a1f0780ee0f8378b4c2a11870cb9e024f34c03d; inspected CLI selection, diagnosis writer, artifact routing, verification scope, E2E, and architecture contract.",
+  "inspection_inputs": [
+    "src/cli.js",
+    "src/diagnostic-engine.js",
+    "src/artifact-routing.js",
+    "src/verification-evidence.js",
+    "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+    "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+  ],
+  "judgment_delta": "No blocking runtime-contract finding after tracing public lifecycle and fail-closed write preflight."
+}

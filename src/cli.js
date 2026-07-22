@@ -330,13 +330,14 @@ Review record migration:
   VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
 
 Guarded Run sessions:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
       Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
+      --action-profile autonomous selects the closed Action DAG. --disable-autonomous-actions audibly falls back to legacy for new or resumed Runs.
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
       Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
       resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
   vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
@@ -588,13 +589,14 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 Guarded Runセッション:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
       --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
+      --action-profile autonomousで閉じたAction DAGを選択します。--disable-autonomous-actionsは新規・再開Runを監査可能な形でlegacyへフォールバックします。
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
-  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
       Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
       resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
   vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
@@ -2373,6 +2375,8 @@ export async function runCli(argv, io = {}) {
         answeredBy: getOption(rest, '--answered-by'),
         reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? [],
         autonomy: getOption(rest, '--autonomy'),
+        actionProfile: getOption(rest, '--action-profile'),
+        autonomousEnabled: hasFlag(rest, '--disable-autonomous-actions') ? false : undefined,
         maxAttempts: parseNumberOption(rest, '--max-attempts'),
         maxIterations: parseNumberOption(rest, '--max-iterations'),
         maxDurationMs: parseNumberOption(rest, '--max-duration-ms'),
@@ -2424,6 +2428,20 @@ export async function runCli(argv, io = {}) {
               { command: `execute ${subcommand}`, unsupported_options: offPathPolicyFlags, supported_command: 'execute run' }
             );
           }
+          if (subcommand !== 'run' && hasFlag(rest, '--action-profile')) {
+            throw new GuardedRunError(
+              'action_profile_not_supported',
+              '--action-profile is supported only by execute run.',
+              { command: `execute ${subcommand}`, supported_command: 'execute run' }
+            );
+          }
+          if (!['run', 'resume'].includes(subcommand) && hasFlag(rest, '--disable-autonomous-actions')) {
+            throw new GuardedRunError(
+              'autonomous_feature_option_not_supported',
+              '--disable-autonomous-actions is supported only by execute run and execute resume.',
+              { command: `execute ${subcommand}`, supported_commands: ['execute run', 'execute resume'] }
+            );
+          }
           if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
             throw new GuardedRunError(
               'invalid_target',
@@ -2436,6 +2454,13 @@ export async function runCli(argv, io = {}) {
           }
           if (runOptions.autonomy && runOptions.autonomy !== 'guarded') {
             throw new GuardedRunError('invalid_autonomy', 'Guarded Run supports only --autonomy guarded.', { autonomy: runOptions.autonomy });
+          }
+          if (runOptions.actionProfile && !['legacy', 'autonomous'].includes(runOptions.actionProfile)) {
+            throw new GuardedRunError(
+              'invalid_action_profile',
+              'Guarded Run supports only --action-profile legacy or autonomous.',
+              { action_profile: runOptions.actionProfile, supported_profiles: ['legacy', 'autonomous'] }
+            );
           }
           const result = subcommand === 'run'
             ? runOptions.until
@@ -3598,6 +3623,7 @@ function renderArtifactMigrationPlan(result) {
   const lines = [
     `Artifact migration plan for ${result.story_id}: ${result.status}`,
     `Profile: ${result.profile ?? 'legacy'}; feature_slug=${result.feature_slug ?? '-'}`,
+    `Profile change: ${result.profile_change?.from ?? 'legacy'} -> ${result.profile_change?.to ?? result.profile ?? 'legacy'}; required=${result.profile_change?.required ? 'yes' : 'no'}; reason=${result.profile_change?.reason ?? '-'}`,
     `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
   ];
   for (const item of result.items ?? []) {
@@ -3608,6 +3634,9 @@ function renderArtifactMigrationPlan(result) {
   }
   for (const unresolved of result.unresolved ?? []) {
     lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
+  }
+  for (const risk of result.overwrite_risks ?? []) {
+    lines.push(`- overwrite-risk: ${risk.code}: ${risk.message}; path=${risk.path}`);
   }
   return `${lines.join('\n')}\n`;
 }

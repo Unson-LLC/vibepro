@@ -45,7 +45,12 @@ export async function getExecutionStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute status');
   const existing = await readManagedExecutionState(repoRoot, storyId);
   if (existing) {
-    const managedWorktree = await refreshManagedWorktree(repoRoot, existing.managed_worktree).catch(() => existing.managed_worktree ?? null);
+    // Pass the stored state unrefreshed: buildExecutionState performs the refresh.
+    // The policy_sync audit does not depend on refresh count — the last real sync is
+    // stamped durably in the worktree (.vibepro/policy-sync.json via
+    // recordPolicySyncEvent/withLastPolicySyncEvent) and every refresh resurfaces it
+    // as policy_sync.last_event. Refreshing here too would only duplicate git work.
+    const managedWorktree = existing.managed_worktree ?? null;
     const state = await buildExecutionState(repoRoot, {
       ...options,
       storyId,
@@ -103,7 +108,10 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
     startedAt: existing?.started_at,
-    managedWorktree: await refreshManagedWorktree(repoRoot, existing?.managed_worktree).catch(() => existing?.managed_worktree ?? null),
+    // Unrefreshed on purpose: buildExecutionState performs the refresh, and the
+    // policy_sync audit survives any refresh count via the durable worktree stamp
+    // (see getExecutionStatus).
+    managedWorktree: existing?.managed_worktree ?? null,
     preserveStartedAt: true
   });
   return writeExecutionStateWithLinkedCopies(repoRoot, state);
@@ -283,7 +291,22 @@ function formatManagedWorktreeSummary(managedWorktree) {
       details: '- status: not_recorded'
     };
   }
-  const headline = `${managedWorktree.mode ?? 'unknown'}/${managedWorktree.status ?? 'unknown'}`;
+  const policySync = managedWorktree.policy_sync ?? null;
+  // A fail-soft sync failure must be visible on the default text surface, not only in --json:
+  // silent policy drift is exactly what this state exists to prevent.
+  const policySyncHeadline = policySync?.status === 'failed' ? '/policy_sync_failed' : '';
+  const headline = `${managedWorktree.mode ?? 'unknown'}/${managedWorktree.status ?? 'unknown'}${policySyncHeadline}`;
+  const policySyncLines = policySync
+    ? [
+      `- policy_sync: ${policySync.status ?? '-'}${policySync.sections_updated?.length ? ` (${policySync.sections_updated.join(', ')})` : ''}`,
+      ...(policySync.status === 'failed' || policySync.status === 'skipped'
+        ? [`- policy_sync_reason: ${policySync.reason ?? '-'}`]
+        : []),
+      ...(policySync.last_event
+        ? [`- policy_sync_last_event: ${policySync.last_event.status ?? '-'}${policySync.last_event.sections_updated?.length ? ` (${policySync.last_event.sections_updated.join(', ')})` : ''} at ${policySync.last_event.synced_at ?? '-'}`]
+        : [])
+    ]
+    : ['- policy_sync: not_recorded'];
   return {
     headline,
     details: [
@@ -296,7 +319,8 @@ function formatManagedWorktreeSummary(managedWorktree) {
       `- branch_match: ${managedWorktree.branch_match === false ? 'false' : managedWorktree.branch_match === true ? 'true' : '-'}`,
       `- dirty: ${managedWorktree.dirty === true ? 'true' : managedWorktree.dirty === false ? 'false' : '-'}`,
       `- raw_dirty: ${managedWorktree.raw_dirty === true ? 'true' : managedWorktree.raw_dirty === false ? 'false' : '-'}`,
-      `- raw_dirty_fingerprint: ${managedWorktree.raw_dirty_fingerprint ?? '-'}`
+      `- raw_dirty_fingerprint: ${managedWorktree.raw_dirty_fingerprint ?? '-'}`,
+      ...policySyncLines
     ].join('\n')
   };
 }

@@ -3,41 +3,31 @@
   "model": "vibepro-design-ssot-reconciliation-v1",
   "workflow": "design-ssot-reconcile",
   "status": "passed",
-  "generated_at": "2026-07-21T08:10:30.291Z",
+  "generated_at": "2026-07-21T18:35:51.346Z",
   "registry_sources": [
     "design-ssot.json"
   ],
   "changed_paths": [
-    "design-ssot.json",
     "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
     "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
-    "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
-    "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
-    "docs/features/routing-profiles-rendered-projections/06_tasks.md",
-    "docs/features/routing-profiles-rendered-projections/08_review.md",
-    "docs/features/routing-profiles-rendered-projections/09_gate.md",
-    "docs/features/routing-profiles-rendered-projections/10_release.md",
-    "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
     "src/agent-review.js",
     "src/artifact-routing.js",
     "src/cli.js",
-    "src/diagnostic-engine.js",
-    "src/graphify-adapter.js",
+    "src/content-binding.js",
+    "src/git-fingerprint.js",
     "src/pr-manager.js",
-    "src/story-manager.js",
-    "src/story-task-generator.js",
-    "src/task-manager.js",
+    "src/verification-evidence.js",
+    "src/workspace.js",
     "test/artifact-routing.test.js",
-    "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
     "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
-    "test/evidence-depth-pr-prepare.test.js",
+    "test/responsibility-authority.test.js",
     "test/vibepro-cli.test.js"
   ],
   "summary": {
     "registry_source_count": 1,
-    "design_root_count": 89,
+    "design_root_count": 92,
     "changed_design_root_count": 0,
-    "changed_child_count": 2,
+    "changed_child_count": 1,
     "missing_required_child_count": 0,
     "stale_child_count": 0,
     "frontmatter_gap_count": 0,
@@ -50,47 +40,37 @@
     "model": "vibepro-design-ssot-coverage-v1",
     "workflow": "design-ssot-coverage",
     "status": "passed",
-    "generated_at": "2026-07-21T08:10:30.129Z",
+    "generated_at": "2026-07-21T18:35:51.326Z",
     "registry_sources": [
       "design-ssot.json"
     ],
     "changed_paths": [
-      "design-ssot.json",
       "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
       "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
-      "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
-      "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
-      "docs/features/routing-profiles-rendered-projections/06_tasks.md",
-      "docs/features/routing-profiles-rendered-projections/08_review.md",
-      "docs/features/routing-profiles-rendered-projections/09_gate.md",
-      "docs/features/routing-profiles-rendered-projections/10_release.md",
-      "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
       "src/agent-review.js",
       "src/artifact-routing.js",
       "src/cli.js",
-      "src/diagnostic-engine.js",
-      "src/graphify-adapter.js",
+      "src/content-binding.js",
+      "src/git-fingerprint.js",
       "src/pr-manager.js",
-      "src/story-manager.js",
-      "src/story-task-generator.js",
-      "src/task-manager.js",
+      "src/verification-evidence.js",
+      "src/workspace.js",
       "test/artifact-routing.test.js",
-      "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
       "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
-      "test/evidence-depth-pr-prepare.test.js",
+      "test/responsibility-authority.test.js",
       "test/vibepro-cli.test.js"
     ],
     "summary": {
       "registry_source_count": 1,
-      "design_root_count": 89,
-      "total_design_doc_count": 680,
-      "registered_root_count": 88,
-      "registered_child_count": 236,
-      "registered_doc_count": 324,
-      "unregistered_doc_count": 356,
-      "changed_design_doc_count": 2,
+      "design_root_count": 92,
+      "total_design_doc_count": 691,
+      "registered_root_count": 91,
+      "registered_child_count": 243,
+      "registered_doc_count": 334,
+      "unregistered_doc_count": 357,
+      "changed_design_doc_count": 1,
       "changed_unregistered_design_doc_count": 0,
-      "parent_design_declared_count": 271
+      "parent_design_declared_count": 278
     },
     "registered_docs": [
       {
@@ -170,6 +150,20 @@
           "kind": "architecture",
           "relationship": "implements",
           "required": false,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md",
+        "kind": "adr",
+        "title": "Explicit Run Attribution Lineage Architecture",
+        "status": "accepted",
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-explicit-run-attribution-lineage",
+          "kind": "architecture",
           "source": "design-ssot.json"
         }
       },
@@ -261,6 +255,20 @@
         "registration": {
           "role": "root",
           "root_id": "vibepro-linux-rollup-ci-lock",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/story-vibepro-managed-worktree-policy-resync.md",
+        "kind": "adr",
+        "title": "Managed Worktree Policy Resync Architecture",
+        "status": "accepted",
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-managed-worktree-policy-resync",
           "kind": "architecture",
           "source": "design-ssot.json"
         }
@@ -835,6 +843,20 @@
         "registration": {
           "role": "root",
           "root_id": "vibepro-canonical-audit-cost-accounting",
+          "kind": "architecture",
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+        "kind": "architecture",
+        "title": "Canonical Audit Gate DAG Replay Architecture",
+        "status": null,
+        "parent_design": [],
+        "registered": true,
+        "registration": {
+          "role": "root",
+          "root_id": "vibepro-canonical-audit-gate-dag-replay",
           "kind": "architecture",
           "source": "design-ssot.json"
         }
@@ -2212,6 +2234,24 @@
         }
       },
       {
+        "path": "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+        "kind": "story",
+        "title": "Summary depthのCanonical Audit Replayを欠損なく引き継ぐ",
+        "status": "active",
+        "parent_design": [
+          "vibepro-canonical-audit-gate-dag-replay"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-canonical-audit-gate-dag-replay",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/management/stories/active/story-vibepro-ci-gate-check-mode.md",
         "kind": "story",
         "title": "外部リポジトリのCIから vibepro の実ゲート計算を直接呼べる read-only `gate check` モードを追加する",
@@ -2554,6 +2594,24 @@
         }
       },
       {
+        "path": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "kind": "story",
+        "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+        "status": "active",
+        "parent_design": [
+          "vibepro-explicit-run-attribution-lineage"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-explicit-run-attribution-lineage",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/management/stories/active/story-vibepro-flow-screenshot-visual-gate-bridge.md",
         "kind": "story",
         "title": "verify flow のスクリーンショットを Visual QA Gate の residual 導線に接続する",
@@ -2796,6 +2854,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-linux-rollup-ci-lock",
+          "kind": "story",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
+        "kind": "story",
+        "title": "Managed worktreeのポリシーconfigを凍結させず親repoから再同期する",
+        "status": "active",
+        "parent_design": [
+          "vibepro-managed-worktree-policy-resync"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-managed-worktree-policy-resync",
           "kind": "story",
           "relationship": "implements",
           "required": true,
@@ -3965,6 +4041,24 @@
         }
       },
       {
+        "path": "docs/specs/story-vibepro-explicit-run-attribution-lineage.md",
+        "kind": "spec",
+        "title": "Explicit Run Attribution Lineage Spec",
+        "status": "final",
+        "parent_design": [
+          "vibepro-explicit-run-attribution-lineage"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-explicit-run-attribution-lineage",
+          "kind": "spec",
+          "relationship": "specifies",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
         "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
         "kind": "spec",
         "title": "Flow Screenshot to Visual Gate Bridge Spec",
@@ -4066,6 +4160,24 @@
         "registration": {
           "role": "child",
           "root_id": "vibepro-keyword-gate-structured-migration",
+          "kind": "spec",
+          "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
+        "kind": "spec",
+        "title": "Managed Worktree Policy Resync Spec",
+        "status": "final",
+        "parent_design": [
+          "vibepro-managed-worktree-policy-resync"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-managed-worktree-policy-resync",
           "kind": "spec",
           "relationship": "implements",
           "required": true,
@@ -4212,6 +4324,24 @@
           "root_id": "vibepro-scoped-evidence-invalidation",
           "kind": "spec",
           "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/story-vibepro-session-attribution-boundary-guard.md",
+        "kind": "spec",
+        "title": "Session Attribution Boundary Guard Spec",
+        "status": null,
+        "parent_design": [
+          "vibepro-session-attribution-boundary-guard"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-session-attribution-boundary-guard",
+          "kind": "spec",
+          "relationship": "specifies",
           "required": true,
           "source": "design-ssot.json"
         }
@@ -4824,6 +4954,24 @@
           "root_id": "vibepro-canonical-audit-cost-accounting",
           "kind": "spec",
           "relationship": "implements",
+          "required": true,
+          "source": "design-ssot.json"
+        }
+      },
+      {
+        "path": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+        "kind": "spec",
+        "title": "Canonical Audit Gate DAG Replay Spec",
+        "status": null,
+        "parent_design": [
+          "vibepro-canonical-audit-gate-dag-replay"
+        ],
+        "registered": true,
+        "registration": {
+          "role": "child",
+          "root_id": "vibepro-canonical-audit-gate-dag-replay",
+          "kind": "spec",
+          "relationship": "constrains",
           "required": true,
           "source": "design-ssot.json"
         }
@@ -6778,6 +6926,15 @@
         "path": "docs/management/stories/active/story-vibepro-concise-pr-body.md",
         "kind": "story",
         "title": "GitHub PR本文を1画面の判断ブリーフに絞る",
+        "status": "active",
+        "parent_design": [],
+        "registered": false,
+        "registration": null
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-content-scoped-evidence-reuse-key.md",
+        "kind": "story",
+        "title": "Evidence reuse keyをhead束縛からcontent surface束縛へ移す",
         "status": "active",
         "parent_design": [],
         "registered": false,
@@ -8865,24 +9022,6 @@
           "role": "child",
           "root_id": "vibepro-artifact-output-routing",
           "kind": "architecture",
-          "relationship": "implements",
-          "required": true,
-          "source": "design-ssot.json"
-        }
-      },
-      {
-        "path": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
-        "kind": "story",
-        "title": "Story別routing profileとlineage付きprojectionでfeature packetを正本化する",
-        "status": "active",
-        "parent_design": [
-          "vibepro-artifact-output-routing"
-        ],
-        "registered": true,
-        "registration": {
-          "role": "child",
-          "root_id": "vibepro-artifact-output-routing",
-          "kind": "story",
           "relationship": "implements",
           "required": true,
           "source": "design-ssot.json"
@@ -12828,14 +12967,14 @@
       "source": "design-ssot.json",
       "root_doc": "docs/architecture/vibepro-session-attribution-boundary-guard.md",
       "root_exists": true,
-      "root_hash": "7575dcb984a1b7f0e5de1be37700c937ad0073149a082bee29ae8be2b2ade7e0",
+      "root_hash": "f17fb33efc56b565579ca214e16e8ec6cc75800d415db5e21f884242bad39bda",
       "status": "passed",
       "changed": {
         "root_changed": false,
         "changed_children": []
       },
       "summary": {
-        "child_count": 1,
+        "child_count": 2,
         "action_item_count": 0,
         "missing_required_child_count": 0,
         "frontmatter_gap_count": 0,
@@ -12856,6 +12995,24 @@
               "vibepro-session-attribution-boundary-guard"
             ],
             "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-session-attribution-boundary-guard.md",
+          "required": true,
+          "relationship": "specifies",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-session-attribution-boundary-guard"
+            ],
+            "status": null,
             "superseded_by": [],
             "has_hash_binding": false
           },
@@ -15150,8 +15307,7 @@
       "changed": {
         "root_changed": false,
         "changed_children": [
-          "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
-          "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md"
+          "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
         ]
       },
       "summary": {
@@ -15187,7 +15343,7 @@
           "required": true,
           "relationship": "implements",
           "exists": true,
-          "changed": true,
+          "changed": false,
           "status": "passed",
           "frontmatter": {
             "parent_design": [
@@ -15228,6 +15384,66 @@
           "frontmatter": {
             "parent_design": [
               "vibepro-artifact-output-routing"
+            ],
+            "status": null,
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-canonical-audit-gate-dag-replay",
+      "title": "Canonical Audit Gate DAG Replay",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "root_exists": true,
+      "root_hash": "0d8ba405e843c90ca69d4a90c84134a4d11fdbdb96c6b2bd97e700d363442987",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-canonical-audit-gate-dag-replay"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "required": true,
+          "relationship": "constrains",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-canonical-audit-gate-dag-replay"
             ],
             "status": null,
             "superseded_by": [],
@@ -15291,6 +15507,126 @@
               "vibepro-human-decision-checkpoint"
             ],
             "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-explicit-run-attribution-lineage",
+      "title": "Explicit Run Attribution Lineage",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md",
+      "root_exists": true,
+      "root_hash": "3f99a269bc611c7f0b707d12708810fc56c8da0a883bf6d7361901cfd6266328",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-explicit-run-attribution-lineage"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-explicit-run-attribution-lineage.md",
+          "required": true,
+          "relationship": "specifies",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-explicit-run-attribution-lineage"
+            ],
+            "status": "final",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        }
+      ],
+      "action_items": []
+    },
+    {
+      "id": "vibepro-managed-worktree-policy-resync",
+      "title": "Managed Worktree Policy Resync",
+      "source": "design-ssot.json",
+      "root_doc": "docs/architecture/story-vibepro-managed-worktree-policy-resync.md",
+      "root_exists": true,
+      "root_hash": "9b6052e2f7294996df80eb77a059ba1410b319517e08218401a58688b9fbaf7f",
+      "status": "passed",
+      "changed": {
+        "root_changed": false,
+        "changed_children": []
+      },
+      "summary": {
+        "child_count": 2,
+        "action_item_count": 0,
+        "missing_required_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "stale_child_count": 0,
+        "block_count": 0
+      },
+      "children": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-managed-worktree-policy-resync"
+            ],
+            "status": "active",
+            "superseded_by": [],
+            "has_hash_binding": false
+          },
+          "action_items": []
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
+          "required": true,
+          "relationship": "implements",
+          "exists": true,
+          "changed": false,
+          "status": "passed",
+          "frontmatter": {
+            "parent_design": [
+              "vibepro-managed-worktree-policy-resync"
+            ],
+            "status": "final",
             "superseded_by": [],
             "has_hash_binding": false
           },

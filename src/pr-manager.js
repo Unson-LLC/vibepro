@@ -68,7 +68,7 @@ import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environm
 import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
-import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
+import { collectGitStatusFingerprints, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 import {
   appendEvidenceDrilldownEntry,
   buildEvidenceDecisionIndex,
@@ -98,7 +98,7 @@ import {
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
-import { assertArtifactWritePath, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -2921,7 +2921,16 @@ async function collectGitState(repoRoot, options) {
   const diffLineStats = await getDiffLineStats(repoRoot, baseRef, headRef, includesDirtyInChangedFiles);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
-  const fingerprints = await collectGitStatusFingerprints(repoRoot);
+  // A projection that still renders byte-for-byte from its canonical source is
+  // a VibePro by-product, not an author edit. The evidence and review paths
+  // already exclude it from the user fingerprint; PR/Gate must use the same
+  // scope or it falsely invalidates those otherwise-current artifacts.
+  const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(repoRoot, {
+    storyId: options.storyId
+  });
+  const fingerprints = await collectGitStatusFingerprints(repoRoot, {
+    userExcludePaths: generatedProjectionPaths
+  });
   const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
   const refTopology = await collectRefTopology(repoRoot, {
     baseRef,
@@ -3283,7 +3292,7 @@ function buildUsedForDecisionSummary({
   };
 }
 
-function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
+export function buildSessionBoundaryAdvisory({ storyId, env = process.env, git = null } = {}) {
   const sessionId = env?.VIBEPRO_SESSION_ID ?? env?.CODEX_SESSION_ID ?? env?.CLAUDE_SESSION_ID ?? null;
   return {
     schema_version: '0.1.0',
@@ -5376,7 +5385,8 @@ function normalizeGraphPath(filePath) {
 
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, preImplementationStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
-  let primaryStory = pickPrimaryStory(storyDocs, story);
+  const authoritativeStoryDocs = storyDocs.filter((doc) => !isCanonicalAuditSnapshotPath(doc?.path));
+  let primaryStory = pickPrimaryStory(authoritativeStoryDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
     const filesystemStory = await findStorySource(repoRoot, story);
     if (filesystemStory?.path) {
@@ -5874,7 +5884,7 @@ async function bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git
     binding: {
       current_head_sha: git.head_sha ?? null,
       current_dirty: git.dirty === true,
-      current_status_fingerprint_hash: fullFingerprintHashForContext(git),
+      current_status_fingerprint_hash: fingerprintHashForContext(git),
       current_user_status_fingerprint_hash: git.user_status_fingerprint_hash ?? null,
       stale_command_count: commands.filter((command) => command.binding?.status !== 'current').length
     }
@@ -7150,7 +7160,7 @@ function canonicalStoryBindingSlug(value) {
 
 function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
   const changedDocs = changedStoryDocs
-    .filter((doc) => doc?.path)
+    .filter((doc) => doc?.path && !isCanonicalAuditSnapshotPath(doc.path))
     .map((doc) => ({
       path: doc.path,
       story_id: doc.story_id ?? null,
@@ -7194,6 +7204,10 @@ function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
       ? 'Resolved and changed Story documents match the selected Story, or no changed Story document needs binding.'
       : reasons.join('; ')
   };
+}
+
+function isCanonicalAuditSnapshotPath(filePath) {
+  return normalizeGraphPath(filePath ?? '').startsWith('docs/management/audit-artifacts/');
 }
 
 function resolveArchitectureDecision(storyDoc, fileGroups) {
@@ -8610,6 +8624,18 @@ function classifySeniorAxisEvidence({
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
   const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
+  // An artifact-backed senior decision directly answers scope's split question
+  // when automatic classification only flags a multi-commit coherent Story.
+  // Keep this narrow: other axes must still supply their own evidence kinds.
+  if (axis === 'scope_reviewability' && acceptedFollowupDecision && scope?.status !== 'reviewable') {
+    add('scope_reviewed', acceptedFollowupDecision.decision_id ?? 'accepted scope review', {
+      strength: 'supporting',
+      strength_reason: 'artifact-backed accepted senior decision confirms this diff is one reviewable unit',
+      binding_status: 'current',
+      artifact_quality: 'decision_record',
+      artifact: acceptedFollowupDecision.artifact
+    });
+  }
   if (acceptedFollowupDecision) {
     add(
       'decision_record',
@@ -11495,7 +11521,7 @@ export function buildArtifactConsistencyGate({ git = null, verificationEvidence 
   const managedWorktree = managedWorktreeContext?.managed_worktree ?? managedWorktreeContext;
   const current = {
     head_sha: git?.head_sha ?? null,
-    status_fingerprint_hash: fullFingerprintHashForContext(git),
+    status_fingerprint_hash: fingerprintHashForContext(git),
     user_status_fingerprint_hash: git?.user_status_fingerprint_hash ?? null,
     raw_status_fingerprint_hash: git?.status_fingerprint_hash ?? null,
     dirty: git?.dirty === true,
@@ -11571,13 +11597,13 @@ function buildStaleArtifactDetail(artifact, { git = null, storyId = null } = {})
     recorded_head_sha: artifact.recorded_head_sha ?? null,
     current_head_sha: git?.head_sha ?? null,
     recorded_status_fingerprint_hash: artifact.recorded_status_fingerprint_hash ?? null,
-    current_status_fingerprint_hash: fullFingerprintHashForContext(git),
+    current_status_fingerprint_hash: fingerprintHashForContext(git),
     content_binding: artifact.content_binding ?? null,
     dependency_chain: [
       {
         step: 'current_git_state',
         head_sha: git?.head_sha ?? null,
-        status_fingerprint_hash: fullFingerprintHashForContext(git)
+        status_fingerprint_hash: fingerprintHashForContext(git)
       },
       {
         step: 'recorded_artifact',
@@ -11726,7 +11752,7 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       artifact: command.artifact ?? null,
       observation: command.observation ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
-      recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
+      recorded_status_fingerprint_hash: fingerprintHashForContext(command.git_context),
       recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,
       status,
       content_binding: command.binding?.content_binding ?? command.content_binding ?? null,
@@ -11796,7 +11822,7 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         role: role.role ?? null,
         artifact: role.artifact ?? null,
         recorded_head_sha: role.git_context?.head_sha ?? role.source_git_context?.head_sha ?? null,
-        recorded_status_fingerprint_hash: fullFingerprintHashForContext(role.git_context ?? role.source_git_context),
+        recorded_status_fingerprint_hash: fingerprintHashForContext(role.git_context ?? role.source_git_context),
         recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
         status,
         required_current: !historicalNonblocking,

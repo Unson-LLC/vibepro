@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "needs_changes",
+  "summary": "Autonomous verify fallback conflicts with final_prepare-only pr_ready.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "autonomous-verify-legacy-pr-ready-contract-conflict",
+      "detail": "Map or stop the legacy verify fallback so only final_prepare can emit pr_ready."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current diff, DAG composition, legacy PR autopilot return contract, and focused tests.",
+    "evidence": null,
+    "inputs": [
+      "src/guarded-run-session.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial regression concern became needs_changes after confirming legacy verify fallback can emit pr_ready and fail autonomous execution."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+    "current_head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T11:30:45.494Z",
+  "git_context": {
+    "head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T11:30:45.488Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "High-risk regression review is bound to the exact reviewed HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "ec99e9c2702b6b8826742277bd2d12649d10727f9b35e9827d24b344ae075b1d",
+        "size": 104700
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "52bf7d11d72ffb96270240943c51460b67b307a9cfd96eed86eaecfb476adfc4"
+  },
+  "source_fingerprint": "9abb77602673034b6ffee19269727dd90964de3ecce9c1229e6938abb9a08c6c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aad-c01-regression-risk-light",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression_risk-c01.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression_risk-c01.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

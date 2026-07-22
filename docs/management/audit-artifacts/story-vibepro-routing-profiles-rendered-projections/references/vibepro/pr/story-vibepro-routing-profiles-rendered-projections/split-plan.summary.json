@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "split-plan.json",
-  "source_bytes": 19049,
-  "source_content_hash": "sha256:f728cdc88414580baac445408ff117f5eb00e9a6c6ef4c7772a164eb357a77ec",
+  "source_bytes": 16503,
+  "source_content_hash": "sha256:bb19e85a9c8bbdea4047c7a537d85b918e4f74c0bef7527de9949f5f321aa07a",
   "conclusion": {
     "status_fields": {
       "model": "story-pr-split-plan-v1",
@@ -11,10 +11,10 @@
       "recommended_strategy": "split_by_lane_then_prepare"
     },
     "top_level_counts": {
-      "rationale_count": 2,
-      "lanes_count": 3,
-      "merge_order_count": 3,
-      "next_actions_count": 3
+      "rationale_count": 3,
+      "lanes_count": 2,
+      "merge_order_count": 2,
+      "next_actions_count": 2
     }
   },
   "highlights": [

@@ -2,1047 +2,2699 @@
   "schema_version": "0.2.0",
   "model": "vibepro-judgment-dag-adjudication-v2",
   "story_id": "story-vibepro-routing-profiles-rendered-projections",
-  "updated_at": "2026-07-21T07:47:12.749Z",
+  "updated_at": "2026-07-21T18:23:16.216Z",
   "events": [
     {
-      "event_id": "10900462-abef-4d91-9b89-a93ea12a7550",
+      "event_id": "4595baa0-0e8b-4c18-b4c5-b6e7126adc1d",
       "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Story states Issue 359 intent, one-SSOT outcome, acceptance criteria and non-goals mapped to implementation.",
+      "reason": "Story states the routing/projection problem, boundaries, ownership model, compatibility goal, and fourteen concrete acceptance criteria.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:37.517Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:54.876Z"
     },
     {
-      "event_id": "a170191b-d590-44ca-98f8-47683df8df09",
+      "event_id": "1f24aa04-ce8f-4341-ad3f-910d3c656aca",
       "type": "verdict",
       "item_id": "spine:current_reality",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Current-head focused tests and CLI paths exercise the changed production behavior.",
+      "reason": "Changed resolver, CLI, workspace and review paths are exercised by the focused fresh-checkout lifecycle E2E rather than file classification alone.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:37.909Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:55.103Z"
     },
     {
-      "event_id": "3f696329-bcc8-4b4f-b26b-95826b6b11fa",
+      "event_id": "7344dc99-9265-4a82-a432-e8b5b8da2aaf",
       "type": "verdict",
       "item_id": "spine:invariants",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Architecture, Spec and tests enforce one canonical authority, fail-closed writes and ownership boundaries.",
+      "reason": "Tests enforce catalog authority, mirror consistency, one canonical read authority, lineage headers, no human-owned overwrite, and legacy fallback.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:38.486Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:55.273Z"
     },
     {
-      "event_id": "884f5fb5-2e49-4fce-93cb-556f167d71ee",
+      "event_id": "739f1616-6da6-4a8d-a4c3-b50da14efb5c",
       "type": "verdict",
       "item_id": "spine:boundaries",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Catalog, Story mirror, writer, projection, legacy and containment boundaries are explicit and tested.",
+      "reason": "Story explicitly excludes UI and multiple editable SSOT; changed runtime lane is resolver, projections, migration, lifecycle and evidence binding.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:38.837Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:55.560Z"
     },
     {
-      "event_id": "7720e7c4-2260-43ba-87b7-590cdacb3ad0",
+      "event_id": "160dc579-7300-45e5-a211-04103a594dce",
       "type": "verdict",
       "item_id": "spine:failure_modes",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Negative tests cover routing metadata, paths, collision, lineage, ownership and atomicity failures.",
+      "reason": "Focused unit tests cover missing/conflicting metadata, malformed lineage, unsupported renderer and preflight no-mutation failures; E2E replays lifecycle.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:39.180Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:55.834Z"
     },
     {
-      "event_id": "66bf828e-b599-4c17-9d00-2df72d42ba4a",
+      "event_id": "dda97756-03c7-4c86-8f4b-cd588f975c2b",
       "type": "verdict",
       "item_id": "spine:done_evidence",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Current-head unit, integration, E2E and typecheck evidence is sufficient for the scoped Story.",
+      "reason": "Focused E2E executes feature and governance fresh-checkout lifecycle including resolve, dry-run migration, PR prepare, status and rendered outputs.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:39.560Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:56.051Z"
     },
     {
-      "event_id": "8985e962-7f51-4c4b-adf1-03a94b0a660a",
+      "event_id": "b5fc4197-0b24-4cf1-bf70-e5358d264f4c",
       "type": "verdict",
       "item_id": "axis:public_contract",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Compatibility and CLI text/JSON contracts are documented and regression tested.",
+      "reason": "CLI resolve/migrate JSON/text and profile/legacy behavior are exercised in focused tests, including two packet layouts and compatibility fallback.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:40.120Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:56.312Z"
     },
     {
-      "event_id": "c0315bd4-83d5-4f24-8168-c256429ba26c",
+      "event_id": "8f6885dc-6b95-4811-af29-487c3398ef7d",
       "type": "verdict",
       "item_id": "axis:execution_topology",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lifecycle producers share the resolver and preflight failures occur before mutations.",
+      "reason": "Shared resolver drives lifecycle consumers; fresh-checkout E2E reaches resolve, migration, PR prepare, status and generated surfaces without orphaned state.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:40.488Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:56.490Z"
     },
     {
-      "event_id": "1acec667-4bb2-4073-9561-960a51361c49",
+      "event_id": "6a7e9b8b-5b32-41eb-b848-12a0e83a3852",
       "type": "verdict",
       "item_id": "axis:scope_reviewability",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "The docs, routing core, consumer adapters and tests form one coherent vertical slice.",
+      "reason": "Seven files form one routing/projection runtime lane: resolver and its consumers plus direct unit and focused E2E coverage; no unrelated product surface is bundled.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:41.157Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:12:56.740Z"
     },
     {
-      "event_id": "0f4a907d-073e-45dc-9909-944fd5fe2bce",
+      "event_id": "86a63b90-64f8-4e74-9021-017ac3a339cb",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier marked parse failure not_required, but artifact-routing tests reject malformed projection lineage fail-closed; premise omits relevant parsing failure coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
+      },
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:13:19.319Z"
+    },
+    {
+      "event_id": "5628fa46-581e-45f3-b892-3d57af676441",
       "type": "verdict",
       "item_id": "failure_mode:schema_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
       "responds_to_correction_id": null,
-      "reason": "Incomplete and unsupported schema/profile configurations fail closed.",
+      "reason": "Classifier marked schema failure not_required, but resolver tests fail closed for missing/conflicting metadata and unsupported renderer contracts; premise is false.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:41.862Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:13:19.514Z"
     },
     {
-      "event_id": "7180f822-4c96-45dd-b9e3-45c56eb978b3",
+      "event_id": "f93f49fa-8b69-4a20-96b2-e94ea91a2f4c",
       "type": "verdict",
       "item_id": "failure_mode:evidence_lifecycle_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Review, evidence, gate and release projections preserve lineage and ownership.",
+      "reason": "Agent-review independence and content-scoped freshness integration suites execute lifecycle regression checks, with focused routing tests preserving lineage and ownership.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:42.286Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:13:19.681Z"
     },
     {
-      "event_id": "ddb71a6d-26e1-49b5-8d6b-6e4130226a5d",
+      "event_id": "c07b2982-59eb-4e5e-8692-89305ccfbe24",
       "type": "verdict",
       "item_id": "failure_mode:workflow_state_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Migration and routed lifecycle states are executable and do not falsely become green.",
+      "reason": "Focused lifecycle E2E and resolver preflight tests verify state cannot advance through invalid routing/projection writes and legacy fallback remains available.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_ac_last_terra",
+        "session_ref": "final-lightweight-review"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:48:42.604Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:13:19.852Z"
     },
     {
-      "event_id": "caac369c-9c70-40cc-8bf0-a96937ddb39e",
+      "event_id": "a1396b88-f0e0-4f2f-bab2-62ad0746bb56",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "86a63b90-64f8-4e74-9021-017ac3a339cb",
+      "wrong_premise": "parse_failure is not_required and has no relevant evidence.",
+      "corrected_premise": "Parse and malformed routing/projection lineage failures are required failure modes; test/artifact-routing.test.js verifies malformed routing config and malformed/non-canonical projection lineage fail closed before repository writes.",
+      "reason": "The classifier ignored direct artifact-routing regression coverage. The focused suite passed at the current HEAD, so its source and recorded verification evidence replace the false not_required premise.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "3dd85352b442784696753c807bff1863341856f23cf9db9bd2b18bf09537399e"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "1468c324d4573ebd2f4a6c5a8487fa5976d99200fa25f8fbb6aafb78c52a0767"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_judgment_correction_terra",
+        "session_ref": "judgment-dag-premise-correction"
+      },
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:19:25.567Z"
+    },
+    {
+      "event_id": "ca436c96-934b-4134-bf05-f9359f369e02",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "5628fa46-581e-45f3-b892-3d57af676441",
+      "wrong_premise": "schema_failure is not_required and has no relevant evidence.",
+      "corrected_premise": "Schema and metadata validation failures are required failure modes; test/artifact-routing.test.js verifies missing or conflicting Story/profile metadata and unsupported renderer contracts fail closed before writes.",
+      "reason": "The classifier omitted direct resolver validation coverage. The focused suite passed at the current HEAD, so its source and recorded verification evidence replace the false not_required premise.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "3dd85352b442784696753c807bff1863341856f23cf9db9bd2b18bf09537399e"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "1468c324d4573ebd2f4a6c5a8487fa5976d99200fa25f8fbb6aafb78c52a0767"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_judgment_correction_terra",
+        "session_ref": "judgment-dag-premise-correction"
+      },
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:19:33.326Z"
+    },
+    {
+      "event_id": "675b0454-c865-4536-a285-15851f9f0037",
       "type": "verdict",
       "item_id": "failure_mode:parse_failure",
       "verdict": "judged_sound",
       "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Current-head malformed JSON test rejects invalid_config and proves config and existing artifact bytes remain unchanged.",
+      "responds_to_correction_id": "a1396b88-f0e0-4f2f-bab2-62ad0746bb56",
+      "reason": "Independent re-adjudication confirms the corrected premise: the current-HEAD artifact-routing suite passed, including malformed routing config and malformed/non-canonical projection lineage fail-closed before writes; the implementation is sound.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-ux-completion",
-        "session_ref": null
+        "agent_id": "/root/vibepro_judgment_correction_terra",
+        "session_ref": "independent-current-head-re-adjudication"
       },
-      "head_commit": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
-      "recorded_at": "2026-07-21T05:49:16.954Z"
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:19:43.182Z"
     },
     {
-      "event_id": "6eed051e-54fa-4361-8c54-41c2b82bed22",
+      "event_id": "8eefac68-cc29-469e-80a9-779daf622b9f",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "ca436c96-934b-4134-bf05-f9359f369e02",
+      "reason": "Independent re-adjudication confirms the corrected premise: the current-HEAD artifact-routing suite passed missing/conflicting metadata and unsupported renderer fail-closed checks before writes; the implementation is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_judgment_correction_terra",
+        "session_ref": "independent-current-head-re-adjudication"
+      },
+      "head_commit": "a391212742c7df5391d4c99dd22443ac5cf0ac82",
+      "recorded_at": "2026-07-21T12:19:43.941Z"
+    },
+    {
+      "event_id": "913201db-a900-4a4b-bcb7-dd96d6e3b8ee",
       "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Storyの14 ACと受理済みSpec 12 clausesを差分実体に照合した。named profile、単一canonical、lineage projection、fail-closedという一貫した意図が実装とテストに対応している。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:23.121Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:45.767Z"
     },
     {
-      "event_id": "c7273579-4971-4a19-b00e-6c2ff555a91b",
+      "event_id": "f51bb3b6-98cd-4bcf-96a0-f92a3e7d1c85",
       "type": "verdict",
       "item_id": "spine:current_reality",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "HEAD 43835759のfocused unit JUnit 55/0とStory E2E 56/0を確認した。共有resolverが実際のCLI・projection経路で使われ、fresh checkoutを含む現行経路の再生証跡がある。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:24.020Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:45.971Z"
     },
     {
-      "event_id": "7959506c-4ce0-4cbf-a228-1467397c70d5",
+      "event_id": "1e550419-cd99-4a26-be6a-e1268a34e03f",
       "type": "verdict",
       "item_id": "spine:invariants",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Spec INV-001〜003とコードを照合した。profile完全性、書込前fail-closed、human_owned非上書き、projection非read-authorityが実装され、focused testsで保持される。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:24.842Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:46.230Z"
     },
     {
-      "event_id": "8fbbcdb3-5e1a-4ff1-b818-53027f8cb2f7",
+      "event_id": "9f46d3cf-ec3b-4098-b40b-44921bb3c2a2",
       "type": "verdict",
       "item_id": "spine:boundaries",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "catalog authorityとStory mirror、canonicalとprojection、generated/curated/human_owned、repository containmentの境界がArchitecture・Spec・resolver preflightに一致し、境界逸脱は書込前に拒否される。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:26.032Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:46.453Z"
     },
     {
-      "event_id": "382297bd-7d9a-4f68-9407-5919784ef7c6",
+      "event_id": "dc9f6317-e3b9-4192-9541-8177bbb979c1",
       "type": "verdict",
       "item_id": "spine:failure_modes",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "malformed config、partial schema、unknown renderer、unsafe projection、metadata conflict、collisionを検討した。schema対象6/0とmutation-boundary対象3/0の個別実行で失敗時の非変更を確認した。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:27.027Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:46.660Z"
     },
     {
-      "event_id": "16d48019-8b2d-402e-ac1e-ae202cd030de",
+      "event_id": "3a7be63e-159b-41ee-8f7a-a9280ccfc802",
       "type": "verdict",
       "item_id": "spine:done_evidence",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "HEAD 43835759にstrict-boundされたunit 55/0、E2E 56/0、typecheck passがあり、AC-1〜14とS-001〜004を再生する。中断したfull suiteはneeds_setupのままで成功扱いされていない。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:27.580Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:46.868Z"
     },
     {
-      "event_id": "bb02c29d-09d9-4536-8536-8911489e3d6e",
+      "event_id": "01fcceff-11aa-4ebd-9c4c-d8d681385ca5",
       "type": "verdict",
       "item_id": "axis:public_contract",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "schema 0.2.0のnamed profilesは明示opt-inで、0.1.0 fallbackを保持し、旧resolverは0.2.0をunsupported_schemaで拒否する。CLI出力とlineage契約もfocused testsで固定されている。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:28.476Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:47.081Z"
     },
     {
-      "event_id": "fd392f11-550c-4014-adf5-fcd8694b5e14",
+      "event_id": "1911e356-9b49-4042-bb2c-ec6959d2b288",
       "type": "verdict",
       "item_id": "axis:execution_topology",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "変更は共有resolverからcanonical writeをpreflightし、その後projection publishへ進む同期的トポロジーである。Spec S-003の状態順序と、unsafe projection時にcanonicalを保持する個別実行3/0から欠落handoffやover-green化を認めない。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:29.095Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:47.425Z"
     },
     {
-      "event_id": "232ae885-0cd9-432b-9a27-542c27c78944",
+      "event_id": "d0f6d4c9-654a-4d0b-80d0-de5fec6edffd",
       "type": "verdict",
       "item_id": "axis:scope_reviewability",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "24 filesだが、実装・consumer接続・契約テスト・VibePro生成projectionはartifact routing profileという単一intentに追跡可能である。Spec/Architectureとfocused suiteで一人のreviewerが一貫して判断できる。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:30.288Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:47.723Z"
     },
     {
-      "event_id": "3688b5f8-bdb8-4d1c-8788-3e62a0bcaa6a",
-      "type": "verdict",
-      "item_id": "failure_mode:parse_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "malformed .vibepro/config.jsonをinvalid_configとして拒否し既存artifactと不正config bytesを保持するテストを個別実行しpassした。parse失敗は書込前に閉じる。",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
-      },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:31.384Z"
-    },
-    {
-      "event_id": "172ed806-023a-4309-a9e1-f057cdcd3c8d",
-      "type": "verdict",
-      "item_id": "failure_mode:schema_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "個別実行 `node --test --test-name-pattern='schema 0.2 validates every profile|schema 0.2 requires a non-empty canonical|schema 0.2 rejects repository-global|malformed routing config fails closed' test/artifact-routing.test.js` が6/0。unselected profile欠落、空canonical、legacy混在、不正JSONを明示的に拒否する。",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
-      },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:32.100Z"
-    },
-    {
-      "event_id": "0804beba-d82f-42bd-b8d2-a18d82d15df4",
+      "event_id": "75243f07-38a0-4276-990d-89c37957e363",
       "type": "verdict",
       "item_id": "failure_mode:evidence_lifecycle_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Evidence/Test Plan/Review/Gate/PRは同一routing contextとownershipを公開し、fresh E2E 56/0がAC-1〜14を再生する。未完full suiteはneeds_setupでpassに昇格せず、誤green化を認めない。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:33.166Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:47.920Z"
     },
     {
-      "event_id": "c7cf3cfe-fcd5-433e-9d36-371cf10b5047",
+      "event_id": "26a17915-7b3a-4e05-aa54-b1363bf5681a",
       "type": "verdict",
       "item_id": "failure_mode:workflow_state_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "受理済みSpec S-003は unresolved -> canonical_written -> projections_written -> published を明記する。個別実行でprojection preflight、human_owned非上書き、unsafe projection時canonical保持が3/0、さらにHEAD固定E2E 56/0のworkflow_state_regression scenarioがpassした。",
+      "reason": "Independent current-head inspection of canonical spec, focused routing tests, fresh-checkout E2E, and recorded strict-head verification supports this judgment.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-judgment-438",
-        "session_ref": "collaboration:issue359_runtime_contract"
+        "agent_id": "/root/vibepro_post_spec_evidence_terra",
+        "session_ref": "post-spec-current-head"
       },
-      "head_commit": "43835759a6198b69c70dea5d8e64b6717379240c",
-      "recorded_at": "2026-07-21T06:16:34.155Z"
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:30:48.193Z"
     },
     {
-      "event_id": "0884a766-b6c5-49d5-ac5c-f0dacb2545cf",
+      "event_id": "cd811e36-19e8-48da-89af-c6da6436eb5f",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current-head judgment: the classifier premise that parse failure is not required is false. test/artifact-routing.test.js covers malformed routing config and malformed/non-canonical projection lineage and requires failure before repository writes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_final_evidence_fix_terra",
+        "session_ref": "independent-current-head-premise-review-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:33:27.949Z"
+    },
+    {
+      "event_id": "f52f946d-f377-41c4-b38a-ca5d700b5b8c",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current-head judgment: the classifier premise that schema failure is not required is false. test/artifact-routing.test.js covers missing/conflicting metadata and unsupported renderer contracts and requires fail-closed behavior before writes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_final_evidence_fix_terra",
+        "session_ref": "independent-current-head-premise-review-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:33:28.451Z"
+    },
+    {
+      "event_id": "ce9ce656-885c-4b2c-931d-6946c5ff5647",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "cd811e36-19e8-48da-89af-c6da6436eb5f",
+      "wrong_premise": "parse_failure is not required despite direct malformed routing and projection lineage coverage.",
+      "corrected_premise": "Parse and malformed routing/projection lineage failures are required; artifact-routing regression tests fail closed before writes.",
+      "reason": "Append-only current-head correction linked to the current unsound classifier-premise verdict. The older correction belongs to a3912127 and remains historical.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "3dd85352b442784696753c807bff1863341856f23cf9db9bd2b18bf09537399e"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "adcd0e87d71c71daebd8dd38e4bd4c9a2280877ddd2a8dccb09f4c661ba47520"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_final_evidence_fix_terra",
+        "session_ref": "current-head-correction-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:33:39.617Z"
+    },
+    {
+      "event_id": "fd9a7724-dfce-49fd-93e1-b6b16f7d0450",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "f52f946d-f377-41c4-b38a-ca5d700b5b8c",
+      "wrong_premise": "schema_failure is not required despite direct metadata and renderer contract coverage.",
+      "corrected_premise": "Schema and metadata validation failures are required; artifact-routing regression tests fail closed before writes.",
+      "reason": "Append-only current-head correction linked to the current unsound classifier-premise verdict. The older correction belongs to a3912127 and remains historical.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "3dd85352b442784696753c807bff1863341856f23cf9db9bd2b18bf09537399e"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "adcd0e87d71c71daebd8dd38e4bd4c9a2280877ddd2a8dccb09f4c661ba47520"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_final_evidence_fix_terra",
+        "session_ref": "current-head-correction-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:33:39.867Z"
+    },
+    {
+      "event_id": "46242462-240f-4c63-a554-db9cedb93d5e",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "ce9ce656-885c-4b2c-931d-6946c5ff5647",
+      "reason": "Independent current-head inspection: malformed config is rejected as invalid_config without changing existing bytes (artifact-routing test), malformed/non-canonical lineage is never treated as current, and projection/canonical writes are preflighted before mutation. The focused suite passed 59/59, so the corrected premise and failure handling are substantively supported.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_independent_judgment_terra",
+        "session_ref": "terra-independent-parse-20260721-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:36:18.810Z"
+    },
+    {
+      "event_id": "b97bf801-2731-404d-be28-640e97c0cb2b",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "fd9a7724-dfce-49fd-93e1-b6b16f7d0450",
+      "reason": "Independent current-head inspection: schema 0.2 validates every selected and unselected profile for complete artifacts and non-empty canonical paths; generated projections require supported renderer id/version, while conflicting metadata is rejected before routing. The focused suite passed 59/59, including unsupported renderer, incomplete profile, missing canonical, and metadata conflict cases; the corrected premise is substantively supported.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_independent_judgment_terra",
+        "session_ref": "terra-independent-schema-20260721-67a3"
+      },
+      "head_commit": "67a3eb8f57461250e2ca3fecf909cadc0482187a",
+      "recorded_at": "2026-07-21T12:36:19.605Z"
+    },
+    {
+      "event_id": "cec7a92f-2d88-4952-a726-0cd1fcab68aa",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is unsound: parse failure is required; malformed routing and lineage inputs are explicitly tested fail-closed before writes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:51:53.912Z"
+    },
+    {
+      "event_id": "ccb69d1e-b184-4482-a658-07ad5bb93c75",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "cec7a92f-2d88-4952-a726-0cd1fcab68aa",
+      "wrong_premise": "parse failure is not a required failure mode for the routed profile lifecycle.",
+      "corrected_premise": "parse failure is required and malformed routing or lineage inputs are rejected before writes.",
+      "reason": "Append-only current-head correction; independent agent must perform the subsequent soundness judgment.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "bb6b995f848e35ba893685e7d3476b350760d65eaca63a00dbd897c83cb07125"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:00.131Z"
+    },
+    {
+      "event_id": "8097f0e0-781f-43cd-b5c9-b14e740142dd",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is unsound: schema failure is required; incomplete/conflicting metadata and unsupported renderers are explicitly tested fail-closed before writes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:06.091Z"
+    },
+    {
+      "event_id": "15ac2f32-e252-499a-8ed9-fbde4afb4987",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "8097f0e0-781f-43cd-b5c9-b14e740142dd",
+      "wrong_premise": "schema failure is not a required failure mode for the routed profile lifecycle.",
+      "corrected_premise": "schema failure is required and incomplete/conflicting metadata or unsupported renderer inputs are rejected before writes.",
+      "reason": "Append-only current-head correction; independent agent must perform the subsequent soundness judgment.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "bb6b995f848e35ba893685e7d3476b350760d65eaca63a00dbd897c83cb07125"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:16.333Z"
+    },
+    {
+      "event_id": "5be1597d-f37f-4c7a-b4d4-fbdd5b4d3f7c",
       "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:intent is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:28.144Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:23.763Z"
     },
     {
-      "event_id": "44cb0737-e496-4b06-a693-bbd78a90c7cb",
+      "event_id": "d4924d4e-6cbe-4561-81e9-3cf9e3ad8dc4",
       "type": "verdict",
       "item_id": "spine:current_reality",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:current_reality is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:28.402Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:24.159Z"
     },
     {
-      "event_id": "5e75582a-8a01-48c5-b27d-1713de537236",
+      "event_id": "5c990bff-2782-474e-9810-fb0011b1535d",
       "type": "verdict",
       "item_id": "spine:invariants",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:invariants is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:28.655Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:24.766Z"
     },
     {
-      "event_id": "487b75e8-5c9f-419a-9fca-fb5ccf00d0de",
+      "event_id": "aeb106f3-fbcb-4d54-a61f-ae7eb02c2f20",
       "type": "verdict",
       "item_id": "spine:boundaries",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:boundaries is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:28.908Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:25.193Z"
     },
     {
-      "event_id": "15b004b8-01c9-4df7-a0e2-301112e7f57a",
+      "event_id": "a33f60fb-a47b-44d8-9c2f-230fe8d76be8",
       "type": "verdict",
       "item_id": "spine:failure_modes",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:failure_modes is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:29.169Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:25.520Z"
     },
     {
-      "event_id": "c70054be-618c-42b6-8e37-720fc02dd8bf",
+      "event_id": "9f803709-3754-42bd-a4a7-a7504ac098a2",
       "type": "verdict",
       "item_id": "spine:done_evidence",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; spine:done_evidence is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:29.423Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:26.015Z"
     },
     {
-      "event_id": "644d4b82-d7d1-4978-af84-087c3f783c14",
+      "event_id": "8b759bff-2193-4cac-af1a-521edfe5e918",
       "type": "verdict",
       "item_id": "axis:public_contract",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:public_contract is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:29.678Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:26.926Z"
     },
     {
-      "event_id": "bb7808b5-065b-4568-b893-b8f225fb184d",
+      "event_id": "7abf185d-efcf-41b6-a215-3fa9c057fc20",
       "type": "verdict",
       "item_id": "axis:execution_topology",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:execution_topology is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:29.930Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:27.913Z"
     },
     {
-      "event_id": "855b9141-9b25-4f28-9b9a-96073ff06b7e",
+      "event_id": "d45912ab-c7fa-4b2d-9ca6-a4ee6530d6bf",
       "type": "verdict",
       "item_id": "axis:scope_reviewability",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; axis:scope_reviewability is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:30.217Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:28.525Z"
     },
     {
-      "event_id": "18f4be9e-aedc-44b1-9479-0967047fa998",
-      "type": "verdict",
-      "item_id": "failure_mode:parse_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:parse_failure is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
-      },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:30.625Z"
-    },
-    {
-      "event_id": "e929e8c7-adb5-49e1-b615-1bb399592e6f",
-      "type": "verdict",
-      "item_id": "failure_mode:schema_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:schema_failure is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
-      },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:31.005Z"
-    },
-    {
-      "event_id": "a42288cf-f3fe-49dd-8051-95f41277fb4d",
+      "event_id": "86ef5fb7-3ad0-4e55-b20a-4f7ae585158d",
       "type": "verdict",
       "item_id": "failure_mode:evidence_lifecycle_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:evidence_lifecycle_regression is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:31.287Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:28.808Z"
     },
     {
-      "event_id": "07690346-f831-4a38-a51f-549495f407f7",
+      "event_id": "ab881196-bccb-4225-8d23-fafb17738eb4",
       "type": "verdict",
       "item_id": "failure_mode:workflow_state_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Independent lightweight final-HEAD review inspected the implementation, architecture, focused 111 assertions, and typecheck; failure_mode:workflow_state_regression is sound with authority, failure, compatibility, and rollback boundaries demonstrated.",
+      "reason": "Current HEAD 5753e973: canonical structured Spec, strict-head evidence, and routed lifecycle tests support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head575_evidence_terra",
+        "session_ref": "head575-evidence-refresh"
       },
-      "head_commit": "e67f33883823ecc77d5cd8cddf20a87b8b4a3574",
-      "recorded_at": "2026-07-21T06:57:31.545Z"
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:52:29.524Z"
     },
     {
-      "event_id": "369a6e90-8333-4229-9dd0-84afa93c325f",
+      "event_id": "18025845-7264-4952-8e82-0ac43059753f",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "ccb69d1e-b184-4482-a658-07ad5bb93c75",
+      "reason": "HEAD 5753e973でtest/artifact-routing.test.jsを実行し、malformed routing configがrepository filesを変更する前にfail-closedすること（subtest 33）と、経路collision/traversal/absolute/unresolved variableを拒否すること（subtest 32）を確認した。訂正後前提どおりparse failureは必要な失敗モードとして実装・検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_judge_terra",
+        "session_ref": "vibepro-head575-judge-parse-20260721"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:54:19.436Z"
+    },
+    {
+      "event_id": "904d44e8-54d1-41f3-8e97-e95e4bcc7271",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "15ac2f32-e252-499a-8ed9-fbde4afb4987",
+      "reason": "HEAD 5753e973でtest/artifact-routing.test.jsを実行し、unknown renderer contractをwrite前に拒否すること（subtest 16）、全profileのcomplete schemaとcanonicalを検証すること（subtests 17-18）、metadata authority/frontmatter conflictをfail-closedすること（subtest 5）を確認した。訂正後前提どおりschema failureは必要な失敗モードとして実装・検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head575_judge_terra",
+        "session_ref": "vibepro-head575-judge-schema-20260721"
+      },
+      "head_commit": "5753e9735700e7554c0eccf660f113020087f50c",
+      "recorded_at": "2026-07-21T12:54:19.622Z"
+    },
+    {
+      "event_id": "f23a35de-d377-48df-81d6-ccceddfaa7b5",
       "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:intent sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:51.230Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:48.856Z"
     },
     {
-      "event_id": "3330cd04-1c84-4d41-b76c-f35389a60b36",
+      "event_id": "2bd7402b-bb54-4cb8-9c96-ace95a2d652f",
       "type": "verdict",
       "item_id": "spine:current_reality",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:current_reality sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:51.487Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:49.105Z"
     },
     {
-      "event_id": "c3f611c8-b2f9-456e-beab-8db48c56d624",
+      "event_id": "7bc130c4-3e2c-4b7f-a2c2-8018047f7bb0",
       "type": "verdict",
       "item_id": "spine:invariants",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:invariants sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:51.741Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:49.298Z"
     },
     {
-      "event_id": "08c2ad21-353f-4504-9d22-82e44fb20317",
+      "event_id": "5b232ce9-8fab-4666-a58c-584e1a998fc7",
       "type": "verdict",
       "item_id": "spine:boundaries",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:boundaries sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:51.997Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:49.587Z"
     },
     {
-      "event_id": "f309fcc9-4717-4f4d-8fbc-068ab6cfd0a6",
+      "event_id": "4fb45172-5b98-4a39-a7fc-0c1f0cdeb978",
       "type": "verdict",
       "item_id": "spine:failure_modes",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:failure_modes sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:52.242Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:49.762Z"
     },
     {
-      "event_id": "417d0a94-95e7-4b49-b5bf-20141a21b4ae",
+      "event_id": "d2c2aa06-cfa6-428d-a5f9-a25072251cd1",
       "type": "verdict",
       "item_id": "spine:done_evidence",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged spine:done_evidence sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:52.485Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:49.921Z"
     },
     {
-      "event_id": "924980a8-cde2-4207-99eb-d7c28e5653da",
+      "event_id": "5b5ebb20-84f0-49c3-8eec-e424c5a2724b",
       "type": "verdict",
       "item_id": "axis:public_contract",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:public_contract sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:52.870Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:50.062Z"
     },
     {
-      "event_id": "d364fff3-8167-44c5-bf29-a4409ea3e7af",
+      "event_id": "292f00f9-9d22-472c-9b49-5e5e56048cd5",
       "type": "verdict",
       "item_id": "axis:execution_topology",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:execution_topology sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:53.137Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:50.198Z"
     },
     {
-      "event_id": "ee8ddaf7-0d20-498f-bef3-23985bfa2064",
+      "event_id": "18d8fb5f-38d5-46af-ab3a-ba1641886cef",
       "type": "verdict",
       "item_id": "axis:scope_reviewability",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged axis:scope_reviewability sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:53.394Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:50.328Z"
     },
     {
-      "event_id": "2c16c4b3-9757-48cf-9122-473f36937f40",
-      "type": "verdict",
-      "item_id": "failure_mode:parse_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:parse_failure sound against Story, architecture, implementation, and tests",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
-      },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:53.643Z"
-    },
-    {
-      "event_id": "af9c1e6e-f17d-41b6-a67e-04d535e25ca7",
-      "type": "verdict",
-      "item_id": "failure_mode:schema_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:schema_failure sound against Story, architecture, implementation, and tests",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
-      },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:53.893Z"
-    },
-    {
-      "event_id": "4c468d14-d422-47c9-94b7-39bbdf241c1d",
+      "event_id": "841f9c16-c588-4c8f-b952-46dd970cbf6d",
       "type": "verdict",
       "item_id": "failure_mode:evidence_lifecycle_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:evidence_lifecycle_regression sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:54.139Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:50.462Z"
     },
     {
-      "event_id": "b8be32e4-74ae-4278-adfc-4cf1e281830f",
+      "event_id": "f10d866c-ee80-4f76-b7f8-c3dfca559918",
       "type": "verdict",
       "item_id": "failure_mode:workflow_state_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 733c3faa judged failure_mode:workflow_state_regression sound against Story, architecture, implementation, and tests",
+      "reason": "Exact-head 7059c5ff evidence supports this item: routing unit 60/60, responsibility/authority integration 13/13, fresh-checkout E2E 3/3, and type/diff checks pass.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359_product_review",
-        "session_ref": "/private/tmp/issue359-final-lightweight-review.md"
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
       },
-      "head_commit": "733c3faa69b4898391f7a4a23ea7ad74c314267c",
-      "recorded_at": "2026-07-21T07:18:54.388Z"
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:13:50.628Z"
     },
     {
-      "event_id": "bc337bb3-4148-4363-82fb-cc679469aa10",
+      "event_id": "4d98c4aa-9283-4319-93d9-f866fbbfc992",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Deliberate current-HEAD premise correction event: an unqualified classifier premise is insufficient until it is bound to strict-head parse-failure evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:14:08.166Z"
+    },
+    {
+      "event_id": "c90191d3-7ae7-4233-a244-d01633c5599b",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "4d98c4aa-9283-4319-93d9-f866fbbfc992",
+      "wrong_premise": "An unqualified classifier premise was not bound to the exact current verification surface.",
+      "corrected_premise": "At HEAD 7059c5ff, artifact-routing 60/60 verifies malformed routing and unsafe paths fail closed before mutation (subtests 32-33).",
+      "reason": "Replace the intentionally unsound current classifier premise with strict-head parse-failure evidence.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "493056640ed584463ce7592c828e8297e5ce5b0feb47fe667d4acc0f56980718"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:14:15.967Z"
+    },
+    {
+      "event_id": "e9cbbce6-0f10-4093-99cc-3093edd8fc57",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Deliberate current-HEAD premise correction event: an unqualified classifier premise is insufficient until it is bound to strict-head schema-failure evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:14:27.067Z"
+    },
+    {
+      "event_id": "451a98dd-a47e-4f2b-a2b8-dd2f2ab1df0e",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "e9cbbce6-0f10-4093-99cc-3093edd8fc57",
+      "wrong_premise": "An unqualified classifier premise was not bound to the exact current verification surface.",
+      "corrected_premise": "At HEAD 7059c5ff, artifact-routing 60/60 verifies unknown renderer, incomplete profile/canonical, and metadata conflict are rejected before writes (subtests 5 and 16-18).",
+      "reason": "Replace the intentionally unsound current classifier premise with strict-head schema-failure evidence.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689"
+        },
+        {
+          "artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+          "sha256": "493056640ed584463ce7592c828e8297e5ce5b0feb47fe667d4acc0f56980718"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_final_evidence_terra",
+        "session_ref": "strict-head-7059c5ff"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:14:34.243Z"
+    },
+    {
+      "event_id": "494a091c-55ae-4789-8568-2ef5d85fc691",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "c90191d3-7ae7-4233-a244-d01633c5599b",
+      "reason": "At exact HEAD 7059c5ff, the focused strict-head run demonstrates malformed routing config and unsafe projection paths fail closed before repository mutation; the full artifact-routing verification is recorded as 60/60 on this head.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_judge_terra",
+        "session_ref": "vibepro-head705-parse-20260721"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:16:22.884Z"
+    },
+    {
+      "event_id": "69244ea4-7682-4895-bad4-ece324010f5e",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "451a98dd-a47e-4f2b-a2b8-dd2f2ab1df0e",
+      "reason": "At exact HEAD 7059c5ff, the focused strict-head run demonstrates malformed/non-canonical projection lineage and unknown renderer contracts are rejected before writes; the full artifact-routing verification is recorded as 60/60 on this head.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head705_judge_terra",
+        "session_ref": "vibepro-head705-schema-20260721"
+      },
+      "head_commit": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "recorded_at": "2026-07-21T13:16:23.112Z"
+    },
+    {
+      "event_id": "dce2706b-8712-4ccc-b64c-add1b7abf240",
       "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:intent sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:08.719Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:40:58.653Z"
     },
     {
-      "event_id": "0ed92cf9-7a08-4bc3-9bdc-5265fc2b33eb",
+      "event_id": "c83357a1-25c6-4af2-9cf0-51762e5fd7c8",
       "type": "verdict",
       "item_id": "spine:current_reality",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:current_reality sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:09.065Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:40:59.014Z"
     },
     {
-      "event_id": "53af292a-aa2f-46b6-9473-45edd461cb1b",
+      "event_id": "bb820806-60fe-46ff-b963-da7a27d5eddd",
       "type": "verdict",
       "item_id": "spine:invariants",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:invariants sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:09.396Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:40:59.277Z"
     },
     {
-      "event_id": "efd14dde-6fa8-453e-a3a7-7ab5b3d574fc",
+      "event_id": "405106f7-204a-422e-8728-389433219d57",
       "type": "verdict",
       "item_id": "spine:boundaries",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:boundaries sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:09.797Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:40:59.632Z"
     },
     {
-      "event_id": "dd405240-618b-4345-8c1e-56ddd5453a2a",
+      "event_id": "410f0e2f-e60a-4fac-b087-eb8d40cda9c9",
       "type": "verdict",
       "item_id": "spine:failure_modes",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:failure_modes sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:10.174Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:00.096Z"
     },
     {
-      "event_id": "d344fb91-af5f-4ee0-a1c5-2dd4e3ed765f",
+      "event_id": "b4a16422-5c06-46c9-a167-3445d78db60a",
       "type": "verdict",
       "item_id": "spine:done_evidence",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged spine:done_evidence sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:10.463Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:00.510Z"
     },
     {
-      "event_id": "ee2f4637-73f3-442a-acf3-f1093484083b",
+      "event_id": "8c57ef93-d499-487a-8642-760ffa5dff9f",
       "type": "verdict",
       "item_id": "axis:public_contract",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:public_contract sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:10.821Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:01.051Z"
     },
     {
-      "event_id": "4ffab44e-36c8-4e63-9647-7496882cd7e3",
+      "event_id": "06a149f1-d7b2-4daa-99a7-ce114d04793c",
       "type": "verdict",
       "item_id": "axis:execution_topology",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:execution_topology sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:11.222Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:01.428Z"
     },
     {
-      "event_id": "e844e457-72e6-4826-92a7-7cec1930227b",
+      "event_id": "9234a64b-6568-48bc-b7b9-bc68c381bf7e",
       "type": "verdict",
       "item_id": "axis:scope_reviewability",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged axis:scope_reviewability sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:11.586Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:01.806Z"
     },
     {
-      "event_id": "24128ae5-db72-4e1d-9739-066265ddc5d8",
-      "type": "verdict",
-      "item_id": "failure_mode:schema_failure",
-      "verdict": "judged_sound",
-      "unsound_cause": null,
-      "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:schema_failure sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
-      },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:11.926Z"
-    },
-    {
-      "event_id": "fd951ae6-4935-4919-b45c-4f35b905c687",
+      "event_id": "f4ee7a30-d75c-4e99-a75b-6a5a487b88d4",
       "type": "verdict",
       "item_id": "failure_mode:evidence_lifecycle_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:evidence_lifecycle_regression sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:12.170Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:02.114Z"
     },
     {
-      "event_id": "9cd075b9-cc63-442f-aa21-fb7387550cce",
+      "event_id": "e1c073f7-5e40-4013-b7bb-61df6da1a5b6",
       "type": "verdict",
       "item_id": "failure_mode:workflow_state_regression",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:workflow_state_regression sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Current strict-head evidence and structured Spec support this judgment item.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:12.460Z"
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:02.392Z"
     },
     {
-      "event_id": "fe73ed8f-c406-4f6d-a6ed-2e25c34b5aa3",
+      "event_id": "e768f613-be09-4841-bbbd-607f5ae6b12f",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is intentionally challenged and will be corrected against exact current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:44.549Z"
+    },
+    {
+      "event_id": "0431f4d1-a93e-4641-9770-029968b3f350",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise is intentionally challenged and will be corrected against exact current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:44.960Z"
+    },
+    {
+      "event_id": "30e4abb1-5c8c-49ea-8451-624aafb8e674",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "e768f613-be09-4841-bbbd-607f5ae6b12f",
+      "wrong_premise": "The parse-failure classifier premise was not bound to the exact current verification surface.",
+      "corrected_premise": "At HEAD 23a31970, artifact-routing 60/60 verifies malformed routing and unsafe paths fail closed before mutation (subtests 32-33).",
+      "reason": "Revalidated against strict current-head unit evidence.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:56.644Z"
+    },
+    {
+      "event_id": "cf5e0af6-af04-48cd-b373-62c5864e8132",
+      "type": "premise_correction",
+      "item_id": "failure_mode:schema_failure",
+      "corrects_verdict_id": "0431f4d1-a93e-4641-9770-029968b3f350",
+      "wrong_premise": "The schema-failure classifier premise was not bound to the exact current verification surface.",
+      "corrected_premise": "At HEAD 23a31970, artifact-routing 60/60 verifies unknown renderer, incomplete profile/canonical, and metadata conflict are rejected before writes (subtests 5 and 16-18).",
+      "reason": "Revalidated against strict current-head unit evidence.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/artifact-routing.test.js",
+          "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_final_evidence_terra",
+        "session_ref": "head-23a31970"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:41:57.231Z"
+    },
+    {
+      "event_id": "9e3e7d70-474c-4341-8bad-a9d072195473",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "30e4abb1-5c8c-49ea-8451-624aafb8e674",
+      "reason": "At HEAD 23a31970, the focused artifact-routing suite passes 60/60. The malformed routing configuration and unsafe path subtests verify failure before repository mutation, so malformed parse input is fail-closed on the changed path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_judge_terra",
+        "session_ref": "head23-judge-parse-re-adjudication"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:44:59.332Z"
+    },
+    {
+      "event_id": "2f01b01f-320b-448d-9ceb-c33a7cd926a9",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "cf5e0af6-af04-48cd-b373-62c5864e8132",
+      "reason": "At HEAD 23a31970, the focused artifact-routing suite passes 60/60. Unknown renderer, incomplete profile/canonical, and metadata-conflict cases are rejected before writes, so schema validation failure remains fail-closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/vibepro_head23_judge_terra",
+        "session_ref": "head23-judge-schema-re-adjudication"
+      },
+      "head_commit": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "recorded_at": "2026-07-21T13:44:59.539Z"
+    },
+    {
+      "event_id": "86e48336-96d2-4ca1-8c5b-d80ce69e734f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:27.679Z"
+    },
+    {
+      "event_id": "9ba74a64-a4a6-4755-9da7-81ac546cc674",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:27.811Z"
+    },
+    {
+      "event_id": "aefc2548-6bb7-4b34-9323-637f76df9c69",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:27.955Z"
+    },
+    {
+      "event_id": "424986b4-6da3-4684-ab45-60ed24ff6cf6",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.083Z"
+    },
+    {
+      "event_id": "984d44d9-671d-4fe4-90be-50b980a5100f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.216Z"
+    },
+    {
+      "event_id": "0547d5e0-0b5c-4cdb-b50e-f6da1a1dea9d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.353Z"
+    },
+    {
+      "event_id": "3c94bfec-54d8-4195-b7e5-0e76545bb716",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.482Z"
+    },
+    {
+      "event_id": "4baf30f6-0a46-455a-93c4-2791d31cb283",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.613Z"
+    },
+    {
+      "event_id": "cf67f1a8-5af6-4109-9e25-db9d346e4868",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.756Z"
+    },
+    {
+      "event_id": "cf44e12e-1a19-44a1-9b38-8bfc9b3cee85",
       "type": "verdict",
       "item_id": "failure_mode:parse_failure",
       "verdict": "judged_sound",
       "unsound_cause": null,
       "responds_to_correction_id": null,
-      "reason": "Lightweight fresh-context review on HEAD 63c6a30e judged failure_mode:parse_failure sound; implementation surfaces are unchanged and the final test expectation now exactly asserts canonical-writer authority",
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "issue359-lightweight-63c",
-        "session_ref": "collaboration:issue359_product_review"
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
       },
-      "head_commit": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-      "recorded_at": "2026-07-21T07:47:12.748Z"
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:28.885Z"
+    },
+    {
+      "event_id": "6bbea197-5700-477c-bf90-27bba607f3ad",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:29.018Z"
+    },
+    {
+      "event_id": "5d872e69-95b4-4fd1-ac71-18b4fa965cc9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:29.145Z"
+    },
+    {
+      "event_id": "e914c444-973c-4aef-b022-d1802f6eb3a2",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent review and accepted root judgment confirm this current-HEAD change is sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-judgment-adjudicator-8a1f",
+        "session_ref": null
+      },
+      "head_commit": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "recorded_at": "2026-07-21T14:58:29.273Z"
+    },
+    {
+      "event_id": "da8fd8f7-aac3-48c2-89e5-02dc867a9236",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story and architecture consistently define catalog-authoritative safe rendered projections.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:22.840Z"
+    },
+    {
+      "event_id": "c5f1ffc7-d3d3-40ec-89b9-80d1170c8dfe",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD focused evidence reports 111/111 and responsibility evidence 157 passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:23.396Z"
+    },
+    {
+      "event_id": "8ad2b344-6a85-4ca6-9436-84849de67ada",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fail-closed reconciliation, canonical ownership, deterministic projection, and curated preservation are test-covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:23.680Z"
+    },
+    {
+      "event_id": "5d70623f-4a05-4c32-a3c2-a6df70caf2df",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new network or worker boundary; routing writers and human-owned content remain separated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:24.238Z"
+    },
+    {
+      "event_id": "40a3e5aa-74b8-4007-9980-f5e492301da7",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Targeted evidence covers parse, schema, workflow, and lifecycle fail-closed paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:24.461Z"
+    },
+    {
+      "event_id": "72f708a7-6be7-49f1-b4cf-cdae196852ad",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current strict-head targeted, responsibility, and role-review evidence is recorded before final sequence execution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:24.986Z"
+    },
+    {
+      "event_id": "c5b835cc-b08e-4cea-9410-f4bf8a2426df",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Resolver, migration dry-run, status, and prepare contracts replay through production CLI.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:25.524Z"
+    },
+    {
+      "event_id": "1dfbcc7a-44ba-496d-bf2a-639df2c7b747",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Replacement lifecycle recovery is regression covered and current strict-head role reviews are closed and passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:26.215Z"
+    },
+    {
+      "event_id": "e1181751-a323-4265-ae5d-a941eb6734b8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Artifact-backed accepted scope decision records the deliberate review boundary without fabricating owner-map evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:26.525Z"
+    },
+    {
+      "event_id": "e83d3180-b8fc-4729-a0cc-f05e414162ae",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current targeted evidence covers malformed routing input fail-closed before writes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:27.017Z"
+    },
+    {
+      "event_id": "6655f82e-7656-4602-990e-3566c048e165",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Routing validation rejects malformed schema and conflict states before writer execution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:27.411Z"
+    },
+    {
+      "event_id": "167a8195-58d6-4c57-ab46-a900eec1ad31",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout predecessor replacement semantics have direct regression coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:27.668Z"
+    },
+    {
+      "event_id": "454ad6f2-7650-4059-beb2-c17b3dac8bfb",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current targeted evidence replays lifecycle transitions through real recorders.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-adjudication-9415",
+        "session_ref": "preview_usability"
+      },
+      "head_commit": "9415adf470e0f16b2ad1db459d2c8f2cfbb5775e",
+      "recorded_at": "2026-07-21T15:32:27.882Z"
+    },
+    {
+      "event_id": "aa55cae2-cbf4-487d-b597-a5a159ecec03",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:15:59.683Z"
+    },
+    {
+      "event_id": "ae4f1c5e-1b3d-4d1c-8eeb-d58a35c5b863",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:15:59.845Z"
+    },
+    {
+      "event_id": "1869c38f-a6f6-4ce0-b24d-4a705325a67c",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.009Z"
+    },
+    {
+      "event_id": "13f5ce89-ad4e-43b3-8cdc-ddcf3e48360a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.176Z"
+    },
+    {
+      "event_id": "98d6ac97-a536-4251-8b39-6e26e552acf6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.356Z"
+    },
+    {
+      "event_id": "fcb5a121-f25d-4402-8ccc-a0d2b8eb0897",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.544Z"
+    },
+    {
+      "event_id": "daebc0d0-de37-4928-99f3-283f35e78e3d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.703Z"
+    },
+    {
+      "event_id": "c2b426b5-0400-44cf-9227-f80e0ef3133c",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:00.895Z"
+    },
+    {
+      "event_id": "11bb1afd-09eb-456d-bf00-3c39b41b58d8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:01.099Z"
+    },
+    {
+      "event_id": "ea8741ef-7ab3-4070-b2f3-4ffab540bc9a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:01.268Z"
+    },
+    {
+      "event_id": "5d7a584d-1895-4dcd-924d-2e8dc1622e1f",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:01.437Z"
+    },
+    {
+      "event_id": "97be8839-afb5-4438-9aec-7b7d14da0fef",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:01.584Z"
+    },
+    {
+      "event_id": "ace72f1f-23df-49cb-a053-159373cd3424",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent fresh-context adjudication on current HEAD 23d464e21770 judged this item sound; no blockers found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_head_adjudication",
+        "session_ref": "collaboration:/root/current_head_adjudication"
+      },
+      "head_commit": "23d464e217702f142d4be383b6f27ec057e55583",
+      "recorded_at": "2026-07-21T16:16:01.721Z"
+    },
+    {
+      "event_id": "a829e4b2-30af-4f33-9cfe-a31be28e58c6",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:17.976Z"
+    },
+    {
+      "event_id": "681a40de-cf52-4f90-8d32-9baf7ae99813",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:18.599Z"
+    },
+    {
+      "event_id": "8f97c5d3-75e6-4b86-a3c7-b5d6b420d533",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:19.858Z"
+    },
+    {
+      "event_id": "f65ed602-6bd6-4dcb-811d-1f99e080f614",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:21.078Z"
+    },
+    {
+      "event_id": "2be6076a-cfff-41ad-905e-b35fb0dd2016",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:21.953Z"
+    },
+    {
+      "event_id": "ab2091df-b26f-4550-90a1-1685c8da6586",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:23.131Z"
+    },
+    {
+      "event_id": "097e38af-2b3b-4ca5-839f-5dd8bfd60757",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:24.563Z"
+    },
+    {
+      "event_id": "b4352b72-7f48-4aa9-a17a-f6fe1777f654",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:25.718Z"
+    },
+    {
+      "event_id": "3bc6dabc-6720-40ee-9ee4-90ee4e20577e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:26.619Z"
+    },
+    {
+      "event_id": "6e33b3a2-5757-45ce-836b-3c69651e1e86",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:27.578Z"
+    },
+    {
+      "event_id": "7c07f586-c2e2-430f-84d9-d54082f67f88",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:28.557Z"
+    },
+    {
+      "event_id": "e9854a8d-20fe-499d-b2ce-5a769da48132",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:29.441Z"
+    },
+    {
+      "event_id": "dc271951-e105-4719-b5d6-3de59aae8e41",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fresh lightweight current-HEAD adjudication found this judgment sound against current source and 111 passing targeted tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-low-gate-evidence-review",
+        "session_ref": "collaboration:/root/vibepro_finish_merge/gate_evidence_review"
+      },
+      "head_commit": "962d7e02cf6578d4acfa62c695c5168f9296ba02",
+      "recorded_at": "2026-07-21T16:37:30.424Z"
+    },
+    {
+      "event_id": "fd9585b2-ecda-40bb-a759-9cfd6d3b64c8",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.115Z"
+    },
+    {
+      "event_id": "9196cb09-f986-4e4c-ac11-bd1ccf1b0a5c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.234Z"
+    },
+    {
+      "event_id": "05a3dd38-88b7-40df-b46c-4828dcec1f43",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.354Z"
+    },
+    {
+      "event_id": "b4d599fc-04ff-4018-993b-75a8dbdac3ec",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.473Z"
+    },
+    {
+      "event_id": "c742f76f-1b0b-46aa-8575-c4dd14160863",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.595Z"
+    },
+    {
+      "event_id": "84c3a7f9-20da-44a5-a9fd-21a8b18dce36",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.716Z"
+    },
+    {
+      "event_id": "b27c02a1-56d2-4707-97d0-7f239e00ab53",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.835Z"
+    },
+    {
+      "event_id": "b9bf7186-a28b-4996-9d94-ec179551ca53",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:22.956Z"
+    },
+    {
+      "event_id": "dc45daa8-11b8-4298-bd85-86b1f8a9c010",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:23.077Z"
+    },
+    {
+      "event_id": "f0459c00-a9e0-4f7b-8531-f9dc415f8506",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:23.197Z"
+    },
+    {
+      "event_id": "3407c93b-b28a-4481-8426-b3c918ef1ea2",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:23.318Z"
+    },
+    {
+      "event_id": "a8d3b434-a1bf-4aed-b57e-0b7d40aca7a0",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:23.438Z"
+    },
+    {
+      "event_id": "6fc27b5f-3a7c-4bbd-8d15-0a91a50c1eb3",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudication judged this item sound against the focused E2E replay and recorded review evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-1200",
+        "session_ref": "/private/tmp/vibepro-adjudication-1200.md"
+      },
+      "head_commit": "1200b86b9f5309e5b59f1c9edd907238a5c59a4f",
+      "recorded_at": "2026-07-21T17:47:23.557Z"
+    },
+    {
+      "event_id": "0a8df48b-5213-4339-a93f-5a23317939fe",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.564Z"
+    },
+    {
+      "event_id": "048624e4-6aea-47db-86fe-061b975c36e0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.700Z"
+    },
+    {
+      "event_id": "d393d29d-88e5-47c9-95ae-465d26811c9b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.830Z"
+    },
+    {
+      "event_id": "0ecc9c5c-576b-4f5c-ad48-c5cfd09a3e05",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.961Z"
+    },
+    {
+      "event_id": "8279872d-11de-4409-b44f-b10e81977768",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.092Z"
+    },
+    {
+      "event_id": "cd03b300-5e71-489f-b08e-26a0a930dac6",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.225Z"
+    },
+    {
+      "event_id": "2cf6b119-b5bc-497d-b089-b37afac75a47",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.361Z"
+    },
+    {
+      "event_id": "4617fe00-beff-450b-b394-81eba971e30c",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.517Z"
+    },
+    {
+      "event_id": "06b4ce64-01b1-40a3-8dcb-6f6ef240209d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.652Z"
+    },
+    {
+      "event_id": "21fefb22-deb8-46c4-a392-43ac30bacba4",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.791Z"
+    },
+    {
+      "event_id": "d48252ab-3e70-4d82-89c3-d65b0d738e9e",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:15.954Z"
+    },
+    {
+      "event_id": "1c61199a-719c-4b8e-892e-f21579ac725c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:16.086Z"
+    },
+    {
+      "event_id": "fd1aa41f-601a-4eca-ad5e-4244f7f9cce6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:16.216Z"
     }
   ]
 }

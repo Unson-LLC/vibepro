@@ -405,3 +405,108 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-explicit-run
 なし
 
 <!-- vibepro-release-pr:371:end -->
+
+<!-- vibepro-release-pr:374:start -->
+## [#374](https://github.com/Unson-LLC/vibepro/pull/374) story-vibepro-managed-worktree-policy-resync - Managed worktreeのポリシーconfigを凍結させず親repoから再同期する
+
+- Author: @sintariran
+- Merged: 2026-07-21T16:27:55Z
+- Commit: `a39b1973eb7e93c50a7d40cdf41a7f36a02f9b0a`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:374:end -->
+
+<!-- vibepro-release-pr:345:start -->
+## [#345](https://github.com/Unson-LLC/vibepro/pull/345) story-vibepro-session-attribution-boundary-guard - 2026-07-09 の価値監査で親 session 019f3f8c が複数の関連 story を混載し、strict と worktree-bound の attribution 乖離（例: docs-feature-map strict 1h24m vs bound 11h24m 相当）が前回監査から横ばいのまま残った
+
+- Author: @sintariran
+- Merged: 2026-07-21T18:13:55Z
+- Commit: `60524f51fe7c76ba3f06e82161bb043afcc22b04`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-session-attribution-boundary-guard.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-session-attribution-boundary-guard.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:345:end -->
+
+<!-- vibepro-release-pr:373:start -->
+## [#373](https://github.com/Unson-LLC/vibepro/pull/373) story-vibepro-routing-profiles-rendered-projections - Story別routing profileとlineage付きprojectionでfeature packetを正本化する
+
+- Author: @sintariran
+- Merged: 2026-07-21T18:37:10Z
+- Commit: `b03bec63b9dd03d9ecc33baad705ec5d5dfe0f1b`
+
+### Change Summary
+
+- `.vibepro/config.json`に複数のnamed routing profileを定義し、既存`artifact_routing.artifacts`は後方互換なdefaultとして扱う。 - `.vibepro/config.json`の`brainbase.stories[]`を`artifact_profile`と`feature_slug`のauthorityとする。named profileを選ぶStoryではStory frontmatterを必須mirrorとし、不在または不一致なら共通resolverは書込前にfail closedする。profile metadataを持たないlegacy/unconfigured Storyではmirrorを任意とする。 - projectionは`renderer`と`ownership`を持ち、generated viewにsource path、SHA-256、renderer/schema version、direct-edit prohibitionを埋め込む。 - `human_owned`はVibeProが上書きせず、`curated`は自動上書き対象外として明示的な運用境界を返す。 - migration dry-runはprofile変更、move/collision、stale projection、human-owned overwrite...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:373:end -->
+
+<!-- vibepro-release-pr:375:start -->
+## [#375](https://github.com/Unson-LLC/vibepro/pull/375) fix: policy_syncレビュー残課題3件を解消（#374 フォローアップ）
+
+- Author: @sintariran
+- Merged: 2026-07-21T23:17:49Z
+- Commit: `4b15c508535f1156deb38f97bde853a7c8888b61`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:375:end -->
+
+<!-- vibepro-release-pr:372:start -->
+## [#372](https://github.com/Unson-LLC/vibepro/pull/372) story-vibepro-autonomous-action-dag - Guarded Runを完全な型付き自律Action DAGへ拡張する
+
+- Author: @sintariran
+- Merged: 2026-07-22T00:06:54Z
+- Commit: `df3c5dcd7cb95f99d06c299ee963fafeea2703fb`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-autonomous-action-dag.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-action-dag.md), [docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md), [docs/management/stories/active/story-vibepro-independent-review-orchestration.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-independent-review-orchestration.md), [docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md), ...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:372:end -->

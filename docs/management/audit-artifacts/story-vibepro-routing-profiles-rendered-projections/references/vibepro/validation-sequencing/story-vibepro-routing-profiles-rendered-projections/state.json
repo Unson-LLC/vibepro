@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "model": "vibepro-risk-adaptive-validation-sequencing-v1",
   "story_id": "story-vibepro-routing-profiles-rendered-projections",
-  "created_at": "2026-07-21T07:53:18.351Z",
-  "updated_at": "2026-07-21T07:58:21.883Z",
+  "created_at": "2026-07-21T18:24:13.134Z",
+  "updated_at": "2026-07-21T18:27:55.523Z",
   "plan": {
     "model": "vibepro-risk-adaptive-validation-sequencing-v1",
     "story_id": "story-vibepro-routing-profiles-rendered-projections",
@@ -13,7 +13,8 @@
       "gate_orchestration",
       "regression_blast_radius",
       "review_lifecycle",
-      "test_coverage"
+      "test_coverage",
+      "verification_evidence"
     ],
     "preflight_roles": [
       "architecture_boundary"
@@ -41,127 +42,122 @@
     ]
   },
   "frozen_binding": {
-    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-    "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-    "verification_command": "node --test test/artifact-routing.test.js"
+    "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+    "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+    "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
   },
   "phases": {
     "targeted_validation": {
       "status": "passed",
-      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
       "reason": null,
       "evidence": [
         ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json"
       ],
       "source": "local",
-      "recorded_at": "2026-07-21T07:55:35.884Z",
+      "recorded_at": "2026-07-21T18:26:23.965Z",
       "binding": {
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-        "verification_command": "node --test test/artifact-routing.test.js"
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+        "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+        "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
       }
     },
     "preflight_review": {
       "status": "passed",
-      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
       "reason": null,
       "evidence": [
+        ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-architecture_boundary.json",
         ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-architecture_boundary.json"
       ],
       "record_type": "advisory_preflight",
       "findings": [],
       "dispositions": [],
       "satisfies_final_review": false,
-      "recorded_at": "2026-07-21T07:56:38.701Z",
+      "recorded_at": "2026-07-21T18:27:36.428Z",
       "review_provenance": {
         "status": "pass",
         "story_id": "story-vibepro-routing-profiles-rendered-projections",
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
         "system": "codex",
         "execution_mode": "parallel_subagent",
         "evidence_strength": "strong",
         "agent_closed": true,
         "role": "architecture_boundary",
         "stage": "architecture_spec",
-        "inspection_summary": "reviewed gate_orchestration,review_lifecycle; risk_surfaces=gate_orchestration,review_lifecycle",
+        "inspection_summary": "Reviewed gate_orchestration,review_lifecycle; risk_surfaces=gate_orchestration,review_lifecycle. Temporary child PATH containment leaves production Graphify/resolver/CLI unchanged.",
         "inspection_inputs": [
-          "src/artifact-routing.js",
-          "src/agent-review.js",
-          "src/pr-manager.js",
-          "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+          "src/graphify-adapter.js"
         ]
       },
       "binding": {
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-        "verification_command": "node --test test/artifact-routing.test.js"
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+        "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+        "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
       }
     },
     "code_frozen": {
       "status": "passed",
-      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
       "reason": null,
       "evidence": [],
-      "recorded_at": "2026-07-21T07:56:53.918Z",
+      "recorded_at": "2026-07-21T18:27:36.557Z",
       "binding": {
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-        "verification_command": "node --test test/artifact-routing.test.js"
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+        "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+        "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
       }
     },
     "expensive_verification": {
       "status": "passed",
-      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
       "reason": null,
       "evidence": [
         ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json"
       ],
       "source": "local",
-      "recorded_at": "2026-07-21T07:57:43.275Z",
+      "recorded_at": "2026-07-21T18:27:54.277Z",
       "binding": {
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-        "verification_command": "node --test test/artifact-routing.test.js"
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+        "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+        "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
       }
     },
     "final_review": {
       "status": "passed",
-      "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+      "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
       "reason": null,
       "evidence": [
         ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-runtime_contract.json"
       ],
       "source": "agent_review",
-      "recorded_at": "2026-07-21T07:58:21.883Z",
+      "recorded_at": "2026-07-21T18:27:55.523Z",
       "review_provenance": {
         "status": "pass",
         "story_id": "story-vibepro-routing-profiles-rendered-projections",
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
         "system": "codex",
         "execution_mode": "parallel_subagent",
         "evidence_strength": "strong",
         "agent_closed": true,
         "role": "runtime_contract",
         "stage": "implementation",
-        "inspection_summary": "reviewed final frozen-HEAD runtime contract",
+        "inspection_summary": "Final review confirms child-only PATH stub, canonical graph assertion, and preserved fail-closed adapter behavior.",
         "inspection_inputs": [
-          "src/artifact-routing.js",
-          "src/cli.js",
-          "test/artifact-routing.test.js",
-          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+          "src/graphify-adapter.js"
         ]
       },
       "binding": {
-        "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-        "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-        "verification_command": "node --test test/artifact-routing.test.js"
+        "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+        "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+        "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
       }
     }
   },
   "proposed_binding": {
-    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
-    "test_fingerprint": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
-    "verification_command": "node --test test/artifact-routing.test.js"
+    "head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+    "test_fingerprint": "8948de85d9eb99fc6eae89b634ae452bd2840058e8d085540691f529f33285b9",
+    "verification_command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
   },
   "invalidations": []
 }

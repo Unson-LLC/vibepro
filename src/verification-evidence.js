@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext } from './git-fingerprint.js';
+import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
@@ -32,7 +33,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     storyId,
     commandName: 'verify record'
   });
-  const gitContext = await collectGitContext(root);
+  const generatedProjectionPaths = await collectCurrentGeneratedProjectionPaths(root, { storyId });
+  const gitContext = await collectGitContext(root, { userExcludePaths: generatedProjectionPaths });
   const lineage = resolveRecorderLineage(options, {
     story_id: storyId,
     worktree_root: root,
@@ -128,6 +130,7 @@ export function renderVerificationEvidenceSummary(result) {
   const warnings = latest.warnings?.length
     ? latest.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
     : '- none';
+  const managedWorktree = formatManagedWorktreeContextSummary(latest.managed_worktree_context);
   return `# VibePro Verification Evidence
 
 - story: ${result.evidence.story_id}
@@ -135,11 +138,61 @@ export function renderVerificationEvidenceSummary(result) {
 - status: ${latest.status}
 - command: ${latest.command ?? '-'}
 - artifact: ${result.artifact}
+- managed_worktree: ${managedWorktree.headline}
+
+## Managed Worktree Context
+
+${managedWorktree.details}
 
 ## Warnings
 
 ${warnings}
 `;
+}
+
+// The plain-text verify record output is a primary surface for policy drift: a policy_sync
+// failure during this command's own gate/context refresh must be visible here, not only
+// via --json (same rationale as the execution-state text summary).
+function formatManagedWorktreeContextSummary(context) {
+  if (!context) {
+    return {
+      headline: 'not_recorded',
+      details: '- status: not_recorded'
+    };
+  }
+  const worktree = context.managed_worktree ?? null;
+  const policySync = worktree?.policy_sync ?? null;
+  const policySyncHeadline = policySync?.status === 'failed' ? '/policy_sync_failed' : '';
+  const headline = `${context.mode ?? 'unknown'}/${context.status ?? 'unknown'}${policySyncHeadline}`;
+  const policySyncLines = policySync
+    ? [
+      `- policy_sync: ${policySync.status ?? '-'}${policySync.sections_updated?.length ? ` (${policySync.sections_updated.join(', ')})` : ''}`,
+      ...(policySync.status === 'failed' || policySync.status === 'skipped'
+        ? [`- policy_sync_reason: ${policySync.reason ?? '-'}`]
+        : []),
+      ...(policySync.last_event
+        ? [`- policy_sync_last_event: ${policySync.last_event.status ?? '-'}${policySync.last_event.sections_updated?.length ? ` (${policySync.last_event.sections_updated.join(', ')})` : ''} at ${policySync.last_event.synced_at ?? '-'}`]
+        : [])
+    ]
+    : ['- policy_sync: not_recorded'];
+  return {
+    headline,
+    details: [
+      `- status: ${context.status ?? '-'}`,
+      `- mode: ${context.mode ?? '-'}`,
+      `- reason: ${context.reason ?? '-'}`,
+      ...(worktree
+        ? [
+          `- path: ${worktree.path ?? '-'}`,
+          `- branch: ${worktree.branch ?? '-'}`,
+          `- actual_branch: ${worktree.actual_branch ?? '-'}`,
+          `- dirty: ${worktree.dirty === true ? 'true' : worktree.dirty === false ? 'false' : '-'}`,
+          `- raw_dirty: ${worktree.raw_dirty === true ? 'true' : worktree.raw_dirty === false ? 'false' : '-'}`,
+          ...policySyncLines
+        ]
+        : ['- worktree: not_recorded'])
+    ].join('\n')
+  };
 }
 
 async function readEvidence(repoRoot, evidencePath, storyId) {

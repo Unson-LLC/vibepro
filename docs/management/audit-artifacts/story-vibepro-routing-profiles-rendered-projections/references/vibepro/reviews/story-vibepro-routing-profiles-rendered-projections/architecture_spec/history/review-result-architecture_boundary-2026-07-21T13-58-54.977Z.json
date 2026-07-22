@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Generated projection freshness exclusion remains fail-closed across review and gate lifecycle.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=gate_orchestration,review_lifecycle; inspected current routing, review lifecycle, and focused tests.",
+    "evidence": "HEAD 23a31970; focused projection freshness and lifecycle tests passed.",
+    "inputs": [
+      "src/agent-review.js",
+      "src/artifact-routing.js",
+      "src/content-binding.js",
+      "src/git-fingerprint.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that generated projection exclusion weakens lifecycle binding -> pass because exact lineage, canonical, and user-fingerprint validation retain fail-closed behavior."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+    "current_head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "current_head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T13:58:54.977Z",
+  "git_context": {
+    "head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "7f28ce8b3e77ff9617e1bcb6a3241e5857a388b61ea4491c85b8977e978b0db9",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T13:58:54.973Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Preflight boundary review must bind to the frozen implementation head."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "23a31970d51db10d55c95dccad564e946afd1a8b",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "0c227c0feaa02dbbbbfdcb4c67fc70d8c1eb02ade8f687878d3e4c94ca8c6517",
+        "size": 154534
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "31598361c6701bf07971b864f474abe337a0a49d2326cdb13dfdc55a7db3ae48",
+        "size": 45451
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "3b6b710c03b3d96d532f266b18f5de42fea0dff08329c56f78df79675cb58f81",
+        "size": 8134
+      },
+      {
+        "path": "src/git-fingerprint.js",
+        "sha256": "74d573f4a770489639e9bee28b10018dbae13c32a804da42564950730014a843",
+        "size": 5581
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "6aab33160952341b895f0bad502ed4f970a4039ec581aa0dbcc8054f6ad9e399",
+        "size": 1086955
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "97f4e5de34c13ae6174f9ca0fcc2b699a3af604024359d1e17fcc77518c8a17d"
+  },
+  "source_fingerprint": "255daa79fde6ff06700717c3430566202e8a15d5b3807acd9bc1b77f4fd7b101",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/execute_validation_sequence/architecture_boundary_review",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../vibepro-review-architecture-boundary-current.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "/private/tmp/vibepro-review-architecture-boundary-current.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

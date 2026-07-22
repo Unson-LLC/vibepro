@@ -6,6 +6,9 @@ export const CONTENT_BINDING_MODEL = 'vibepro-content-scoped-evidence-freshness-
 
 export async function buildContentBinding(repoRoot, options = {}) {
   const mode = options.strictHead === true ? 'strict_head' : 'content_surface';
+  const excludedPaths = new Set(arrayOf(options.excludeSurfacePaths)
+    .map((ref) => normalizeSurfacePath(ref))
+    .filter(Boolean));
   const refs = collectSurfaceRefs(options);
   const surfaceFiles = [];
   const missingFiles = [];
@@ -13,6 +16,11 @@ export async function buildContentBinding(repoRoot, options = {}) {
     const filePath = normalizeSurfacePath(ref);
     if (!filePath) continue;
     if (isInternalWorkspacePath(filePath)) continue;
+    // A current rendered projection is a deterministic view, not an independent
+    // review surface.  Its canonical source and renderer are already the
+    // authority; binding its transient bytes would make a review stale when
+    // recording or PR preparation deterministically re-renders that same view.
+    if (excludedPaths.has(filePath)) continue;
     const snapshot = await snapshotFile(repoRoot, filePath);
     if (snapshot.missing) {
       missingFiles.push(filePath);

@@ -2,10 +2,20 @@ import { createHash } from 'node:crypto';
 import { selectNextBestAction } from './next-best-action-controller.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
-const REGISTRY = Object.freeze([
+const LEGACY_REGISTRY = Object.freeze([
   Object.freeze({ id: 'pr_prepare', classification: 'repo_local_safe', depends_on: [] }),
   Object.freeze({ id: 'pr_autopilot_safe', classification: 'repo_local_safe', depends_on: ['pr_prepare'] })
 ]);
+const AUTONOMOUS_REGISTRY = Object.freeze([
+  Object.freeze({ id: 'diagnose', classification: 'repo_local_safe', depends_on: [] }),
+  Object.freeze({ id: 'prepare_artifacts', classification: 'agent_runtime_guarded', depends_on: ['diagnose'] }),
+  Object.freeze({ id: 'implement', classification: 'agent_runtime_guarded', depends_on: ['prepare_artifacts'] }),
+  Object.freeze({ id: 'verify', classification: 'repo_local_safe', depends_on: ['implement'] }),
+  Object.freeze({ id: 'review', classification: 'agent_runtime_read_only', depends_on: ['verify'] }),
+  Object.freeze({ id: 'repair', classification: 'agent_runtime_guarded', depends_on: ['review'] }),
+  Object.freeze({ id: 'final_prepare', classification: 'repo_local_safe', depends_on: ['repair'] })
+]);
+const ACTION_PROFILES = Object.freeze({ legacy: LEGACY_REGISTRY, autonomous: AUTONOMOUS_REGISTRY });
 const ESCAPE_REGISTRY = Object.freeze([
   Object.freeze({ id: 'ask', classification: 'approval_required' }),
   Object.freeze({ id: 'split', classification: 'approval_required' }),
@@ -14,29 +24,30 @@ const ESCAPE_REGISTRY = Object.freeze([
   Object.freeze({ id: 'rediagnose', classification: 'approval_required' })
 ]);
 
-export function buildSafeActionPlan(state) {
-  return REGISTRY.map((action) => {
+export function buildSafeActionPlan(state, options = {}) {
+  const profile = resolveActionProfile(state, options.profile, options);
+  return ACTION_PROFILES[profile].map((action) => {
     const lineage = resolveActionLineage(state, state.lineage ?? state.run_lineage, `action-${action.id}`);
     return {
       ...action,
       ...(lineage ? { lineage } : {}),
+      ...(profile === 'legacy' ? {} : { action_profile: profile }),
       node_id: action.id,
       input_head_sha: state.current_head_sha,
-      idempotency_key: createHash('sha256')
-        .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
-        .digest('hex')
+      idempotency_key: actionKey(state, action.id, profile)
     };
   });
 }
 
 export function selectSafeActionCandidate(state, options = {}) {
-  const candidates = buildSafeActionPlan(state)
-    .filter((action) => !hasCompletedCheckpoint(state, action.id, state))
+  const profile = resolveActionProfile(state, options.profile, options);
+  const candidates = buildSafeActionPlan(state, { ...options, profile })
+    .filter((action) => !hasCompletedCheckpoint(state, action.id, state, profile))
     .map((action) => ({
       action_id: action.id,
       classification: action.classification,
-      policy_allowed: true,
-      dependency_ready: dependenciesCompleted(state, action, state),
+      policy_allowed: !new Set(options.policyDeniedActionIds ?? []).has(action.id),
+      dependency_ready: dependenciesCompleted(state, action, state, profile),
       metrics: options.metrics?.[action.id] ?? {}
     }));
   const escapeCandidates = buildEscapeCandidates(options.escapeActionIds, options.metrics);
@@ -74,42 +85,71 @@ function buildEscapeCandidates(requestedIds = [], metrics = {}) {
 }
 
 export async function runSafeActionPlan(state, options = {}) {
-  const plan = options.plan ?? buildSafeActionPlan(state);
-  const canonicalPlan = buildSafeActionPlan(state);
+  const profile = resolveActionProfile(state, options.profile, options);
+  const plan = options.plan ?? buildSafeActionPlan(state, { profile });
+  const canonicalPlan = buildSafeActionPlan(state, { profile });
   if (!isAllowedCanonicalPlan(plan, canonicalPlan)) {
     const providedPlan = Array.isArray(plan) ? plan : [];
     const rejectedAction = providedPlan.find((action, index) => !isExactCanonicalAction(action, canonicalPlan[index]))
       ?? canonicalPlan[providedPlan.length]
       ?? canonicalPlan[0];
-    const key = rejectedAction.idempotency_key ?? createHash('sha256')
-      .update(`${state.run_id}:${rejectedAction.id}:${state.current_head_sha}`)
-      .digest('hex');
+    const key = rejectedAction.idempotency_key ?? actionKey(state, rejectedAction.id, profile);
     return {
       plan,
       state: stop(state, rejectedAction, key, 'blocked', 'action_forbidden', 'forbidden')
     };
   }
   if (options.dryRun) return { plan, state };
-  let current = state;
+  const executionState = profile === 'legacy' ? state : { ...state, action_profile: profile };
+  let current = executionState;
   const seenActionIds = new Set();
-  for (const action of plan) {
-    const key = createHash('sha256')
-      .update(`${state.run_id}:${action.id}:${state.current_head_sha}`)
-      .digest('hex');
-    if (!isCanonicalAction(action, state, key)
+  let activePlan = plan;
+  for (let index = 0; index < activePlan.length; index += 1) {
+    const action = activePlan[index];
+    const key = actionKey(current, action.id, profile);
+    const policyDenied = new Set(options.policyDeniedActionIds ?? []).has(action.id);
+    if (!isCanonicalAction(action, current, key, profile)
       || seenActionIds.has(action.id)
-      || !dependenciesCompleted(current, action, state)
+      || !dependenciesCompleted(current, action, current, profile)
+      || policyDenied
       || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
     seenActionIds.add(action.id);
-    const completed = hasCompletedCheckpoint(current, action.id, state);
+    const completed = hasCompletedCheckpoint(current, action.id, current, profile);
     if (completed) continue;
     try {
-      const result = await options.runners[action.id]({ state: current, action });
+      const rawResult = await options.runners[action.id]({ state: current, action });
+      const result = profile === 'legacy' && rawResult?.status === undefined
+        ? { ...(rawResult ?? {}), status: 'continue' }
+        : rawResult;
+      assertActionResult(result);
+      // Runner output is untrusted: always bind action evidence and any suffix
+      // rebinding to the repository HEAD resolved after the runner completes.
+      const resolvedHead = await options.resolveCurrentHead?.({ state: current, action, result })
+        ?? current.current_head_sha;
+      if (result.output_head_sha !== undefined && result.output_head_sha !== resolvedHead) {
+        throw new Error(`Safe action output HEAD does not match the authoritative current HEAD: reported=${result.output_head_sha} actual=${resolvedHead}`);
+      }
+      const boundResult = { ...result, output_head_sha: resolvedHead };
+      if (result.status === 'pr_ready' && profile === 'autonomous' && action.id !== 'final_prepare') {
+        throw new Error(`Only autonomous final_prepare may return pr_ready: ${action.id}`);
+      }
+      if (profile === 'autonomous' && action.id === 'final_prepare' && result.status === 'continue') {
+        throw new Error('Autonomous final_prepare must return pr_ready or a typed stop');
+      }
+      const journalStatus = profile === 'legacy'
+        ? (result.status === 'failed' ? 'failed' : 'completed')
+        : (['continue', 'pr_ready'].includes(result.status) ? 'completed' : 'failed');
       const lineage = resolveActionLineage(current, action.lineage, `action-${action.id}`);
-      const journal = append(current, action, key, result?.status === 'failed' ? 'failed' : 'completed', { ...result, lineage });
+      let journal = append(current, action, key, journalStatus, { ...boundResult, lineage });
+      if (resolvedHead !== current.current_head_sha) {
+        journal = { ...journal, current_head_sha: resolvedHead };
+        const canonical = buildSafeActionPlan(journal, { profile });
+        const actionPosition = canonical.findIndex((entry) => entry.id === action.id);
+        activePlan = [...activePlan.slice(0, index + 1), ...canonical.slice(actionPosition + 1)];
+      }
       if (result?.status === 'pr_ready') {
         current = transition(journal, 'pr_ready', null);
         break;
@@ -148,6 +188,7 @@ function isExactCanonicalAction(action, canonical) {
   return Boolean(action && canonical)
     && action.id === canonical.id
     && action.classification === canonical.classification
+    && action.action_profile === canonical.action_profile
     && Array.isArray(action.depends_on)
     && action.depends_on.length === canonical.depends_on.length
     && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index])
@@ -156,31 +197,45 @@ function isExactCanonicalAction(action, canonical) {
     && action.idempotency_key === canonical.idempotency_key;
 }
 
-function dependenciesCompleted(current, action, state) {
-  return action.depends_on.every((dependency) => hasCompletedCheckpoint(current, dependency, state));
+function dependenciesCompleted(current, action, state, profile = state.action_profile ?? 'legacy') {
+  return action.depends_on.every((dependency) => hasCompletedCheckpoint(current, dependency, state, profile));
 }
 
-function hasCompletedCheckpoint(current, actionId, state) {
-  const key = createHash('sha256')
-    .update(`${state.run_id}:${actionId}:${state.current_head_sha}`)
-    .digest('hex');
-  return current.action_journal.some((entry) => entry.idempotency_key === key
+function hasCompletedCheckpoint(current, actionId, state, profile = state.action_profile ?? 'legacy') {
+  const key = actionKey(state, actionId, profile);
+  return current.action_journal.some((entry) => (entry.idempotency_key === key
+      || (entry.output_head_sha === state.current_head_sha
+        && entry.idempotency_key === actionKey({ ...state, current_head_sha: entry.input_head_sha }, actionId, profile)))
     && entry.status === 'completed'
     && entry.action_id === actionId
     && entry.node_id === actionId
-    && entry.input_head_sha === state.current_head_sha);
+    && (profile === 'legacy' || entry.action_profile === profile)
+    && (entry.input_head_sha === state.current_head_sha || entry.output_head_sha === state.current_head_sha));
 }
 
-function isCanonicalAction(action, state, expectedKey) {
-  const canonical = REGISTRY.find((entry) => entry.id === action?.id);
+function isCanonicalAction(action, state, expectedKey, profile) {
+  const canonical = ACTION_PROFILES[profile].find((entry) => entry.id === action?.id);
   return Boolean(canonical)
     && action.classification === canonical.classification
+    && (profile === 'legacy' ? action.action_profile === undefined : action.action_profile === profile)
     && Array.isArray(action.depends_on)
     && action.depends_on.length === canonical.depends_on.length
     && action.depends_on.every((dependency, index) => dependency === canonical.depends_on[index])
     && (action.node_id === undefined || action.node_id === canonical.id)
     && (action.input_head_sha === undefined || action.input_head_sha === state.current_head_sha)
     && (action.idempotency_key === undefined || action.idempotency_key === expectedKey);
+}
+
+function resolveActionProfile(state, requestedProfile, options = {}) {
+  const profile = requestedProfile ?? state.action_profile ?? 'legacy';
+  if (profile === 'autonomous' && options.autonomousEnabled === false) return 'legacy';
+  if (!Object.hasOwn(ACTION_PROFILES, profile)) throw new Error(`Unknown safe action profile: ${profile}`);
+  return profile;
+}
+
+function assertActionResult(result) {
+  const statuses = new Set(['continue', 'pr_ready', 'waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']);
+  if (!result || !statuses.has(result.status)) throw new Error(`Invalid safe action result status: ${result?.status ?? 'missing'}`);
 }
 
 function append(state, action, key, status, result = {}) {
@@ -190,6 +245,9 @@ function append(state, action, key, status, result = {}) {
     ...state,
     action_journal: [...state.action_journal, {
       action_id: action.id,
+      ...((action.action_profile ?? state.action_profile ?? 'legacy') === 'legacy'
+        ? {}
+        : { action_profile: action.action_profile ?? state.action_profile }),
       node_id: action.node_id ?? action.id,
       input_head_sha: state.current_head_sha,
       output_head_sha: result.output_head_sha ?? state.current_head_sha,
@@ -225,6 +283,13 @@ function resolveActionLineage(state, supplied, dispatchId) {
     branch: state.branch ?? state.current_branch ?? state.execution_context?.branch,
     head_sha: state.current_head_sha
   });
+}
+
+function actionKey(state, actionId, profile) {
+  const profileSegment = profile === 'legacy' ? '' : `:${profile}`;
+  return createHash('sha256')
+    .update(`${state.run_id}${profileSegment}:${actionId}:${state.current_head_sha}`)
+    .digest('hex');
 }
 
 function transition(state, status, code, details = {}) {

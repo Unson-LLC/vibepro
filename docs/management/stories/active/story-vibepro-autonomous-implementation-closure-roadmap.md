@@ -1,0 +1,50 @@
+---
+story_id: story-vibepro-autonomous-implementation-closure-roadmap
+parent_design: vibepro-autonomous-implementation-closure-roadmap
+title: 自律実装の実行プレーンを1コマンドPR-readyへ接続する
+status: active
+view: dev
+period: 2026-07
+category: architecture
+source:
+  type: operator_feedback
+  title: "制御プレーンだけでなく実装・検証・Review・修正まで自律的に閉じたい"
+related_stories:
+  - story-vibepro-autonomous-action-dag
+  - story-vibepro-production-runtime-connectors
+  - story-vibepro-independent-review-orchestration
+  - story-vibepro-one-command-pr-ready-closure
+reason: "alternatives considered: declare the merged Guarded Autonomy control plane complete, expand the old hardening Story after merge, or preserve its audit history and add a closure roadmap for the missing execution-plane wiring; selected the new closure roadmap. compatibility impact: existing Run, managed worktree, Gate DAG, Agent Runtime Adapter, Review, Repair, evidence, budget, and merge contracts remain authoritative. rollback plan: disable the new Action DAG feature and return to the current pr_prepare/pr_autopilot_safe flow. boundary and scope: this roadmap connects existing primitives and adds production runtime execution; it never auto-merges, auto-waives critical gates, or performs unapproved external side effects."
+created_at: 2026-07-21
+updated_at: 2026-07-21
+---
+
+# 自律実装の実行プレーンを1コマンドPR-readyへ接続する
+
+## User Story
+
+**As a** Storyから安全に実装を完了させたい開発者
+**I want** `execute run --until pr-ready --autonomy guarded`が準備、実装、検証、独立Review、修正を自律実行してほしい
+**So that** 人間は重要判断とmergeだけを担い、通常の実装ループを手動接続しなくてよい
+
+## Scope
+
+- 現在2 ActionだけのGuarded Runを、型付きの完全な実行DAGへ拡張する。
+- production Agent Runtimeを接続し、managed worktree内で実装を委譲する。
+- 既存のrecipe preflight、managed worktree、verification autopilot、Review lifecycle、Repair Loopを同じRunへ接続する。
+- current HEADのGate DAGがreadyになるまでboundedに反復する。
+- 実装順を関連Storyの記載順へ固定する。
+
+## Acceptance Criteria
+
+- [ ] AIC-S-1: 4 Storyの責務、entry/exit gate、既存契約との所有境界が一意である。
+- [ ] AIC-S-2: 4 Storyを順番に完了し、後続Storyは先行Storyのexit gateを要求する。
+- [ ] AIC-S-3: 最終E2Eが実装commit、検証、`needs_changes`、修正commit、独立再Review、`pr_ready`を1 Runで証明する。
+- [ ] AIC-S-4: merge、critical waiver、未承認外部副作用は自動化されない。
+- [ ] AIC-S-5: 既存の各制御契約を再実装せず、composition rootと不足providerだけを追加する。
+
+## Non Goals
+
+- Brainbaseの上流優先順位や意図管理をVibeProへ移すこと。
+- PR mergeまたはproduction deployをGuarded Runへ含めること。
+- provider障害、予算切れ、未確認値を成功へ変換すること。

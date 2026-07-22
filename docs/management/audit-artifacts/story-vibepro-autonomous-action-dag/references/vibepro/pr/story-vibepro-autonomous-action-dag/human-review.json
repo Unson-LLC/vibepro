@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "created_at": "2026-07-21T23:59:05.275Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-autonomous-action-dag/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-autonomous-action-dag/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-autonomous-action-dag/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-autonomous-action-dag/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-autonomous-action-dag.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-autonomous-action-dag.md, docs/specs/story-vibepro-autonomous-action-dag.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784644269878-281df8c6",
+        "story_id": "story-vibepro-autonomous-action-dag",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_review",
+        "summary": "Autonomous DAG implementation remains one reviewable compatibility contract",
+        "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+        "reviewer": "gate-blocker-analysis-terra",
+        "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/qa/autonomous-action-dag-typecheck-87434439.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/autonomous-action-dag-e2e-87434439.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/autonomous-action-dag-integration-87434439.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/autonomous-action-dag-unit-87434439.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/vibepro-version-stamp-bbbc2510.json",
+              "type": "build",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "874344394f6da1f3263176f7cd58a0d289a5b776",
+          "current_branch": "codex/autonomous-action-dag-impl",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-21T14:31:09.877Z"
+        },
+        "recorded_at": "2026-07-21T14:31:09.878Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T23:58:53.638Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "branch": "codex/autonomous-action-dag-impl",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "2cdd1f429103e52534dacc87189d69f811908090",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

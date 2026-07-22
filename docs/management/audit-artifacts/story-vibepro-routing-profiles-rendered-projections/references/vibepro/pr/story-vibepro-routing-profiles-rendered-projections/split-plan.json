@@ -5,19 +5,21 @@
   "status": "split_recommended",
   "recommended_strategy": "split_by_lane_then_prepare",
   "rationale": [
-    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
-    "Graphifyで 13 changed files が一致し、144 related files を影響調査候補にした"
+    "baseからのcommitが 16 件あり、Story外の変更混入を確認する必要がある",
+    "2 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 12 changed files が一致し、134 related files を影響調査候補にした"
   ],
   "graph_context": {
     "available": true,
     "graph_path": ".vibepro/graphify/graph.json",
     "edge_source_key": "links",
-    "node_count": 4702,
-    "edge_count": 10541,
-    "matched_file_count": 13,
-    "related_file_count": 144,
+    "node_count": 4868,
+    "edge_count": 10974,
+    "matched_file_count": 12,
+    "related_file_count": 134,
     "investigation_files": [
       "bin/vibepro.js",
+      "scripts/check-public-manual-build.mjs",
       "scripts/generate-cli-reference.mjs",
       "scripts/npm-release-lock.mjs",
       "scripts/post-merge-release.mjs",
@@ -26,8 +28,6 @@
       "src/agent-harness-scanner.js",
       "src/agent-review.js",
       "src/agent-runtime-adapter.js",
-      "src/api-boundary-scanner.js",
-      "src/architecture-profiler.js",
       "src/architecture-readiness.js",
       "src/architecture-store.js",
       "src/artifact-routing.js",
@@ -39,14 +39,15 @@
       "src/checkpoint-manager.js",
       "src/ci-evidence.js",
       "src/cli.js",
-      "src/code-quality-scanner.js",
       "src/code-topology-provider.js",
       "src/codex-manager.js",
-      "src/component-style-scanner.js",
       "src/content-binding.js",
-      "src/database-access-scanner.js",
       "src/decision-records.js",
-      "src/design-modernize.js"
+      "src/design-modernize.js",
+      "src/design-ssot.js",
+      "src/design-system.js",
+      "src/diagnostic-engine.js",
+      "src/diagram-requirement-resolver.js"
     ],
     "impact_by_file": [
       {
@@ -59,7 +60,7 @@
           "src_agent_review_buildcoordinatorinstructions",
           "src_agent_review_prepareagentreview",
           "src_agent_review_recordagentreview",
-          "src_agent_review_requiresinspectionforpass"
+          "src_agent_review_resolverecorderlineage"
         ],
         "related_files": [
           "scripts/npm-release-lock.mjs",
@@ -85,8 +86,8 @@
           "src_artifact_routing_readartifactroutingconfig",
           "src_artifact_routing_resolveartifactroutes",
           "src_artifact_routing_resolveartifactroute",
-          "src_artifact_routing_resolveprartifactfile",
-          "src_artifact_routing_resolvegateartifactfile"
+          "src_artifact_routing_collectcurrentgeneratedprojectionpaths",
+          "src_artifact_routing_resolveprartifactfile"
         ],
         "related_files": [
           "src/adjudication.js",
@@ -131,49 +132,42 @@
         ]
       },
       {
-        "file": "src/diagnostic-engine.js",
+        "file": "src/content-binding.js",
         "matched_nodes": [
-          "src_diagnostic_engine_js",
-          "src_diagnostic_engine_rundiagnosis",
-          "src_diagnostic_engine_normalizediagnosisphase",
-          "src_diagnostic_engine_builddiagnosisphaseevidence",
-          "src_diagnostic_engine_builddesigninputjudgmentevidence",
-          "src_diagnostic_engine_buildpreimplementationjudgmentevidence",
-          "src_diagnostic_engine_summarizediagnosisjudgment",
-          "src_diagnostic_engine_findpreviousstoryrun"
+          "src_content_binding_js",
+          "src_content_binding_buildcontentbinding",
+          "src_content_binding_evaluatecontentbinding",
+          "src_content_binding_normalizesurfacepath",
+          "src_content_binding_collectsurfacerefs",
+          "src_content_binding_arrayof",
+          "src_content_binding_snapshotfile",
+          "src_content_binding_dedupesurfacefiles"
         ],
         "related_files": [
-          "src/api-boundary-scanner.js",
-          "src/architecture-profiler.js",
-          "src/artifact-routing.js",
-          "src/cli.js",
-          "src/code-quality-scanner.js",
-          "src/component-style-scanner.js",
-          "src/database-access-scanner.js",
-          "src/flow-design-scanner.js",
-          "src/gesture-interaction-scanner.js",
-          "src/graph-context.js",
-          "src/language.js",
-          "src/local-dev-scanner.js"
+          "scripts/check-public-manual-build.mjs",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/verification-evidence.js"
         ]
       },
       {
-        "file": "src/graphify-adapter.js",
+        "file": "src/git-fingerprint.js",
         "matched_nodes": [
-          "src_graphify_adapter_js",
-          "src_graphify_adapter_importgraphifyartifacts",
-          "src_graphify_adapter_rungraphify",
-          "src_graphify_adapter_buildgraphifynotfoundmessage",
-          "src_graphify_adapter_findgraphifypathcandidates",
-          "src_graphify_adapter_graphifyexecutablename",
-          "src_graphify_adapter_mirrorgraphifyoutput",
-          "src_graphify_adapter_cleanupdefaultgraphifyoutput"
+          "src_git_fingerprint_js",
+          "src_git_fingerprint_collectgitcontext",
+          "src_git_fingerprint_collectgitstatusfingerprints",
+          "src_git_fingerprint_normalizeuserexcludepaths",
+          "src_git_fingerprint_fingerprinthashforcontext",
+          "src_git_fingerprint_comparefingerprintcontexts",
+          "src_git_fingerprint_fullfingerprinthashforcontext",
+          "src_git_fingerprint_hashfingerprint"
         ],
         "related_files": [
-          "src/artifact-routing.js",
-          "src/cli.js",
-          "src/design-system.js",
-          "src/workspace.js"
+          "src/agent-review.js",
+          "src/managed-worktree.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js"
         ]
       },
       {
@@ -204,103 +198,90 @@
         ]
       },
       {
-        "file": "src/story-manager.js",
+        "file": "src/verification-evidence.js",
         "matched_nodes": [
-          "src_story_manager_js",
-          "src_story_manager_addstory",
-          "src_story_manager_liststories",
-          "src_story_manager_selectstory",
-          "src_story_manager_archivestory",
-          "src_story_manager_getstoryruns",
-          "src_story_manager_getstorystatus",
-          "src_story_manager_createstoryreport"
+          "src_verification_evidence_js",
+          "src_verification_evidence_recordverificationevidence",
+          "src_verification_evidence_resolverecorderlineage",
+          "src_verification_evidence_renderverificationevidencesummary",
+          "src_verification_evidence_readevidence",
+          "src_verification_evidence_normalizewarning",
+          "src_verification_evidence_normalizemanagedworktreecontext",
+          "src_verification_evidence_mergewarnings"
         ],
         "related_files": [
+          "src/agent-review.js",
           "src/artifact-routing.js",
-          "src/brainbase-importer.js",
+          "src/ci-evidence.js",
           "src/cli.js",
-          "src/diagnostic-engine.js",
-          "src/graph-context.js",
-          "src/guard.js",
-          "src/journey-map.js",
-          "src/performance-evidence.js",
-          "src/playbook-exporter.js",
+          "src/content-binding.js",
+          "src/managed-worktree-gate.js",
           "src/pr-manager.js",
-          "src/story-catalog-generator.js",
-          "src/story-html.js"
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/uiux-prepare.js",
+          "src/workspace.js"
         ]
       },
       {
-        "file": "src/story-task-generator.js",
+        "file": "src/workspace.js",
         "matched_nodes": [
-          "src_story_task_generator_js",
-          "src_story_task_generator_createstorytasks",
-          "src_story_task_generator_readtaskstateifexists",
-          "src_story_task_generator_shouldpreservecanonicaltasks",
-          "src_story_task_generator_saferunid",
-          "src_story_task_generator_readstorytasks",
-          "src_story_task_generator_buildstorytaskstate",
-          "src_story_task_generator_renderstorytasks"
+          "src_workspace_js",
+          "src_workspace_initworkspace",
+          "src_workspace_readmanifest",
+          "src_workspace_writemanifest",
+          "src_workspace_getworkspacedir",
+          "src_workspace_toworkspacerelative",
+          "src_workspace_getmanifestpath",
+          "src_workspace_createmanifest"
         ],
         "related_files": [
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
           "src/artifact-routing.js",
           "src/brainbase-importer.js",
-          "src/diagnostic-engine.js",
-          "src/story-manager.js",
-          "src/task-manager.js",
-          "src/workspace.js"
-        ]
-      },
-      {
-        "file": "src/task-manager.js",
-        "matched_nodes": [
-          "src_task_manager_js",
-          "src_task_manager_listtasks",
-          "src_task_manager_showtask",
-          "src_task_manager_createtasksfromplan",
-          "src_task_manager_createtaskbrief",
-          "src_task_manager_createtaskplan",
-          "src_task_manager_createtaskhandoff",
-          "src_task_manager_createtaskexecution"
-        ],
-        "related_files": [
-          "src/artifact-routing.js",
-          "src/checkpoint-manager.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/ci-evidence.js",
           "src/cli.js",
-          "src/language.js",
-          "src/story-manager.js",
-          "src/story-task-generator.js",
-          "src/workspace.js"
+          "src/decision-records.js",
+          "src/diagnostic-engine.js"
         ]
       },
       {
         "file": "test/artifact-routing.test.js",
         "matched_nodes": [
           "test_artifact_routing_test_js",
+          "test_artifact_routing_test_completeprofile",
+          "test_artifact_routing_test_namedprofilerepo",
+          "test_artifact_routing_test_projectedpacketprofile",
           "test_artifact_routing_test_repo"
         ],
         "related_files": []
       },
       {
-        "file": "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
+        "file": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
         "matched_nodes": [
-          "test_e2e_story_vibepro_artifact_output_routing_main_spec_ts"
+          "test_e2e_story_vibepro_routing_profiles_rendered_projections_main_spec_ts",
+          "e2e_story_vibepro_routing_profiles_rendered_projections_main_spec_invoke"
         ],
         "related_files": []
       },
       {
-        "file": "test/evidence-depth-pr-prepare.test.js",
+        "file": "test/responsibility-authority.test.js",
         "matched_nodes": [
-          "test_evidence_depth_pr_prepare_test_js",
-          "test_evidence_depth_pr_prepare_test_git",
-          "test_evidence_depth_pr_prepare_test_readjson",
-          "test_evidence_depth_pr_prepare_test_exists",
-          "test_evidence_depth_pr_prepare_test_setuplowriskrepo",
-          "test_evidence_depth_pr_prepare_test_setuphighriskauthrepo"
+          "test_responsibility_authority_test_js",
+          "test_responsibility_authority_test_writereviewedworkspacestatus",
+          "test_responsibility_authority_test_responsibilityentry",
+          "test_responsibility_authority_test_makefixturerepo",
+          "test_responsibility_authority_test_writestorydocs",
+          "test_responsibility_authority_test_writeresponsibilityfixture",
+          "test_responsibility_authority_test_writereadonlyreportingresponsibilityfixture",
+          "test_responsibility_authority_test_git"
         ],
-        "related_files": [
-          "src/cli.js"
-        ]
+        "related_files": []
       },
       {
         "file": "test/vibepro-cli.test.js",
@@ -326,9 +307,8 @@
       "order": 10,
       "title": "Story / Spec / Architecture / Policy SSOT",
       "category": "requirements",
-      "recommendation": "same_pr_allowed",
+      "recommendation": "separate_pr",
       "files": [
-        "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
         "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
         "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
       ],
@@ -340,7 +320,7 @@
         "実装差分が要求の範囲を超えていないか",
         "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
       ],
-      "file_count": 3,
+      "file_count": 2,
       "graph_investigation_files": [],
       "suggested_branch": "feat/vibepro-routing-profiles-rendered-projections-requirements-ssot"
     },
@@ -354,16 +334,14 @@
         "src/agent-review.js",
         "src/artifact-routing.js",
         "src/cli.js",
-        "src/diagnostic-engine.js",
-        "src/graphify-adapter.js",
+        "src/content-binding.js",
+        "src/git-fingerprint.js",
         "src/pr-manager.js",
-        "src/story-manager.js",
-        "src/story-task-generator.js",
-        "src/task-manager.js",
+        "src/verification-evidence.js",
+        "src/workspace.js",
         "test/artifact-routing.test.js",
-        "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
         "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
-        "test/evidence-depth-pr-prepare.test.js",
+        "test/responsibility-authority.test.js",
         "test/vibepro-cli.test.js"
       ],
       "required_gates": [
@@ -376,9 +354,10 @@
         "受け入れ基準と実装分岐が対応しているか",
         "Graphifyで隣接するファイルまで影響確認されているか"
       ],
-      "file_count": 14,
+      "file_count": 12,
       "graph_investigation_files": [
         "bin/vibepro.js",
+        "scripts/check-public-manual-build.mjs",
         "scripts/generate-cli-reference.mjs",
         "scripts/npm-release-lock.mjs",
         "scripts/post-merge-release.mjs",
@@ -386,49 +365,22 @@
         "src/agent-harness-map.js",
         "src/agent-harness-scanner.js",
         "src/agent-runtime-adapter.js",
-        "src/api-boundary-scanner.js",
-        "src/architecture-profiler.js",
         "src/architecture-readiness.js",
-        "src/architecture-store.js"
+        "src/architecture-store.js",
+        "src/authorization-scoring.js"
       ],
       "suggested_branch": "feat/vibepro-routing-profiles-rendered-projections-runtime-behavior"
-    },
-    {
-      "id": "misc-follow-up",
-      "order": 90,
-      "title": "Miscellaneous follow-up",
-      "category": "other",
-      "recommendation": "separate_pr",
-      "files": [
-        "design-ssot.json",
-        "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
-        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
-        "docs/features/routing-profiles-rendered-projections/06_tasks.md",
-        "docs/features/routing-profiles-rendered-projections/08_review.md",
-        "docs/features/routing-profiles-rendered-projections/09_gate.md",
-        "docs/features/routing-profiles-rendered-projections/10_release.md"
-      ],
-      "required_gates": [
-        "Manual Review"
-      ],
-      "review_focus": [
-        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
-      ],
-      "file_count": 7,
-      "graph_investigation_files": [],
-      "suggested_branch": "feat/vibepro-routing-profiles-rendered-projections-misc-follow-up"
     }
   ],
   "merge_order": [
     "requirements-ssot",
-    "runtime-behavior",
-    "misc-follow-up"
+    "runtime-behavior"
   ],
   "stacked_gate_plan": {
     "schema_version": "0.1.0",
     "model": "stacked-pr-gate-plan-v1",
     "summary": {
-      "lane_count": 3,
+      "lane_count": 2,
       "cumulative_gate_count": 0,
       "requires_cumulative_e2e": false
     },
@@ -448,47 +400,32 @@
         "gate_mode": "isolated_pr",
         "depends_on": [],
         "isolated_checks": [
-          "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/session-efficiency-audit.test.js",
-          "node --test test/artifact-routing.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+          "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29857507932/job/88725441241"
         ],
         "cumulative_checks": [],
         "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
-      },
-      {
-        "lane_id": "misc-follow-up",
-        "gate_mode": "isolated_pr",
-        "depends_on": [],
-        "isolated_checks": [
-          "manual review"
-        ],
-        "cumulative_checks": [],
-        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
       }
     ],
     "final_validation": {
       "required": false,
       "trigger": "各PRのisolated checksで十分",
       "commands": [
-        "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/session-efficiency-audit.test.js",
-        "node --test test/artifact-routing.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+        "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29857507932/job/88725441241"
       ]
     }
   },
   "next_actions": [
     {
       "lane_id": "requirements-ssot",
-      "action": "Create feat/vibepro-routing-profiles-rendered-projections-requirements-ssot with 3 files",
-      "command": "git switch -c feat/vibepro-routing-profiles-rendered-projections-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md docs/features/routing-profiles-rendered-projections/02_functional_spec.md docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+      "action": "Create feat/vibepro-routing-profiles-rendered-projections-requirements-ssot with 2 files",
+      "command": "git switch -c feat/vibepro-routing-profiles-rendered-projections-requirements-ssot <base> && git add docs/features/routing-profiles-rendered-projections/02_functional_spec.md docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
     },
     {
       "lane_id": "runtime-behavior",
-      "action": "Create feat/vibepro-routing-profiles-rendered-projections-runtime-behavior with 14 files",
-      "command": "git switch -c feat/vibepro-routing-profiles-rendered-projections-runtime-behavior <base> && git add src/agent-review.js src/artifact-routing.js src/cli.js src/diagnostic-engine.js src/graphify-adapter.js src/pr-manager.js src/story-manager.js src/story-task-generator.js src/task-manager.js test/artifact-routing.test.js test/e2e/story-vibepro-artifact-output-routing-main.spec.ts test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts test/evidence-depth-pr-prepare.test.js test/vibepro-cli.test.js"
-    },
-    {
-      "lane_id": "misc-follow-up",
-      "action": "Create feat/vibepro-routing-profiles-rendered-projections-misc-follow-up with 7 files",
-      "command": "git switch -c feat/vibepro-routing-profiles-rendered-projections-misc-follow-up <base> && git add design-ssot.json docs/features/routing-profiles-rendered-projections/04_technical_delta.md docs/features/routing-profiles-rendered-projections/05_test_plan.md docs/features/routing-profiles-rendered-projections/06_tasks.md docs/features/routing-profiles-rendered-projections/08_review.md docs/features/routing-profiles-rendered-projections/09_gate.md docs/features/routing-profiles-rendered-projections/10_release.md"
+      "action": "Create feat/vibepro-routing-profiles-rendered-projections-runtime-behavior with 12 files",
+      "command": "git switch -c feat/vibepro-routing-profiles-rendered-projections-runtime-behavior <base> && git add src/agent-review.js src/artifact-routing.js src/cli.js src/content-binding.js src/git-fingerprint.js src/pr-manager.js src/verification-evidence.js src/workspace.js test/artifact-routing.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts test/responsibility-authority.test.js test/vibepro-cli.test.js"
     }
   ]
 }

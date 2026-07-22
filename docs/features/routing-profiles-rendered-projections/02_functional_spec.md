@@ -1,9 +1,11 @@
-<!-- vibepro-projection story_id=story-vibepro-routing-profiles-rendered-projections feature_slug=routing-profiles-rendered-projections ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json source_sha256=f4f4a41a809bfccc59afa995c2b57f7d1ab3e90802084f2e373b6d12c8550c9b renderer=functional_spec_markdown@1 direct_edit=false -->
+<!-- vibepro-projection story_id=story-vibepro-routing-profiles-rendered-projections feature_slug=routing-profiles-rendered-projections ownership=generated profile=feature_packet source=.vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json source_sha256=60210a07a7db6aaaa15fe4025a149398f180f1a70235f69f717b68c2717160c3 renderer=functional_spec_markdown@1 direct_edit=false -->
+- Canonical ownership: generated
+
 # Functional Spec
 
 - Story: story-vibepro-routing-profiles-rendered-projections
 - Status: -
-- Clauses: 12
+- Clauses: 14
 
 ## C-001
 
@@ -95,6 +97,8 @@ Given catalog-authoritative artifact_profile and feature_slug for a named-profil
 
 ### Origin refs
 
+- {"case":"schema 0.1 generated projections retain legacy byte-copy overwrite compatibility","file":"test/artifact-routing.test.js"}
+- {"case":"upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile","file":"test/artifact-routing.test.js"}
 - {"file":"docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md","section":"方針","text_snippet":"artifact_profile"}
 - {"index":1,"kind":"acceptance_criteria","text_snippet":"各Storyがartifact_profileと明示的feature_slugを永続的に選択できる"}
 - {"index":2,"kind":"acceptance_criteria","text_snippet":"Story discovery、Architecture、Spec、Task、Graphify、Review、Gate、PR prepare/create/merge、status、migrationが同じprofileを解決する"}
@@ -131,6 +135,25 @@ A fresh checkout must resolve story-feature-checkout to feature_packet surfaces 
 - {"case":"migration dry-run reports create update noop conflict without editing a fresh checkout","file":"test/artifact-routing.test.js"}
 - {"index":12,"kind":"acceptance_criteria","text_snippet":"feature profileとgovernance profileをfresh checkout E2Eで検証する"}
 - {"index":13,"kind":"acceptance_criteria","text_snippet":"profile未設定repositoryと既存artifact_routing.artifacts設定の後方互換を維持する"}
+
+## S-005
+
+Given an Agent Review record has neither supplied lineage nor Run authority, the recorder leaves lineage absent; when either source is available, the established lineage-resolution path remains unchanged.
+
+### Origin refs
+
+- {"anchor":"resolveRecorderLineage","file":"src/agent-review.js"}
+- {"case":"authoritative evidence recorders inherit validated Run lineage additively","file":"test/run-lineage-evidence-propagation.test.js"}
+
+## S-006
+
+Given recorded git context contains user_status_fingerprint_hash, freshness comparison uses that user fingerprint; when it is absent, the established full-fingerprint fallback remains unchanged.
+
+### Origin refs
+
+- {"anchor":"fingerprintHashForContext","file":"src/git-fingerprint.js"}
+- {"case":"pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes","file":"test/vibepro-cli.test.js"}
+- {"case":"story-vibepro-evidence-user-fingerprint evidence binding replay","file":"test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts"}
 
 ## Diagrams
 
