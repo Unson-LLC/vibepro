@@ -320,12 +320,12 @@
           "network_runtime": 3,
           "regression_risk": 55,
           "release_risk": 4,
-          "runtime_contract": 19,
+          "runtime_contract": 20,
           "spec_consistency": 31,
           "unit_integration": 8,
           "ux_completion": 13
         },
-        "amendment_reason": "Historical review lifecycle debt reached 236 closed or replaced entries before final closure. User explicitly authorized immediate completion on 2026-07-22. A required rebase onto origin/main invalidated preflight and strict final-review bindings after the prior bounded amendment. Freeze every other observed role at its current dispatch count and permit exactly one current-HEAD replacement each for architecture_boundary, runtime_contract, gate_evidence, and release_risk on the final frozen rebased tree; retain all historical evidence and leave default Story budgets unchanged."
+        "amendment_reason": "Historical review lifecycle debt reached 236 closed or replaced entries before final closure. User explicitly authorized immediate completion on 2026-07-22. A required rebase onto origin/main invalidated preflight and strict final-review bindings after the prior bounded amendment. The authorized final runtime review then caught a stale generated CLI reference through the required docs build; permit exactly one replacement runtime_contract review after committing that reviewer-driven fix. Freeze every other observed role at its current dispatch count and retain the single current-HEAD gate_evidence and release_risk replacements; retain all historical evidence and leave default Story budgets unchanged."
       },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
