@@ -97,8 +97,16 @@ test('IRO-S-3 a malformed persisted review record fails closed after restart', a
   assert.equal(result.stop_reason.code, 'invalid_review_verdict');
 });
 
-test('IRO-S-5 typed runtime/auth/timeout/provenance stops never become pass', async () => {
-  for (const [operation, code] of [['dispatch', 'auth_denied'], ['poll', 'runtime_timeout'], ['record', 'invalid_runtime_review']]) {
+test('IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, workflow_state_regression, and provenance stops never become pass', async () => {
+  for (const [operation, code] of [
+    ['dispatch', 'auth_denied'],
+    ['poll', 'runtime_timeout'],
+    ['poll', 'retry_or_async_failure'],
+    ['record', 'schema_failure'],
+    ['record', 'evidence_lifecycle_regression'],
+    ['record', 'workflow_state_regression'],
+    ['record', 'invalid_runtime_review']
+  ]) {
     const result = await orchestrateIndependentReview({ stages: [stages[0]], boundaries: boundaries({ stop: { [operation]: { status: 'waiting_for_runtime', stop_reason: { code, message: code } } } }) });
     assert.equal(result.verdict, 'block');
     assert.equal(result.stop_reason.code, code);
