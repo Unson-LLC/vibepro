@@ -3415,8 +3415,8 @@ function getReviewResultHistoryPath(reviewDir, role, recordedAt) {
 }
 
 async function acquireRuntimeReviewLock(reviewDir, runtimeDispatchId, {
-  waitMs = 5000,
-  staleMs = 120000
+  staleMs = 120000,
+  waitMs = staleMs
 } = {}) {
   const lockId = crypto.createHash('sha256').update(runtimeDispatchId).digest('hex');
   const lockPath = path.join(reviewDir, `.runtime-review-${lockId}.lock`);

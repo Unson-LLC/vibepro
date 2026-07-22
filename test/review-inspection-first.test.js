@@ -407,7 +407,17 @@ test('recordAgentReview reuses the canonical result for the same runtime dispatc
     runtimeDispatchId: 'dispatch-runtime-review-1'
   };
   const reviewDir = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate');
-  const results = await Promise.all(Array.from({ length: 20 }, () => recordAgentReview(root, options)));
+  const previousDelay = process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
+  process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = '300';
+  let results;
+  try {
+    // The canonical writer can legitimately outlive the former 5s contention
+    // window while lifecycle projections are being finalized under load.
+    results = await Promise.all(Array.from({ length: 20 }, () => recordAgentReview(root, options)));
+  } finally {
+    if (previousDelay === undefined) delete process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
+    else process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = previousDelay;
+  }
   const first = results.find((result) => result.reused === false);
   assert.ok(first);
   assert.equal(results.filter((result) => result.reused === false).length, 1);
