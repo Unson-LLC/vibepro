@@ -12,6 +12,7 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { buildMergeGateAuthorization } from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -44,6 +45,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
+  const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate);
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });
@@ -103,9 +105,10 @@ export async function executeMerge(repoRoot, options = {}) {
       checks: []
     },
     gate_dag: gateDag,
+    gate_authorization: gateAuthorization,
     preconditions: {
       pr_selector_resolved: Boolean(prSelector),
-      gate_ready: gateDag?.overall_status === 'ready_for_review',
+      gate_ready: gateAuthorization.allowed,
       clean_worktree: nonWorkspaceDirtyFiles.length === 0,
       base_freshness: {
         status: 'unknown',

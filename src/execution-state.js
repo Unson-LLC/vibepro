@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getAgentReviewStatus } from './agent-review.js';
+import { buildMergeGateAuthorization } from './merge-gate-authorization.js';
 import {
   buildExecutionDag,
   buildManagedWorktreeCommands,
@@ -362,6 +363,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   const currentPrMerge = isCurrentPrLifecycleArtifact(prMerge, currentHeadSha) ? prMerge : null;
   const gateStatus = prPrepare?.gate_status ?? null;
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
+  const mergeGateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate);
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const managedWorktree = options.managedWorktree
@@ -386,7 +388,9 @@ async function buildExecutionState(repoRoot, options = {}) {
     ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
   const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
-  const prCreatedReadyForMerge = prCreated && (gateDag ? readyForPrCreate : (!prPrepare || readyForPrCreate));
+  const prCreatedReadyForMerge = prCreated && !executionBlockingGate && (
+    gateDag ? mergeGateAuthorization.allowed : (!prPrepare || readyForPrCreate)
+  );
   const waiverRequired = !prCreatedReadyForMerge && !readyForPrCreate && Boolean(prPrepare) && (
     executionBlockingGate
       ? false

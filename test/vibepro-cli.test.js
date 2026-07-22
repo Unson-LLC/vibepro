@@ -13183,8 +13183,8 @@ test('execute merge dry-run plans external checks without executing them', async
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    gate_status: { overall_status: 'needs_verification', ready_for_pr_create: false },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
     git: { base_ref: 'main' }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
@@ -13195,8 +13195,15 @@ test('execute merge dry-run plans external checks without executing them', async
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
@@ -13244,6 +13251,8 @@ process.exit(99);
   assert.equal(result.result.merge.preconditions.checks_ready.status, 'not_run');
   assert.equal(result.result.merge.preconditions.review_policy.status, 'not_run');
   assert.equal(result.result.merge.preconditions.open_pull_request.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.gate_ready, true);
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr view')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('git fetch origin main')), true);
@@ -13640,15 +13649,15 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    gate_status: { overall_status: 'needs_verification', ready_for_pr_create: false },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
     git: { base_ref: 'main' }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
-    overall_status: 'ready_for_review',
+    overall_status: 'needs_verification',
     nodes: [],
-    summary: { needs_evidence_count: 0 }
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13658,8 +13667,15 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/124',
@@ -13732,6 +13748,7 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
   assert.equal(result.result.merge.branch_cleanup.requested, false);
