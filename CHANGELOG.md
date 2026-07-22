@@ -594,3 +594,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-node20-e2e-t
 なし
 
 <!-- vibepro-release-pr:379:end -->
+
+<!-- vibepro-release-pr:380:start -->
+## [#380](https://github.com/Unson-LLC/vibepro/pull/380) story-vibepro-canonical-audit-review-root-state-files - Canonical auditがreview root直下のstory-level state fileでmergeを失敗させないようにする
+
+- Author: @sintariran
+- Merged: 2026-07-22T07:29:04Z
+- Commit: `6b9194470de71596e2afcdb82e877f6df7c5146f`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-canonical-audit-review-root-state-files.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-canonical-audit-review-root-state-files.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:380:end -->

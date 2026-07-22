@@ -133,3 +133,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:379:start -->
 - [PR #379](https://github.com/Unson-LLC/vibepro/pull/379) — [2026-07](/releases/2026-07): story-vibepro-node20-e2e-ts-ci-visibility - Node 20 CIレーンのe2e .ts spec偽passを可視化しNode 22+必須ゲートで実行する
 <!-- vibepro-release-index-pr:379:end -->
+
+<!-- vibepro-release-index-pr:380:start -->
+- [PR #380](https://github.com/Unson-LLC/vibepro/pull/380) — [2026-07](/releases/2026-07): story-vibepro-canonical-audit-review-root-state-files - Canonical auditがreview root直下のstory-level state fileでmergeを失敗させないようにする
+<!-- vibepro-release-index-pr:380:end -->
