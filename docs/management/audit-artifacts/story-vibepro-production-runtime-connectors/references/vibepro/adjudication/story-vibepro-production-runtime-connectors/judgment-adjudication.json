@@ -1,0 +1,934 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "updated_at": "2026-07-22T01:57:37.557Z",
+  "events": [
+    {
+      "event_id": "a6d9b6bf-0bd2-40ae-951a-7f4c259498c4",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの7 ACとconnector導入意図が実装とSpecに一貫して反映されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:18.085Z"
+    },
+    {
+      "event_id": "b69d170c-ffe6-4d4f-8b25-c3d74b2ea24b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実CLI process transport、Guarded Run composition root、既存注入優先をコードと対象JUnit 41件で確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:19.882Z"
+    },
+    {
+      "event_id": "2a7fd393-327c-48c5-a0ed-027f2d87bf64",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "managed worktree/write、review read-onlyと別identity/session、malformed/stale result fail-closedを実装とテストで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:21.420Z"
+    },
+    {
+      "event_id": "863e31b7-e396-4cd7-bf47-711e26acd80f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "connectorはcomposition rootでのみ登録しfallback、Gate、worktree、Review lifecycleを直接操作しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:22.715Z"
+    },
+    {
+      "event_id": "e06bc4b1-3bcf-4ae8-a16c-67565078cf0f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "auth、quota、permission、timeout、cancel containment、malformed resultを成功へ昇格させない実装とテストがある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:25.103Z"
+    },
+    {
+      "event_id": "5286279b-27dc-4f66-99e8-7b62dd9772bc",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEADにstrict-boundした対象JUnit 41件がpassし、実Codex binaryのversionとlogin status probeも実行される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:27.125Z"
+    },
+    {
+      "event_id": "42beb6b1-f5a4-48f9-a4aa-0215f05fbf8c",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Codex/Claude opt-in contract、明示Coordinator注入優先、CLI接続をテスト済み。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:29.516Z"
+    },
+    {
+      "event_id": "43436cd6-6b68-44ed-9912-d7f02798404b",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spawn/status/cancel/collect、terminal close、timeout containment、review identity/session分離を確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:33.358Z"
+    },
+    {
+      "event_id": "bc463587-5378-4c09-b642-59e9fcfe468c",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "複数commitとSSOT変更によるsplit前提は誤り。runtime実装、テスト、同一Story文書とlineageは一つの判断単位である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:34.535Z"
+    },
+    {
+      "event_id": "fa58a07c-ff51-49df-9071-f16d1f3f171b",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "not_required前提は誤り。timeoutはStory/Spec対象でprobe/start/status/result timeoutとcontainmentを実装、検証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:36.230Z"
+    },
+    {
+      "event_id": "de2addd6-209d-4a97-90f8-c20835937534",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "not_required前提は誤り。structured-result抽出とCodex auth text判定を変更し、Not logged in誤認防止をテスト済み。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:38.135Z"
+    },
+    {
+      "event_id": "b0616ee3-2ba3-46df-a8fa-d8a84a12ce01",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "not_required前提は誤り。外部CLI境界のbinary/auth/quota/permission失敗をtyped resultへ正規化している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:40.016Z"
+    },
+    {
+      "event_id": "856bf0a9-5e8d-4f75-b72f-89486efc56a2",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "not_required前提は誤り。auth probeは変更対象で、Logged inを許容しNot logged inを拒否するテストがある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:41.667Z"
+    },
+    {
+      "event_id": "fad74a41-52a2-44c4-98c3-53af73b39049",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "connector/composition変更はGate、review、evidence lifecycleを直接変更せずArchitectureの責務境界と一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:43.915Z"
+    },
+    {
+      "event_id": "eb20dee3-0b1d-40ce-b1b4-4e5745a9cc42",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatch/poll/cancel state transitionとtimeout/cancel/orphan containmentの回帰を対象JUnitで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_final",
+        "session_ref": "runtime_judgment_final"
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:10:45.644Z"
+    },
+    {
+      "event_id": "026f2825-3abc-420b-b1d5-f2971d926996",
+      "type": "premise_correction",
+      "item_id": "axis:scope_reviewability",
+      "corrects_verdict_id": "bc463587-5378-4c09-b642-59e9fcfe468c",
+      "wrong_premise": "複数commitとSSOT変更は分割が必要",
+      "corrected_premise": "全変更はproduction runtime connectorという同一Storyの実装、テスト、設計lineageで一つのreview単位",
+      "reason": "独立judgeが実差分と対象JUnitに照らしclassifier premiseの誤りを特定した。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+          "sha256": "739f83451eed873224ac3be2ca33f53ed4bd92e300c903e02933aae0c0fda958"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "root",
+        "session_ref": null
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:12:36.103Z"
+    },
+    {
+      "event_id": "cf755f8b-57db-4c63-8d74-d01ad8886de7",
+      "type": "premise_correction",
+      "item_id": "failure_mode:timeout",
+      "corrects_verdict_id": "fa58a07c-ff51-49df-9071-f16d1f3f171b",
+      "wrong_premise": "timeoutはnot_required",
+      "corrected_premise": "timeoutはStoryとSpecで要求されadapter lifecycleで実装、対象テスト済み",
+      "reason": "独立judgeが実差分と対象JUnitに照らしclassifier premiseの誤りを特定した。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/vibepro-production-runtime-connectors.md",
+          "sha256": "160aa933e2235336c65dcaaccdabdb570fe46d31843bc275bfc05d72529c378d"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "root",
+        "session_ref": null
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:12:39.274Z"
+    },
+    {
+      "event_id": "c4333c8f-d48a-436e-ab4d-2406fe67fb7c",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "de2addd6-209d-4a97-90f8-c20835937534",
+      "wrong_premise": "parse_failureはnot_required",
+      "corrected_premise": "structured resultとauth text parsingは変更対象でmalformed入力をfail-closed検証済み",
+      "reason": "独立judgeが実差分と対象JUnitに照らしclassifier premiseの誤りを特定した。",
+      "replacement_evidence": [
+        {
+          "artifact": "test/agent-runtime-connectors.test.js",
+          "sha256": "c243a74f752d4a8a33815ff18d5fe0fa9c9bcf61de95c06ee0b42e68a1a2d463"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "root",
+        "session_ref": null
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:12:41.549Z"
+    },
+    {
+      "event_id": "a61437f4-e25c-42d8-9a8f-9c9175fce4ee",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "b0616ee3-2ba3-46df-a8fa-d8a84a12ce01",
+      "wrong_premise": "provider_failureはnot_required",
+      "corrected_premise": "外部CLI provider境界のtyped failure正規化は実装対象で検証済み",
+      "reason": "独立judgeが実差分と対象JUnitに照らしclassifier premiseの誤りを特定した。",
+      "replacement_evidence": [
+        {
+          "artifact": "src/agent-runtime-connectors.js",
+          "sha256": "539a76074cd3a16fe0fd6944cfb458edc33a4d7bb84cac3d1171639170cb11be"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "root",
+        "session_ref": null
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:12:43.058Z"
+    },
+    {
+      "event_id": "0bd3ad7c-317e-459c-830e-dfe353bf0c84",
+      "type": "premise_correction",
+      "item_id": "failure_mode:auth_denied",
+      "corrects_verdict_id": "856bf0a9-5e8d-4f75-b72f-89486efc56a2",
+      "wrong_premise": "auth_deniedはnot_required",
+      "corrected_premise": "Codex auth probeは実装対象でlogged-inとnot-logged-inを区別し検証済み",
+      "reason": "独立judgeが実差分と対象JUnitに照らしclassifier premiseの誤りを特定した。",
+      "replacement_evidence": [
+        {
+          "artifact": "test/agent-runtime-connectors.test.js",
+          "sha256": "c243a74f752d4a8a33815ff18d5fe0fa9c9bcf61de95c06ee0b42e68a1a2d463"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "root",
+        "session_ref": null
+      },
+      "head_commit": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "recorded_at": "2026-07-22T01:12:44.899Z"
+    },
+    {
+      "event_id": "e88797ab-d53d-45f6-a5b4-db9298b4f590",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Seven acceptance criteria map directly to connector, composition, documentation, and test changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:16.190Z"
+    },
+    {
+      "event_id": "e63c8c82-976c-4213-bf61-1614ae47021f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current strict-HEAD targeted evidence and real CLI smoke cover the changed runtime path; the classifier premise is stale.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:17.708Z"
+    },
+    {
+      "event_id": "10115b11-e3c4-4e46-ab14-7d01b2f04ab6",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Managed-worktree write, read-only review, identity/session separation, typed failures, and fail-closed results are preserved.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:19.117Z"
+    },
+    {
+      "event_id": "b6cd764b-6156-4550-8962-4dc1a6f0f9ce",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Connector composition is limited to Guarded Run CLI root; injected coordinator remains preferred and lifecycle ownership is unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:20.485Z"
+    },
+    {
+      "event_id": "9e331418-3b2f-4ff9-897f-998c08155862",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current code and tests cover auth, quota, permission, timeout, cancellation containment, and malformed result.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:22.096Z"
+    },
+    {
+      "event_id": "6c4bfde7-63b7-41b7-87b9-f5cfda1c75e1",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Strict-HEAD JUnit evidence is bound to 7763326c and an independent rerun confirmed 43 passing tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:24.274Z"
+    },
+    {
+      "event_id": "95f45235-278c-448d-8e66-6582d5ef93f5",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Codex default, Claude opt-in, and injected coordinator precedence are explicit and verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:26.369Z"
+    },
+    {
+      "event_id": "e1b9e603-214d-4d1a-9faf-8469e7cbb514",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spawn, status, cancel, and collect lifecycle is terminal-aware with uncertain-operation containment.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:28.372Z"
+    },
+    {
+      "event_id": "df5f5e5c-fd28-437d-a29b-4a626c79f499",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Design SSOT only registers this Story's spec and architecture; docs, implementation, and tests are one atomic review unit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:43.719Z"
+    },
+    {
+      "event_id": "5efcf1a2-0485-4a6b-b29b-22e428554919",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Timeout is in scope: connector kills at deadline and reports timed_out with typed timeout; containment tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:45.262Z"
+    },
+    {
+      "event_id": "8c775571-f928-4f2a-917f-f6b0504ebf52",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Parse failure is in scope: invalid output throws and coordinator validates all required result fields fail-closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:47.868Z"
+    },
+    {
+      "event_id": "56192347-bfdf-4385-a8a4-e6a0df9f5e06",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Provider failure is in scope and binary, auth, quota, permission and post-start failures normalize into typed results.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:49.946Z"
+    },
+    {
+      "event_id": "36a28ef4-3763-42de-9baf-3e106fa4d8a8",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Auth denial is in scope; Codex probe distinguishes Not logged in and maps denial to a typed failure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:52.497Z"
+    },
+    {
+      "event_id": "43388667-356a-4ca9-871b-9a9bc10778d8",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No gate, review, or evidence persistence behavior was changed; only runtime coordinator composition was added.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:54.374Z"
+    },
+    {
+      "event_id": "f26f115c-adf3-4568-a651-9cf43efcbbb5",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed provider stop reasons are preserved and timeout, cancel, orphan, and malformed-success regressions are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:31:56.513Z"
+    },
+    {
+      "event_id": "00ec0c53-f669-4fe4-a3e4-799cc19d0412",
+      "type": "premise_correction",
+      "item_id": "spine:current_reality",
+      "corrects_verdict_id": "e63c8c82-976c-4213-bf61-1614ae47021f",
+      "wrong_premise": "Current production runtime path lacks strong replay evidence.",
+      "corrected_premise": "The current-head verified status artifact and structured observations provide strong flow_replay, artifact_replay, and scenario_clause_e2e evidence.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:39.644Z"
+    },
+    {
+      "event_id": "f72d2c6f-3c6e-4c96-bab0-541f9f014a0b",
+      "type": "premise_correction",
+      "item_id": "spine:failure_modes",
+      "corrects_verdict_id": "9e331418-3b2f-4ff9-897f-998c08155862",
+      "wrong_premise": "Timeout, parse, provider, and auth failure modes are absent from the implementation evidence.",
+      "corrected_premise": "Current tests and verified observations directly cover timeout, malformed output, provider failure, quota, permission, and auth denial.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:42.998Z"
+    },
+    {
+      "event_id": "dca362f9-5019-4be4-8315-8b2897117c7b",
+      "type": "premise_correction",
+      "item_id": "spine:done_evidence",
+      "corrects_verdict_id": "6c4bfde7-63b7-41b7-87b9-f5cfda1c75e1",
+      "wrong_premise": "The targeted passing suite has no durable verified completion artifact.",
+      "corrected_premise": "The status JSON records pass, exit_code 0, 43 tests, zero failures, and exact HEAD, while JUnit supplies testcase detail.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:46.704Z"
+    },
+    {
+      "event_id": "0950e3ba-70df-49f7-ae80-4981f4e4bf78",
+      "type": "premise_correction",
+      "item_id": "axis:scope_reviewability",
+      "corrects_verdict_id": "df5f5e5c-fd28-437d-a29b-4a626c79f499",
+      "wrong_premise": "Design SSOT changes are unrelated miscellaneous scope requiring a split.",
+      "corrected_premise": "Design SSOT only adds lineage for this exact Story's Architecture and Spec; implementation, contract, docs, and tests are one atomic review surface.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:49.686Z"
+    },
+    {
+      "event_id": "a9b7343a-6786-4743-a4f9-eedfaa1ac140",
+      "type": "premise_correction",
+      "item_id": "failure_mode:timeout",
+      "corrects_verdict_id": "5efcf1a2-0485-4a6b-b29b-22e428554919",
+      "wrong_premise": "Timeout handling is not required or covered.",
+      "corrected_premise": "Timeout is an explicit PRC-S-3 failure mode; the connector kills at the deadline and returns timed_out with typed timeout.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:52.356Z"
+    },
+    {
+      "event_id": "bd1d03b0-6ebf-4cb7-9ecb-0445fbaa1fef",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "8c775571-f928-4f2a-917f-f6b0504ebf52",
+      "wrong_premise": "Malformed provider output is not required or covered.",
+      "corrected_premise": "Malformed output is rejected as invalid_runtime_result and coordinator normalization requires all result fields fail-closed.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:56.821Z"
+    },
+    {
+      "event_id": "48d9565c-b093-47ff-8ae0-08f622e6aec5",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "56192347-bfdf-4385-a8a4-e6a0df9f5e06",
+      "wrong_premise": "Provider failures are not required or covered.",
+      "corrected_premise": "Binary, auth, quota, permission, process, and post-start provider failures normalize into typed outcomes and are tested.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:44:59.432Z"
+    },
+    {
+      "event_id": "3f2325d6-308c-4f62-881b-9aea6918672d",
+      "type": "premise_correction",
+      "item_id": "failure_mode:auth_denied",
+      "corrects_verdict_id": "36a28ef4-3763-42de-9baf-3e106fa4d8a8",
+      "wrong_premise": "Authentication denial is not required or covered.",
+      "corrected_premise": "Codex login status explicitly distinguishes Not logged in and maps denial to typed auth failure, with regression coverage.",
+      "reason": "Independent adjudication found the classifier premise unsound and current-head source plus verified test artifacts establish the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+          "sha256": "cddf80dbb2803a9c93757baddea5973834d6083ed47c70f973ecbd0f9436ae9b"
+        },
+        {
+          "artifact": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+          "sha256": "fcc7500f87e1f6a1f02fac94960aea568518cab627a4f003aaf50c410a1f76e4"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_judgment_7763",
+        "session_ref": "runtime_judgment_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:45:02.242Z"
+    },
+    {
+      "event_id": "3d93fc4b-5237-411b-a12e-f7d2092cf9af",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "00ec0c53-f669-4fe4-a3e4-799cc19d0412",
+      "reason": "Exact-HEAD status artifact and JUnit plus structured observations demonstrate flow and artifact replay with 43 passing tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:28.866Z"
+    },
+    {
+      "event_id": "d36a1810-d31d-4892-8f52-62d2f031c66a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "f72d2c6f-3c6e-4c96-bab0-541f9f014a0b",
+      "reason": "JUnit directly covers timeout, malformed result, typed provider failure, quota, permission, and auth denial; all 43 pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:30.153Z"
+    },
+    {
+      "event_id": "eb13af9f-4546-4e70-98ac-73575e460145",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "dca362f9-5019-4be4-8315-8b2897117c7b",
+      "reason": "Status JSON records pass, exit 0, 43 tests, zero failures, exact HEAD and JUnit contains testcase detail.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:31.451Z"
+    },
+    {
+      "event_id": "0960bf2e-ee28-4c84-a85b-bb20865cd75e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "0950e3ba-70df-49f7-ae80-4981f4e4bf78",
+      "reason": "The nine-file diff is one connector contract, composition, docs, tests, and exact Story lineage review surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:32.754Z"
+    },
+    {
+      "event_id": "5cb25dfb-a972-4e67-be46-d2fc28a41bb1",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "a9b7343a-6786-4743-a4f9-eedfaa1ac140",
+      "reason": "Connector enforces timeout_ms, kills at deadline, and reports timed_out with typed timeout; regression passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:33.869Z"
+    },
+    {
+      "event_id": "c9b8e96c-e88f-41a3-a172-e5f0643d10ff",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "bd1d03b0-6ebf-4cb7-9ecb-0445fbaa1fef",
+      "reason": "Malformed completion throws invalid_runtime_result and coordinator normalization remains fail-closed; regression passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:35.235Z"
+    },
+    {
+      "event_id": "184936de-ee85-4991-8b91-48b849b0ec3b",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "48d9565c-b093-47ff-8ae0-08f622e6aec5",
+      "reason": "Probe, start, process exit, and post-start failures normalize to typed outcomes with passing regressions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:36.344Z"
+    },
+    {
+      "event_id": "06a1dfff-b279-444e-9338-114203a172be",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "3f2325d6-308c-4f62-881b-9aea6918672d",
+      "reason": "Codex probe rejects Not logged in or unauthenticated state and auth-denial regressions pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_correction_rejudge",
+        "session_ref": "runtime_correction_rejudge"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:57:37.557Z"
+    }
+  ]
+}

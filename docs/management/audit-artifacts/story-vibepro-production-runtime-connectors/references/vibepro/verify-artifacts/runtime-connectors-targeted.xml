@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="ARA-S-1 ARA-S-2 provider-neutral contract reports quota wait before start" time="0.021070" classname="test"/>
+	<testcase name="ARA-S-2 waiting runtime dispatch re-probes after capability recovery" time="0.000477" classname="test"/>
+	<testcase name="ARA-S-2 auth denial remains a typed resumable stop" time="0.000284" classname="test"/>
+	<testcase name="PRC-S-3 typed provider failure survives status normalization" time="0.000428" classname="test"/>
+	<testcase name="ARA-S-3 successful implementation result is structured and HEAD-bearing" time="0.000516" classname="test"/>
+	<testcase name="ARA-S-4 review requires separate identity and closed parallel provenance" time="0.003812" classname="test"/>
+	<testcase name="ARA-S-4 review requires review capability before provider start" time="0.000137" classname="test"/>
+	<testcase name="ARA-S-4 review rejects a provider result that impersonates the implementer" time="0.000258" classname="test"/>
+	<testcase name="ARA-S-4 review rejects stale HEAD and same implementation session" time="0.000525" classname="test"/>
+	<testcase name="ARA-S-4 review result must correlate to the reviewer runtime returned by start" time="0.004283" classname="test"/>
+	<testcase name="ARA-S-4 review start without session or thread provenance is contained" time="0.014090" classname="test"/>
+	<testcase name="ARA-S-4 review dispatch identity changes with the implementation session" time="0.019762" classname="test"/>
+	<testcase name="ARA-S-4 review runtime is read-only at request and result boundaries" time="0.000359" classname="test"/>
+	<testcase name="ARA-S-4 review rejects a mutable provider sandbox before start" time="0.000085" classname="test"/>
+	<testcase name="ARA-S-4 review validates started identity and contains the wrong runtime" time="0.000461" classname="test"/>
+	<testcase name="ARA-S-2 permission wait during polling becomes a typed Run stop" time="0.000353" classname="test"/>
+	<testcase name="ARA-S-2 permission wait clears stale Run stop after provider resumes" time="0.000562" classname="test"/>
+	<testcase name="ARA-S-5 adapter id participates in dispatch identity" time="0.000258" classname="test"/>
+	<testcase name="ARA-S-6 provider operations enforce the requested timeout" time="0.216246" classname="test"/>
+	<testcase name="ARA-S-5 duplicate dispatch is reused and cancel confirms terminal runtime" time="0.000288" classname="test"/>
+	<testcase name="ARA-S-5 nonterminal cancel fails closed as orphaned agent" time="0.000125" classname="test"/>
+	<testcase name="ARA-S-5 cancel escalates to force before declaring an orphan" time="0.000590" classname="test"/>
+	<testcase name="ARA-S-6 cancel provider failure escalates and reports an orphan when containment fails" time="0.000102" classname="test"/>
+	<testcase name="ARA-S-5 start timeout invokes dispatch-scoped force containment" time="0.043300" classname="test"/>
+	<testcase name="ARA-S-5 start timeout is orphaned unless dispatch-scoped containment confirms terminal status" time="0.006450" classname="test"/>
+	<testcase name="ARA-S-5 generic start failure is contained before redispatch can occur" time="0.011213" classname="test"/>
+	<testcase name="ARA-S-6 timeout and malformed success never become completion" time="0.018166" classname="test"/>
+	<testcase name="ARA-S-5 operation timeout contains the provider runtime before allowing redispatch" time="0.041492" classname="test"/>
+	<testcase name="ARA-S-5 operation timeout reports an orphan when containment cannot confirm terminal state" time="0.084402" classname="test"/>
+	<testcase name="ARA-S-5 result timeout contains the provider runtime before failing" time="0.057973" classname="test"/>
+	<testcase name="ARA-S-7 adapter definition rejects incomplete provider contracts" time="0.012741" classname="test"/>
+	<testcase name="PRC-S-1 Codex connector conforms to probe/start/status/result/cancel" time="0.002430" classname="test"/>
+	<testcase name="PRC-S-2 Claude Code is explicit opt-in and shares the connector contract" time="0.000330" classname="test"/>
+	<testcase name="PRC-S-3 probe failures normalize auth, quota, permission and unavailable states" time="0.000319" classname="test"/>
+	<testcase name="PRC-S-3 Codex probe requires explicit authenticated output" time="0.000269" classname="test"/>
+	<testcase name="PRC-S-4 review uses read-only sandbox, separate identity and a separate provider session" time="0.000274" classname="test"/>
+	<testcase name="PRC-S-3 cancellation confirms a terminal provider status" time="0.000159" classname="test"/>
+	<testcase name="PRC-S-3 requested timeout terminates the provider and remains typed" time="0.071586" classname="test"/>
+	<testcase name="PRC-S-3 malformed provider output fails closed at result collection" time="0.000326" classname="test"/>
+	<testcase name="PRC-S-3 provider quota failure remains typed after process start" time="0.129528" classname="test"/>
+	<testcase name="PRC-S-3 terminated permission failures are terminal and remain typed" time="0.006587" classname="test"/>
+	<testcase name="PRC-S-7 production composition preserves an explicitly injected coordinator" time="0.000226" classname="test"/>
+	<testcase name="PRC-S-6 production smoke probe is typed and never requires credentials" time="1.416600" classname="test"/>
+	<!-- tests 43 -->
+	<!-- suites 0 -->
+	<!-- pass 43 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 2641.943084 -->
+</testsuites>

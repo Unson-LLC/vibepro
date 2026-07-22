@@ -1,0 +1,272 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "updated_at": "2026-07-22T02:11:57.612Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686317612-4273a6b9",
+      "story_id": "story-vibepro-production-runtime-connectors",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep the production runtime connector Story as one focused review unit",
+      "reason": "The Architecture, Spec, production connectors, adapter and CLI composition, Design SSOT lineage, and focused verification jointly define one runtime contract. Splitting them would separate behavior from its authority and evidence while the nine-file change remains reviewable as one coherent Story.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/runtime-cost-cli-unit.xml",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+        "current_branch": "codex/story-vibepro-production-runtime-connectors",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-22T02:11:57.602Z"
+      },
+      "recorded_at": "2026-07-22T02:11:57.612Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784685363631-88dc0088",
+      "story_id": "story-vibepro-production-runtime-connectors",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Keep the production runtime connector Story as one focused PR",
+      "reason": "The Architecture, Spec, connector and adapter implementation, CLI composition, tests, and Design SSOT lineage are one atomic contract-and-verification surface; splitting them would make each PR incomplete.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+        "current_branch": "codex/story-vibepro-production-runtime-connectors",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-22T01:56:03.628Z"
+      },
+      "recorded_at": "2026-07-22T01:56:03.632Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784684446319-9e0e80ae",
+      "story_id": "story-vibepro-production-runtime-connectors",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep production runtime connector implementation as one focused PR",
+      "reason": "Runtime connectors, composition wiring, adapter failure semantics, tests, Architecture, Spec, and Design SSOT lineage form one Story-level review unit; splitting would separate contract from verification.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+        "current_branch": "codex/story-vibepro-production-runtime-connectors",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-22T01:40:46.295Z"
+      },
+      "recorded_at": "2026-07-22T01:40:46.319Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784682850743-73b7b5eb",
+      "story_id": "story-vibepro-production-runtime-connectors",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep production runtime connector implementation as one focused PR",
+      "reason": "Runtime connectors, composition wiring, adapter failure semantics, tests, Architecture, Spec, and Design SSOT lineage form one Story-level review unit; splitting would separate contract from its verification.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+        "current_branch": "codex/story-vibepro-production-runtime-connectors",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T01:14:10.734Z"
+      },
+      "recorded_at": "2026-07-22T01:14:10.745Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686317612-4273a6b9",
+      "story_id": "story-vibepro-production-runtime-connectors",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Keep the production runtime connector Story as one focused review unit",
+      "reason": "The Architecture, Spec, production connectors, adapter and CLI composition, Design SSOT lineage, and focused verification jointly define one runtime contract. Splitting them would separate behavior from its authority and evidence while the nine-file change remains reviewable as one coherent Story.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/runtime-cost-cli-unit.xml",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+        "current_branch": "codex/story-vibepro-production-runtime-connectors",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-22T02:11:57.602Z"
+      },
+      "recorded_at": "2026-07-22T02:11:57.612Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-production-runtime-connectors/decision-records.json"
+}

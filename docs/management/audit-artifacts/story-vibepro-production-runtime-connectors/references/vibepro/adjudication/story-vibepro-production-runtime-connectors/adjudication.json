@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "updated_at": "2026-07-22T01:39:42.891Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Production coordinator is composed only at Guarded Run CLI root while explicit injection remains preferred and lifecycle ownership is unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:39:42.885Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Fake-process conformance plus real codex version and login-status smoke probes pass in the 43-test targeted suite.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:39:38.742Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Fallback follows persisted provider order only for allowlisted stop codes and retains failed dispatch attempts for audit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:39:33.286Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Implementation uses managed-worktree workspace-write while review is read-only or plan with separate identity/session and fail-closed lifecycle checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:38:52.391Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Auth, quota, permission, sandbox, timeout and usage are normalized into typed outcomes; negative-path tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:38:48.795Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Claude Code is explicit opt-in and uses the same connector/adapter contract; PRC-S-2 passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:38:45.062Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Codex connector implements probe/start/status/cancel/collect_result; PRC-S-1 and targeted suite pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "runtime_acceptance_7763",
+        "session_ref": "runtime_acceptance_7763"
+      },
+      "head_commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "recorded_at": "2026-07-22T01:38:41.039Z"
+    }
+  ]
+}

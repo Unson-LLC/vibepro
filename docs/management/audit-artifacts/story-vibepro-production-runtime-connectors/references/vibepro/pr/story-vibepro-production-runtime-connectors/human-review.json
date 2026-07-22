@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "created_at": "2026-07-22T02:25:15.568Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-production-runtime-connectors/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-production-runtime-connectors/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-production-runtime-connectors/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-production-runtime-connectors/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-production-runtime-connectors.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-production-runtime-connectors.vibepro.json, docs/specs/vibepro-production-runtime-connectors.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 3,
+        "waiver": 1
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784686317612-4273a6b9",
+        "story_id": "story-vibepro-production-runtime-connectors",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Keep the production runtime connector Story as one focused review unit",
+        "reason": "The Architecture, Spec, production connectors, adapter and CLI composition, Design SSOT lineage, and focused verification jointly define one runtime contract. Splitting them would separate behavior from its authority and evidence while the nine-file change remains reviewable as one coherent Story.",
+        "reviewer": "codex",
+        "artifact": "docs/architecture/story-vibepro-production-runtime-connectors.md",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/verify-artifacts/runtime-cost-cli-unit.xml",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verify-artifacts/runtime-connectors-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-production-runtime-connectors/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+              "type": "integration",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+          "current_branch": "codex/story-vibepro-production-runtime-connectors",
+          "dirty": true,
+          "status_fingerprint": "M .vibepro/config.json",
+          "recorded_at": "2026-07-22T02:11:57.602Z"
+        },
+        "recorded_at": "2026-07-22T02:11:57.612Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-22T02:24:42.568Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "7763326c54791c9ec828b9cce4371e241ea1c7a7",
+      "branch": "codex/story-vibepro-production-runtime-connectors",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "0c3aaac532075efc60e0298217fbec11effe0f2f",
+      "origin_main_relation": "ahead",
+      "dirty": true,
+      "dirty_summary": [
+        "M .vibepro/config.json"
+      ]
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
