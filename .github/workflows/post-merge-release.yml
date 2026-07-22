@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Run the trusted workflow and projection code from the default branch.
           # The merged SHA is checked out only for the immutable package build below.
