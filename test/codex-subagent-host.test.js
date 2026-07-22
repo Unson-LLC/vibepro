@@ -108,6 +108,7 @@ test('production Codex host shutdown contains the detached worker process group'
     import { writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
     await writeFile(process.argv[2], String(process.pid));
+    setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
   const host = createCodexSubagentHost({
