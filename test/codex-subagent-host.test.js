@@ -128,18 +128,27 @@ test('production Codex host keeps containment inside the worker sandbox boundary
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-containment-eperm-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   const childPidPath = path.join(repoRoot, 'codex-child.pid');
+  const childStoppedPath = path.join(repoRoot, 'codex-child-stopped.txt');
   const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
   await writeFile(fakeCodex, `
+    import { writeFileSync } from 'node:fs';
     import { writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
+    for (const signal of ['SIGTERM', 'SIGINT']) {
+      process.once(signal, () => {
+        writeFileSync(process.argv[3], signal);
+        process.exit(signal === 'SIGTERM' ? 143 : 130);
+      });
+    }
     await writeFile(process.argv[2], String(process.pid));
+    setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
   let deniedGroupSignals = 0;
   const host = createCodexSubagentHost({
     cwd: repoRoot,
     codexExecutable: process.execPath,
-    codexExecutableArgs: [fakeCodex, childPidPath],
+    codexExecutableArgs: [fakeCodex, childPidPath, childStoppedPath],
     killProcess(pid, signal) {
       if (pid < 0) {
         deniedGroupSignals += 1;
@@ -152,12 +161,11 @@ test('production Codex host keeps containment inside the worker sandbox boundary
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
   await waitFor(async () => access(childPidPath).then(() => true, () => false));
-  const childPid = Number(await readFile(childPidPath, 'utf8'));
 
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_eperm_test' });
 
-  await waitFor(async () => !isProcessAlive(childPid));
-  assert.equal(isProcessAlive(childPid), false);
+  await waitFor(async () => access(childStoppedPath).then(() => true, () => false));
+  assert.equal(await readFile(childStoppedPath, 'utf8'), 'SIGTERM');
   assert.equal(deniedGroupSignals, 0);
 });
 
