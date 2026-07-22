@@ -466,8 +466,45 @@ function normalizeResult(value, dispatchRecord) {
     if (result.review_provenance.lifecycle !== 'closed') {
       throw new AgentRuntimeError('invalid_runtime_result', 'review result requires closed lifecycle');
     }
+    result.review = normalizeReviewResult(value);
   }
   return result;
+}
+
+function normalizeReviewResult(value) {
+  const status = requireText(value.status, 'review status');
+  if (!new Set(['pass', 'needs_changes', 'block']).has(status)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review status must be pass, needs_changes, or block');
+  }
+  return {
+    status,
+    summary: requireText(value.summary, 'review summary'),
+    inspection_summary: requireText(value.inspection_summary, 'inspection_summary'),
+    ...(value.inspection_evidence === undefined ? {} : { inspection_evidence: requireText(value.inspection_evidence, 'inspection_evidence') }),
+    inspection_inputs: requireStringArray(value.inspection_inputs, 'inspection_inputs'),
+    judgment_delta: requireStringArray(value.judgment_delta, 'judgment_delta'),
+    findings: normalizeReviewFindings(value.findings)
+  };
+}
+
+function normalizeReviewFindings(value) {
+  if (!Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review findings must be an array');
+  }
+  return value.map((finding, index) => {
+    if (!finding || typeof finding !== 'object' || Array.isArray(finding)) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review findings[${index}] must be an object`);
+    }
+    const severity = requireText(finding.severity, `review findings[${index}].severity`);
+    if (!new Set(['critical', 'high', 'medium', 'low']).has(severity)) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review findings[${index}].severity is unsupported`);
+    }
+    return {
+      severity,
+      id: requireText(finding.id, `review findings[${index}].id`),
+      detail: requireText(finding.detail, `review findings[${index}].detail`)
+    };
+  });
 }
 
 function normalizeUsageAccounting(value) {

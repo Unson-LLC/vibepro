@@ -172,11 +172,14 @@ function buildPrompt(request) {
   const contract = request.role === 'review'
     ? 'Do not modify files. Inspect the current HEAD and report findings only. changed_files must be [].'
     : 'Work only inside the provided managed worktree. Complete the requested task and commit the focused change.';
+  const resultShape = request.role === 'review'
+    ? '{"completion_status":"completed","changed_files":[],"head_sha":"40-char git SHA","test_suggestions":["command"],"summary":"runtime result","status":"pass | needs_changes | block","inspection_summary":"what you inspected","inspection_evidence":"optional evidence reference","inspection_inputs":["file, command, artifact, log, URL, or state"],"judgment_delta":["initial concern -> conclusion and why"],"findings":[{"severity":"critical | high | medium | low","id":"stable-id","detail":"specific issue"}]}'
+    : '{"completion_status":"completed","changed_files":["path"],"head_sha":"40-char git SHA","test_suggestions":["command"],"summary":"result"}';
   return [
     `VibePro runtime dispatch ${request.dispatch_id} for Story ${request.story_id}, task ${request.task_id}.`,
     contract,
     'Your final response MUST contain one JSON object with exactly these fields:',
-    '{"completion_status":"completed","changed_files":["path"],"head_sha":"40-char git SHA","test_suggestions":["command"],"summary":"result"}',
+    resultShape,
     'Do not claim completion unless head_sha is the actual current git HEAD.'
   ].join('\n');
 }

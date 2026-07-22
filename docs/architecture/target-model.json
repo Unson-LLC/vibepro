@@ -148,6 +148,7 @@
         "src/next-best-action-controller.js",
         "src/human-decision-checkpoint.js",
         "src/agent-runtime-adapter.js",
+        "src/independent-review-orchestrator.js",
         "src/session-learning.js",
         "src/run-context-capsule.js"
       ]

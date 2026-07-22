@@ -120,7 +120,15 @@ export async function runSafeActionPlan(state, options = {}) {
     const completed = hasCompletedCheckpoint(current, action.id, current, profile);
     if (completed) continue;
     try {
-      const rawResult = await options.runners[action.id]({ state: current, action });
+      const persistCheckpoint = async (checkpoint) => {
+        if (!Array.isArray(checkpoint)) throw new TypeError('Safe action checkpoint must be an array');
+        await options.onCheckpoint?.({
+          state: current,
+          action,
+          checkpoint: checkpoint.map((entry) => ({ ...entry }))
+        });
+      };
+      const rawResult = await options.runners[action.id]({ state: current, action, persistCheckpoint });
       const result = profile === 'legacy' && rawResult?.status === undefined
         ? { ...(rawResult ?? {}), status: 'continue' }
         : rawResult;
@@ -255,6 +263,7 @@ function append(state, action, key, status, result = {}) {
       status,
       artifact: result.artifact ?? null,
       result_summary: result.summary ?? result.stop_reason ?? result.status ?? null,
+      ...(result.checkpoint === undefined ? {} : { checkpoint: result.checkpoint }),
       ...(lineage ? { lineage } : {}),
       started_at: now,
       completed_at: now

@@ -15,7 +15,7 @@ related_stories:
   - story-vibepro-agent-review-lifecycle-control
 reason: "selected automated lifecycle composition using existing review contracts instead of weakening required Agent Review. compatibility: review prepare/start/close/record and provenance gates remain authoritative. rollback: emit the existing dispatch instruction and wait for runtime. boundary: orchestration only; verdict content remains the independent reviewer result."
 created_at: 2026-07-21
-updated_at: 2026-07-21
+updated_at: 2026-07-22
 ---
 
 # Required Reviewを独立agentへ自動dispatchして記録する
@@ -29,8 +29,10 @@ updated_at: 2026-07-21
 - [ ] IRO-S-5: runtime不足、auth、timeout、invalid provenanceはGate passにせず型付き停止する。
 - [ ] IRO-S-6: parallel success、needs_changes、block、same-session rejection、restartのE2Eがある。
 - [ ] IRO-S-7: `needs_changes`は既存Review LifecycleとRepair Loopへ渡し、新しいverdict/finding schemaを作らない。
+- [ ] IRO-S-8: target architecture conformance導入後のbaseline（68 violations）を悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
 
 ## Non Goals
 
 - required Reviewの省略またはmanual passへの置換。
 - 実装agentをreviewerとして再利用すること。
+- target architectureの既存68 violationsをこのStory内で解消すること。

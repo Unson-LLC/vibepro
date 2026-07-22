@@ -90,7 +90,12 @@ test('ARA-S-4 review requires separate identity and closed parallel provenance',
   const adapter = fakeAdapter({
     async start() { return { provider_run_id: 'review-1', agent_identity: 'reviewer-2', thread_id: 'thread-2' }; },
     async status() { return { status: 'completed' }; },
-    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: 'abc123', test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', lifecycle: 'closed' }; }
+    async collect_result() { return {
+      completion_status: 'completed', changed_files: [], head_sha: 'abc123', test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', lifecycle: 'closed',
+      status: 'needs_changes', inspection_summary: 'inspected runtime boundary', inspection_evidence: 'test/agent-runtime-adapter.test.js',
+      inspection_inputs: ['src/agent-runtime-adapter.js'], judgment_delta: ['transport concern -> review payload retained'],
+      findings: [{ severity: 'medium', id: 'runtime-contract', detail: 'follow-up needed' }]
+    }; }
   });
   const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
   await assert.rejects(coordinator.dispatch(state, { ...request, role: 'review', implementation_identity: 'same', reviewer_identity: 'same' }), { code: 'review_identity_not_separate' });
@@ -98,6 +103,15 @@ test('ARA-S-4 review requires separate identity and closed parallel provenance',
   const result = await coordinator.poll(started.state, started.dispatch.dispatch_id);
   assert.equal(result.dispatch.result.review_provenance.execution_mode, 'parallel_subagent');
   assert.equal(result.dispatch.result.review_provenance.lifecycle, 'closed');
+  assert.deepEqual(result.dispatch.result.review, {
+    status: 'needs_changes',
+    summary: 'pass',
+    inspection_summary: 'inspected runtime boundary',
+    inspection_evidence: 'test/agent-runtime-adapter.test.js',
+    inspection_inputs: ['src/agent-runtime-adapter.js'],
+    judgment_delta: ['transport concern -> review payload retained'],
+    findings: [{ severity: 'medium', id: 'runtime-contract', detail: 'follow-up needed' }]
+  });
 });
 
 test('ARA-S-4 review requires review capability before provider start', async () => {
