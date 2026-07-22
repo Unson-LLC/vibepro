@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { access, copyFile, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -15,6 +15,8 @@ const STORY_ID = 'story-vibepro-codex-detached-completion-inbox';
 const RUN_ID = 'run-20260722T010203Z-01020304';
 const execFileAsync = promisify(execFile);
 const BIN_URL = pathToFileURL(fileURLToPath(new URL('../../bin/vibepro.js', import.meta.url))).href;
+const BRIDGE_URL = pathToFileURL(fileURLToPath(new URL('../../src/codex-runtime-bridge.js', import.meta.url))).href;
+const HOST_URL = pathToFileURL(fileURLToPath(new URL('../../src/codex-subagent-host.js', import.meta.url))).href;
 
 // Story coverage: AC-1 AC-2 AC-3 AC-4 AC-5 AC-6 AC-7 AC-8 AC-9 AC-10 S-001 S-002.
 // flow_replay scenario_clause_e2e: the production worker and Guarded Run scenarios execute
@@ -22,13 +24,27 @@ const BIN_URL = pathToFileURL(fileURLToPath(new URL('../../bin/vibepro.js', impo
 // -> unfinished-only result reuse -> Agent Review lifecycle close without replacement spawn.
 
 test('CDI-S-9 production Codex worker survives the monitor boundary and a successor drains its durable completion', async (t) => {
-  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-production-e2e-'));
+  const repoRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-production-e2e-')));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   await mkdir(path.join(repoRoot, '.vibepro'), { recursive: true });
+  await mkdir(path.join(repoRoot, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repoRoot, 'bin'), { recursive: true });
   await writeFile(path.join(repoRoot, '.vibepro', 'config.json'), `${JSON.stringify({
     schema_version: '0.1.0',
     brainbase: { stories: [{ story_id: STORY_ID, title: 'Codex detached completion Inbox' }] }
   }, null, 2)}\n`);
+  await writeFile(path.join(repoRoot, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify({
+    schema_version: '0.1.0', tool: 'vibepro', repo: { root: '.', git_remote: null, commit: null },
+    latest_run: null, artifacts: {}, runs: []
+  }, null, 2)}\n`);
+  await writeFile(path.join(repoRoot, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---\nstory_id: ${STORY_ID}\ntitle: Codex detached completion Inbox\nstatus: active\n---\n`);
+  await copyFile(fileURLToPath(new URL('../../bin/vibepro.js', import.meta.url)), path.join(repoRoot, 'bin', 'vibepro.js'));
+  await symlink(fileURLToPath(new URL('../../src', import.meta.url)), path.join(repoRoot, 'src'), 'dir');
+  await execFileAsync('git', ['init', '-q'], { cwd: repoRoot });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro E2E'], { cwd: repoRoot });
+  await execFileAsync('git', ['config', 'user.email', 'vibepro-e2e@example.invalid'], { cwd: repoRoot });
+  await execFileAsync('git', ['add', '.'], { cwd: repoRoot });
+  await execFileAsync('git', ['commit', '-qm', 'fixture'], { cwd: repoRoot });
 
   const releasePath = path.join(repoRoot, 'release-codex');
   const fakeCodex = path.join(repoRoot, 'fake-codex.mjs');
@@ -51,69 +67,87 @@ test('CDI-S-9 production Codex worker survives the monitor boundary and a succes
     }));
   `);
 
-  const headSha = 'b'.repeat(40);
-  const gitCommonDir = path.join(repoRoot, '.git-common');
-  let clock = '2026-07-22T01:02:03.000Z';
-  const guardedRunDependencies = {
-    now: () => new Date(clock),
-    randomBytes: () => Buffer.from([1, 2, 3, 4]),
-    resolveGitIdentity: async () => ({ root_realpath: repoRoot, git_dir_realpath: path.join(gitCommonDir, 'source'), git_common_dir_realpath: gitCommonDir, head_sha: headSha }),
-    startExecution: async () => ({ state: { schema_version: '0.1.0', story_id: STORY_ID, target: 'pr_create', managed_worktree: { status: 'disabled', required: false, mode: 'disabled', source_repo: repoRoot, source_relative_path: null, path: null, relative_path: null, branch: 'codex/story-production-e2e', actual_branch: null, branch_match: null, base_ref: 'main', created_from_sha: headSha, current_head_sha: null, dirty: null, dirty_paths: [], dirty_check_error: null, failure_reason: null } }, found: true }),
-    readGateReadiness: async () => ({ ready_for_pr_create: false })
-  };
-  const productionHost = createCodexSubagentHost({
-    cwd: repoRoot,
-    codexExecutable: process.execPath,
-    codexExecutableArgs: [fakeCodex]
-  });
-  const lostNotificationHost = {
-    probe: (...args) => productionHost.probe(...args),
-    spawn: (...args) => productionHost.spawn(...args),
-    status: (...args) => productionHost.status(...args),
-    shutdown: (...args) => productionHost.shutdown(...args),
-    detach: (...args) => productionHost.detach(...args),
-    drainCompletion: (...args) => productionHost.drainCompletion(...args),
-    async subscribeCompletion() { return { subscription_id: 'intentionally-lost-notification' }; },
-    registerResumeHandler() {},
-    async wake() { throw new Error('parent session is absent'); }
-  };
-  const parent = createCodexGuardedRunBridge({ repoRoot, host: lostNotificationHost, now: () => new Date(clock), guardedRunDependencies });
-  await parent.ready;
-  const run = await parent.session.run(repoRoot, { storyId: STORY_ID });
-  const request = {
-    adapter_id: 'codex-subagent', task_id: 'production-logical-review', role: 'review', reviewer_identity: 'codex-reviewer',
-    implementation_identity: 'implementer', implementation_session_id: 'implementation-thread', inspection_surface_hash: 'surface-production-e2e',
-    requested_judgments: [{ judgment_id: 'runtime-contract' }],
-    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'], strict_head_binding: true, strict_head_reason: 'Runtime review is bound to the inspected HEAD' },
-    requirements: { capabilities: ['review'], timeout_ms: 10000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
-  };
-  const started = await parent.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: run.run_id, request });
-  clock = '2026-07-22T01:12:03.000Z';
-  const detached = await parent.session.pollRuntime(repoRoot, { storyId: STORY_ID, runId: run.run_id, dispatchId: started.dispatch.dispatch_id });
-  assert.equal(detached.dispatch.status, 'running_detached');
+  const headSha = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot })).stdout.trim();
+  const gitDir = path.join(repoRoot, '.git');
+  const parentResultPath = path.join(repoRoot, 'parent-result.json');
+  const parentRunnerPath = path.join(repoRoot, 'parent-runner.mjs');
+  await writeFile(parentRunnerPath, `
+    import { writeFile } from 'node:fs/promises';
+    import { createCodexGuardedRunBridge } from ${JSON.stringify(BRIDGE_URL)};
+    import { createCodexSubagentHost } from ${JSON.stringify(HOST_URL)};
+    const repoRoot = ${JSON.stringify(repoRoot)};
+    const storyId = ${JSON.stringify(STORY_ID)};
+    const headSha = ${JSON.stringify(headSha)};
+    let clock = '2026-07-22T01:02:03.000Z';
+    const guardedRunDependencies = {
+      now: () => new Date(clock), randomBytes: () => Buffer.from([1, 2, 3, 4]),
+      resolveGitIdentity: async () => ({ root_realpath: repoRoot, git_dir_realpath: ${JSON.stringify(gitDir)}, git_common_dir_realpath: ${JSON.stringify(gitDir)}, head_sha: headSha }),
+      startExecution: async () => ({ state: { schema_version: '0.1.0', story_id: storyId, target: 'pr_create', managed_worktree: { status: 'disabled', required: false, mode: 'disabled', source_repo: repoRoot, source_relative_path: null, path: null, relative_path: null, branch: 'codex/story-production-e2e', actual_branch: null, branch_match: null, base_ref: 'main', created_from_sha: headSha, current_head_sha: null, dirty: null, dirty_paths: [], dirty_check_error: null, failure_reason: null } }, found: true }),
+      readGateReadiness: async () => ({ ready_for_pr_create: false })
+    };
+    const productionHost = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [${JSON.stringify(fakeCodex)}], probeTimeoutMs: 30000 });
+    const parent = createCodexGuardedRunBridge({ repoRoot, host: productionHost, now: () => new Date(clock), guardedRunDependencies });
+    await parent.ready;
+    const run = await parent.session.run(repoRoot, { storyId });
+    const request = {
+      adapter_id: 'codex-subagent', task_id: 'production-logical-review', role: 'review', reviewer_identity: 'codex-reviewer',
+      implementation_identity: 'implementer', implementation_session_id: 'implementation-thread', inspection_surface_hash: 'surface-production-e2e',
+      requested_judgments: [{ judgment_id: 'runtime-contract' }],
+      review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'], strict_head_binding: true, strict_head_reason: 'Runtime review is bound to the inspected HEAD' },
+      requirements: { capabilities: ['review'], timeout_ms: 30000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
+    };
+    const started = await parent.session.dispatchRuntime(repoRoot, { storyId, runId: run.run_id, request });
+    if (!started.dispatch.provider_run_id) throw new Error('production dispatch did not start: ' + JSON.stringify(started.dispatch));
+    clock = '2026-07-22T01:12:03.000Z';
+    const detached = await parent.session.pollRuntime(repoRoot, { storyId, runId: run.run_id, dispatchId: started.dispatch.dispatch_id });
+    await writeFile(${JSON.stringify(parentResultPath)}, JSON.stringify({ parent_pid: process.pid, run_id: run.run_id, dispatch: started.dispatch, detached: detached.dispatch }));
+  `);
+  await execFileAsync(process.execPath, [parentRunnerPath], { cwd: repoRoot });
+  const parentResult = JSON.parse(await readFile(parentResultPath, 'utf8'));
+  const run = { run_id: parentResult.run_id };
+  const started = { dispatch: parentResult.dispatch };
+  assert.equal(parentResult.detached.status, 'running_detached');
+  assert.equal(isProcessAlive(parentResult.parent_pid), false);
 
   await writeFile(releasePath, 'complete\n');
-  await waitForCondition(async () => (await productionHost.drainCompletion({
-    dispatch_id: started.dispatch.dispatch_id,
-    repo_root: repoRoot
-  })).some((event) => event.kind === 'completed'));
+  const productionHost = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
+  const runRoot = path.join(repoRoot, '.vibepro', 'codex-host', 'runs');
+  const [runName] = await readdir(runRoot);
+  const runDir = path.join(runRoot, runName);
+  try {
+    await waitForCondition(async () => (await productionHost.drainCompletion({ dispatch_id: started.dispatch.dispatch_id, repo_root: repoRoot })).some((event) => event.kind === 'completed'), 30000);
+  } catch (error) {
+    throw new Error(`${error.message}; worker-state=${await readFile(path.join(runDir, 'state.json'), 'utf8')}; artifacts=${JSON.stringify(await readdir(runDir, { recursive: true }))}`);
+  }
+  await waitForCondition(async () => access(path.join(runDir, 'worker-finished.json')).then(() => true, () => false), 30000);
+  const deliveryError = await readFile(path.join(runDir, 'delivery-error.json'), 'utf8').catch(() => null);
+  assert.equal(deliveryError, null);
+  const inboxDispatchPath = path.join(repoRoot, '.vibepro', 'runtime-inbox', started.dispatch.dispatch_id);
+  assert.equal(await access(inboxDispatchPath).then(() => true, () => false), true,
+    `runtime-ingest did not persist Inbox; state=${await readFile(path.join(runDir, 'state.json'), 'utf8')}; artifacts=${JSON.stringify(await readdir(path.join(repoRoot, '.vibepro'), { recursive: true }))}`);
+  await stat(inboxDispatchPath);
 
-  const reviews = [];
   const successorHost = createCodexSubagentHost({ cwd: repoRoot, codexExecutable: process.execPath, codexExecutableArgs: [fakeCodex] });
   const successor = createCodexGuardedRunBridge({
     repoRoot,
     host: successorHost,
-    now: () => new Date(clock),
-    guardedRunDependencies,
-    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; }
+    guardedRunDependencies: {
+      now: () => new Date('2026-07-22T01:12:04.000Z'), randomBytes: () => Buffer.from([1, 2, 3, 4]),
+      resolveGitIdentity: async () => ({ root_realpath: repoRoot, git_dir_realpath: gitDir, git_common_dir_realpath: gitDir, head_sha: headSha }),
+      startExecution: async () => ({ state: null, found: false }), readGateReadiness: async () => ({ ready_for_pr_create: false })
+    },
+    recordAgentReview: async () => { throw new Error('successor must reuse the runtime-bound review'); }
   });
   await successor.ready;
   const recovered = await successor.resumeFromWake({ story_id: STORY_ID, run_id: run.run_id, dispatch_id: started.dispatch.dispatch_id });
   assert.equal(recovered.dispatch.status, 'completed');
   assert.equal(recovered.dispatch.result.review_provenance.thread_id, started.dispatch.thread_id);
   assert.equal(recovered.agent_review.status, 'pass');
-  assert.equal(reviews[0].review.agentClosed, true);
-  assert.equal((await parent.session.status(repoRoot, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches.length, 1);
+  const persistedReview = JSON.parse(await readFile(path.join(repoRoot, '.vibepro', 'reviews', STORY_ID, 'gate', 'review-result-gate_evidence.json'), 'utf8'));
+  assert.equal(persistedReview.status, 'pass');
+  assert.equal(persistedReview.runtime_dispatch_id, started.dispatch.dispatch_id);
+  assert.equal(persistedReview.agent_provenance.lifecycle.agent_closed, true);
+  assert.equal((await successor.session.status(repoRoot, { storyId: STORY_ID, runId: run.run_id })).runtime_dispatches.length, 1);
 });
 
 test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and a successor closes the Inbox review', async (t) => {
@@ -280,4 +314,14 @@ async function waitForCondition(predicate, timeoutMs = 10000) {
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
   throw new Error('condition timeout');
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error.code === 'ESRCH') return false;
+    throw error;
+  }
 }

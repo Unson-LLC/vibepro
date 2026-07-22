@@ -173,9 +173,12 @@ async function deliverToRuntime(request, event) {
   const args = [cliPath, 'execute', 'runtime-ingest', repoRoot, '--story-id', request.story_id, '--run-id', request.run_id,
     '--dispatch-id', request.dispatch_id, '--event', eventPath, '--json'];
   await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, args, { cwd: repoRoot, stdio: 'ignore' });
+    const child = spawn(process.execPath, args, { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stderr = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk) => { stderr = boundedAppend(stderr, chunk); });
     child.on('error', reject);
-    child.on('close', (code) => code === 0 ? resolve() : reject(new Error(`runtime-ingest exited ${code}`)));
+    child.on('close', (code) => code === 0 ? resolve() : reject(new Error(`runtime-ingest exited ${code}: ${stderr.slice(-4096)}`)));
   });
 }
 

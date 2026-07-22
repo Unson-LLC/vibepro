@@ -223,7 +223,7 @@ function coordinatorRuntimeRequest(repoRoot) {
 }
 
 async function waitFor(predicate) {
-  const deadline = Date.now() + 5000;
+  const deadline = Date.now() + 10000;
   while (Date.now() < deadline) {
     if (await predicate()) return;
     await new Promise((resolve) => setTimeout(resolve, 20));

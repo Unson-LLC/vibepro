@@ -233,7 +233,7 @@ export async function recordGuardedRuntimeReview({ deps, repoRoot, options, load
   if (dispatch.review_gate_record?.runtime_dispatch_id === dispatch.dispatch_id) {
     return { dispatch, review: dispatch.review_gate_record.review, reused: true };
   }
-  const review = await reviewRecorder(loaded.state.execution_context.root_realpath, {
+  const reviewResult = await reviewRecorder(loaded.state.execution_context.root_realpath, {
     ...(options.review ?? {}), storyId: loaded.state.story_id,
     agentSystem: options.review?.agentSystem ?? 'codex', executionMode: 'parallel_subagent',
     agentId: provenance.agent_identity, agentThreadId: provenance.thread_id,
@@ -241,6 +241,7 @@ export async function recordGuardedRuntimeReview({ deps, repoRoot, options, load
     implementationSessionId: dispatch.implementation_session_id,
     runtimeDispatchId: dispatch.dispatch_id
   });
+  const review = reviewResult?.review ?? reviewResult;
   const recordedDispatch = {
     ...dispatch,
     review_gate_record: {
