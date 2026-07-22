@@ -673,8 +673,20 @@
         "period": "2026-07",
         "started_at": "2026-07-22",
         "due_at": null
+      },
+      {
+        "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+        "title": "Canonical auditがreview root直下のstory-level state fileでmergeを失敗させないようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-node20-e2e-ts-ci-visibility"
+    "current_story_id": "story-vibepro-canonical-audit-review-root-state-files"
   }
 }
