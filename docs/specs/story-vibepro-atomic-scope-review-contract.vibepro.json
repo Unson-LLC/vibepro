@@ -5,6 +5,9 @@
     "caller": "codex",
     "stage": "ai_synthesis"
   },
+  "entities": [
+    { "name": "AtomicScopeDecision", "states": ["split_recommended", "rejected", "accepted", "cumulative_validation", "ready"] }
+  ],
   "clauses": [
     {
       "id": "ASR-S-1",
@@ -270,6 +273,11 @@
     }
   ],
   "diagrams": [
+    {
+      "kind": "state",
+      "title": "Atomic scope review lifecycle",
+      "mermaid": "stateDiagram-v2\n  [*] --> SplitRecommended\n  SplitRecommended --> Rejected: boundary or owner evidence incomplete\n  Rejected --> Accepted: typed lanes and current-HEAD owners cover every changed path\n  Accepted --> Rejected: HEAD or review surface changes\n  Accepted --> CumulativeValidation: required commands retained\n  CumulativeValidation --> Ready: current verification and final reviews pass\n  CumulativeValidation --> Rejected: verification or final review fails"
+    },
     {
       "kind": "flow",
       "title": "Atomic scope acceptance flow",
