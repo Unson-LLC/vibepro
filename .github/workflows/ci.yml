@@ -22,6 +22,11 @@ jobs:
       - run: npm install
       - run: npm run typecheck
       - run: npm test
+      # Node < 22.6 cannot type-strip .ts, so `npm test` silently skips
+      # test/e2e/*.spec.ts there. This step runs those specs explicitly as
+      # the required gate on Node 22+, and prints a counted skip annotation
+      # on lanes that cannot execute them.
+      - run: npm run test:e2e:ts
       - run: npm run pack:dry-run
       - run: node bin/vibepro.js --version
       - run: node bin/vibepro.js help --language en
