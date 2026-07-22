@@ -111,6 +111,24 @@ flowchart LR
 
 主な脅威は自己承認、identity未確認reviewの昇格、stale/unrelated evidenceの誤束縛、自由文によるlane接続の偽装、governance語からauth境界を誤生成する分類ノイズである。typed declaration、`separate_session`、strict HEAD、contract-qualified evidence、境界固有のfailure-mode分類でfail-closedにする。
 
+## State Model
+
+```mermaid
+stateDiagram-v2
+  [*] --> SplitRecommended
+  SplitRecommended --> Rejected: typed boundary or owner evidence incomplete
+  Rejected --> Rejected: stale, foreign, running, or partial review evidence
+  Rejected --> Accepted: connected typed lanes and current-HEAD lifecycle owners cover every changed path
+  Accepted --> Rejected: HEAD or review surface changes
+  Accepted --> CumulativeValidation: all required commands retained
+  CumulativeValidation --> Ready: current verification and final reviews pass
+  CumulativeValidation --> Rejected: verification or final review fails
+```
+
+## Release and rollback
+
+This is a CLI policy change with no migration or operator action. The release note is the PR decision summary and Story-to-contract traceability. Operators verify `pr-prepare.json` and the Gate DAG; unexpected atomic acceptance is observable as `atomic_scope.status = accepted` with its owner map and structured lineage. Rollback is to revert the atomic acceptance policy while retaining generated split lanes and the legacy automatic split recommendation. The VibePro maintainer owns release and rollback.
+
 ## Acceptance Scenarios
 
 1. atomic review workflowでは、完全な宣言でもlifecycle-bound current-HEAD review owner mapがない限りscope stateは`rejected`かつ`split_recommended`に留まり、全changed pathのownershipが揃ったときだけ`accepted`へtransitionする。
