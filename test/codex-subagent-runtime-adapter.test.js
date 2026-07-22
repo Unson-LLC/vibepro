@@ -148,6 +148,37 @@ test('CDI-S-5 heartbeat without checkpoint cannot extend no-progress deadline', 
   assert.equal(host.metrics().shutdowns, 1);
 });
 
+test('CDI-S-1 CDI-S-5 successor reconcile preserves detached state and the original no-progress deadline', async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-successor-deadline-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  let clock = new Date('2026-07-22T01:00:00.000Z');
+  const host = fakeCodexHost();
+  const request = reviewRequest(repoRoot);
+  request.requirements.no_progress_deadline_ms = 1000;
+  const first = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const started = await first.dispatch(baseState, request);
+  const detached = await first.detach(started.state, started.dispatch.dispatch_id);
+  clock = new Date('2026-07-22T01:00:00.500Z');
+  const successor = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const observed = await successor.reconcile(detached.state, detached.dispatch.dispatch_id);
+  assert.equal(observed.dispatch.status, 'running_detached');
+  assert.equal(observed.dispatch.attempt_started_at, started.dispatch.attempt_started_at);
+  assert.equal(host.metrics().shutdowns, 0);
+
+  clock = new Date('2026-07-22T01:00:01.200Z');
+  const laterSuccessor = createAgentRuntimeCoordinator({
+    adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host, now: () => clock })], now: () => clock
+  });
+  const stalled = await laterSuccessor.reconcile(observed.state, observed.dispatch.dispatch_id);
+  assert.equal(stalled.dispatch.stop_reason.code, 'runtime_stalled');
+  assert.equal(host.metrics().shutdowns, 1);
+  assert.equal(host.metrics().spawns, 1);
+});
+
 test('CDI-S-5 CDI-S-6 bounded recovery resumes only unfinished judgments and reaches completion', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-bounded-recovery-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));

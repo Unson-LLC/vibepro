@@ -238,6 +238,8 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       session_id: restarted.session_id ?? null,
       thread_id: restarted.thread_id ?? null,
       attempts: attempts + 1,
+      logical_started_at: record.logical_started_at,
+      attempt_started_at: record.attempt_started_at,
       usage_accounting: { cost_usd: record.accumulated_cost_usd, total_tokens: null },
       partial_results: partialJudgments,
       recovery_plan: recoveryPlan
@@ -364,8 +366,8 @@ function reconstructRecord(dispatch) {
   return {
     request: dispatch,
     started: { provider_run_id: dispatch.provider_run_id },
-    logical_started_at: dispatch.started_at,
-    attempt_started_at: dispatch.updated_at ?? dispatch.started_at,
+    logical_started_at: dispatch.logical_started_at ?? dispatch.started_at,
+    attempt_started_at: dispatch.attempt_started_at ?? dispatch.started_at,
     recovery_attempts: dispatch.attempts ?? 1,
     accumulated_cost_usd: dispatch.usage_accounting?.cost_usd ?? 0
   };

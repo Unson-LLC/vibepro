@@ -123,6 +123,7 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
       request.requirements.timeout_ms,
       'runtime_start_timeout'
     ));
+    const startedAt = iso(now);
     const dispatchRecord = {
       ...request,
       provider_run_id: started.provider_run_id,
@@ -132,8 +133,10 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
       sandbox: capability.sandbox,
       approval_policy: capability.approval_policy,
       status: 'running',
-      started_at: iso(now),
-      updated_at: iso(now),
+      started_at: startedAt,
+      logical_started_at: startedAt,
+      attempt_started_at: startedAt,
+      updated_at: startedAt,
       result: null,
       stop_reason: null
     };
@@ -297,9 +300,10 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
     return failed(runState, current, 'runtime_stalled', observed.message ?? 'runtime made no bounded progress', now);
   }
   if (!TERMINAL_STATUSES.has(observed.status)) {
+    const preserveDetached = current.status === 'running_detached' && observed.status === 'running';
     const next = {
       ...current,
-      status: observed.status,
+      status: preserveDetached ? 'running_detached' : observed.status,
       provider_run_id: observed.provider_run_id ?? current.provider_run_id,
       provider_session_id: observed.provider_session_id ?? current.provider_session_id ?? null,
       session_id: observed.session_id ?? current.session_id ?? null,
@@ -310,7 +314,9 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
       partial_results: observed.partial_results ?? current.partial_results ?? [],
       attempts: observed.attempts ?? current.attempts ?? 1,
       usage_accounting: observed.usage_accounting ?? current.usage_accounting ?? null,
-      recovery_plan: observed.recovery_plan ?? current.recovery_plan ?? null
+      recovery_plan: observed.recovery_plan ?? current.recovery_plan ?? null,
+      logical_started_at: observed.logical_started_at ?? current.logical_started_at ?? current.started_at,
+      attempt_started_at: observed.attempt_started_at ?? current.attempt_started_at ?? current.started_at
     };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
     assertProviderIdentityUniqueness([
