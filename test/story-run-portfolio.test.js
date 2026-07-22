@@ -156,10 +156,21 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
     ],
     human_decision_journal: [{ decision_id: 'decision-1' }]
   });
-  const state = await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-cost' });
+  const state = await fixture.controller.advance(fixture.root, {
+    portfolioId: 'portfolio-cost', costAttribution: {
+      story_id: STORIES[0], run_id: fixture.runs.get(STORIES[0]).run_id,
+      observed_work_ms: 1500, active_wait_ms: 400, tool_wait_ms: 300,
+      review_wait_ms: 700, subagent_wall_clock_ms: 700, agent_consumption_ms: 1000,
+      subagent_count: 2, review_dispatch_count: 2, accepted_finding_count: 2, repair_batch_count: 1,
+      fresh_input_tokens: 12, expensive_verification_count: 1,
+      efficiency_debt_count: 0
+    }
+  });
   const output = renderStoryRunPortfolioSummary(state);
   assert.match(output, /trusted_pr_ready_ms=unknown active_ms=1700 wait_ms=300 tokens=42/);
   assert.match(output, /full_suite=1 evidence_reuse=2 evidence_invalidations=0 human_interruptions=1 accepted_defects=2 risk_reductions=3/);
+  assert.match(output, /observed_work_ms=1500 active_wait_ms=400 tool_wait_ms=300 review_wait_ms=700 subagent_wall_clock_ms=700 agent_consumption_ms=1000/);
+  assert.match(output, /subagents=2 review_dispatches=2 accepted_findings=2 repair_batches=1 expensive_verification=1 fresh_input_tokens=12 evidence_invalidation=0 efficiency_debt=0/);
   await assert.rejects(fixture.controller.advance(fixture.root, {
     portfolioId: 'portfolio-cost', costAttribution: {
       story_id: STORIES[1], run_id: fixture.runs.get(STORIES[0]).run_id, total_tokens: 999
@@ -169,6 +180,31 @@ test('SRP-S-6 GAH-S-10 summary reports per-Story time cost suite reuse and inter
   assert.equal(unchanged.entries[0].cost_attribution.total_tokens, 42);
   assert.equal(unchanged.status, 'blocked');
   assert.equal(unchanged.entries[0].stop_reason.code, 'scope_contamination');
+});
+
+test('portfolio aggregates raw review intervals before persisting the closed attribution shape', async (t) => {
+  const fixture = await createFixture(t);
+  await fixture.controller.create(fixture.root, { portfolioId: 'portfolio-aggregate', storyIds: STORIES.slice(0, 1) });
+  await fixture.controller.advance(fixture.root, { portfolioId: 'portfolio-aggregate' });
+  const runId = fixture.runs.get(STORIES[0]).run_id;
+  const state = await fixture.controller.advance(fixture.root, {
+    portfolioId: 'portfolio-aggregate',
+    costAttribution: {
+      story_id: STORIES[0],
+      run_id: runId,
+      run_started_at: '2026-07-21T00:00:00.000Z',
+      trusted_pr_ready_at: '2026-07-21T00:05:00.000Z',
+      reviews: [
+        { role: 'gate_evidence', started_at: '2026-07-21T00:01:00.000Z', finished_at: '2026-07-21T00:03:00.000Z' },
+        { role: 'gate_evidence', started_at: '2026-07-21T00:02:00.000Z', finished_at: '2026-07-21T00:04:00.000Z' }
+      ]
+    }
+  });
+  assert.equal(state.entries[0].cost_attribution.trusted_pr_ready_ms, 300000);
+  assert.equal(state.entries[0].cost_attribution.review_wait_ms, 180000);
+  assert.equal(state.entries[0].cost_attribution.agent_consumption_ms, 240000);
+  assert.equal(state.entries[0].cost_attribution.review_dispatch_count, 2);
+  assert.equal(state.entries[0].cost_attribution.fresh_input_tokens, null);
 });
 
 test('SRP-S-7 stops scope contamination and SRP-S-8 rejects unproved parallel mode', async (t) => {

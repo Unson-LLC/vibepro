@@ -109,33 +109,21 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     agentReviews.required_reviews.map((item) => `${item.stage}:${item.role}`).sort(),
     [
       'gate:gate_evidence',
-      'gate:release_risk',
-      'preview:human_usability',
-      'preview:network_runtime'
+      'gate:release_risk'
     ]
   );
   const previewStage = agentReviews.stages.find((stage) => stage.stage === 'preview');
-  assert.deepEqual(previewStage.roles.map((role) => role.role).sort(), [
-    'human_usability',
-    'network_runtime'
-  ]);
-  assert.equal(previewStage.next_actions.join('\n').includes('preview_smoke'), false);
+  assert.equal(previewStage, undefined);
   const previewDispatch = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
-  assert.equal(previewDispatch.prepare_command.includes('preview_smoke'), false);
+  assert.equal(previewDispatch, undefined);
   const firstPrDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
   const firstPersistedPrepare = await readJson(path.join(firstPrDir, 'pr-prepare.json'));
   const firstPersistedPreviewStage = firstPersistedPrepare.pr_context.agent_reviews.stages.find((stage) => stage.stage === 'preview');
-  assert.deepEqual(firstPersistedPreviewStage.roles.map((role) => role.role).sort(), [
-    'human_usability',
-    'network_runtime'
-  ]);
-  assert.equal(firstPersistedPreviewStage.next_actions.join('\n').includes('preview_smoke'), false);
+  assert.equal(firstPersistedPreviewStage, undefined);
   assert.equal(
     firstPersistedPrepare.pr_context.agent_reviews.parallel_dispatch.required_stages
-      .find((stage) => stage.stage === 'preview')
-      .prepare_command
-      .includes('preview_smoke'),
-    false
+      .find((stage) => stage.stage === 'preview'),
+    undefined
   );
 
   await runCli([
@@ -218,15 +206,13 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
   assert.equal(persistedGateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');
   assert.equal(
     persistedPrepare.pr_context.agent_reviews.parallel_dispatch.required_stages
-      .find((stage) => stage.stage === 'preview')
-      .prepare_command
-      .includes('preview_smoke'),
-    false
+      .find((stage) => stage.stage === 'preview'),
+    undefined
   );
   assert.match(prBody, /\.vibepro\/pr\/story-vibepro-workflow-pre-pr-evidence-gate\/pr-prepare\.json/);
   assert.doesNotMatch(prBody, /preview:network_runtime/);
   assert.doesNotMatch(prBody, /preview:preview_smoke\(missing\)|--role preview_smoke/);
-  assert.match(prPrepareHtml, /network_runtime/);
+  assert.doesNotMatch(prPrepareHtml, /network_runtime/);
   assert.doesNotMatch(prPrepareHtml, /--role preview_smoke/);
   assert.match(cockpitHtml, /agent review|Agent Review|review/i);
   assert.match(cockpitHtml, /agent-closed|close\/shutdown|close/i);

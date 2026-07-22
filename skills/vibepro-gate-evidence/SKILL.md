@@ -42,9 +42,11 @@ Touching any file listed in a review's inspected surface (even a Story doc) afte
 
 ## Agent Review Lifecycle
 
-Order per role: `review prepare` → `review start` (with the **real** subagent id) → dispatch the subagent → `review close --close-reason completed` → `review record --agent-closed`.
+Order per role: `review prepare` → `review authorize` (model, risk closure, freeze, Story-wide budget) → dispatch only when authorized → `review start --dispatch-authorization <id>` (with the **real** subagent id) → `review close --close-reason completed` → `review record --agent-closed`.
 
-- Started with a placeholder id? Repair: `close --close-reason replaced` → `start` with the real id → `close completed` → `record`.
+- Never spawn first and authorize later. An authorization stop means no subagent is started. Active reservations count against the Story budget, preventing parallel coordinators from overbooking it.
+
+- Started with a placeholder id? Repair: `close --close-reason replaced` → obtain a fresh authorization → `start` with the real id and authorization → `close completed` → `record`.
 - Always pass `--inspection-input <ref>` listing the real source, test, Story, Spec, contract, or config files inspected. A review-request path or generated `.vibepro` artifact alone is not a content surface. Keep the list honest and minimal — every listed file that later changes makes the review stale.
 - Do not append `--strict-head-binding` to every review. Configured strict roles apply automatically; a deliberate override must include `--strict-head-reason <text>`.
 - `vibepro review repair <repo> --story-id <id>` generates the prepare→start→close→record command sequence for incomplete review evidence.

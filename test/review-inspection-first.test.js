@@ -10,10 +10,12 @@ import {
   AGENT_SKILL_DISCIPLINE_BLOCK,
   AGENT_SKILL_DISCIPLINE_BLOCK_JA,
   INVESTIGATION_GUIDELINES_BLOCK,
+  authorizeAgentReviewDispatch,
   prepareAgentReview,
   recordAgentReview,
   getAgentReviewStatus,
-  startAgentReviewLifecycle
+  startAgentReviewLifecycle,
+  closeAgentReviewLifecycle
 } from '../src/agent-review.js';
 import { runCli } from '../src/cli.js';
 
@@ -60,6 +62,133 @@ async function startCloseable(root) {
     timeoutMs: 600000
   });
 }
+
+test('review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence', 'release_risk'], language: 'en' });
+
+  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence'
+  }), /closes_risks must not be empty/);
+
+  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
+    reviewKind: 'final', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Confirm current release evidence.',
+    freeze: ['source', 'spec', 'review_surface']
+  }), /review dispatch stop: finalization_incomplete/);
+
+  const authorized = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
+    reusableEvidence: ['targeted:test']
+  });
+  assert.equal(authorized.dispatch_decision.action, 'dispatch');
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'missing-authorization'
+  }), /requires --dispatch-authorization/);
+  const started = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'preflight-1',
+    dispatchAuthorization: authorized.authorization.authorization_id
+  });
+  assert.equal(started.dispatch_decision.action, 'dispatch');
+  assert.equal(started.lifecycle.dispatch_authorization_id, authorized.authorization.authorization_id);
+  assert.equal(started.lifecycle.dispatch_decision.idempotency_key, started.dispatch_decision.idempotency_key);
+
+  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
+    reusableEvidence: ['targeted:test']
+  }), /review dispatch await_result: running/);
+
+  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'release_risk',
+    reviewKind: 'preflight', closesRisks: ['release risk'], expectedJudgmentDelta: 'Confirm no remaining release blocker.'
+  }), /review dispatch stop: budget_exceeded/);
+
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'implementation', roles: ['runtime_contract'], language: 'en' });
+  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'implementation', role: 'runtime_contract',
+    reviewKind: 'preflight', closesRisks: ['runtime contract'], expectedJudgmentDelta: 'Check another stage.'
+  }), /review dispatch stop: budget_exceeded/);
+
+  await assert.rejects(() => startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'reuse-auth',
+    dispatchAuthorization: authorized.authorization.authorization_id
+  }), /is consumed/);
+});
+
+test('review authorize CLI returns a consumable pre-spawn authorization', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  let output = '';
+  const authorized = await runCli([
+    'review', 'authorize', root, '--id', 'story-test', '--stage', 'gate', '--role', 'gate_evidence',
+    '--review-kind', 'preflight', '--closes-risk', 'release confidence',
+    '--expected-judgment-delta', 'find missing evidence', '--agent-model', 'gpt-5.6-luna',
+    '--agent-reasoning-effort', 'low', '--agent-cost-tier', 'low', '--json'
+  ], { stdout: { write: (chunk) => { output += chunk; } } });
+  assert.equal(authorized.exitCode, 0);
+  const authorization = JSON.parse(output).authorization;
+  assert.equal(authorization.status, 'authorized');
+  assert.equal(authorization.agent_model, 'gpt-5.6-luna');
+
+  const started = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'agent-luna',
+    dispatchAuthorization: authorization.authorization_id, agentModel: 'gpt-5.6-luna',
+    agentReasoningEffort: 'low', agentCostTier: 'low'
+  });
+  assert.equal(started.lifecycle.dispatch_authorization_id, authorization.authorization_id);
+});
+
+test('HEAD mutation remains orphaned until explicit cancellation confirmation persists obsolete', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const started = await startCloseable(root);
+  assert.ok(started.lifecycle.head_sha);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = false;\n');
+  await git(root, ['add', 'src/foo.js']);
+  await git(root, ['commit', '-m', 'mutate reviewed head']);
+
+  const stale = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const staleRole = stale.stages[0].roles.find((role) => role.role === 'gate_evidence');
+  assert.equal(staleRole.lifecycle.effective_status, 'orphaned_agent');
+  assert.match(staleRole.lifecycle.latest.head_sha, /^[a-f0-9]{40}$/);
+  assert.match(stale.stages[0].next_actions.join('\n'), /Fail closed and confirm cancellation/);
+
+  const unconfirmed = await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'replaced',
+    closeEvidence: 'provider-cancellation-requested'
+  });
+  assert.equal(unconfirmed.lifecycle.effective_status, 'orphaned_agent');
+  assert.equal(unconfirmed.lifecycle.status, 'running');
+  assert.equal(unconfirmed.lifecycle.cancel_confirmed, false);
+  assert.equal(unconfirmed.lifecycle.closed_at, null);
+  assert.equal(unconfirmed.lifecycle.terminal_reason, 'head_mutated_cancellation_unconfirmed');
+
+  const closed = await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'replaced',
+    closeEvidence: 'provider-cancellation-confirmed',
+    cancellationConfirmed: true
+  });
+  assert.equal(closed.lifecycle.effective_status, 'obsolete');
+  assert.equal(closed.lifecycle.status, 'replaced');
+  assert.equal(closed.lifecycle.cancel_confirmed, true);
+  assert.equal(closed.lifecycle.terminal_reason, 'head_mutated_after_dispatch');
+});
 
 test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-only checks', () => {
   assert.equal(typeof INVESTIGATION_GUIDELINES_BLOCK, 'string');
@@ -334,6 +463,21 @@ test('recordAgentReview synthesizes a closed lifecycle entry from closed provena
   assert.equal(role.lifecycle.effective_status, 'closed');
   assert.equal(role.lifecycle.latest.synthesized_from_result, true);
   assert.equal(role.lifecycle.latest.agent_id, 'synthetic-agent-1');
+});
+
+test('delivery efficiency policy rejects synthetic lifecycle evidence that bypasses pre-spawn authorization', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await assert.rejects(() => recordAgentReview(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'ok',
+    inspectionSummary: 'read source', inspectionInputs: ['src/agent-review.js'],
+    judgmentDeltas: ['uncertain -> pass'], agentSystem: 'codex', executionMode: 'parallel_subagent',
+    agentId: 'unauthorized-agent', agentClosed: true,
+    agentTranscript: '.vibepro/reviews/story-test/gate/unauthorized-transcript.json'
+  }), /requires a lifecycle started from a consumed dispatch authorization/);
 });
 
 test('getAgentReviewStatus surfaces empty handoff arrays for missing roles', async () => {

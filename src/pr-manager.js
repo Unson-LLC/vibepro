@@ -7,6 +7,12 @@ import { promisify } from 'node:util';
 
 import { formatCounts } from './refactoring-delta-reporter.js';
 import {
+  aggregateDeliveryMetrics,
+  evaluateDeliveryBudget,
+  resolveEfficiencyPolicy,
+  summarizeEfficiencyDebt
+} from './delivery-efficiency-guardrail.js';
+import {
   buildRequirementConsistency,
   findStorySource,
   isStoryDocPath,
@@ -5507,8 +5513,12 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     networkContracts,
     performanceEvidence,
     changeClassification,
+    validationSequence,
     git
   });
+  if (agentReviews) {
+    agentReviews.delivery_efficiency = await buildDeliveryEfficiencyContext(repoRoot, story.story_id, agentReviews);
+  }
   const engineeringJudgment = buildEngineeringJudgmentClassification({
     fileGroups,
     storySource: primaryStory,
@@ -11004,6 +11014,7 @@ function buildGateDag({
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
+  const efficiency = buildAgentReviewEfficiencySummary(agentReviews, needsEvidence.length === 0);
   const suppressedJudgmentAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   return {
     schema_version: '0.1.0',
@@ -11044,10 +11055,108 @@ function buildGateDag({
       decision_record_status: decisionRecordGate.status,
       review_inspection_required_status: reviewInspectionRequiredGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
-      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
+      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null,
+      correctness_ready: efficiency.correctness_ready,
+      efficiency_debt: efficiency
     },
     nodes: allNodes,
     edges
+  };
+}
+
+export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady = false) {
+  const lifecycles = [];
+  let duplicateDispatchCount = 0;
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      const lifecycle = role.lifecycle ?? {};
+      for (let index = 0; index < (lifecycle.timed_out_count ?? 0); index += 1) lifecycles.push({ status: 'timed_out' });
+      if (['obsolete', 'orphaned_agent'].includes(lifecycle.effective_status)) {
+        lifecycles.push({ status: lifecycle.effective_status });
+      }
+      duplicateDispatchCount += Math.max(0, (lifecycle.running_count ?? 0) - 1);
+    }
+  }
+  const delivery = agentReviews?.delivery_efficiency ?? {};
+  const metrics = aggregateDeliveryMetrics({
+    ...(delivery.measurements ?? {}),
+    reviews: delivery.reviews
+  });
+  const budget = evaluateDeliveryBudget(delivery.policy ?? {}, metrics);
+  const summary = summarizeEfficiencyDebt({
+    correctness_ready: correctnessReady,
+    lifecycles,
+    duplicate_dispatch_count: duplicateDispatchCount,
+    budget
+  });
+  return {
+    ...summary,
+    metrics,
+    budget,
+    attribution: {
+      status: metrics.attribution_status ?? 'unknown',
+      reason: delivery.attribution_reason ?? 'no session-cost attribution was connected to this PR preparation'
+    },
+    dispatch_decision: delivery.dispatch_decision ?? {
+      status: 'unknown',
+      reason: 'no concrete Story/stage/role/HEAD/surface dispatch request was evaluated'
+    },
+    repair: {
+      batch_count: delivery.repair_batch_count ?? null,
+      states: delivery.repair_states ?? []
+    }
+  };
+}
+
+async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
+  let policy = {};
+  try {
+    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    policy = resolveEfficiencyPolicy(config, storyId) ?? {};
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const reviews = [];
+  const repairStates = [];
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      for (const lifecycle of stage.lifecycle?.entries ?? []) {
+        if (lifecycle.role !== role.role) continue;
+        reviews.push({
+          role: role.role,
+          started_at: lifecycle.started_at,
+          finished_at: lifecycle.closed_at
+        });
+      }
+      const repairPath = path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', storyId, stage.stage, role.role, 'state.json');
+      try {
+        const state = JSON.parse(await readFile(repairPath, 'utf8'));
+        repairStates.push({
+          stage: stage.stage,
+          role: role.role,
+          status: state.status,
+          repair_batch_count: Array.isArray(state.repair_batches) ? state.repair_batches.length : null
+        });
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+  const knownRepairCounts = repairStates.map((state) => state.repair_batch_count).filter(Number.isFinite);
+  return {
+    policy,
+    reviews,
+    measurements: {
+      repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
+      attribution_status: 'unknown'
+    },
+    attribution_reason: 'PR preparation has review lifecycle timing but no bounded session-cost attribution input',
+    dispatch_decision: {
+      status: 'unknown',
+      reason: 'dispatch decisions are evaluated only for concrete current-HEAD review requests'
+    },
+    repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
+    repair_states: repairStates
   };
 }
 
@@ -11408,7 +11517,7 @@ function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agent
   return bindings;
 }
 
-function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
+export function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
   const managedWorktree = managedWorktreeContext?.managed_worktree ?? managedWorktreeContext;
   const current = {
     head_sha: git?.head_sha ?? null,
@@ -11611,10 +11720,12 @@ function buildArtifactConsistencyPassedReason(artifacts = []) {
   const currentCount = artifacts.filter((artifact) => artifact.status === 'current').length;
   const reusedMergeDeltaCount = artifacts.filter((artifact) => artifact.status === 'reused_merge_delta').length;
   const reusedLowRiskCount = artifacts.filter((artifact) => artifact.status === 'reused_low_risk').length;
+  const historicalNonblockingCount = artifacts.filter((artifact) => artifact.status === 'historical_nonblocking').length;
   const parts = [];
   if (currentCount > 0) parts.push(`${currentCount} current`);
   if (reusedMergeDeltaCount > 0) parts.push(`${reusedMergeDeltaCount} merge-delta reused`);
   if (reusedLowRiskCount > 0) parts.push(`${reusedLowRiskCount} low-risk reused`);
+  if (historicalNonblockingCount > 0) parts.push(`${historicalNonblockingCount} historical nonblocking`);
   return `${artifacts.length} recorded verification/review artifact(s) accepted for artifact consistency (${parts.join(', ')}); reused artifacts are not labeled as current`;
 }
 
@@ -11657,7 +11768,10 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
 }
 
 function isArtifactBindingAccepted(status) {
-  return status === 'current' || status === 'reused_low_risk' || status === 'reused_merge_delta';
+  return status === 'current'
+    || status === 'reused_low_risk'
+    || status === 'reused_merge_delta'
+    || status === 'historical_nonblocking';
 }
 
 function isAgentReviewMergeDeltaReused(role) {
@@ -11666,12 +11780,24 @@ function isAgentReviewMergeDeltaReused(role) {
 
 function collectReviewArtifactBindings(agentReviews = null, changeClassification = null) {
   const stages = Array.isArray(agentReviews?.stages) ? agentReviews.stages : [];
+  const currentRequirementKeys = new Set([
+    ...(agentReviews?.required_reviews ?? []),
+    ...(agentReviews?.checkpoint_required_reviews ?? [])
+  ].map((requirement) => `${requirement?.stage ?? ''}:${requirement?.role ?? ''}`));
+  const explicitlySupersededKeys = new Set([
+    ...(agentReviews?.risk_adaptive_coverage?.duplicate_checkpoint_roles_suppressed ?? []),
+    ...(agentReviews?.risk_adaptive_coverage?.validation_sequence_review_roles ?? [])
+  ]);
   const artifacts = [];
   for (const stage of stages) {
     for (const role of stage.roles ?? []) {
       if (!role.artifact) continue;
+      const roleKey = `${stage.stage ?? ''}:${role.role ?? ''}`;
       const stale = role.effective_status === 'stale';
       const unverified = role.effective_status === 'unverified_agent';
+      const historicalNonblocking = stale
+        && explicitlySupersededKeys.has(roleKey)
+        && !currentRequirementKeys.has(roleKey);
       const mergeDeltaReused = isAgentReviewMergeDeltaReused(role);
       const current = !stale && !unverified && !mergeDeltaReused;
       const staleReason = role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state';
@@ -11679,7 +11805,9 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         && !mergeDeltaReused
         && stale
         && canReuseLowRiskArtifactBinding({ status: 'pass', binding: { status: 'stale', reason: staleReason } }, changeClassification);
-      const status = current
+      const status = historicalNonblocking
+        ? 'historical_nonblocking'
+        : current
         ? 'current'
         : mergeDeltaReused
           ? 'reused_merge_delta'
@@ -11697,9 +11825,12 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         recorded_status_fingerprint_hash: fingerprintHashForContext(role.git_context ?? role.source_git_context),
         recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
         status,
+        required_current: !historicalNonblocking,
         content_binding: role.content_binding ?? null,
         reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
-        reason: current
+        reason: historicalNonblocking
+          ? 'review result is retained as audit history but is not part of the current PR-final or checkpoint-required review set'
+          : current
           ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'
           : mergeDeltaReused
             ? `merge-delta review reuse accepted for artifact consistency: ${staleReason}`

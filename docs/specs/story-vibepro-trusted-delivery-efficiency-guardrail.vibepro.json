@@ -1,0 +1,248 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-trusted-delivery-efficiency-guardrail",
+  "parent_design": ["vibepro-trusted-delivery-efficiency-guardrail"],
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Delivery policy preserves unspecified limits and unmeasured values as unknown, evaluates time, token, cost, subagent, role-dispatch, repair-batch, and verification budgets, applies exceptional migration allowance only through a Story-specific override, and emits typed budget_exceeded or attribution_unknown stops.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Delivery efficiency policy" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "resolveEfficiencyPolicy" },
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "evaluateDeliveryBudget" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "policy keeps unspecified and unmeasured budgets unknown instead of zero" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "budget exceed and required attribution unknown are typed stops" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "story budget override preserves global defaults and merges role limits" }
+        ]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Before provider spawn, review authorization records intended model, risk closure, expected judgment delta, reusable evidence and a Story-wide budget snapshot under one lock; final dispatch requires a frozen source, Spec, test and review surface. The conforming host coordinator calls the external provider only for dispatch, receives the provider-native completion notification, and then closes the lifecycle; VibePro owns authorization, exact binding, accounting and fail-closed recording but does not transport provider notifications or technically intercept provider calls outside the host contract. Active reservations and running, uncollected or completed-pass lifecycles make the Story-stage-role-HEAD-surface binding idempotent, and review start consumes one matching authorization exactly once.",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "existing",
+        "files": [
+          "src/agent-review.js"
+        ]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 2 }, { "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Review dispatch decision" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "buildReviewDispatchDecision" },
+          { "file": "src/agent-review.js", "anchor": "authorizeAgentReviewDispatch" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "final review waits for an exact frozen surface while preflight remains available" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "same binding dispatch is idempotent for running, uncollected, and completed pass lifecycles" },
+          { "file": "test/review-inspection-first.test.js", "case": "review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks" }
+        ]
+      }
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "Running review work superseded by a HEAD mutation becomes obsolete only after confirmed cancellation or closure; unconfirmed cancellation emits an orphaned_agent stop.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Lifecycle debt" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "planLifecycleTerminalization" },
+          { "file": "src/agent-review.js", "anchor": "closeAgentReviewLifecycle" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "HEAD mutation terminalizes obsolete work and fails closed when cancellation is unconfirmed" },
+          { "file": "test/review-inspection-first.test.js", "case": "review lifecycle fails closed on HEAD mutation and persists obsolete after explicit close" }
+        ]
+      }
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "Compatible repairable findings with one role and normalized code/test surface share one implementation dispatch, targeted verification and independent re-review; conflicts and human or split decisions remain separate.",
+      "inherited_behavior": {
+        "condition": "!rereview.agent_identity || (!rereview.session_id && !rereview.thread_id)",
+        "classification": "existing",
+        "files": ["src/review-finding-repair-loop.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Finding batch planner" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "planCompatibleFindingBatches" },
+          { "file": "src/review-finding-repair-loop.js", "anchor": "dispatchBatchAction" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "compatible repairable findings batch by role and surface while human/conflicting findings remain separate" },
+          { "file": "test/review-finding-repair-loop.test.js", "case": "TDEG-S-5 compatible repairable findings share one dispatch, verification, and re-review batch" }
+        ]
+      }
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "Story metrics separate Trusted PR-ready elapsed, observed work, active wait, tool wait, union review wall-clock, summed agent consumption, subagent and role dispatch counts, repair and verification counters, evidence reuse or invalidation, fresh and total tokens and cost; missing values remain unknown.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }, { "kind": "acceptance_criteria", "index": 9 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Story efficiency metrics" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "aggregateDeliveryMetrics" },
+          { "file": "src/story-run-portfolio.js", "anchor": "mergeCostAttribution" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "metrics separate review union wall clock from parallel agent consumption and preserve unknown" },
+          { "file": "test/story-run-portfolio.test.js", "case": "SRP-S-6 summary reports per-Story time cost suite reuse and interruptions without converting unknown to zero" },
+          { "file": "test/story-run-portfolio.test.js", "case": "portfolio aggregates overlapping review intervals before persisting closed attribution" }
+        ]
+      }
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "PR correctness readiness remains independent from visible timeout, obsolete, orphan, duplicate-dispatch and budget efficiency debt; required tests, independent review, critical Gates, current-HEAD binding and fail-closed semantics are never relaxed for efficiency.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }, { "kind": "acceptance_criteria", "index": 10 }, { "kind": "acceptance_criteria", "index": 11 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Invariants" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "summarizeEfficiencyDebt" },
+          { "file": "src/pr-manager.js", "anchor": "buildAgentReviewEfficiencySummary" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "efficiency debt stays separate from correctness readiness" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "pr gate summary exposes review lifecycle debt without changing correctness readiness" },
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "pr summary exposes delivery budget, attribution, dispatch, repair, and debt without changing correctness readiness" }
+        ]
+      }
+    },
+    {
+      "id": "C-006",
+      "type": "contract",
+      "statement": "Review coverage is selected from concrete UI and network change surfaces. Workflow-heavy changes retain independent final gate-evidence and release-risk judgment. A required validation sequence owns aggregate checkpoints and suppresses the five legacy duplicate checkpoint roles only when the repository explicitly enables validation-sequence checkpoint ownership; repositories without the flag retain existing checkpoint requirements.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-trusted-delivery-efficiency-guardrail.md", "section": "Risk-adaptive review coverage ownership" }],
+        "code_refs": [
+          { "file": "src/delivery-efficiency-guardrail.js", "anchor": "selectRiskAdaptiveReviewCoverage" },
+          { "file": "src/agent-review.js", "anchor": "summarizeAgentReviewsForPr" },
+          { "file": "src/pr-manager.js", "anchor": "buildPrContext" }
+        ],
+        "test_refs": [
+          { "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" },
+          { "file": "test/risk-adaptive-gate.test.js", "case": "pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence" }
+        ]
+      }
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given delivery measurements are missing, when a Story budget is evaluated, then unknown values remain unknown and are never converted to zero.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a review has no concrete risk closure or judgment delta, when dispatch is evaluated, then the guardrail returns a typed stop instead of spawning by role presence alone.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Given source, Spec, tests, or review surface are not frozen, when final review is requested, then dispatch is blocked while preflight remains available.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "Given an identical Story, stage, role, HEAD, and surface binding already exists, when dispatch is requested again, then running, uncollected, or completed-pass work is reused rather than duplicated.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "Given compatible repairable findings share a role and code-test surface, when repair is planned, then they receive one mutation batch, targeted verification, and independent re-review while conflicts remain separate.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "Given a running reviewer belongs to an older HEAD, when close is attempted without explicit cancellation confirmation and evidence, then it remains orphaned and fail closed; confirmed cancellation terminalizes it as obsolete.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-007",
+      "type": "scenario",
+      "statement": "Given budget exhaustion, no progress, unknown attribution, or an orphaned agent, when the next action is evaluated, then a typed stop prevents additional spawn and cannot become success, waiver, or Gate pass.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-008",
+      "type": "scenario",
+      "statement": "Given correctness Gates pass but lifecycle efficiency debt remains, when PR readiness is prepared, then correctness and timeout, obsolete, orphan, duplicate, and budget debt are displayed separately.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-009",
+      "type": "scenario",
+      "statement": "Given overlapping parallel reviews and partial usage data, when Story metrics are aggregated, then active wait, tool wait, union review wait, summed agent consumption, counters, tokens, cost, and unknown fields remain distinct.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-010",
+      "type": "scenario",
+      "statement": "Given no comparable pre-change workflow-heavy measurement exists, when performance evidence is recorded, then before remains unknown, the run establishes a baseline, and no numeric improvement claim or changed-line allocation is made.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 9 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-011",
+      "type": "scenario",
+      "statement": "Given repeated same-role review, repair batches, HEAD mutation, timeout, orphan, budget stop, parallel review, and unknown metrics, when the acceptance replay runs, then each path has executable evidence.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 10 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-012",
+      "type": "scenario",
+      "statement": "Given the efficiency guardrail is enabled, when existing validation, review lifecycle, PR readiness, and Design SSOT contract suites run, then required tests, independent final review, critical Gates, current-HEAD binding, and fail-closed semantics remain intact.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 11 }], "test_refs": [{ "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }] }
+    },
+    {
+      "id": "S-013",
+      "type": "scenario",
+      "statement": "Given a workflow-heavy internal orchestration change without UI or network surface, required validation sequencing, and explicit repository checkpoint ownership, when the workflow state transition selects review coverage, then UI and network roles and five duplicate checkpoint roles are omitted while independent final gate-evidence and release-risk review remain required; without explicit ownership the existing checkpoint roles remain required.",
+      "origin": { "story_refs": [{ "kind": "acceptance_criteria", "index": 12 }], "test_refs": [
+        { "file": "test/delivery-efficiency-guardrail.test.js", "case": "risk-adaptive review coverage suppresses irrelevant roles and validation-sequence duplicates" },
+        { "file": "test/e2e/story-vibepro-trusted-delivery-efficiency-guardrail-acceptance.spec.ts", "case": "trusted delivery efficiency guardrail replays TDEG-S-1 through TDEG-S-13" }
+      ] }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Authorized review lifecycle without blind polling",
+      "entities": ["parent_coordinator", "review_authorization", "review_provider", "completion_notification", "lifecycle_store"],
+      "mermaid": "flowchart LR\n  Parent[Host coordinator] --> Authorize[VibePro authorization under Story budget]\n  Authorize -->|typed stop| Stop[Host must not spawn]\n  Authorize -->|authorized| Spawn[Host calls provider API]\n  Spawn --> Start[VibePro binds provider agent id]\n  Start --> Work[Parent continues independent work]\n  Provider[External review provider] --> Notify[Host-native completion notification]\n  Work --> Notify\n  Notify --> Close[VibePro closes lifecycle]\n  Close --> Record[Record current-bound judgment]\n  Missing[Missing or incomplete provider delivery] --> ExternalStop[External typed failure; no Gate pass]\n  Record --> Next{Additional concrete risk?}\n  Next -->|no| Done[Advance gate]\n  Next -->|yes and budget remains| Authorize"
+    },
+    {
+      "kind": "threat_model",
+      "title": "Review cancellation trust boundary",
+      "entities": ["parent_coordinator", "review_provider", "current_head", "lifecycle_store"],
+      "mermaid": "flowchart LR\n  Parent[Parent coordinator] --> Close[review close]\n  Provider[Provider cancellation result] --> Confirm[Explicit confirmation plus evidence]\n  Head[Current HEAD] --> Close\n  Close -->|same HEAD| Closed[Closed lifecycle]\n  Close -->|changed HEAD unconfirmed| Orphan[Orphaned agent fail closed]\n  Confirm --> Obsolete[Obsolete terminal state]\n  Close --> Obsolete"
+    },
+    {
+      "kind": "state",
+      "title": "Risk-adaptive review coverage ownership",
+      "entities": ["Review coverage", "UI", "network", "validation sequence", "checkpoint roles"],
+      "mermaid": "stateDiagram-v2\n  [*] --> ClassifyRisk\n  ClassifyRisk --> SelectSurfaceRoles\n  SelectSurfaceRoles --> ValidationSequenceOwned: sequence required and ownership enabled\n  SelectSurfaceRoles --> AgentCheckpointOwned: ownership not enabled\n  ValidationSequenceOwned --> SuppressDuplicateCheckpoints\n  AgentCheckpointOwned --> RequireLegacyCheckpoints\n  SuppressDuplicateCheckpoints --> FinalIndependentReviews\n  RequireLegacyCheckpoints --> FinalIndependentReviews\n  FinalIndependentReviews --> [*]"
+    }
+  ]
+}
