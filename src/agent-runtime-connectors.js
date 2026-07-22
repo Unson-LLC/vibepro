@@ -45,7 +45,7 @@ export function createCliRuntimeConnector(options = {}) {
   const enabled = options.enabled === true;
   const env = options.env ?? process.env;
   const spawnProcess = options.spawnProcess ?? nodeSpawn;
-  const probeCommand = options.probeCommand ?? defaultProbeCommand;
+  const probeCommand = options.probeCommand ?? probeCliRuntime;
   const createId = options.createId ?? randomUUID;
   const runs = new Map();
 
@@ -139,13 +139,18 @@ export function createCliRuntimeConnector(options = {}) {
   });
 }
 
-async function defaultProbeCommand(command, { env, id }) {
-  await execFile(command, ['--version'], { env, timeout: 5000 });
+export async function probeCliRuntime(command, { env, id, execCommand = execFile }) {
+  await execCommand(command, ['--version'], { env, timeout: 5000 });
   const authArgs = id === 'codex' ? ['login', 'status'] : ['auth', 'status'];
-  const { stdout = '' } = await execFile(command, authArgs, { env, timeout: 5000 });
+  const { stdout = '', stderr = '' } = await execCommand(command, authArgs, { env, timeout: 5000 });
   if (id === 'claude-code') {
     const status = JSON.parse(stdout);
     if (status.loggedIn !== true) throw new AgentRuntimeError('auth_denied', 'Claude Code is not authenticated');
+  } else {
+    const authStatus = `${stdout}\n${stderr}`;
+    if (/not logged in|unauthenticated/i.test(authStatus) || !/logged in|authenticated/i.test(authStatus)) {
+      throw new AgentRuntimeError('auth_denied', 'Codex is not authenticated');
+    }
   }
 }
 

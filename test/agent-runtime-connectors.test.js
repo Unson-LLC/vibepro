@@ -6,7 +6,8 @@ import test from 'node:test';
 import {
   composeProductionRuntimeDependencies,
   createCliRuntimeConnector,
-  createProductionRuntimeConnectors
+  createProductionRuntimeConnectors,
+  probeCliRuntime
 } from '../src/agent-runtime-connectors.js';
 
 const implementationRequest = {
@@ -78,6 +79,14 @@ test('PRC-S-3 probe failures normalize auth, quota, permission and unavailable s
     const connector = createCliRuntimeConnector({ id: 'codex', command: 'codex', enabled: true, probeCommand: async () => { throw new Error(message); } });
     assert.equal((await connector.probe()).reason, reason);
   }
+});
+
+test('PRC-S-3 Codex probe requires explicit authenticated output', async () => {
+  await assert.rejects(
+    probeCliRuntime('codex', { id: 'codex', env: {}, execCommand: async (_command, args) => args[0] === '--version' ? {} : { stdout: 'Not logged in', stderr: '' } }),
+    (error) => error.code === 'auth_denied'
+  );
+  await probeCliRuntime('codex', { id: 'codex', env: {}, execCommand: async (_command, args) => args[0] === '--version' ? {} : { stdout: '', stderr: 'Logged in using ChatGPT' } });
 });
 
 test('PRC-S-4 review uses read-only sandbox, separate identity and a separate provider session', async () => {
