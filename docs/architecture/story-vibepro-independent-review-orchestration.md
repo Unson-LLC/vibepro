@@ -4,6 +4,7 @@ title: Independent Review Orchestration Architecture
 status: accepted
 updated_at: 2026-07-22
 reason: "compose the existing Gate, Review Lifecycle, runtime adapter, and repair contracts behind a run-session owner; alternatives rejected: CLI-driven orchestration creates a reverse dependency and manual coordinator instructions do not close the autonomous UX; compatibility: existing review artifacts and verdicts remain authoritative; rollback: disconnect the owner runner and return the typed runtime_required stop; boundary: orchestration owns sequencing only, not reviewer judgment or finding schemas."
+parent_design: vibepro-autonomous-implementation-closure-roadmap
 ---
 
 # Independent Review Orchestration Architecture
