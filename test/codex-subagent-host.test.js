@@ -124,7 +124,7 @@ test('production Codex host shutdown contains the detached worker process group'
   assert.equal(isProcessAlive(childPid), false);
 });
 
-test('production Codex host delegates containment to the worker when the host cannot signal the Codex group', { skip: process.platform === 'win32' }, async (t) => {
+test('production Codex host keeps containment inside the worker sandbox boundary', { skip: process.platform === 'win32' }, async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-containment-eperm-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   const childPidPath = path.join(repoRoot, 'codex-child.pid');
@@ -158,7 +158,7 @@ test('production Codex host delegates containment to the worker when the host ca
 
   await waitFor(async () => !isProcessAlive(childPid));
   assert.equal(isProcessAlive(childPid), false);
-  assert.equal(deniedGroupSignals, 1);
+  assert.equal(deniedGroupSignals, 0);
 });
 
 test('explicit managed authority cannot be shadowed by the caller root for status, delivery, subscription, or shutdown', async (t) => {

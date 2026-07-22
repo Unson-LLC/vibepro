@@ -19,6 +19,10 @@ for (const signal of ['SIGTERM', 'SIGINT']) {
 }
 
 await main().catch(async (error) => {
+  // A signal handler's promise is not itself an event-loop handle. Bind the
+  // top-level lifecycle to it so this worker cannot exit before its direct
+  // Codex child has emitted close and been reaped.
+  if (shutdownPromise) await shutdownPromise;
   const request = await readJson(path.join(runDir, 'request.json'));
   const state = await readJson(path.join(runDir, 'state.json'));
   const event = {
@@ -130,17 +134,23 @@ function runCodex(executable, args, prompt) {
 
 async function stopActiveCodexChild(signal) {
   const child = activeCodexChild;
-  if (!child) return;
-  const closed = new Promise((resolve) => child.once('close', resolve));
-  signalCodexTree(child, signal);
-  const stopped = await Promise.race([
-    closed.then(() => true),
-    new Promise((resolve) => setTimeout(() => resolve(false), 1500))
-  ]);
-  if (!stopped) {
-    signalCodexTree(child, 'SIGKILL');
-    await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 500))]);
+  if (child) {
+    const closed = new Promise((resolve) => child.once('close', resolve));
+    signalCodexTree(child, signal);
+    const stopped = await Promise.race([
+      closed.then(() => true),
+      new Promise((resolve) => setTimeout(() => resolve(false), 1500))
+    ]);
+    if (!stopped) {
+      signalCodexTree(child, 'SIGKILL');
+      const killed = await Promise.race([
+        closed.then(() => true),
+        new Promise((resolve) => setTimeout(() => resolve(false), 3000))
+      ]);
+      if (!killed) return;
+    }
   }
+  await writeJson(path.join(runDir, 'shutdown-finished.json'), { observed_at: new Date().toISOString() });
 }
 
 function signalCodexTree(child, signal) {

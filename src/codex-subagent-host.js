@@ -75,8 +75,11 @@ export function createCodexSubagentHost({
       const statePath = path.join(located, 'state.json');
       const state = await readJson(statePath);
       if (Number.isInteger(state?.worker_pid) && state.worker_pid > 1 && isActive(state.status)) {
-        const codexProcess = await readJson(path.join(located, 'codex-process.json'));
-        await terminateWorkerTree(state.worker_pid, workers.get(providerRunId), codexProcess?.pid, killProcess);
+        // The child can publish its own observable PID before the worker's
+        // atomic metadata rename completes. Resolve that short startup race so
+        // containment never treats an unknown Codex PID as already stopped.
+        const codexProcess = await waitForJson(path.join(located, 'codex-process.json'), 1000);
+        await terminateWorkerTree(located, state.worker_pid, workers.get(providerRunId), codexProcess?.pid, killProcess);
       }
       const next = { ...state, status: 'cancelled', completed_at: new Date().toISOString(), stop_reason: { code: reason ?? 'cancelled' } };
       await writeJson(statePath, next);
@@ -241,25 +244,68 @@ function workerEnvironment(env, { executable, executableArgs, selectedModel }) {
 
 function isActive(status) { return ['spawning', 'running', 'running_detached'].includes(status); }
 
-async function terminateWorkerTree(workerPid, workerProcess, codexPid, killProcess) {
-  // Stop the separately-grouped Codex tree while its worker is still alive to
-  // reap the direct child. Killing both groups at once can strand a zombie.
+async function terminateWorkerTree(runDir, workerPid, workerProcess, codexPid, killProcess) {
+  // The worker is the Codex process's direct parent, so let it stop and reap
+  // that child before the host escalates. This also keeps process-group signals
+  // inside the managed sandbox boundary on hosts that reject negative PIDs.
+  signalProcess(workerPid, 'SIGTERM', killProcess);
+  const [workerStopped, shutdownAcknowledged] = await Promise.all([
+    waitForProcessExit(workerPid, 4000, workerProcess),
+    waitForFile(path.join(runDir, 'shutdown-finished.json'), 4000)
+  ]);
+  if (workerStopped && shutdownAcknowledged && await waitForPidExit(codexPid, 500, killProcess)) return;
   if (Number.isInteger(codexPid) && codexPid > 1) {
     const signaled = process.platform !== 'win32'
       ? signalProcess(-codexPid, 'SIGTERM', killProcess, ['EINVAL', 'EPERM'])
       : signalProcess(codexPid, 'SIGTERM', killProcess);
-    if (signaled && await waitForProcessExit(workerPid, 2000, workerProcess)) return;
+    if (signaled) {
+      const [codexStopped, ownerStopped] = await Promise.all([
+        waitForPidExit(codexPid, 2000, killProcess),
+        waitForProcessExit(workerPid, 2000, workerProcess)
+      ]);
+      if (codexStopped && ownerStopped) return;
+    }
   }
-  // A managed host may not be permitted to signal the Codex process group.
-  // The worker owns that direct child and forwards this signal from inside the
-  // permitted boundary before reaping it.
-  signalProcess(workerPid, 'SIGTERM', killProcess);
-  if (await waitForProcessExit(workerPid, 2000, workerProcess)) return;
   if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGTERM', killProcess);
-  if (await waitForProcessExit(workerPid, 1000, workerProcess)) return;
+  if (await waitForProcessExit(workerPid, 1000, workerProcess)
+      && await waitForPidExit(codexPid, 500, killProcess)) return;
+  if (Number.isInteger(codexPid) && codexPid > 1) {
+    if (process.platform !== 'win32') signalProcess(-codexPid, 'SIGKILL', killProcess, ['EINVAL', 'EPERM']);
+    else signalProcess(codexPid, 'SIGKILL', killProcess);
+  }
   if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGKILL', killProcess);
   else signalProcess(workerPid, 'SIGKILL', killProcess);
-  await waitForProcessExit(workerPid, 1000, workerProcess);
+  const [ownerStopped, codexStopped] = await Promise.all([
+    waitForProcessExit(workerPid, 1000, workerProcess),
+    waitForPidExit(codexPid, 1000, killProcess)
+  ]);
+  if (!ownerStopped || !codexStopped) {
+    throw new Error(`Codex containment could not confirm terminal processes: worker=${workerPid} codex=${codexPid ?? 'unknown'}`);
+  }
+}
+
+async function waitForFile(file, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      await readFile(file);
+      return true;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return false;
+}
+
+async function waitForJson(file, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const value = await readJson(file);
+    if (value) return value;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return null;
 }
 
 function signalProcess(pid, signal, killProcess, fallbackCodes = []) {
@@ -285,6 +331,21 @@ async function waitForProcessExit(pid, timeoutMs, workerProcess) {
   while (Date.now() < deadline) {
     try {
       process.kill(pid, 0);
+    } catch (error) {
+      if (error.code === 'ESRCH') return true;
+      throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return false;
+}
+
+async function waitForPidExit(pid, timeoutMs, killProcess) {
+  if (!Number.isInteger(pid) || pid <= 1) return true;
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      killProcess(pid, 0);
     } catch (error) {
       if (error.code === 'ESRCH') return true;
       throw error;
