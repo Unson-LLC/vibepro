@@ -96,6 +96,35 @@ test('IRO-S-3 reserves dispatch before the external boundary and reconciles its 
   assert.ok(persistCount > 0);
 });
 
+test('IRO-S-3 resumes a reserved record with the same idempotency key', async () => {
+  let durable = [];
+  const recordedKeys = [];
+  const reviewRecords = new Map();
+  const firstBoundaries = boundaries();
+  firstBoundaries.record = async ({ operation }) => {
+    recordedKeys.push(operation.idempotency_key);
+    if (!reviewRecords.has(operation.idempotency_key)) reviewRecords.set(operation.idempotency_key, { verdict: 'pass' });
+    return reviewRecords.get(operation.idempotency_key);
+  };
+  await assert.rejects(orchestrateIndependentReview({
+    stages: [{ stage: 'architecture', roles: ['architecture'] }],
+    boundaries: firstBoundaries,
+    persistCheckpoint: async (journal) => {
+      durable = structuredClone(journal);
+      if (journal.at(-1)?.operation === 'record' && journal.at(-1)?.state === 'reserved') throw new Error('crash after record reservation');
+    }
+  }), /crash after record reservation/);
+
+  const resumedBoundaries = boundaries();
+  resumedBoundaries.record = firstBoundaries.record;
+  const resumed = await orchestrateIndependentReview({
+    stages: [{ stage: 'architecture', roles: ['architecture'] }], journal: durable, boundaries: resumedBoundaries
+  });
+  assert.equal(resumed.verdict, 'pass');
+  assert.equal(reviewRecords.size, 1);
+  assert.deepEqual(recordedKeys, ['architecture:architecture:record']);
+});
+
 test('IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win', async () => {
   const persisted = [];
   await orchestrateIndependentReview({

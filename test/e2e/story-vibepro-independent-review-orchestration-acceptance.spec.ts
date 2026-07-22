@@ -139,8 +139,9 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
   let crashOnce = true;
   await assert.rejects(runner({ state, action: { id: 'review', node_id: 'review' }, persistCheckpoint: async (next) => {
     checkpoint = structuredClone(next);
-    if (crashOnce && next.some((entry) => entry.operation === 'record' && entry.state === 'completed')) { crashOnce = false; throw new Error('crash after record side effect'); }
-  } }), /crash after record side effect/);
+    if (crashOnce && next.some((entry) => entry.operation === 'record' && entry.state === 'reserved')) { crashOnce = false; throw new Error('crash after record reservation'); }
+  } }), /crash after record reservation/);
+  state.action_journal = [{ action_id: 'review', status: 'checkpoint', checkpoint: structuredClone(checkpoint) }];
   const restarted = await runner({ state, action: { id: 'review', node_id: 'review' }, persistCheckpoint: async (next) => { checkpoint = structuredClone(next); } });
   assert.equal(restarted.status, 'continue');
   assert.equal(restarted.verdict, 'needs_changes');

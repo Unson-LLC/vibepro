@@ -54,6 +54,7 @@ export async function orchestrateIndependentReview(input = {}) {
     : undefined;
   const invalidRecord = journal.find((entry) => entry?.kind === 'independent_review'
     && entry.operation === 'record'
+    && (entry.state === 'completed' || !entry.state)
     && !VERDICTS.has(entry.result?.verdict ?? entry.result?.status));
   if (invalidRecord) {
     return {
@@ -377,7 +378,12 @@ function requireBoundaries(value) {
   return value;
 }
 
-function hasRecorded(journal, stage, role) { return journal.some((entry) => entry.stage === stage.stage && entry.role === roleName(role) && entry.operation === 'record'); }
+function hasRecorded(journal, stage, role) {
+  return journal.some((entry) => entry.stage === stage.stage
+    && entry.role === roleName(role)
+    && entry.operation === 'record'
+    && (entry.state === 'completed' || !entry.state));
+}
 function recordedResult(journal, stage, role) { const entry = journal.find((item) => item.stage === stage.stage && item.role === roleName(role) && item.operation === 'record'); return { status: 'completed', verdict: entry.result.verdict ?? entry.result.status, record: entry.result }; }
 function roleName(role) { return typeof role === 'string' ? role : role.role; }
 function isStop(value) { return value?.status === 'waiting_for_runtime' || value?.status === 'blocked' || value?.status === 'failed' || value?.status === 'waiting_for_human'; }
