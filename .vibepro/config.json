@@ -275,7 +275,7 @@
       "max_active_wait_ms": 1200000,
       "max_tool_wait_ms": 1200000,
       "max_total_tokens": null,
-      "max_fresh_input_tokens": null,
+      "max_fresh_input_tokens": 8000000,
       "max_cost_usd": null,
       "max_subagent_count": 6,
       "max_agent_consumption_ms": 1800000,
