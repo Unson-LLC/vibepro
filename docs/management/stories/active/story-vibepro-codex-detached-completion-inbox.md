@@ -43,8 +43,8 @@ updated_at: 2026-07-22
 - [x] CDI-S-5: heartbeatだけでは延命せず、progress checkpoint、no-progress deadline、総wall-clock、attempt、cost上限から`stalled`を判定する。
 - [x] CDI-S-6: 複数判定の部分成果を永続化し、完了済み部分を再利用して未完了部分だけを再開できる。
 - [x] CDI-S-7: HEADとinspection surfaceが不変なら結果を再利用し、budget設定、証跡timestamp、rebaseだけでは全面失効しない。surface変更時だけ影響範囲を再判定する。
-- [x] CDI-S-8: VibeProとhostの所有境界をfail closedで強制し、host capabilityが未結線なら完了扱いしない。
-- [x] CDI-S-9: 実Codex hostを模したcontract/integration/E2Eでspawn→10分境界→detached継続→親process終了後の`runtime-ingest`→completion Inbox→結果回収→review lifecycle closeを証明する。
+- [x] CDI-S-8: VibeProとhostの所有境界をfail closedで強制し、review lifecycle authorizationが`!authorizationId`なら開始を拒否し、host capabilityが未結線なら完了扱いしない。
+- [x] CDI-S-9: 実Codex hostを模したcontract/integration/E2Eでspawn→10分境界→detached継続→親process終了後の`runtime-ingest`→completion Inbox→結果回収→review lifecycle closeを証明する。Runが`loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human'`なら新規runtime dispatchを開始しない。
 - [x] CDI-S-10: recoveryは論理task単位のwall-clock/attempt/cost上限内で行い、追加予算の反復を正常系にしない。
 
 ## Scenarios
