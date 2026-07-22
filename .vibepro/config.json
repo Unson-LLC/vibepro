@@ -309,23 +309,23 @@
         "amendment_reason": "Historical repair and stale lifecycle time predates the final frozen HEAD and exhausted duration and aggregate agent-consumption limits. User explicitly authorized merge completion on 2026-07-22. Disable only historical time dimensions and allow only the current-HEAD architecture-boundary, gate-evidence, and release-risk lifecycles plus fresh-context adjudication with lightweight agents; dispatch-count limits remain enforced, and default Story budgets remain unchanged."
       },
       "story-vibepro-atomic-scope-review-contract": {
-        "max_subagent_count": 251,
-        "max_agent_consumption_ms": 215000000,
+        "max_subagent_count": 255,
+        "max_agent_consumption_ms": 217400000,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 59,
+          "architecture_boundary": 60,
           "e2e_ux": 24,
           "gate_coverage": 24,
-          "gate_evidence": 5,
+          "gate_evidence": 6,
           "human_usability": 3,
           "network_runtime": 3,
           "regression_risk": 55,
-          "release_risk": 5,
-          "runtime_contract": 21,
+          "release_risk": 6,
+          "runtime_contract": 22,
           "spec_consistency": 31,
           "unit_integration": 8,
           "ux_completion": 13
         },
-        "amendment_reason": "User authorized immediate completion on 2026-07-22. The rebased current-HEAD architecture review correctly blocked because canonical evidence lacked the complete 39-path target union and atomic CLI/report E2E. That E2E then passed 1/1, and the review lifecycle was closed with its block retained. This amendment adds exactly one global and architecture_boundary slot for one replacement after final-HEAD revalidation; runtime_contract, gate_evidence, and release_risk retain their existing final slots. Every other role remains frozen and defaults remain unchanged."
+        "amendment_reason": "User authorized immediate completion on 2026-07-22. Exact-HEAD runtime_contract, gate_evidence, and release_risk reviews found stale or malformed coordinator artifacts, then exceeded the 600000 ms lifecycle while those findings were repaired; validation sequencing also requires one aggregate architecture_boundary preflight. Add exactly four replacement slots, one per named role, and 2400000 ms consumption allowance so repaired evidence can be independently reassessed on the new final HEAD. Every other role remains frozen and defaults remain unchanged."
       },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
