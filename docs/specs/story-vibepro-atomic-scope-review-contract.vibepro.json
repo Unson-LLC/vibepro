@@ -28,7 +28,8 @@
       "inherited_behaviors": [
         { "condition": "!authority", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
         { "condition": "!entry.primary_authority?.ref", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
-        { "condition": "!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind", "classification": "unchanged", "files": ["src/responsibility-authority.js"] }
+        { "condition": "!VALID_AUTHORITY_KINDS.has(entry.primary_authority.kind", "classification": "unchanged", "files": ["src/responsibility-authority.js"] },
+        { "condition": "gitContext?.user_status_fingerprint_hash", "classification": "unchanged", "files": ["src/git-fingerprint.js"] }
       ]
     },
     {
