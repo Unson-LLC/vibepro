@@ -31,6 +31,11 @@ updated_at: 2026-07-22
 - [ ] IRO-S-7: `needs_changes`は既存Review LifecycleとRepair Loopへ渡し、新しいverdict/finding schemaを作らない。
 - [ ] IRO-S-8: 現行`origin/main`のtarget architecture conformance baseline（69 violations。PR #378時点の68件に、後続mainで1件追加）を悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
 
+## Scenarios
+
+- S-001: Given required review roles are pending, when Guarded Run advances the review action, then roles are prepared and dispatched in serial stages with parallel roles, and every start/poll/close/record transition is journaled exactly once.
+- S-002: Given dispatch or polling is interrupted, unauthorized, timed out, or returns invalid provenance, when the same Run resumes, then the deterministic operation key prevents duplicate reviewer execution, any started lifecycle is closed, and a typed stop remains visible instead of becoming a pass.
+
 ## Non Goals
 
 - required Reviewの省略またはmanual passへの置換。
