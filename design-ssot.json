@@ -6412,10 +6412,28 @@
         "stale_review_hash": "needs_review",
         "accepted_adr_supersession_conflict": "block"
       },
-      "children": {},
-      "child_links": [],
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-canonical-audit-review-root-state-files.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-canonical-audit-review-root-state-files.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-22T07:05:32.882Z"
+  "updated_at": "2026-07-22T07:09:17.316Z"
 }
