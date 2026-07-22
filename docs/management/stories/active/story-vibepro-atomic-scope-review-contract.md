@@ -59,6 +59,12 @@ VibeProは広い変更をlaneへ分解してレビュー可能性を示すが、
 - [x] `ASR-S-14`: 混在repo-controlが`.vibepro/config.json`だけならtracked canonical Story registrationとしてtyped atomic contractのreview対象にできるが、`.github/*`、`.claude/*`、package/lockfile等の独立repo-controlが併存する場合はunsafeを維持する。
 - [x] `ASR-S-15`: 現在Storyの`-vN` lineageは2親以上の実mergeで、`origin/codex/<story-vN>`がmerge parentへ解決され、targetが同じ`codex/<story-vN>`の場合だけcurrent lineageとして受理する。受理したreference、full commit SHA、parent count、判定basisをscope artifactへ保存し、bounded summary、human review、PR body、split plan、gate DAG、各HTML reportから再構成可能にする。titleだけ、単一親、missing/mismatched refはforeign lineageとしてfail-closedにする。
 
+## Acceptance Scenarios
+
+- Given `gate_orchestration` と `review_lifecycle` の両surfaceが変わる、When risk profileを分類する、Then `workflow_heavy`へ昇格する。どちらか一方だけなら従来の軽量profileを維持する（ASR-S-12）。
+- Given failure-mode名を含む証跡がある、When coverageを評価する、Then current HEADのpassing executable command、structured observation、非空target、明示的mode assertionがすべて揃う場合だけcoveredとする（ASR-S-13）。
+- Given atomic scopeがacceptedである、When HEADまたはreview surfaceが変わる、Then acceptedを再利用せずrejectedへ戻しcurrent-head validationとfinal reviewを要求する。
+
 ## Non Goals
 
 - すべての大規模PRをatomicとして許可すること。

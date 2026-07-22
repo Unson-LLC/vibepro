@@ -6,6 +6,19 @@ parent_design:
   - vibepro-atomic-scope-review-contract
 architecture_docs:
   - docs/architecture/vibepro-atomic-scope-review-contract.md
+diagrams:
+  - kind: state
+    title: Atomic scope review lifecycle
+    mermaid: |
+      stateDiagram-v2
+        [*] --> SplitRecommended
+        SplitRecommended --> Rejected: boundary or owner evidence incomplete
+        Rejected --> Accepted: typed lanes and current-HEAD owners cover every changed path
+        Accepted --> Rejected: HEAD or review surface changes
+        Accepted --> CumulativeValidation: required commands retained
+        CumulativeValidation --> Ready: current verification and final reviews pass
+        CumulativeValidation --> Rejected: verification or final review fails
+    rationale: "Atomic acceptance remains fail-closed across HEAD, ownership, and verification lifecycle changes."
 code_refs:
   - src/agent-review.js
   - src/canonical-audit.js#summarizeScopeForLlm
