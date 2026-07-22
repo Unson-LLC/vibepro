@@ -7,7 +7,14 @@ import { fileURLToPath } from 'node:url';
 const POLL_MS = 250;
 const HOST_ROOT = ['.vibepro', 'codex-host', 'runs'];
 
-export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env, codexExecutable, codexExecutableArgs = [], model } = {}) {
+export function createCodexSubagentHost({
+  cwd = process.cwd(),
+  env = process.env,
+  codexExecutable,
+  codexExecutableArgs = [],
+  model,
+  probeTimeoutMs = 10000
+} = {}) {
   const executable = codexExecutable ?? env?.VIBEPRO_CODEX_EXECUTABLE ?? 'codex';
   const selectedModel = model ?? env?.VIBEPRO_CODEX_MODEL ?? null;
   const workerPath = fileURLToPath(new URL('./codex-subagent-host-worker.js', import.meta.url));
@@ -17,7 +24,7 @@ export function createCodexSubagentHost({ cwd = process.cwd(), env = process.env
 
   return {
     async probe() {
-      const available = await probeExecutable(executable, codexExecutableArgs);
+      const available = await probeExecutable(executable, codexExecutableArgs, probeTimeoutMs);
       return {
         available, capabilities: available ? ['review', 'completion_inbox', 'detached_resume'] : [],
         sandbox: 'read-only', approval_policy: 'managed', reason: available ? null : `Codex executable unavailable: ${executable}`
@@ -229,10 +236,10 @@ function workerEnvironment(env, { executable, executableArgs, selectedModel }) {
 
 function isActive(status) { return ['spawning', 'running', 'running_detached'].includes(status); }
 
-function probeExecutable(executable, executableArgs) {
+function probeExecutable(executable, executableArgs, timeoutMs) {
   return new Promise((resolve) => {
     const child = spawn(executable, [...executableArgs, '--version'], { stdio: 'ignore' });
-    const timer = setTimeout(() => { child.kill('SIGTERM'); resolve(false); }, 3000);
+    const timer = setTimeout(() => { child.kill('SIGTERM'); resolve(false); }, timeoutMs);
     timer.unref();
     child.once('error', () => { clearTimeout(timer); resolve(false); });
     child.once('close', (code) => { clearTimeout(timer); resolve(code === 0); });

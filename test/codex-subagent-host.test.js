@@ -146,7 +146,7 @@ function coordinatorRuntimeRequest(repoRoot) {
     implementation_identity: 'implementer-host', implementation_session_id: 'implementation-session-host',
     inspection_surface_hash: 'surface-host', requested_judgments: [{ judgment_id: 'correctness' }],
     review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'] },
-    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000,
+    requirements: { capabilities: ['review'], timeout_ms: 10000, monitor_boundary_ms: 600000,
       no_progress_deadline_ms: 1000, max_wall_clock_ms: 3600000, max_attempts: 2,
       max_cost_usd: 1, managed_worktree: repoRoot }
   };
