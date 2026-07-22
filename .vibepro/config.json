@@ -378,6 +378,66 @@
         "category": "product"
       },
       {
+        "story_id": "story-vibepro-autonomous-implementation-closure-roadmap",
+        "title": "自律実装の実行プレーンを1コマンドPR-readyへ接続する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-autonomous-action-dag",
+        "title": "Guarded Runを完全な型付き自律Action DAGへ拡張する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-production-runtime-connectors",
+        "title": "Agent Runtime Adapterへproduction connectorを接続する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-independent-review-orchestration",
+        "title": "Required Reviewを独立agentへ自動dispatchして記録する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-one-command-pr-ready-closure",
+        "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
         "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
         "title": "Summary depthのCanonical Audit Replayを欠損なく引き継ぐ",
         "ssot": "local",

@@ -6092,40 +6092,49 @@
         "accepted_adr_supersession_conflict": "block"
       },
       "children": {
+        "story": [{"kind": "story", "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null}],
+        "spec": [{"kind": "spec", "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null}]
+      },
+      "child_links": [
+        {"kind": "story", "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null},
+        {"kind": "spec", "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null}
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-autonomous-implementation-closure-roadmap",
+      "title": "Autonomous Implementation Closure Roadmap",
+      "root_doc": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "owner": "vibepro-core",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": ["adr", "spec", "story"],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "adr": [{"kind": "adr", "path": "docs/architecture/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null}],
+        "spec": [{"kind": "spec", "path": "docs/specs/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null}],
         "story": [
-          {
-            "kind": "story",
-            "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
-            "required": true,
-            "relationship": "implements",
-            "last_reviewed_root_hash": null
-          }
-        ],
-        "spec": [
-          {
-            "kind": "spec",
-            "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
-            "required": true,
-            "relationship": "implements",
-            "last_reviewed_root_hash": null
-          }
+          {"kind": "story", "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null},
+          {"kind": "story", "path": "docs/management/stories/active/story-vibepro-production-runtime-connectors.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null},
+          {"kind": "story", "path": "docs/management/stories/active/story-vibepro-independent-review-orchestration.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null},
+          {"kind": "story", "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null}
         ]
       },
       "child_links": [
-        {
-          "kind": "story",
-          "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
-          "required": true,
-          "relationship": "implements",
-          "last_reviewed_root_hash": null
-        },
-        {
-          "kind": "spec",
-          "path": "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
-          "required": true,
-          "relationship": "implements",
-          "last_reviewed_root_hash": null
-        }
+        {"kind": "adr", "path": "docs/architecture/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null},
+        {"kind": "spec", "path": "docs/specs/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null},
+        {"kind": "story", "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md", "required": true, "relationship": "implements", "last_reviewed_root_hash": null},
+        {"kind": "story", "path": "docs/management/stories/active/story-vibepro-production-runtime-connectors.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null},
+        {"kind": "story", "path": "docs/management/stories/active/story-vibepro-independent-review-orchestration.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null},
+        {"kind": "story", "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md", "required": true, "relationship": "decomposes", "last_reviewed_root_hash": null}
       ],
       "source": "design-ssot.json"
     }

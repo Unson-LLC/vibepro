@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "AAD-S-1",
+      "type": "scenario",
+      "statement": "The closed autonomous registry contains diagnose, prepare_artifacts, implement, verify, review, repair, and final_prepare, and Guarded Run composes them only through canonical owner ports.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-1"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "AUTONOMOUS_REGISTRY"}, {"file": "src/guarded-run-session.js", "anchor": "buildActionRunners"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-1 autonomous profile exposes the closed implementation DAG"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners"}]}
+    },
+    {
+      "id": "AAD-S-2",
+      "type": "invariant",
+      "statement": "A dependency-incomplete, policy-denied, unknown, or forged autonomous Action is rejected before its runner executes.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-2"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "isAllowedCanonicalPlan"}, {"file": "src/safe-action-orchestrator.js", "anchor": "dependenciesCompleted"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-2 policy-denied autonomous actions fail closed before their runner executes"}, {"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-6 dependency-incomplete suffix cannot execute its runner"}]}
+    },
+    {
+      "id": "AAD-S-3",
+      "type": "scenario",
+      "statement": "Completed autonomous checkpoints are keyed by Run, node, profile, and input HEAD. Same-HEAD resume skips replay, while a HEAD-changing mutation preserves that node as the dependency boundary and immediately rebinds the remaining suffix to new-HEAD keys.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-3"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "actionKey"}, {"file": "src/safe-action-orchestrator.js", "anchor": "hasCompletedCheckpoint"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD"}, {"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately"}]}
+    },
+    {
+      "id": "AAD-S-4",
+      "type": "invariant",
+      "statement": "Autonomous runners accept only typed results, and pr_ready is reachable only from final_prepare after the current-HEAD Gate SSOT reports ready_for_pr_create.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-4"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "assertActionResult"}, {"file": "src/guarded-run-session.js", "anchor": "buildActionRunners"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-4 only final_prepare may produce pr_ready"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT"}]}
+    },
+    {
+      "id": "AAD-S-5",
+      "type": "invariant",
+      "statement": "The autonomous registry excludes arbitrary shell, merge, waiver, and deploy, while explicit feature disable preserves the legacy two-node plan and records requested/effective profile plus fallback reason.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-5"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "LEGACY_REGISTRY"}, {"file": "src/guarded-run-session.js", "anchor": "applyAutonomousFeaturePolicy"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-5 disabling autonomous explicitly falls back to the legacy plan"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-5 public CLI disables autonomous execution before resuming an existing Run"}]}
+    },
+    {
+      "id": "AAD-S-6",
+      "type": "scenario",
+      "statement": "Every autonomous transition is either continue to the dependent node, a typed terminal wait/block/failure that stops dependents, or final_prepare-only pr_ready; prohibited combinations fail closed.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-6"}], "code_refs": [{"file": "src/safe-action-orchestrator.js", "anchor": "runSafeActionPlan"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-6 waiting_for_runtime stops before dependent autonomous nodes"}, {"file_glob": "test/safe-action-orchestrator.test.js", "must_contain": "AAD-S-4 only final_prepare may produce pr_ready"}]}
+    },
+    {
+      "id": "AAD-S-7",
+      "type": "invariant",
+      "statement": "The composition port journals only canonical owner artifact references; a missing owner produces a typed waiting_for_runtime stop, and autonomous verify never falls through to the legacy pr-ready autopilot.",
+      "origin": {"story_refs": [{"kind": "acceptance_criteria", "id": "AAD-S-7"}], "code_refs": [{"file": "src/guarded-run-session.js", "anchor": "buildActionRunners"}, {"file": "src/safe-action-orchestrator.js", "anchor": "append"}]},
+      "verifiable_by": {"test_pattern": [{"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-7 autonomous composition preserves canonical owner artifact references"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-3 missing autonomous owner stops with typed runtime recovery"}, {"file_glob": "test/guarded-run-session.test.js", "must_contain": "AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot"}]}
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Autonomous action execution trust boundary",
+      "mermaid": "flowchart LR\n  Input[Story and current HEAD] --> Plan[Closed autonomous Action DAG]\n  Plan --> Owners[Injected canonical owner runners]\n  Owners --> Journal[HEAD-bound checkpoint journal]\n  Journal --> Final[final_prepare Gate SSOT]\n  Unknown[Unknown profile action or forged plan] -. rejected .-> Stop[typed fail-closed stop]\n  Missing[Missing runtime owner] -. no silent skip .-> Wait[waiting_for_runtime]\n  Plan -. excludes .-> SideEffects[merge waiver deploy arbitrary shell]"
+    }
+  ]
+}

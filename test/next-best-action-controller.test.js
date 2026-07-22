@@ -29,6 +29,23 @@ test('NBA-S-1 excludes policy, dependency, and classification violations', () =>
   assert.deepEqual(result.candidates.map((item) => item.action_id), ['safe']);
 });
 
+test('AAD-S-1 admits only the typed autonomous runtime classifications', () => {
+  for (const classification of ['agent_runtime_guarded', 'agent_runtime_read_only']) {
+    const result = selectNextBestAction({
+      checkpoint_reason: 'autonomous_action',
+      state_delta: { head: 'a' },
+      candidates: [candidate('runtime', {}, { classification })]
+    });
+    assert.equal(result.selected_action_id, 'runtime');
+  }
+  const denied = selectNextBestAction({
+    checkpoint_reason: 'autonomous_action',
+    state_delta: { head: 'a' },
+    candidates: [candidate('runtime', {}, { classification: 'agent_runtime_unrestricted' })]
+  });
+  assert.equal(denied.selected_action_id, null);
+});
+
 test('NBA-S-2 and NBA-S-4 record every metric and preserve unknown costs', () => {
   const result = selectNextBestAction({
     checkpoint_reason: 'before_expensive_action', state_delta: {},
