@@ -1,0 +1,17 @@
+{
+ "status": "pass",
+ "exit_code": 0,
+ "suites": {
+  "architecture-conformance": {
+   "tests": 12,
+   "pass": 12,
+   "fail": 0
+  },
+  "telemetry-contract": {
+   "tests": 429,
+   "pass": 429,
+   "fail": 0
+  }
+ },
+ "command": "node --test test/architecture-conformance.test.js; node --test test/session-efficiency-audit.test.js test/vibepro-cli.test.js"
+}

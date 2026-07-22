@@ -1,0 +1,7 @@
+{
+ "status": "pass",
+ "exit_code": 0,
+ "violations": 68,
+ "command": "node bin/vibepro.js architecture conformance . --json",
+ "reruns": "model-edit, rebase and docs-regen reruns tracked tree state deterministically"
+}

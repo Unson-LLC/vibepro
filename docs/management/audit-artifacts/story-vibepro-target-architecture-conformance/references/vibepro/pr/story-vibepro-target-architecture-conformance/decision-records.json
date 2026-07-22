@@ -1,0 +1,397 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-target-architecture-conformance",
+  "updated_at": "2026-07-22T04:26:43.073Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784694403070-14e15a05",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "no split: registrations are inseparable from the feature they register",
+      "reason": "Same justification as pr_scope_judgment: catalog and design-ssot registrations exist only because this story exists; a split would produce non-green intermediate PRs and no reviewability gain",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/pr/story-vibepro-target-architecture-conformance/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/integration-combined-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-combined-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T04:26:43.055Z"
+      },
+      "recorded_at": "2026-07-22T04:26:43.073Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784694398747-8b30b00f",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "bundled scope justification: single-intent feature with its required registrations",
+      "reason": "The 3 commits serve one intent (target architecture SSOT + conformance dry-run): feature commit (module/CLI/tests/model/story), config catalog registration required by schema 0.2.0 routing, and design-ssot root registration required by the design reconciliation gate. Splitting the registrations from the feature would leave each intermediate PR failing gates; one reviewer can read the whole diff as one coherent decision (adjudicated axis:scope_reviewability judged_sound)",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/integration-combined-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-combined-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T04:26:38.727Z"
+      },
+      "recorded_at": "2026-07-22T04:26:38.749Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686146182-505ea411",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": null,
+      "summary": "no UI/design surface in this change; design lineage action not applicable",
+      "reason": "The change is CLI/backend only (conformance checker, target model JSON, tests); it introduces no UI component, journey, or design token surface, so the flagged design lineage action item has no applicable design SSOT to reconcile against",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/pr/story-vibepro-target-architecture-conformance/design-ssot-reconciliation.summary.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-run-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T02:09:06.143Z"
+      },
+      "recorded_at": "2026-07-22T02:09:06.185Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686139290-70d094b7",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "committed .vibepro file is config.json story registration only",
+      "reason": "The only .vibepro file committed is .vibepro/config.json carrying the required story catalog registration (schema 0.2.0 requires a catalog entry); no diagnostic evidence artifacts are committed - conformance outputs stay untracked under .[REDACTED:090eae625b84]/. This artifact policy statement is included in the PR body",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/pr/story-vibepro-target-architecture-conformance/pr-prepare.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-run-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T02:08:59.266Z"
+      },
+      "recorded_at": "2026-07-22T02:08:59.294Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686132832-99b1304d",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": null,
+      "summary": "matched contracts telemetry_ingestion and safe_action_orchestration untouched by additive cli.js branch",
+      "reason": "Contracts vibepro.runtime_cost.telemetry_ingestion and vibepro.guarded_run.safe_action_orchestration matched by path because src/cli.js changed; the change is a purely additive architecture-conformance subcommand branch plus two usage lines, verified by the gate_evidence review (additive-only diff finding) - no telemetry ingestion or guarded-run orchestration code path was modified, so unit_regression/integration_runtime_path/negative_path re-evidence for those contracts is not applicable to this diff; CI full suite will re-verify both contract areas on the PR",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/subagent-gate_evidence-verdict.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-run-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T02:08:52.806Z"
+      },
+      "recorded_at": "2026-07-22T02:08:52.835Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686112261-59d627e5",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewability: single-intent 7-file diff reviewable by one reviewer",
+      "reason": "Diff is one intent (target architecture SSOT + conformance dry-run): conformance module, additive CLI branch, focused test file, target-model.json, story doc and config registration. Review owner is the vibepro repo owner; independent adjudication ruled axis:scope_reviewability judged_sound; no split needed",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-run-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T02:08:32.238Z"
+      },
+      "recorded_at": "2026-07-22T02:08:32.265Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784686106585-08ae6280",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": null,
+      "summary": "data_state axis followup: no persistent data surface in this change",
+      "reason": "The change adds a read-only dry-run command: it reads target-model.json and graph.json without mutation and writes only its own regenerated artifact .[REDACTED:090eae625b84]/*. No migration, cache, query semantics, or replayable persistent state exists, so migration_plan/rollback_plan/idempotency_test/query_semantics_test are not applicable; idempotency of the artifact write itself is demonstrated by deterministic reruns (66 violations reproduced) and the independent judgment adjudication ruled axis:data_state judged_sound",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-run-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T02:08:26.547Z"
+      },
+      "recorded_at": "2026-07-22T02:08:26.591Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "open": 0,
+    "by_type": {
+      "needs_review": 7
+    },
+    "by_status": {
+      "accepted": 7
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784694403070-14e15a05",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "no split: registrations are inseparable from the feature they register",
+      "reason": "Same justification as pr_scope_judgment: catalog and design-ssot registrations exist only because this story exists; a split would produce non-green intermediate PRs and no reviewability gain",
+      "reviewer": "sato_keigo_agent",
+      "artifact": ".vibepro/pr/story-vibepro-target-architecture-conformance/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/conformance-e2e-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/integration-combined-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-target-architecture-conformance/unit-combined-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "current_branch": "codex/story-vibepro-target-architecture-conformance",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T04:26:43.055Z"
+      },
+      "recorded_at": "2026-07-22T04:26:43.073Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-target-architecture-conformance/decision-records.json"
+}

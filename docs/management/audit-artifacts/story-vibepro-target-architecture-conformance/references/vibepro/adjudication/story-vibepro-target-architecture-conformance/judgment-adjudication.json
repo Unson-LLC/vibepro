@@ -1,0 +1,776 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-target-architecture-conformance",
+  "updated_at": "2026-07-22T05:35:48.877Z",
+  "events": [
+    {
+      "event_id": "61105dc9-3543-4c55-af3c-fc27acb4142f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states coherent intent (human-adjudicated to-be model diffed against as-is graph to surface subtraction candidates) with User Value and 5 ACs matching the diff",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:48.599Z"
+    },
+    {
+      "event_id": "57bc50f8-eea3-4083-b758-e4428c86784c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Feature core engages current reality by design: integration run against this repo (4956 nodes, 66 violations, exit 0) reproduced by adjudicator; real runtime path evidence exists",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:50.202Z"
+    },
+    {
+      "event_id": "e9b7c994-9795-4356-a2f7-458c64001651",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "12-test contract verifies dependency-allowance rules, baseline budget freezing, fail-loud inputs and dry-run vs strict exit semantics; invariants tested not asserted",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:51.754Z"
+    },
+    {
+      "event_id": "8ce1ff31-cf67-4635-8692-47c24a7b68ff",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Change bounded to new module + CLI subcommand + target-model doc per story reason; new module imports only workspace.js; CLI addition additive",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:53.292Z"
+    },
+    {
+      "event_id": "0251ecc3-8e5c-41eb-857a-c5e1a41d709a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Complete failure surface of this deterministic command tested: missing graph, unparsable graph, invalid model each fail loud; no distributed/stateful failure mode applies to an additive dry-run command",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:54.930Z"
+    },
+    {
+      "event_id": "d77abca0-0246-4b59-bf70-cd153ee59c0b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unit-test-run.log 12/12 pass plus integration run recorded pass with content binding; unit+integration is the appropriate done evidence for an additive deterministic subcommand",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:56.855Z"
+    },
+    {
+      "event_id": "24291ad1-12c9-4e62-a0fa-9034234ec06f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI change purely additive: new subcommand and new artifact output; no existing command, flag or output contract modified",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:58.587Z"
+    },
+    {
+      "event_id": "86268c80-65d4-4e1a-8149-a821c45d0162",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Writes only to dedicated new path .vibepro/architecture/conformance/* regenerated each run (idempotent); reads but never mutates target-model.json and graph.json; no migration, no cache, no existing persistent state touched",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:05:00.111Z"
+    },
+    {
+      "event_id": "b82181ac-81d4-4fc4-93ef-b02c1a0bf210",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is 5 files serving one intent (module, 12-line CLI branch, focused tests, SSOT doc, story doc); coherent single-intent unit; target model adjudication itself is explicitly a future human step outside this PR",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:05:01.689Z"
+    },
+    {
+      "event_id": "4debeb03-89ea-4e61-beb8-7993a4adf32c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse failure is a real path (JSON.parse of model and graph) and is handled with descriptive throws plus empty-nodes/modules guards, verified by fail-loud test",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:05:03.030Z"
+    },
+    {
+      "event_id": "73f569ad-c01c-4adf-8452-7421e5268ccf",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed files do not touch gate/review/evidence lifecycle code; conformance writes only its own artifact and is explicitly not wired into gates per Non-Goals",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:05:04.742Z"
+    },
+    {
+      "event_id": "c4623a11-c943-464b-afc5-8e95a141519d",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Command performs no gate/workflow state transition; dry-run exit 0, strict-only exit 2 verified by test; writes no gate/pending/green state",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:05:06.356Z"
+    },
+    {
+      "event_id": "17df6cf1-0f38-46d6-bead-eb79c779fef4",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:27.509Z"
+    },
+    {
+      "event_id": "194479b0-b80e-4b83-9b4a-872122dce53c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:28.333Z"
+    },
+    {
+      "event_id": "85576930-19ae-4dae-9657-5c816d3a979c",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:29.700Z"
+    },
+    {
+      "event_id": "97afaade-85d6-40e6-b464-e338fbe6d743",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:31.054Z"
+    },
+    {
+      "event_id": "3006c61c-7545-453b-af23-966490be4f65",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:32.623Z"
+    },
+    {
+      "event_id": "431d5ec6-9f7c-4bd4-8ee1-e70024f2d6e1",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:34.004Z"
+    },
+    {
+      "event_id": "d61f3100-da95-4851-992d-86a288521d89",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:35.214Z"
+    },
+    {
+      "event_id": "dcbefd63-4d8b-45bb-93d2-4a45d211b0db",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:36.206Z"
+    },
+    {
+      "event_id": "2b778f4e-0964-4bcd-a0e7-f54bb7c396ea",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:37.216Z"
+    },
+    {
+      "event_id": "f0a87092-d171-4402-9d0b-6b9068cb4b0a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:38.222Z"
+    },
+    {
+      "event_id": "832ff658-66cc-4c51-8294-9e858f30a2ed",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:39.244Z"
+    },
+    {
+      "event_id": "226a2cdf-49b8-4073-8763-a51b0bc187b4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at head 4e0480e0: delta since prior judged_sound verdict is the design-ssot.json root registration only (semantic equality of prior entries verified, no source/test/story change); the original grounded reasoning for this item is unchanged and still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "4e0480e07298ab80ff049f925ede39026c1908bc",
+      "recorded_at": "2026-07-22T03:06:40.265Z"
+    },
+    {
+      "event_id": "07c4aa1a-459b-4cdf-bbca-8833da91d118",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:08.837Z"
+    },
+    {
+      "event_id": "cc162899-b1e9-4956-9c6d-9a9c2cc47af8",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:10.028Z"
+    },
+    {
+      "event_id": "7fe44673-cba6-42c7-b048-701945e2665f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:11.538Z"
+    },
+    {
+      "event_id": "5084df03-e2c3-40e8-abbb-b5cfa0b4a182",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:12.610Z"
+    },
+    {
+      "event_id": "859d572f-9259-4e72-85b0-17b16eb89aa4",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:14.092Z"
+    },
+    {
+      "event_id": "3a648a06-06da-487f-ae24-fea72f21824f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:15.229Z"
+    },
+    {
+      "event_id": "4bcb1479-5044-420d-80b5-7926b317771a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:16.243Z"
+    },
+    {
+      "event_id": "732f2853-96c1-425e-b73a-53e1ebe6076f",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:17.727Z"
+    },
+    {
+      "event_id": "11d147c8-c9f3-42b6-902f-d46f07fdaef2",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:19.106Z"
+    },
+    {
+      "event_id": "16638f47-ef84-45ae-8e9b-68e4dab36d81",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:20.638Z"
+    },
+    {
+      "event_id": "9119e4be-5085-4960-a327-049d76a609ba",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:22.219Z"
+    },
+    {
+      "event_id": "408fd3fe-db73-4213-bbd9-6f22a8354445",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at rebased head b0e8a92e: rebase onto merged main introduced no change to this feature's surface (additive diff verified); evidence re-recorded at this head (unit 12/12 + telemetry 174 + guarded 429, conformance run 68 violations exit 0); the original grounded reasoning for this item still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+      "recorded_at": "2026-07-22T04:26:23.628Z"
+    },
+    {
+      "event_id": "688c713a-816f-48ef-8a2d-ffe92bb8c7bf",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:30.636Z"
+    },
+    {
+      "event_id": "2aa7aa5d-66ba-4e25-a8f3-7b521a3d6182",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:32.069Z"
+    },
+    {
+      "event_id": "c6448195-d8ad-44af-ba14-5852991ae1d9",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:33.733Z"
+    },
+    {
+      "event_id": "1b43d483-39ba-4d2f-bd0f-98449af3192b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:35.550Z"
+    },
+    {
+      "event_id": "42357bc3-7545-4fd7-8cfd-f6a2aaa367ee",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:37.416Z"
+    },
+    {
+      "event_id": "b0984d5d-4afd-42cd-9665-28caafb899d6",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:39.048Z"
+    },
+    {
+      "event_id": "f42e91c2-d799-4e39-b4e1-20133587455c",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:40.547Z"
+    },
+    {
+      "event_id": "f6cf600c-8512-4581-b654-a5621f1fbfcf",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:42.483Z"
+    },
+    {
+      "event_id": "2306f316-0007-4964-80ab-bcbb82c4b02e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:44.240Z"
+    },
+    {
+      "event_id": "3e8c86e4-0104-4c4d-9eb4-7e58b23c1e51",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:45.822Z"
+    },
+    {
+      "event_id": "6a130e9e-575a-4623-8b3b-49af39bc39c6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:47.451Z"
+    },
+    {
+      "event_id": "45d6c4eb-a2b7-4bca-af39-a4e64597c230",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated at final head f05f9b24: only delta is regenerated CLI reference docs fixing the CI contract test; no source/test/model change; evidence re-recorded at this head (unit 12/12, telemetry 174, guarded 429, conformance 68 violations exit 0); original grounded reasoning still holds",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:35:48.861Z"
+    }
+  ]
+}
