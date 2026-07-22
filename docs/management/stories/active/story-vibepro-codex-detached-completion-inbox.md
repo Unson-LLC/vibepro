@@ -47,6 +47,20 @@ updated_at: 2026-07-22
 - [x] CDI-S-9: 実Codex hostを模したcontract/integration/E2Eでspawn→10分境界→detached継続→親process終了後の`runtime-ingest`→completion Inbox→結果回収→review lifecycle closeを証明する。
 - [x] CDI-S-10: recoveryは論理task単位のwall-clock/attempt/cost上限内で行い、追加予算の反復を正常系にしない。
 
+## Scenarios
+
+### S-001 / AC-1, AC-2, AC-3, AC-4, AC-8, AC-9
+
+- Given 実Codex hostがreviewをspawnし、親sessionの同期監視境界が600000msである
+- When provider runが境界を超えて継続し、親session不在中にcompletionを配送する
+- Then Runはshutdownせず`running_detached`をauthority-firstに保存し、後継sessionがpush喪失時も永続Inboxから同一dispatchを一度だけ回収してreview lifecycleを閉じる
+
+### S-002 / AC-5, AC-6, AC-7, AC-10
+
+- Given 論理review taskにprogress checkpoint、no-progress deadline、wall-clock、attempt、cost、inspection surfaceが設定されている
+- When heartbeatだけが続く、部分判定だけが完了する、またはHEAD metadataだけが変化する
+- Then bounded recoveryはstalledを判定し、完了済み判定と不変surfaceの成果を再利用して未完了部分だけを再開し、replacement spawnや追加予算の反復を行わない
+
 ## Non Goals
 
 - PR #370のStory budget policyやreview role selectionを再実装すること。

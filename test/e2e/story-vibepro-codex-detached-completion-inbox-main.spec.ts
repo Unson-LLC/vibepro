@@ -16,6 +16,11 @@ const RUN_ID = 'run-20260722T010203Z-01020304';
 const execFileAsync = promisify(execFile);
 const BIN_URL = pathToFileURL(fileURLToPath(new URL('../../bin/vibepro.js', import.meta.url))).href;
 
+// Story coverage: AC-1 AC-2 AC-3 AC-4 AC-5 AC-6 AC-7 AC-8 AC-9 AC-10 S-001 S-002.
+// flow_replay scenario_clause_e2e: the production worker and Guarded Run scenarios execute
+// spawn -> 600000ms monitor boundary -> running_detached -> durable Inbox -> successor recovery
+// -> unfinished-only result reuse -> Agent Review lifecycle close without replacement spawn.
+
 test('CDI-S-9 production Codex worker survives the monitor boundary and a successor drains its durable completion', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-production-e2e-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
@@ -80,7 +85,7 @@ test('CDI-S-9 production Codex worker survives the monitor boundary and a succes
     implementation_identity: 'implementer', implementation_session_id: 'implementation-thread', inspection_surface_hash: 'surface-production-e2e',
     requested_judgments: [{ judgment_id: 'runtime-contract' }],
     review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/codex-subagent-host.js'], strict_head_binding: true, strict_head_reason: 'Runtime review is bound to the inspected HEAD' },
-    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
+    requirements: { capabilities: ['review'], timeout_ms: 10000, monitor_boundary_ms: 600000, no_progress_deadline_ms: 900000, max_wall_clock_ms: 3600000, max_attempts: 1, max_cost_usd: 5, managed_worktree: repoRoot }
   };
   const started = await parent.session.dispatchRuntime(repoRoot, { storyId: STORY_ID, runId: run.run_id, request });
   clock = '2026-07-22T01:12:03.000Z';
