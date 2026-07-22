@@ -46,6 +46,41 @@ test('SAO-S-3 action failure stops and records action_failed', async () => {
   assert.equal(result.state.action_journal[0].status, 'failed');
 });
 
+test('IRO-S-3 typed action stops persist the owner checkpoint for restart', async () => {
+  const checkpoint = [{ operation: 'dispatch', idempotency_key: 'gate:release_risk:dispatch' }];
+  const result = await runSafeActionPlan(state, {
+    runners: {
+      pr_prepare: async () => ({
+        status: 'waiting_for_runtime',
+        stop_reason: 'runtime_timeout',
+        checkpoint
+      })
+    }
+  });
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.deepEqual(result.state.action_journal.at(-1).checkpoint, checkpoint);
+});
+
+test('IRO-S-3 runner checkpoint hook awaits each durable journal snapshot', async () => {
+  const checkpoints = [];
+  await runSafeActionPlan(state, {
+    onCheckpoint: async ({ action, checkpoint }) => {
+      checkpoints.push({ action: action.id, checkpoint });
+    },
+    runners: {
+      pr_prepare: async ({ persistCheckpoint }) => {
+        await persistCheckpoint([{ operation: 'dispatch' }]);
+        await persistCheckpoint([{ operation: 'dispatch' }, { operation: 'poll' }]);
+        return { status: 'waiting_for_runtime', stop_reason: 'runtime_timeout' };
+      }
+    }
+  });
+  assert.deepEqual(checkpoints, [
+    { action: 'pr_prepare', checkpoint: [{ operation: 'dispatch' }] },
+    { action: 'pr_prepare', checkpoint: [{ operation: 'dispatch' }, { operation: 'poll' }] }
+  ]);
+});
+
 test('SAO-S-4 forbidden action never invokes a runner', async () => {
   let calls = 0;
   const result = await runSafeActionPlan(state, {

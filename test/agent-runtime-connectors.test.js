@@ -96,12 +96,18 @@ test('PRC-S-4 review uses read-only sandbox, separate identity and a separate pr
     spawnProcess() { child = fakeProcess(); return child; }
   });
   const started = await connector.start({ ...implementationRequest, role: 'review', reviewer_identity: 'reviewer-2' });
-  child.stdout.end(JSON.stringify({ completion_status: 'completed', changed_files: [], head_sha: implementationRequest.input_head_sha, test_suggestions: [], summary: 'pass' }) + '\n');
+  child.stdout.end(JSON.stringify({
+    completion_status: 'completed', changed_files: [], head_sha: implementationRequest.input_head_sha, test_suggestions: [], summary: 'pass',
+    status: 'pass', inspection_summary: 'inspected adapter contract', inspection_evidence: 'test/agent-runtime-connectors.test.js',
+    inspection_inputs: ['src/agent-runtime-connectors.js'], judgment_delta: ['contract concern -> covered by read-only dispatch'], findings: []
+  }) + '\n');
   child.emit('close', 0, null);
   const result = await connector.collect_result({ provider_run_id: started.provider_run_id });
   assert.equal(started.agent_identity, 'reviewer-2');
   assert.equal(result.lifecycle, 'closed');
   assert.equal(result.session_id, started.session_id);
+  assert.equal(result.status, 'pass');
+  assert.deepEqual(result.findings, []);
 });
 
 test('PRC-S-3 cancellation confirms a terminal provider status', async () => {

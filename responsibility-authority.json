@@ -84,6 +84,9 @@
       "owned_surfaces": {
         "paths": [
           "src/agent-review.js",
+          "src/independent-review-orchestrator.js",
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
           "src/review-repair.js"
         ],
         "symbols": [
