@@ -117,3 +117,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:372:start -->
 - [PR #372](https://github.com/Unson-LLC/vibepro/pull/372) — [2026-07](/releases/2026-07): story-vibepro-autonomous-action-dag - Guarded Runを完全な型付き自律Action DAGへ拡張する
 <!-- vibepro-release-index-pr:372:end -->
+
+<!-- vibepro-release-index-pr:370:start -->
+- [PR #370](https://github.com/Unson-LLC/vibepro/pull/370) — [2026-07](/releases/2026-07): story-vibepro-trusted-delivery-efficiency-guardrail - 個別Gateの安全性だけでなく、Story全体の時間・subagent・token・再レビューを最適化したい
+<!-- vibepro-release-index-pr:370:end -->
