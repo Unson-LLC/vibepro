@@ -162,6 +162,11 @@ export async function executeMerge(repoRoot, options = {}) {
     cost_accounting_collection: costAccountingResult.collection
   };
   merge.warnings.push(...costAccountingResult.warnings);
+  if (!gateAuthorization.allowed) {
+    merge.warnings.push(
+      `Merge gate authorization rejected (${gateAuthorization.reason}). Run \`vibepro pr prepare\` and \`vibepro pr create\` again for the current HEAD, then retry the merge after resolving critical gates or supplying a complete noncritical waiver.`
+    );
+  }
 
   if (!prSelector) {
     merge.stop_reason = 'pr_selector_missing';
@@ -788,6 +793,10 @@ export function renderPrMergeSummary(result) {
 ## Preconditions
 
 - gate_ready: ${merge.preconditions.gate_ready ? 'passed' : 'blocked'}
+- gate_authorization_source: ${merge.gate_authorization?.source ?? 'none'}
+- gate_authorization_reason: ${merge.gate_authorization?.reason ?? '-'}
+- gate_override_policy: ${merge.gate_authorization?.gate_override?.waiver_policy ?? '-'}
+- gate_override_critical_unresolved: ${merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-'}
 - clean_worktree: ${merge.preconditions.clean_worktree ? 'passed' : 'blocked'}
 - base_freshness: ${merge.preconditions.base_freshness.status}
 - remote_head_match: ${merge.preconditions.remote_head_match.status}

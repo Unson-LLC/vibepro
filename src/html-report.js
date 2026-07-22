@@ -288,6 +288,16 @@ export function renderPrMergeHtml(merge, options = {}) {
         ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
       </section>
       ${renderPrLifecycleFreshnessPanel(merge.artifact_freshness, language)}
+      <section>
+        <h2>Gate Authorization</h2>
+        ${renderKeyValueTable([
+          ['Allowed', merge.gate_authorization?.allowed ? 'yes' : 'no'],
+          ['Source', merge.gate_authorization?.source ?? 'none'],
+          ['Reason', merge.gate_authorization?.reason ?? '-'],
+          ['Waiver policy', merge.gate_authorization?.gate_override?.waiver_policy ?? '-'],
+          ['Critical unresolved gates', merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-']
+        ])}
+      </section>
       <section class="grid-2">
         <div>
           <h2>Preconditions</h2>
