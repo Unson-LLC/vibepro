@@ -183,10 +183,11 @@ export function createGuardedIndependentReviewRunner({
       authorize: async ({ state, stage, role }) => agentReviewOps.authorize(repoRoot, {
         storyId: state.story_id, stage, role, agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low'
       }),
-      start: async ({ state, stage, role, authorization }) => agentReviewOps.start(repoRoot, {
+      start: async ({ state, stage, role, authorization, operation }) => agentReviewOps.start(repoRoot, {
         storyId: state.story_id, stage, role, agentSystem: 'codex', agentId: reviewerIdentity(state, stage, role),
         agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low',
-        dispatchAuthorization: authorization.authorization?.authorization_id
+        dispatchAuthorization: authorization.authorization?.authorization_id,
+        operationIdempotencyKey: operation.idempotency_key
       }),
       dispatch: async ({ state, stage, role, lifecycle }) => dispatchRuntime(state, {
         adapter_id: 'codex', task_id: `independent-review:${stage}:${role}`, role: 'review',
@@ -196,11 +197,12 @@ export function createGuardedIndependentReviewRunner({
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
       }),
       poll: async ({ state, dispatch }) => normalizePoll(await pollRuntime(state, dispatch.dispatch?.dispatch_id)),
-      close: async ({ state, stage, role, lifecycle, closeReason }) => agentReviewOps.close(repoRoot, {
+      close: async ({ state, stage, role, lifecycle, closeReason, operation }) => agentReviewOps.close(repoRoot, {
         storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
-        closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed'
+        closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
+        operationIdempotencyKey: operation.idempotency_key
       }),
-      record: async ({ state, stage, role, poll }) => {
+      record: async ({ state, stage, role, poll, operation }) => {
         const dispatch = poll.dispatch;
         const review = dispatch?.result?.review;
         if (!review) throw fail('invalid_runtime_review', 'review runtime result did not include a valid review verdict');
@@ -208,7 +210,7 @@ export function createGuardedIndependentReviewRunner({
           stage, role, status: review.status, summary: review.summary,
           inspectionSummary: review.inspection_summary, inspectionEvidence: review.inspection_evidence,
           inspectionInputs: review.inspection_inputs, judgmentDeltas: review.judgment_delta,
-          findings: review.findings.map((finding) => JSON.stringify(finding))
+          findings: review.findings.map((finding) => JSON.stringify(finding)), operationIdempotencyKey: operation.idempotency_key
         });
         return { ...recorded.review, verdict: review.status };
       }

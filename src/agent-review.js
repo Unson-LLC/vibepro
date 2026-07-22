@@ -371,7 +371,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     excludeSurfacePaths: generatedProjectionPaths
   });
   const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
-  const result = {
+  let result = {
     schema_version: '0.1.0',
     story_id: storyId,
     stage,
@@ -400,6 +400,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
     }),
     agent_usage: buildAgentUsage(options)
   };
+  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
+  if (operationIdempotencyKey) result.operation_idempotency_key = operationIdempotencyKey;
   if (requiresInspectionForPass(result) && !result.inspection.summary) {
     throw new Error(
       `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
@@ -422,6 +424,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }
   const resultPath = getReviewResultPath(reviewDir, role);
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
+  const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null;
+  if (existingResult?.operation_idempotency_key === operationIdempotencyKey) result = existingResult;
   const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   if (efficiencyPolicy && result.agent_provenance.lifecycle?.agent_closed) {
     const lifecycle = await readLifecycle(root, storyId, stage);
@@ -434,8 +438,10 @@ export async function recordAgentReview(repoRoot, options = {}) {
       throw new Error(`review record ${stage}:${role} requires a lifecycle started from a consumed dispatch authorization when delivery efficiency policy is enabled`);
     }
   }
-  await writeJson(resultPath, result);
-  await writeJson(historyPath, result);
+  if (existingResult?.operation_idempotency_key !== operationIdempotencyKey) {
+    await writeJson(resultPath, result);
+    await writeJson(historyPath, result);
+  }
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     if (!result.agent_provenance.lifecycle?.agent_closed) return;
@@ -557,6 +563,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const reusableEvidence = options.reusableEvidence ?? [];
   const freeze = normalizeReviewFreeze(options.freeze);
   const now = new Date().toISOString();
+  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
   const entry = {
     schema_version: '0.1.0',
     lifecycle_id: options.lifecycleId ?? crypto.randomUUID(),
@@ -582,11 +589,28 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     close_reason: null,
     close_evidence: null,
     closed_at: null,
-    result_artifact: null
+    result_artifact: null,
+    ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
   };
+  const existingLifecycle = operationIdempotencyKey
+    ? (await readLifecycle(root, storyId, stage)).entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey)
+    : null;
+  if (existingLifecycle) {
+    return {
+      lifecycle: existingLifecycle,
+      dispatch_decision: existingLifecycle.dispatch_decision ?? null,
+      summary: await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy }),
+      artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir))
+    };
+  }
   let summary = null;
   let dispatchDecision = null;
   const persistLifecycle = async () => updateLifecycle(root, storyId, stage, (lifecycle) => {
+    const existing = operationIdempotencyKey && lifecycle.entries.find((item) => item.operation_idempotency_key === operationIdempotencyKey);
+    if (existing) {
+      Object.assign(entry, existing);
+      return;
+    }
     lifecycle.entries.push(entry);
   }, async () => {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
@@ -774,10 +798,16 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const role = requireRole(reviewPolicy, stage, options.role, 'review close');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const closeReason = normalizeCloseReason(options.closeReason);
+  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
   let match = null;
   const gitContext = await collectReviewGitContext(root, storyId);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    const alreadyClosed = operationIdempotencyKey && lifecycle.entries.find((entry) => entry.close_operation_idempotency_key === operationIdempotencyKey);
+    if (alreadyClosed) {
+      match = alreadyClosed;
+      return;
+    }
     match = findLifecycleEntry(lifecycle.entries, {
       lifecycleId: options.lifecycleId,
       role,
@@ -804,6 +834,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
       match.cancellation_evidence = closeEvidence;
     }
     match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
+    if (operationIdempotencyKey) match.close_operation_idempotency_key = operationIdempotencyKey;
     match.closed_at = new Date().toISOString();
     match.close_reason = closeReason;
     match.close_evidence = closeEvidence;
