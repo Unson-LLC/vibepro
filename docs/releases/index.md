@@ -137,3 +137,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:380:start -->
 - [PR #380](https://github.com/Unson-LLC/vibepro/pull/380) — [2026-07](/releases/2026-07): story-vibepro-canonical-audit-review-root-state-files - Canonical auditがreview root直下のstory-level state fileでmergeを失敗させないようにする
 <!-- vibepro-release-index-pr:380:end -->
+
+<!-- vibepro-release-index-pr:382:start -->
+- [PR #382](https://github.com/Unson-LLC/vibepro/pull/382) — [2026-07](/releases/2026-07): story-vibepro-independent-review-orchestration - Required Reviewを独立agentへ自動dispatchして記録する
+<!-- vibepro-release-index-pr:382:end -->
