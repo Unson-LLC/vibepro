@@ -57,6 +57,54 @@ test('canonical audit ignores compatibility markdown directly under the story re
   await assert.doesNotReject(() => promoteCanonicalAuditArtifacts(root, { storyId }));
 });
 
+test('CARS-S-1 canonical audit tolerates dispatch-authorizations.json under the story review root and still collects stages', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-dispatch-auth-'));
+  const storyId = 'story-canonical-dispatch-auth';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId }
+  });
+  await writeJson(path.join(root, '.vibepro', 'reviews', storyId, 'dispatch-authorizations.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    authorizations: []
+  });
+  await mkdir(path.join(root, '.vibepro', 'reviews', storyId, 'gate'), { recursive: true });
+  await writeFile(
+    path.join(root, '.vibepro', 'reviews', storyId, 'gate', 'review-request-gate_evidence.md'),
+    '# Review request\n'
+  );
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  assert.equal(
+    promoted.bundle.artifacts.some((item) => item.kind === 'review_request' && item.canonical_path.endsWith('review-request-gate_evidence.md')),
+    true
+  );
+});
+
+test('CARS-S-2 canonical audit tolerates future story-level json state files under the story review root', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-story-state-json-'));
+  const storyId = 'story-canonical-story-state-json';
+  await writeJson(path.join(root, '.vibepro', 'reviews', storyId, 'future_review-state.json'), {
+    story_id: storyId
+  });
+
+  await assert.doesNotReject(() => promoteCanonicalAuditArtifacts(root, { storyId }));
+});
+
+test('CARS-S-3 canonical audit skips dot entries such as a stale .dispatch.lock directory', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-dot-entries-'));
+  const storyId = 'story-canonical-dot-entries';
+  await mkdir(path.join(root, '.vibepro', 'reviews', storyId, '.dispatch.lock'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'reviews', storyId, '.DS_Store'), 'osx metadata\n');
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  assert.equal(
+    promoted.bundle.artifacts.some((item) => String(item.canonical_path ?? '').includes('.dispatch.lock')),
+    false
+  );
+});
+
 test('canonical audit surfaces an expected review stage replaced by a file', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-review-stage-file-'));
   const storyId = 'story-canonical-review-stage-file';

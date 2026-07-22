@@ -2656,12 +2656,17 @@ async function safeReaddirDirectories(dir) {
   const entries = await safeReaddir(dir);
   const directories = [];
   for (const entry of entries) {
+    // Lock remnants (.dispatch.lock) and OS metadata (.DS_Store) are never stages.
+    if (entry.startsWith('.')) continue;
     const entryPath = path.join(dir, entry);
     if ((await stat(entryPath)).isDirectory()) {
       directories.push(entry);
       continue;
     }
     if (/^[A-Za-z0-9_-]+-final\.md$/.test(entry)) continue;
+    // Story-level review state files (e.g. dispatch-authorizations.json) live
+    // directly under the review root next to stage directories.
+    if (/^[A-Za-z0-9_-]+\.json$/.test(entry)) continue;
     const error = new Error(`expected review stage directory: ${entryPath}`);
     error.code = 'ENOTDIR';
     throw error;
