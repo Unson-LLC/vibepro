@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+  "updated_at": "2026-07-22T07:25:59.073Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Committed regression tests in test/canonical-audit-self-contained.test.js (CARS-S-1/S-2/S-3 plus the retained ENOTDIR case covering S-4) pin all four behaviors and pass 20/20 on the current head per /tmp/cars-test-output.txt; the uncommitted scratchpad replay is not needed because the committed suite independently fixes each clause.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:25:59.064Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "The pre-existing test 'canonical audit surfaces an expected review stage replaced by a file' writes an extensionless file named gate and asserts rejection with error.code === 'ENOTDIR'; it still passes on current head (20/20), and gate matches neither the dot-skip, -final.md, nor .json tolerance branches, so the fail-loud throw is preserved by construction.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:25:57.303Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "CARS-S-3 creates a stale .dispatch.lock directory and a .DS_Store file under the review root, promotion completes without error, and the assertion confirms no promoted artifact path includes .dispatch.lock (so it was not treated as a stage); the entry.startsWith('.') continue branch in the diff is the direct mechanism.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:25:55.997Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The diff adds the exact /^[A-Za-z0-9_-]+\\.json$/ tolerance branch in safeReaddirDirectories, and CARS-S-2 pins a representative future state file (future_review-state.json, exercising letters/underscore/hyphen) with doesNotReject, passing on current head; no inferential leap from code+test to the clause's pattern-level tolerance.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:25:54.544Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Committed test CARS-S-1 creates dispatch-authorizations.json under .vibepro/reviews/<story>/ plus a gate stage, and asserts promoteCanonicalAuditArtifacts succeeds AND promotes the gate review_request artifact (stage collection continues); it passes 20/20 on current head per /tmp/cars-test-output.txt, and the diff's dot-skip/json-tolerance in safeReaddirDirectories (src/canonical-audit.js ~2660) reaches both callers (lines 583/1176) used by merge-time promotion.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:25:53.038Z"
+    }
+  ]
+}

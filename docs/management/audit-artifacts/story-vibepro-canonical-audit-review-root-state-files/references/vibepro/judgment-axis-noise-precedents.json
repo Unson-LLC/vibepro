@@ -1,0 +1,74 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "decision_id": "decision-1784704064923-fbb72b00",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Blast radius is one function (safeReaddirDirectories) with two callers, both inside canonical audit promotion; Graphify shows 2 changed / 13 related files with no runtime consumers outside merge-time promotion. All other changes are the mandatory story registration artifacts. A single reviewer can read the diff as one consistent decision.",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T07:08:11.456Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "decision_id": "decision-1784704062266-ad21a11c",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Backward-compatible: previously-succeeding trees (stage dirs + *-final.md only) promote identically; the change only stops rejecting state files that the shipped review authorize flow itself writes. The fail-loud ENOTDIR contract for a stage replaced by an extensionless file is preserved and re-verified by the existing regression test and the promotion replay. docs/reference/cli.md required no edits (contract surface diff is empty).",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T07:08:11.456Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "decision_id": "decision-1784704064923-fbb72b00",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Blast radius is one function (safeReaddirDirectories) with two callers, both inside canonical audit promotion; Graphify shows 2 changed / 13 related files with no runtime consumers outside merge-time promotion. All other changes are the mandatory story registration artifacts. A single reviewer can read the diff as one consistent decision.",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T07:21:13.212Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:config_or_agent_policy|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "decision_id": "decision-1784704062266-ad21a11c",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Backward-compatible: previously-succeeding trees (stage dirs + *-final.md only) promote identically; the change only stops rejecting state files that the shipped review authorize flow itself writes. The fail-loud ENOTDIR contract for a stage replaced by an extensionless file is preserved and re-verified by the existing regression test and the promotion replay. docs/reference/cli.md required no edits (contract surface diff is empty).",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "activation_candidates": [
+        "pr_route:config_or_agent_policy",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T07:21:13.212Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

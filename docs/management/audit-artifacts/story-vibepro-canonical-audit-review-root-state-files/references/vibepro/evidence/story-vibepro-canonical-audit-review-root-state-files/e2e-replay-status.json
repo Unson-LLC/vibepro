@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node scratchpad/replay-canonical-audit.mjs",
+  "replay": "canonical_audit_promotion",
+  "dispatch_authorizations_tolerated": true,
+  "stale_lock_skipped": true,
+  "fail_loud_preserved": true,
+  "promoted_artifact_count": 2,
+  "recorded_at": "2026-07-22"
+}

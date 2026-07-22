@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review after rebase onto origin/main re-issued PASS for head 44ebe877: the reviewed surface (src/canonical-audit.js tolerance fix, its test, agent-review.js, story, spec) is byte-identical to the previously passed head ebde526f; the rebase delta is additive PR #379 content (457 insertions, 0 deletions) with no interaction with canonical audit promotion, review-root layout, or the authorize flow; targeted suite 20/20 on the new head.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewer verified git diff ebde526f..44ebe877 --stat is exactly the 11 PR #379 files plus the two conflict resolutions, confirmed zero diff across the rebase for the five reviewed-surface files, grepped the delta for canonical/review-root/authorize interactions (none), validated both JSON conflict resolutions (both story entries present; design-ssot root with spec child link intact), and read /tmp/cars-test-output.txt regenerated on 44ebe877 (20/20 pass incl. CARS-S-1/2/3).",
+    "evidence": null,
+    "inputs": [
+      "src/canonical-audit.js",
+      "src/agent-review.js",
+      "test/canonical-audit-self-contained.test.js",
+      "docs/management/stories/active/story-vibepro-canonical-audit-review-root-state-files.md",
+      "docs/specs/vibepro-canonical-audit-review-root-state-files.md"
+    ]
+  },
+  "judgment_delta": [
+    "stale strict-HEAD pass at ebde526f -> re-issued pass at 44ebe877 because the reviewed surface is byte-identical across the rebase, the PR #379 delta is additive and non-interacting with canonical audit/review-root/authorize code paths, both conflict resolutions are correct, and the targeted suite passes 20/20 on the new head."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+    "expected_root": null,
+    "expected_head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+    "current_head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+      "expected_root": null,
+      "expected_head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "current_head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-22T07:24:27.746Z",
+  "git_context": {
+    "head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+    "current_branch": "claude/affectionate-heisenberg-36d68d",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T07:24:27.673Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-canonical-audit-review-root-state-files.md",
+        "sha256": "b429d2262741855958ad72e08a951735b354466f9b445c505b916d7c3bc1325c",
+        "size": 4080
+      },
+      {
+        "path": "docs/specs/vibepro-canonical-audit-review-root-state-files.md",
+        "sha256": "c68af5636bc92ec50631e185127c29f335525f2769ccb513daf1250bd6d7a7ea",
+        "size": 2412
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "a9c28372bdda25ce9c1b6b1834346c6f9c3a64358d768f71e5c8e4280286ed69",
+        "size": 172656
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "ece79f92b4e354b12cf74443546b25524fbe9f96eb21773592f1fc5ab1800448",
+        "size": 108193
+      },
+      {
+        "path": "test/canonical-audit-self-contained.test.js",
+        "sha256": "e76ccfaebcdf18d5620c4c08d9d99581d211fe9c16c40554c32a3dfd41c8b9a0",
+        "size": 40835
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a82e7e6a00c402f2f165b12d055964e2a817da44859efb2943953b22db4e4822"
+  },
+  "source_fingerprint": "bad6c2a9778cee61d7cbd966322dc4e2c24333315640cb30dd1ca9d1653e25ca",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "af271adcbd0430334",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/af271adcbd0430334.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-canonical-audit-review-root-state-files/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
