@@ -99,6 +99,31 @@ test('production Codex host without cost telemetry fails closed instead of spawn
   assert.equal(state.stop_reason.code, 'cost_accounting_unavailable');
 });
 
+test('production Codex host shutdown contains the detached worker process group', { skip: process.platform === 'win32' }, async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-containment-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const childPidPath = path.join(repoRoot, 'codex-child.pid');
+  const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
+  await writeFile(fakeCodex, `
+    import { writeFile } from 'node:fs/promises';
+    if (process.argv.includes('--version')) process.exit(0);
+    await writeFile(process.argv[2], String(process.pid));
+    await new Promise(() => {});
+  `);
+  const host = createCodexSubagentHost({
+    cwd: repoRoot,
+    codexExecutable: process.execPath,
+    codexExecutableArgs: [fakeCodex, childPidPath]
+  });
+  const started = await host.spawn(runtimeRequest(repoRoot));
+  await waitFor(async () => access(childPidPath).then(() => true, () => false));
+  const childPid = Number(await readFile(childPidPath, 'utf8'));
+  assert.equal(isProcessAlive(childPid), true);
+  await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_test' });
+  await waitFor(async () => !isProcessAlive(childPid));
+  assert.equal(isProcessAlive(childPid), false);
+});
+
 test('explicit managed authority cannot be shadowed by the caller root for status, delivery, subscription, or shutdown', async (t) => {
   const callerRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-caller-'));
   const managedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-managed-'));
@@ -159,4 +184,14 @@ async function waitFor(predicate) {
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
   throw new Error('condition timeout');
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error.code === 'ESRCH') return false;
+    throw error;
+  }
 }

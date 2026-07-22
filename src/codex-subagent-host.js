@@ -71,7 +71,7 @@ export function createCodexSubagentHost({
       const statePath = path.join(located, 'state.json');
       const state = await readJson(statePath);
       if (Number.isInteger(state?.worker_pid) && state.worker_pid > 1 && isActive(state.status)) {
-        try { process.kill(state.worker_pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+        terminateWorkerTree(state.worker_pid, 'SIGTERM');
       }
       const next = { ...state, status: 'cancelled', completed_at: new Date().toISOString(), stop_reason: { code: reason ?? 'cancelled' } };
       await writeJson(statePath, next);
@@ -235,6 +235,23 @@ function workerEnvironment(env, { executable, executableArgs, selectedModel }) {
 }
 
 function isActive(status) { return ['spawning', 'running', 'running_detached'].includes(status); }
+
+function terminateWorkerTree(workerPid, signal) {
+  if (process.platform !== 'win32') {
+    try {
+      process.kill(-workerPid, signal);
+      return;
+    } catch (error) {
+      if (error.code === 'ESRCH') return;
+      if (error.code !== 'EINVAL' && error.code !== 'EPERM') throw error;
+    }
+  }
+  try {
+    process.kill(workerPid, signal);
+  } catch (error) {
+    if (error.code !== 'ESRCH') throw error;
+  }
+}
 
 function probeExecutable(executable, executableArgs, timeoutMs) {
   return new Promise((resolve) => {
