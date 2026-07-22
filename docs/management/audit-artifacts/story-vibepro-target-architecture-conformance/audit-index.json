@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-target-architecture-conformance",
   "source": "execute_merge",
-  "generated_at": "2026-07-22T06:12:38.617Z",
+  "generated_at": "2026-07-22T06:13:06.684Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -18,11 +18,11 @@
     "diff_stats_refs": {
       "base_ref": "origin/main",
       "head_ref": "f05f9b2401655828445858c7dc717f83d55017db",
-      "base_sha": "8bd052cce14e84064958ac2a25248d55511e44ae",
+      "base_sha": "846cf48a58d83b8f6a6114136a641584783fa5c3",
       "head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
       "merge_commit_sha": "ed7fde3cd9ad1e67840733821d1739e5c454228c"
     },
-    "diff_stats_collected_at": "2026-07-22T06:12:37.741Z",
+    "diff_stats_collected_at": "2026-07-22T06:13:05.674Z",
     "diff_stats_reason": null,
     "artifact_lines": 1205,
     "changed_lines": {
@@ -65,11 +65,11 @@
       "refs": {
         "base_ref": "origin/main",
         "head_ref": "f05f9b2401655828445858c7dc717f83d55017db",
-        "base_sha": "8bd052cce14e84064958ac2a25248d55511e44ae",
+        "base_sha": "846cf48a58d83b8f6a6114136a641584783fa5c3",
         "head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
         "merge_commit_sha": "ed7fde3cd9ad1e67840733821d1739e5c454228c"
       },
-      "collected_at": "2026-07-22T06:12:37.741Z",
+      "collected_at": "2026-07-22T06:13:05.674Z",
       "reason": null
     },
     "product_changed_lines": 0,
@@ -110,7 +110,7 @@
       "expanded_line_count": 354,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 12021,
+    "raw_source_artifact_lines": 12022,
     "raw_source_artifact_code_ratio": null,
     "artifact_lines_source": "persisted_canonical_compact"
   },
@@ -222,7 +222,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-target-architecture-conformance",
-    "generated_at": "2026-07-22T06:12:38.617Z",
+    "generated_at": "2026-07-22T06:13:06.684Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -327,8 +327,8 @@
     "path": "docs/management/audit-artifacts/story-vibepro-target-architecture-conformance/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:c6f6ac62d9cb1da0d598b2056b4676b4aabd18453272cfa0d3e5542ea207c758",
-    "compressed_hash": "sha256:2dfd31e35ad30e1525b3f05060fec0697c506bcccaaf7f202c437fc148836edf",
+    "content_hash": "sha256:0b27bb7b40776ee4d2b02357be61965dad0bcf61821345ed10dc9b7634f03853",
+    "compressed_hash": "sha256:7802e153d2838ca48df45ad156ec5c3321a8a9e56434b512af0ee8ffaa4cd32b",
     "expanded_bytes": 13566,
     "compressed_bytes": 3228,
     "expanded_line_count": 354,
