@@ -290,6 +290,10 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-merge-waiver-propagation": {
+        "max_subagent_count": 9,
+        "amendment_reason": "The delivery requires three implementation roles and three distinct gate roles. One bounded replacement pass consumed the remaining three lifecycle slots after concrete implementation findings. The user explicitly approved raising this Story-only cap from six to nine on 2026-07-23. Reuse the same three lightweight agents for the required gate roles, and permit no further budget amendment or replacement loop."
+      },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
         "max_agent_consumption_ms": 3300000,
