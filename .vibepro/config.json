@@ -310,22 +310,22 @@
       },
       "story-vibepro-atomic-scope-review-contract": {
         "max_subagent_count": 241,
-        "max_agent_consumption_ms": 209849004,
+        "max_agent_consumption_ms": 215000000,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 53,
+          "architecture_boundary": 54,
           "e2e_ux": 24,
           "gate_coverage": 24,
-          "gate_evidence": 4,
+          "gate_evidence": 5,
           "human_usability": 3,
           "network_runtime": 3,
           "regression_risk": 55,
-          "release_risk": 4,
-          "runtime_contract": 20,
+          "release_risk": 5,
+          "runtime_contract": 21,
           "spec_consistency": 31,
           "unit_integration": 8,
           "ux_completion": 13
         },
-        "amendment_reason": "Historical review lifecycle debt reached 236 closed or replaced entries before final closure. User explicitly authorized immediate completion on 2026-07-22. A required rebase onto origin/main invalidated preflight and strict final-review bindings after the prior bounded amendment. The authorized final runtime review then caught a stale generated CLI reference through the required docs build; permit exactly one replacement runtime_contract review after committing that reviewer-driven fix. Freeze every other observed role at its current dispatch count and retain the single current-HEAD gate_evidence and release_risk replacements; retain all historical evidence and leave default Story budgets unchanged."
+        "amendment_reason": "Historical review lifecycle debt reached 236 closed or replaced entries before final closure. User explicitly authorized immediate completion on 2026-07-22. A required rebase onto origin/main invalidated prior strict bindings. The authorized final runtime review then caught a stale generated CLI reference through the required docs build. This final amendment is committed together with that reviewer-driven fix and authorizes exactly one current-HEAD replacement for architecture_boundary, runtime_contract, gate_evidence, and release_risk, with bounded agent consumption headroom; freeze every other role, retain all historical evidence, and leave default Story budgets unchanged."
       },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
