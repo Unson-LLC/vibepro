@@ -124,6 +124,43 @@ test('production Codex host shutdown contains the detached worker process group'
   assert.equal(isProcessAlive(childPid), false);
 });
 
+test('production Codex host delegates containment to the worker when the host cannot signal the Codex group', { skip: process.platform === 'win32' }, async (t) => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-production-codex-containment-eperm-'));
+  t.after(() => rm(repoRoot, { recursive: true, force: true }));
+  const childPidPath = path.join(repoRoot, 'codex-child.pid');
+  const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
+  await writeFile(fakeCodex, `
+    import { writeFile } from 'node:fs/promises';
+    if (process.argv.includes('--version')) process.exit(0);
+    await writeFile(process.argv[2], String(process.pid));
+    await new Promise(() => {});
+  `);
+  let deniedGroupSignals = 0;
+  const host = createCodexSubagentHost({
+    cwd: repoRoot,
+    codexExecutable: process.execPath,
+    codexExecutableArgs: [fakeCodex, childPidPath],
+    killProcess(pid, signal) {
+      if (pid < 0) {
+        deniedGroupSignals += 1;
+        const error = new Error('sandbox denied process-group signal');
+        error.code = 'EPERM';
+        throw error;
+      }
+      return process.kill(pid, signal);
+    }
+  });
+  const started = await host.spawn(runtimeRequest(repoRoot));
+  await waitFor(async () => access(childPidPath).then(() => true, () => false));
+  const childPid = Number(await readFile(childPidPath, 'utf8'));
+
+  await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_eperm_test' });
+
+  await waitFor(async () => !isProcessAlive(childPid));
+  assert.equal(isProcessAlive(childPid), false);
+  assert.equal(deniedGroupSignals, 1);
+});
+
 test('explicit managed authority cannot be shadowed by the caller root for status, delivery, subscription, or shutdown', async (t) => {
   const callerRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-caller-'));
   const managedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-shadow-managed-'));

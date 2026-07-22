@@ -13,7 +13,8 @@ export function createCodexSubagentHost({
   codexExecutable,
   codexExecutableArgs = [],
   model,
-  probeTimeoutMs = 10000
+  probeTimeoutMs = 10000,
+  killProcess = process.kill.bind(process)
 } = {}) {
   const executable = codexExecutable ?? env?.VIBEPRO_CODEX_EXECUTABLE ?? 'codex';
   const selectedModel = model ?? env?.VIBEPRO_CODEX_MODEL ?? null;
@@ -75,7 +76,7 @@ export function createCodexSubagentHost({
       const state = await readJson(statePath);
       if (Number.isInteger(state?.worker_pid) && state.worker_pid > 1 && isActive(state.status)) {
         const codexProcess = await readJson(path.join(located, 'codex-process.json'));
-        await terminateWorkerTree(state.worker_pid, workers.get(providerRunId), codexProcess?.pid);
+        await terminateWorkerTree(state.worker_pid, workers.get(providerRunId), codexProcess?.pid, killProcess);
       }
       const next = { ...state, status: 'cancelled', completed_at: new Date().toISOString(), stop_reason: { code: reason ?? 'cancelled' } };
       await writeJson(statePath, next);
@@ -240,28 +241,35 @@ function workerEnvironment(env, { executable, executableArgs, selectedModel }) {
 
 function isActive(status) { return ['spawning', 'running', 'running_detached'].includes(status); }
 
-async function terminateWorkerTree(workerPid, workerProcess, codexPid) {
+async function terminateWorkerTree(workerPid, workerProcess, codexPid, killProcess) {
   // Stop the separately-grouped Codex tree while its worker is still alive to
   // reap the direct child. Killing both groups at once can strand a zombie.
   if (Number.isInteger(codexPid) && codexPid > 1) {
-    if (process.platform !== 'win32') signalProcess(-codexPid, 'SIGTERM');
-    else signalProcess(codexPid, 'SIGTERM');
-    if (await waitForProcessExit(workerPid, 2000, workerProcess)) return;
+    const signaled = process.platform !== 'win32'
+      ? signalProcess(-codexPid, 'SIGTERM', killProcess, ['EINVAL', 'EPERM'])
+      : signalProcess(codexPid, 'SIGTERM', killProcess);
+    if (signaled && await waitForProcessExit(workerPid, 2000, workerProcess)) return;
   }
-  signalProcess(workerPid, 'SIGTERM');
+  // A managed host may not be permitted to signal the Codex process group.
+  // The worker owns that direct child and forwards this signal from inside the
+  // permitted boundary before reaping it.
+  signalProcess(workerPid, 'SIGTERM', killProcess);
   if (await waitForProcessExit(workerPid, 2000, workerProcess)) return;
-  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGTERM');
+  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGTERM', killProcess);
   if (await waitForProcessExit(workerPid, 1000, workerProcess)) return;
-  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGKILL');
-  else signalProcess(workerPid, 'SIGKILL');
+  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGKILL', killProcess);
+  else signalProcess(workerPid, 'SIGKILL', killProcess);
   await waitForProcessExit(workerPid, 1000, workerProcess);
 }
 
-function signalProcess(pid, signal) {
+function signalProcess(pid, signal, killProcess, fallbackCodes = []) {
   try {
-    process.kill(pid, signal);
+    killProcess(pid, signal);
+    return true;
   } catch (error) {
-    if (error.code !== 'ESRCH') throw error;
+    if (error.code === 'ESRCH') return true;
+    if (fallbackCodes.includes(error.code)) return false;
+    throw error;
   }
 }
 
