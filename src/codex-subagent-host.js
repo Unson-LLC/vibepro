@@ -20,6 +20,7 @@ export function createCodexSubagentHost({
   const workerPath = fileURLToPath(new URL('./codex-subagent-host-worker.js', import.meta.url));
   let resumeHandler = null;
   const subscriptions = new Map();
+  const workers = new Map();
   const runRoots = new Set([path.resolve(cwd)]);
 
   return {
@@ -51,6 +52,8 @@ export function createCodexSubagentHost({
         cwd: repoRoot, detached: true, stdio: 'ignore',
         env: workerEnvironment(env, { executable, executableArgs: codexExecutableArgs, selectedModel })
       });
+      workers.set(providerRunId, child);
+      child.once('close', () => workers.delete(providerRunId));
       child.unref();
       state.worker_pid = child.pid;
       state.status = 'running';
@@ -71,7 +74,8 @@ export function createCodexSubagentHost({
       const statePath = path.join(located, 'state.json');
       const state = await readJson(statePath);
       if (Number.isInteger(state?.worker_pid) && state.worker_pid > 1 && isActive(state.status)) {
-        terminateWorkerTree(state.worker_pid, 'SIGTERM');
+        const codexProcess = await readJson(path.join(located, 'codex-process.json'));
+        await terminateWorkerTree(state.worker_pid, workers.get(providerRunId), codexProcess?.pid);
       }
       const next = { ...state, status: 'cancelled', completed_at: new Date().toISOString(), stop_reason: { code: reason ?? 'cancelled' } };
       await writeJson(statePath, next);
@@ -236,21 +240,50 @@ function workerEnvironment(env, { executable, executableArgs, selectedModel }) {
 
 function isActive(status) { return ['spawning', 'running', 'running_detached'].includes(status); }
 
-function terminateWorkerTree(workerPid, signal) {
-  if (process.platform !== 'win32') {
-    try {
-      process.kill(-workerPid, signal);
-      return;
-    } catch (error) {
-      if (error.code === 'ESRCH') return;
-      if (error.code !== 'EINVAL' && error.code !== 'EPERM') throw error;
-    }
+async function terminateWorkerTree(workerPid, workerProcess, codexPid) {
+  // Stop the separately-grouped Codex tree while its worker is still alive to
+  // reap the direct child. Killing both groups at once can strand a zombie.
+  if (Number.isInteger(codexPid) && codexPid > 1) {
+    if (process.platform !== 'win32') signalProcess(-codexPid, 'SIGTERM');
+    else signalProcess(codexPid, 'SIGTERM');
+    if (await waitForProcessExit(workerPid, 2000, workerProcess)) return;
   }
+  signalProcess(workerPid, 'SIGTERM');
+  if (await waitForProcessExit(workerPid, 2000, workerProcess)) return;
+  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGTERM');
+  if (await waitForProcessExit(workerPid, 1000, workerProcess)) return;
+  if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGKILL');
+  else signalProcess(workerPid, 'SIGKILL');
+  await waitForProcessExit(workerPid, 1000, workerProcess);
+}
+
+function signalProcess(pid, signal) {
   try {
-    process.kill(workerPid, signal);
+    process.kill(pid, signal);
   } catch (error) {
     if (error.code !== 'ESRCH') throw error;
   }
+}
+
+async function waitForProcessExit(pid, timeoutMs, workerProcess) {
+  if (workerProcess) {
+    if (workerProcess.exitCode !== null || workerProcess.signalCode !== null) return true;
+    return Promise.race([
+      new Promise((resolve) => workerProcess.once('close', () => resolve(true))),
+      new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs))
+    ]);
+  }
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      process.kill(pid, 0);
+    } catch (error) {
+      if (error.code === 'ESRCH') return true;
+      throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  return false;
 }
 
 function probeExecutable(executable, executableArgs, timeoutMs) {

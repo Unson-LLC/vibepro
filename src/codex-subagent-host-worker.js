@@ -7,6 +7,16 @@ import { buildCodexRuntimePrompt, codexRuntimeOutputSchema, toCodexCompletionRes
 
 const [runDir, repoRoot] = process.argv.slice(2);
 if (!runDir || !repoRoot) process.exit(2);
+let activeCodexChild = null;
+let shutdownPromise = null;
+
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.on(signal, () => {
+    shutdownPromise ??= stopActiveCodexChild(signal).finally(() => {
+      process.exitCode = signal === 'SIGTERM' ? 143 : 130;
+    });
+  });
+}
 
 await main().catch(async (error) => {
   const request = await readJson(path.join(runDir, 'request.json'));
@@ -74,17 +84,27 @@ async function main() {
 }
 
 function runCodex(executable, args, prompt) {
-  return new Promise((resolve, reject) => {
-    const executableArgs = JSON.parse(process.env.VIBEPRO_CODEX_EXECUTABLE_ARGS ?? '[]');
-    const child = spawn(executable, [...executableArgs, ...args], { cwd: repoRoot, stdio: ['pipe', 'pipe', 'pipe'] });
+  const executableArgs = JSON.parse(process.env.VIBEPRO_CODEX_EXECUTABLE_ARGS ?? '[]');
+  const child = spawn(executable, [...executableArgs, ...args], {
+    cwd: repoRoot,
+    detached: process.platform !== 'win32',
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+  activeCodexChild = child;
+  const completion = new Promise((resolve, reject) => {
     let stdout = '';
     let stderr = '';
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
     child.stdout.on('data', (chunk) => { stdout = boundedAppend(stdout, chunk); });
     child.stderr.on('data', (chunk) => { stderr = boundedAppend(stderr, chunk); });
-    child.on('error', reject);
+    child.on('error', (error) => {
+      activeCodexChild = null;
+      reject(error);
+    });
     child.on('close', (code) => {
+      activeCodexChild = null;
+      if (shutdownPromise) return reject(new Error('Codex exec stopped by host shutdown'));
       if (code !== 0) return reject(new Error(`Codex exec failed (${code}): ${stderr.slice(-4096)}`));
       let sessionId = null;
       let usageAccounting = null;
@@ -97,8 +117,43 @@ function runCodex(executable, args, prompt) {
       }
       resolve({ sessionId, usageAccounting });
     });
-    child.stdin.end(prompt);
   });
+  return writeJson(path.join(runDir, 'codex-process.json'), { pid: child.pid, started_at: new Date().toISOString() })
+    .then(() => {
+      child.stdin.end(prompt);
+      return completion;
+    }, (error) => {
+      signalCodexTree(child, 'SIGTERM');
+      throw error;
+    });
+}
+
+async function stopActiveCodexChild(signal) {
+  const child = activeCodexChild;
+  if (!child) return;
+  const closed = new Promise((resolve) => child.once('close', resolve));
+  signalCodexTree(child, signal);
+  const stopped = await Promise.race([
+    closed.then(() => true),
+    new Promise((resolve) => setTimeout(() => resolve(false), 1500))
+  ]);
+  if (!stopped) {
+    signalCodexTree(child, 'SIGKILL');
+    await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 500))]);
+  }
+}
+
+function signalCodexTree(child, signal) {
+  if (process.platform !== 'win32') {
+    try {
+      process.kill(-child.pid, signal);
+      return;
+    } catch (error) {
+      if (error.code === 'ESRCH') return;
+      if (error.code !== 'EINVAL' && error.code !== 'EPERM') throw error;
+    }
+  }
+  child.kill(signal);
 }
 
 async function deliverToRuntime(request, event) {
