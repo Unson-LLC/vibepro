@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+  "summary": "Current-HEAD independent review production path suite passed 117/117, including S-003 lifecycle/replay and executable schema, provider, retry/async, timeout, auth, malformed-result, provenance, and workflow regression failure paths. The prior full suite executed 1743 tests with zero code failures; its two sandbox capability failures passed on host rerun. Architecture conformance remains 69 violations, unchanged from the origin/main baseline.",
+  "observed": {
+    "current_head_targeted_tests": 117,
+    "current_head_targeted_failures": 0,
+    "full_suite_tests": 1743,
+    "full_suite_code_failures": 0,
+    "sandbox_capability_failures": 2,
+    "sandbox_capability_rerun_pass": 2,
+    "production_replay": "pass",
+    "schema_failure": "pass",
+    "provider_failure": "pass",
+    "retry_or_async_failure": "pass",
+    "conformance_baseline": 69,
+    "conformance_current": 69
+  }
+}

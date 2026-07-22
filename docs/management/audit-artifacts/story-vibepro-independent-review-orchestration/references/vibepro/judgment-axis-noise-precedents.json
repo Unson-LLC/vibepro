@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "decision_id": "decision-1784726133103-42a32801",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18 changed files form one lifecycle contract across the Independent Review owner, runtime adapters, Guarded Run composition, SSOT, and direct tests. Existing split-plan, Graphify blast radius, responsibility authority, and two independent final reviews establish a coherent owner and review surface; splitting would create incomplete production composition or provenance contracts.",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.summary.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T13:15:43.447Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "decision_id": "decision-1784726116323-5e872988",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "This Story changes only persisted review checkpoints and action-journal composition, introduces no schema migration or query/cache semantics, and current-HEAD focused E2E covers deterministic operation keys, restart replay, terminal-state short circuit, and duplicate-external-work prevention. Rollback is code rollback because persisted checkpoint shapes remain backward compatible.",
+      "artifact": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T13:15:43.447Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:75|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "decision_id": "decision-1784726133103-42a32801",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18 changed files form one lifecycle contract across the Independent Review owner, runtime adapters, Guarded Run composition, SSOT, and direct tests. Existing split-plan, Graphify blast radius, responsibility authority, and two independent final reviews establish a coherent owner and review surface; splitting would create incomplete production composition or provenance contracts.",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.summary.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:75",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T13:16:26.787Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state|code_topology:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "decision_id": "decision-1784726116323-5e872988",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "This Story changes only persisted review checkpoints and action-journal composition, introduces no schema migration or query/cache semantics, and current-HEAD focused E2E covers deterministic operation keys, restart replay, terminal-state short circuit, and duplicate-external-work prevention. Rollback is code rollback because persisted checkpoint shapes remain backward compatible.",
+      "artifact": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+      "activation_candidates": [
+        "code_topology:data_state",
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T13:16:26.787Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

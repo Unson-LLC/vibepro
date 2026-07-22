@@ -1,0 +1,350 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "updated_at": "2026-07-22T13:15:33.103Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784726133103-42a32801",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一Storyとしてのreviewabilityを受理する",
+      "reason": "The 18 changed files form one lifecycle contract across the Independent Review owner, runtime adapters, Guarded Run composition, SSOT, and direct tests. Existing split-plan, Graphify blast radius, responsibility authority, and two independent final reviews establish a coherent owner and review surface; splitting would create incomplete production composition or provenance contracts.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.summary.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T13:15:33.102Z"
+      },
+      "recorded_at": "2026-07-22T13:15:33.103Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784726116323-5e872988",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "needs_evidence",
+      "summary": "永続状態とreplay安全性を現証跡で受理する",
+      "reason": "This Story changes only persisted review checkpoints and action-journal composition, introduces no schema migration or query/cache semantics, and current-HEAD focused E2E covers deterministic operation keys, restart replay, terminal-state short circuit, and duplicate-external-work prevention. Rollback is code rollback because persisted checkpoint shapes remain backward compatible.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T13:15:16.322Z"
+      },
+      "recorded_at": "2026-07-22T13:15:16.323Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784724835704-92be20b7",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:requirement",
+      "source_status": "needs_review",
+      "summary": "構造化inherited behaviorを明示的に受理する",
+      "reason": "IRO-C-3 explicitly declares unchanged checkpoint reuse inherited from guarded-run-session and safe-action-orchestrator, while S-003 separately specifies and tests the new production lifecycle transition and replay behavior. Deprecated keyword matches add no unstated behavior.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/spec/story-vibepro-independent-review-orchestration/spec.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T12:53:55.703Z"
+      },
+      "recorded_at": "2026-07-22T12:53:55.704Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784724833886-b982b1d4",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "単一Storyとしてレビュー可能な原子的変更を維持する",
+      "reason": "The commits jointly implement one lifecycle contract across owner, runtime adapters, Guarded Run composition, Story/Architecture/Spec and tests. Splitting would create intermediate branches where production composition or provenance contracts are incomplete; the managed worktree is clean and all files map to AC-1..AC-8.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/pr-prepare.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T12:53:53.875Z"
+      },
+      "recorded_at": "2026-07-22T12:53:53.886Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784721223875-eabd4444",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Diagnostic VibePro artifacts remain uncommitted",
+      "reason": "Generated .vibepro artifacts are ignored diagnostic evidence and are not part of the tracked PR diff.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/pr-prepare.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T11:53:43.874Z"
+      },
+      "recorded_at": "2026-07-22T11:53:43.876Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784721222467-a9713d58",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundled scope is intentional and atomic",
+      "reason": "Story, Architecture, Spec, run-session owner, production composition, adapters, and direct tests form one reviewable Independent Review Orchestration contract; splitting would separate the owner from its executable contract and SSOT.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T11:53:42.466Z"
+      },
+      "recorded_at": "2026-07-22T11:53:42.467Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784726133103-42a32801",
+      "story_id": "story-vibepro-independent-review-orchestration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一Storyとしてのreviewabilityを受理する",
+      "reason": "The 18 changed files form one lifecycle contract across the Independent Review owner, runtime adapters, Guarded Run composition, SSOT, and direct tests. Existing split-plan, Graphify blast radius, responsibility authority, and two independent final reviews establish a coherent owner and review surface; splitting would create incomplete production composition or provenance contracts.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.summary.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+        "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T13:15:33.102Z"
+      },
+      "recorded_at": "2026-07-22T13:15:33.103Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/decision-records.json"
+}

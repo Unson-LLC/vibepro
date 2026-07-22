@@ -1,0 +1,438 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "baseからのcommitが 14 件あり、Story外の変更混入を確認する必要がある",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 13 changed files が一致し、37 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5040,
+    "edge_count": 11326,
+    "matched_file_count": 13,
+    "related_file_count": 37,
+    "investigation_files": [
+      "scripts/npm-release-lock.mjs",
+      "src/agent-review.js",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/artifact-routing.js",
+      "src/canonical-audit.js",
+      "src/checkpoint-manager.js",
+      "src/cli.js",
+      "src/content-binding.js",
+      "src/delivery-efficiency-guardrail.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/git-fingerprint.js",
+      "src/git-identity.js",
+      "src/guarded-run-session.js",
+      "src/human-decision-checkpoint.js",
+      "src/independent-review-orchestrator.js",
+      "src/language.js",
+      "src/managed-worktree-gate.js",
+      "src/merge-manager.js",
+      "src/next-best-action-controller.js",
+      "src/pr-manager.js",
+      "src/public-discovery-scanner.js",
+      "src/review-finding-repair-loop.js",
+      "src/run-context-capsule.js",
+      "src/run-lineage.js",
+      "src/safe-action-orchestrator.js",
+      "src/story-run-portfolio.js",
+      "src/uiux-prepare.js",
+      "src/validation-sequencing.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/agent-review.js",
+        "matched_nodes": [
+          "src_agent_review_js",
+          "src_agent_review_localizedevidencehandlingblock",
+          "src_agent_review_localizedinvestigationguidelinesblock",
+          "src_agent_review_localizedagentskilldisciplineblock",
+          "src_agent_review_buildcoordinatorinstructions",
+          "src_agent_review_prepareagentreview",
+          "src_agent_review_recordagentreview",
+          "src_agent_review_resolverecorderlineage"
+        ],
+        "related_files": [
+          "scripts/npm-release-lock.mjs",
+          "src/artifact-routing.js",
+          "src/checkpoint-manager.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/delivery-efficiency-guardrail.js",
+          "src/evidence-reuse.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/language.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "src/agent-runtime-adapter.js",
+        "matched_nodes": [
+          "src_agent_runtime_adapter_js",
+          "src_agent_runtime_adapter_agentruntimeerror",
+          "src_agent_runtime_adapter_agentruntimeerror_constructor",
+          "src_agent_runtime_adapter_defineagentruntimeadapter",
+          "src_agent_runtime_adapter_createagentruntimecoordinator",
+          "src_agent_runtime_adapter_dispatch",
+          "src_agent_runtime_adapter_poll",
+          "src_agent_runtime_adapter_isallowedruntimetransition"
+        ],
+        "related_files": [
+          "src/agent-runtime-connectors.js",
+          "src/cli.js",
+          "src/guarded-run-session.js",
+          "src/public-discovery-scanner.js",
+          "src/review-finding-repair-loop.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "test/agent-runtime-adapter.test.js"
+        ]
+      },
+      {
+        "file": "src/agent-runtime-connectors.js",
+        "matched_nodes": [
+          "src_agent_runtime_connectors_js",
+          "src_agent_runtime_connectors_createproductionruntimecoordinator",
+          "src_agent_runtime_connectors_composeproductionruntimedependencies",
+          "src_agent_runtime_connectors_createproductionruntimeconnectors",
+          "src_agent_runtime_connectors_createcliruntimeconnector",
+          "src_agent_runtime_connectors_probecliruntime",
+          "src_agent_runtime_connectors_buildinvocation",
+          "src_agent_runtime_connectors_buildprompt"
+        ],
+        "related_files": [
+          "src/agent-runtime-adapter.js",
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "src/guarded-run-session.js",
+        "matched_nodes": [
+          "src_guarded_run_session_js",
+          "src_guarded_run_session_guardedrunerror",
+          "src_guarded_run_session_guardedrunerror_constructor",
+          "src_guarded_run_session_guardedrunerror_tojson",
+          "src_guarded_run_session_createguardedrunsession",
+          "src_guarded_run_session_mutateruntimedispatch",
+          "src_guarded_run_session_runtimedispatchauthority",
+          "src_guarded_run_session_dispatchruntimewithfallbacks"
+        ],
+        "related_files": [
+          "src/agent-runtime-adapter.js",
+          "src/canonical-audit.js",
+          "src/cli.js",
+          "src/execution-state.js",
+          "src/git-identity.js",
+          "src/human-decision-checkpoint.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/safe-action-orchestrator.js",
+          "src/story-run-portfolio.js"
+        ]
+      },
+      {
+        "file": "src/independent-review-orchestrator.js",
+        "matched_nodes": [
+          "src_independent_review_orchestrator_js",
+          "src_independent_review_orchestrator_createdefaultagentreviewops",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror_constructor",
+          "src_independent_review_orchestrator_orchestrateindependentreview",
+          "src_independent_review_orchestrator_createindependentreviewactionrunner",
+          "src_independent_review_orchestrator_createguardedindependentreviewrunner",
+          "src_independent_review_orchestrator_recordguardedruntimereview"
+        ],
+        "related_files": [
+          "src/guarded-run-session.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+        ]
+      },
+      {
+        "file": "src/safe-action-orchestrator.js",
+        "matched_nodes": [
+          "src_safe_action_orchestrator_js",
+          "src_safe_action_orchestrator_buildsafeactionplan",
+          "src_safe_action_orchestrator_selectsafeactioncandidate",
+          "src_safe_action_orchestrator_buildescapecandidates",
+          "src_safe_action_orchestrator_runsafeactionplan",
+          "src_safe_action_orchestrator_isallowedcanonicalplan",
+          "src_safe_action_orchestrator_iscompletecanonicalplan",
+          "src_safe_action_orchestrator_isexactcanonicalaction"
+        ],
+        "related_files": [
+          "src/guarded-run-session.js",
+          "src/next-best-action-controller.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js"
+        ]
+      },
+      {
+        "file": "test/agent-runtime-adapter.test.js",
+        "matched_nodes": [
+          "test_agent_runtime_adapter_test_js",
+          "test_agent_runtime_adapter_test_fakeadapter",
+          "test_agent_runtime_adapter_test_probe"
+        ],
+        "related_files": [
+          "src/agent-runtime-adapter.js"
+        ]
+      },
+      {
+        "file": "test/agent-runtime-connectors.test.js",
+        "matched_nodes": [
+          "test_agent_runtime_connectors_test_js",
+          "test_agent_runtime_connectors_test_fakeprocess"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_independent_review_orchestration_acceptance_spec_ts",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_git",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_fixture",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_reviewoptions",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_lifecycle",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_dispatchruntime",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_pollruntime"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/guarded-run-session.test.js",
+        "matched_nodes": [
+          "test_guarded_run_session_test_js",
+          "test_guarded_run_session_test_stopreason",
+          "test_guarded_run_session_test_fixturehumandecision",
+          "test_guarded_run_session_test_cp",
+          "test_guarded_run_session_test_allows",
+          "test_guarded_run_session_test_createfixture",
+          "test_guarded_run_session_test_writeconfig",
+          "test_guarded_run_session_test_git"
+        ],
+        "related_files": [
+          "src/execution-state.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "test/independent-review-orchestrator.test.js",
+        "matched_nodes": [
+          "test_independent_review_orchestrator_test_js",
+          "test_independent_review_orchestrator_test_boundaries"
+        ],
+        "related_files": [
+          "test/scan-status.test.js"
+        ]
+      },
+      {
+        "file": "test/review-inspection-first.test.js",
+        "matched_nodes": [
+          "test_review_inspection_first_test_js",
+          "test_review_inspection_first_test_git",
+          "test_review_inspection_first_test_setuprepo",
+          "test_review_inspection_first_test_startcloseable"
+        ],
+        "related_files": [
+          "src/agent-review.js"
+        ]
+      },
+      {
+        "file": "test/safe-action-orchestrator.test.js",
+        "matched_nodes": [
+          "test_safe_action_orchestrator_test_js",
+          "test_safe_action_orchestrator_test_make",
+          "test_safe_action_orchestrator_test_run"
+        ],
+        "related_files": [
+          "src/pr-manager.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+        "docs/architecture/story-vibepro-independent-review-orchestration.md",
+        "docs/architecture/target-model.json"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-independent-review-orchestration-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/agent-review.js",
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/guarded-run-session.js",
+        "src/independent-review-orchestrator.js",
+        "src/safe-action-orchestrator.js",
+        "test/agent-runtime-adapter.test.js",
+        "test/agent-runtime-connectors.test.js",
+        "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "test/guarded-run-session.test.js",
+        "test/independent-review-orchestrator.test.js",
+        "test/review-inspection-first.test.js",
+        "test/safe-action-orchestrator.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate",
+        "E2E Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 13,
+      "graph_investigation_files": [
+        "scripts/npm-release-lock.mjs",
+        "src/artifact-routing.js",
+        "src/canonical-audit.js",
+        "src/checkpoint-manager.js",
+        "src/cli.js",
+        "src/content-binding.js",
+        "src/delivery-efficiency-guardrail.js",
+        "src/evidence-reuse.js",
+        "src/execution-state.js",
+        "src/git-fingerprint.js",
+        "src/git-identity.js",
+        "src/human-decision-checkpoint.js"
+      ],
+      "suggested_branch": "feat/vibepro-independent-review-orchestration-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "responsibility-authority.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 2,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-independent-review-orchestration-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/independent-review-orchestrator.test.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/guarded-run-session.test.js",
+          "node --test test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/independent-review-orchestrator.test.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/guarded-run-session.test.js"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/independent-review-orchestrator.test.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/guarded-run-session.test.js",
+        "node --test test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/independent-review-orchestrator.test.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/guarded-run-session.test.js"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-independent-review-orchestration-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-independent-review-orchestration-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-independent-review-orchestration.md docs/architecture/story-vibepro-independent-review-orchestration.md docs/architecture/target-model.json"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-independent-review-orchestration-runtime-behavior with 13 files",
+      "command": "git switch -c feat/vibepro-independent-review-orchestration-runtime-behavior <base> && git add src/agent-review.js src/agent-runtime-adapter.js src/agent-runtime-connectors.js src/guarded-run-session.js src/independent-review-orchestrator.js src/safe-action-orchestrator.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/review-inspection-first.test.js test/safe-action-orchestrator.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-independent-review-orchestration-misc-follow-up with 2 files",
+      "command": "git switch -c feat/vibepro-independent-review-orchestration-misc-follow-up <base> && git add design-ssot.json responsibility-authority.json"
+    }
+  ]
+}

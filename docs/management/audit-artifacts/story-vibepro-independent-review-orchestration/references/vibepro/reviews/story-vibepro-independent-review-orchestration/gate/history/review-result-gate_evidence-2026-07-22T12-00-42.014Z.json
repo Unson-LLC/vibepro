@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "SHA-bound tests exist, but production-adapter flow replay and explicit workflow Spec evidence remain unresolved",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "production-flow-replay",
+      "detail": "Acceptance E2E injects mocked dispatch/poll boundaries and does not exercise the actual production adapter path"
+    },
+    {
+      "severity": "high",
+      "id": "explicit-spec",
+      "detail": "Workflow-heavy state and evidence clauses remain inferred instead of authoritative"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-independent-review-orchestration/gate/codex-gate-evidence-50b3a8ab.md"
+  ],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, inferred Spec/Gate state, current pr-prepare and verification evidence, adjudications, implementation, unit tests, and acceptance E2E at current HEAD",
+    "evidence": ".vibepro/pr/story-vibepro-independent-review-orchestration/verification-evidence.json",
+    "inputs": [
+      "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+      "src/independent-review-orchestrator.js"
+    ]
+  },
+  "judgment_delta": [
+    "tests and head-bound adjudication suggested pass; final judgment is needs_changes because actual production adapter replay and explicit workflow clauses are absent"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "expected_head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+    "current_head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "actual_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "current_head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-22T10:27:26.361Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-22T12:00:42.014Z",
+  "git_context": {
+    "head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+    "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T12:00:42.002Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final gate reviews bind to frozen current HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+    "surface_files": [
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "197c705bd2696c0b35422f7d14bb993e2aaa8a266fcd4b8ad53ae76156780f7f",
+        "size": 22505
+      },
+      {
+        "path": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf",
+        "size": 11043
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1590ae98d1ef29d9b0143f2104285caa5b5267643a52d26036804f969d2b3829"
+  },
+  "source_fingerprint": "54113518e443caf1e7b580c1bc9219a1b18c88856a2fd74e0b5c700d17096ce1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "codex-gate-evidence-50b3a8ab",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-independent-review-orchestration/gate/codex-gate-evidence-50b3a8ab.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-independent-review-orchestration/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-independent-review-orchestration/gate/codex-gate-evidence-50b3a8ab.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": "implementation-50b3a8ab",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}
