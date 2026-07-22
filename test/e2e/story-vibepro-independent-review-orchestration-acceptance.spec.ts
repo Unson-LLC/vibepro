@@ -104,7 +104,7 @@ test('AC-4 actual lifecycle recording preserves needs_changes and block verdicts
 });
 
 test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 S-002 scenario_clause_e2e workflow_state_transition production composer preserves parallel pass, needs_changes, block, same-session rejection, and restart', async (t) => {
-  const root = await fixture(t, ['gate_evidence', 'release_risk']);
+  const root = await fixture(t, ['gate_evidence', 'pr_split_scope', 'release_risk']);
   const head = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   const state = {
     story_id: STORY_ID, run_id: RUN_ID, current_head_sha: head,
@@ -113,7 +113,7 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
     runtime_dispatches: [{ role: 'implementation', status: 'completed', result: { head_sha: head }, agent_identity: 'implementer', session_id: 'implementation-session' }]
   };
   const dispatches = new Map();
-  const verdicts = new Map([['gate_evidence', 'needs_changes'], ['release_risk', 'pass']]);
+  const verdicts = new Map([['gate_evidence', 'needs_changes'], ['pr_split_scope', 'block'], ['release_risk', 'pass']]);
   const dispatchRuntime = async (_state, request) => {
     const id = `dispatch-${createHash('sha256').update(`${RUN_ID}:${request.adapter_id}:${request.task_id}:${request.role}:${head}:${request.reviewer_identity}:implementation-session`).digest('hex').slice(0, 16)}`;
     const dispatch = { dispatch_id: id, run_id: RUN_ID, adapter_id: request.adapter_id, task_id: request.task_id, role: 'review', input_head_sha: head,
@@ -130,7 +130,7 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
   const agentReviewOps = createDefaultAgentReviewOps({ authorize: async () => ({ action: 'dispatch', authorization: { authorization_id: null } }) });
   const runner = createGuardedIndependentReviewRunner({
     repoRoot: root, baseRef: 'HEAD', agentReviewOps,
-    preparePullRequest: async () => ({ preparation: { pr_context: { agent_reviews: { parallel_dispatch: { required_stages: [{ stage: 'gate', roles: ['gate_evidence', 'release_risk'] }] } } } } }),
+    preparePullRequest: async () => ({ preparation: { pr_context: { agent_reviews: { parallel_dispatch: { required_stages: [{ stage: 'gate', roles: ['gate_evidence', 'pr_split_scope', 'release_risk'] }] } } } } }),
     dispatchRuntime, pollRuntime,
     recordRuntimeReview: (runState, dispatchId, review) => recordGuardedRuntimeReview({ deps: { agentReviewOps }, repoRoot: root, options: { dispatchId, review }, loadRun: async () => ({ state: runState }), createError: (code, message) => Object.assign(new Error(message), { code }) }),
     createError: (code, message) => Object.assign(new Error(message), { code })
@@ -143,9 +143,9 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
   } }), /crash after record reservation/);
   state.action_journal = [{ action_id: 'review', status: 'checkpoint', checkpoint: structuredClone(checkpoint) }];
   const restarted = await runner({ state, action: { id: 'review', node_id: 'review' }, persistCheckpoint: async (next) => { checkpoint = structuredClone(next); } });
-  assert.equal(restarted.status, 'continue');
-  assert.equal(restarted.verdict, 'needs_changes');
-  assert.equal(checkpoint.filter((entry) => entry.operation === 'record').length, 2);
+  assert.equal(restarted.status, 'blocked');
+  assert.equal(restarted.verdict, 'block');
+  assert.equal(checkpoint.filter((entry) => entry.operation === 'record').length, 3);
   const history = await readdir(path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate', 'history'));
   assert.equal(history.filter((file) => file.startsWith('review-result-gate_evidence-')).length, 1);
 
