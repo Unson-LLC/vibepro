@@ -315,17 +315,17 @@
           "architecture_boundary": 61,
           "e2e_ux": 24,
           "gate_coverage": 24,
-          "gate_evidence": 6,
+          "gate_evidence": 7,
           "human_usability": 3,
           "network_runtime": 3,
           "regression_risk": 55,
-          "release_risk": 6,
+          "release_risk": 7,
           "runtime_contract": 22,
           "spec_consistency": 31,
           "unit_integration": 8,
           "ux_completion": 13
         },
-        "amendment_reason": "User authorized immediate completion on 2026-07-22. Exact-HEAD runtime_contract, gate_evidence, and release_risk reviews found stale or malformed coordinator artifacts, then exceeded the 600000 ms lifecycle while those findings were repaired; validation sequencing also requires one aggregate architecture_boundary preflight. Add four final review slots plus one architecture-only replacement because the first passing architecture lifecycle omitted agent session identity and correctly failed separate-session binding. The replacement must bind agent session ID at review start. Every other role remains frozen and defaults remain unchanged."
+        "amendment_reason": "User authorized immediate completion on 2026-07-22. Exact-HEAD runtime_contract, gate_evidence, and release_risk reviews found stale or malformed coordinator artifacts, then exceeded the 600000 ms lifecycle while those findings were repaired; validation sequencing also requires one aggregate architecture_boundary preflight. Add four final review slots plus one architecture-only replacement because the first passing architecture lifecycle omitted agent session identity and correctly failed separate-session binding. The replacement must bind agent session ID at review start. After the final code-freeze validation, the remaining gate_evidence and release_risk authorizations correctly failed closed because both role budgets were exhausted; add exactly one provenance-recovery dispatch for each role, reuse an already independent Luna high reviewer, and keep every other role and the total subagent budget frozen."
       },
       "story-vibepro-trusted-delivery-efficiency-guardrail": {
         "max_subagent_count": 21,
