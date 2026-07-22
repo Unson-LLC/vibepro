@@ -662,8 +662,19 @@
         "started_at": "2026-07-22",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-node20-e2e-ts-ci-visibility",
+        "title": "Node 20 CIレーンのe2e .ts spec偽passを可視化しNode 22+必須ゲートで実行する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null
       }
     ],
-    "current_story_id": "story-vibepro-target-architecture-conformance"
+    "current_story_id": "story-vibepro-node20-e2e-ts-ci-visibility"
   }
 }
