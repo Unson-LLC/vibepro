@@ -632,6 +632,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   const agentModel = normalizeNullable(options.agentModel);
   const agentReasoningEffort = normalizeReasoningEffort(options.agentReasoningEffort);
   const agentCostTier = normalizeCostTier(options.agentCostTier);
+  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
   const modelPolicyPreflight = buildModelPolicyPreflight(rolePolicy.model_policy, {
     agent_model: agentModel,
     agent_reasoning_effort: agentReasoningEffort,
@@ -653,6 +654,15 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   await withDirectoryLock(path.join(storyReviewDir, '.dispatch.lock'), async () => {
     const authorizations = await readDispatchAuthorizations(storyReviewDir, storyId);
     expireDispatchAuthorizations(authorizations.entries, now);
+    const existing = operationIdempotencyKey ? authorizations.entries.find((item) =>
+      item.operation_idempotency_key === operationIdempotencyKey
+      && item.binding?.head_sha === gitContext.head_sha
+      && item.binding?.surface_digest === (gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash)
+    ) : null;
+    if (existing) {
+      authorization = existing;
+      return;
+    }
     const lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir);
     const activeReservations = authorizations.entries.filter((item) => item.status === 'authorized');
     const lifecycles = [
@@ -716,7 +726,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       created_at: now.toISOString(),
       expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
       consumed_at: null,
-      agent_id: null
+      agent_id: null,
+      ...(operationIdempotencyKey ? { operation_idempotency_key: operationIdempotencyKey } : {})
     };
     authorizations.entries.push(authorization);
     await writeDispatchAuthorizations(storyReviewDir, storyId, authorizations);

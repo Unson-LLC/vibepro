@@ -180,8 +180,9 @@ export function createGuardedIndependentReviewRunner({
         if (!planned) throw fail('review_plan_unavailable', `missing required review stage: ${stage}`);
         return agentReviewOps.prepare(repoRoot, { storyId: state.story_id, stage, roles: planned.roles });
       },
-      authorize: async ({ state, stage, role }) => agentReviewOps.authorize(repoRoot, {
-        storyId: state.story_id, stage, role, agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low'
+      authorize: async ({ state, stage, role, operation }) => agentReviewOps.authorize(repoRoot, {
+        storyId: state.story_id, stage, role, agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low',
+        operationIdempotencyKey: operation.idempotency_key
       }),
       start: async ({ state, stage, role, authorization, operation }) => agentReviewOps.start(repoRoot, {
         storyId: state.story_id, stage, role, agentSystem: 'codex', agentId: reviewerIdentity(state, stage, role),
