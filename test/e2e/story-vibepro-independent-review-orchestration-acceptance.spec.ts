@@ -103,7 +103,7 @@ test('AC-4 actual lifecycle recording preserves needs_changes and block verdicts
   }
 });
 
-test('AC-1 AC-4 AC-6 Guarded Run production composer preserves parallel pass, needs_changes, block, same-session rejection, and restart', async (t) => {
+test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 S-002 scenario_clause_e2e workflow_state_transition production composer preserves parallel pass, needs_changes, block, same-session rejection, and restart', async (t) => {
   const root = await fixture(t, ['gate_evidence', 'release_risk']);
   const head = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   const state = {

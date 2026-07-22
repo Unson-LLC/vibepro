@@ -35,6 +35,7 @@ updated_at: 2026-07-22
 
 - S-001: Given required review roles are pending, when Guarded Run advances the review action, then roles are prepared and dispatched in serial stages with parallel roles, and every start/poll/close/record transition is journaled exactly once.
 - S-002: Given dispatch or polling is interrupted, unauthorized, timed out, or returns invalid provenance, when the same Run resumes, then the deterministic operation key prevents duplicate reviewer execution, any started lifecycle is closed, and a typed stop remains visible instead of becoming a pass.
+- S-003: Given a role is pending, when its lifecycle moves through prepared → authorized → running → closed → recorded, then each transition is persisted before the next transition and the next serial stage remains blocked until every role reaches recorded.
 
 ## Non Goals
 
