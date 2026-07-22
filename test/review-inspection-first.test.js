@@ -358,6 +358,43 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
   assert.deepEqual(review.judgment_delta, ['generic gate pass -> accepted after source and focused test inspection']);
 });
 
+test('recordAgentReview collects the result after an explicitly closed lifecycle', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'completed',
+    closeEvidence: 'test/review-inspection-first.test.js'
+  });
+
+  await recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'closed lifecycle result collection regression',
+    inspectionEvidence: 'test/review-inspection-first.test.js',
+    inspectionInputs: ['src/agent-review.js', 'test/review-inspection-first.test.js'],
+    judgmentDeltas: ['result uncollected -> collected after review record'],
+    agentSystem: 'claude_code',
+    executionMode: 'parallel_subagent',
+    agentId: 'task-test-1',
+    agentClosed: true,
+    agentCloseEvidence: 'test/review-inspection-first.test.js'
+  });
+
+  const lifecycle = JSON.parse(await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'lifecycle.json'), 'utf8'));
+  const entry = lifecycle.entries.find((item) => item.agent_id === 'task-test-1');
+  assert.equal(entry.status, 'closed');
+  assert.equal(entry.result_status, 'pass');
+  assert.equal(entry.result_artifact, '.vibepro/reviews/story-test/gate/review-result-gate_evidence.json');
+});
+
 test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

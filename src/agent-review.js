@@ -473,7 +473,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
         entry.result_status = result.status;
       }
     }
-
   }, async () => {
     // Persist lifecycle authority first. A later result write failure leaves
     // an explicit lifecycle pointer to missing evidence, which fails closed;
