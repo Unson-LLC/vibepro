@@ -812,6 +812,10 @@ ${merge.commands.map((command) => `- ${command}`).join('\n')}
 
 - checks: ${checks.length}
 - failing_or_pending: ${failures.length}
+
+## Warnings / Next Actions
+
+${(merge.warnings ?? []).map((warning) => `- ${warning}`).join('\n') || '- none'}
 `;
 }
 

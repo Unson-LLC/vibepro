@@ -13639,6 +13639,26 @@ process.exit(99);
   assert.match(html, /Gate Authorization/);
   assert.match(html, /gate_override_not_allowed/);
   assert.match(html, /vibepro pr prepare/);
+  let textStdout = '';
+  const textResult = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--pr',
+    '123',
+    '--dry-run'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stdout: { write(chunk) { textStdout += chunk; } }
+  });
+  assert.equal(textResult.exitCode, 2);
+  assert.match(textStdout, /Warnings \/ Next Actions/);
+  assert.match(textStdout, /vibepro pr prepare/);
+  assert.match(textStdout, /vibepro pr create/);
   assert.equal(
     await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
     false
