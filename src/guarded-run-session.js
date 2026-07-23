@@ -531,6 +531,8 @@ function buildIndependentReviewRunner(deps, loaded, options) {
       { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
     pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
       { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
+    cancelRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+      { storyId: state.story_id, runId: state.run_id, dispatchId }, 'cancel'),
     recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
       { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
     createError: (code, message) => new GuardedRunError(code, message)

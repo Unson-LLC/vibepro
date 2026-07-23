@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createIndependentReviewActionRunner, orchestrateIndependentReview } from '../src/independent-review-orchestrator.js';
+import {
+  createGuardedIndependentReviewRunner,
+  createIndependentReviewActionRunner,
+  orchestrateIndependentReview
+} from '../src/independent-review-orchestrator.js';
 
 function boundaries({ verdict = 'pass', stop = null, events = [] } = {}) {
   const call = (name, result = {}) => async (input) => { events.push(`${name}:${input.stage}:${input.role ?? '*'}`); return stop?.[name] ?? result; };
@@ -235,3 +239,169 @@ test('IRO-S-7 repair HEAD invalidates the old review checkpoint and dispatches a
   assert.equal(result.checkpoint.some((entry) =>
     entry.operation === 'record' && entry.result?.findings?.some((finding) => finding.id === 'old-head-finding')), false);
 });
+
+test('IRO-S-3 production review runtime polls running to completed before closing and recording', async () => {
+  const events = [];
+  let pollCount = 0;
+  const runner = guardedRuntimeRunner({
+    events,
+    pollRuntime: async () => {
+      pollCount += 1;
+      return pollCount < 3
+        ? { dispatch: { dispatch_id: 'review-dispatch', status: 'running' } }
+        : completedRuntimeReview();
+    }
+  });
+  const result = await runner({
+    state: guardedRuntimeState(),
+    action: { id: 'review', node_id: 'review' }
+  });
+  assert.equal(result.status, 'continue');
+  assert.equal(result.verdict, 'pass');
+  assert.equal(pollCount, 3);
+  assert.equal(events.filter((event) => event === 'close').length, 1);
+  assert.equal(events.filter((event) => event === 'record').length, 1);
+});
+
+test('IRO-S-3 interrupted active review poll resumes the same dispatch and converges', async () => {
+  const events = [];
+  let checkpoint = [];
+  let interrupted = true;
+  const runner = guardedRuntimeRunner({
+    events,
+    pollRuntime: async () => {
+      events.push('poll');
+      if (interrupted) {
+        interrupted = false;
+        throw new Error('transport interrupted while review remained active');
+      }
+      return completedRuntimeReview();
+    }
+  });
+  await assert.rejects(runner({
+    state: guardedRuntimeState(),
+    action: { id: 'review', node_id: 'review' },
+    persistCheckpoint: async (next) => { checkpoint = structuredClone(next); }
+  }), /transport interrupted/);
+  assert.equal(checkpoint.find((entry) => entry.operation === 'poll').state, 'reserved');
+
+  const resumedState = guardedRuntimeState();
+  resumedState.action_journal = [{
+    action_id: 'review',
+    output_head_sha: resumedState.current_head_sha,
+    status: 'checkpoint',
+    checkpoint
+  }];
+  const resumed = await runner({
+    state: resumedState,
+    action: { id: 'review', node_id: 'review' },
+    persistCheckpoint: async (next) => { checkpoint = structuredClone(next); }
+  });
+  assert.equal(resumed.status, 'continue');
+  assert.equal(resumed.verdict, 'pass');
+  assert.equal(events.filter((event) => event === 'dispatch').length, 1);
+  assert.equal(events.filter((event) => event === 'poll').length, 2);
+});
+
+test('IRO-S-5 active review timeout cancels the dispatch and remains a typed stop', async () => {
+  const events = [];
+  let clock = 0;
+  const runner = guardedRuntimeRunner({
+    events,
+    lifecycleTimeoutMs: 2,
+    now: () => clock,
+    waitForRuntimePoll: async () => { clock += 1; },
+    pollRuntime: async () => ({ dispatch: { dispatch_id: 'review-dispatch', status: 'running' } })
+  });
+  const result = await runner({
+    state: guardedRuntimeState(),
+    action: { id: 'review', node_id: 'review' }
+  });
+  assert.equal(result.status, 'waiting_for_runtime');
+  assert.equal(result.stop_reason, 'runtime_timeout');
+  assert.equal(events.filter((event) => event === 'cancel').length, 1);
+  assert.equal(events.filter((event) => event === 'close').length, 1);
+});
+
+function guardedRuntimeRunner({
+  events,
+  pollRuntime,
+  lifecycleTimeoutMs = 1000,
+  now,
+  waitForRuntimePoll = async () => {}
+}) {
+  return createGuardedIndependentReviewRunner({
+    repoRoot: '/managed',
+    baseRef: 'origin/main',
+    preparePullRequest: async () => ({
+      preparation: {
+        pr_context: {
+          agent_reviews: {
+            parallel_dispatch: {
+              required_stages: [{ stage: 'gate', roles: ['runtime_contract'] }]
+            }
+          }
+        }
+      }
+    }),
+    agentReviewOps: {
+      prepare: async () => ({}),
+      authorize: async () => ({ action: 'dispatch', authorization: { authorization_id: 'authorization' } }),
+      start: async () => ({ lifecycle: { lifecycle_id: 'lifecycle', timeout_ms: lifecycleTimeoutMs } }),
+      close: async () => { events.push('close'); return { status: 'closed' }; }
+    },
+    dispatchRuntime: async () => {
+      events.push('dispatch');
+      return { dispatch: { dispatch_id: 'review-dispatch', status: 'running' } };
+    },
+    pollRuntime,
+    cancelRuntime: async () => {
+      events.push('cancel');
+      return { dispatch: { dispatch_id: 'review-dispatch', status: 'cancelled' } };
+    },
+    recordRuntimeReview: async (_state, _dispatchId, review) => {
+      events.push('record');
+      return { review: { status: review.status, findings: [] } };
+    },
+    createError: (code, message) => Object.assign(new Error(message), { code }),
+    runtimePollIntervalMs: 1,
+    waitForRuntimePoll,
+    ...(now ? { now } : {})
+  });
+}
+
+function guardedRuntimeState() {
+  return {
+    story_id: 'story',
+    run_id: 'run',
+    current_head_sha: 'head',
+    action_journal: [],
+    runtime_dispatches: [{
+      role: 'implementation',
+      status: 'completed',
+      result: { head_sha: 'head' },
+      agent_identity: 'implementer',
+      session_id: 'implementation-session'
+    }]
+  };
+}
+
+function completedRuntimeReview() {
+  return {
+    dispatch: {
+      dispatch_id: 'review-dispatch',
+      status: 'completed',
+      result: {
+        review: {
+          status: 'pass',
+          summary: 'runtime contract passed',
+          inspection_summary: 'reviewed production-shaped async runtime',
+          inspection_evidence: 'runtime:test',
+          inspection_inputs: ['src/independent-review-orchestrator.js'],
+          judgment_delta: ['running -> completed'],
+          findings: []
+        }
+      }
+    }
+  };
+}

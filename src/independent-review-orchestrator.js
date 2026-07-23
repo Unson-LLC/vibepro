@@ -23,6 +23,7 @@ const TERMINAL_STOP_CODES = new Set([
   'review_identity_not_separate', 'review_session_not_separate', 'review_readonly_unavailable'
 ]);
 const VERDICTS = new Set(['pass', 'needs_changes', 'block']);
+const ACTIVE_RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait']);
 
 export class IndependentReviewOrchestrationError extends Error {
   constructor(code, message, details = {}) {
@@ -164,7 +165,10 @@ export function createIndependentReviewActionRunner({ resolveStages, boundaries 
 
 export function createGuardedIndependentReviewRunner({
   repoRoot, baseRef, preparePullRequest, agentReviewOps, dispatchRuntime, pollRuntime,
-  recordRuntimeReview, createError
+  cancelRuntime, recordRuntimeReview, createError,
+  runtimePollIntervalMs = 250,
+  waitForRuntimePoll = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)),
+  now = () => Date.now()
 }) {
   let stagesByName = new Map();
   let implementationProvenance = null;
@@ -201,14 +205,23 @@ export function createGuardedIndependentReviewRunner({
         implementation_session_id: implementationProvenance.session_id,
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
       }),
-      poll: async ({ state, dispatch }) => normalizePoll(await pollRuntime(state, dispatch.dispatch?.dispatch_id)),
+      poll: async ({ state, lifecycle, dispatch }) => pollReviewRuntimeUntilTerminal({
+        state,
+        lifecycle,
+        dispatch,
+        pollRuntime,
+        cancelRuntime,
+        runtimePollIntervalMs,
+        waitForRuntimePoll,
+        now
+      }),
       close: async ({ state, stage, role, lifecycle, dispatch, poll, closeReason, operation }) => {
         const runtimeDispatch = poll?.dispatch ?? dispatch?.dispatch;
         return agentReviewOps.close(repoRoot, {
-        storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
-        agentThreadId: runtimeDispatch?.thread_id, agentSessionId: runtimeDispatch?.session_id,
-        closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
-        operationIdempotencyKey: operation.idempotency_key
+          storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
+          agentThreadId: runtimeDispatch?.thread_id, agentSessionId: runtimeDispatch?.session_id,
+          closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
+          operationIdempotencyKey: operation.idempotency_key
         });
       },
       record: async ({ state, stage, role, poll, operation }) => {
@@ -321,6 +334,59 @@ function normalizePoll(result) {
       details: { dispatch_id: result.dispatch?.dispatch_id ?? null }
     }
   };
+}
+
+async function pollReviewRuntimeUntilTerminal({
+  state,
+  lifecycle,
+  dispatch,
+  pollRuntime,
+  cancelRuntime,
+  runtimePollIntervalMs,
+  waitForRuntimePoll,
+  now
+}) {
+  const dispatchId = dispatch.dispatch?.dispatch_id;
+  const timeoutMs = positiveTimeout(lifecycle.lifecycle?.timeout_ms ?? 600000);
+  const deadline = now() + timeoutMs;
+  let observed = await pollRuntime(state, dispatchId);
+  while (isActiveRuntimeObservation(observed) && now() < deadline) {
+    await waitForRuntimePoll(runtimePollIntervalMs);
+    observed = await pollRuntime(state, dispatchId);
+  }
+  if (!isActiveRuntimeObservation(observed)) return normalizePoll(observed);
+
+  let cancellation = null;
+  if (typeof cancelRuntime === 'function') {
+    try {
+      cancellation = await cancelRuntime(state, dispatchId);
+    } catch (error) {
+      cancellation = { status: 'failed', code: error?.code ?? 'runtime_cancel_failed', message: error?.message ?? String(error) };
+    }
+  }
+  return {
+    status: 'waiting_for_runtime',
+    stop_reason: {
+      code: 'runtime_timeout',
+      message: `review runtime remained active for ${timeoutMs}ms`,
+      details: {
+        dispatch_id: dispatchId ?? null,
+        cancellation
+      }
+    }
+  };
+}
+
+function isActiveRuntimeObservation(value) {
+  const dispatchStatus = value?.dispatch?.status;
+  if (typeof dispatchStatus === 'string') {
+    return ACTIVE_RUNTIME_STATUSES.has(dispatchStatus);
+  }
+  return ACTIVE_RUNTIME_STATUSES.has(value?.state?.status);
+}
+
+function positiveTimeout(value) {
+  return Number.isSafeInteger(value) && value > 0 ? value : 600000;
 }
 
 async function runRole({ boundaries, context, journal, stage, role, persistCheckpoint }) {
