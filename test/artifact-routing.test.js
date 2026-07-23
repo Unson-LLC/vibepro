@@ -11,6 +11,7 @@ import {
   ArtifactRoutingError,
   buildArtifactMigrationPlan,
   collectCurrentGeneratedProjectionPaths,
+  discoverPrArtifactStoryIds,
   isCurrentGeneratedProjection,
   projectArtifact,
   resolveArtifactRoute,
@@ -112,6 +113,28 @@ test('named artifact-routing profile: schema 0.2 selects a complete profile from
   assert.equal(resolved.routes.task_plan.canonical.relative_path, `.vibepro/stories/${storyId}/tasks/tasks.json`);
   await writeFile(path.join(root, `docs/management/stories/active/${storyId}.md`), '---\nartifact_profile: governance_packet\nfeature_slug: payments\n---\n');
   await assert.rejects(() => resolveArtifactRoutes(root, { storyId }), (error) => error.code === 'metadata_mismatch');
+});
+
+test('PR artifact discovery includes profile-only schema 0.2 routes', async () => {
+  const storyId = 'story-profile-only-pr-route';
+  const profile = completeProfile({
+    pr: { canonical: '.vibepro/profile-pr/{story_id}/pr-prepare.json' }
+  });
+  const root = await repo({
+    brainbase: {
+      stories: [{ story_id: storyId, artifact_profile: 'feature_packet', feature_slug: 'payments' }]
+    },
+    artifact_routing: {
+      schema_version: '0.2.0',
+      artifacts: {},
+      profiles: { feature_packet: profile }
+    }
+  });
+  const artifact = path.join(root, `.vibepro/profile-pr/${storyId}/pr-prepare.json`);
+  await mkdir(path.dirname(artifact), { recursive: true });
+  await writeFile(artifact, '{}\n');
+
+  assert.deepEqual(await discoverPrArtifactStoryIds(root), [storyId]);
 });
 
 test('named profile requires a complete matching Story mirror before writes', async () => {

@@ -119,18 +119,26 @@ export async function resolveGateArtifactFile(repoRoot, storyId) {
 export async function discoverPrArtifactStoryIds(repoRoot) {
   const root = path.resolve(repoRoot);
   const { routing } = await readArtifactRoutingConfig(root);
-  const template = routing?.artifacts?.pr?.canonical;
-  if (typeof template !== 'string' || !template.includes('{story_id}')) return [];
-  const normalized = toPosix(template);
-  const staticPrefix = normalized.slice(0, normalized.indexOf('{'));
-  const scanRelative = path.posix.dirname(staticPrefix.endsWith('/') ? staticPrefix.slice(0, -1) : staticPrefix);
-  const matcher = artifactTemplateMatcher(normalized);
-  const ids = [];
-  for (const filePath of await listFilesRecursive(path.resolve(root, scanRelative === '.' ? '' : scanRelative))) {
-    const match = toPosix(path.relative(root, filePath)).match(matcher);
-    if (match?.groups?.story_id) ids.push(match.groups.story_id);
+  const templates = [
+    routing?.artifacts?.pr?.canonical,
+    ...Object.values(routing?.profiles ?? {}).map((profile) => profile?.artifacts?.pr?.canonical)
+  ].filter((template, index, all) => (
+    typeof template === 'string'
+    && template.includes('{story_id}')
+    && all.indexOf(template) === index
+  ));
+  const ids = new Set();
+  for (const template of templates) {
+    const normalized = toPosix(template);
+    const staticPrefix = normalized.slice(0, normalized.indexOf('{'));
+    const scanRelative = path.posix.dirname(staticPrefix.endsWith('/') ? staticPrefix.slice(0, -1) : staticPrefix);
+    const matcher = artifactTemplateMatcher(normalized);
+    for (const filePath of await listFilesRecursive(path.resolve(root, scanRelative === '.' ? '' : scanRelative))) {
+      const match = toPosix(path.relative(root, filePath)).match(matcher);
+      if (match?.groups?.story_id) ids.add(match.groups.story_id);
+    }
   }
-  return [...new Set(ids)];
+  return [...ids];
 }
 
 function artifactTemplateMatcher(template) {
