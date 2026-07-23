@@ -25,6 +25,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
     'prepareCurrentHead',
     'dispatchRuntime',
     'pollRuntime',
+    'cancelRuntime',
     'providerFallbacks',
     'runtimeTimeoutMs',
     'runtimePollIntervalMs',
@@ -35,6 +36,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
   const prepareCurrentHead = requireBoundary(boundaries.prepareCurrentHead, 'prepareCurrentHead');
   const dispatchRuntime = requireBoundary(boundaries.dispatchRuntime, 'dispatchRuntime');
   const pollRuntime = requireBoundary(boundaries.pollRuntime, 'pollRuntime');
+  const cancelRuntime = requireBoundary(boundaries.cancelRuntime, 'cancelRuntime');
   const providerFallbacks = normalizeProviders(boundaries.providerFallbacks);
   const runtimeTimeoutMs = positiveInteger(boundaries.runtimeTimeoutMs ?? 30 * 60 * 1000, 'runtimeTimeoutMs');
   const runtimePollIntervalMs = positiveInteger(boundaries.runtimePollIntervalMs ?? 250, 'runtimePollIntervalMs');
@@ -91,6 +93,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
         objective: buildArtifactObjective(context.state, missing),
         dispatchRuntime,
         pollRuntime,
+        cancelRuntime,
         providerFallbacks,
         runtimeTimeoutMs,
         runtimePollIntervalMs,
@@ -105,6 +108,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
       objective: buildImplementationObjective(context.state),
       dispatchRuntime,
       pollRuntime,
+      cancelRuntime,
       providerFallbacks,
       runtimeTimeoutMs,
       runtimePollIntervalMs,
@@ -163,6 +167,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
         objective: buildRepairObjective(context.state, review, attempt, maxRepairAttempts),
         dispatchRuntime,
         pollRuntime,
+        cancelRuntime,
         providerFallbacks,
         runtimeTimeoutMs,
         runtimePollIntervalMs,
@@ -269,6 +274,11 @@ export function createOneCommandPrReadyRunSessionOwners(boundaries = {}) {
       runId: state.run_id,
       dispatchId: dispatch.dispatch_id
     }, 'poll'),
+    cancelRuntime: async ({ state, dispatch }) => mutateRuntimeDispatch({
+      storyId: state.story_id,
+      runId: state.run_id,
+      dispatchId: dispatch.dispatch_id
+    }, 'cancel'),
     providerFallbacks
   });
 }
@@ -396,6 +406,7 @@ async function runImplementationRuntime({
   objective,
   dispatchRuntime,
   pollRuntime,
+  cancelRuntime,
   providerFallbacks,
   runtimeTimeoutMs,
   runtimePollIntervalMs,
@@ -428,12 +439,33 @@ async function runImplementationRuntime({
   }
   if (isRuntimeActive(observed)) {
     const dispatch = observed?.dispatch ?? observed;
+    let contained;
+    try {
+      contained = await cancelRuntime({
+        ...context,
+        state: observed.state ?? context.state,
+        dispatch,
+        request,
+        providerFallbacks
+      });
+    } catch (error) {
+      return orphanedRuntimeResult(dispatch, error);
+    }
+    if (isRuntimeActive(contained) || !isRuntimeTerminal(contained)) {
+      return orphanedRuntimeResult(
+        contained?.dispatch ?? dispatch,
+        new Error('runtime cancellation did not confirm a terminal dispatch')
+      );
+    }
     return {
       status: 'waiting_for_runtime',
       stop_reason: 'runtime_probe_timeout',
-      runtime_dispatch: dispatch ?? null,
-      recovery: { dispatch_id: dispatch?.dispatch_id ?? null },
-      summary: `runtime dispatch remained active for ${runtimeTimeoutMs}ms`
+      runtime_dispatch: contained?.dispatch ?? dispatch ?? null,
+      recovery: {
+        dispatch_id: dispatch?.dispatch_id ?? null,
+        containment_status: contained?.dispatch?.status ?? contained?.status ?? null
+      },
+      summary: `runtime dispatch exceeded ${runtimeTimeoutMs}ms and was contained before retry`
     };
   }
   return runtimeActionResult(observed, context.state.current_head_sha, requireHeadAdvance);
@@ -486,6 +518,24 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
 function isRuntimeActive(observed) {
   const status = observed?.dispatch?.status ?? observed?.status;
   return ['queued', 'running', 'permission_wait'].includes(status);
+}
+
+function isRuntimeTerminal(observed) {
+  const status = observed?.dispatch?.status ?? observed?.status;
+  return ['completed', 'failed', 'cancelled', 'timed_out'].includes(status);
+}
+
+function orphanedRuntimeResult(dispatch, error) {
+  return {
+    status: 'failed',
+    stop_reason: 'orphaned_agent',
+    runtime_dispatch: dispatch ?? null,
+    recovery: {
+      dispatch_id: dispatch?.dispatch_id ?? null,
+      containment_error: error?.message ?? String(error)
+    },
+    summary: 'runtime dispatch containment could not be confirmed after the owner deadline'
+  };
 }
 
 function buildArtifactObjective(state, missing) {

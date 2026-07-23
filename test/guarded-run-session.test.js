@@ -113,7 +113,14 @@ test('OCR-S-1 production owner returns a persisted typed runtime stop without re
   const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_unavailable');
+  assert.equal(result.state.stop_reason.details.provider, 'capability-limited-runtime');
   assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write']);
+  assert.deepEqual(result.state.stop_reason.details.recovery, {
+    action: 'resume_run',
+    story_id: STORY_ID,
+    run_id: RUN_ID,
+    required_capabilities: ['workspace_write']
+  });
   assert.deepEqual(
     result.state.transitions.filter(({ to }) => to === 'waiting_for_runtime')
       .map(({ from, to }) => [from, to]),

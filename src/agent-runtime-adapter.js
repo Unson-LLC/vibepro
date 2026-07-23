@@ -110,7 +110,16 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
   if (!capability.available || missing.length > 0) {
     return waiting(runState, request, capability.reason ?? 'runtime_unavailable', missing.length > 0
       ? `runtime lacks required capabilities: ${missing.join(', ')}`
-      : 'runtime is unavailable', now, { missing_capabilities: missing });
+      : 'runtime is unavailable', now, {
+      provider: request.adapter_id,
+      missing_capabilities: missing,
+      recovery: {
+        action: 'resume_run',
+        story_id: runState.story_id,
+        run_id: runState.run_id,
+        required_capabilities: request.requirements.capabilities
+      }
+    });
   }
   if (request.role === 'review' && capability.sandbox !== 'read-only') {
     return waiting(runState, request, 'review_readonly_unavailable',

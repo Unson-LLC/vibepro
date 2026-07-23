@@ -55,6 +55,14 @@ function boundaries(overrides = {}) {
     }),
     dispatchRuntime: async ({ request }) => completedRuntime(request),
     pollRuntime: async ({ dispatch, state }) => ({ dispatch, state }),
+    cancelRuntime: async ({ dispatch, state }) => ({
+      state,
+      dispatch: {
+        ...dispatch,
+        status: 'cancelled',
+        stop_reason: { code: 'runtime_cancelled', message: 'cancelled by owner deadline' }
+      }
+    }),
     runtimePollIntervalMs: 1,
     waitForRuntimePoll: async () => {},
     ...overrides
@@ -124,16 +132,23 @@ test('OCR-T-3 production-shaped runtime keeps polling the same running dispatch 
 
 test('OCR-T-3 runtime timeout and cancellation remain typed, contained stops', async () => {
   const dispatch = { dispatch_id: 'dispatch-contained', status: 'running' };
+  const cancellations = [];
   const timedOut = createOneCommandPrReadyActionOwners(boundaries({
     runtimeTimeoutMs: 1,
     waitForRuntimePoll: async () => new Promise((resolve) => setTimeout(resolve, 2)),
     dispatchRuntime: async () => ({ state: baseState, dispatch }),
-    pollRuntime: async () => ({ state: baseState, dispatch })
+    pollRuntime: async () => ({ state: baseState, dispatch }),
+    cancelRuntime: async ({ dispatch: active }) => {
+      cancellations.push(active.dispatch_id);
+      return { state: baseState, dispatch: { ...active, status: 'cancelled' } };
+    }
   }));
   const timeout = await timedOut.implement(context());
   assert.equal(timeout.status, 'waiting_for_runtime');
   assert.equal(timeout.stop_reason, 'runtime_probe_timeout');
   assert.equal(timeout.recovery.dispatch_id, dispatch.dispatch_id);
+  assert.equal(timeout.recovery.containment_status, 'cancelled');
+  assert.deepEqual(cancellations, [dispatch.dispatch_id]);
 
   const cancelled = createOneCommandPrReadyActionOwners(boundaries({
     dispatchRuntime: async () => ({
@@ -149,6 +164,22 @@ test('OCR-T-3 runtime timeout and cancellation remain typed, contained stops', a
   assert.equal(cancellation.status, 'failed');
   assert.equal(cancellation.stop_reason, 'runtime_cancelled');
   assert.equal(cancellation.runtime_dispatch.dispatch_id, dispatch.dispatch_id);
+});
+
+test('OCR-T-4 owner deadline fails closed when dispatch containment is not terminal', async () => {
+  const dispatch = { dispatch_id: 'dispatch-orphaned', status: 'running' };
+  const owners = createOneCommandPrReadyActionOwners(boundaries({
+    runtimeTimeoutMs: 1,
+    waitForRuntimePoll: async () => new Promise((resolve) => setTimeout(resolve, 2)),
+    dispatchRuntime: async () => ({ state: baseState, dispatch }),
+    pollRuntime: async () => ({ state: baseState, dispatch }),
+    cancelRuntime: async () => ({ state: baseState, dispatch })
+  }));
+  const result = await owners.implement(context());
+  assert.equal(result.status, 'failed');
+  assert.equal(result.stop_reason, 'orphaned_agent');
+  assert.equal(result.recovery.dispatch_id, dispatch.dispatch_id);
+  assert.match(result.recovery.containment_error, /did not confirm a terminal dispatch/);
 });
 
 test('OCR-T-2 missing artifacts are delegated only when needed and no-progress fails closed', async () => {
