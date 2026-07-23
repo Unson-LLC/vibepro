@@ -11089,7 +11089,7 @@ function hasCurrentBugPhysicsEvidence(verificationEvidence, matcher) {
   return (verificationEvidence?.commands ?? []).some((item) => {
     if (item.binding?.status !== 'current') return false;
     if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
-    return matcher.test(`${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`);
+    return matcher.test(resolveVerificationCommandSearchText(item).text);
   });
 }
 

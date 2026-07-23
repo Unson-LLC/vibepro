@@ -560,6 +560,55 @@ test('bug physics verification text includes structured observation scenarios an
   assert.match(text, /monitoring current-head monitoring evidence/);
 });
 
+test('observability bug physics accepts structured evidence bound by current git context', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Authoritative observability signal
+architecture_docs:
+  reason: observability fixture
+---
+
+# Authoritative observability signal
+
+## 背景
+
+Monitoring needs one authoritative signal source instead of ambiguous indicators.
+
+## 受け入れ基準
+
+- [ ] Current-head structured verification proves signal availability
+`);
+  await writeFile(path.join(repo, 'src', 'observability.js'), 'export const signalSource = "verification-evidence";\n');
+  await execFileAsync('git', ['add', '.'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', 'add observability fixture'], { cwd: repo });
+
+  const recorded = await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/integration/observability.test.js',
+    '--target', 'src/observability.js',
+    '--scenario', 'authoritative_signal_source is verification-evidence store',
+    '--observed', 'signal_availability=available',
+    '--strict-head-binding',
+    '--strict-head-reason', 'observability proof must match the inspected runtime HEAD'
+  ]);
+  assert.equal(recorded.exitCode, 0, recorded.stderr);
+  assert.equal(recorded.result.evidence.commands[0].binding, undefined);
+  assert.equal(recorded.result.evidence.commands[0].content_binding.status, 'strict_head');
+  assert.equal(recorded.result.evidence.commands[0].git_context.dirty, false);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:bug_physics_observability_signal_source');
+  assert.equal(gate.status, 'passed');
+});
+
 test('pr prepare reuses same-head passing verification for low-risk evidence changes only', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
