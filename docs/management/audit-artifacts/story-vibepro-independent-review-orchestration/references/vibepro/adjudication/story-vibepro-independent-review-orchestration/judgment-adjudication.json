@@ -1,0 +1,1120 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "updated_at": "2026-07-22T13:06:02.309Z",
+  "events": [
+    {
+      "event_id": "899e3dfc-0608-454d-9563-eba916dfd38b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent maps directly to eight acceptance criteria and the implemented review owner contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:22.702Z"
+    },
+    {
+      "event_id": "ad633a28-6627-4c50-aa81-05df7e39f142",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current production-composer E2E and strict-HEAD 1743-pass evidence demonstrate the path; the classifier omitted those current artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:22.829Z"
+    },
+    {
+      "event_id": "592e792d-d829-4858-9101-aeeef6da278d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fail-closed provenance, owner boundaries, and verdict invariants are directly implemented and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:40.314Z"
+    },
+    {
+      "event_id": "37eeb36b-f5a2-47ef-b638-2e9666acb21b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The owner remains in run-session, has no CLI reverse dependency, and conformance stays 69 to 69.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:40.652Z"
+    },
+    {
+      "event_id": "ac3b2501-7ef7-4b55-aad3-58c9d88e9a1b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Typed timeout, auth, schema, retry, workflow, and provenance non-pass paths are directly exercised.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:41.004Z"
+    },
+    {
+      "event_id": "ad0c348a-8dd2-4e30-b934-01e5a1e1c49e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current strict-HEAD evidence binds full 1743 passes, E2E, integration rerun, and conformance comparison.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:41.352Z"
+    },
+    {
+      "event_id": "dfeeb0e7-733f-441f-8986-3bfed4da09b0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Existing review verdict and finding schema is preserved and invalid verdicts fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:41.696Z"
+    },
+    {
+      "event_id": "7409f63c-238e-474c-9897-e9addfc0c0e7",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Journal reservation, reconciliation, one-history restart, and deterministic keys directly cover data state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:42.032Z"
+    },
+    {
+      "event_id": "9ca44f34-c5f4-4b90-ab02-4b05e6f3c1ec",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Parallel roles, serial stage barriers, serialized checkpoints, cleanup, and restart are directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:42.374Z"
+    },
+    {
+      "event_id": "5dd2123a-0da8-47dd-a67d-c3e170012c1c",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The diff is one cohesive review-owner Story with its SSOT, runtime composition, and direct contract tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:42.740Z"
+    },
+    {
+      "event_id": "471f689c-1847-46df-8ba1-5f3b43587b2c",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Adapter, connector, and owner tests directly contain timeout as a typed non-pass result.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:43.051Z"
+    },
+    {
+      "event_id": "5b48d51a-482a-4729-b0ff-20026377d482",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider result extraction and normalization fail closed in connector and adapter tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:43.391Z"
+    },
+    {
+      "event_id": "df4935ee-6825-4996-b073-57119371d169",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Schema failure and persisted malformed review records are explicitly rejected without pass promotion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:43.712Z"
+    },
+    {
+      "event_id": "a5ce4e5a-3050-4438-a4c4-e8651043a30b",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Crash after reservation and restart reuse the same key without duplicate history or repoll.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:44.047Z"
+    },
+    {
+      "event_id": "064e74b8-19a5-4300-98d2-c85c9bb818a0",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Auth denial is normalized and propagated as a typed resumable non-pass stop.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:44.373Z"
+    },
+    {
+      "event_id": "4646d371-dccd-4323-93e9-f5784ad6e23d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Lifecycle start close record exactly-once, verdict retention, and forged provenance rejection are exercised.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:44.706Z"
+    },
+    {
+      "event_id": "f3214253-3c94-4bc2-9dde-0fda5ce962ea",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Stage barriers, repair routing, block stop, invalid persisted state, and checkpoint recovery are exercised.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:51:45.043Z"
+    },
+    {
+      "event_id": "a1583e16-f2a8-469f-8ea3-cfa42cf786ee",
+      "type": "premise_correction",
+      "item_id": "spine:current_reality",
+      "corrects_verdict_id": "ad633a28-6627-4c50-aa81-05df7e39f142",
+      "wrong_premise": "Current production runtime path lacks evidence",
+      "corrected_premise": "Production-composer E2E and strict-HEAD full suite evidence cover the current path",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:19.778Z"
+    },
+    {
+      "event_id": "33434932-0ccc-4a6c-8add-25c34f92d629",
+      "type": "premise_correction",
+      "item_id": "spine:failure_modes",
+      "corrects_verdict_id": "ac3b2501-7ef7-4b55-aad3-58c9d88e9a1b",
+      "wrong_premise": "Failure modes lack executable evidence",
+      "corrected_premise": "Owner, adapter, and connector tests execute typed failure containment",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:20.102Z"
+    },
+    {
+      "event_id": "597ae747-fca5-4ae7-aa17-35a8eae966cf",
+      "type": "premise_correction",
+      "item_id": "spine:done_evidence",
+      "corrects_verdict_id": "ad0c348a-8dd2-4e30-b934-01e5a1e1c49e",
+      "wrong_premise": "Done evidence is absent",
+      "corrected_premise": "Strict-HEAD full suite, E2E, integration rerun, and conformance evidence are recorded",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:20.550Z"
+    },
+    {
+      "event_id": "eda7f617-5505-49f7-a9a1-fc25621d6176",
+      "type": "premise_correction",
+      "item_id": "axis:data_state",
+      "corrects_verdict_id": "7409f63c-238e-474c-9897-e9addfc0c0e7",
+      "wrong_premise": "Persistent state behavior is unverified",
+      "corrected_premise": "Reservation, checkpoint reconciliation, and no-duplicate restart are executable",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:20.882Z"
+    },
+    {
+      "event_id": "67836038-2ff2-4468-ae20-3f222cb91800",
+      "type": "premise_correction",
+      "item_id": "axis:execution_topology",
+      "corrects_verdict_id": "9ca44f34-c5f4-4b90-ab02-4b05e6f3c1ec",
+      "wrong_premise": "Execution topology is unverified",
+      "corrected_premise": "Parallel roles, serial barriers, serialized checkpoints, and cleanup are executable",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:21.242Z"
+    },
+    {
+      "event_id": "3f9603ec-2128-4707-ad6d-2fae7dc66fc3",
+      "type": "premise_correction",
+      "item_id": "axis:scope_reviewability",
+      "corrects_verdict_id": "5dd2123a-0da8-47dd-a67d-c3e170012c1c",
+      "wrong_premise": "Generated lanes imply the Story must split",
+      "corrected_premise": "The docs, owner, runtime composition, and direct tests form one atomic review-orchestration contract",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:21.710Z"
+    },
+    {
+      "event_id": "55213065-54b0-45dc-bef5-d10b03eb8dbd",
+      "type": "premise_correction",
+      "item_id": "failure_mode:timeout",
+      "corrects_verdict_id": "471f689c-1847-46df-8ba1-5f3b43587b2c",
+      "wrong_premise": "Timeout lacks executable coverage",
+      "corrected_premise": "Adapter, connector, and owner tests execute timeout containment",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:22.094Z"
+    },
+    {
+      "event_id": "cc46e830-81e2-49f5-a59a-966111a6fb1f",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "5b48d51a-482a-4729-b0ff-20026377d482",
+      "wrong_premise": "Parse failure lacks executable coverage",
+      "corrected_premise": "Malformed provider extraction and normalization are executed fail-closed",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:22.431Z"
+    },
+    {
+      "event_id": "e06e43e8-23de-4e73-9080-96d827fbf6dd",
+      "type": "premise_correction",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "corrects_verdict_id": "a5ce4e5a-3050-4438-a4c4-e8651043a30b",
+      "wrong_premise": "Async retry behavior lacks evidence",
+      "corrected_premise": "Crash-after-reservation restart reuses keys without duplicate history or repoll",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:22.786Z"
+    },
+    {
+      "event_id": "25087388-945a-42b3-8e71-a7becfa6f193",
+      "type": "premise_correction",
+      "item_id": "failure_mode:auth_denied",
+      "corrects_verdict_id": "064e74b8-19a5-4300-98d2-c85c9bb818a0",
+      "wrong_premise": "Auth denial lacks executable coverage",
+      "corrected_premise": "Auth denial is normalized and propagated as typed non-pass",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:23.083Z"
+    },
+    {
+      "event_id": "4a0541bb-c694-4f4d-a446-1ae43bcb5269",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "4646d371-dccd-4323-93e9-f5784ad6e23d",
+      "wrong_premise": "Review lifecycle regression is uncovered",
+      "corrected_premise": "Start close record exactly-once, verdict retention, and forged provenance rejection are executable",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:23.426Z"
+    },
+    {
+      "event_id": "a014c141-68f1-457e-a04f-6e22db8948f0",
+      "type": "premise_correction",
+      "item_id": "failure_mode:workflow_state_regression",
+      "corrects_verdict_id": "f3214253-3c94-4bc2-9dde-0fda5ce962ea",
+      "wrong_premise": "Workflow state regression is uncovered",
+      "corrected_premise": "Stage barrier, repair, block, invalid persisted state, and checkpoint recovery are executable",
+      "reason": "Current frozen-HEAD executable evidence directly contradicts the classifier premise.",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/verify-artifacts/independent-review-final-43b5d814.status.json",
+          "sha256": "6f35ea63a87f43bcade2aae88a4c18f298541ada9657dd95b72c7bf0ee39d54b"
+        },
+        {
+          "artifact": "test/independent-review-orchestrator.test.js",
+          "sha256": "7662dac09c8aaf0693f06048704087c110b5bdd8ff44faf064d08a5cb48fb382"
+        },
+        {
+          "artifact": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "sha256": "8644a1f27b6881b0b87e6b3362a9a762e4bf82edf92050017e23dec02a28f5cf"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-judgment-50b3a8ab",
+        "session_ref": "/root/judgment_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:52:23.783Z"
+    },
+    {
+      "event_id": "5531e4d8-fb81-40bf-81f6-c2dc991e0ba6",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "a1583e16-f2a8-469f-8ea3-cfa42cf786ee",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:18.525Z"
+    },
+    {
+      "event_id": "15469078-df5c-4d5d-a38b-59d727877d67",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "33434932-0ccc-4a6c-8add-25c34f92d629",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:18.870Z"
+    },
+    {
+      "event_id": "4c715eb1-fcff-4bc3-ba3d-c968b0336f53",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "597ae747-fca5-4ae7-aa17-35a8eae966cf",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:19.217Z"
+    },
+    {
+      "event_id": "dfd5475d-2cc4-4e80-ac0d-81c4afbd26ed",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "eda7f617-5505-49f7-a9a1-fc25621d6176",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:19.565Z"
+    },
+    {
+      "event_id": "99b0377d-3031-4d99-8cd1-2e1591e8fbb9",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "67836038-2ff2-4468-ae20-3f222cb91800",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:19.920Z"
+    },
+    {
+      "event_id": "1c826eac-4f7d-4f9f-9775-d1668d5acdae",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "55213065-54b0-45dc-bef5-d10b03eb8dbd",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:20.260Z"
+    },
+    {
+      "event_id": "e332c4f2-49d2-45d5-9e04-a3a5f919b4ca",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "cc46e830-81e2-49f5-a59a-966111a6fb1f",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:20.600Z"
+    },
+    {
+      "event_id": "29a12a75-03cc-4fbd-93b0-319cc92fdb9d",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "e06e43e8-23de-4e73-9080-96d827fbf6dd",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:20.942Z"
+    },
+    {
+      "event_id": "04f4c7fd-1e00-488d-b3ad-e4db0365f73c",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "25087388-945a-42b3-8e71-a7becfa6f193",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:21.322Z"
+    },
+    {
+      "event_id": "b43157b8-ff39-4b9b-a90e-17e9e9095272",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "4a0541bb-c694-4f4d-a446-1ae43bcb5269",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:21.657Z"
+    },
+    {
+      "event_id": "7dc86a5c-9347-4202-9a8e-5380c25946d1",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "a014c141-68f1-457e-a04f-6e22db8948f0",
+      "reason": "Independent correction re-judge verified the corrected premise against current frozen-HEAD executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:55:21.994Z"
+    },
+    {
+      "event_id": "760c1e7e-612b-4ebc-886b-7ddbbf10a193",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "3f9603ec-2128-4707-ad6d-2fae7dc66fc3",
+      "reason": "Accepted bundled-scope decision binds the Story, architecture, run-session owner, production composition, adapters, and direct tests as one coherent executable contract; no unrelated tracked scope was found.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-correction-rejudge-50b3a8ab",
+        "session_ref": "/root/correction_rejudge_50b3a8ab"
+      },
+      "head_commit": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+      "recorded_at": "2026-07-22T11:57:04.793Z"
+    },
+    {
+      "event_id": "1dbd13e0-7cad-4ee2-ae25-3f2190853c5c",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Intent is explicit: independently orchestrate required review roles inside the guarded run.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:48.100Z"
+    },
+    {
+      "event_id": "11517e32-5522-4999-ab70-9eff4ab51dbd",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current manual review lifecycle and production composition are explicitly documented and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:48.462Z"
+    },
+    {
+      "event_id": "c7d7e9eb-11cd-4ac8-b943-b7af4184b4c3",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD, read-only execution, independent identity, provenance, and deterministic replay invariants are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:48.834Z"
+    },
+    {
+      "event_id": "7c4b9eeb-fadb-45c4-abfb-a55b21829da1",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The run-session owner boundary and adapter/composer responsibilities are explicit and conformance-neutral.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:49.213Z"
+    },
+    {
+      "event_id": "0f7b0cc6-7a96-4ac5-ab8e-62de5adf2981",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout, parse, schema, provider, auth, provenance, and workflow regressions are enumerated and exercised.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:50.137Z"
+    },
+    {
+      "event_id": "d6eb20f9-3672-4f63-8def-8f19bc868fc9",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence binds the final spec, focused tests, production-flow replay, reviews, and conformance result.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:50.737Z"
+    },
+    {
+      "event_id": "4b8704bd-b975-4e93-8718-2d72b5f4aef4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The orchestrator request/result and typed-stop contract are explicit and directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:51.206Z"
+    },
+    {
+      "event_id": "0c6ef77a-9fda-4f9e-8386-6c2882a6f7dd",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Operation keys, checkpoints, verdict aggregation, and replay state transitions are explicit and deterministic.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:51.653Z"
+    },
+    {
+      "event_id": "6fc5c4d0-98f4-46a3-9dc8-fa092b7efb9a",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parallel dispatch, canonical lifecycle calls, and production guarded-run composition are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:52.088Z"
+    },
+    {
+      "event_id": "acf2e998-3798-4fc7-9ba4-c4085ea8403b",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout behavior is a typed blocking stop and is directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:52.802Z"
+    },
+    {
+      "event_id": "a64bac82-d72f-4203-a87c-ab797d771cb1",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Invalid parse/result behavior fails closed and is directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:53.338Z"
+    },
+    {
+      "event_id": "f5ff4c3e-842d-43dd-ad69-46167616f396",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed review result schema is rejected fail-closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:53.718Z"
+    },
+    {
+      "event_id": "0b8d7f78-4497-4d77-8eb8-bfe1c90194be",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime/provider failure is preserved as typed blocking evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:54.091Z"
+    },
+    {
+      "event_id": "cc6d506b-dc09-476e-913e-f4f60e4f77eb",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checkpoint reuse and crash/restart replay prevent duplicate side effects.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:54.482Z"
+    },
+    {
+      "event_id": "52b66f71-2026-45ea-9009-3c6faae4f439",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authorization denial is a typed blocking stop and is directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:54.844Z"
+    },
+    {
+      "event_id": "a791724d-4d26-466b-b52c-0bcc55a3b459",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical review evidence lifecycle compatibility is covered by regression tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:55.188Z"
+    },
+    {
+      "event_id": "b079acc4-95d9-4780-8147-666677971bc5",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Production workflow state transitions and replay are covered end-to-end.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:55.586Z"
+    },
+    {
+      "event_id": "3f04330a-3040-494f-9ee3-74afd060c66a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Accepted split decisions establish owner, executable contract, contract tests, and SSOT as one vertically reviewable atomic change; splitting would remove standalone contract verifiability.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_judgment_final",
+        "session_ref": "/root/iro_judgment_final"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:06:02.308Z"
+    }
+  ]
+}

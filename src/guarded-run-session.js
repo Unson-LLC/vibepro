@@ -12,6 +12,7 @@ import {
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
 import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
+import { createDefaultAgentReviewOps, createGuardedIndependentReviewRunner, createReviewCheckpointPersister, recordGuardedRuntimeReview } from './independent-review-orchestrator.js';
 import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
@@ -50,8 +51,10 @@ const DEPENDENCY_KEYS = new Set([
   'safeAutopilotPullRequest',
   'actionRunners',
   'agentRuntimeCoordinator',
-  'recordAgentReview'
+  'recordAgentReview',
+  'agentReviewOps'
 ]);
+const AGENT_REVIEW_OP_KEYS = new Set(['prepare', 'authorize', 'start', 'close', 'record']);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
 const ACTION_RUNNER_KEYS = new Set(['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare']);
 
@@ -81,6 +84,7 @@ export function createGuardedRunSession(dependencies = {}) {
   assertClosedKeys(dependencies, DEPENDENCY_KEYS, 'guarded Run dependency');
   assertClosedKeys(dependencies.artifactIo ?? {}, ARTIFACT_IO_KEYS, 'guarded Run artifact I/O dependency');
   assertClosedKeys(dependencies.actionRunners ?? {}, ACTION_RUNNER_KEYS, 'guarded Run action runner');
+  assertClosedKeys(dependencies.agentReviewOps ?? {}, AGENT_REVIEW_OP_KEYS, 'guarded Run Agent Review operation');
   const deps = {
     now: dependencies.now ?? (() => new Date()),
     randomBytes: dependencies.randomBytes ?? nodeRandomBytes,
@@ -93,6 +97,7 @@ export function createGuardedRunSession(dependencies = {}) {
     actionRunners: { ...(dependencies.actionRunners ?? {}) },
     agentRuntimeCoordinator: dependencies.agentRuntimeCoordinator ?? null,
     recordAgentReview: dependencies.recordAgentReview ?? null,
+    agentReviewOps: createDefaultAgentReviewOps(dependencies.agentReviewOps),
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
 
@@ -110,7 +115,6 @@ export function createGuardedRunSession(dependencies = {}) {
     recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
   };
 }
-
 async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   if (!deps.agentRuntimeCoordinator) {
     throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
@@ -248,61 +252,11 @@ async function dispatchRuntimeWithFallbacks(coordinator, state, request, options
   }
   return result;
 }
-
 async function recordRuntimeReview(deps, repoRoot, options) {
-  if (!deps.recordAgentReview) {
-    throw new GuardedRunError('review_runtime_unavailable', 'Guarded Run has no Agent Review recording boundary');
-  }
-  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  const dispatch = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
-  const provenance = validateRuntimeReviewDispatch(dispatch, loaded.state.current_head_sha);
-  const review = await deps.recordAgentReview(loaded.state.execution_context.root_realpath, {
-    ...(options.review ?? {}),
-    storyId: loaded.state.story_id,
-    agentSystem: options.review?.agentSystem ?? 'codex',
-    executionMode: 'parallel_subagent',
-    agentId: provenance.agent_identity,
-    agentThreadId: provenance.thread_id,
-    agentSessionId: provenance.session_id,
-    agentClosed: true,
-    reviewerIdentity: 'separate_session',
-    implementationSessionId: dispatch.implementation_session_id
+  return recordGuardedRuntimeReview({
+    deps, repoRoot, options, loadRun: loadSelectedRun, createError: (code, message) => new GuardedRunError(code, message)
   });
-  return { dispatch, review };
 }
-
-function validateRuntimeReviewDispatch(dispatch, currentHeadSha) {
-  const result = dispatch?.result;
-  const provenance = result?.review_provenance;
-  const expectedDispatchId = dispatch && `dispatch-${createHash('sha256').update(`${dispatch.run_id}:${dispatch.adapter_id}:${dispatch.task_id}:${dispatch.role}:${dispatch.input_head_sha}:${dispatch.reviewer_identity ?? ''}:${dispatch.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
-  const correlatedRuntime = Boolean(dispatch?.session_id || dispatch?.thread_id)
-    && provenance?.session_id === dispatch?.session_id
-    && provenance?.thread_id === dispatch?.thread_id;
-  const separateRuntime = correlatedRuntime
-    && ![provenance?.session_id, provenance?.thread_id].includes(dispatch?.implementation_session_id);
-  const valid = dispatch?.role === 'review'
-    && dispatch.dispatch_id === expectedDispatchId
-    && dispatch.status === 'completed'
-    && dispatch.sandbox === 'read-only'
-    && Array.isArray(dispatch.requirements?.capabilities)
-    && dispatch.requirements.capabilities.includes('review')
-    && !dispatch.requirements.capabilities.includes('workspace_write')
-    && Array.isArray(result?.changed_files)
-    && result.changed_files.length === 0
-    && dispatch.input_head_sha === currentHeadSha
-    && result.head_sha === currentHeadSha
-    && provenance?.execution_mode === 'parallel_subagent'
-    && provenance.agent_identity === dispatch.reviewer_identity
-    && provenance.agent_identity === dispatch.agent_identity
-    && provenance.agent_identity !== dispatch.implementation_identity
-    && provenance.lifecycle === 'closed'
-    && separateRuntime;
-  if (!valid) {
-    throw new GuardedRunError('invalid_runtime_review', 'only a current-HEAD, read-only, separately identified closed review dispatch can enter the Agent Review Gate');
-  }
-  return provenance;
-}
-
 async function orchestrateRun(deps, repoRoot, options) {
   if (options.dryRun) {
     const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
@@ -366,8 +320,12 @@ async function orchestrateRun(deps, repoRoot, options) {
       'worktree_mismatch'
     )).head_sha,
     onProgress: async (progress) => {
+      const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+        storyId: loaded.state.story_id,
+        runId: loaded.state.run_id
+      });
       const checkpoint = {
-        ...decisionState,
+        ...persisted.state,
         current_head_sha: progress.current_head_sha,
         action_journal: progress.action_journal,
         ...resumeCursorPatch(progress, decisionState)
@@ -380,10 +338,22 @@ async function orchestrateRun(deps, repoRoot, options) {
         'safe_action_checkpoint'
       );
     },
+    onCheckpoint: createReviewCheckpointPersister({
+      loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+        storyId: state.story_id, runId: state.run_id
+      }),
+      persist: (selected, state) => persistAuthorityThenMirror(deps, state, selected.authorityFile,
+        selected.mirrorFile, 'safe_action_operation_checkpoint'),
+      now: () => toIso(deps.now())
+    }),
     runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
   });
+  const persistedAfterOwners = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+    storyId: loaded.state.story_id,
+    runId: loaded.state.run_id
+  });
   let next = {
-    ...decisionState,
+    ...persistedAfterOwners.state,
     current_head_sha: result.state.current_head_sha,
     action_journal: result.state.action_journal,
     ...resumeCursorPatch(result.state, decisionState)
@@ -482,6 +452,12 @@ function buildActionRunners(deps, loaded, options) {
     recovery: { missing_action_runner: actionId }
   });
   const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
+  // An explicitly supplied review owner remains the escape hatch for tests and
+  // alternative runtimes. The production default is composed only when the
+  // Guarded Run has its provider-neutral runtime coordinator.
+  if (!injected.review && deps.agentRuntimeCoordinator) {
+    autonomous.review = buildIndependentReviewRunner(deps, loaded, options);
+  }
   if (injected.final_prepare) {
     autonomous.final_prepare = async (context) => {
       const ownerResult = await injected.final_prepare(context);
@@ -507,14 +483,26 @@ function buildActionRunners(deps, loaded, options) {
     pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(repoRoot, { storyId, baseRef: options.baseRef })
   };
 }
-
+function buildIndependentReviewRunner(deps, loaded, options) {
+  const repoRoot = loaded.state.execution_context.root_realpath;
+  return createGuardedIndependentReviewRunner({
+    repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
+    agentReviewOps: deps.agentReviewOps,
+    dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
+      { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
+    pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+      { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
+    recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
+      { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
+    createError: (code, message) => new GuardedRunError(code, message)
+  });
+}
 function hasCompletedResumeCheckpoint(state, resumeNodeId) {
   if (resumeNodeId == null) return false;
   return state.action_journal.some((entry) => entry.node_id === resumeNodeId
     && entry.input_head_sha === state.current_head_sha
     && entry.status === 'completed');
 }
-
 function resumeCursorPatch(progress, source) {
   if (progress.action_profile === 'autonomous'
       && ['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(progress.status)) {
@@ -1895,7 +1883,7 @@ function validateRunShape(state) {
         || typeof entry.input_head_sha !== 'string'
         || typeof entry.output_head_sha !== 'string'
         || typeof entry.idempotency_key !== 'string'
-        || !['completed', 'failed', 'forbidden'].includes(entry.status)
+        || !['completed', 'failed', 'forbidden', 'checkpoint'].includes(entry.status)
         || !isIsoTimestamp(entry.started_at)
         || !isIsoTimestamp(entry.completed_at)) {
       throw contractError('invalid_state', 'Guarded Run action journal contains an invalid entry.', {

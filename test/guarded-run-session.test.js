@@ -77,6 +77,161 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   });
 });
 
+test('IRO-S-1 Guarded Run composes the production independent-review owner, persists its checkpoint, and keeps injected review runners authoritative', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const events = [];
+  let request = null;
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'codex',
+    async probe({ role }) { return role === 'review'
+      ? { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }
+      : { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+    async start(value) {
+      request = value;
+      return value.role === 'review'
+        ? { provider_run_id: 'iro-provider', agent_identity: value.reviewer_identity, session_id: 'iro-session', thread_id: 'iro-thread' }
+        : { provider_run_id: 'implementation-provider', agent_identity: 'implementer-1', session_id: 'implementation-session', thread_id: 'implementation-thread' };
+    },
+    async status() { return { status: 'completed' }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() {
+      if (request.role === 'implementation') return {
+        completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
+        test_suggestions: [], summary: 'implementation completed', agent_identity: 'implementer-1',
+        session_id: 'implementation-session', thread_id: 'implementation-thread', lifecycle: 'closed'
+      };
+      return {
+        completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
+        test_suggestions: [], summary: 'runtime review', agent_identity: request.reviewer_identity,
+        session_id: 'iro-session', thread_id: 'iro-thread', lifecycle: 'closed',
+        status: 'pass', inspection_summary: 'inspected fixture', inspection_inputs: ['src/guarded-run-session.js'],
+        judgment_delta: ['concern -> pass'], findings: []
+      };
+    }
+  }] });
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'repair'];
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    preparePullRequest: async () => ({
+      preparation: { gate_status: { ready_for_pr_create: true }, pr_context: { agent_reviews: { parallel_dispatch: { required_stages: [{ stage: 'implementation', roles: ['runtime_contract'] }] } } } }
+    }),
+    actionRunners: Object.fromEntries([...ids, 'final_prepare'].map((id) => [id, async () => ({ status: id === 'final_prepare' ? 'pr_ready' : 'continue' })])),
+    agentReviewOps: {
+      prepare: async (_root, value) => { events.push(['prepare', value.stage, value.roles]); return { status: 'prepared' }; },
+      authorize: async (_root, value) => { events.push(['authorize', value.stage, value.role]); return { authorization: { authorization_id: 'iro-auth', action: 'dispatch' } }; },
+      start: async (_root, value) => { events.push(['start', value.stage, value.role]); return { lifecycle: { lifecycle_id: 'iro-lifecycle', timeout_ms: 1000 } }; },
+      close: async (_root, value) => { events.push(['close', value.stage, value.role]); return { lifecycle: { lifecycle_id: value.lifecycleId } }; },
+      record: async (_root, value) => { events.push(['record', value.stage, value.role, value.status]); return { status: value.status }; }
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const implementation = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    request: {
+      adapter_id: 'codex', task_id: 'implementation-runtime', role: 'implementation',
+      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
+    }
+  });
+  await session.pollRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, dispatchId: implementation.dispatch.dispatch_id
+  });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined ? delete process.env.VIBEPRO_NEXT_BEST_ACTION : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'pr_ready');
+  assert.deepEqual(events, [
+    ['prepare', 'implementation', ['runtime_contract']], ['authorize', 'implementation', 'runtime_contract'],
+    ['start', 'implementation', 'runtime_contract'], ['close', 'implementation', 'runtime_contract'],
+    ['record', 'implementation', 'runtime_contract', 'pass']
+  ]);
+  const review = result.state.action_journal.find((entry) => entry.action_id === 'review');
+  assert.equal(review.status, 'completed');
+  assert.equal(review.checkpoint.at(-1).operation, 'record');
+  assert.equal(result.state.runtime_dispatches.filter((dispatch) => dispatch.role === 'review' && dispatch.status === 'completed').length, 1);
+  assert.equal(request.role, 'review');
+  assert.equal(request.implementation_identity, 'implementer-1');
+  assert.equal(request.implementation_session_id, 'implementation-session');
+  assert.equal(request.requirements.managed_worktree, fixture.source);
+
+  const injected = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    actionRunners: { review: async () => ({ status: 'continue', summary: 'explicit review runner' }) }
+  });
+  const injectedRun = await injected.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const injectedResult = await injected.orchestrate(fixture.source, { storyId: STORY_ID, runId: injectedRun.run_id });
+  assert.notEqual(injectedResult.state.stop_reason?.code, 'review_plan_unavailable');
+});
+
+test('IRO-S-3 Guarded Run persists an operation checkpoint before a review action stops and restores it after resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let invocation = 0;
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'repair'];
+  const session = fixture.session({
+    preparePullRequest: async () => ({
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
+      review: async ({ state, persistCheckpoint }) => {
+        invocation += 1;
+        if (invocation === 1) {
+          const checkpoint = [{ kind: 'independent_review', stage: 'implementation', role: 'runtime_contract', operation: 'dispatch' }];
+          await persistCheckpoint(checkpoint);
+          const operationDurable = await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+          assert.equal(operationDurable.action_journal.findLast((entry) => entry.status === 'checkpoint').checkpoint.at(-1).operation, 'dispatch');
+          return { status: 'waiting_for_runtime', stop_reason: 'runtime_timeout', checkpoint };
+        }
+        const saved = state.action_journal.findLast((entry) => entry.action_id === 'review' && Array.isArray(entry.checkpoint));
+        assert.equal(saved.checkpoint.at(-1).operation, 'dispatch');
+        return { status: 'continue', checkpoint: saved.checkpoint };
+      },
+      final_prepare: async () => ({ status: 'pr_ready' })
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined ? delete process.env.VIBEPRO_NEXT_BEST_ACTION : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+  const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.status, 'waiting_for_runtime');
+  const durable = await session.watch(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const savedCheckpoint = durable.action_journal.findLast((entry) => entry.action_id === 'review' && Array.isArray(entry.checkpoint));
+  assert.ok(savedCheckpoint, JSON.stringify(durable.action_journal));
+  assert.equal(savedCheckpoint.checkpoint.at(-1).operation, 'dispatch');
+
+  await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  const completed = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(completed.state.status, 'pr_ready', JSON.stringify(completed.state.stop_reason));
+  assert.equal(invocation, 2);
+});
+
+test('IRO-S-2 production review fails closed without actual implementation runtime provenance', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'codex',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { throw new Error('review must not dispatch without implementation provenance'); },
+    async status() { return { status: 'completed' }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { throw new Error('review must not collect without implementation provenance'); }
+  }] });
+  const completedBeforeReview = ['diagnose', 'prepare_artifacts', 'implement', 'verify'];
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    actionRunners: Object.fromEntries(completedBeforeReview.map((id) => [id, async () => ({ status: 'continue' })]))
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined ? delete process.env.VIBEPRO_NEXT_BEST_ACTION : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'implementation_provenance_unavailable');
+});
+
 test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const oldHead = fixture.identity(fixture.source).head_sha;
@@ -298,6 +453,33 @@ test('AAD-S-7 missing final_prepare owner cannot synthesize pr_ready', async (t)
   assert.equal(result.state.stop_reason.code, 'runtime_required');
   assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'final_prepare');
   assert.equal(gatePrepareCalls, 0);
+});
+
+test('IRO-S-1 Guarded Run executes the independent review action owner in the canonical DAG', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const calls = [];
+  const session = fixture.session({
+    preparePullRequest: async () => ({
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
+    actionRunners: Object.fromEntries(
+      ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'].map((id) => [id, async () => {
+        if (id === 'review') calls.push('independent_review');
+        return { status: id === 'final_prepare' ? 'pr_ready' : 'continue', ...(id === 'review' ? { checkpoint: [] } : {}) };
+      }])
+    )
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => {
+    if (previous === undefined) delete process.env.VIBEPRO_NEXT_BEST_ACTION;
+    else process.env.VIBEPRO_NEXT_BEST_ACTION = previous;
+  });
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'pr_ready');
+  assert.deepEqual(calls, ['independent_review']);
 });
 
 test('AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot', async (t) => {
@@ -618,7 +800,7 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
     async status() { return { status: runtimeStatus }; },
     async cancel() { runtimeStatus = 'cancelled'; },
     async collect_result() {
-      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'review pass', agent_identity: 'reviewer-2', lifecycle: 'closed' };
+      return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'review pass', agent_identity: 'reviewer-2', session_id: 'review-session', thread_id: 'review-thread', lifecycle: 'closed', status: 'pass', inspection_summary: 'fixture review', inspection_inputs: ['src/guarded-run-session.js'], judgment_delta: ['concern -> pass'], findings: [] };
     }
   }] });
   const session = fixture.session({
@@ -831,7 +1013,7 @@ test('ARA-S-4 Agent Review bridge revalidates persisted review provenance fail c
     async start() { return { provider_run_id: 'provider-review', agent_identity: 'reviewer-2', session_id: 'review-session' }; },
     async status() { return { status: runtimeStatus }; },
     async cancel() { return { status: 'cancelled' }; },
-    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', lifecycle: 'closed' }; }
+    async collect_result() { return { completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha, test_suggestions: [], summary: 'pass', agent_identity: 'reviewer-2', session_id: 'review-session', lifecycle: 'closed', status: 'pass', inspection_summary: 'fixture review', inspection_inputs: ['src/guarded-run-session.js'], judgment_delta: ['concern -> pass'], findings: [] }; }
   }] });
   let recordCalls = 0;
   const session = fixture.session({ agentRuntimeCoordinator: coordinator, recordAgentReview: async () => { recordCalls += 1; return { status: 'pass' }; } });

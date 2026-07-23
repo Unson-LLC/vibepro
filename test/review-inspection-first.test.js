@@ -83,9 +83,15 @@ test('review authorize prevents spawn before evidence, freeze, Story-wide budget
   const authorized = await authorizeAgentReviewDispatch(root, {
     storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
     reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
-    reusableEvidence: ['targeted:test']
+    reusableEvidence: ['targeted:test'], operationIdempotencyKey: 'gate:gate_evidence:authorize'
   });
   assert.equal(authorized.dispatch_decision.action, 'dispatch');
+  const replayedAuthorization = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
+    reusableEvidence: ['targeted:test'], operationIdempotencyKey: 'gate:gate_evidence:authorize'
+  });
+  assert.equal(replayedAuthorization.authorization.authorization_id, authorized.authorization.authorization_id);
   await assert.rejects(() => startAgentReviewLifecycle(root, {
     storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'missing-authorization'
   }), /requires --dispatch-authorization/);

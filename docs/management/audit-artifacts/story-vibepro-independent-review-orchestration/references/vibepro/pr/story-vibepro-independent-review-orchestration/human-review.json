@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "created_at": "2026-07-22T13:31:22.791Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-independent-review-orchestration/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-independent-review-orchestration/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-independent-review-orchestration/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-independent-review-orchestration.md, docs/architecture/target-model.json)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "9 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784726133103-42a32801",
+        "story_id": "story-vibepro-independent-review-orchestration",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "単一Storyとしてのreviewabilityを受理する",
+        "reason": "The 18 changed files form one lifecycle contract across the Independent Review owner, runtime adapters, Guarded Run composition, SSOT, and direct tests. Existing split-plan, Graphify blast radius, responsibility authority, and two independent final reviews establish a coherent owner and review surface; splitting would create incomplete production composition or provenance contracts.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-independent-review-orchestration/split-plan.summary.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/verify-artifacts/independent-review-final-aee9e977.status.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "aee9e977a2391d8bd635047f818ea026570fdd21",
+          "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-22T13:15:33.102Z"
+        },
+        "recorded_at": "2026-07-22T13:15:33.103Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-22T13:31:18.770Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "c4ccdcbd481be0b2992ae72772d5dd050e9897e4",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
