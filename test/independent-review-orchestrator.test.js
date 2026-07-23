@@ -181,9 +181,15 @@ test('IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, work
     const result = await orchestrateIndependentReview({ stages: [stages[0]], boundaries: boundaries({ events, stop: { [operation]: { status: 'waiting_for_runtime', stop_reason: { code, message: code } } } }) });
     assert.equal(result.verdict, 'block');
     assert.equal(result.stop_reason.code, code);
-    if (operation === 'dispatch' || operation === 'poll') assert.equal(events.some((event) => event.startsWith('close:')), true);
+    if (operation === 'dispatch' || operation === 'poll') {
+      assert.equal(events.some((event) => event.startsWith('close:')), !RETRYABLE_REVIEW_STOPS.has(code));
+    }
   }
 });
+
+const RETRYABLE_REVIEW_STOPS = new Set([
+  'runtime_unavailable', 'auth_denied', 'permission_wait', 'review_readonly_unavailable'
+]);
 
 test('IRO-S-6 same-session/runtime rejection and a needs_changes result are contained', async () => {
   const rejected = await orchestrateIndependentReview({ stages: [stages[0]], boundaries: boundaries({ stop: { dispatch: { status: 'waiting_for_runtime', stop_reason: { code: 'review_session_not_separate', message: 'same session' } } } }) });
@@ -303,6 +309,77 @@ test('IRO-S-3 interrupted active review poll resumes the same dispatch and conve
   assert.equal(events.filter((event) => event === 'poll').length, 2);
 });
 
+test('IRO-S-3 production read-only stop is typed and resume redispatches the reserved review', async () => {
+  const events = [];
+  const operationKeys = [];
+  let checkpoint = [];
+  let readOnlyAvailable = false;
+  const runner = guardedRuntimeRunner({
+    events,
+    dispatchRuntime: async (_state, _request, operation) => {
+      events.push('dispatch');
+      operationKeys.push(operation?.idempotency_key);
+      if (!readOnlyAvailable) {
+        return {
+          state: {
+            status: 'waiting_for_runtime',
+            stop_reason: {
+              code: 'review_readonly_unavailable',
+              message: 'read-only review sandbox unavailable',
+              details: { recovery: { next_command: 'vibepro execute resume . --run-id run --until pr-ready' } }
+            }
+          },
+          dispatch: {
+            dispatch_id: 'review-dispatch',
+            provider_run_id: null,
+            status: 'waiting_for_runtime',
+            stop_reason: {
+              code: 'review_readonly_unavailable',
+              message: 'read-only review sandbox unavailable',
+              details: { recovery: { next_command: 'vibepro execute resume . --run-id run --until pr-ready' } }
+            }
+          }
+        };
+      }
+      return { dispatch: { dispatch_id: 'review-dispatch', status: 'running' } };
+    },
+    pollRuntime: async () => completedRuntimeReview()
+  });
+  const state = guardedRuntimeState();
+  const stopped = await runner({
+    state,
+    action: { id: 'review', node_id: 'review' },
+    persistCheckpoint: async (next) => { checkpoint = structuredClone(next); }
+  });
+  assert.equal(stopped.status, 'waiting_for_runtime');
+  assert.equal(stopped.stop_reason, 'review_readonly_unavailable');
+  assert.equal(stopped.recovery.next_command, 'vibepro execute resume . --run-id run --until pr-ready');
+  assert.equal(checkpoint.find((entry) => entry.operation === 'dispatch').state, 'reserved');
+  assert.equal(events.includes('close'), false);
+
+  readOnlyAvailable = true;
+  const resumedState = guardedRuntimeState();
+  resumedState.action_journal = [{
+    action_id: 'review',
+    output_head_sha: resumedState.current_head_sha,
+    status: 'checkpoint',
+    checkpoint
+  }];
+  const resumed = await runner({
+    state: resumedState,
+    action: { id: 'review', node_id: 'review' },
+    persistCheckpoint: async (next) => { checkpoint = structuredClone(next); }
+  });
+  assert.equal(resumed.status, 'continue');
+  assert.equal(resumed.verdict, 'pass');
+  assert.equal(events.filter((event) => event === 'dispatch').length, 2);
+  assert.deepEqual(operationKeys, [
+    'gate:runtime_contract:dispatch',
+    'gate:runtime_contract:dispatch'
+  ]);
+  assert.equal(events.filter((event) => event === 'close').length, 1);
+});
+
 test('IRO-S-5 active review timeout cancels the dispatch and remains a typed stop', async () => {
   const events = [];
   let clock = 0;
@@ -326,6 +403,7 @@ test('IRO-S-5 active review timeout cancels the dispatch and remains a typed sto
 function guardedRuntimeRunner({
   events,
   pollRuntime,
+  dispatchRuntime,
   lifecycleTimeoutMs = 1000,
   now,
   waitForRuntimePoll = async () => {}
@@ -350,10 +428,10 @@ function guardedRuntimeRunner({
       start: async () => ({ lifecycle: { lifecycle_id: 'lifecycle', timeout_ms: lifecycleTimeoutMs } }),
       close: async () => { events.push('close'); return { status: 'closed' }; }
     },
-    dispatchRuntime: async () => {
+    dispatchRuntime: dispatchRuntime ?? (async () => {
       events.push('dispatch');
       return { dispatch: { dispatch_id: 'review-dispatch', status: 'running' } };
-    },
+    }),
     pollRuntime,
     cancelRuntime: async () => {
       events.push('cancel');

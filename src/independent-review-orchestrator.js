@@ -24,6 +24,9 @@ const TERMINAL_STOP_CODES = new Set([
 ]);
 const VERDICTS = new Set(['pass', 'needs_changes', 'block']);
 const ACTIVE_RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait']);
+const RETRYABLE_RUNTIME_STOP_CODES = new Set([
+  'runtime_unavailable', 'auth_denied', 'permission_wait', 'review_readonly_unavailable'
+]);
 
 export class IndependentReviewOrchestrationError extends Error {
   constructor(code, message, details = {}) {
@@ -198,13 +201,13 @@ export function createGuardedIndependentReviewRunner({
         dispatchAuthorization: authorization.authorization?.authorization_id,
         operationIdempotencyKey: operation.idempotency_key
       }),
-      dispatch: async ({ state, stage, role, lifecycle }) => dispatchRuntime(state, {
+      dispatch: async ({ state, stage, role, lifecycle, operation }) => dispatchRuntime(state, {
         adapter_id: 'codex', task_id: `independent-review:${stage}:${role}`, role: 'review',
         reviewer_identity: reviewerIdentity(state, stage, role),
         implementation_identity: implementationProvenance.agent_identity,
         implementation_session_id: implementationProvenance.session_id,
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
-      }),
+      }, operation),
       poll: async ({ state, lifecycle, dispatch }) => pollReviewRuntimeUntilTerminal({
         state,
         lifecycle,
@@ -336,6 +339,23 @@ function normalizePoll(result) {
   };
 }
 
+function normalizeRuntimeDispatch(result) {
+  if (isStop(result)) return result;
+  const stopReason = result?.dispatch?.stop_reason ?? result?.state?.stop_reason;
+  const runtimeStatus = result?.dispatch?.status ?? result?.state?.status;
+  if (!stopReason?.code || !['waiting_for_runtime', 'blocked', 'failed', 'waiting_for_human'].includes(runtimeStatus)) {
+    return result;
+  }
+  return {
+    status: runtimeStatus === 'failed' ? 'failed' : runtimeStatus === 'waiting_for_human' ? 'waiting_for_human' : 'waiting_for_runtime',
+    stop_reason: {
+      code: stopReason.code,
+      message: stopReason.message ?? 'review runtime dispatch stopped before provider execution',
+      details: stopReason.details ?? {}
+    }
+  };
+}
+
 async function pollReviewRuntimeUntilTerminal({
   state,
   lifecycle,
@@ -399,14 +419,32 @@ async function runRole({ boundaries, context, journal, stage, role, persistCheck
   }
   const lifecycle = await once(journal, stage, role, 'start', (operation) => boundaries.start({ ...base, authorization, operation }), persistCheckpoint);
   if (isStop(lifecycle)) return lifecycle;
-  const dispatched = await once(journal, stage, role, 'dispatch', (operation) => boundaries.dispatch({ ...base, authorization, lifecycle, operation }), persistCheckpoint);
+  const dispatched = await once(
+    journal,
+    stage,
+    role,
+    'dispatch',
+    async (operation) => normalizeRuntimeDispatch(await boundaries.dispatch({ ...base, authorization, lifecycle, operation })),
+    persistCheckpoint,
+    { retryableRuntimeStop: true }
+  );
   if (isStop(dispatched)) {
+    if (isRetryableRuntimeStop(dispatched)) return dispatched;
     const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: dispatched, journal, stage, role, persistCheckpoint });
     if (isStop(cleanup)) return cleanup;
     return dispatched;
   }
-  const polled = await once(journal, stage, role, 'poll', (operation) => boundaries.poll({ ...base, lifecycle, dispatch: dispatched, operation }), persistCheckpoint);
+  const polled = await once(
+    journal,
+    stage,
+    role,
+    'poll',
+    (operation) => boundaries.poll({ ...base, lifecycle, dispatch: dispatched, operation }),
+    persistCheckpoint,
+    { retryableRuntimeStop: true }
+  );
   if (isStop(polled)) {
+    if (isRetryableRuntimeStop(polled)) return polled;
     const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: polled, journal, stage, role, persistCheckpoint });
     if (isStop(cleanup)) return cleanup;
     return polled;
@@ -426,7 +464,7 @@ async function closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch, st
   }), persistCheckpoint);
 }
 
-async function once(journal, stage, role, operation, invoke, persistCheckpoint) {
+async function once(journal, stage, role, operation, invoke, persistCheckpoint, options = {}) {
   const existing = journal.find((entry) => entry.stage === stage.stage && entry.role === roleName(role) && entry.operation === operation);
   if (existing?.state === 'completed' || (existing && !existing.state)) return existing.result;
   const entry = existing ?? {
@@ -447,11 +485,11 @@ async function once(journal, stage, role, operation, invoke, persistCheckpoint) 
     if (error?.code) result = typedStop(error.code, error.message, error.details);
     else throw error;
   }
-  entry.state = 'completed';
+  entry.state = options.retryableRuntimeStop && isRetryableRuntimeStop(result) ? 'reserved' : 'completed';
   entry.result = result;
-  // Successful and stopped attempts are both durable. This makes the journal
-  // a complete exactly-once operation ledger and prevents a restart from
-  // silently retrying a terminal poll or lifecycle transition.
+  // Terminal results remain exactly-once. Provider-readiness stops retain the
+  // reservation so resume reconciles the same idempotency key after the
+  // operator fixes auth, permission, capability, or read-only isolation.
   await persistCheckpoint?.(journal.map((entry) => ({ ...entry })));
   return result;
 }
@@ -482,6 +520,7 @@ function hasRecorded(journal, stage, role) {
 function recordedResult(journal, stage, role) { const entry = journal.find((item) => item.stage === stage.stage && item.role === roleName(role) && item.operation === 'record'); return { status: 'completed', verdict: entry.result.verdict ?? entry.result.status, record: entry.result }; }
 function roleName(role) { return typeof role === 'string' ? role : role.role; }
 function isStop(value) { return value?.status === 'waiting_for_runtime' || value?.status === 'blocked' || value?.status === 'failed' || value?.status === 'waiting_for_human'; }
+function isRetryableRuntimeStop(value) { return isStop(value) && RETRYABLE_RUNTIME_STOP_CODES.has(value?.stop_reason?.code); }
 function typedStop(code, message, details = {}) { return { status: terminalStatus(code), stop_reason: { code, message, details } }; }
 function terminalStatus(code) { return TERMINAL_STOP_CODES.has(code) ? 'waiting_for_runtime' : 'blocked'; }
 function stopResult(value, journal, stage) { return { status: value.status, verdict: 'block', journal, stage, stop_reason: value.stop_reason ?? { code: 'review_orchestration_stopped', message: 'review orchestration stopped' } }; }

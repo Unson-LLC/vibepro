@@ -293,16 +293,7 @@ test('OCR-S-1 permission wait stops without containment and preserves same-Run r
       };
     }
   }] });
-  const session = fixture.session({
-    agentRuntimeCoordinator: coordinator,
-    actionRunners: {
-      implement: async () => ({
-        status: 'blocked',
-        stop_reason: 'fixture_after_permission_recovery',
-        summary: 'permission recovery advanced to the next DAG owner'
-      })
-    }
-  });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
   await session.run(fixture.source, {
     storyId: STORY_ID,
     actionProfile: 'autonomous',
@@ -329,8 +320,9 @@ test('OCR-S-1 permission wait stops without containment and preserves same-Run r
   approved = true;
   const continued = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(continued.state.run_id, RUN_ID);
-  assert.equal(continued.state.status, 'blocked');
-  assert.equal(continued.state.stop_reason.code, 'fixture_after_permission_recovery');
+  assert.notEqual(continued.state.stop_reason?.code, 'permission_wait');
+  assert.equal(continued.state.action_journal.some((entry) =>
+    entry.action_id === 'implement' && entry.status === 'completed' && entry.output_head_sha === nextHead), true);
   assert.equal(statusCalls, 2);
   assert.equal(cancelled, false);
 });

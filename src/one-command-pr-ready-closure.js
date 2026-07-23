@@ -427,7 +427,7 @@ async function runImplementationRuntime({
   };
   let observed = await dispatchRuntime({ ...context, request, providerFallbacks });
   const deadline = Date.now() + runtimeTimeoutMs;
-  if (isRuntimePermissionWait(observed) && Date.now() < deadline) {
+  if (observed?.reused && isRuntimePermissionWait(observed) && Date.now() < deadline) {
     observed = await pollRuntime({
       ...context,
       state: observed.state ?? context.state,
