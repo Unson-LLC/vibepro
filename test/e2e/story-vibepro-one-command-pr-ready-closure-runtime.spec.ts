@@ -20,6 +20,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
+import { runCli } from "../../src/cli.js";
 import { createGuardedRunSession } from "../../src/guarded-run-session.js";
 import { createOneCommandPrReadyActionOwners } from "../../src/one-command-pr-ready-closure.js";
 import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
@@ -347,6 +348,112 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
     })
   });
   assert.equal((await cancelled.implement(context("implement"))).stop_reason, "runtime_cancelled");
+});
+
+test("scenario:S-004 public guarded Run CLI persists typed stops across resume, render, and cancel", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-public-run-e2e-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const storyId = "story-vibepro-one-command-pr-ready-closure-public-run-e2e";
+  await execFileAsync("git", ["init", "-b", "main"], { cwd: root });
+  await execFileAsync("git", ["config", "user.name", "VibePro E2E"], { cwd: root });
+  await execFileAsync("git", ["config", "user.email", "vibepro-e2e@example.invalid"], { cwd: root });
+  await mkdir(path.join(root, ".vibepro"), { recursive: true });
+  await writeFile(path.join(root, ".vibepro", "config.json"), JSON.stringify({
+    schema_version: "0.1.0",
+    brainbase: {
+      stories: [{ story_id: storyId, title: "OCR public guarded Run E2E" }]
+    },
+    execution: { managed_worktree: "disabled" }
+  }, null, 2) + "\n");
+  await writeFile(path.join(root, "README.md"), "# guarded Run public E2E\n");
+  await execFileAsync("git", ["add", "."], { cwd: root });
+  await execFileAsync("git", ["commit", "-m", "test: initialize guarded Run public E2E"], { cwd: root });
+
+  let implementAttempts = 0;
+  const guardedRunDependencies = {
+    now: () => new Date("2026-07-24T00:00:00.000Z"),
+    randomBytes: () => Buffer.from([1, 2, 3, 4]),
+    actionRunners: {
+      diagnose: async () => ({ status: "continue", summary: "fixture diagnosis complete" }),
+      prepare_artifacts: async () => ({ status: "continue", summary: "fixture artifacts ready" }),
+      implement: async () => {
+        implementAttempts += 1;
+        return implementAttempts === 1
+          ? {
+              status: "waiting_for_runtime",
+              stop_reason: "runtime_unavailable",
+              recovery: {
+                provider: "deterministic-e2e",
+                required_capabilities: ["workspace_write"]
+              },
+              summary: "deterministic runtime is unavailable"
+            }
+          : {
+              status: "blocked",
+              stop_reason: "verification_failed",
+              recovery: { required_actions: ["refresh focused verification evidence"] },
+              summary: "deterministic verification stop after resume"
+            };
+      }
+    }
+  };
+  const invoke = async (args, { json = true } = {}) => {
+    let stdout = "";
+    const invocation = await runCli([...args, ...(json ? ["--json"] : [])], {
+      guardedRunDependencies,
+      stdout: { write: (chunk) => { stdout += chunk; } },
+      stderr: { write: (chunk) => { stdout += chunk; } }
+    });
+    return { invocation, stdout };
+  };
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = "off";
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const started = await invoke([
+    "execute", "run", root, "--story-id", storyId,
+    "--until", "pr-ready", "--autonomy", "guarded", "--action-profile", "autonomous"
+  ]);
+  assert.equal(started.invocation.exitCode, 0);
+  assert.equal(started.invocation.result.state.status, "waiting_for_runtime");
+  assert.equal(started.invocation.result.state.stop_reason.code, "runtime_unavailable");
+  const runId = started.invocation.result.state.run_id;
+  const stateFile = path.join(root, ".vibepro", "executions", storyId, "runs", runId, "state.json");
+  const initialState = JSON.parse(await readFile(stateFile, "utf8"));
+  assert.equal(initialState.status, "waiting_for_runtime");
+  assert.equal(initialState.resume_from_node_id, "implement");
+  assert.equal(initialState.stop_reason.details.recovery.action, "resume_run");
+
+  const resumed = await invoke([
+    "execute", "resume", root, "--story-id", storyId, "--run-id", runId, "--until", "pr-ready"
+  ]);
+  assert.equal(resumed.invocation.exitCode, 0);
+  assert.equal(resumed.invocation.result.state.status, "blocked");
+  assert.equal(resumed.invocation.result.state.stop_reason.code, "verification_failed");
+  const resumedState = JSON.parse(await readFile(stateFile, "utf8"));
+  assert.equal(implementAttempts, 2);
+  assert.equal(resumedState.retry_journal.at(-1).stop_code, "runtime_unavailable");
+  assert.equal(resumedState.stop_reason.code, "verification_failed");
+
+  const rendered = await invoke([
+    "execute", "status", root, "--story-id", storyId, "--run-id", runId
+  ], { json: false });
+  assert.equal(rendered.invocation.exitCode, 0);
+  assert.match(rendered.stdout, /# VibePro Guarded Run/);
+  assert.match(rendered.stdout, /- status: blocked/);
+  assert.match(rendered.stdout, /- stop_reason: verification_failed:/);
+  assert.match(rendered.stdout, /next_command: vibepro execute resume/);
+
+  const cancelled = await invoke([
+    "execute", "cancel", root, "--story-id", storyId, "--run-id", runId
+  ]);
+  assert.equal(cancelled.invocation.exitCode, 0);
+  assert.equal(cancelled.invocation.result.status, "cancelled");
+  const cancelledState = JSON.parse(await readFile(stateFile, "utf8"));
+  assert.equal(cancelledState.stop_reason.code, "cancelled_by_operator");
+  assert.equal(cancelledState.transitions.at(-1).reason, "operator_cancelled");
 });
 
 test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {
