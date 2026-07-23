@@ -117,6 +117,7 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
   const dispatchRuntime = async (_state, request) => {
     const id = `dispatch-${createHash('sha256').update(`${RUN_ID}:${request.adapter_id}:${request.task_id}:${request.role}:${head}:${request.reviewer_identity}:implementation-session`).digest('hex').slice(0, 16)}`;
     const dispatch = { dispatch_id: id, run_id: RUN_ID, adapter_id: request.adapter_id, task_id: request.task_id, role: 'review', input_head_sha: head,
+      inspection_surface_hash: head,
       reviewer_identity: request.reviewer_identity, implementation_identity: 'implementer', implementation_session_id: 'implementation-session', agent_identity: request.reviewer_identity,
       session_id: `review-session-${request.task_id.split(':').at(-1)}`, thread_id: `review-thread-${request.task_id.split(':').at(-1)}`, sandbox: 'read-only', requirements: request.requirements, status: 'completed' };
     dispatches.set(id, dispatch); state.runtime_dispatches = [...state.runtime_dispatches, dispatch];
@@ -132,7 +133,13 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
     repoRoot: root, baseRef: 'HEAD', agentReviewOps,
     preparePullRequest: async () => ({ preparation: { pr_context: { agent_reviews: { parallel_dispatch: { required_stages: [{ stage: 'gate', roles: ['gate_evidence', 'pr_split_scope', 'release_risk'] }] } } } } }),
     dispatchRuntime, pollRuntime,
-    recordRuntimeReview: (runState, dispatchId, review) => recordGuardedRuntimeReview({ deps: { agentReviewOps }, repoRoot: root, options: { dispatchId, review }, loadRun: async () => ({ state: runState }), createError: (code, message) => Object.assign(new Error(message), { code }) }),
+    recordRuntimeReview: (runState, dispatchId, review) => recordGuardedRuntimeReview({
+      deps: { agentReviewOps }, repoRoot: root, options: { dispatchId, review },
+      loadRun: async () => ({ state: runState }),
+      persistRun: async (nextState) => Object.assign(runState, nextState),
+      now: () => '2026-07-22T01:02:03.000Z',
+      createError: (code, message) => Object.assign(new Error(message), { code })
+    }),
     createError: (code, message) => Object.assign(new Error(message), { code })
   });
   let checkpoint = [];
