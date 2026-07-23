@@ -10,6 +10,10 @@ const auditableOverride = {
   critical_unresolved_gates: [],
   unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
 };
+const matchingGateStatus = {
+  unresolved_gates: [{ id: 'gate:validation_sequencing', status: 'needs_evidence' }],
+  critical_unresolved_gates: []
+};
 
 test('MWP-AC-1 ready Gate DAG remains merge-authorized without a waiver', () => {
   const result = buildMergeGateAuthorization({ overall_status: 'ready_for_review' }, null);
@@ -21,7 +25,8 @@ test('MWP-AC-1 ready Gate DAG remains merge-authorized without a waiver', () => 
 test('MWP-AC-2 current PR create auditable noncritical waiver authorizes merge', () => {
   const result = buildMergeGateAuthorization(
     { overall_status: 'needs_verification' },
-    { gate_override: auditableOverride }
+    { gate_override: auditableOverride },
+    matchingGateStatus
   );
   assert.equal(result.allowed, true);
   assert.equal(result.source, 'pr_create_gate_override');
@@ -33,6 +38,8 @@ test('MWP-AC-3 malformed or critical waivers fail closed', () => {
     [null, 'gate_override_not_allowed'],
     [{ ...auditableOverride, reason: ' ' }, 'gate_override_reason_missing'],
     [{ ...auditableOverride, waiver_policy: '' }, 'gate_override_policy_missing'],
+    [{ ...auditableOverride, unresolved_gates: undefined }, 'gate_override_targets_missing'],
+    [{ ...auditableOverride, unresolved_gates: [{ id: '' }] }, 'gate_override_targets_invalid'],
     [{ ...auditableOverride, critical_unresolved_gates: undefined }, 'gate_override_critical_gates_unknown'],
     [{ ...auditableOverride, critical_unresolved_gates: [{ id: 'gate:critical' }] }, 'gate_override_contains_critical_gates']
   ];
@@ -44,8 +51,46 @@ test('MWP-AC-3 malformed or critical waivers fail closed', () => {
 test('MWP-AC-3 nested execution override remains compatible with persisted PR create shape', () => {
   const result = buildMergeGateAuthorization(
     { overall_status: 'needs_verification' },
-    { execution: { gate_override: auditableOverride } }
+    { execution: { gate_override: auditableOverride } },
+    matchingGateStatus
   );
   assert.equal(result.allowed, true);
   assert.equal(result.source, 'pr_create_gate_override');
+});
+
+test('MWP-AC-3 waiver targets must exactly match the current Gate status', () => {
+  const omittedTargets = buildMergeGateAuthorization(
+    { overall_status: 'needs_verification' },
+    { gate_override: { ...auditableOverride, unresolved_gates: [] } },
+    matchingGateStatus
+  );
+  assert.equal(omittedTargets.allowed, false);
+  assert.equal(omittedTargets.reason, 'gate_override_targets_missing');
+
+  const mismatchedTargets = buildMergeGateAuthorization(
+    { overall_status: 'needs_verification' },
+    { gate_override: auditableOverride },
+    {
+      unresolved_gates: [{ id: 'gate:different' }],
+      critical_unresolved_gates: []
+    }
+  );
+  assert.equal(mismatchedTargets.allowed, false);
+  assert.equal(mismatchedTargets.reason, 'gate_override_targets_mismatch');
+});
+
+test('MWP-AC-3 current critical Gate status cannot be suppressed by waiver authority', () => {
+  const result = buildMergeGateAuthorization(
+    { overall_status: 'needs_verification' },
+    { gate_override: auditableOverride },
+    {
+      unresolved_gates: [
+        { id: 'gate:validation_sequencing' },
+        { id: 'gate:e2e' }
+      ],
+      critical_unresolved_gates: [{ id: 'gate:e2e' }]
+    }
+  );
+  assert.equal(result.allowed, false);
+  assert.equal(result.reason, 'current_gate_status_contains_critical_gates');
 });

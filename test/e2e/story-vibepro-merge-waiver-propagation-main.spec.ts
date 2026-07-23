@@ -23,8 +23,13 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10
         allowed: true,
         reason: 'accepted noncritical verification boundary',
         waiver_policy: 'allow_needs_verification',
-        critical_unresolved_gates: []
+        critical_unresolved_gates: [],
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }]
       }
+    },
+    {
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
     }
   );
   assert.equal(authorized.allowed, true, 'ac-6 AC-2 current HEAD audited noncritical waiver satisfies merge precondition');
@@ -44,7 +49,8 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10
         allowed: true,
         reason: 'critical authority must not merge',
         waiver_policy: 'allow_needs_verification',
-        critical_unresolved_gates: ['gate:critical']
+        unresolved_gates: [{ id: 'gate:critical' }],
+        critical_unresolved_gates: [{ id: 'gate:critical' }]
       }
     }
   );
