@@ -521,7 +521,7 @@
         "story_id": "story-vibepro-autonomous-action-dag",
         "title": "Guarded Runを完全な型付き自律Action DAGへ拡張する",
         "ssot": "local",
-        "status": "active",
+        "status": "completed",
         "horizon": "now",
         "view": "dev",
         "period": "2026-07",
