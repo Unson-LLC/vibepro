@@ -657,11 +657,15 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
     async status() { return { status: 'completed' }; },
     async cancel() { return { status: 'cancelled' }; },
     async collect_result() {
-      if (request.role === 'implementation') return {
-        completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
-        test_suggestions: [], summary: 'implementation completed', agent_identity: 'implementer-1',
-        session_id: 'implementation-session', thread_id: 'implementation-thread', lifecycle: 'closed'
-      };
+      if (request.role === 'implementation') {
+        const implementationHead = 'b'.repeat(40);
+        fixture.setHead(fixture.source, implementationHead);
+        return {
+          completion_status: 'completed', changed_files: ['src/implementation.js'], head_sha: implementationHead,
+          test_suggestions: [], summary: 'implementation completed', agent_identity: 'implementer-1',
+          session_id: 'implementation-session', thread_id: 'implementation-thread', lifecycle: 'closed'
+        };
+      }
       return {
         completion_status: 'completed', changed_files: [], head_sha: fixture.identity(fixture.source).head_sha,
         test_suggestions: [], summary: 'runtime review', agent_identity: request.reviewer_identity,
