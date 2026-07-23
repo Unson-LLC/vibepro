@@ -5898,6 +5898,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storyId: story.story_id,
     riskProfile: changeClassification.profile,
     riskSurfaces: changeClassification.risk_surfaces,
+    inspectionInputs: git.changed_files.map((file) => file.path),
     headSha: git.head_sha
   });
   if (validationSequence.plan.required && validationSequence !== persistedValidationSequence) {

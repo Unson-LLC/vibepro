@@ -99,6 +99,7 @@ test('high-risk plan schedules one canonical aggregate boundary preflight before
     stage: 'architecture_spec', role: 'architecture_boundary',
     surfaces: ['core_workflow_state', 'auth_boundary']
   }]);
+  assert.deepEqual(state.plan.preflight_required_inspection_inputs, []);
   assert.ok(state.plan.phases.indexOf('preflight_review') < state.plan.phases.indexOf('expensive_verification'));
 });
 
@@ -108,12 +109,48 @@ test('aggregate preflight inspection inputs fail closed without design runtime a
     /must cover design, runtime, and test surfaces/
   );
   assert.throws(
-    () => validatePreflightInspectionInputs(['docs/specs/story.md', 'src/runtime.js']),
+    () => validatePreflightInspectionInputs(['docs/specs/story.md', 'src/runtime.js'], ['docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js']),
     /must cover design, runtime, and test surfaces/
   );
   assert.deepEqual(validatePreflightInspectionInputs([
     'docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js'
+  ], [
+    'docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js'
   ]), ['docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js']);
+});
+
+test('aggregate preflight inspection inputs cover every planned changed path', () => {
+  const required = [
+    'docs/architecture/story.md',
+    'src/validation-sequencing.js',
+    'src/pr-manager.js',
+    'test/validation-sequencing.test.js'
+  ];
+  assert.throws(
+    () => validatePreflightInspectionInputs([
+      'docs/architecture/story.md',
+      'src/validation-sequencing.js',
+      'test/validation-sequencing.test.js'
+    ]),
+    /requires a planned current changed-path inspection union/
+  );
+  assert.throws(
+    () => validatePreflightInspectionInputs([
+      'docs/architecture/story.md',
+      'src/validation-sequencing.js',
+      'test/validation-sequencing.test.js'
+    ], required),
+    /do not cover every planned changed path: src\/pr-manager\.js/
+  );
+  assert.deepEqual(validatePreflightInspectionInputs([
+    'docs/architecture/story.md',
+    'src',
+    'test/validation-sequencing.test.js'
+  ], required), [
+    'docs/architecture/story.md',
+    'src',
+    'test/validation-sequencing.test.js'
+  ]);
 });
 
 test('auth-only plan emits a canonical producible aggregate review', () => {

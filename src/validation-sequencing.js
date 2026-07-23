@@ -40,11 +40,12 @@ const TERMINAL_PREFLIGHT_DISPOSITIONS = new Set([
   'resolved'
 ]);
 
-export function buildValidationSequencePlan({ storyId, riskProfile = 'light', riskSurfaces = [] } = {}) {
+export function buildValidationSequencePlan({ storyId, riskProfile = 'light', riskSurfaces = [], inspectionInputs = [] } = {}) {
   const preflightSurfaces = [...new Set(riskSurfaces.filter((surface) => PREFLIGHT_SENSITIVE_SURFACES.has(surface)))];
   const boundarySensitive = preflightSurfaces.length > 0;
   const required = riskProfile === 'workflow_heavy' || riskProfile === 'api_contract' || boundarySensitive;
   const reviews = required ? [{ ...AGGREGATE_REVIEW, surfaces: preflightSurfaces }] : [];
+  const requiredInspectionInputs = normalizeInspectionInputs(inspectionInputs);
   return {
     model: VALIDATION_SEQUENCE_MODEL,
     story_id: storyId ?? null,
@@ -54,6 +55,7 @@ export function buildValidationSequencePlan({ storyId, riskProfile = 'light', ri
     preflight_roles: reviews.map((review) => review.role),
     preflight_reviews: reviews,
     preflight_surfaces: preflightSurfaces,
+    preflight_required_inspection_inputs: requiredInspectionInputs,
     phases: VALIDATION_PHASES
   };
 }
@@ -78,8 +80,8 @@ export function createValidationSequenceState({ plan, headSha = null, testFinger
   };
 }
 
-export function reconcileValidationSequenceState(state, { storyId, riskProfile = 'light', riskSurfaces = [], headSha = null, reconciledAt = new Date().toISOString() } = {}) {
-  const currentPlan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces });
+export function reconcileValidationSequenceState(state, { storyId, riskProfile = 'light', riskSurfaces = [], inspectionInputs = [], headSha = null, reconciledAt = new Date().toISOString() } = {}) {
+  const currentPlan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces, inspectionInputs });
   if (!state) return createValidationSequenceState({ plan: currentPlan, headSha, createdAt: reconciledAt });
   if (samePlan(state.plan, currentPlan)) {
     if (!headSha || state.proposed_binding?.head_sha === headSha) return state;
@@ -262,7 +264,13 @@ export async function validateValidationPhaseEvidence(repoRoot, evidencePath, { 
   return { status: 'verified', artifact: path.relative(root, absolute).replaceAll('\\', '/') };
 }
 
-export async function validatePreflightReviewEvidence(repoRoot, evidencePath, { storyId, headSha, roles = [], reviews = [] } = {}) {
+export async function validatePreflightReviewEvidence(repoRoot, evidencePath, {
+  storyId,
+  headSha,
+  roles = [],
+  reviews = [],
+  requiredInspectionInputs = []
+} = {}) {
   const provenance = await readFinalReviewProvenance(repoRoot, evidencePath);
   if (provenance.story_id !== storyId || provenance.head_sha !== headSha
     || provenance.status !== 'pass' || !roles.includes(provenance.role)) {
@@ -274,19 +282,39 @@ export async function validatePreflightReviewEvidence(repoRoot, evidencePath, { 
   if (!planned || !provenance.inspection_summary.includes(coverageMarker)) {
     throw new Error(`preflight_review requires canonical inspection coverage metadata: ${coverageMarker}`);
   }
-  validatePreflightInspectionInputs(provenance.inspection_inputs);
+  validatePreflightInspectionInputs(provenance.inspection_inputs, requiredInspectionInputs);
   return { evidenceValidation: { status: 'verified' }, reviewProvenance: provenance };
 }
 
-export function validatePreflightInspectionInputs(inputs = []) {
-  const normalized = [...new Set(inputs.map((input) => String(input).replaceAll('\\', '/').replace(/^\.\//, '')))].filter(Boolean);
-  const hasDesignInput = normalized.some((input) => /^(docs\/management\/stories|docs\/architecture|docs\/specs)\//.test(input));
-  const hasRuntimeInput = normalized.some((input) => /^(src|bin|lib|app|apps|packages)\//.test(input));
-  const hasTestInput = normalized.some((input) => /^(test|tests|__tests__)\//.test(input) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(input));
+export function validatePreflightInspectionInputs(inputs = [], requiredInputs = []) {
+  const normalized = normalizeInspectionInputs(inputs);
+  const hasDesignInput = normalized.some((input) => /^(docs\/management\/stories|docs\/architecture|docs\/specs)(?:\/|$)/.test(input));
+  const hasRuntimeInput = normalized.some((input) => /^(src|bin|lib|app|apps|packages)(?:\/|$)/.test(input));
+  const hasTestInput = normalized.some((input) => /^(test|tests|__tests__)(?:\/|$)/.test(input) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(input));
   if (!hasDesignInput || !hasRuntimeInput || !hasTestInput) {
     throw new Error('preflight_review inspection inputs must cover design, runtime, and test surfaces; generated review artifacts or marker text alone are insufficient');
   }
+  const required = normalizeInspectionInputs(requiredInputs);
+  if (required.length === 0) {
+    throw new Error('preflight_review requires a planned current changed-path inspection union; re-run sequence plan with --inspection-input for every changed path');
+  }
+  const uncovered = required.filter((requiredPath) => (
+    !normalized.some((input) => inspectionInputCoversPath(input, requiredPath))
+  ));
+  if (uncovered.length > 0) {
+    throw new Error(`preflight_review inspection inputs do not cover every planned changed path: ${uncovered.join(', ')}`);
+  }
   return normalized;
+}
+
+function normalizeInspectionInputs(inputs = []) {
+  return [...new Set(inputs.map((input) => (
+    String(input).trim().replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '')
+  )))].filter(Boolean);
+}
+
+function inspectionInputCoversPath(input, requiredPath) {
+  return input === requiredPath || requiredPath.startsWith(`${input}/`);
 }
 
 function assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId, headSha }) {
@@ -429,9 +457,11 @@ function assertFreezeAllowed(state, binding) {
 function buildNextRequiredAction(state, blocking) {
   if (!state?.frozen_binding && !isCompleteBinding(state?.proposed_binding)) {
     const surfaces = (state?.plan?.risk_surfaces ?? []).map((surface) => ` --surface ${surface}`).join('');
+    const inspectionInputs = (state?.plan?.preflight_required_inspection_inputs ?? [])
+      .map((input) => ` --inspection-input '${input}'`).join('');
     return {
       phase: 'plan',
-      command: `vibepro sequence plan . --id ${state.story_id} --head ${state?.proposed_binding?.head_sha ?? '<current-head>'} --risk-profile ${state?.plan?.risk_profile ?? 'light'}${surfaces} --command "<verification-command>" --test-fingerprint "<test-fingerprint>"`
+      command: `vibepro sequence plan . --id ${state.story_id} --head ${state?.proposed_binding?.head_sha ?? '<current-head>'} --risk-profile ${state?.plan?.risk_profile ?? 'light'}${surfaces}${inspectionInputs} --command "<verification-command>" --test-fingerprint "<test-fingerprint>"`
     };
   }
   if (state?.frozen_binding && blocking.includes('current_head_binding')) {
@@ -458,6 +488,9 @@ function buildNextRequiredAction(state, blocking) {
       const review = state.plan?.preflight_reviews?.[0] ?? AGGREGATE_REVIEW;
       const scope = (review.surfaces ?? []).join(',') || 'declared high-risk boundaries';
       const result = `.vibepro/reviews/${state.story_id}/${review.stage}/review-result-${review.role}.json`;
+      const inspectionInputs = state.plan?.preflight_required_inspection_inputs?.length > 0
+        ? state.plan.preflight_required_inspection_inputs
+        : AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS;
       return {
         phase,
         required_review: { ...review, surfaces: review.surfaces ?? [] },
@@ -468,7 +501,7 @@ function buildNextRequiredAction(state, blocking) {
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind preflight --closes-risk "${scope}" --expected-judgment-delta "identify boundary risks before freeze" --reusable-evidence <ref>`,
           `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" ${AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS.map((input) => `--inspection-input '${input}'`).join(' ')} --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system '<codex|claude_code>' --agent-id '<agent-id>' --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" ${inspectionInputs.map((input) => `--inspection-input '${input}'`).join(' ')} --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system '<codex|claude_code>' --agent-id '<agent-id>' --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
           `vibepro sequence record . --id ${state.story_id} --phase preflight_review --evidence ${result}`
         ]
       };
@@ -544,7 +577,8 @@ function samePlan(left, right) {
     && left?.risk_profile === right?.risk_profile
     && sameStringSet(left?.risk_surfaces, right?.risk_surfaces)
     && sameStringSet(left?.preflight_roles, right?.preflight_roles)
-    && sameStringSet(left?.preflight_surfaces, right?.preflight_surfaces);
+    && sameStringSet(left?.preflight_surfaces, right?.preflight_surfaces)
+    && sameStringSet(left?.preflight_required_inspection_inputs, right?.preflight_required_inspection_inputs);
 }
 
 function sameStringSet(left = [], right = []) {
