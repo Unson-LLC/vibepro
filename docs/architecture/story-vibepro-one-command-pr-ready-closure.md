@@ -110,9 +110,10 @@ initial PR candidate. After that candidate has current-HEAD Gate and imported CI
 evidence, a focused closure commit reconciles the three predecessors, marks the
 final Story and parent roadmap `completed`, and is itself reverified, rereviewed,
 and imported from CI before merge. The later explicit `vibepro execute merge`
-is the post-merge confirmation persisted by the existing merge authority in
-`pr-merge.json` and the canonical audit. The final operator report verifies both
-phases.
+consumes that pre-merge acceptance and supplies delivery confirmation through
+the existing merge authority in `pr-merge.json` and the canonical audit; the
+post-merge confirmation is not a circular pre-PR Gate prerequisite. The final
+operator report verifies both phases.
 
 The canonical planned cases and their public surfaces are fixed in
 `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`. Existing

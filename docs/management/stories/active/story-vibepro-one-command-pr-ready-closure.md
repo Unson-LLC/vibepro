@@ -27,13 +27,13 @@ updated_at: 2026-07-23
 ## Acceptance Criteria
 
 - [x] OCR-S-1: 公開CLIはagentを起動しないという旧説明を削除し、guarded実行範囲と停止境界を正確に示す。
-- [x] OCR-S-2: 1コマンドでworktree作成、不足artifact準備、実装commit、検証、独立Review、修正commit、再検証、再Review、final prepareを実行する。
+- [x] OCR-S-2: 必要capabilityを持つproviderでは、1コマンドでworktree作成、不足artifact準備、実装commit、検証、独立Review、修正commit、再検証、再Review、final prepareを実行する。このavailable-pathは公開CLIが選ぶ同じproduction action ownerを使うproduction-shaped E2Eで実証し、実providerがcapabilityを欠く環境ではOCR-S-6のpre-mutation typed stopを正規terminalとして扱う。
 - [x] OCR-S-3: current HEADの`pr-prepare.json`が`ready_for_pr_create=true`の場合だけRunが`pr_ready`になる。
 - [x] OCR-S-4: merge、critical waiver、external side effectは実行せずHuman Checkpointまたは明示操作へ残す。
 - [x] OCR-S-5: success、resume、human decision、verification failure、repair convergence、no-progress、quota、timeout、CI pending、cancelのE2E matrixがpassする。
 - [x] OCR-S-6: production connector smokeは、runtimeが必要capabilityを提供する場合は実commitと独立Review identityを証明し、提供しない場合はmutation前に不足capability、provider、再開条件を型付き停止として同じRunへ永続化する。available-pathのcommit/review契約はproduction-shaped E2Eで回帰保証する。
 - [x] OCR-S-7: self-dogfoodでこのStory自身または専用fixture StoryがTrusted PR-readyまたは契約どおりの型付き停止へ到達する。
-- [ ] OCR-S-8: merge済みPR #372、#377、#382の証跡で先行3 Storyを完了へ整合し、OCR-S-1..8、dogfood、current-HEAD Gate、CIの証跡に基づいて最終Storyと親closure roadmapを完了へ閉じる。明示的な`execute merge`はGit文書完了後の監査確認として記録し、先行機能は再実装しない。
+- [ ] OCR-S-8: merge済みPR #372、#377、#382の証跡で先行3 Storyを完了へ整合し、先行機能を再実装しない。初回PR候補のcurrent-HEAD GateとCI importが揃ったら、同一branchのfocused closure commitで最終Storyと親roadmapを完了へ閉じ、そのcommitを再検証・再Review・CI importしてmerge可能にする。明示的な`execute merge`とpost-merge auditはこのpre-merge acceptanceを消費して生成するdelivery confirmationであり、PR作成を循環依存させるpre-PR Gate条件にはしない。
 
 ## Non Goals
 

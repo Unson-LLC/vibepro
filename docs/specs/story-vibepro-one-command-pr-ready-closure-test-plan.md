@@ -120,7 +120,10 @@ to one Run. When every selected provider lacks a required capability, the same
 smoke instead passes only if it stops before mutation and binds provider,
 missing capability, recovery boundary, and typed stop to the Run. The
 available-provider commit/review path remains mandatory production-shaped E2E
-regression evidence; it must not be described as a real provider execution.
+regression evidence through the same production action owner selected by the
+public CLI; it must not be described as a real provider execution. These are
+the two explicit branches of OCR-S-2/OCR-S-6, so an environment-backed
+capability stop is not misreported as a failed available-provider execution.
 The Story dogfood run must finish at current-HEAD Trusted PR-ready or a typed
 evidence-backed stop.
 
@@ -129,6 +132,8 @@ predecessor Stories, without changing their implementation. The final Story and
 parent roadmap remain active until the initial PR candidate's dogfood Run,
 current-HEAD Gate, and CI import are recorded. A focused closure commit then
 marks all four Stories and the parent roadmap complete; that commit must be
-reverified, rereviewed, and re-imported from CI before merge. AIC-S-1..5 must be
-traceable to the four Story/PR evidence sets. The explicit VibePro merge then
-supplies post-merge confirmation in `pr-merge.json` and the canonical audit.
+reverified, rereviewed, and re-imported from CI so it is mergeable. AIC-S-1..5
+must be traceable to the four Story/PR evidence sets. The explicit VibePro merge
+then consumes that pre-merge acceptance and supplies delivery confirmation in
+`pr-merge.json` and the canonical audit; post-merge confirmation is not itself a
+pre-PR Gate criterion.
