@@ -74,6 +74,7 @@ export async function getExecutionStatus(repoRoot, options = {}) {
       startedAt: existing.started_at,
       managedWorktree,
       repairManagedWorktreeGitExclude: false,
+      syncManagedWorktreePolicy: false,
       preserveStartedAt: true
     });
     return {
@@ -530,7 +531,8 @@ async function buildExecutionState(repoRoot, options = {}) {
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const managedWorktree = options.managedWorktree
     ? await refreshManagedWorktree(root, options.managedWorktree, {
-        repairGitExclude: options.repairManagedWorktreeGitExclude !== false
+        repairGitExclude: options.repairManagedWorktreeGitExclude !== false,
+        syncPolicy: options.syncManagedWorktreePolicy !== false
       }).catch(() => options.managedWorktree)
     : null;
   const expectedHeadSha = await resolveExecutionExpectedHead(root, managedWorktree, currentHeadSha);

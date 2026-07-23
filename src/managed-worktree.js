@@ -176,7 +176,14 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree, options 
     await ensureManagedWorktreeGitExclude(worktreePath);
   }
   const policySync = exists
-    ? await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+    ? options.syncPolicy === false
+      ? await inspectWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+        .catch((error) => withLastPolicySyncEvent(worktreePath, {
+          status: 'failed',
+          reason: normalizeErrorMessage(error),
+          sections_updated: []
+        }))
+      : await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
       // Fail-soft, but keep the durable audit stamp attached: a failed sync must not
       // hide the last sync that actually happened before the failure.
       .catch((error) => withLastPolicySyncEvent(worktreePath, { status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
@@ -721,6 +728,44 @@ function buildManagedWorktreeContextReason({
 // the source repo config; everything else in the worktree copy stays a creation-time snapshot.
 const POLICY_CONFIG_SECTIONS = ['budgets', 'execution', 'artifact_routing', 'output'];
 const POLICY_SYNC_AUDIT_FILE = 'policy-sync.json';
+
+async function inspectWorktreePolicySections(sourceRepo, worktreePath) {
+  const source = await canonicalPath(sourceRepo);
+  const target = await canonicalPath(worktreePath);
+  if (source === target) {
+    return withLastPolicySyncEvent(worktreePath, {
+      status: 'skipped',
+      reason: 'source repo and managed worktree are the same checkout',
+      sections_updated: []
+    });
+  }
+  const sourceConfig = await readConfig(sourceRepo);
+  if (!sourceConfig) {
+    return withLastPolicySyncEvent(worktreePath, {
+      status: 'skipped',
+      reason: 'source repo has no .vibepro/config.json',
+      sections_updated: []
+    });
+  }
+  const targetPath = path.join(getWorkspaceDir(worktreePath), 'config.json');
+  let targetConfig = null;
+  try {
+    targetConfig = JSON.parse(await readFile(targetPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const sectionsUpdated = targetConfig
+    ? POLICY_CONFIG_SECTIONS.filter((section) =>
+        JSON.stringify(sourceConfig[section] ?? null) !== JSON.stringify(targetConfig[section] ?? null))
+    : POLICY_CONFIG_SECTIONS.filter((section) => sourceConfig[section] !== undefined);
+  return withLastPolicySyncEvent(worktreePath, {
+    status: sectionsUpdated.length > 0 ? 'needs_sync' : 'unchanged',
+    reason: sectionsUpdated.length > 0
+      ? 'policy sections differ from the source repo; a mutating command must resync them'
+      : 'policy sections already match the source repo config',
+    sections_updated: sectionsUpdated
+  });
+}
 
 async function syncWorktreePolicySections(sourceRepo, worktreePath) {
   const source = await canonicalPath(sourceRepo);
