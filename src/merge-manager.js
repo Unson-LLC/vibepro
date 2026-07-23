@@ -226,6 +226,18 @@ export async function executeMerge(repoRoot, options = {}) {
     return { merge, artifacts };
   }
 
+  if (merge.preconditions.gate_ready !== true) {
+    merge.status = 'blocked';
+    merge.stop_reason = 'gate_not_ready';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return { merge, artifacts };
+  }
+
   const fetchResult = await runCommand(root, fetchCommand, options);
   merge.results.push(fetchResult);
   if (fetchResult.exit_code !== 0) {

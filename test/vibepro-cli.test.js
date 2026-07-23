@@ -13687,7 +13687,7 @@ process.exit(99);
   );
 });
 
-test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before GitHub merge', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations', async () => {
   const cases = [
     {
       name: 'omitted targets',
@@ -13843,12 +13843,15 @@ process.exit(99);
     await chmod(path.join(binDir, 'gh'), 0o755);
 
     const result = await runCli([
-      'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+      'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--json'
     ], {
       env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
     });
 
     assert.equal(result.exitCode, 2, fixture.name);
+    assert.equal(result.result.merge.dry_run, false, fixture.name);
+    assert.equal(result.result.merge.stop_reason, 'gate_not_ready', fixture.name);
+    assert.equal(result.result.merge.results.length, 0, fixture.name);
     assert.equal(await pathExists(ghCallLog), false, fixture.name);
     assert.equal(result.result.merge.gate_authorization.reason, fixture.expectedReason, fixture.name);
   }
