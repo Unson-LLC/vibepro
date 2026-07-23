@@ -153,3 +153,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:381:start -->
 - [PR #381](https://github.com/Unson-LLC/vibepro/pull/381) — [2026-07](/releases/2026-07): story-vibepro-codex-detached-completion-inbox - 10分wait超過でsubagent成果を失わず、後継Runが完了通知を回収したい
 <!-- vibepro-release-index-pr:381:end -->
+
+<!-- vibepro-release-index-pr:384:start -->
+- [PR #384](https://github.com/Unson-LLC/vibepro/pull/384) — [2026-07](/releases/2026-07): Agent Review freshnessを検査surfaceとrelease-impactに束縛する
+<!-- vibepro-release-index-pr:384:end -->

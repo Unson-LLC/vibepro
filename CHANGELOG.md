@@ -699,3 +699,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-codex-detach
 なし
 
 <!-- vibepro-release-pr:381:end -->
+
+<!-- vibepro-release-pr:384:start -->
+## [#384](https://github.com/Unson-LLC/vibepro/pull/384) Agent Review freshnessを検査surfaceとrelease-impactに束縛する
+
+- Author: @sintariran
+- Merged: 2026-07-23T22:49:28Z
+- Commit: `f55312ecdf68c6a012147e89b317b237872e74fc`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:384:end -->
