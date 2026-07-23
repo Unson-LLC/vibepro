@@ -148,6 +148,12 @@ test('story-vibepro-independent-review-orchestration ac:1 ac:2 ac:3 ac:4 ac:5 ac
   assert.equal(checkpoint.filter((entry) => entry.operation === 'record').length, 3);
   const history = await readdir(path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate', 'history'));
   assert.equal(history.filter((file) => file.startsWith('review-result-gate_evidence-')).length, 1);
+  const lifecycleState = JSON.parse(await readFile(path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate', 'lifecycle.json'), 'utf8'));
+  for (const role of ['gate_evidence', 'pr_split_scope', 'release_risk']) {
+    const entry = lifecycleState.entries.find((item) => item.role === role);
+    assert.equal(entry.session_id, `review-session-${role}`);
+    assert.equal(entry.thread_id, `review-thread-${role}`);
+  }
 
   const forged = structuredClone(dispatches.values().next().value);
   forged.result.review_provenance.session_id = 'implementation-session';

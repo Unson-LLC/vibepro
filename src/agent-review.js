@@ -853,6 +853,10 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
       match.cancel_confirmed = true;
       match.cancellation_evidence = closeEvidence;
     }
+    const agentThreadId = normalizeNullable(options.agentThreadId);
+    const agentSessionId = normalizeNullable(options.agentSessionId);
+    if (agentThreadId) match.thread_id = agentThreadId;
+    if (agentSessionId) match.session_id = agentSessionId;
     match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
     if (operationIdempotencyKey) match.close_operation_idempotency_key = operationIdempotencyKey;
     match.closed_at = new Date().toISOString();

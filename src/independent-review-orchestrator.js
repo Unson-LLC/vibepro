@@ -199,11 +199,15 @@ export function createGuardedIndependentReviewRunner({
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
       }),
       poll: async ({ state, dispatch }) => normalizePoll(await pollRuntime(state, dispatch.dispatch?.dispatch_id)),
-      close: async ({ state, stage, role, lifecycle, closeReason, operation }) => agentReviewOps.close(repoRoot, {
+      close: async ({ state, stage, role, lifecycle, dispatch, poll, closeReason, operation }) => {
+        const runtimeDispatch = poll?.dispatch ?? dispatch?.dispatch;
+        return agentReviewOps.close(repoRoot, {
         storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
+        agentThreadId: runtimeDispatch?.thread_id, agentSessionId: runtimeDispatch?.session_id,
         closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
         operationIdempotencyKey: operation.idempotency_key
-      }),
+        });
+      },
       record: async ({ state, stage, role, poll, operation }) => {
         const dispatch = poll.dispatch;
         const review = dispatch?.result?.review;
