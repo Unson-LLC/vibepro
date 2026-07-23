@@ -11,6 +11,7 @@
 3. `gate_dag.overall_status=ready_for_review` なら通常authorizationを返す。
 4. 通常readyでない場合、`gate_override.allowed=true`、空でないreason/policy、`critical_unresolved_gates=[]` をすべて満たす場合だけwaiver authorizationを返す。
 5. merge artifactへauthorization sourceとwaiver監査情報を記録し、その他のGitHub preconditionとANDでmerge可否を決める。
+6. self-dogfood reviewでは、事前authorization済みlifecycleが `completed` で明示close済みでも、続く `review record` が同じlifecycleへresult artifact/statusを結線する。timeout/manual shutdownには結果を後付けしない。
 
 ## Threat model
 
@@ -35,13 +36,16 @@ flowchart LR
 - Authority: Gate waiverの正本は同一HEADの `pr-create.json`。`execute merge` のCLI引数や推測では再生成しない。
 - Compatibility: `ready_for_review` の既存経路、GitHub checks、review policy、base freshness、remote HEAD一致は変更しない。
 - Fail-closed: stale artifact、schema不足、critical unresolvedありは `gate_not_ready`。
+- Review lifecycle: completed closeだけが結果回収可能。timeout/replaced/manual shutdownへpass結果を後付けする経路は拒否する。
 - Rollback: merge authorization helperとprecondition配線を戻せば従来のGate DAG only判定へ戻る。永続artifactの追加フィールドはreader互換を保つ。
 
 ## 影響範囲
 
 - `src/merge-gate-authorization.js`: pure policy evaluation
 - `src/merge-manager.js`: current PR lifecycle artifactとのbindingと監査出力
+- `src/agent-review.js`: authorization済みcompleted lifecycleのclose後結果回収
 - `test/merge-gate-authorization.test.js`: contract matrix
 - `test/vibepro-cli.test.js`: `execute merge` dry-run/integration contract
+- `test/review-inspection-first.test.js`: close後recordとresult collectionの回帰契約
 
 PR #381のruntime lifecycleおよびPR #370のbudget policyは依存先でも変更対象でもない。

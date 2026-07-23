@@ -453,7 +453,19 @@ export async function recordAgentReview(repoRoot, options = {}) {
       lifecycle.entries.push(entry);
       return;
     }
-    if (entry.closed_at) return;
+    if (entry.closed_at) {
+      if (entry.close_reason !== 'completed') {
+        throw new Error(
+          `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason ?? 'unknown'}`
+        );
+      }
+      entry.result_artifact = toWorkspaceRelative(root, resultPath);
+      entry.result_status = result.status;
+      if (!entry.close_evidence) {
+        entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
+      }
+      return;
+    }
     entry.status = 'closed';
     entry.closed_at = result.recorded_at ?? new Date().toISOString();
     entry.close_reason = 'completed';

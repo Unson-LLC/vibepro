@@ -13665,6 +13665,67 @@ process.exit(99);
   );
 });
 
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), '{ malformed');
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-parse-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let parseFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { parseFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(parseFailureStderr, /JSON|position|property name/i);
+});
+
+test('story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main', head_sha: head }
+  });
+  await mkdir(path.join(prDir, 'pr-merge.json'));
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-persistence-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let persistenceFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { persistenceFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(persistenceFailureStderr, /directory|EISDIR|rename/i);
+});
+
 test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
