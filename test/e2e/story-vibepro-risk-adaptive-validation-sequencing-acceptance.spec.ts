@@ -108,9 +108,23 @@ test('AC-9 S-001 acceptance matrix executes without failures', async () => {
   const headSha = head.trim();
   const sequenceCommand = 'node --test --test-name-pattern=e2e test/sequence.test.js';
   const common = [root, '--id', 'story-sequence-e2e', '--head', headSha, '--command', sequenceCommand, '--test-fingerprint', 'suite-v1', '--json'];
-  const plan = await runCli(['sequence', 'plan', ...common, '--risk-profile', 'workflow_heavy', '--surface', 'core_workflow_state']);
+  const plannedInspectionInputs = [
+    'docs/specs/sequence-design.md',
+    'src/sequence.js',
+    'test/sequence.test.js'
+  ];
+  const plan = await runCli([
+    'sequence', 'plan', ...common,
+    '--risk-profile', 'workflow_heavy',
+    '--surface', 'core_workflow_state',
+    ...plannedInspectionInputs.flatMap((input) => ['--inspection-input', input])
+  ]);
   assert.equal(plan.exitCode, 0);
   assert.equal(plan.result.evaluation.next_required_action.phase, 'targeted_validation');
+  assert.deepEqual(
+    plan.result.state.plan.preflight_required_inspection_inputs,
+    plannedInspectionInputs
+  );
 
   let stderr = '';
   const premature = await runCli(['sequence', 'record', ...common, '--phase', 'code_frozen'], {
