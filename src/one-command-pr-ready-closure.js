@@ -521,7 +521,7 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
 
 function isRuntimeActive(observed) {
   const status = observed?.dispatch?.status ?? observed?.status;
-  return ['queued', 'running', 'permission_wait'].includes(status);
+  return ['queued', 'running'].includes(status);
 }
 
 function isRuntimeTerminal(observed) {

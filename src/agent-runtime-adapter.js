@@ -119,7 +119,10 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
   }
   if (request.role === 'review' && capability.sandbox !== 'read-only') {
     return waiting(runState, request, 'review_readonly_unavailable',
-      'review runtime requires a read-only sandbox before start', now, { sandbox: capability.sandbox });
+      'review runtime requires a read-only sandbox before start', now,
+      runtimeRecoveryDetails(runState, request, request.requirements.capabilities, {
+        sandbox: capability.sandbox
+      }));
   }
 
   try {
@@ -180,7 +183,8 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
         failureCode, error.message);
     }
     if (WAIT_REASONS.has(error.code) && error.code !== 'runtime_start_timeout') {
-      return waiting(runState, request, error.code, error.message, now);
+      return waiting(runState, request, error.code, error.message, now,
+        runtimeRecoveryDetails(runState, request));
     }
     const failureCode = error.code === 'runtime_start_timeout' ? error.code : 'runtime_start_failed';
     try {
@@ -299,7 +303,9 @@ async function applyObservedStatus(registry, now, runState, current, observed, o
       'invalid_runtime_transition', `runtime status cannot transition from ${current.status} to ${observed.status}`);
   }
   if (observed.status === 'permission_wait') {
-    return waitingExisting(runState, current, 'permission_wait', observed.message ?? 'runtime requires permission', now);
+    return waitingExisting(runState, current, 'permission_wait',
+      observed.message ?? 'runtime requires permission', now,
+      runtimeRecoveryDetails(runState, current, []));
   }
   if (observed.status === 'stalled') {
     return failed(runState, current, 'runtime_stalled', observed.message ?? 'runtime made no bounded progress', now);
@@ -740,8 +746,14 @@ function waiting(state, request, code, message, now, details = {}) {
   return { state: { ...upsertDispatch(state, record), status: 'waiting_for_runtime', stop_reason: record.stop_reason }, dispatch: record, reused: false };
 }
 
-function runtimeRecoveryDetails(runState, request, missingCapabilities = request.requirements.capabilities) {
+function runtimeRecoveryDetails(
+  runState,
+  request,
+  missingCapabilities = request.requirements.capabilities,
+  additionalDetails = {}
+) {
   return {
+    ...additionalDetails,
     provider: request.adapter_id,
     missing_capabilities: [...missingCapabilities],
     recovery: {

@@ -64,6 +64,16 @@ test('ARA-S-2 auth denial remains a typed resumable stop', async () => {
   const result = await coordinator.dispatch(state, request);
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.dispatch.stop_reason.code, 'auth_denied');
+  assert.deepEqual(result.dispatch.stop_reason.details, {
+    provider: 'fake',
+    missing_capabilities: ['workspace_write'],
+    recovery: {
+      action: 'resume_run',
+      story_id: state.story_id,
+      run_id: state.run_id,
+      required_capabilities: ['workspace_write']
+    }
+  });
 });
 
 test('PRC-S-3 typed provider failure survives status normalization', async () => {
@@ -218,6 +228,9 @@ test('ARA-S-4 review rejects a mutable provider sandbox before start', async () 
   const result = await coordinator.dispatch(state, { ...request, role: 'review', requirements: { ...request.requirements, capabilities: ['review'] }, implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', reviewer_identity: 'reviewer-2' });
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.dispatch.stop_reason.code, 'review_readonly_unavailable');
+  assert.equal(result.dispatch.stop_reason.details.sandbox, 'workspace-write');
+  assert.equal(result.dispatch.stop_reason.details.provider, 'fake');
+  assert.equal(result.dispatch.stop_reason.details.recovery.run_id, state.run_id);
   assert.equal(adapter.starts(), 0);
 });
 
@@ -244,6 +257,16 @@ test('ARA-S-2 permission wait during polling becomes a typed Run stop', async ()
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'permission_wait');
   assert.equal(result.dispatch.status, 'permission_wait');
+  assert.deepEqual(result.dispatch.stop_reason.details, {
+    provider: 'fake',
+    missing_capabilities: [],
+    recovery: {
+      action: 'resume_run',
+      story_id: state.story_id,
+      run_id: state.run_id,
+      required_capabilities: ['workspace_write']
+    }
+  });
 });
 
 test('ARA-S-2 permission wait clears stale Run stop after provider resumes', async () => {
