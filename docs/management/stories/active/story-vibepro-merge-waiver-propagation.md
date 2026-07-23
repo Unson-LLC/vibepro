@@ -2,6 +2,8 @@
 story_id: story-vibepro-merge-waiver-propagation
 title: PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する
 status: active
+parent_design:
+  - story-vibepro-merge-waiver-propagation
 reason: PR createで承認・永続化済みの非critical waiverをmerge時に再入力させる案は判断の二重化と証跡分裂を招く。current HEADに束縛されたpr-create artifactだけをauthorityとし、理由・policy・対象Gate一覧を現行Gate statusと照合してcritical unresolvedなしを再検証する。既存のready_for_review経路は互換維持し、artifactがstale・欠落・不正・現行Gateと不一致なら従来どおりfail-closedに戻せる。
 ---
 
