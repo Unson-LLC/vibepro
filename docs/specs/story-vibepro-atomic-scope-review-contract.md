@@ -148,6 +148,8 @@ Observability evidence: owner-visible release evidence is `.vibepro/pr/<story-id
 
 Rollback instruction: trigger rollback on unexpected atomic acceptance, changed legacy split behavior, cross-artifact accepted/rejected disagreement, or an owner-map omission that cannot be repaired on the same HEAD. Revert the release merge with `git revert <release-merge-sha>`, then run `node bin/vibepro.js pr prepare . --story-id <canary-story-id> --base origin/main --view blocking-gates --json`. Confirm that legacy split recommendations and lanes remain, atomic acceptance no longer occurs, and the metadata-free Story fixture passes. If revert or verification fails, stop further merges and escalate the artifacts and failing command to the VibePro maintainer.
 
+Pre-merge rehearsal boundary: execute one focused integration covering the metadata-free legacy surface signal, the small-PR legacy readiness path, rejection of legacy keyword evidence for atomic scope, and continued automatic split advice while current-HEAD owner evidence is absent. This demonstrates compatibility and fail-closed behavior before merge; it does not claim that a not-yet-created release merge commit was reverted. The release owner performs the canonical `main` canary after merge and executes the real `git revert` only when a rollback trigger occurs.
+
 ## Acceptance Scenarios
 
 1. atomic review workflowでは、完全な宣言でもlifecycle-bound current-HEAD review owner mapがない限りscope stateは`rejected`かつ`split_recommended`に留まり、全changed pathのownershipが揃ったときだけ`accepted`へtransitionする。
