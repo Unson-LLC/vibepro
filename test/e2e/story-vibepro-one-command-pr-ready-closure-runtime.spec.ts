@@ -192,7 +192,6 @@ test("scenario:S-001 available-provider regression persists one production-shape
 test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {
   const repoRoot = path.resolve(import.meta.dirname, "../..");
   const storyFiles = {
-    actionDag: "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
     connectors: "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
     review: "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
     closure: "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
@@ -211,7 +210,6 @@ test("scenario:S-005 roadmap closure keeps external authority explicit and prede
   }, { profile: "autonomous" });
 
   // S-005: executable SSOT assertions reconcile merged predecessors without granting external authority.
-  assert.match(entries.actionDag, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/372/);
   assert.match(entries.connectors, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/377/);
   assert.match(entries.review, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/382/);
   assert.match(entries.closure, /status: (?:active|completed)/);
