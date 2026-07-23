@@ -393,7 +393,12 @@ async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepar
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: storyId, title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
     git: { base_ref: 'main', head_sha: headSha }
   });

@@ -1,5 +1,45 @@
 export function buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus = null) {
   if (gateDag?.overall_status === 'ready_for_review') {
+    // A persisted PR lifecycle exists only after readiness was evaluated. Once
+    // it exists, managed merge authority must also reconcile to the current
+    // routed pr-prepare status. Otherwise an embedded ready snapshot could
+    // hide a stale, mismatched, or critical standalone Gate DAG.
+    if (currentPrCreate && !currentGateStatus) {
+      return {
+        allowed: false,
+        source: 'none',
+        reason: 'current_gate_status_unknown',
+        gate_override: null
+      };
+    }
+    if (currentPrCreate) {
+      const currentUnresolvedGateIds = normalizeGateIds(currentGateStatus?.unresolved_gates);
+      const currentCriticalGateIds = normalizeGateIds(currentGateStatus?.critical_unresolved_gates);
+      if (currentUnresolvedGateIds.reason || currentCriticalGateIds.reason) {
+        return {
+          allowed: false,
+          source: 'none',
+          reason: 'current_gate_status_unknown',
+          gate_override: null
+        };
+      }
+      if (currentCriticalGateIds.ids.length > 0) {
+        return {
+          allowed: false,
+          source: 'none',
+          reason: 'current_gate_status_contains_critical_gates',
+          gate_override: null
+        };
+      }
+      if (currentUnresolvedGateIds.ids.length > 0) {
+        return {
+          allowed: false,
+          source: 'none',
+          reason: 'current_gate_status_not_ready',
+          gate_override: null
+        };
+      }
+    }
     return {
       allowed: true,
       source: 'gate_dag',

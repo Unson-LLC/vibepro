@@ -77,7 +77,15 @@ async function executeMergeLocked(root, options = {}) {
     ?? currentPrCreate?.gate_dag
     ?? currentGateDagArtifact
     ?? null;
-  const currentGateStatus = resolveCurrentMergeGateStatus(currentPrPrepare, currentHeadSha, gateDag);
+  // A separately routed DAG cannot grant authority without current-head
+  // binding, but it can reveal that the embedded PR status no longer
+  // represents the routed gate surface. Reconcile against it conservatively
+  // so a critical routed gate cannot be hidden by a ready embedded snapshot.
+  const currentGateStatus = resolveCurrentMergeGateStatus(
+    currentPrPrepare,
+    currentHeadSha,
+    gateDagArtifact ?? gateDag
+  );
   const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus);
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
@@ -269,6 +277,24 @@ async function executeMergeLocked(root, options = {}) {
       merge.status = 'dry_run_planned';
       merge.stop_reason = 'external_checks_skipped_dry_run';
     }
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+
+  // Reject an unauthorized managed merge before touching the provider, while
+  // still allowing reconciliation when the local base already proves that the
+  // story HEAD was delivered externally. Provider observation remains required
+  // to bind that delivery to the selected PR.
+  const locallyDeliveredHead = await gitIsAncestor(currentHeadSha, `origin/${baseBranch}`);
+  const locallyDeliveredTree = await gitTreesEqual(root, currentHeadSha, `origin/${baseBranch}`);
+  if (merge.preconditions.gate_ready !== true && !locallyDeliveredHead && !locallyDeliveredTree) {
+    merge.status = 'blocked';
+    merge.stop_reason = 'gate_not_ready';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return attachExecutionStateSyncBaseline(merge, artifacts);
   }
@@ -1512,6 +1538,16 @@ async function gitIsAncestor(repoRoot, ancestor, descendant) {
   if (ancestor === descendant) return true;
   try {
     await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function gitTreesEqual(repoRoot, left, right) {
+  if (!left || !right || left === right) return false;
+  try {
+    await execFileAsync('git', ['diff', '--quiet', left, right, '--'], { cwd: repoRoot, encoding: 'utf8' });
     return true;
   } catch {
     return false;

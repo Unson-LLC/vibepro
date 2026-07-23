@@ -26,6 +26,51 @@ test('MWP-AC-1 ready Gate DAG remains merge-authorized without a waiver', () => 
   assert.equal(result.gate_override, null);
 });
 
+test('MWP-AC-1 persisted ready DAG rejects unknown or mismatched current routed authority', () => {
+  const currentPrCreate = { pr_url: 'https://github.com/example/repo/pull/1' };
+  const unknown = buildMergeGateAuthorization(
+    { overall_status: 'ready_for_review' },
+    currentPrCreate,
+    null
+  );
+  assert.equal(unknown.allowed, false);
+  assert.equal(unknown.source, 'none');
+  assert.equal(unknown.reason, 'current_gate_status_unknown');
+
+  const critical = buildMergeGateAuthorization(
+    { overall_status: 'ready_for_review' },
+    currentPrCreate,
+    {
+      unresolved_gates: [{ id: 'gate:e2e' }],
+      critical_unresolved_gates: [{ id: 'gate:e2e' }]
+    }
+  );
+  assert.equal(critical.allowed, false);
+  assert.equal(critical.reason, 'current_gate_status_contains_critical_gates');
+
+  const unresolved = buildMergeGateAuthorization(
+    { overall_status: 'ready_for_review' },
+    currentPrCreate,
+    {
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    }
+  );
+  assert.equal(unresolved.allowed, false);
+  assert.equal(unresolved.reason, 'current_gate_status_not_ready');
+
+  const current = buildMergeGateAuthorization(
+    { overall_status: 'ready_for_review' },
+    currentPrCreate,
+    {
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    }
+  );
+  assert.equal(current.allowed, true);
+  assert.equal(current.source, 'gate_dag');
+});
+
 test('MWP-AC-2 current PR create auditable noncritical waiver authorizes merge', () => {
   const result = buildMergeGateAuthorization(
     { overall_status: 'needs_verification' },

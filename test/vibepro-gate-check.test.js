@@ -263,10 +263,11 @@ title: Docs Only Update Spec
   ]);
   assert.equal(adjudication.exitCode, 0);
 
+  let verificationStderr = '';
   const verification = await runCli([
     'verify', 'record', repo,
     '--id', 'story-gate-check',
-    '--kind', 'integration',
+    '--kind', 'unit',
     '--status', 'pass',
     '--command', 'node --test test/vibepro-gate-check.test.js',
     '--summary', 'AC-1 docs-only contract is demonstrated by the committed fixture',
@@ -274,8 +275,14 @@ title: Docs Only Update Spec
     '--scenario', 'AC-1: ドキュメントのみの変更である',
     '--observed', 'changed_surface=story_and_spec_docs_only',
     '--json'
-  ]);
-  assert.equal(verification.exitCode, 0, JSON.stringify(verification, null, 2));
+  ], {
+    stderr: { write(chunk) { verificationStderr += chunk; } }
+  });
+  assert.equal(
+    verification.exitCode,
+    0,
+    `${JSON.stringify(verification, null, 2)}\n${verificationStderr}`
+  );
 
   const result = await runCli(['gate', 'check', repo, '--story-id', 'story-gate-check', '--base', 'main', '--ci', '--json']);
 

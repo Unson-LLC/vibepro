@@ -1604,7 +1604,7 @@ test('DRS-CONTRACT-003 execution status prefers same-head pr-prepare over standa
   assert.notEqual(result.state.completion_status, 'ready_for_pr_create');
 });
 
-test('CAA-VERIFY-001 current created PR remains merge-ready when its same-head pr-prepare is unavailable', async () => {
+test('CAA-VERIFY-001 current created PR fails closed when its same-head pr-prepare authority is unavailable', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execution-current-pr-create-'));
   await execFileAsync('git', ['init'], { cwd: root });
   await execFileAsync('git', ['config', 'user.email', 'test@example.test'], { cwd: root });
@@ -1628,7 +1628,7 @@ test('CAA-VERIFY-001 current created PR remains merge-ready when its same-head p
   }));
 
   const result = await getExecutionStatus(root, { storyId: 'story-delivery', baseRef: 'main' });
-  assert.equal(result.state.completion_status, 'pr_created');
-  assert.equal(result.state.current_phase, 'complete');
-  assert.match(result.state.next_actions[0], /vibepro execute merge/);
+  assert.equal(result.state.completion_status, 'ready_for_pr_create');
+  assert.notEqual(result.state.current_phase, 'complete');
+  assert.equal(result.state.next_actions.some((action) => /vibepro execute merge/.test(action)), false);
 });
