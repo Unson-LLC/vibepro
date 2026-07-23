@@ -657,3 +657,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-merge-waiver
 なし
 
 <!-- vibepro-release-pr:383:end -->
+
+<!-- vibepro-release-pr:358:start -->
+## [#358](https://github.com/Unson-LLC/vibepro/pull/358) story-vibepro-atomic-scope-review-contract - 大規模Storyが自ら追加したscope policyで自身の単一PRを承認できる循環を除く
+
+- Author: @sintariran
+- Merged: 2026-07-23T11:28:35Z
+- Commit: `d6893c2671aeff5cb6792f215126af7d275038fc`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:358:end -->

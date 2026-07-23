@@ -145,3 +145,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:383:start -->
 - [PR #383](https://github.com/Unson-LLC/vibepro/pull/383) — [2026-07](/releases/2026-07): story-vibepro-merge-waiver-propagation - PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する
 <!-- vibepro-release-index-pr:383:end -->
+
+<!-- vibepro-release-index-pr:358:start -->
+- [PR #358](https://github.com/Unson-LLC/vibepro/pull/358) — [2026-07](/releases/2026-07): story-vibepro-atomic-scope-review-contract - 大規模Storyが自ら追加したscope policyで自身の単一PRを承認できる循環を除く
+<!-- vibepro-release-index-pr:358:end -->
