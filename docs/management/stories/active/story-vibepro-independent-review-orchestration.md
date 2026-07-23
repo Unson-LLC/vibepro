@@ -3,7 +3,7 @@ story_id: story-vibepro-independent-review-orchestration
 parent_design: vibepro-autonomous-implementation-closure-roadmap
 vibepro_story_id: story-vibepro-autonomous-implementation-closure-roadmap
 title: Required Reviewを独立agentへ自動dispatchして記録する
-status: active
+status: completed
 view: dev
 period: 2026-07
 category: quality
@@ -15,21 +15,29 @@ related_stories:
   - story-vibepro-agent-review-lifecycle-control
 reason: "selected automated lifecycle composition using existing review contracts instead of weakening required Agent Review. compatibility: review prepare/start/close/record and provenance gates remain authoritative. rollback: emit the existing dispatch instruction and wait for runtime. boundary: orchestration only; verdict content remains the independent reviewer result."
 created_at: 2026-07-21
-updated_at: 2026-07-22
+updated_at: 2026-07-23
 ---
 
 # Required Reviewを独立agentへ自動dispatchして記録する
 
 ## Acceptance Criteria
 
-- [ ] IRO-S-1: Gate DAGが要求するroleをprepareし、role単位の別agentへ可能な範囲で並列dispatchする。
-- [ ] IRO-S-2: Reviewはread-only、別identity、別session、closed lifecycleを必須とする。
-- [ ] IRO-S-3: start、poll、close、recordをRun journalへexactly-onceで記録する。
-- [ ] IRO-S-4: `pass`、`needs_changes`、`block`を改変せず集約する。
-- [ ] IRO-S-5: runtime不足、auth、timeout、invalid provenanceはGate passにせず型付き停止する。
-- [ ] IRO-S-6: parallel success、needs_changes、block、same-session rejection、restartのE2Eがある。
-- [ ] IRO-S-7: `needs_changes`は既存Review LifecycleとRepair Loopへ渡し、新しいverdict/finding schemaを作らない。
-- [ ] IRO-S-8: 現行`origin/main`のtarget architecture conformance baseline（69 violations。PR #378時点の68件に、後続mainで1件追加）を悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
+- [x] IRO-S-1: Gate DAGが要求するroleをprepareし、role単位の別agentへ可能な範囲で並列dispatchする。
+- [x] IRO-S-2: Reviewはread-only、別identity、別session、closed lifecycleを必須とする。
+- [x] IRO-S-3: start、poll、close、recordをRun journalへexactly-onceで記録する。
+- [x] IRO-S-4: `pass`、`needs_changes`、`block`を改変せず集約する。
+- [x] IRO-S-5: runtime不足、auth、timeout、invalid provenanceはGate passにせず型付き停止する。
+- [x] IRO-S-6: parallel success、needs_changes、block、same-session rejection、restartのE2Eがある。
+- [x] IRO-S-7: `needs_changes`は既存Review LifecycleとRepair Loopへ渡し、新しいverdict/finding schemaを作らない。
+- [x] IRO-S-8: merge時点の`origin/main` target architecture conformance baselineを悪化させない。新規コードはrun-session owner境界内に置き、`cli.js`への逆呼び出しとbaseline超過を追加しない。
+
+## Completion Evidence
+
+- PR: https://github.com/Unson-LLC/vibepro/pull/382
+- Merge commit: `b235b36df6a225c49f4a98340c381eb2d8b8ad1c`
+- Merged at: `2026-07-22T13:31:43Z`
+- GitHub checks: Node 20/22 CI、CodeQL、post-merge releaseはいずれもsuccess。
+- この最終Storyはreview lifecycle/verdict schemaを再実装せず、merge済みorchestratorを再利用する。
 
 ## Scenarios
 

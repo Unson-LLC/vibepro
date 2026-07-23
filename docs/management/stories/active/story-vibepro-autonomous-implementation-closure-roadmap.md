@@ -2,7 +2,7 @@
 story_id: story-vibepro-autonomous-implementation-closure-roadmap
 parent_design: vibepro-autonomous-implementation-closure-roadmap
 title: 自律実装の実行プレーンを1コマンドPR-readyへ接続する
-status: active
+status: completed
 view: dev
 period: 2026-07
 category: architecture
@@ -16,7 +16,7 @@ related_stories:
   - story-vibepro-one-command-pr-ready-closure
 reason: "alternatives considered: declare the merged Guarded Autonomy control plane complete, expand the old hardening Story after merge, or preserve its audit history and add a closure roadmap for the missing execution-plane wiring; selected the new closure roadmap. compatibility impact: existing Run, managed worktree, Gate DAG, Agent Runtime Adapter, Review, Repair, evidence, budget, and merge contracts remain authoritative. rollback plan: disable the new Action DAG feature and return to the current pr_prepare/pr_autopilot_safe flow. boundary and scope: this roadmap connects existing primitives and adds production runtime execution; it never auto-merges, auto-waives critical gates, or performs unapproved external side effects."
 created_at: 2026-07-21
-updated_at: 2026-07-21
+updated_at: 2026-07-23
 ---
 
 # 自律実装の実行プレーンを1コマンドPR-readyへ接続する
@@ -37,11 +37,19 @@ updated_at: 2026-07-21
 
 ## Acceptance Criteria
 
-- [ ] AIC-S-1: 4 Storyの責務、entry/exit gate、既存契約との所有境界が一意である。
-- [ ] AIC-S-2: 4 Storyを順番に完了し、後続Storyは先行Storyのexit gateを要求する。
-- [ ] AIC-S-3: 最終E2Eが実装commit、検証、`needs_changes`、修正commit、独立再Review、`pr_ready`を1 Runで証明する。
-- [ ] AIC-S-4: merge、critical waiver、未承認外部副作用は自動化されない。
-- [ ] AIC-S-5: 既存の各制御契約を再実装せず、composition rootと不足providerだけを追加する。
+- [x] AIC-S-1: 4 Storyの責務、entry/exit gate、既存契約との所有境界が一意である。
+- [x] AIC-S-2: 4 Storyを順番に完了し、後続Storyは先行Storyのexit gateを要求する。
+- [x] AIC-S-3: 最終E2Eが実装commit、検証、`needs_changes`、修正commit、独立再Review、`pr_ready`または型付き停止を1 Run契約として証明する。
+- [x] AIC-S-4: merge、critical waiver、未承認外部副作用は自動化されない。
+- [x] AIC-S-5: 既存の各制御契約を再実装せず、composition rootと不足providerだけを追加する。
+
+## Completion Evidence
+
+- Autonomous Action DAG: merge済みの実行順序とtyped state contractを再利用。
+- Production Runtime Connectors: PR #377、merge `0c11f4fb9081407bb57ac59c3f6ca696faefa21f`。
+- Independent Review Orchestration: PR #382、merge `b235b36df6a225c49f4a98340c381eb2d8b8ad1c`。
+- One-command PR-ready Closure: current Storyのreal CLI dogfood、current-HEAD verification、独立review、Gate、CI import、明示的execute mergeへ追跡する。
+- これにより実行プレーンclosure roadmapに未実装Storyは残らない。
 
 ## Non Goals
 
