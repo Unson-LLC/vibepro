@@ -113,16 +113,22 @@ Target artifacts:
 - `docs/management/stories/active/story-vibepro-independent-review-orchestration.md`
 - `docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md`
 
-The smoke must bind the implementation pre/post HEAD, implementation
-identity/session, independent review identity/session/lifecycle, verification
-commands, and final Gate status to one Run. The Story dogfood run must finish at
-current-HEAD Trusted PR-ready or a typed evidence-backed stop; mock-only connector
-tests are regression evidence, not the production proof.
+When a production provider exposes the required capability, the smoke must bind
+the implementation pre/post HEAD, implementation identity/session, independent
+review identity/session/lifecycle, verification commands, and final Gate status
+to one Run. When every selected provider lacks a required capability, the same
+smoke instead passes only if it stops before mutation and binds provider,
+missing capability, recovery boundary, and typed stop to the Run. The
+available-provider commit/review path remains mandatory production-shaped E2E
+regression evidence; it must not be described as a real provider execution.
+The Story dogfood run must finish at current-HEAD Trusted PR-ready or a typed
+evidence-backed stop.
 
-The lifecycle closure must cite merged PR #377 and #382 for the two predecessor
-Stories, without changing their implementation. The final Story and parent
-roadmap may be marked complete after the dogfood Run, current-HEAD Gate, and CI
-import are recorded; AIC-S-1..5 must be traceable to the four Story/PR evidence
-sets. The explicit VibePro merge then supplies post-merge confirmation in
-`pr-merge.json` and the canonical audit. The test must not require the same PR's
-future merge SHA to be embedded in the Git commit it merges.
+The lifecycle closure must cite merged PR #372, #377, and #382 for the three
+predecessor Stories, without changing their implementation. The final Story and
+parent roadmap remain active until the initial PR candidate's dogfood Run,
+current-HEAD Gate, and CI import are recorded. A focused closure commit then
+marks all four Stories and the parent roadmap complete; that commit must be
+reverified, rereviewed, and re-imported from CI before merge. AIC-S-1..5 must be
+traceable to the four Story/PR evidence sets. The explicit VibePro merge then
+supplies post-merge confirmation in `pr-merge.json` and the canonical audit.

@@ -101,16 +101,18 @@ Existing Runs retain their persisted action profile. `--action-profile legacy` k
 
 ## Verification
 
-The acceptance matrix covers success, restart/resume, material human decision, verification failure, `needs_changes` repair convergence, no progress, quota, timeout, CI pending, and cancellation. A production-connector smoke must prove a real implementation commit and a separate read-only review identity. The Story's self-dogfood run must reach current-HEAD Trusted PR-ready or a typed, evidence-backed stop.
+The acceptance matrix covers success, restart/resume, material human decision, verification failure, `needs_changes` repair convergence, no progress, quota, timeout, CI pending, and cancellation. When the selected production connector exposes the required capability, its smoke must prove a real implementation commit and a separate read-only review identity. When no provider exposes that capability, the production smoke must stop before mutation and persist the provider, missing capability, recovery boundary, and typed stop; the available path remains covered by production-shaped E2E rather than being misreported as a real provider commit. The Story's self-dogfood run must reach current-HEAD Trusted PR-ready or a typed, evidence-backed stop.
 
 Lifecycle closure is two-phase to avoid making a Git commit depend on its own
 future merge SHA. The two merged predecessor Stories are reconciled from PR
-#377 and #382. The final Story and parent roadmap become `completed` in this PR
-only after OCR-S-1..8, dogfood, current-HEAD Gate, and imported CI evidence are
-present. The later explicit `vibepro execute merge` is not a prerequisite for
-that Git status; it is the post-merge confirmation persisted by the existing
-merge authority in `pr-merge.json` and the canonical audit. The final operator
-report verifies both phases.
+#372, #377, and #382. The final Story and parent roadmap remain `active` in the
+initial PR candidate. After that candidate has current-HEAD Gate and imported CI
+evidence, a focused closure commit reconciles the three predecessors, marks the
+final Story and parent roadmap `completed`, and is itself reverified, rereviewed,
+and imported from CI before merge. The later explicit `vibepro execute merge`
+is the post-merge confirmation persisted by the existing merge authority in
+`pr-merge.json` and the canonical audit. The final operator report verifies both
+phases.
 
 The canonical planned cases and their public surfaces are fixed in
 `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`. Existing

@@ -3,7 +3,7 @@ story_id: story-vibepro-one-command-pr-ready-closure
 parent_design: vibepro-autonomous-implementation-closure-roadmap
 vibepro_story_id: story-vibepro-autonomous-implementation-closure-roadmap
 title: 1コマンド自律実装を実Runtime E2Eで閉じる
-status: completed
+status: active
 view: dev
 period: 2026-07
 category: quality
@@ -26,9 +26,9 @@ updated_at: 2026-07-23
 - [x] OCR-S-3: current HEADの`pr-prepare.json`が`ready_for_pr_create=true`の場合だけRunが`pr_ready`になる。
 - [x] OCR-S-4: merge、critical waiver、external side effectは実行せずHuman Checkpointまたは明示操作へ残す。
 - [x] OCR-S-5: success、resume、human decision、verification failure、repair convergence、no-progress、quota、timeout、CI pending、cancelのE2E matrixがpassする。
-- [x] OCR-S-6: production connector smokeが実commitと独立Review identityを証明する。
+- [x] OCR-S-6: production connector smokeは、runtimeが必要capabilityを提供する場合は実commitと独立Review identityを証明し、提供しない場合はmutation前に不足capability、provider、再開条件を型付き停止として同じRunへ永続化する。available-pathのcommit/review契約はproduction-shaped E2Eで回帰保証する。
 - [x] OCR-S-7: self-dogfoodでこのStory自身または専用fixture StoryがTrusted PR-readyまたは契約どおりの型付き停止へ到達する。
-- [x] OCR-S-8: merge済みPR #377と#382の証跡で先行2 Storyを完了へ整合し、OCR-S-1..8、dogfood、current-HEAD Gate、CIの証跡に基づいて最終Storyと親closure roadmapを完了へ閉じる。明示的な`execute merge`はGit文書完了後の監査確認として記録し、先行機能は再実装しない。
+- [ ] OCR-S-8: merge済みPR #372、#377、#382の証跡で先行3 Storyを完了へ整合し、OCR-S-1..8、dogfood、current-HEAD Gate、CIの証跡に基づいて最終Storyと親closure roadmapを完了へ閉じる。明示的な`execute merge`はGit文書完了後の監査確認として記録し、先行機能は再実装しない。
 
 ## Non Goals
 
@@ -48,9 +48,9 @@ updated_at: 2026-07-23
 5. `[VERIFY]` acceptance matrixとarchitecture conformanceを記録する。
    - `test/one-command-pr-ready-closure.test.js`、`test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts`、`test/guarded-run-session.test.js`、`test/independent-review-orchestrator.test.js`がOCR-T-1..4、workflow-heavy E2E replay、repair後の旧HEAD checkpoint無効化、既存公開help回帰を実装し、focused/full testsと最新main比target architecture conformanceをcurrent HEADへ記録する。
 6. `[QA/DOGFOOD]` production connectorとVibePro lifecycleを実証する。
-   - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`のOCR-T-5を実commit、別identity review lifecycle、Gate、PR、CI import、current HEAD rebindの証跡で閉じ、Git文書完了後に`vibepro execute merge`の監査証跡を永続化する。
-   - `docs/management/stories/active/story-vibepro-production-runtime-connectors.md`をmerge済みPR #377の証跡で完了へ更新し、`docs/management/stories/active/story-vibepro-independent-review-orchestration.md`をmerge済みPR #382の証跡で完了へ更新する。先行コードは二重実装しない。
-   - `docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md`をdogfood、current-HEAD Gate、CIの証跡で完了へ更新し、`docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md`を同じ証跡で完了へ更新する。roadmapのAIC-S-1..5が4 Storyの既存証跡へ追跡できる状態にし、当該PRのmerge SHAは同一commitの前提にせず、`execute merge`が`.vibepro/pr/.../pr-merge.json`とcanonical auditへpost-merge confirmationとして記録する。
+   - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`のOCR-T-5を、利用可能runtimeでは実commitと別identity review lifecycle、利用不能runtimeではmutation前の型付きcapability停止として実証する。後者はavailable-pathのproduction-shaped E2E、current-HEAD Gate、PR、CI import、current HEAD rebindと組み合わせて閉じ、Git文書完了後に`vibepro execute merge`の監査証跡を永続化する。
+   - `docs/management/stories/active/story-vibepro-autonomous-action-dag.md`をmerge済みPR #372、Production Runtime ConnectorsをPR #377、Independent Review OrchestrationをPR #382の証跡で完了へ更新する。先行コードは二重実装しない。
+   - このStoryと親roadmapはPR作成前は`active`を維持する。PRのcurrent-HEAD GateとCI importが揃った後の同一branch closure commitで両方を`completed`へ更新し、roadmapのAIC-S-1..5を4 Story/PR証跡へ追跡可能にする。そのclosure commitを再検証・再review・CI importしてからmergeし、`execute merge`が`.vibepro/pr/.../pr-merge.json`とcanonical auditへpost-merge confirmationを記録する。
 
 ## Completion Evidence
 

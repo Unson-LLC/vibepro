@@ -124,7 +124,7 @@
     {
       "id": "S-OCR-5",
       "type": "scenario",
-      "statement": "A production connector smoke proves that implementation advances the real managed-worktree commit and independent review uses a distinct read-only identity and closed provider session.",
+      "statement": "A production connector smoke proves a real managed-worktree commit plus distinct read-only closed review session when the provider exposes the required capability. If every selected provider lacks a required capability, it instead proves a pre-mutation typed stop that binds provider, missing capability, and recovery boundary to the Run; the available-provider commit/review path remains covered by production-shaped E2E and is not represented as a real provider execution.",
       "inherited_behaviors": [
         {
           "condition": "/not logged in|unauthenticated/i.test(authStatus)",
@@ -171,7 +171,7 @@
     {
       "id": "S-OCR-6",
       "type": "scenario",
-      "statement": "Roadmap closure reconciles the already merged Production Runtime Connectors and Independent Review Orchestration Story lifecycles from PR #377 and PR #382, then closes the final Story and parent roadmap from dogfood, current-HEAD Gate, and imported CI evidence without reimplementing either predecessor. The later explicit execute merge is a second-phase confirmation persisted in pr-merge.json and the canonical audit, not a future-SHA prerequisite embedded in the same Git commit.",
+      "statement": "Roadmap closure reconciles the already merged Autonomous Action DAG, Production Runtime Connectors, and Independent Review Orchestration Story lifecycles from PR #372, PR #377, and PR #382 without reimplementing them. The initial PR candidate keeps the final Story and parent roadmap active; after its current-HEAD Gate and imported CI evidence, a focused closure commit marks them completed and is itself reverified, rereviewed, and re-imported from CI before explicit execute merge supplies post-merge confirmation in pr-merge.json and the canonical audit.",
       "inherited_behaviors": [
         {
           "condition": "PR #377 and PR #382 are already merged and their implementation surfaces are outside this closure Story",
