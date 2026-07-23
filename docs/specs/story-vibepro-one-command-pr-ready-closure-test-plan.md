@@ -89,7 +89,7 @@ still proving every stop crosses the public boundary unchanged.
 | quota | `quota_exceeded` | provider fallback or explicit retry |
 | timeout | typed runtime timeout | dispatch is contained before retry |
 | CI pending | `ci_pending` | imported CI evidence resumes final prepare |
-| cancellation | `cancelled` | no automatic continuation |
+| cancellation | `cancelled`, with every active runtime dispatch contained | a stale in-flight dispatch/poll preserves terminal authority and no automatic suffix continuation occurs |
 
 Path-specific producer coverage is split deliberately: the one-command owner
 tests assert `verification_failed`, `repair_convergence_exhausted`,

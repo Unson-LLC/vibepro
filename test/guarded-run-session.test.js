@@ -111,6 +111,113 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   });
 });
 
+test('OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const calls = [];
+  let cancelCalls = 0;
+  let runtimeCancelled = false;
+  let releaseStalePoll;
+  let reportPollStarted;
+  const stalePollRelease = new Promise((resolve) => { releaseStalePoll = resolve; });
+  const pollStarted = new Promise((resolve) => { reportPollStarted = resolve; });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'cancellable-runtime',
+    async probe() {
+      return {
+        available: true,
+        capabilities: ['workspace_write'],
+        sandbox: 'workspace-write',
+        approval_policy: 'managed'
+      };
+    },
+    async start() {
+      return {
+        provider_run_id: 'provider-cancellable',
+        agent_identity: 'implementer-cancellable',
+        session_id: 'implementation-cancellable'
+      };
+    },
+    async status() {
+      if (runtimeCancelled) return { status: 'cancelled' };
+      reportPollStarted();
+      await stalePollRelease;
+      return { status: 'running' };
+    },
+    async cancel() {
+      cancelCalls += 1;
+      runtimeCancelled = true;
+      return { status: 'cancelled' };
+    },
+    async collect_result() {
+      throw new Error('cancelled runtime must not collect a result');
+    }
+  }] });
+  let session;
+  const continueRunner = (id) => async () => {
+    calls.push(id);
+    return { status: 'continue' };
+  };
+  session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    actionRunners: {
+      diagnose: continueRunner('diagnose'),
+      prepare_artifacts: continueRunner('prepare_artifacts'),
+      implement: async ({ state }) => {
+        calls.push('implement');
+        const started = await session.dispatchRuntime(fixture.source, {
+          storyId: state.story_id,
+          runId: state.run_id,
+          request: {
+            adapter_id: 'cancellable-runtime',
+            task_id: 'implementation-cancel-race',
+            role: 'implementation',
+            implementation_identity: 'implementer-cancellable',
+            requirements: {
+              capabilities: ['workspace_write'],
+              timeout_ms: 1000,
+              managed_worktree: state.execution_context.root_realpath
+            }
+          }
+        });
+        await session.pollRuntime(fixture.source, {
+          storyId: state.story_id,
+          runId: state.run_id,
+          dispatchId: started.dispatch.dispatch_id
+        });
+        return { status: 'continue' };
+      },
+      verify: continueRunner('verify'),
+      review: continueRunner('review'),
+      repair: continueRunner('repair'),
+      final_prepare: async () => {
+        calls.push('final_prepare');
+        return { status: 'pr_ready' };
+      }
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const orchestration = session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  await pollStarted;
+  const cancelled = await session.cancel(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(cancelCalls, 1);
+  releaseStalePoll();
+
+  const result = await orchestration;
+  assert.equal(result.state.status, 'cancelled');
+  assert.deepEqual(calls, ['diagnose', 'prepare_artifacts', 'implement']);
+  const persisted = await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.status, 'cancelled');
+  assert.equal(persisted.runtime_dispatches[0].status, 'cancelled');
+  assert.equal(cancelCalls, 1);
+});
+
 test('OCR-S-4 material ambiguity persists the exact Human Decision and resumes from prepare_artifacts', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let prepareCalls = 0;

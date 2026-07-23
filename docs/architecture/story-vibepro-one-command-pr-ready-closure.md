@@ -93,7 +93,7 @@ Guarded closure may create/reuse a managed worktree, write repository artifacts,
 - grant a critical waiver;
 - perform deployment, publication, or another material external side effect.
 
-Those operations remain explicit human commands. Missing authority, product ambiguity, quota, permission, timeout, CI pending, cancellation, no progress, and exhausted repair convergence are typed terminal or resumable stops with a next command.
+Those operations remain explicit human commands. Missing authority, product ambiguity, quota, permission, timeout, CI pending, cancellation, no progress, and exhausted repair convergence are typed terminal or resumable stops with a next command. Operator cancellation first commits terminal Run authority, then contains every active runtime dispatch; an in-flight dispatch or poll must re-read authority and may neither overwrite `cancelled` nor continue the action suffix.
 
 ## Compatibility and Rollback
 

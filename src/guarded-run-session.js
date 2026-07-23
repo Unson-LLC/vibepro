@@ -40,6 +40,7 @@ const RECOVERABLE_STATUSES = new Set([
   'blocked',
   'failed'
 ]);
+const ACTIVE_RUNTIME_DISPATCH_STATUSES = new Set(['queued', 'running', 'permission_wait']);
 const AUTHORITY_KINDS = new Set(['managed', 'repository', 'source_fallback']);
 const DEPENDENCY_KEYS = new Set([
   'now',
@@ -175,6 +176,36 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   let result = operation === 'dispatch'
     ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, runtimeState, options.request, { providerIdentityRecords })
     : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
+  const latest = await loadSelectedRun(deps, repoRoot, options);
+  if (operation !== 'cancel' && latest.state.status === 'cancelled' && loaded.state.status !== 'cancelled') {
+    let contained = result;
+    const latestDispatch = (latest.state.runtime_dispatches ?? [])
+      .find((item) => item.dispatch_id === result.dispatch?.dispatch_id);
+    if (latestDispatch && !ACTIVE_RUNTIME_DISPATCH_STATUSES.has(latestDispatch.status)) {
+      contained = { ...result, state: latest.state, dispatch: latestDispatch };
+    } else if (ACTIVE_RUNTIME_DISPATCH_STATUSES.has(result.dispatch?.status)) {
+      contained = await deps.agentRuntimeCoordinator.cancel(
+        operation === 'dispatch' ? result.state : latest.state,
+        result.dispatch.dispatch_id,
+        { providerIdentityRecords }
+      );
+    }
+    const terminalDispatch = contained.dispatch ?? result.dispatch ?? null;
+    const terminalState = terminalDispatch
+      ? {
+          ...latest.state,
+          runtime_dispatches: upsertRuntimeDispatch(latest.state.runtime_dispatches, terminalDispatch)
+        }
+      : latest.state;
+    await persistAuthorityThenMirror(
+      deps,
+      terminalState,
+      latest.authorityFile,
+      latest.mirrorFile,
+      `agent_runtime_${operation}_cancelled_run`
+    );
+    return { ...contained, state: terminalState, dispatch: terminalDispatch };
+  }
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
     result = {
@@ -348,48 +379,68 @@ async function orchestrateRun(deps, repoRoot, options) {
   const selectedPlan = resumePlan ?? (!controllerEnabled
     ? undefined
     : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
-  const result = await runSafeActionPlan(decisionState, {
-    profile: decisionState.action_profile ?? 'legacy',
-    policyDeniedActionIds: options.policyDeniedActionIds,
-    plan: selectedPlan,
-    resolveCurrentHead: async () => (await resolveIdentity(
-      deps,
-      loaded.state.execution_context.root_realpath,
-      'worktree_mismatch'
-    )).head_sha,
-    onProgress: async (progress) => {
-      const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
-        storyId: loaded.state.story_id,
-        runId: loaded.state.run_id
-      });
-      const checkpoint = {
-        ...persisted.state,
-        current_head_sha: progress.current_head_sha,
-        action_journal: progress.action_journal,
-        ...resumeCursorPatch(progress, decisionState)
-      };
-      await persistAuthorityThenMirror(
+  let result;
+  try {
+    result = await runSafeActionPlan(decisionState, {
+      profile: decisionState.action_profile ?? 'legacy',
+      policyDeniedActionIds: options.policyDeniedActionIds,
+      plan: selectedPlan,
+      resolveCurrentHead: async () => (await resolveIdentity(
         deps,
-        checkpoint,
-        loaded.authorityFile,
-        loaded.mirrorFile,
-        'safe_action_checkpoint'
-      );
-    },
-    onCheckpoint: createReviewCheckpointPersister({
-      loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
-        storyId: state.story_id, runId: state.run_id
+        loaded.state.execution_context.root_realpath,
+        'worktree_mismatch'
+      )).head_sha,
+      onProgress: async (progress) => {
+        const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: loaded.state.story_id,
+          runId: loaded.state.run_id
+        });
+        assertRunNotCancelled(persisted.state);
+        const checkpoint = {
+          ...persisted.state,
+          current_head_sha: progress.current_head_sha,
+          action_journal: progress.action_journal,
+          ...resumeCursorPatch(progress, decisionState)
+        };
+        await persistAuthorityThenMirror(
+          deps,
+          checkpoint,
+          loaded.authorityFile,
+          loaded.mirrorFile,
+          'safe_action_checkpoint'
+        );
+      },
+      onCheckpoint: createReviewCheckpointPersister({
+        loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: state.story_id, runId: state.run_id
+        }),
+        persist: async (selected, state) => {
+          const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+            storyId: state.story_id, runId: state.run_id
+          });
+          assertRunNotCancelled(persisted.state);
+          return persistAuthorityThenMirror(deps, state, selected.authorityFile,
+            selected.mirrorFile, 'safe_action_operation_checkpoint');
+        },
+        now: () => toIso(deps.now())
       }),
-      persist: (selected, state) => persistAuthorityThenMirror(deps, state, selected.authorityFile,
-        selected.mirrorFile, 'safe_action_operation_checkpoint'),
-      now: () => toIso(deps.now())
-    }),
-    runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
-  });
+      runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
+    });
+  } catch (error) {
+    if (error?.code !== 'run_cancelled') throw error;
+    const cancelled = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: loaded.state.story_id,
+      runId: loaded.state.run_id
+    });
+    return { plan: [], state: cancelled.state };
+  }
   const persistedAfterOwners = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
     storyId: loaded.state.story_id,
     runId: loaded.state.run_id
   });
+  if (persistedAfterOwners.state.status === 'cancelled') {
+    return { plan: result.plan, state: persistedAfterOwners.state };
+  }
   let next = {
     ...persistedAfterOwners.state,
     current_head_sha: result.state.current_head_sha,
@@ -1131,7 +1182,19 @@ async function cancelRun(deps, repoRoot, options) {
     pending_decision: null
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'terminal_transition');
-  return next;
+  let contained = next;
+  if (deps.agentRuntimeCoordinator) {
+    for (const dispatch of (loaded.state.runtime_dispatches ?? [])
+      .filter((item) => ACTIVE_RUNTIME_DISPATCH_STATUSES.has(item.status))) {
+      const result = await mutateRuntimeDispatch(deps, repoRoot, {
+        storyId: loaded.state.story_id,
+        runId: loaded.state.run_id,
+        dispatchId: dispatch.dispatch_id
+      }, 'cancel');
+      contained = result.state;
+    }
+  }
+  return contained;
 }
 
 async function transitionRun(deps, repoRoot, options) {
@@ -1680,6 +1743,21 @@ function isAllowedTransition(from, to, reason) {
       || to === 'pr_ready';
   }
   return false;
+}
+
+function assertRunNotCancelled(state) {
+  if (state.status !== 'cancelled') return;
+  throw new GuardedRunError(
+    'run_cancelled',
+    'The guarded Run was cancelled while autonomous orchestration was active.',
+    { run_id: state.run_id }
+  );
+}
+
+function upsertRuntimeDispatch(dispatches = [], dispatch) {
+  const index = dispatches.findIndex((item) => item.dispatch_id === dispatch.dispatch_id);
+  if (index < 0) return [...dispatches, dispatch];
+  return dispatches.map((item, itemIndex) => itemIndex === index ? dispatch : item);
 }
 
 async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile, capsuleReason) {
