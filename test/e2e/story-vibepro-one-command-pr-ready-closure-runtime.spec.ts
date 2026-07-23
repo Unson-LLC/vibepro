@@ -385,7 +385,18 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
   const resumable = createOneCommandPrReadyActionOwners({
     ...defaults,
     dispatchRuntime: async ({ request }) => runtimeAvailable
-      ? defaults.dispatchRuntime({ request })
+      ? ({
+          state,
+          dispatch: {
+            dispatch_id: `dispatch-${request.task_id}`,
+            status: "completed",
+            result: {
+              completion_status: "completed",
+              changed_files: ["src/change.js"],
+              head_sha: "b".repeat(40)
+            }
+          }
+        })
       : ({
           state,
           dispatch: {
