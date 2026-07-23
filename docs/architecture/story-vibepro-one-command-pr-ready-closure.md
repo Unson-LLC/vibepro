@@ -103,17 +103,22 @@ Existing Runs retain their persisted action profile. `--action-profile legacy` k
 
 The acceptance matrix covers success, restart/resume, material human decision, verification failure, `needs_changes` repair convergence, no progress, quota, timeout, CI pending, and cancellation. When the selected production connector exposes the required capability, its smoke must prove a real implementation commit and a separate read-only review identity. When no provider exposes that capability, the production smoke must stop before mutation and persist the provider, missing capability, recovery boundary, and typed stop; the available path remains covered by production-shaped E2E rather than being misreported as a real provider commit. The Story's self-dogfood run must reach current-HEAD Trusted PR-ready or a typed, evidence-backed stop.
 
-Lifecycle closure is two-phase to avoid making a Git commit depend on its own
-future merge SHA. The two merged predecessor Stories are reconciled from PR
-#372, #377, and #382. The final Story and parent roadmap remain `active` in the
-initial PR candidate. After that candidate has current-HEAD Gate and imported CI
-evidence, a focused closure commit reconciles the three predecessors, marks the
-final Story and parent roadmap `completed`, and is itself reverified, rereviewed,
-and imported from CI before merge. The later explicit `vibepro execute merge`
-consumes that pre-merge acceptance and supplies delivery confirmation through
-the existing merge authority in `pr-merge.json` and the canonical audit; the
-post-merge confirmation is not a circular pre-PR Gate prerequisite. The final
-operator report verifies both phases.
+Pre-PR lifecycle acceptance proves only the staged closure protocol and
+nonduplication boundary. PR #372, #377, and #382 are the canonical evidence for
+the three merged predecessor Stories, their implementation surfaces are not
+reimplemented here, and the final Story plus parent roadmap remain `active` in
+the initial PR candidate. PR creation and every later delivery operation are
+outside OCR-S-8 acceptance, so no pre-PR Gate depends on future PR or merge
+evidence.
+
+## Post-PR Delivery Closure Record
+
+After VibePro creates the PR, the delivery record imports initial CI, creates a
+focused same-branch closure commit that marks the final Story and parent roadmap
+`completed`, rebinds evidence to that HEAD, reruns Gate and independent review,
+re-imports CI, and then invokes explicit `vibepro execute merge`. `pr-merge.json`,
+the canonical audit, and the merge SHA provide post-merge confirmation. This
+record consumes pre-PR acceptance; it is not an acceptance prerequisite.
 
 The canonical planned cases and their public surfaces are fixed in
 `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`. Existing

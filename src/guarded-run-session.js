@@ -618,20 +618,35 @@ function buildActionRunners(deps, loaded, options) {
   };
 }
 function buildIndependentReviewRunner(deps, loaded, options) {
-  const repoRoot = loaded.state.execution_context.root_realpath;
-  return createGuardedIndependentReviewRunner({
-    repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
-    agentReviewOps: deps.agentReviewOps,
-    dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
-    pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
-    cancelRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, dispatchId }, 'cancel'),
-    recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
-    createError: (code, message) => new GuardedRunError(code, message)
-  });
+  return async (context) => {
+    const selected = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: context.state.story_id,
+      runId: context.state.run_id
+    });
+    const repoRoot = selected.state.managed_worktree?.path
+      ?? selected.state.execution_context.root_realpath;
+    const runReview = createGuardedIndependentReviewRunner({
+      repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
+      agentReviewOps: deps.agentReviewOps,
+      dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
+      pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
+      cancelRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'cancel'),
+      recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
+      createError: (code, message) => new GuardedRunError(code, message)
+    });
+    return runReview({
+      ...context,
+      state: {
+        ...selected.state,
+        current_head_sha: context.state.current_head_sha,
+        action_journal: context.state.action_journal
+      }
+    });
+  };
 }
 function hasCompletedResumeCheckpoint(state, resumeNodeId) {
   if (resumeNodeId == null) return false;

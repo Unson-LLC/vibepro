@@ -20,14 +20,14 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
+import { createAgentRuntimeCoordinator } from "../../src/agent-runtime-adapter.js";
 import { runCli } from "../../src/cli.js";
-import { createGuardedRunSession } from "../../src/guarded-run-session.js";
 import { createOneCommandPrReadyActionOwners } from "../../src/one-command-pr-ready-closure.js";
 import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
 
 const execFileAsync = promisify(execFile);
 
-test("scenario:S-001 available-provider regression persists one production-shaped Run lifecycle", async (t) => {
+test("scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-e2e-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const source = path.join(root, "source");
@@ -87,131 +87,219 @@ test("scenario:S-001 available-provider regression persists one production-shape
   let implementationHead = initialHead;
   let repairedHead = initialHead;
   let reviewCalls = 0;
-  let verificationCalls = 0;
-  const continueAction = async () => ({ status: "continue" });
-  const session = createGuardedRunSession({
+  let runtimeSequence = 0;
+  let lifecycleSequence = 0;
+  const runtimeRequests = new Map();
+  const reviewLifecycleEvents = [];
+  const coordinator = createAgentRuntimeCoordinator({
+    adapters: [{
+      id: "codex",
+      async probe({ role }) {
+        return role === "review"
+          ? { available: true, capabilities: ["review"], sandbox: "read-only", approval_policy: "managed" }
+          : { available: true, capabilities: ["workspace_write"], sandbox: "workspace-write", approval_policy: "managed" };
+      },
+      async start(request) {
+        runtimeSequence += 1;
+        const providerRunId = `ocr-provider-${runtimeSequence}`;
+        runtimeRequests.set(providerRunId, request);
+        const reviewOrdinal = reviewCalls + 1;
+        return request.role === "review"
+          ? {
+              provider_run_id: providerRunId,
+              agent_identity: request.reviewer_identity,
+              session_id: `review-session-${reviewOrdinal}`,
+              thread_id: `review-thread-${reviewOrdinal}`
+            }
+          : {
+              provider_run_id: providerRunId,
+              agent_identity: "implementation-agent",
+              session_id: `implementation-session-${runtimeSequence}`,
+              thread_id: `implementation-thread-${runtimeSequence}`
+            };
+      },
+      async status() {
+        return { status: "completed" };
+      },
+      async cancel() {
+        return { status: "cancelled" };
+      },
+      async collect_result({ provider_run_id, dispatch }) {
+        const request = runtimeRequests.get(provider_run_id);
+        assert.ok(request, `missing deterministic request for ${provider_run_id}`);
+        if (request.role === "implementation") {
+          const repair = request.task_id.endsWith(":repair-1");
+          await writeFile(
+            path.join(managed, "implementation.txt"),
+            repair
+              ? "repaired by production-shaped runtime\n"
+              : "implemented by production-shaped runtime\n"
+          );
+          await execFileAsync("git", ["add", "implementation.txt"], { cwd: managed });
+          await execFileAsync(
+            "git",
+            ["commit", "-m", repair
+              ? "fix: repair independent review finding"
+              : "test: advance managed runtime head"],
+            { cwd: managed }
+          );
+          const head = await currentHead();
+          if (repair) repairedHead = head;
+          else implementationHead = head;
+          return {
+            completion_status: "completed",
+            changed_files: ["implementation.txt"],
+            head_sha: head,
+            test_suggestions: ["node --test test/one-command-pr-ready-closure.test.js"],
+            summary: repair
+              ? "managed repair runtime committed"
+              : "managed implementation runtime committed"
+          };
+        }
+        reviewCalls += 1;
+        const status = reviewCalls === 1 ? "needs_changes" : "pass";
+        const findings = status === "needs_changes"
+          ? [{ id: "e2e-repair", severity: "medium", detail: "repair fixture" }]
+          : [];
+        return {
+          completion_status: "completed",
+          changed_files: [],
+          head_sha: await currentHead(),
+          test_suggestions: [],
+          summary: status === "needs_changes"
+            ? "independent review requested fixture repair"
+            : "independent re-review passed",
+          status,
+          inspection_summary: "inspected the managed-worktree implementation commit read-only",
+          inspection_evidence: "implementation.txt and current git HEAD",
+          inspection_inputs: ["implementation.txt"],
+          judgment_delta: [status === "needs_changes"
+            ? "implementation commit -> repair required"
+            : "repaired commit -> pass"],
+          findings,
+          agent_identity: dispatch.agent_identity,
+          session_id: dispatch.session_id,
+          thread_id: dispatch.thread_id,
+          lifecycle: "closed"
+        };
+      }
+    }]
+  });
+  const guardedRunDependencies = {
     now: () => new Date("2026-07-23T15:00:00.000Z"),
     randomBytes: () => Buffer.from([9, 8, 7, 6]),
     startExecution: async () => {
       await writeLegacy();
       return { state: legacy, found: true };
     },
-    readGateReadiness: async () => ({ ready_for_pr_create: false }),
+    agentRuntimeCoordinator: coordinator,
+    readGateReadiness: async () => ({
+      ready_for_pr_create: false,
+      missing_artifacts: []
+    }),
     preparePullRequest: async () => ({
       git: { head_sha: await currentHead() },
-      preparation: { gate_status: { ready_for_pr_create: true, next_required_actions: [] } },
+      preparation: {
+        gate_status: { ready_for_pr_create: true, next_required_actions: [] },
+        pr_context: {
+          agent_reviews: {
+            parallel_dispatch: {
+              required_stages: [{ stage: "implementation", roles: ["runtime_contract"] }]
+            }
+          }
+        }
+      },
       artifacts: { json: ".vibepro/pr/ocr-e2e/pr-prepare.json" }
     }),
-    actionRunners: {
-      diagnose: continueAction,
-      prepare_artifacts: continueAction,
-      implement: async () => {
-        await writeFile(path.join(managed, "implementation.txt"), "implemented by production-shaped runtime\n");
-        await execFileAsync("git", ["add", "implementation.txt"], { cwd: managed });
-        await execFileAsync("git", ["commit", "-m", "test: advance managed runtime head"], { cwd: managed });
-        implementationHead = await currentHead();
+    agentReviewOps: {
+      prepare: async (_root, value) => {
+        reviewLifecycleEvents.push(["prepare", value.stage, value.roles]);
+        return { status: "prepared" };
+      },
+      authorize: async (_root, value) => {
+        reviewLifecycleEvents.push(["authorize", value.stage, value.role]);
         return {
-          status: "continue",
-          output_head_sha: implementationHead,
-          summary: "managed implementation runtime committed",
-          checkpoint: [{
-            kind: "runtime_dispatch",
-            role: "implementation",
-            provider: "production-shaped-runtime",
-            agent_identity: "implementation-agent",
-            session_id: "implementation-session",
-            managed_worktree: managed,
-            status: "completed"
-          }]
+          action: "dispatch",
+          authorization: {
+            action: "dispatch",
+            authorization_id: `ocr-authorization-${lifecycleSequence + 1}`
+          }
         };
       },
-      verify: async () => ({
-        status: "continue",
-        artifact: ".vibepro/verification/ocr-e2e.json",
-        checkpoint: [{
-          kind: "verification",
-          head_sha: (++verificationCalls > 1 ? repairedHead : implementationHead),
-          commands: ["node --test test/one-command-pr-ready-closure.test.js"],
-          status: "pass"
-        }]
-      }),
-      review: async () => {
-        reviewCalls += 1;
+      start: async (_root, value) => {
+        lifecycleSequence += 1;
+        reviewLifecycleEvents.push(["start", value.stage, value.role]);
         return {
-          status: "continue",
-          checkpoint: [{
-          kind: "independent_review",
-          reviewer_identity: "review-agent",
-          implementation_identity: "implementation-agent",
-          session_id: `review-session-${reviewCalls}`,
-          sandbox: "read-only",
-          lifecycle_status: "closed",
-          verdict: reviewCalls === 1 ? "needs_changes" : "pass",
-          findings: reviewCalls === 1 ? [{ id: "e2e-repair", detail: "repair fixture" }] : [],
-          head_sha: reviewCalls === 1 ? implementationHead : repairedHead
-        }]
+          lifecycle: {
+            lifecycle_id: `ocr-lifecycle-${lifecycleSequence}`,
+            timeout_ms: 1000
+          }
         };
       },
-      repair: async () => {
-        if (reviewCalls > 1) {
-          return { status: "continue", summary: "independent re-review passed" };
-        }
-        await writeFile(path.join(managed, "implementation.txt"), "repaired by production-shaped runtime\n");
-        await execFileAsync("git", ["add", "implementation.txt"], { cwd: managed });
-        await execFileAsync("git", ["commit", "-m", "fix: repair independent review finding"], { cwd: managed });
-        repairedHead = await currentHead();
-        return {
-          status: "continue",
-          output_head_sha: repairedHead,
-          replay_from_action_id: "verify",
-          checkpoint: [{ kind: "repair", finding_id: "e2e-repair", head_sha: repairedHead }]
-        };
+      close: async (_root, value) => {
+        reviewLifecycleEvents.push(["close", value.stage, value.role]);
+        return { lifecycle: { lifecycle_id: value.lifecycleId, status: "closed" } };
       },
-      final_prepare: async () => ({
-        status: "pr_ready",
-        artifact: ".vibepro/pr/ocr-e2e/pr-prepare.json",
-        checkpoint: [{
-          kind: "current_head_gate",
-          head_sha: repairedHead,
-          ready_for_pr_create: true
-        }]
-      })
+      record: async (_root, value) => {
+        reviewLifecycleEvents.push(["record", value.stage, value.role, value.status]);
+        return { status: value.status };
+      }
     }
-  });
+  };
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
   process.env.VIBEPRO_NEXT_BEST_ACTION = "off";
   t.after(() => previous === undefined
     ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
     : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
 
-  const created = await session.run(source, {
-    storyId,
-    until: "pr-ready",
-    autonomy: "guarded",
-    actionProfile: "autonomous"
+  let cliOutput = "";
+  const invocation = await runCli([
+    "execute", "run", source,
+    "--story-id", storyId,
+    "--until", "pr-ready",
+    "--autonomy", "guarded",
+    "--provider-fallbacks", "codex",
+    "--json"
+  ], {
+    guardedRunDependencies,
+    stdout: { write: (chunk) => { cliOutput += chunk; } },
+    stderr: { write: (chunk) => { cliOutput += chunk; } }
   });
-  const result = await session.orchestrate(source, { storyId, runId: created.run_id });
-  const artifact = path.join(managed, ".vibepro", "executions", storyId, "runs", created.run_id, "state.json");
+  assert.equal(invocation.exitCode, 0, cliOutput);
+  const result = invocation.result;
+  const artifact = path.join(managed, ".vibepro", "executions", storyId, "runs", result.state.run_id, "state.json");
   const persisted = JSON.parse(await readFile(artifact, "utf8"));
-  assert.equal(result.state.status, "pr_ready", JSON.stringify(result.state.stop_reason));
+  assert.equal(result.state.status, "pr_ready", JSON.stringify({
+    stop_reason: result.state.stop_reason,
+    current_head_sha: result.state.current_head_sha,
+    runtime_dispatches: result.state.runtime_dispatches,
+    action_journal: result.state.action_journal
+  }));
   assert.equal(persisted.current_head_sha, repairedHead);
   assert.notEqual(repairedHead, implementationHead);
   assert.notEqual(implementationHead, initialHead);
-  const implementation = persisted.action_journal.find(({ action_id }) => action_id === "implement");
-  const review = persisted.action_journal.filter(({ action_id }) => action_id === "review").at(-1);
-  const verify = persisted.action_journal.filter(({ action_id }) => action_id === "verify").at(-1);
-  const finalPrepare = persisted.action_journal.find(({ action_id }) => action_id === "final_prepare");
-  // S-001: executable production-shaped evidence binds the real commit and isolated review lifecycle.
-  assert.equal(implementation.checkpoint[0].managed_worktree, managed);
-  assert.equal(implementation.checkpoint[0].session_id, "implementation-session");
+  const implementations = persisted.runtime_dispatches.filter(({ role }) => role === "implementation");
+  const reviews = persisted.runtime_dispatches.filter(({ role }) => role === "review");
+  const verify = persisted.action_journal.filter(({ action_id }) => action_id === "verify");
+  const finalPrepare = persisted.action_journal.findLast(({ action_id }) => action_id === "final_prepare");
+  // S-001: public CLI entered the production run-session owner composition; no
+  // custom implementation, repair, or review action runner produced this evidence.
+  assert.deepEqual(implementations.map(({ result }) => result.head_sha), [implementationHead, repairedHead]);
+  assert.equal(implementations.every(({ requirements }) => requirements.managed_worktree === managed), true);
   assert.equal(reviewCalls, 2);
-  assert.equal(verificationCalls, 2);
-  assert.equal(review.checkpoint[0].sandbox, "read-only");
-  assert.equal(review.checkpoint[0].lifecycle_status, "closed");
-  assert.notEqual(review.checkpoint[0].reviewer_identity, review.checkpoint[0].implementation_identity);
-  assert.equal(verify.checkpoint[0].head_sha, repairedHead);
-  assert.equal(finalPrepare.checkpoint[0].head_sha, repairedHead);
-  assert.equal(finalPrepare.checkpoint[0].ready_for_pr_create, true);
+  assert.equal(verify.length, 2);
+  assert.deepEqual(reviews.map(({ result }) => result.review.status), ["needs_changes", "pass"]);
+  assert.equal(reviews.every(({ sandbox }) => sandbox === "read-only"), true);
+  assert.equal(reviews.every(({ result }) => result.review_provenance.lifecycle === "closed"), true);
+  assert.equal(reviews.every(({ reviewer_identity, implementation_identity }) =>
+    reviewer_identity !== implementation_identity), true);
+  assert.equal(lifecycleSequence, 2);
+  assert.deepEqual(reviewLifecycleEvents.map(([operation]) => operation), [
+    "prepare", "authorize", "start", "close", "record",
+    "prepare", "authorize", "start", "close", "record"
+  ]);
+  assert.equal(finalPrepare.output_head_sha, repairedHead);
+  assert.equal(finalPrepare.status, "completed");
 });
 
 test("scenario:S-002 typed stop and resume matrix executes independently of unit imports", async () => {

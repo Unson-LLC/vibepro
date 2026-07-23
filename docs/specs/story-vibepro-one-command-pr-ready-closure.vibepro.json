@@ -178,7 +178,7 @@
     {
       "id": "S-OCR-6",
       "type": "scenario",
-      "statement": "Roadmap closure reconciles the already merged Autonomous Action DAG, Production Runtime Connectors, and Independent Review Orchestration Story lifecycles from PR #372, PR #377, and PR #382 without reimplementing them. The initial PR candidate keeps the final Story and parent roadmap active; after its current-HEAD Gate and imported CI evidence, a focused closure commit marks them completed and is itself reverified, rereviewed, and re-imported from CI so it is mergeable. Explicit execute merge consumes that pre-merge acceptance and supplies delivery confirmation in pr-merge.json and the canonical audit; post-merge confirmation is not a circular pre-PR Gate prerequisite.",
+      "statement": "Pre-PR roadmap-closure acceptance cites PR #372, PR #377, and PR #382 as the canonical merged evidence for Autonomous Action DAG, Production Runtime Connectors, and Independent Review Orchestration, does not reimplement those surfaces, and keeps the final Story and parent roadmap active in the initial PR candidate. PR creation, CI import, the focused closure commit, evidence rebind, reverification, independent rereview, CI re-import, and explicit execute merge are tracked in the separate Post-PR Delivery Closure Record and are not OCR-S-8 prerequisites.",
       "inherited_behaviors": [
         {
           "condition": "PR #377 and PR #382 are already merged and their implementation surfaces are outside this closure Story",

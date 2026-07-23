@@ -33,7 +33,7 @@ updated_at: 2026-07-23
 - [x] OCR-S-5: success、resume、human decision、verification failure、repair convergence、no-progress、quota、timeout、CI pending、cancelのE2E matrixがpassする。
 - [x] OCR-S-6: production connector smokeは、runtimeが必要capabilityを提供する場合は実commitと独立Review identityを証明し、提供しない場合はmutation前に不足capability、provider、再開条件を型付き停止として同じRunへ永続化する。available-pathのcommit/review契約はproduction-shaped E2Eで回帰保証する。
 - [x] OCR-S-7: self-dogfoodでこのStory自身または専用fixture StoryがTrusted PR-readyまたは契約どおりの型付き停止へ到達する。
-- [ ] OCR-S-8: merge済みPR #372、#377、#382の証跡で先行3 Storyを完了へ整合し、先行機能を再実装しない。初回PR候補のcurrent-HEAD GateとCI importが揃ったら、同一branchのfocused closure commitで最終Storyと親roadmapを完了へ閉じ、そのcommitを再検証・再Review・CI importしてmerge可能にする。明示的な`execute merge`とpost-merge auditはこのpre-merge acceptanceを消費して生成するdelivery confirmationであり、PR作成を循環依存させるpre-PR Gate条件にはしない。
+- [x] OCR-S-8: pre-PR acceptanceは、merge済みPR #372、#377、#382を先行3 Storyの正本証跡として参照し、その実装を二重化しないこと、および最終Storyと親roadmapをPR作成時点では`active`のまま保つstaged closure protocolだけを証明する。PR作成、CI import、focused closure commit、再検証、再Review、再CI import、明示的な`execute merge`は下記Post-PR Delivery Closure Recordで追跡し、pre-PR Gate条件に含めない。
 
 ## Non Goals
 
@@ -53,13 +53,18 @@ updated_at: 2026-07-23
 5. `[VERIFY]` acceptance matrixとarchitecture conformanceを記録する。
    - `test/one-command-pr-ready-closure.test.js`、`test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts`、`test/guarded-run-session.test.js`、`test/independent-review-orchestrator.test.js`がOCR-T-1..4、workflow-heavy E2E replay、repair後の旧HEAD checkpoint無効化、既存公開help回帰を実装し、focused/full testsと最新main比target architecture conformanceをcurrent HEADへ記録する。
 6. `[QA/DOGFOOD]` production connectorとVibePro lifecycleを実証する。
-   - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`のOCR-T-5を、利用可能runtimeでは実commitと別identity review lifecycle、利用不能runtimeではmutation前の型付きcapability停止として実証する。後者はavailable-pathのproduction-shaped E2E、current-HEAD Gate、PR、CI import、current HEAD rebindと組み合わせて閉じ、Git文書完了後に`vibepro execute merge`の監査証跡を永続化する。
+   - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`のOCR-T-5を、利用可能runtimeでは実commitと別identity review lifecycle、利用不能runtimeではmutation前の型付きcapability停止として実証する。後者はavailable-pathのproduction-shaped E2Eとcurrent-HEAD Gateを組み合わせてpre-PR acceptanceを閉じる。
    - `docs/management/stories/active/story-vibepro-autonomous-action-dag.md`をmerge済みPR #372、Production Runtime ConnectorsをPR #377、Independent Review OrchestrationをPR #382の証跡で完了へ更新する。先行コードは二重実装しない。
-   - このStoryと親roadmapはPR作成前は`active`を維持する。PRのcurrent-HEAD GateとCI importが揃った後の同一branch closure commitで両方を`completed`へ更新し、roadmapのAIC-S-1..5を4 Story/PR証跡へ追跡可能にする。そのclosure commitを再検証・再review・CI importしてからmergeし、`execute merge`が`.vibepro/pr/.../pr-merge.json`とcanonical auditへpost-merge confirmationを記録する。
+   - このStoryと親roadmapはpre-PR acceptance完了時も`active`を維持し、後続処理を下記Post-PR Delivery Closure Recordへ引き渡す。
+
+## Post-PR Delivery Closure Record
+
+これはOCR-S-8のpre-PR acceptanceではなく、delivery closureの運用記録である。VibeProでPRを作成し、初回CIをimportした後、同一branchのfocused closure commitでこのStoryと親roadmapを`completed`へ更新してAIC-S-1..5を4 Story/PR証跡へ追跡可能にする。そのcommitをcurrent HEADへ再bindし、Gate再検証、独立再Review、CI再importを完了してから、明示的な`vibepro execute merge`でmergeする。`pr-merge.json`、canonical audit、merge SHAをpost-merge confirmationとして記録する。
 
 ## Completion Evidence
 
 - Real CLI dogfood: `run-20260723T121501Z-793c40ad`。managed worktreeで7-action DAGを開始し、利用可能runtimeの`workspace_write`不足を`runtime_unavailable`として型付き永続化した。
-- Targeted runtime E2E: current-HEAD strict bindingで17/17 pass。
+- Targeted run-session regression: current-HEAD strict bindingで155/155 pass。
+- Public CLI production-owner E2E: current-HEAD strict bindingで5/5 pass。実装commit、独立Reviewの`needs_changes`、修復commit、再検証、別review lifecycleのpass、final prepareを同一Runで実証する。
 - Independent preflight review: current HEADへ再bindしてから判定する。確認対象はrun-sessionからCLIへの逆依存、先行connector/reviewの二重実装、human authority越境。
-- PR-readyの最終権威はcurrent-HEAD `pr-prepare.json`、CIは`verify import-ci`、mergeは明示的な`execute merge`とし、各artifactを同じStory監査へ記録する。
+- Pre-PR PR-readyの最終権威はcurrent-HEAD `pr-prepare.json`とし、CI import以降はPost-PR Delivery Closure Recordの同じStory監査へ記録する。

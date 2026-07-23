@@ -671,7 +671,7 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
       };
     }
   }] });
-  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'repair'];
+  const ids = ['diagnose', 'prepare_artifacts', 'verify', 'repair'];
   const session = fixture.session({
     agentRuntimeCoordinator: coordinator,
     preparePullRequest: async () => preparedAtCurrentHead(fixture, {
@@ -687,17 +687,6 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
     }
   });
   await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
-  const implementation = await session.dispatchRuntime(fixture.source, {
-    storyId: STORY_ID,
-    runId: RUN_ID,
-    request: {
-      adapter_id: 'codex', task_id: 'implementation-runtime', role: 'implementation',
-      requirements: { capabilities: ['workspace_write'], timeout_ms: 1000, managed_worktree: fixture.source }
-    }
-  });
-  await session.pollRuntime(fixture.source, {
-    storyId: STORY_ID, runId: RUN_ID, dispatchId: implementation.dispatch.dispatch_id
-  });
   const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
   process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
   t.after(() => previous === undefined ? delete process.env.VIBEPRO_NEXT_BEST_ACTION : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
@@ -712,6 +701,7 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
   assert.equal(review.status, 'completed');
   assert.equal(review.checkpoint.at(-1).operation, 'record');
   assert.equal(result.state.runtime_dispatches.filter((dispatch) => dispatch.role === 'review' && dispatch.status === 'completed').length, 1);
+  assert.equal(result.state.runtime_dispatches.filter((dispatch) => dispatch.role === 'implementation' && dispatch.status === 'completed').length, 1);
   assert.equal(request.role, 'review');
   assert.equal(request.implementation_identity, 'implementer-1');
   assert.equal(request.implementation_session_id, 'implementation-session');

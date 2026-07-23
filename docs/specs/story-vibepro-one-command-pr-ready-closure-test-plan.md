@@ -127,13 +127,19 @@ capability stop is not misreported as a failed available-provider execution.
 The Story dogfood run must finish at current-HEAD Trusted PR-ready or a typed
 evidence-backed stop.
 
-The lifecycle closure must cite merged PR #372, #377, and #382 for the three
-predecessor Stories, without changing their implementation. The final Story and
-parent roadmap remain active until the initial PR candidate's dogfood Run,
-current-HEAD Gate, and CI import are recorded. A focused closure commit then
-marks all four Stories and the parent roadmap complete; that commit must be
-reverified, rereviewed, and re-imported from CI so it is mergeable. AIC-S-1..5
-must be traceable to the four Story/PR evidence sets. The explicit VibePro merge
-then consumes that pre-merge acceptance and supplies delivery confirmation in
-`pr-merge.json` and the canonical audit; post-merge confirmation is not itself a
-pre-PR Gate criterion.
+OCR-S-8 pre-PR acceptance must cite merged PR #372, #377, and #382 for the
+three predecessor Stories without changing or duplicating their implementation.
+It must also prove that the final Story and parent roadmap remain `active` in
+the initial PR candidate and that a separate staged delivery record exists.
+PR creation, CI evidence, closure commit, rereview, and merge artifacts are not
+inputs to this pre-PR acceptance.
+
+## Post-PR Delivery Closure Record (operational, not OCR-S-8 acceptance)
+
+After VibePro creates the PR, record initial CI import, a focused same-branch
+closure commit marking the final Story and parent roadmap complete, AIC-S-1..5
+traceability to all four Story/PR evidence sets, current-HEAD evidence rebind,
+Gate reverification, independent rereview, and CI re-import. Finally record the
+explicit `vibepro execute merge`, `pr-merge.json`, canonical audit, and merge
+SHA. These artifacts confirm delivery closure but cannot retroactively become a
+pre-PR Gate prerequisite.
