@@ -121,6 +121,14 @@ test('OCR-S-1 production owner returns a persisted typed runtime stop without re
     run_id: RUN_ID,
     required_capabilities: ['workspace_write']
   });
+  const humanSummary = renderGuardedRunSummary(result.state);
+  assert.match(humanSummary, /provider: capability-limited-runtime/);
+  assert.match(humanSummary, /missing_capabilities: workspace_write/);
+  assert.match(humanSummary, /required_capabilities: workspace_write/);
+  assert.match(humanSummary, /recovery_action: resume_run/);
+  assert.match(humanSummary, new RegExp(
+    `next_command: vibepro execute resume .* --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
+  ));
   assert.deepEqual(
     result.state.transitions.filter(({ to }) => to === 'waiting_for_runtime')
       .map(({ from, to }) => [from, to]),

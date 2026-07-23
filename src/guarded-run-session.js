@@ -763,12 +763,26 @@ export function renderGuardedRunSummary(value) {
     : 'Inspect the persisted Guarded Run state before taking another action.';
   const recoveryDetailLines = recovery
     ? [
+        state.stop_reason?.details?.provider
+          ? `- provider: ${state.stop_reason.details.provider}`
+          : null,
+        ...(state.stop_reason?.details?.missing_capabilities?.length
+          ? [`- missing_capabilities: ${state.stop_reason.details.missing_capabilities.join(', ')}`]
+          : []),
+        recovery.action ? `- recovery_action: ${recovery.action}` : null,
+        ...(recovery.required_capabilities?.length
+          ? [`- required_capabilities: ${recovery.required_capabilities.join(', ')}`]
+          : []),
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
         ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
         ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
         ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
         recovery.failure ? `- failure: ${recovery.failure}` : null,
-        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
+        recovery.next_command
+          ? `- next_command: ${recovery.next_command}`
+          : recovery.action === 'resume_run' && state.execution_context?.root_realpath
+            ? `- next_command: vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${recovery.story_id ?? state.story_id} --run-id ${recovery.run_id ?? state.run_id} --until pr-ready`
+            : null
       ].filter(Boolean)
     : [];
   const recoveryLines = recoveryDetailLines.length > 0

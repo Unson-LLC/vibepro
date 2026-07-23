@@ -182,6 +182,38 @@ test('OCR-T-4 owner deadline fails closed when dispatch containment is not termi
   assert.match(result.recovery.containment_error, /did not confirm a terminal dispatch/);
 });
 
+test('OCR-T-4 owner deadline preserves a production-shaped orphaned containment failure', async () => {
+  const dispatch = { dispatch_id: 'dispatch-production-orphan', status: 'running' };
+  const owners = createOneCommandPrReadyActionOwners(boundaries({
+    runtimeTimeoutMs: 1,
+    waitForRuntimePoll: async () => new Promise((resolve) => setTimeout(resolve, 2)),
+    dispatchRuntime: async () => ({ state: baseState, dispatch }),
+    pollRuntime: async () => ({ state: baseState, dispatch }),
+    cancelRuntime: async () => ({
+      state: {
+        ...baseState,
+        stop_reason: {
+          code: 'orphaned_agent',
+          message: 'runtime remained active after normal and force cancellation'
+        }
+      },
+      dispatch: {
+        ...dispatch,
+        status: 'failed',
+        stop_reason: {
+          code: 'orphaned_agent',
+          message: 'runtime remained active after normal and force cancellation'
+        }
+      }
+    })
+  }));
+  const result = await owners.implement(context());
+  assert.equal(result.status, 'failed');
+  assert.equal(result.stop_reason, 'orphaned_agent');
+  assert.equal(result.runtime_dispatch.dispatch_id, dispatch.dispatch_id);
+  assert.match(result.summary, /remained active/);
+});
+
 test('OCR-T-2 missing artifacts are delegated only when needed and no-progress fails closed', async () => {
   let dispatches = 0;
   const owners = createOneCommandPrReadyActionOwners(boundaries({

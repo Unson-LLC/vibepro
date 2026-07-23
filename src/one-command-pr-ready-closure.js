@@ -457,13 +457,17 @@ async function runImplementationRuntime({
         new Error('runtime cancellation did not confirm a terminal dispatch')
       );
     }
+    const containedDispatch = contained?.dispatch ?? contained;
+    if (containedDispatch?.status === 'failed' || containedDispatch?.status === 'completed') {
+      return runtimeActionResult(contained, context.state.current_head_sha, requireHeadAdvance);
+    }
     return {
       status: 'waiting_for_runtime',
       stop_reason: 'runtime_probe_timeout',
-      runtime_dispatch: contained?.dispatch ?? dispatch ?? null,
+      runtime_dispatch: containedDispatch ?? dispatch ?? null,
       recovery: {
         dispatch_id: dispatch?.dispatch_id ?? null,
-        containment_status: contained?.dispatch?.status ?? contained?.status ?? null
+        containment_status: containedDispatch?.status ?? null
       },
       summary: `runtime dispatch exceeded ${runtimeTimeoutMs}ms and was contained before retry`
     };
