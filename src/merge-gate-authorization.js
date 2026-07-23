@@ -36,7 +36,7 @@ export function resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag
     return null;
   }
   const preparedGateDag = prPrepare?.pr_context?.gate_dag ?? null;
-  if (gateDag && preparedGateDag && !sameGateDagAuthorizationSurface(gateDag, preparedGateDag)) {
+  if (gateDag && (!preparedGateDag || !sameGateDagAuthorizationSurface(gateDag, preparedGateDag))) {
     return null;
   }
   return prPrepare.gate_status;

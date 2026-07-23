@@ -125,6 +125,11 @@ test('MWP-AC-8 waiver reconciliation rejects stale or inconsistently routed pr-p
       nodes: [{ id: 'gate:e2e', type: 'e2e', status: 'needs_evidence', required: true, critical: true }]
     }
   ), null);
+  assert.equal(resolveCurrentMergeGateStatus(
+    { ...prPrepare, pr_context: {} },
+    currentHead,
+    currentDag
+  ), null);
   const stale = buildMergeGateAuthorization(
     currentDag,
     { gate_override: auditableOverride },

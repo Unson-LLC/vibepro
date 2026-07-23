@@ -12,7 +12,7 @@ related_architecture:
 
 - `INV-001`: A `ready_for_review` Gate DAG authorizes merge without a waiver.
 - `INV-002`: A stale, missing, malformed, target-mismatched, or critical-gate-bearing authority fails closed before GitHub operations.
-- `INV-003`: Waiver target and critical Gate ID sets exactly match a current-HEAD `pr-prepare.gate_status` whose embedded Gate DAG has the same authorization surface (overall status plus required node identity, type, status, and critical classification) as the routed Gate DAG.
+- `INV-003`: Waiver target and critical Gate ID sets exactly match a current-HEAD `pr-prepare.gate_status`; whenever a routed Gate DAG exists, the embedded Gate DAG is mandatory and has the same authorization surface (overall status plus required node identity, type, status, and critical classification).
 
 ## Contracts
 
@@ -29,5 +29,5 @@ related_architecture:
 
 - `test/merge-gate-authorization.test.js` covers schema, target reconciliation, current-HEAD binding, and routed Gate DAG consistency.
 - `test/review-inspection-first.test.js` proves completed result recovery and absence of current/history artifacts for timeout, replacement, and manual shutdown.
-- `test/vibepro-cli.test.js` covers dry-run, pre-GitHub rejection, persistence failure, and the actual merge fixture.
+- `test/vibepro-cli.test.js` covers dry-run, missing or mismatched embedded Gate DAG rejection before GitHub, persistence failure, and the actual merge fixture.
 - `test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts` binds AC-1 through AC-8 and S-001/S-002 to production wiring.

@@ -13761,6 +13761,32 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         }]
       },
       expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'routed critical gate with missing embedded gate dag',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'missing embedded authority must not conceal the routed critical gate',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      omitEmbeddedGateDag: true,
+      expectedReason: 'current_gate_status_unknown'
     }
   ];
 
@@ -13776,7 +13802,7 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         ready_for_pr_create: false,
         ...fixture.gateStatus
       },
-      pr_context: {
+      pr_context: fixture.omitEmbeddedGateDag ? {} : {
         gate_dag: {
           overall_status: 'needs_verification',
           nodes: fixture.gateStatus.unresolved_gates.map((gate) => ({

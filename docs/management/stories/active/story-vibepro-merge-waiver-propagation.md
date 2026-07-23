@@ -29,7 +29,7 @@ VibeProはwaiver schema、current-HEAD binding、critical gate拒否、merge pre
 - [x] AC-5 dry-run contract testと実merge fixtureで、正規 `execute merge` が同じ判定を用いることを証明する。
 - [x] AC-6 self-dogfoodの `review close → review record` で、事前authorization済みの完了結果を回収済みとして永続化し、同じroleのreplacement再dispatch閉路を起こさない。
 - [x] AC-7 waiverの対象Gate一覧とcritical一覧をcurrent `pr-prepare.gate_status` と完全照合し、対象欠落・不一致・現行critical GateありはGitHub操作前にfail-closedになる。
-- [x] AC-8 `pr-prepare.gate_status` 自体がcurrent HEADかつoverall statusだけでなくrequired nodeのID・type・status・critical classificationまで同じrouted Gate DAGに属する場合だけwaiver照合へ使い、staleまたは不整合なstatusはGitHub操作前に拒否する。
+- [x] AC-8 `pr-prepare.gate_status` 自体がcurrent HEADであり、routed Gate DAGがある場合は埋込DAGを必須とし、overall statusだけでなくrequired nodeのID・type・status・critical classificationまで同じ場合だけwaiver照合へ使う。stale・埋込DAG欠落・不整合なstatusはGitHub操作前に拒否する。
 
 ## シナリオ
 
