@@ -184,7 +184,7 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
     }
     if (WAIT_REASONS.has(error.code) && error.code !== 'runtime_start_timeout') {
       return waiting(runState, request, error.code, error.message, now,
-        runtimeRecoveryDetails(runState, request));
+        runtimeRecoveryDetails(runState, request, []));
     }
     const failureCode = error.code === 'runtime_start_timeout' ? error.code : 'runtime_start_failed';
     try {

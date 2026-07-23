@@ -66,7 +66,7 @@ test('ARA-S-2 auth denial remains a typed resumable stop', async () => {
   assert.equal(result.dispatch.stop_reason.code, 'auth_denied');
   assert.deepEqual(result.dispatch.stop_reason.details, {
     provider: 'fake',
-    missing_capabilities: ['workspace_write'],
+    missing_capabilities: [],
     recovery: {
       action: 'resume_run',
       story_id: state.story_id,

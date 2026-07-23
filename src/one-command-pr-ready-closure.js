@@ -427,6 +427,15 @@ async function runImplementationRuntime({
   };
   let observed = await dispatchRuntime({ ...context, request, providerFallbacks });
   const deadline = Date.now() + runtimeTimeoutMs;
+  if (isRuntimePermissionWait(observed) && Date.now() < deadline) {
+    observed = await pollRuntime({
+      ...context,
+      state: observed.state ?? context.state,
+      dispatch: observed.dispatch,
+      request,
+      providerFallbacks
+    });
+  }
   while (isRuntimeActive(observed) && Date.now() < deadline) {
     await waitForRuntimePoll(runtimePollIntervalMs);
     observed = await pollRuntime({
@@ -522,6 +531,10 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
 function isRuntimeActive(observed) {
   const status = observed?.dispatch?.status ?? observed?.status;
   return ['queued', 'running'].includes(status);
+}
+
+function isRuntimePermissionWait(observed) {
+  return (observed?.dispatch?.status ?? observed?.status) === 'permission_wait';
 }
 
 function isRuntimeTerminal(observed) {

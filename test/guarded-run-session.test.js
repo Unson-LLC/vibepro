@@ -235,7 +235,8 @@ test('OCR-S-1 auth denial persists actionable same-Run recovery and resumes in p
   const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(stopped.state.stop_reason.code, 'auth_denied');
   assert.equal(stopped.state.stop_reason.details.provider, 'auth-runtime');
-  assert.deepEqual(stopped.state.stop_reason.details.missing_capabilities, ['workspace_write']);
+  assert.deepEqual(stopped.state.stop_reason.details.missing_capabilities, []);
+  assert.doesNotMatch(renderGuardedRunSummary(stopped.state), /missing_capabilities:/);
   assert.equal(stopped.state.stop_reason.details.recovery.run_id, RUN_ID);
   assert.match(renderGuardedRunSummary(stopped.state), new RegExp(
     `next_command: vibepro execute resume .* --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
@@ -254,6 +255,9 @@ test('OCR-S-1 auth denial persists actionable same-Run recovery and resumes in p
 test('OCR-S-1 permission wait stops without containment and preserves same-Run recovery', async (t) => {
   const fixture = await createFixture(t, { mode: 'required' });
   let cancelled = false;
+  let approved = false;
+  let statusCalls = 0;
+  const nextHead = 'b'.repeat(40);
   const coordinator = createAgentRuntimeCoordinator({ adapters: [{
     id: 'permission-runtime',
     async probe() {
@@ -271,11 +275,34 @@ test('OCR-S-1 permission wait stops without containment and preserves same-Run r
         session_id: 'session-permission'
       };
     },
-    async status() { return { status: 'permission_wait', message: 'approval required' }; },
+    async status() {
+      statusCalls += 1;
+      return approved
+        ? { status: 'completed', message: 'approved' }
+        : { status: 'permission_wait', message: 'approval required' };
+    },
     async cancel() { cancelled = true; },
-    async collect_result() { throw new Error('result is not collected while permission is pending'); }
+    async collect_result() {
+      fixture.setHead(fixture.managed, nextHead);
+      return {
+        completion_status: 'completed',
+        changed_files: ['docs/management/stories/active/story-guarded-run-test.md'],
+        head_sha: nextHead,
+        test_suggestions: [],
+        summary: 'permission approved and artifact prepared'
+      };
+    }
   }] });
-  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    actionRunners: {
+      implement: async () => ({
+        status: 'blocked',
+        stop_reason: 'fixture_after_permission_recovery',
+        summary: 'permission recovery advanced to the next DAG owner'
+      })
+    }
+  });
   await session.run(fixture.source, {
     storyId: STORY_ID,
     actionProfile: 'autonomous',
@@ -299,6 +326,13 @@ test('OCR-S-1 permission wait stops without containment and preserves same-Run r
   const resumed = await session.resume(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(resumed.run_id, RUN_ID);
   assert.equal(resumed.status, 'running');
+  approved = true;
+  const continued = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.state.run_id, RUN_ID);
+  assert.equal(continued.state.status, 'blocked');
+  assert.equal(continued.state.stop_reason.code, 'fixture_after_permission_recovery');
+  assert.equal(statusCalls, 2);
+  assert.equal(cancelled, false);
 });
 
 test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners', async (t) => {
