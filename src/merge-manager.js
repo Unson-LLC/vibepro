@@ -285,7 +285,7 @@ async function executeMergeLocked(root, options = {}) {
   // still allowing reconciliation when the local base already proves that the
   // story HEAD was delivered externally. Provider observation remains required
   // to bind that delivery to the selected PR.
-  const locallyDeliveredHead = await gitIsAncestor(currentHeadSha, `origin/${baseBranch}`);
+  const locallyDeliveredHead = await gitIsAncestor(root, currentHeadSha, `origin/${baseBranch}`);
   const locallyDeliveredTree = await gitTreesEqual(root, currentHeadSha, `origin/${baseBranch}`);
   if (merge.preconditions.gate_ready !== true && !locallyDeliveredHead && !locallyDeliveredTree) {
     merge.status = 'blocked';

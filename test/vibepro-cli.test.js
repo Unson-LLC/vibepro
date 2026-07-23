@@ -14996,6 +14996,72 @@ process.exit(result.status ?? 1);
   });
 });
 
+test('DRS-SCENARIO-002 externally merged ancestor bypasses stale local gate even when base tree differs', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-external-ancestor-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const { headSha, prDir } = await prepareExecuteMergeDryRunFixture(repo);
+
+  const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+  prepare.gate_status = {
+    overall_status: 'needs_verification',
+    ready_for_pr_create: false,
+    unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+    critical_unresolved_gates: []
+  };
+  prepare.pr_context.gate_dag = {
+    overall_status: 'needs_verification',
+    nodes: [],
+    summary: { needs_evidence_count: 1 }
+  };
+  await writeJson(path.join(prDir, 'pr-prepare.json'), prepare);
+
+  await git(repo, ['switch', 'main']);
+  await writeFile(path.join(repo, 'base-only.txt'), 'base-only change after story branch\n');
+  await git(repo, ['add', 'base-only.txt']);
+  await git(repo, ['commit', '-m', 'chore: advance base independently']);
+  await git(repo, ['merge', '--no-ff', 'feature/test-story', '-m', 'merge: deliver story externally']);
+  const mergeCommit = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(repo, ['push', 'origin', 'main']);
+  await git(repo, ['switch', 'feature/test-story']);
+
+  const gh = await makeFakeGhMerge({
+    merged: true,
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    reviewDecision: '',
+    statusCheckRollup: [],
+    mergeCommit,
+    mergedAt: '2026-06-07T00:32:55Z'
+  });
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'merged_externally');
+  assert.equal(result.result.merge.stop_reason, 'delivery_reconciliation_required');
+  assert.equal(result.result.merge.delivery.status, 'merged_externally');
+  assert.equal(result.result.merge.delivery.merge_commit_sha, mergeCommit);
+  assert.equal(result.result.merge.reconciliation.status, 'reconciliation_required');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, ['gate_not_ready']);
+  assert.equal(result.result.merge.results.some((entry) => entry.command.includes('gh pr view')), true);
+});
+
 test('DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-persistence-failure-remote-'));
