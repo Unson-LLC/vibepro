@@ -54,14 +54,13 @@ with `freshness_reason` on that role. A global `strict_head` default is rejected
 so an unrelated ordinary role cannot become HEAD-bound without an explicit,
 reviewable risk decision.
 
-`gate_evidence` and `release_risk` remain built-in strict-HEAD roles because they
-currently cover head-bound canonical artifacts or the complete release
-candidate. A repository can opt either role into `content_surface` only through
-an explicit role-specific policy. This exception is an operator-owned risk
-decision; VibePro records and hashes the supplied inspection surface but does
-not claim that the first model can prove transitive impact completeness. A
-global `defaults.freshness_mode` cannot weaken a built-in strict role, and the
-exception is not inferred from review keywords.
+`gate_evidence` and `release_risk` use the same `content_surface` default as
+other roles. Their inspection inputs must include the canonical evidence or
+release-impact surface they actually judged, so content changes invalidate the
+affected role while unrelated HEAD movement does not. A genuinely commit-wide
+high-risk role can remain `strict_head` only through an explicit role-specific
+policy with a reason; the exception is operator-owned and is not inferred from
+review keywords.
 
 An operator can override one record with `--strict-head-binding
 --strict-head-reason <reason>`. The persisted `freshness_policy` records the

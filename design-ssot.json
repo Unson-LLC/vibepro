@@ -15,7 +15,10 @@
         "PR split plan",
         "PR scope judgment and split resolution gates"
       ],
-      "required_child_kinds": ["story", "spec"],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
         "missing_required_child": "block",
@@ -2683,12 +2686,35 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
           {
             "kind": "spec",
             "path": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -2704,8 +2730,29 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -6607,5 +6654,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-23T04:29:42.681Z"
+  "updated_at": "2026-07-23T17:32:51.642Z"
 }

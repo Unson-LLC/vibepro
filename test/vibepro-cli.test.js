@@ -9184,7 +9184,7 @@ test('pr ship dry-run reruns prepare and stops with Agent Review commands instea
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
 });
 
-test('pr ship dry-run restores Agent Review commands from stale role gates', async () => {
+test('pr ship dry-run restores Agent Review commands from explicitly strict stale role gates', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'ship-stale-review.js'), 'export const version = 1;\n');
@@ -9212,6 +9212,9 @@ test('pr ship dry-run restores Agent Review commands from stale role gates', asy
     'gate',
     '--role',
     'gate_evidence',
+    '--strict-head-binding',
+    '--strict-head-reason',
+    'exercise explicit strict-head compatibility after the surface-aware default',
     '--status',
     'pass',
     '--summary',

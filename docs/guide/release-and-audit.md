@@ -22,8 +22,9 @@ Do not assume that a command documented from current `main` exists in an older i
 
 Verification evidence and ordinary reviews use content-surface binding by default,
 so an unrelated commit does not invalidate evidence when every inspected file is
-unchanged. High-risk roles such as `gate_evidence` and `release_risk` remain
-strictly head-bound, and callers can request strict binding explicitly.
+unchanged. `gate_evidence` and `release_risk` use the same content-surface
+default; repositories and callers can retain strict binding for a genuinely
+commit-wide high-risk role through a reasoned role policy or CLI override.
 Finalize the intended review surface, commit, record verification and independent
 review, then run `pr prepare` and `pr create`. After CI completes, import it,
 refresh preparation and the existing PR, then merge through `execute merge`.
