@@ -1,0 +1,27 @@
+{
+  "agent_id": "current_judgment_audit",
+  "head_sha": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+  "status": "pass",
+  "summary": "Current HEADのwaiver authorizationは、current pr-prepare・routed/embedded Gate DAGの整合をfail-closedで確認し、不正時はGitHub操作前に停止する。review lifecycleもcompleted以外への結果後付けを拒否する。",
+  "inspection_summary": "merge authorization helper、execute mergeのprecondition順序、Story/Architecture/SpecのAC-8契約、CLIのfake-gh negative fixtures、review lifecycle negative tests、strict-HEAD verification artifactを照合した。",
+  "inspection_evidence": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-a6ab19a3.json",
+  "inspection_inputs": [
+    "src/merge-gate-authorization.js",
+    "src/merge-manager.js",
+    "src/execution-state.js",
+    "src/agent-review.js",
+    "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+    "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+    ".vibepro/spec/story-vibepro-merge-waiver-propagation/spec.json",
+    "test/merge-gate-authorization.test.js",
+    "test/vibepro-cli.test.js",
+    "test/review-inspection-first.test.js",
+    "test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+    ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "Initial concern: routed gate-dag artifact could let stale or missing embedded pr-prepare authority conceal a critical gate. Final: exact normalized routed/embedded authorization surfaces are mandatory; missing or mismatched embedded DAG returns null and authorization fails closed.",
+    "Initial concern: lifecycle result might persist before close-reason rejection. Final: lifecycle authority is updated before result/history writes; timeout, replaced, and manual_shutdown tests assert rejection and artifact absence."
+  ],
+  "findings": []
+}

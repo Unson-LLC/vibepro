@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "block",
+  "summary": "Same-status/different-node handling is closed, but missing embedded pr-prepare Gate DAG bypasses exact comparison.",
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "missing-embedded-gate-dag-bypass",
+      "detail": "Missing embedded pr-prepare Gate DAG permits stale noncritical status against a current critical routed DAG before GitHub."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed authorization helper, normalized surface logic, unit CLI E2E regressions, Story Architecture Spec, and current-head validation; direct missing-embedded-DAG reproduction returned allowed=true.",
+    "evidence": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-preflight-56c0a2ae.json",
+    "inputs": [
+      "src/merge-gate-authorization.js",
+      "test/merge-gate-authorization.test.js",
+      "test/vibepro-cli.test.js",
+      "docs/specs/story-vibepro-merge-waiver-propagation.spec.md"
+    ]
+  },
+  "judgment_delta": [
+    "Prior same-status/different-DAG block closed; overall remains block because malformed missing embedded authority still bypasses comparison."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-waiver-propagation",
+    "actual_root": "/private/tmp/vibepro-waiver-propagation",
+    "expected_root": null,
+    "expected_head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+    "current_head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-waiver-propagation",
+      "actual_root": "/private/tmp/vibepro-waiver-propagation",
+      "expected_root": null,
+      "expected_head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+      "current_head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T05:08:07.322Z",
+  "git_context": {
+    "head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+    "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T05:08:07.311Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "authorization boundary review must bind to exact implementation HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+        "sha256": "1d84fe6986bbfb7e70f352a0fbe0f6f18dd2ddd8a2016a25991691af11f91bfc",
+        "size": 2276
+      },
+      {
+        "path": "src/merge-gate-authorization.js",
+        "sha256": "8c1c6fa2befea6e644bc2164a04afdd12c94e8c7fa78848b2ed51d8599df6543",
+        "size": 5293
+      },
+      {
+        "path": "test/merge-gate-authorization.test.js",
+        "sha256": "9db131a6e284eff2f00761ab00fa4009af55aae3bfdd0b8984f0a73d28b04010",
+        "size": 5244
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "93f97bd2b92367ee393008b6b69c529b8c57b45ac4d745fdd82b86b911e6cefe",
+        "size": 1109973
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e30b0464e254b6590ead527c912e9abf75d67c921b1fba6c16b320d95be3ab67"
+  },
+  "source_fingerprint": "124e33c4f3a91f264cf0b87632ddd1bf367b7d610bac8ada5924f03116bcea39",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-preflight-56c0a2ae.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-preflight-56c0a2ae.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

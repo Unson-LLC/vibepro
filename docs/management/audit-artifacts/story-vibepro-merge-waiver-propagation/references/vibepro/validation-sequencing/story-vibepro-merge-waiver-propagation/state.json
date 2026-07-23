@@ -1,0 +1,173 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "created_at": "2026-07-23T08:24:24.169Z",
+  "updated_at": "2026-07-23T08:27:42.228Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-merge-waiver-propagation",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "auth_boundary",
+      "core_workflow_state",
+      "polling_retry",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "auth_boundary",
+          "core_workflow_state",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "auth_boundary",
+      "core_workflow_state",
+      "review_lifecycle"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "test_fingerprint": "merge-waiver-focused-1c2267aa",
+    "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T08:24:34.854Z",
+      "binding": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "test_fingerprint": "merge-waiver-focused-1c2267aa",
+        "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-23T08:24:39.864Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-merge-waiver-propagation",
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "risk_surfaces=auth_boundary,core_workflow_state,review_lifecycle. executeMerge resolves current-HEAD authority through the dedicated authorization module and returns gate_not_ready before git fetch and gh pr view; recordAgentReview still requires completed lifecycle authority before persisting results.",
+        "inspection_inputs": [
+          "src/merge-manager.js",
+          "src/merge-gate-authorization.js",
+          "src/agent-review.js",
+          "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+          "test/merge-gate-authorization.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "test_fingerprint": "merge-waiver-focused-1c2267aa",
+        "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-07-23T08:24:43.452Z",
+      "binding": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "test_fingerprint": "merge-waiver-focused-1c2267aa",
+        "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T08:26:08.738Z",
+      "binding": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "test_fingerprint": "merge-waiver-focused-1c2267aa",
+        "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-merge-waiver-propagation/gate/review-result-gate_evidence.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-23T08:27:42.228Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-merge-waiver-propagation",
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "gate_evidence",
+        "stage": "gate",
+        "inspection_summary": "Inspected execution order, authority reconciliation, five invalid non-dry-run cases, authorized production fixture, and exact-HEAD full-suite evidence.",
+        "inspection_inputs": [
+          "src/merge-manager.js",
+          "src/merge-gate-authorization.js",
+          "test/vibepro-cli.test.js",
+          ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json"
+        ]
+      },
+      "binding": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "test_fingerprint": "merge-waiver-focused-1c2267aa",
+        "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "test_fingerprint": "merge-waiver-focused-1c2267aa",
+    "verification_command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+  },
+  "invalidations": []
+}

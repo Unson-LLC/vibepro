@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Safe to freeze: invalid merge authority is rejected before all external merge-path commands while the authorized path and independent review-lifecycle authority remain intact.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=auth_boundary,core_workflow_state,review_lifecycle. executeMerge resolves current-HEAD authority through the dedicated authorization module and returns gate_not_ready before git fetch and gh pr view; recordAgentReview still requires completed lifecycle authority before persisting results.",
+    "evidence": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+    "inputs": [
+      "src/merge-manager.js",
+      "src/merge-gate-authorization.js",
+      "src/agent-review.js",
+      "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+      "test/merge-gate-authorization.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "The former release-risk block was the non-dry-run command order; current HEAD adds the early fail-closed return and a non-dry-run regression assertion, with full suite 1757/1757, targeted Story replay 16/16, typecheck, and package build passing."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-waiver-propagation",
+    "actual_root": "/private/tmp/vibepro-waiver-propagation",
+    "expected_root": null,
+    "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-waiver-propagation",
+      "actual_root": "/private/tmp/vibepro-waiver-propagation",
+      "expected_root": null,
+      "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T07:00:51.411Z",
+  "git_context": {
+    "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "eb8783c3f47f381db94f65a8f017189bd102cdd4005200aa8904cbb84ffedb30",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T07:00:51.400Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "authorization ordering is an auth-boundary freeze condition"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+        "sha256": "bc295133e75d60ffaabb17bea4fe2d367a1112d73fccaadc406f07075120ee5d",
+        "size": 2347
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "7ababb391c2b339aea3ca3edda8b3f38e217ae847665f26f46ad6f0018b8d1dd",
+        "size": 175705
+      },
+      {
+        "path": "src/merge-gate-authorization.js",
+        "sha256": "4740706325fc7ed63cd96aea1538f41aae39616a7d4575fc06b0bf31573675ce",
+        "size": 5296
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "dcfca6d2c27112c75f770552e9bc7cf4984fde71e2ac451e1a8cdf3b2784472f",
+        "size": 50259
+      },
+      {
+        "path": "test/merge-gate-authorization.test.js",
+        "sha256": "5c108d157e0df6b8c64b8fa8f1a38e18a16a00adac5af0c4ffce055381dfec01",
+        "size": 5372
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "b596cc639a3e1f68f8690d57123af929982cd1b0512e50036d3252bc9c6f59e3",
+        "size": 1111058
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6e2a4ef832eebd4e61bd4da264ec159a38820e893ed1778a3c461740ae7b4f0b"
+  },
+  "source_fingerprint": "d0eba539fb7f1e15d3634110307c75eca1d146646bf6910c3cd3f04b8c554fd2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/current_judgment_audit",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-1c2267aa-transcript.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-1c2267aa-transcript.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

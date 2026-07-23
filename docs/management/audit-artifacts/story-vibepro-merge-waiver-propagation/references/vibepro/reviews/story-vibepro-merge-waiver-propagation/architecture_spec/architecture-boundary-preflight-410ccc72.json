@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0",
+  "head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+  "agent_id": "/root/gate_evidence_review",
+  "status": "block",
+  "summary": "Two prior blockers are repaired, but embedded Gate DAG validation compares only overall_status and can accept stale noncritical gate status when current critical nodes differ.",
+  "findings": [
+    {
+      "severity": "critical",
+      "file": "src/merge-gate-authorization.js",
+      "line": 39,
+      "detail": "Same-overall-status Gate DAGs with different required node identities and classifications are treated as consistent, allowing stale noncritical gate_status to authorize merge."
+    },
+    {
+      "severity": "high",
+      "file": "test/merge-gate-authorization.test.js",
+      "line": 102,
+      "detail": "AC-8 lacks a same-overall-status/different-node DAG regression and execute-merge pre-GitHub rejection coverage."
+    }
+  ],
+  "inspected_inputs": [
+    "src/agent-review.js",
+    "src/merge-gate-authorization.js",
+    "src/merge-manager.js",
+    "src/execution-state.js",
+    "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+    "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+    "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+    "design-ssot.json",
+    "test/review-inspection-first.test.js",
+    "test/merge-gate-authorization.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts"
+  ],
+  "judgment_delta": "Prior block -> partial repair confirmed -> remains block because embedded DAG identity is not validated and tests miss the same-status/different-surface case."
+}

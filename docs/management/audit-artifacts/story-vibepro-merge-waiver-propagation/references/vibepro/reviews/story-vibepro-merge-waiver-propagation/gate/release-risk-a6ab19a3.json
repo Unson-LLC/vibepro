@@ -1,0 +1,26 @@
+{
+  "status": "block",
+  "summary": "Release-blocking fail-closed contract is not met: a non-dry-run invalid gate authorization reaches gh pr view before gate_not_ready is enforced.",
+  "inspection_summary": "The authorization calculation is fail-closed, but enforcement occurs after external fetch and GitHub PR inspection in the real execution path. This contradicts AC-7, AC-8, and S-001.",
+  "inspection_evidence": [
+    "src/merge-manager.js:229-244",
+    "src/merge-manager.js:296-309",
+    "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md:31-36",
+    ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json"
+  ],
+  "judgment_delta": "The resolver is conservative, but the actual non-dry-run call order enforces its result too late.",
+  "findings": [
+    {
+      "id": "release-risk-gate-authorization-external-call-order",
+      "severity": "high",
+      "finding": "Invalid gate authorization can execute gh pr view before gate_not_ready.",
+      "required_resolution": "Return before external GitHub operations and add a non-dry-run regression fixture."
+    },
+    {
+      "id": "release-risk-full-suite-evidence-missing",
+      "severity": "medium",
+      "finding": "Current HEAD has focused but not uninterrupted full-suite evidence.",
+      "required_resolution": "Record current-HEAD suite evidence after the ordering fix."
+    }
+  ]
+}

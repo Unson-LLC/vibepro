@@ -1,0 +1,418 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "updated_at": "2026-07-23T06:57:36.463Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-waiver-propagation",
+      "actual_root": "/private/tmp/vibepro-waiver-propagation",
+      "expected_root": null,
+      "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784789856463-716de87b",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One coherent merge-waiver authority intent is reviewable as a single PR.",
+      "reason": "The 14-file product diff has one control-plane intent: docs define the authority lineage, runtime enforces it, tests prove it, and registries declare its ownership. The independent current-HEAD judge found the split-plan advisory lanes are review views, not unrelated scope.",
+      "reviewer": "/root/final_judgment_1c",
+      "artifact": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-23T06:57:36.461Z"
+      },
+      "recorded_at": "2026-07-23T06:57:36.463Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784777581516-62866fc2",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundled scope is one reviewable merge-lifecycle correction",
+      "reason": "All changed files serve the single intent of consuming current-HEAD PR-create waiver authority in execute merge and proving fail-closed behavior; no PR #381 runtime lifecycle or PR #370 budget-policy implementation is included.",
+      "reviewer": "coordinator",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/pack-00014677.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/typecheck-00014677.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/integration-00014677.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "current_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+        "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T03:33:01.515Z"
+      },
+      "recorded_at": "2026-07-23T03:33:01.516Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784777580930-bf4ef705",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Atomic Story scope retained",
+      "reason": "The authorization helper, execute-merge and execution-state consumers, audit rendering, contract tests, Story, architecture, responsibility authority, and design lineage form one rollback and review unit; splitting would separate the authority contract from its consumers or proof.",
+      "reviewer": "coordinator",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/pack-00014677.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/typecheck-00014677.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/integration-00014677.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "current_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+        "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T03:33:00.929Z"
+      },
+      "recorded_at": "2026-07-23T03:33:00.930Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784777580277-923a81af",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Canonical artifact policy confirmed",
+      "reason": "Only tracked .vibepro/config.json is canonical configuration; generated .vibepro evidence remains ignored and is not part of the PR surface.",
+      "reviewer": "coordinator",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/pack-00014677.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/typecheck-00014677.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/integration-00014677.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/e2e-00014677.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "current_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+        "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T03:33:00.271Z"
+      },
+      "recorded_at": "2026-07-23T03:33:00.278Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-waiver-propagation",
+        "actual_root": "/private/tmp/vibepro-waiver-propagation",
+        "expected_root": null,
+        "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784789856463-716de87b",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One coherent merge-waiver authority intent is reviewable as a single PR.",
+      "reason": "The 14-file product diff has one control-plane intent: docs define the authority lineage, runtime enforces it, tests prove it, and registries declare its ownership. The independent current-HEAD judge found the split-plan advisory lanes are review views, not unrelated scope.",
+      "reviewer": "/root/final_judgment_1c",
+      "artifact": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+        "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-23T06:57:36.461Z"
+      },
+      "recorded_at": "2026-07-23T06:57:36.463Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-merge-waiver-propagation/decision-records.json"
+}

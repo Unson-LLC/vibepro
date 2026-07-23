@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "block",
+  "summary": "Lifecycle persistence and Spec lineage are repaired; same-status different-node Gate DAG authorization bypass remains.",
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "gate-dag-identity-bypass",
+      "detail": "Same overall_status with different required node identities can authorize stale noncritical gate status."
+    },
+    {
+      "severity": "high",
+      "id": "missing-same-status-dag-regression",
+      "detail": "AC-8 lacks pre-fix-failing same-status different-node coverage."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed auth_boundary,core_workflow_state,review_lifecycle; prior repairs confirmed and direct policy reproduction found remaining bypass.",
+    "evidence": null,
+    "inputs": [
+      "src/merge-gate-authorization.js",
+      "test/merge-gate-authorization.test.js",
+      "src/agent-review.js",
+      "docs/specs/story-vibepro-merge-waiver-propagation.spec.md"
+    ]
+  },
+  "judgment_delta": [
+    "Prior block -> partial repair confirmed -> remains block because Gate DAG identity is not validated."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-waiver-propagation",
+    "actual_root": "/private/tmp/vibepro-waiver-propagation",
+    "expected_root": null,
+    "expected_head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+    "current_head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-waiver-propagation",
+      "actual_root": "/private/tmp/vibepro-waiver-propagation",
+      "expected_root": null,
+      "expected_head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+      "current_head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T05:01:59.073Z",
+  "git_context": {
+    "head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+    "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T05:01:59.064Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Preflight recovery must remain bound to the exact repaired HEAD."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "410ccc726b7f84c349c0be77a08046666cd08654",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+        "sha256": "be64d45a13cc046966aa0019dc97f33f855a8787623c15245275d17841151526",
+        "size": 2139
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "7ababb391c2b339aea3ca3edda8b3f38e217ae847665f26f46ad6f0018b8d1dd",
+        "size": 175705
+      },
+      {
+        "path": "src/merge-gate-authorization.js",
+        "sha256": "6e20ccc84fe7be23915d70734e5e06741be654629da43da7cba0306c671203a6",
+        "size": 4511
+      },
+      {
+        "path": "test/merge-gate-authorization.test.js",
+        "sha256": "35c9bdcb94a93ff5faad2f624f0348b6059003631e8f5e6e952a0e12445066ff",
+        "size": 4874
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8fd5d62af1cafef4b223c37a142c57391fcc33c1ee9eae06a469231805bc9ede"
+  },
+  "source_fingerprint": "2976d2ea81d1ff599a34734733212153e198badcdd0d5c764838dbc7d984f4b5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-preflight-410ccc72.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/architecture_spec/architecture-boundary-preflight-410ccc72.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

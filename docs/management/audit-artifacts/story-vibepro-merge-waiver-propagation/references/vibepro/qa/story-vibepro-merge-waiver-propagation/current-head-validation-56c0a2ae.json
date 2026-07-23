@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+  "status": "pass",
+  "exit_code": 0,
+  "focused": {
+    "tests_passed": 16,
+    "tests_failed": 0
+  },
+  "lifecycle_and_policy": {
+    "tests_passed": 29,
+    "tests_failed": 0
+  },
+  "cli_same_status_different_dag": {
+    "tests_passed": 1,
+    "tests_failed": 0,
+    "github_called": false
+  },
+  "typecheck": "pass"
+}

@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-HEAD strict-bound verification and focused replay support safe waiver propagation; stale, malformed, and critical waiver paths fail closed.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, authorization and merge wiring, acceptance and integration tests, and current pr-prepare state at frozen HEAD; reran focused acceptance tests.",
+    "evidence": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/gate/gate_evidence-final.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+      "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+      "src/merge-gate-authorization.js",
+      "src/merge-manager.js",
+      "src/execution-state.js",
+      "test/merge-gate-authorization.test.js",
+      "test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial bypass concern changed to pass after direct inspection and focused replay established freshness, schema, critical-gate rejection, and independent GitHub preconditions."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-waiver-propagation",
+    "actual_root": "/private/tmp/vibepro-waiver-propagation",
+    "expected_root": null,
+    "expected_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+    "current_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-waiver-propagation",
+      "actual_root": "/private/tmp/vibepro-waiver-propagation",
+      "expected_root": null,
+      "expected_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+      "current_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T03:37:44.084Z",
+  "git_context": {
+    "head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+    "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T03:37:44.073Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final gate-evidence review is bound to frozen release candidate HEAD."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "00014677d51664005b8cd0be5aa0a1f7aab078d3",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+        "sha256": "f8d52614e30d1303c6bf28e6e5a63f5ccef4893039a38bfed59681ed9bf8b4cc",
+        "size": 2849
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+        "sha256": "936927ba273b79f299b0411de6a8282671b4d765d6df636c056e0dc6596a66e3",
+        "size": 2830
+      },
+      {
+        "path": "src/execution-state.js",
+        "sha256": "bd7c225d67397fdc1aff6f1899a1f2cd3e6fc7a27557f83aaf31669990429bd6",
+        "size": 42439
+      },
+      {
+        "path": "src/merge-gate-authorization.js",
+        "sha256": "01358b8203b3033fc860518bf6856f83bdcff33c3be8e9087df6f2bc2676a050",
+        "size": 1645
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "81ca8226dd1f2c528d4d825c1aad7dab202f32e7ae3117e72e86ffcd452e19e3",
+        "size": 49580
+      },
+      {
+        "path": "test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+        "sha256": "f14a7085fd96018d82c0a7ecd86eda41516cea4357bb172a444580048c05897f",
+        "size": 4172
+      },
+      {
+        "path": "test/merge-gate-authorization.test.js",
+        "sha256": "9e92efe80b38273265d74d85cd24e8ed75bfcad780205bea3b67499f17fd1688",
+        "size": 2182
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "c12c1d4a78490c56cb86de36da541ebd19b5775aecd0a7afc456b61634218099",
+        "size": 1101205
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "2fa3b3f86a03f0a1a27ff84e2581647f0566e8a32814914dda2c4cbfde259932"
+  },
+  "source_fingerprint": "679e72b0bc624ef29bf9fee89dd6cdfd577fe85aa377950987e42c148ec8711c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "unknown",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/gate/gate_evidence-final.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-waiver-propagation/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "missing",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,173 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "created_at": "2026-07-23T08:33:34.048Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-merge-waiver-propagation/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-merge-waiver-propagation/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-merge-waiver-propagation/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-merge-waiver-propagation/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-merge-waiver-propagation.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-merge-waiver-propagation.spec.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-waiver-propagation",
+          "actual_root": "/private/tmp/vibepro-waiver-propagation",
+          "expected_root": null,
+          "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784789856463-716de87b",
+        "story_id": "story-vibepro-merge-waiver-propagation",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "One coherent merge-waiver authority intent is reviewable as a single PR.",
+        "reason": "The 14-file product diff has one control-plane intent: docs define the authority lineage, runtime enforces it, tests prove it, and registries declare its ownership. The independent current-HEAD judge found the split-plan advisory lanes are review views, not unrelated scope.",
+        "reviewer": "/root/final_judgment_1c",
+        "artifact": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+              "type": "integration",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-waiver-propagation",
+            "actual_root": "/private/tmp/vibepro-waiver-propagation",
+            "expected_root": null,
+            "expected_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+            "current_head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+          "current_branch": "codex/story-vibepro-merge-waiver-propagation",
+          "dirty": true,
+          "status_fingerprint": "M .vibepro/config.json",
+          "recorded_at": "2026-07-23T06:57:36.461Z"
+        },
+        "recorded_at": "2026-07-23T06:57:36.463Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-23T08:33:20.694Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/private/tmp/vibepro-waiver-propagation"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-waiver-propagation/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-waiver-propagation/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "branch": "codex/story-vibepro-merge-waiver-propagation",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
