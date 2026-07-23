@@ -163,6 +163,16 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
+async function gitIsAncestorForTest(repo, ancestor, descendant) {
+  try {
+    await git(repo, ['merge-base', '--is-ancestor', ancestor, descendant]);
+    return true;
+  } catch (error) {
+    if (error?.code === 1) return false;
+    throw error;
+  }
+}
+
 async function runCliWithStdout(args, io = {}) {
   let stdout = '';
   let stderr = '';
@@ -14996,11 +15006,14 @@ process.exit(result.status ?? 1);
   });
 });
 
-test('DRS-SCENARIO-002 externally merged ancestor bypasses stale local gate even when base tree differs', async () => {
+test('DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-external-ancestor-remote-'));
   await git(remote, ['init', '--bare']);
   await git(repo, ['remote', 'add', 'origin', remote]);
+  await writeFile(path.join(repo, 'story-change.txt'), 'story branch change\n');
+  await git(repo, ['add', 'story-change.txt']);
+  await git(repo, ['commit', '-m', 'feat: add story branch change']);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
   const { headSha, prDir } = await prepareExecuteMergeDryRunFixture(repo);
@@ -15019,14 +15032,23 @@ test('DRS-SCENARIO-002 externally merged ancestor bypasses stale local gate even
   };
   await writeJson(path.join(prDir, 'pr-prepare.json'), prepare);
 
-  await git(repo, ['switch', 'main']);
-  await writeFile(path.join(repo, 'base-only.txt'), 'base-only change after story branch\n');
-  await git(repo, ['add', 'base-only.txt']);
-  await git(repo, ['commit', '-m', 'chore: advance base independently']);
-  await git(repo, ['merge', '--no-ff', 'feature/test-story', '-m', 'merge: deliver story externally']);
-  const mergeCommit = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
-  await git(repo, ['push', 'origin', 'main']);
-  await git(repo, ['switch', 'feature/test-story']);
+  const externalClone = await mkdtemp(path.join(os.tmpdir(), 'vibepro-external-ancestor-clone-'));
+  await git(externalClone, ['clone', remote, '.']);
+  await git(externalClone, ['config', 'user.email', 'test@example.com']);
+  await git(externalClone, ['config', 'user.name', 'Test User']);
+  await git(externalClone, ['switch', '-c', 'main', '--track', 'origin/main']);
+  await writeFile(path.join(externalClone, 'base-only.txt'), 'base-only change after story branch\n');
+  await git(externalClone, ['add', 'base-only.txt']);
+  await git(externalClone, ['commit', '-m', 'chore: advance base independently']);
+  await git(externalClone, ['merge', '--no-ff', 'origin/feature/test-story', '-m', 'merge: deliver story externally']);
+  const mergeCommit = (await git(externalClone, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(externalClone, ['push', 'origin', 'main']);
+
+  assert.equal(
+    await gitIsAncestorForTest(repo, headSha, 'origin/main'),
+    false,
+    'fixture must leave the invoking clone remote-tracking base stale'
+  );
 
   const gh = await makeFakeGhMerge({
     merged: true,
@@ -15060,6 +15082,7 @@ test('DRS-SCENARIO-002 externally merged ancestor bypasses stale local gate even
   assert.equal(result.result.merge.reconciliation.status, 'reconciliation_required');
   assert.deepEqual(result.result.merge.reconciliation.reasons, ['gate_not_ready']);
   assert.equal(result.result.merge.results.some((entry) => entry.command.includes('gh pr view')), true);
+  assert.equal(await gitIsAncestorForTest(repo, headSha, 'origin/main'), true);
 });
 
 test('DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary', async () => {

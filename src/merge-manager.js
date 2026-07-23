@@ -281,8 +281,23 @@ async function executeMergeLocked(root, options = {}) {
     return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
-  // Reject an unauthorized managed merge before touching the provider, while
-  // still allowing reconciliation when the local base already proves that the
+  // Refresh the read-only base observation before deciding whether a stale
+  // local gate may be bypassed for external-delivery reconciliation. Checking
+  // origin/<base> first can return gate_not_ready from a stale clone even when
+  // another clone has already merged the selected PR.
+  const fetchResult = await runCommand(root, fetchCommand, options);
+  merge.results.push(fetchResult);
+  if (fetchResult.exit_code !== 0) {
+    merge.stop_reason = 'base_fetch_failed';
+    merge.preconditions.base_freshness.status = 'blocked';
+    merge.error = `Command failed: ${fetchResult.command}`;
+    applyProviderObservationFailure(merge, priorObservedMerge, 'base_fetch_failed');
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+
+  // Reject an unauthorized managed merge before provider mutation, while still
+  // allowing reconciliation when the freshly observed base proves that the
   // story HEAD was delivered externally. Provider observation remains required
   // to bind that delivery to the selected PR.
   const locallyDeliveredHead = await gitIsAncestor(root, currentHeadSha, `origin/${baseBranch}`);
@@ -295,17 +310,6 @@ async function executeMergeLocked(root, options = {}) {
     merge.preconditions.checks_ready.status = 'not_run';
     merge.preconditions.review_policy.status = 'not_run';
     merge.preconditions.open_pull_request.status = 'not_run';
-    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return attachExecutionStateSyncBaseline(merge, artifacts);
-  }
-
-  const fetchResult = await runCommand(root, fetchCommand, options);
-  merge.results.push(fetchResult);
-  if (fetchResult.exit_code !== 0) {
-    merge.stop_reason = 'base_fetch_failed';
-    merge.preconditions.base_freshness.status = 'blocked';
-    merge.error = `Command failed: ${fetchResult.command}`;
-    applyProviderObservationFailure(merge, priorObservedMerge, 'base_fetch_failed');
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return attachExecutionStateSyncBaseline(merge, artifacts);
   }
