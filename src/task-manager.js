@@ -754,35 +754,88 @@ function buildScopeBoundary({ candidates, allowedPaths }) {
   };
 }
 
-function buildPlanTaskState({ story, plan, candidates, allowedPaths }) {
-  const tasks = candidates.map((candidate, index) => ({
-    id: candidate.id,
-    source_type: candidate.source_type ?? 'story_plan_candidate',
-    source_id: candidate.id,
-    finding_id: null,
+export function resolveCandidateTargetFiles(candidate, allowedPaths) {
+  const declared = Array.isArray(candidate.target_files) ? candidate.target_files : [];
+  if (declared.length > 0) return declared;
+  const searchable = flattenTargetInferenceText({
     title: candidate.title,
-    priority: candidate.priority ?? 'medium',
-    status: 'todo',
-    order: (index + 1) * 10,
-    execution_policy: 'proposal_only',
-    mutates_repository: false,
-    target_count: Array.isArray(candidate.target_files) ? candidate.target_files.length : 0,
-    target_files: candidate.target_files ?? [],
-    target_routes: [],
-    target_groups: [],
-    read_first_files: candidate.read_first_files ?? [],
-    recommended_strategy: candidate.recommended_strategy ?? {
-      id: 'story-plan',
-      reason: candidate.purpose
-    },
-    implementation_steps: candidate.implementation_steps ?? [],
-    acceptance_criteria: candidate.acceptance ?? [],
-    source_recovery: candidate.source_recovery ?? null,
-    recovery_drafts: candidate.recovery_drafts ?? [],
-    source_alignment_findings: candidate.source_alignment_findings ?? [],
-    graph_context: candidate.graph_context ?? candidate.source_recovery?.graph_context ?? null,
-    pre_fix_briefing: null
-  }));
+    purpose: candidate.purpose,
+    acceptance: candidate.acceptance,
+    implementation_steps: candidate.implementation_steps
+  });
+  return (Array.isArray(allowedPaths) ? allowedPaths : [])
+    .map((item) => String(item).trim())
+    .filter((item) => item && !/[*?[\]{}]/.test(item) && hasMutationTargetMention(searchable, item));
+}
+
+function flattenTargetInferenceText(value) {
+  if (Array.isArray(value)) return value.map((item) => flattenTargetInferenceText(item)).join('\n');
+  if (value && typeof value === 'object') {
+    return Object.values(value).map((item) => flattenTargetInferenceText(item)).join('\n');
+  }
+  return value == null ? '' : String(value);
+}
+
+function hasMutationTargetMention(searchable, targetPath) {
+  const escapedPath = targetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const exactPath = new RegExp(`(^|[\\s"'\\x60([{,:、])${escapedPath}(?=$|[\\s"'\\x60\\])},:;。、「」]|を|へ|に|が|は|の|と|で)`, 'g');
+  for (const match of searchable.matchAll(exactPath)) {
+    const pathStart = match.index + match[1].length;
+    if (!isReferenceOnlyPathMention(searchable, targetPath, pathStart)) return true;
+  }
+  return false;
+}
+
+function isReferenceOnlyPathMention(searchable, targetPath, pathStart) {
+  const lineStart = searchable.lastIndexOf('\n', pathStart) + 1;
+  const nextLineBreak = searchable.indexOf('\n', pathStart);
+  const lineEnd = nextLineBreak >= 0 ? nextLineBreak : searchable.length;
+  const before = searchable.slice(lineStart, pathStart);
+  const after = searchable.slice(pathStart + targetPath.length, lineEnd);
+  const englishPredicateBefore = /(?:\bmust\s+not|\bdo\s+not|\bdon't|\bnever|\bwithout)\s+(?:modify(?:ing)?|edit(?:ing)?|chang(?:e|ing)|import(?:ing)?|call(?:ing)?|depend(?:ing)?\s+on)\s*$/i;
+  const englishReferenceBefore = /(?:\brefer\s+to|\bsee|\bread)\s*$/i;
+  const englishNegativeAfter = /^\s+(?:must|should)\s+not\s+be\s+(?:modified|edited|changed|imported|called)/i;
+  const japanesePredicateAfter = /^(?:を|へ|への|に|には|と|との)?[^、。;\n]{0,24}(?:変更|編集|修正|追加|import|インポート|依存|逆呼び出し)[^、。;\n]{0,12}(?:しない|せず|禁止|不可)/;
+  const japaneseReferenceAfter = /^(?:を|へ|への|に)?(?:参照(?:する|のみ)?|読むだけ|読み取り専用|参考のみ)/;
+  return englishPredicateBefore.test(before)
+    || englishReferenceBefore.test(before)
+    || englishNegativeAfter.test(after)
+    || japanesePredicateAfter.test(after)
+    || japaneseReferenceAfter.test(after);
+}
+
+function buildPlanTaskState({ story, plan, candidates, allowedPaths }) {
+  const tasks = candidates.map((candidate, index) => {
+    const targetFiles = resolveCandidateTargetFiles(candidate, allowedPaths);
+    return {
+      id: candidate.id,
+      source_type: candidate.source_type ?? 'story_plan_candidate',
+      source_id: candidate.id,
+      finding_id: null,
+      title: candidate.title,
+      priority: candidate.priority ?? 'medium',
+      status: 'todo',
+      order: (index + 1) * 10,
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      target_count: targetFiles.length,
+      target_files: targetFiles,
+      target_routes: [],
+      target_groups: [],
+      read_first_files: candidate.read_first_files ?? [],
+      recommended_strategy: candidate.recommended_strategy ?? {
+        id: 'story-plan',
+        reason: candidate.purpose
+      },
+      implementation_steps: candidate.implementation_steps ?? [],
+      acceptance_criteria: candidate.acceptance ?? [],
+      source_recovery: candidate.source_recovery ?? null,
+      recovery_drafts: candidate.recovery_drafts ?? [],
+      source_alignment_findings: candidate.source_alignment_findings ?? [],
+      graph_context: candidate.graph_context ?? candidate.source_recovery?.graph_context ?? null,
+      pre_fix_briefing: null
+    };
+  });
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),

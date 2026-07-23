@@ -347,8 +347,9 @@ Guarded Run sessions:
   vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
   vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
-      Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
-      --action-profile autonomous selects the closed Action DAG. --disable-autonomous-actions audibly falls back to legacy for new or resumed Runs.
+      Without --until this command only persists state. --until pr-ready defaults to the closed autonomous Action DAG and guarded agent execution.
+      The default provider order is codex then claude-code. Explicit legacy/profile/provider overrides remain supported.
+      PR creation, merge, waiver, and material external side effects always remain explicit human operations. --disable-autonomous-actions audibly falls back to legacy.
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
@@ -611,8 +612,9 @@ Guarded Runセッション:
   vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
   vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
-      --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
-      --action-profile autonomousで閉じたAction DAGを選択します。--disable-autonomous-actionsは新規・再開Runを監査可能な形でlegacyへフォールバックします。
+      --until未指定時は状態だけを永続化します。--until pr-readyは閉じた自律Action DAGとguarded agent実行を既定で選びます。
+      providerの既定順はcodex→claude-codeです。明示的なlegacy/profile/provider指定は維持されます。
+      PR作成、merge、waiver、重大な外部副作用は必ず人間の明示操作に残ります。--disable-autonomous-actionsは監査可能な形でlegacyへフォールバックします。
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]

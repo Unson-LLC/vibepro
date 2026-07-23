@@ -115,7 +115,10 @@ export function createIndependentReviewActionRunner({ resolveStages, boundaries 
     throw new IndependentReviewOrchestrationError('review_boundary_unavailable', 'missing independent review stage resolver');
   }
   return async ({ state, action, persistCheckpoint }) => {
-    const previous = state.action_journal.findLast((entry) => entry.action_id === action.id && Array.isArray(entry.checkpoint));
+    const previous = state.action_journal.findLast((entry) =>
+      entry.action_id === action.id
+      && entry.output_head_sha === state.current_head_sha
+      && Array.isArray(entry.checkpoint));
     let journal = previous?.checkpoint ?? [];
     let stages;
     try {

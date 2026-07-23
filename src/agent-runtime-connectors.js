@@ -177,6 +177,7 @@ function buildPrompt(request) {
     : '{"completion_status":"completed","changed_files":["path"],"head_sha":"40-char git SHA","test_suggestions":["command"],"summary":"result"}';
   return [
     `VibePro runtime dispatch ${request.dispatch_id} for Story ${request.story_id}, task ${request.task_id}.`,
+    `Objective: ${request.objective}`,
     contract,
     'Your final response MUST contain one JSON object with exactly these fields:',
     resultShape,

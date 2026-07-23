@@ -444,6 +444,10 @@ function normalizeRequest(state, input) {
   if (!ROLES.has(role)) throw new AgentRuntimeError('invalid_role', `unsupported runtime role: ${role}`);
   const adapterId = requireText(input.adapter_id, 'adapter_id');
   const taskId = requireText(input.task_id, 'task_id');
+  const objective = requireText(
+    input.objective ?? `${role === 'review' ? 'Review' : 'Implement'} VibePro task ${taskId}.`,
+    'objective'
+  );
   const headSha = requireText(state?.current_head_sha, 'runState.current_head_sha');
   const runId = requireText(state?.run_id, 'runState.run_id');
   const reviewerIdentity = input.reviewer_identity ?? null;
@@ -474,6 +478,7 @@ function normalizeRequest(state, input) {
     adapter_id: adapterId,
     task_id: taskId,
     role,
+    objective,
     reviewer_identity: reviewerIdentity,
     implementation_identity: input.implementation_identity ?? null,
     implementation_session_id: input.implementation_session_id ?? null,

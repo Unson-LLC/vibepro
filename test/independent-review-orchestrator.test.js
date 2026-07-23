@@ -190,7 +190,7 @@ test('IRO-S-6 same-session/runtime rejection and a needs_changes result are cont
 
 test('IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_changes for repair', async () => {
   const passRunner = createIndependentReviewActionRunner({ resolveStages: async () => stages, boundaries: boundaries() });
-  const passed = await passRunner({ state: { action_journal: [] }, action: { id: 'review' } });
+  const passed = await passRunner({ state: { current_head_sha: 'head-a', action_journal: [] }, action: { id: 'review' } });
   assert.equal(passed.status, 'continue');
   assert.equal(passed.verdict, 'pass');
   assert.equal(passed.checkpoint.filter((entry) => entry.operation === 'record').length, 3);
@@ -199,7 +199,39 @@ test('IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_ch
     resolveStages: async () => [stages[0]],
     boundaries: boundaries({ verdict: 'needs_changes' })
   });
-  const repair = await repairRunner({ state: { action_journal: [] }, action: { id: 'review' } });
+  const repair = await repairRunner({ state: { current_head_sha: 'head-a', action_journal: [] }, action: { id: 'review' } });
   assert.equal(repair.status, 'continue');
   assert.equal(repair.verdict, 'needs_changes');
+});
+
+test('IRO-S-7 repair HEAD invalidates the old review checkpoint and dispatches a fresh review', async () => {
+  const events = [];
+  const runner = createIndependentReviewActionRunner({
+    resolveStages: async () => [{ stage: 'implementation', roles: ['runtime'] }],
+    boundaries: boundaries({ events })
+  });
+  const oldCheckpoint = [{
+    kind: 'independent_review',
+    stage: 'implementation',
+    role: 'runtime',
+    operation: 'record',
+    idempotency_key: 'implementation:runtime:record',
+    result: { verdict: 'needs_changes', findings: [{ id: 'old-head-finding' }] }
+  }];
+  const result = await runner({
+    state: {
+      current_head_sha: 'head-after-repair',
+      action_journal: [{
+        action_id: 'review',
+        status: 'completed',
+        output_head_sha: 'head-before-repair',
+        checkpoint: oldCheckpoint
+      }]
+    },
+    action: { id: 'review' }
+  });
+  assert.equal(result.verdict, 'pass');
+  assert.equal(events.filter((event) => event.startsWith('dispatch:implementation:runtime')).length, 1);
+  assert.equal(result.checkpoint.some((entry) =>
+    entry.operation === 'record' && entry.result?.findings?.some((finding) => finding.id === 'old-head-finding')), false);
 });

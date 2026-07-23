@@ -146,6 +146,7 @@
         "src/guarded-stop-codes.js",
         "src/safe-action-orchestrator.js",
         "src/next-best-action-controller.js",
+        "src/one-command-pr-ready-closure.js",
         "src/human-decision-checkpoint.js",
         "src/agent-runtime-adapter.js",
         "src/independent-review-orchestrator.js",

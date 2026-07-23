@@ -14,6 +14,7 @@ import {
 } from './pr-manager.js';
 import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { createDefaultAgentReviewOps, createGuardedIndependentReviewRunner, createReviewCheckpointPersister, recordGuardedRuntimeReview } from './independent-review-orchestrator.js';
+import { bindCurrentHeadFinalPrepare, createOneCommandPrReadyRunSessionOwners, persistOneCommandHumanDecision } from './one-command-pr-ready-closure.js';
 import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
@@ -296,6 +297,7 @@ async function orchestrateRun(deps, repoRoot, options) {
   if (options.dryRun) {
     const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
     const profileResolution = resolveActionProfileDecision(options);
+    const previewPolicy = buildGuardedPolicy(options, toIso(deps.now()));
     const preview = {
       run_id: 'dry-run',
       story_id: requireStoryId(options.storyId),
@@ -303,6 +305,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       status: 'running',
       attempt: 1,
       action_profile: profileResolution.effective,
+      provider_fallbacks: previewPolicy.provider_fallbacks,
       ...(profileResolution.requested === 'autonomous' ? { action_profile_resolution: profileResolution } : {}),
       action_journal: [],
       next_best_action_decisions: []
@@ -395,6 +398,12 @@ async function orchestrateRun(deps, repoRoot, options) {
   };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
+  if (outcomeStatus === 'waiting_for_human') {
+    const decision = await persistOneCommandHumanDecision({ repoRoot: loaded.state.execution_context.root_realpath, state: next, request: result.state.pending_decision_request,
+      now: deps.now, createDecision: createHumanDecision, isDecisionError: (error) => error instanceof HumanDecisionError
+    });
+    [next, outcomeStatus, outcomeStopReason] = [decision.state, decision.status, decision.stopReason];
+  }
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
   if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
     const reboundAt = toIso(deps.now());
@@ -486,28 +495,23 @@ function buildActionRunners(deps, loaded, options) {
     summary: `${actionId} action owner is not connected`,
     recovery: { missing_action_runner: actionId }
   });
-  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
-  // An explicitly supplied review owner remains the escape hatch for tests and
-  // alternative runtimes. The production default is composed only when the
-  // Guarded Run has its provider-neutral runtime coordinator.
+  const defaults = createOneCommandPrReadyRunSessionOwners({
+    repoRoot, storyId, baseRef: options.baseRef, providerFallbacks: loaded.state.provider_fallbacks,
+    agentRuntimeCoordinator: deps.agentRuntimeCoordinator, readGateReadiness: deps.readGateReadiness, preparePullRequest: deps.preparePullRequest,
+    mutateRuntimeDispatch: (request, operation) => mutateRuntimeDispatch(deps, repoRoot, request, operation)
+  });
+  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? defaults[id] ?? unavailable(id)]));
   if (!injected.review && deps.agentRuntimeCoordinator) {
     autonomous.review = buildIndependentReviewRunner(deps, loaded, options);
   }
   if (injected.final_prepare) {
-    autonomous.final_prepare = async (context) => {
-      const ownerResult = await injected.final_prepare(context);
-      if (ownerResult.status !== 'pr_ready') return ownerResult;
-      const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
-      if (prepared.preparation?.gate_status?.ready_for_pr_create === true) {
-        return { ...ownerResult, artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null };
-      }
-      return {
-        status: 'blocked',
-        stop_reason: 'gate_recheck_required',
-        artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null,
-        recovery: { required_actions: prepared.preparation?.gate_status?.next_required_actions ?? [] }
-      };
-    };
+    autonomous.final_prepare = bindCurrentHeadFinalPrepare({
+      owner: autonomous.final_prepare,
+      preparePullRequest: deps.preparePullRequest,
+      repoRoot,
+      storyId,
+      baseRef: options.baseRef
+    });
   }
   if ((loaded.state.action_profile ?? 'legacy') === 'autonomous') return autonomous;
   return {
@@ -723,7 +727,11 @@ export function renderGuardedRunSummary(value) {
     ? [
         `- decision_id: ${pendingDecision.decision_id ?? pendingDecision.id ?? 'unknown'}`,
         `- question: ${pendingDecision.question ?? pendingDecision.prompt ?? 'human decision required'}`,
-        `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`
+        `- choices: ${Array.isArray(pendingDecision.choices) && pendingDecision.choices.length > 0 ? pendingDecision.choices.join(', ') : 'not provided'}`,
+        `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`,
+        `- impact_scope: ${Array.isArray(pendingDecision.impact_scope) && pendingDecision.impact_scope.length > 0 ? pendingDecision.impact_scope.join(', ') : 'not provided'}`,
+        `- source_refs: ${Array.isArray(pendingDecision.source_refs) && pendingDecision.source_refs.length > 0 ? pendingDecision.source_refs.join(', ') : 'not provided'}`,
+        `- resume_command: ${pendingDecision.resume_command ?? recovery?.next_command ?? fallbackNextCommand}`
       ].join('\n')
     : 'none';
   const profileResolution = state.action_profile_resolution;
@@ -1508,7 +1516,7 @@ function buildGuardedPolicy(options, createdAt) {
     ...RECOVERABLE_RUNTIME_STOP_CODES,
     'ci_pending', 'review_timeout', 'action_failed'
   ];
-  const providerFallbacks = options.providerFallbacks ?? [];
+  const providerFallbacks = options.providerFallbacks ?? (isCanonicalAutonomousRequest(options) ? ['codex', 'claude-code'] : []);
   if (retryableStopCodes.some((value) => typeof value !== 'string' || value.length === 0)
       || providerFallbacks.some((value) => typeof value !== 'string' || value.length === 0)) {
     throw contractError('invalid_policy', 'Retry codes and provider fallbacks must be non-empty strings.', {});
@@ -2286,7 +2294,7 @@ function resolveRequestedActionProfile(options = {}) {
 }
 
 function resolveActionProfileDecision(options = {}) {
-  const requested = requireActionProfile(options.actionProfile ?? 'legacy');
+  const requested = requireActionProfile(options.actionProfile ?? (isCanonicalAutonomousRequest(options) ? 'autonomous' : 'legacy'));
   const disabled = requested === 'autonomous' && options.autonomousEnabled === false;
   return {
     requested,
@@ -2294,6 +2302,8 @@ function resolveActionProfileDecision(options = {}) {
     fallback_reason: disabled ? 'autonomous_feature_disabled' : null
   };
 }
+
+function isCanonicalAutonomousRequest(options = {}) { return options.until === 'pr-ready' && (options.autonomy == null || options.autonomy === 'guarded'); }
 
 function applyAutonomousFeaturePolicy(state, options = {}) {
   if ((state.action_profile ?? 'legacy') !== 'autonomous' || options.autonomousEnabled !== false) return state;

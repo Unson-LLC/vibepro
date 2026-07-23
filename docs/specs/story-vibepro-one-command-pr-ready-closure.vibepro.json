@@ -1,0 +1,194 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "diagrams": [
+    {
+      "id": "DG-OCR-THREAT",
+      "kind": "threat_model",
+      "title": "One-command closure authority and evidence boundaries",
+      "mermaid": "flowchart LR\n  Operator[\"Explicit guarded command\"] --> Session[\"Guarded Run session\"]\n  Session --> Worktree[\"Managed worktree implementation owner\"]\n  Session --> Review[\"Independent read-only reviewer\"]\n  Worktree --> Verify[\"Verification owners\"]\n  Review --> Repair[\"Finding-preserving repair loop\"]\n  Verify --> Bind[\"Current HEAD evidence binding\"]\n  Repair --> Bind\n  Bind --> Gate[\"pr-prepare Gate SSOT\"]\n  Gate --> Ready[\"pr_ready typed terminal\"]\n  Ambiguous[\"Material ambiguity\"] -->|bounded choices only| Human[\"Human decision checkpoint\"]\n  Session -. excludes .-> External[\"PR create, merge, waiver, material external side effect\"]\n  Stale[\"Stale HEAD, malformed decision, unknown action\"] -->|fail closed| Stop[\"Typed stop reason\"]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "C-OCR-1",
+      "type": "contract",
+      "statement": "execute run with --until pr-ready and --autonomy guarded selects the closed autonomous implementation DAG and the persisted codex then claude-code provider order by default, while an explicit legacy profile and provider override remain available and auditable.",
+      "inherited_behaviors": [
+        {
+          "condition": "operation === 'dispatch' && dispatchAuthority.error",
+          "classification": "unchanged",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "operation === 'dispatch' && options.request?.requirements?.managed_worktree !== authorityRoot",
+          "classification": "unchanged",
+          "files": ["src/guarded-run-session.js"]
+        },
+        {
+          "condition": "loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human'",
+          "classification": "unchanged",
+          "files": ["src/guarded-run-session.js"]
+        }
+      ],
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-1" },
+          { "kind": "acceptance_criteria", "id": "OCR-S-2" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Decision" }
+        ],
+        "code_refs": [
+          { "file": "src/guarded-run-session.js", "anchor": "resolveActionProfileDecision" },
+          { "file": "src/safe-action-orchestrator.js", "anchor": "buildSafeActionPlan" },
+          { "file": "src/cli.js", "anchor": "actionProfile" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-1 Default one-command profile and public help" }
+        ]
+      }
+    },
+    {
+      "id": "INV-OCR-2",
+      "type": "invariant",
+      "statement": "Only final_prepare may produce pr_ready, and it does so only after the current managed-worktree HEAD pr-prepare artifact reports gate_status.ready_for_pr_create=true.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-3" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Action Ownership" }
+        ],
+        "code_refs": [
+          { "file": "src/guarded-run-session.js", "anchor": "buildActionRunners" },
+          { "file": "src/safe-action-orchestrator.js", "anchor": "runSafeActionPlan" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-2 Production action-owner composition" }
+        ]
+      }
+    },
+    {
+      "id": "INV-OCR-3",
+      "type": "invariant",
+      "statement": "The guarded closure never creates or merges a PR, grants a critical waiver, or performs a material external side effect; it returns a typed stop or leaves those operations to an explicit human command.",
+      "inherited_behavior": {
+        "condition": "state.status === 'cancelled'",
+        "classification": "unchanged",
+        "files": ["src/human-decision-checkpoint.js"]
+      },
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-4" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Safety and Human Authority" }
+        ],
+        "code_refs": [
+          { "file": "src/safe-action-orchestrator.js", "anchor": "AUTONOMOUS_REGISTRY" },
+          { "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-2 Production action-owner composition" },
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-4 Typed-stop and resume matrix" }
+        ]
+      }
+    },
+    {
+      "id": "S-OCR-4",
+      "type": "scenario",
+      "statement": "Success, restart and resume, material human decision, verification failure with explicit correction/resume, needs_changes review repair convergence, no progress, quota, timeout, CI pending, and cancellation all end in current-HEAD pr_ready or an explicit typed stop. A material ambiguity returns a bounded human_decision descriptor containing type, question, choices, material_reason, impact_scope, source_refs, and stop_node_id. The safe-action transport rejects a missing or malformed descriptor fail-closed; guarded-run-session validates an accepted descriptor through createHumanDecision, persists the decision artifact and pending_decision, and resume journals the exact answer and reflected_in paths before restarting prepare_artifacts.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-5" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Action Ownership" }
+        ],
+        "code_refs": [
+          { "file": "src/guarded-run-session.js", "anchor": "createGuardedRunSession" },
+          { "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" },
+          { "file": "src/safe-action-orchestrator.js", "anchor": "runSafeActionPlan" },
+          { "file": "src/guarded-stop-codes.js", "anchor": "RECOVERABLE_RUNTIME_STOP_CODES" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-4 Typed-stop and resume matrix" }
+        ]
+      }
+    },
+    {
+      "id": "S-OCR-5",
+      "type": "scenario",
+      "statement": "A production connector smoke proves that implementation advances the real managed-worktree commit and independent review uses a distinct read-only identity and closed provider session.",
+      "inherited_behaviors": [
+        {
+          "condition": "/not logged in|unauthenticated/i.test(authStatus)",
+          "classification": "unchanged",
+          "files": ["src/agent-runtime-connectors.js"]
+        },
+        {
+          "condition": "record.cancelRequested",
+          "classification": "unchanged",
+          "files": ["src/agent-runtime-connectors.js"]
+        },
+        {
+          "condition": "authorization.action && authorization.action !== 'dispatch'",
+          "classification": "unchanged",
+          "files": ["src/independent-review-orchestrator.js"]
+        },
+        {
+          "condition": "isStop(authorization)",
+          "classification": "unchanged",
+          "files": ["src/independent-review-orchestrator.js"]
+        }
+      ],
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-6" },
+          { "kind": "acceptance_criteria", "id": "OCR-S-7" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Verification" }
+        ],
+        "code_refs": [
+          { "file": "src/agent-runtime-connectors.js", "anchor": "createProductionRuntimeConnectors" },
+          { "file": "src/independent-review-orchestrator.js", "anchor": "createGuardedIndependentReviewRunner" }
+        ],
+        "test_refs": [
+          { "file": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts", "case": "AC-6 OCR-S-6" },
+          { "file": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts", "case": "AC-7 OCR-S-7" },
+          { "file": "test/independent-review-orchestrator.test.js", "case": "repaired HEAD invalidates the prior review operation checkpoint" },
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-3 Runtime commit, review, and repair convergence" },
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-5 Production smoke and dogfood evidence" }
+        ]
+      }
+    },
+    {
+      "id": "S-OCR-6",
+      "type": "scenario",
+      "statement": "Roadmap closure reconciles the already merged Production Runtime Connectors and Independent Review Orchestration Story lifecycles from PR #377 and PR #382, then closes the final Story and parent roadmap from dogfood, current-HEAD Gate, and imported CI evidence without reimplementing either predecessor. The later explicit execute merge is a second-phase confirmation persisted in pr-merge.json and the canonical audit, not a future-SHA prerequisite embedded in the same Git commit.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-8" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Verification" }
+        ],
+        "code_refs": [
+          { "file": "src/guarded-run-session.js", "anchor": "createGuardedRunSession" },
+          { "file": "src/ci-evidence.js", "anchor": "importCiEvidence" },
+          { "file": "src/merge-manager.js", "anchor": "executeMerge" },
+          { "file": "src/canonical-audit.js", "anchor": "promoteCanonicalAuditArtifacts" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-5 Production smoke and dogfood evidence" }
+        ]
+      }
+    }
+  ]
+}

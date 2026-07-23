@@ -37,6 +37,24 @@ test('SAO-S-2 completed same Run node and HEAD is skipped', async () => {
   assert.equal(result.state.status, 'pr_ready');
 });
 
+test('AAD-S-5 legacy human stop remains compatible without an autonomous decision descriptor', async () => {
+  const result = await runSafeActionPlan(state, {
+    runners: {
+      pr_prepare: async () => ({ status: 'continue' }),
+      pr_autopilot_safe: async () => ({
+        status: 'waiting_for_human',
+        stop_reason: 'approval_required',
+        recovery: { approval: 'create_pull_request' }
+      })
+    }
+  });
+  assert.equal(result.state.status, 'waiting_for_human');
+  assert.equal(result.state.stop_reason.code, 'approval_required');
+  assert.equal(result.state.stop_reason.details.recovery.approval, 'create_pull_request');
+  assert.match(result.state.stop_reason.details.recovery.next_command, /vibepro execute resume/);
+  assert.equal(result.state.pending_decision_request, undefined);
+});
+
 test('SAO-S-3 action failure stops and records action_failed', async () => {
   const result = await runSafeActionPlan(state, { runners: { pr_prepare: async () => { throw new Error('boom'); } } });
   assert.equal(result.state.status, 'failed');
@@ -407,7 +425,21 @@ for (const actionId of ['diagnose', 'prepare_artifacts', 'implement', 'verify', 
     const runners = Object.fromEntries(buildSafeActionPlan(autonomousState).map(({ id }) => [id, async () => {
       calls.push(id);
       return id === actionId
-        ? { status: terminalStatus, stop_reason: `${terminalStatus}_reason` }
+        ? {
+          status: terminalStatus,
+          stop_reason: `${terminalStatus}_reason`,
+          ...(terminalStatus === 'waiting_for_human' ? {
+            human_decision: {
+              type: 'clarification',
+              question: `How should ${actionId} continue?`,
+              choices: ['continue', 'split'],
+              material_reason: 'The answer changes the bounded action path.',
+              impact_scope: [actionId],
+              source_refs: [`action:${actionId}`],
+              stop_node_id: actionId
+            }
+          } : {})
+        }
         : { status: 'continue' };
     }]));
     const result = await runSafeActionPlan(autonomousState, {

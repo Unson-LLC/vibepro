@@ -40,10 +40,43 @@ function fixtureHumanDecision() {
   };
 }
 
+function preparedAtCurrentHead(fixture, value) {
+  return {
+    ...value,
+    git: {
+      ...(value.git ?? {}),
+      head_sha: fixture.identity(fixture.source).head_sha
+    }
+  };
+}
+
 test('GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams', () => {
   assert.throws(() => createGuardedRunSession({ service: {} }), /Unknown guarded Run dependency/);
   assert.throws(() => createGuardedRunSession({ artifactIo: { cp() {} } }), /Unknown guarded Run artifact I\/O dependency/);
   assert.throws(() => createGuardedRunSession({ actionRunners: { shell: async () => ({ status: 'continue' }) } }), /Unknown guarded Run action runner/);
+});
+
+test('OCR-S-1 canonical one-command request defaults to autonomous with codex then claude-code', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  const canonical = await session.run(fixture.source, {
+    storyId: STORY_ID,
+    until: 'pr-ready',
+    autonomy: 'guarded'
+  });
+  assert.equal(canonical.action_profile, 'autonomous');
+  assert.deepEqual(canonical.provider_fallbacks, ['codex', 'claude-code']);
+
+  const explicitLegacyFixture = await createFixture(t, { mode: 'disabled' });
+  const explicitLegacy = await explicitLegacyFixture.session().run(explicitLegacyFixture.source, {
+    storyId: STORY_ID,
+    until: 'pr-ready',
+    autonomy: 'guarded',
+    actionProfile: 'legacy',
+    providerFallbacks: ['custom-runtime']
+  });
+  assert.equal(explicitLegacy.action_profile, undefined);
+  assert.deepEqual(explicitLegacy.provider_fallbacks, ['custom-runtime']);
 });
 
 test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners', async (t) => {
@@ -51,7 +84,7 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
   const calls = [];
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
   const session = fixture.session({
-    preparePullRequest: async () => ({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
       preparation: { gate_status: { ready_for_pr_create: true } },
       artifacts: { json: '.vibepro/pr/ready.json' }
     }),
@@ -76,6 +109,159 @@ test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owne
     effective: 'autonomous',
     fallback_reason: null
   });
+});
+
+test('OCR-S-4 material ambiguity persists the exact Human Decision and resumes from prepare_artifacts', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let prepareCalls = 0;
+  const ids = ['diagnose', 'implement', 'verify', 'review', 'repair'];
+  const session = fixture.session({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
+      prepare_artifacts: async () => {
+        prepareCalls += 1;
+        if (prepareCalls > 1) return { status: 'continue' };
+        return {
+          status: 'waiting_for_human',
+          stop_reason: 'material_decision_required',
+          human_decision: {
+            type: 'clarification',
+            question: 'Which compatible boundary should be implemented?',
+            choices: ['preserve', 'split'],
+            material_reason: 'The answer changes the public compatibility contract.',
+            impact_scope: ['public_api'],
+            source_refs: ['story:OCR-S-4'],
+            stop_node_id: 'prepare_artifacts'
+          }
+        };
+      },
+      final_prepare: async () => ({ status: 'pr_ready' })
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.status, 'waiting_for_human', JSON.stringify(stopped.state.stop_reason));
+  assert.equal(stopped.state.stop_reason.code, 'human_decision_required');
+  assert.equal(stopped.state.pending_decision.stop_node_id, 'prepare_artifacts');
+  assert.equal(stopped.state.pending_decision.question, 'Which compatible boundary should be implemented?');
+  assert.deepEqual(stopped.state.pending_decision.choices, ['preserve', 'split']);
+  assert.equal(stopped.state.pending_decision.material_reason, 'The answer changes the public compatibility contract.');
+  assert.deepEqual(stopped.state.pending_decision.impact_scope, ['public_api']);
+  assert.deepEqual(stopped.state.pending_decision.source_refs, ['story:OCR-S-4']);
+  assert.equal(stopped.state.pending_decision.resume_command, stopped.state.stop_reason.details.recovery.next_command);
+  assert.match(stopped.state.pending_decision.resume_command, new RegExp(
+    `--decision ${stopped.state.pending_decision.decision_id} --answer <answer> --until pr-ready$`
+  ));
+  const humanSummary = renderGuardedRunSummary(stopped);
+  assert.match(humanSummary, /Which compatible boundary should be implemented\?/);
+  assert.match(humanSummary, /choices: preserve, split/);
+  assert.match(humanSummary, /The answer changes the public compatibility contract\./);
+  assert.match(humanSummary, /impact_scope: public_api/);
+  assert.match(humanSummary, /source_refs: story:OCR-S-4/);
+  assert.match(humanSummary, new RegExp(
+    `resume_command: .*--decision ${stopped.state.pending_decision.decision_id} --answer <answer> --until pr-ready`
+  ));
+  const decision = JSON.parse(await readFile(path.join(
+    fixture.source,
+    stopped.state.pending_decision.artifact
+  ), 'utf8'));
+  assert.equal(decision.question, 'Which compatible boundary should be implemented?');
+
+  await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: decision.decision_id,
+    answer: 'preserve',
+    answeredBy: 'test-operator',
+    reflectedIn: ['docs/specs/reflected.md']
+  });
+  const completed = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(completed.state.status, 'pr_ready');
+  assert.equal(prepareCalls, 2);
+  assert.deepEqual(completed.state.human_decision_journal.at(-1).reflected_in, ['docs/specs/reflected.md']);
+});
+
+test('OCR-S-4 waiting_for_human without a seven-field descriptor fails closed without persistence', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const ids = ['diagnose', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
+  const session = fixture.session({
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
+      prepare_artifacts: async () => ({
+        status: 'waiting_for_human',
+        stop_reason: 'human_decision_required'
+      })
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const stopped = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(stopped.state.status, 'failed');
+  assert.equal(stopped.state.stop_reason.code, 'action_failed');
+  assert.match(stopped.state.stop_reason.details.recovery.failure, /seven-field human_decision descriptor/);
+  assert.equal(stopped.state.pending_decision, null);
+  await assert.rejects(
+    readdir(path.join(fixture.source, '.vibepro', 'executions', STORY_ID, 'runs', RUN_ID, 'decisions')),
+    { code: 'ENOENT' }
+  );
+});
+
+test('OCR-S-5 successful repair replays verify and independent review before final preparation', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const calls = [];
+  let repairCalls = 0;
+  const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review'];
+  const session = fixture.session({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
+      preparation: { gate_status: { ready_for_pr_create: true } },
+      artifacts: { json: '.vibepro/pr/ready.json' }
+    }),
+    actionRunners: {
+      ...Object.fromEntries(ids.map((id) => [id, async () => {
+        calls.push(id);
+        return { status: 'continue' };
+      }])),
+      repair: async () => {
+        calls.push('repair');
+        repairCalls += 1;
+        return repairCalls === 1
+          ? { status: 'continue', replay_from_action_id: 'verify' }
+          : { status: 'continue' };
+      },
+      final_prepare: async () => {
+        calls.push('final_prepare');
+        return { status: 'pr_ready' };
+      }
+    }
+  });
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'pr_ready');
+  assert.deepEqual(calls, [
+    'diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair',
+    'verify', 'review', 'repair', 'final_prepare'
+  ]);
 });
 
 test('IRO-S-1 Guarded Run composes the production independent-review owner, persists its checkpoint, and keeps injected review runners authoritative', async (t) => {
@@ -113,7 +299,7 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'repair'];
   const session = fixture.session({
     agentRuntimeCoordinator: coordinator,
-    preparePullRequest: async () => ({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
       preparation: { gate_status: { ready_for_pr_create: true }, pr_context: { agent_reviews: { parallel_dispatch: { required_stages: [{ stage: 'implementation', roles: ['runtime_contract'] }] } } } }
     }),
     actionRunners: Object.fromEntries([...ids, 'final_prepare'].map((id) => [id, async () => ({ status: id === 'final_prepare' ? 'pr_ready' : 'continue' })])),
@@ -170,7 +356,7 @@ test('IRO-S-3 Guarded Run persists an operation checkpoint before a review actio
   let invocation = 0;
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'repair'];
   const session = fixture.session({
-    preparePullRequest: async () => ({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
       preparation: { gate_status: { ready_for_pr_create: true } },
       artifacts: { json: '.vibepro/pr/ready.json' }
     }),
@@ -242,7 +428,7 @@ test('AAD-S-3 autonomous implement HEAD change rebinds verify through final_prep
   let persistedAtVerify = null;
   let session;
   session = fixture.session({
-    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
     actionRunners: Object.fromEntries(ids.map((id) => [id, async () => {
       calls.push(id);
       if (id === 'implement') fixture.setHead(fixture.source, newHead);
@@ -413,7 +599,7 @@ test('AAD-S-5 public CLI rejects invalid and off-path autonomous options', async
   assert.equal(JSON.parse(offPathError.text()).stop_reason.code, 'autonomous_feature_option_not_supported');
 });
 
-test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async (t) => {
+test('OCR-S-2 production autonomous owners are composed without injected runners', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();
   await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
@@ -426,17 +612,17 @@ test('AAD-S-3 missing autonomous owner stops with typed runtime recovery', async
   const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_required');
-  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'diagnose');
+  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, undefined);
 });
 
-test('AAD-S-7 missing final_prepare owner cannot synthesize pr_ready', async (t) => {
+test('OCR-S-3 production final_prepare owner rechecks the Gate SSOT', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   let gatePrepareCalls = 0;
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
   const session = fixture.session({
     preparePullRequest: async () => {
       gatePrepareCalls += 1;
-      return { preparation: { gate_status: { ready_for_pr_create: true } } };
+      return preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: true } } });
     },
     actionRunners: Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })]))
   });
@@ -450,17 +636,15 @@ test('AAD-S-7 missing final_prepare owner cannot synthesize pr_ready', async (t)
 
   const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
 
-  assert.equal(result.state.status, 'waiting_for_runtime');
-  assert.equal(result.state.stop_reason.code, 'runtime_required');
-  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'final_prepare');
-  assert.equal(gatePrepareCalls, 0);
+  assert.equal(result.state.status, 'pr_ready');
+  assert.equal(gatePrepareCalls, 1);
 });
 
 test('IRO-S-1 Guarded Run executes the independent review action owner in the canonical DAG', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const calls = [];
   const session = fixture.session({
-    preparePullRequest: async () => ({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
       preparation: { gate_status: { ready_for_pr_create: true } },
       artifacts: { json: '.vibepro/pr/ready.json' }
     }),
@@ -494,7 +678,12 @@ test('AAD-S-7 autonomous verify never falls through to the legacy pr-ready autop
     actionRunners: {
       diagnose: async () => ({ status: 'continue' }),
       prepare_artifacts: async () => ({ status: 'continue' }),
-      implement: async () => ({ status: 'continue' })
+      implement: async () => ({ status: 'continue' }),
+      verify: async () => ({
+        status: 'waiting_for_runtime',
+        stop_reason: 'runtime_required',
+        recovery: { missing_runtime: 'verification' }
+      })
     }
   });
   await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
@@ -508,7 +697,7 @@ test('AAD-S-7 autonomous verify never falls through to the legacy pr-ready autop
   assert.equal(legacyAutopilotCalls, 0);
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_required');
-  assert.equal(result.state.stop_reason.details.recovery.missing_action_runner, 'verify');
+  assert.equal(result.state.stop_reason.details.recovery.missing_runtime, 'verification');
 });
 
 test('AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT', async (t) => {
@@ -518,7 +707,7 @@ test('AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT', 
   const session = fixture.session({
     preparePullRequest: async () => {
       prepareCalls += 1;
-      return { preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } }, artifacts: { json: '.vibepro/pr/blocked.json' } };
+      return preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } }, artifacts: { json: '.vibepro/pr/blocked.json' } });
     },
     actionRunners: {
       ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
@@ -544,7 +733,7 @@ test('AAD-S-1 final_prepare owner receives the canonical action context', async 
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
   let receivedContext = null;
   const session = fixture.session({
-    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
     actionRunners: {
       ...Object.fromEntries(ids.map((id) => [id, async () => ({ status: 'continue' })])),
       final_prepare: async (context) => {
@@ -606,7 +795,7 @@ test('AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without rep
   let implementCalls = 0;
   let verifyCalls = 0;
   const firstSession = fixture.session({
-    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
     actionRunners: {
       diagnose: async () => ({ status: 'continue' }),
       prepare_artifacts: async () => ({ status: 'continue' }),
@@ -628,7 +817,7 @@ test('AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without rep
 
   const suffixCalls = [];
   const restartedSession = fixture.session({
-    preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
     actionRunners: {
       diagnose: async () => { throw new Error('diagnose replayed'); },
       prepare_artifacts: async () => { throw new Error('prepare_artifacts replayed'); },
@@ -661,26 +850,26 @@ test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
   const prefixIds = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair'];
   const prefixRunners = Object.fromEntries(prefixIds.map((id) => [id, async () => ({ status: 'continue' })]));
 
-  const missingFixture = await createFixture(t, { mode: 'disabled' });
-  const missingOut = capture();
+  const defaultFixture = await createFixture(t, { mode: 'disabled' });
+  const defaultOut = capture();
   await runCli([
-    'execute', 'run', missingFixture.source, '--story-id', STORY_ID,
+    'execute', 'run', defaultFixture.source, '--story-id', STORY_ID,
     '--action-profile', 'autonomous', '--until', 'pr-ready', '--json'
   ], {
-    stdout: missingOut,
+    stdout: defaultOut,
     stderr: capture(),
-    guardedRunDependencies: missingFixture.dependencies({ actionRunners: prefixRunners })
+    guardedRunDependencies: defaultFixture.dependencies({
+      preparePullRequest: async () => preparedAtCurrentHead(defaultFixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
+      actionRunners: prefixRunners
+    })
   });
-  const missing = JSON.parse(missingOut.text()).state;
-  assert.equal(missing.status, 'waiting_for_runtime');
-  assert.equal(missing.stop_reason.code, 'runtime_required');
-  assert.equal(missing.stop_reason.details.recovery.missing_action_runner, 'final_prepare');
-  const missingHuman = capture();
+  const completed = JSON.parse(defaultOut.text()).state;
+  assert.equal(completed.status, 'pr_ready');
+  const completedHuman = capture();
   await runCli([
-    'execute', 'status', missingFixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
-  ], { stdout: missingHuman, stderr: capture(), guardedRunDependencies: missingFixture.dependencies() });
-  assert.match(missingHuman.text(), /status: waiting_for_runtime/);
-  assert.match(missingHuman.text(), /final_prepare/);
+    'execute', 'status', defaultFixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID
+  ], { stdout: completedHuman, stderr: capture(), guardedRunDependencies: defaultFixture.dependencies() });
+  assert.match(completedHuman.text(), /status: pr_ready/);
 
   const blockedFixture = await createFixture(t, { mode: 'disabled' });
   const blockedOut = capture();
@@ -691,7 +880,7 @@ test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
     stdout: blockedOut,
     stderr: capture(),
     guardedRunDependencies: blockedFixture.dependencies({
-      preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } } }),
+      preparePullRequest: async () => preparedAtCurrentHead(blockedFixture, { preparation: { gate_status: { ready_for_pr_create: false, next_required_actions: ['record evidence'] } } }),
       actionRunners: { ...prefixRunners, final_prepare: async () => ({ status: 'pr_ready' }) }
     })
   });
@@ -715,7 +904,7 @@ test('AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
     stdout: readyOut,
     stderr: capture(),
     guardedRunDependencies: readyFixture.dependencies({
-      preparePullRequest: async () => ({ preparation: { gate_status: { ready_for_pr_create: true } } }),
+      preparePullRequest: async () => preparedAtCurrentHead(readyFixture, { preparation: { gate_status: { ready_for_pr_create: true } } }),
       actionRunners: { ...prefixRunners, final_prepare: async () => ({ status: 'pr_ready' }) }
     })
   });
@@ -738,7 +927,7 @@ test('AAD-S-7 autonomous composition preserves canonical owner artifact referenc
   });
   const ids = ['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'];
   const session = fixture.session({
-    preparePullRequest: async () => ({
+    preparePullRequest: async () => preparedAtCurrentHead(fixture, {
       preparation: { gate_status: { ready_for_pr_create: true } },
       artifacts: { json: '.vibepro/pr/ready.json' }
     }),
@@ -3293,8 +3482,9 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   }
   assert.match(stdout.text(), /--run-idを省略したexecute statusは従来のstatus契約を維持します/);
   assert.match(stdout.text(), /pr_readyを目標に、再開可能なguarded Runを作成します/);
-  assert.match(stdout.text(), /--until 未指定時は状態の永続化だけ/);
-  assert.match(stdout.text(), /--until pr-ready 指定時はallowlist済みrepo-local Actionだけ/);
+  assert.match(stdout.text(), /--until未指定時は状態だけを永続化/);
+  assert.match(stdout.text(), /--until pr-readyは閉じた自律Action DAG/);
+  assert.match(stdout.text(), /PR作成、merge、waiver、重大な外部副作用は必ず人間の明示操作に残ります/);
   assert.match(stdout.text(), /resumeは--until pr-readyを受け付け.*未完了のallowlist済みActionだけを再試行/);
   assert.match(stdout.text(), /watchは現在値を1回返して終了するsnapshotです/);
   assert.match(stdout.text(), /--targetはpr_readyだけを受け付け/);
@@ -3315,7 +3505,8 @@ test('GRS-S-6 C-001 execute help advertises guarded commands without removing le
   assert.match(englishStdout.text(), /Without --run-id, execute status keeps the legacy status contract/);
   assert.match(englishStdout.text(), /Create a resumable guarded Run targeting pr_ready/);
   assert.match(englishStdout.text(), /Without --until this command only persists state/);
-  assert.match(englishStdout.text(), /--until pr-ready executes only allowlisted repo-local Actions/);
+  assert.match(englishStdout.text(), /--until pr-ready defaults to the closed autonomous Action DAG/);
+  assert.match(englishStdout.text(), /PR creation, merge, waiver, and material external side effects always remain explicit human operations/);
   assert.match(englishStdout.text(), /resume accepts --until pr-ready to retry only incomplete allowlisted Actions/);
   assert.match(englishStdout.text(), /watch returns one current snapshot and exits; it does not stream/);
   assert.match(englishStdout.text(), /Guarded commands accept only --target pr_ready/);
@@ -3809,7 +4000,7 @@ test('NBA-S-7 public CLI derives a bounded escape after repeated unchanged resum
   };
   const started = await runCli([
     'execute', 'run', fixture.source, '--story-id', STORY_ID,
-    '--until', 'pr-ready', '--json'
+    '--until', 'pr-ready', '--action-profile', 'legacy', '--json'
   ], { stdout: capture(), stderr: capture(), guardedRunDependencies: dependencies });
   assert.equal(started.exitCode, 0);
   const resumed = await runCli([
@@ -3855,7 +4046,7 @@ test('SAO-S-5 verification block persists failed kinds for public JSON and human
   const json = capture();
   await runCli([
     'execute', 'run', fixture.source, '--story-id', STORY_ID,
-    '--until', 'pr-ready', '--json'
+    '--until', 'pr-ready', '--action-profile', 'legacy', '--json'
   ], { stdout: json, stderr: capture(), guardedRunDependencies: dependencies });
   const state = JSON.parse(json.text()).state;
   assert.equal(state.stop_reason.code, 'verification_failed');
@@ -3889,7 +4080,7 @@ test('SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints an
   const runOut = capture();
   const first = await runCli([
     'execute', 'run', fixture.source, '--story-id', STORY_ID,
-    '--until', 'pr-ready', '--json'
+    '--until', 'pr-ready', '--action-profile', 'legacy', '--json'
   ], { stdout: runOut, stderr: capture(), guardedRunDependencies: dependencies });
   assert.equal(first.exitCode, 0);
   assert.equal(JSON.parse(runOut.text()).state.status, 'failed');
@@ -4031,10 +4222,15 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   const stdout = capture();
   const result = await runCli([
     'execute', 'run', fixture.source, '--story-id', STORY_ID,
-    '--until', 'pr-ready', '--dry-run', '--json'
+    '--until', 'pr-ready', '--autonomy', 'guarded', '--dry-run', '--json'
   ], { stdout, stderr: capture(), guardedRunDependencies: dependencies });
   assert.equal(result.exitCode, 0);
-  assert.deepEqual(JSON.parse(stdout.text()).plan.map((item) => item.id), ['pr_prepare', 'pr_autopilot_safe']);
+  const dryRun = JSON.parse(stdout.text());
+  assert.equal(dryRun.state.action_profile, 'autonomous');
+  assert.deepEqual(dryRun.state.provider_fallbacks, ['codex', 'claude-code']);
+  assert.deepEqual(dryRun.plan.map((item) => item.id), [
+    'diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare'
+  ]);
   assert.equal(bootstrapCalls, 0);
   assert.equal(actionCalls, 0);
   await assert.rejects(access(fixture.runFile(fixture.source, RUN_ID)));
@@ -4045,12 +4241,12 @@ test('SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed', 
   const humanError = capture();
   const humanResult = await runCli([
     'execute', 'run', fixture.source, '--story-id', STORY_ID,
-    '--until', 'pr-ready', '--dry-run'
+    '--until', 'pr-ready', '--autonomy', 'guarded', '--dry-run'
   ], { stdout: human, stderr: humanError, guardedRunDependencies: dependencies });
   assert.equal(humanResult.exitCode, 0, humanError.text());
   assert.match(human.text(), /Planned Actions/);
-  assert.match(human.text(), /pr_prepare \(repo_local_safe\)/);
-  assert.match(human.text(), /pr_autopilot_safe \(repo_local_safe\)/);
+  assert.match(human.text(), /diagnose \(repo_local_safe\)/);
+  assert.match(human.text(), /final_prepare \(repo_local_safe\)/);
 
   const stderr = capture();
   const invalid = await runCli([
