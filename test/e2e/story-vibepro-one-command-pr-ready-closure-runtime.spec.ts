@@ -21,8 +21,8 @@ import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
 import { createGuardedRunSession } from "../../src/guarded-run-session.js";
+import { createOneCommandPrReadyActionOwners } from "../../src/one-command-pr-ready-closure.js";
 import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
-import "../one-command-pr-ready-closure.test.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -84,6 +84,9 @@ test("scenario:S-001 available-provider regression persists one production-shape
   const currentHead = async () =>
     (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: managed })).stdout.trim();
   let implementationHead = initialHead;
+  let repairedHead = initialHead;
+  let reviewCalls = 0;
+  let verificationCalls = 0;
   const continueAction = async () => ({ status: "continue" });
   const session = createGuardedRunSession({
     now: () => new Date("2026-07-23T15:00:00.000Z"),
@@ -126,31 +129,49 @@ test("scenario:S-001 available-provider regression persists one production-shape
         artifact: ".vibepro/verification/ocr-e2e.json",
         checkpoint: [{
           kind: "verification",
-          head_sha: implementationHead,
+          head_sha: (++verificationCalls > 1 ? repairedHead : implementationHead),
           commands: ["node --test test/one-command-pr-ready-closure.test.js"],
           status: "pass"
         }]
       }),
-      review: async () => ({
-        status: "continue",
-        checkpoint: [{
+      review: async () => {
+        reviewCalls += 1;
+        return {
+          status: "continue",
+          checkpoint: [{
           kind: "independent_review",
           reviewer_identity: "review-agent",
           implementation_identity: "implementation-agent",
-          session_id: "review-session",
+          session_id: `review-session-${reviewCalls}`,
           sandbox: "read-only",
           lifecycle_status: "closed",
-          verdict: "pass",
-          head_sha: implementationHead
+          verdict: reviewCalls === 1 ? "needs_changes" : "pass",
+          findings: reviewCalls === 1 ? [{ id: "e2e-repair", detail: "repair fixture" }] : [],
+          head_sha: reviewCalls === 1 ? implementationHead : repairedHead
         }]
-      }),
-      repair: async () => ({ status: "continue", summary: "passing review requires no repair" }),
+        };
+      },
+      repair: async () => {
+        if (reviewCalls > 1) {
+          return { status: "continue", summary: "independent re-review passed" };
+        }
+        await writeFile(path.join(managed, "implementation.txt"), "repaired by production-shaped runtime\n");
+        await execFileAsync("git", ["add", "implementation.txt"], { cwd: managed });
+        await execFileAsync("git", ["commit", "-m", "fix: repair independent review finding"], { cwd: managed });
+        repairedHead = await currentHead();
+        return {
+          status: "continue",
+          output_head_sha: repairedHead,
+          replay_from_action_id: "verify",
+          checkpoint: [{ kind: "repair", finding_id: "e2e-repair", head_sha: repairedHead }]
+        };
+      },
       final_prepare: async () => ({
         status: "pr_ready",
         artifact: ".vibepro/pr/ocr-e2e/pr-prepare.json",
         checkpoint: [{
           kind: "current_head_gate",
-          head_sha: implementationHead,
+          head_sha: repairedHead,
           ready_for_pr_create: true
         }]
       })
@@ -171,22 +192,161 @@ test("scenario:S-001 available-provider regression persists one production-shape
   const result = await session.orchestrate(source, { storyId, runId: created.run_id });
   const artifact = path.join(managed, ".vibepro", "executions", storyId, "runs", created.run_id, "state.json");
   const persisted = JSON.parse(await readFile(artifact, "utf8"));
-  assert.equal(result.state.status, "pr_ready");
-  assert.equal(persisted.current_head_sha, implementationHead);
+  assert.equal(result.state.status, "pr_ready", JSON.stringify(result.state.stop_reason));
+  assert.equal(persisted.current_head_sha, repairedHead);
+  assert.notEqual(repairedHead, implementationHead);
   assert.notEqual(implementationHead, initialHead);
   const implementation = persisted.action_journal.find(({ action_id }) => action_id === "implement");
-  const review = persisted.action_journal.find(({ action_id }) => action_id === "review");
-  const verify = persisted.action_journal.find(({ action_id }) => action_id === "verify");
+  const review = persisted.action_journal.filter(({ action_id }) => action_id === "review").at(-1);
+  const verify = persisted.action_journal.filter(({ action_id }) => action_id === "verify").at(-1);
   const finalPrepare = persisted.action_journal.find(({ action_id }) => action_id === "final_prepare");
   // S-001: executable production-shaped evidence binds the real commit and isolated review lifecycle.
   assert.equal(implementation.checkpoint[0].managed_worktree, managed);
   assert.equal(implementation.checkpoint[0].session_id, "implementation-session");
+  assert.equal(reviewCalls, 2);
+  assert.equal(verificationCalls, 2);
   assert.equal(review.checkpoint[0].sandbox, "read-only");
   assert.equal(review.checkpoint[0].lifecycle_status, "closed");
   assert.notEqual(review.checkpoint[0].reviewer_identity, review.checkpoint[0].implementation_identity);
-  assert.equal(verify.checkpoint[0].head_sha, implementationHead);
-  assert.equal(finalPrepare.checkpoint[0].head_sha, implementationHead);
+  assert.equal(verify.checkpoint[0].head_sha, repairedHead);
+  assert.equal(finalPrepare.checkpoint[0].head_sha, repairedHead);
   assert.equal(finalPrepare.checkpoint[0].ready_for_pr_create, true);
+});
+
+test("scenario:S-002 typed stop and resume matrix executes independently of unit imports", async () => {
+  const head = "a".repeat(40);
+  const state = {
+    story_id: "story-ocr-matrix",
+    run_id: "run-ocr-matrix",
+    current_head_sha: head,
+    action_journal: [],
+    managed_worktree: { path: "/managed", branch: "codex/ocr-matrix" },
+    execution_context: { root_realpath: "/managed", branch: "codex/ocr-matrix" }
+  };
+  const context = (actionId) => ({ state, action: { id: actionId } });
+  const defaults = {
+    readReadiness: async () => ({ missing_artifacts: [] }),
+    prepareCurrentHead: async () => ({
+      git: { head_sha: head },
+      preparation: { gate_status: { ready_for_pr_create: true, next_required_actions: [] } }
+    }),
+    dispatchRuntime: async ({ request }) => ({
+      state,
+      dispatch: {
+        dispatch_id: `dispatch-${request.task_id}`,
+        status: "completed",
+        result: { completion_status: "completed", changed_files: ["src/change.js"], head_sha: head }
+      }
+    }),
+    pollRuntime: async ({ dispatch }) => ({ state, dispatch }),
+    cancelRuntime: async ({ dispatch }) => ({ state, dispatch: { ...dispatch, status: "cancelled" } }),
+    runtimePollIntervalMs: 1,
+    waitForRuntimePoll: async () => {}
+  };
+
+  const noProgress = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    readReadiness: async () => ({ missing_artifacts: ["Spec"] }),
+    dispatchRuntime: async ({ request }) => ({
+      state,
+      dispatch: {
+        dispatch_id: `dispatch-${request.task_id}`,
+        status: "completed",
+        result: { completion_status: "completed", changed_files: [], head_sha: head }
+      }
+    })
+  });
+  assert.equal((await noProgress.prepare_artifacts(context("prepare_artifacts"))).stop_reason, "no_progress");
+
+  const descriptor = {
+    type: "scope_split",
+    question: "Preserve repository-only scope?",
+    choices: ["preserve", "split"],
+    material_reason: "The answer changes external authority.",
+    impact_scope: ["Story scope"],
+    source_refs: ["story:S-002"],
+    stop_node_id: "prepare_artifacts"
+  };
+  const decision = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    readReadiness: async () => ({ human_decision: descriptor })
+  });
+  assert.equal((await decision.prepare_artifacts(context("prepare_artifacts"))).status, "waiting_for_human");
+
+  const verificationFailure = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    prepareCurrentHead: async () => ({
+      verification_passed: false,
+      git: { head_sha: head },
+      preparation: { gate_status: { next_required_actions: ["focused verification failed"] } }
+    })
+  });
+  assert.equal((await verificationFailure.verify(context("verify"))).stop_reason, "verification_failed");
+
+  const ciPending = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    prepareCurrentHead: async () => ({
+      git: { head_sha: head },
+      preparation: { gate_status: { ready_for_pr_create: false, ci_pending: true, next_required_actions: ["import CI"] } }
+    })
+  });
+  assert.equal((await ciPending.final_prepare(context("final_prepare"))).stop_reason, "ci_pending");
+
+  let runtimeAvailable = false;
+  const resumable = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    dispatchRuntime: async ({ request }) => runtimeAvailable
+      ? defaults.dispatchRuntime({ request })
+      : ({
+          state,
+          dispatch: {
+            dispatch_id: `dispatch-${request.task_id}`,
+            status: "waiting_for_runtime",
+            stop_reason: {
+              code: "quota_exceeded",
+              message: "quota unavailable",
+              details: {
+                provider: request.adapter_id,
+                missing_capabilities: ["workspace_write"],
+                recovery: {
+                  action: "resume_run",
+                  story_id: state.story_id,
+                  run_id: state.run_id,
+                  required_capabilities: ["workspace_write"]
+                }
+              }
+            }
+          }
+        })
+  });
+  const quota = await resumable.implement(context("implement"));
+  assert.equal(quota.stop_reason, "quota_exceeded");
+  assert.equal(quota.recovery.action, "resume_run");
+  runtimeAvailable = true;
+  assert.equal((await resumable.implement(context("implement"))).status, "continue");
+
+  const running = { dispatch_id: "dispatch-timeout", status: "running" };
+  const timeout = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    runtimeTimeoutMs: 1,
+    waitForRuntimePoll: async () => new Promise((resolve) => setTimeout(resolve, 2)),
+    dispatchRuntime: async () => ({ state, dispatch: running }),
+    pollRuntime: async () => ({ state, dispatch: running })
+  });
+  assert.equal((await timeout.implement(context("implement"))).stop_reason, "runtime_probe_timeout");
+
+  const cancelled = createOneCommandPrReadyActionOwners({
+    ...defaults,
+    dispatchRuntime: async () => ({
+      state,
+      dispatch: {
+        dispatch_id: "dispatch-cancelled",
+        status: "cancelled",
+        stop_reason: { code: "runtime_cancelled", message: "operator cancelled" }
+      }
+    })
+  });
+  assert.equal((await cancelled.implement(context("implement"))).stop_reason, "runtime_cancelled");
 });
 
 test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {

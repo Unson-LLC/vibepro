@@ -293,6 +293,47 @@ const FALLBACK_RUNTIME_STOP_CODES = new Set([
   'review_readonly_unavailable'
 ]);
 
+const COMPLETE_RECOVERY_STOP_CODES = new Set([
+  ...FALLBACK_RUNTIME_STOP_CODES,
+  'permission_wait',
+  'runtime_required'
+]);
+
+function completeRuntimeRecovery(state, stopReason) {
+  if (!stopReason || !COMPLETE_RECOVERY_STOP_CODES.has(stopReason.code)) return stopReason;
+  const details = stopReason.details ?? {};
+  const recovery = details.recovery ?? {};
+  const requiredCapabilities = [...(recovery.required_capabilities ?? details.required_capabilities ?? [])];
+  const missingCapabilities = [...(recovery.missing_capabilities ?? details.missing_capabilities ?? [])];
+  const provider = recovery.provider ?? details.provider ?? null;
+  return {
+    ...stopReason,
+    details: {
+      ...details,
+      provider,
+      required_capabilities: requiredCapabilities,
+      missing_capabilities: missingCapabilities,
+      recovery: {
+        ...recovery,
+        action: recovery.action ?? 'resume_run',
+        story_id: recovery.story_id ?? state.story_id,
+        run_id: recovery.run_id ?? state.run_id,
+        provider,
+        required_capabilities: requiredCapabilities,
+        missing_capabilities: missingCapabilities,
+        condition: recovery.condition ?? {
+          kind: 'runtime_available',
+          provider,
+          required_capabilities: requiredCapabilities,
+          missing_capabilities: missingCapabilities
+        },
+        next_command: recovery.next_command
+          ?? `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+      }
+    }
+  };
+}
+
 async function dispatchRuntimeWithFallbacks(coordinator, state, request, options = {}) {
   const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
     .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
@@ -455,6 +496,7 @@ async function orchestrateRun(deps, repoRoot, options) {
     });
     [next, outcomeStatus, outcomeStopReason] = [decision.state, decision.status, decision.stopReason];
   }
+  outcomeStopReason = completeRuntimeRecovery(next, outcomeStopReason);
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
   if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
     const reboundAt = toIso(deps.now());
@@ -531,6 +573,8 @@ async function orchestrateRun(deps, repoRoot, options) {
   }
   if (outcomeStatus !== next.status) {
     next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
+  } else {
+    next = { ...next, stop_reason: outcomeStopReason };
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };

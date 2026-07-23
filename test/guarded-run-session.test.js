@@ -119,7 +119,17 @@ test('OCR-S-1 production owner returns a persisted typed runtime stop without re
     action: 'resume_run',
     story_id: STORY_ID,
     run_id: RUN_ID,
-    required_capabilities: ['workspace_write']
+    dispatch_id: result.state.runtime_dispatches.at(-1).dispatch_id,
+    provider: 'capability-limited-runtime',
+    required_capabilities: ['workspace_write'],
+    missing_capabilities: ['workspace_write'],
+    condition: {
+      kind: 'runtime_available',
+      provider: 'capability-limited-runtime',
+      required_capabilities: ['workspace_write'],
+      missing_capabilities: ['workspace_write']
+    },
+    next_command: `vibepro execute resume ${fixture.managed} --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
   });
   const humanSummary = renderGuardedRunSummary(result.state);
   assert.match(humanSummary, /provider: capability-limited-runtime/);
@@ -182,7 +192,17 @@ for (const scenario of [
       action: 'resume_run',
       story_id: STORY_ID,
       run_id: RUN_ID,
-      required_capabilities: ['workspace_write']
+      dispatch_id: result.state.runtime_dispatches.at(-1).dispatch_id,
+      provider: scenario.provider,
+      required_capabilities: ['workspace_write'],
+      missing_capabilities: ['workspace_write'],
+      condition: {
+        kind: 'runtime_available',
+        provider: scenario.provider,
+        required_capabilities: ['workspace_write'],
+        missing_capabilities: ['workspace_write']
+      },
+      next_command: `vibepro execute resume ${fixture.managed} --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
     });
     const humanSummary = renderGuardedRunSummary(result.state);
     assert.match(humanSummary, new RegExp(`provider: ${scenario.provider}`));

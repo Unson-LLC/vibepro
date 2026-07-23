@@ -474,10 +474,10 @@ async function runImplementationRuntime({
       status: 'waiting_for_runtime',
       stop_reason: 'runtime_probe_timeout',
       runtime_dispatch: containedDispatch ?? dispatch ?? null,
-      recovery: {
+      recovery: runtimeRecovery(containedDispatch ?? dispatch, {
         dispatch_id: dispatch?.dispatch_id ?? null,
         containment_status: containedDispatch?.status ?? null
-      },
+      }),
       summary: `runtime dispatch exceeded ${runtimeTimeoutMs}ms and was contained before retry`
     };
   }
@@ -493,7 +493,7 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
       status: 'waiting_for_runtime',
       stop_reason: code ?? 'runtime_required',
       runtime_dispatch: dispatch ?? null,
-      recovery: { dispatch_id: dispatch?.dispatch_id ?? null },
+      recovery: runtimeRecovery(dispatch),
       summary: dispatch?.stop_reason?.message ?? 'implementation runtime is still active'
     };
   }
@@ -502,7 +502,7 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
       status: RUNTIME_WAIT_CODES.has(code) ? 'waiting_for_runtime' : 'failed',
       stop_reason: code ?? 'runtime_failed',
       runtime_dispatch: dispatch ?? null,
-      recovery: { dispatch_id: dispatch?.dispatch_id ?? null },
+      recovery: runtimeRecovery(dispatch),
       summary: dispatch?.stop_reason?.message ?? `implementation runtime ended with ${dispatch?.status ?? 'an unknown status'}`
     };
   }
@@ -525,6 +525,32 @@ function runtimeActionResult(observed, inputHeadSha, requireHeadAdvance) {
     changed_files: result.changed_files ?? [],
     test_suggestions: result.test_suggestions ?? [],
     summary: result.summary ?? 'implementation runtime completed'
+  };
+}
+
+function runtimeRecovery(dispatch, additional = {}) {
+  const details = dispatch?.stop_reason?.details ?? {};
+  const inherited = details.recovery ?? {};
+  const provider = details.provider ?? dispatch?.adapter_id ?? inherited.provider ?? null;
+  const requiredCapabilities = [
+    ...(inherited.required_capabilities ?? dispatch?.requirements?.capabilities ?? [])
+  ];
+  const missingCapabilities = [
+    ...(details.missing_capabilities ?? inherited.missing_capabilities ?? [])
+  ];
+  return {
+    ...inherited,
+    ...additional,
+    dispatch_id: dispatch?.dispatch_id ?? inherited.dispatch_id ?? null,
+    provider,
+    required_capabilities: requiredCapabilities,
+    missing_capabilities: missingCapabilities,
+    condition: inherited.condition ?? {
+      kind: 'runtime_available',
+      provider,
+      required_capabilities: requiredCapabilities,
+      missing_capabilities: missingCapabilities
+    }
   };
 }
 
