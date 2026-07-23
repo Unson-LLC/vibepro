@@ -12,7 +12,8 @@ import {
   invalidateValidationSequence,
   reconcileValidationSequenceState,
   recordValidationPhase,
-  validateValidationPhaseEvidence
+  validateValidationPhaseEvidence,
+  validatePreflightInspectionInputs
 } from '../src/validation-sequencing.js';
 import { recordImportedCiVerification } from '../src/ci-evidence.js';
 import { getValidationSequencePath, readValidationSequence, writeValidationSequence } from '../src/validation-sequencing.js';
@@ -24,6 +25,7 @@ const finalReview = {
   evidence: '.vibepro/reviews/final.json',
   reviewProvenance: {
     status: 'pass', story_id: 'story-risk-sequence', head_sha: 'abc123',
+    stage: 'implementation', role: 'runtime_contract',
     system: 'codex', execution_mode: 'parallel_subagent', evidence_strength: 'strong', agent_closed: true
   }
 };
@@ -97,7 +99,58 @@ test('high-risk plan schedules one canonical aggregate boundary preflight before
     stage: 'architecture_spec', role: 'architecture_boundary',
     surfaces: ['core_workflow_state', 'auth_boundary']
   }]);
+  assert.deepEqual(state.plan.preflight_required_inspection_inputs, []);
   assert.ok(state.plan.phases.indexOf('preflight_review') < state.plan.phases.indexOf('expensive_verification'));
+});
+
+test('aggregate preflight inspection inputs fail closed without design runtime and test coverage', () => {
+  assert.throws(
+    () => validatePreflightInspectionInputs(['.vibepro/reviews/story/stage/review-request.md']),
+    /must cover design, runtime, and test surfaces/
+  );
+  assert.throws(
+    () => validatePreflightInspectionInputs(['docs/specs/story.md', 'src/runtime.js'], ['docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js']),
+    /must cover design, runtime, and test surfaces/
+  );
+  assert.deepEqual(validatePreflightInspectionInputs([
+    'docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js'
+  ], [
+    'docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js'
+  ]), ['docs/specs/story.md', 'src/runtime.js', 'test/runtime.test.js']);
+});
+
+test('aggregate preflight inspection inputs cover every planned changed path', () => {
+  const required = [
+    'docs/architecture/story.md',
+    'src/validation-sequencing.js',
+    'src/pr-manager.js',
+    'test/validation-sequencing.test.js'
+  ];
+  assert.throws(
+    () => validatePreflightInspectionInputs([
+      'docs/architecture/story.md',
+      'src/validation-sequencing.js',
+      'test/validation-sequencing.test.js'
+    ]),
+    /requires a planned current changed-path inspection union/
+  );
+  assert.throws(
+    () => validatePreflightInspectionInputs([
+      'docs/architecture/story.md',
+      'src/validation-sequencing.js',
+      'test/validation-sequencing.test.js'
+    ], required),
+    /do not cover every planned changed path: src\/pr-manager\.js/
+  );
+  assert.deepEqual(validatePreflightInspectionInputs([
+    'docs/architecture/story.md',
+    'src',
+    'test/validation-sequencing.test.js'
+  ], required), [
+    'docs/architecture/story.md',
+    'src',
+    'test/validation-sequencing.test.js'
+  ]);
 });
 
 test('auth-only plan emits a canonical producible aggregate review', () => {
@@ -116,8 +169,11 @@ test('auth-only plan emits a canonical producible aggregate review', () => {
   assert.equal(action.ordered_actions.length, 6);
   assert.match(action.ordered_actions[1], /review authorize/);
   assert.match(action.ordered_actions[2], /review start .*--dispatch-authorization/);
+  assert.match(action.ordered_actions[2], /--agent-thread-id '<agent-thread-id>'.*--agent-session-id '<agent-session-id>'/);
   assert.match(action.ordered_actions[3], /review close/);
   assert.match(action.ordered_actions[4], /review record .*--summary .*--agent-transcript .*--agent-close-evidence/);
+  assert.match(action.ordered_actions[4], /--inspection-input '<design-story-spec-path>' .*--inspection-input '<runtime-source-path>' .*--inspection-input '<test-path>'/);
+  assert.match(action.ordered_actions[4], /--agent-session-id '<agent-session-id>'.*--implementation-session-id '<implementation-session-id>'.*--reviewer-identity separate_session/);
   assert.match(action.ordered_actions[4], /risk_surfaces=auth_boundary/);
   assert.match(action.ordered_actions[5], /sequence record/);
 });
@@ -154,6 +210,35 @@ test('expensive verification is reused only at the exact frozen binding', () => 
     () => recordValidationPhase(state, { phase: 'expensive_verification', ...binding, source: 'local' }),
     /reuse existing evidence/
   );
+});
+
+test('post-freeze expensive verification may use a distinct e2e command at the frozen identity', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  const expensive = { ...binding, verificationCommand: 'node --test test/e2e/story.spec.ts' };
+  state = recordValidationPhase(state, { phase: 'expensive_verification', ...expensive, source: 'local' });
+  state = recordValidationPhase(state, { phase: 'final_review', ...binding, ...finalReview });
+  const evaluation = evaluateValidationSequence(state, { currentHeadSha: 'abc123' });
+  assert.equal(evaluation.ready_for_final_gate, true);
+  assert.equal(evaluation.blocking_phases.includes('expensive_verification_binding'), false);
+  assert.equal(state.phases.expensive_verification.binding.verification_command, 'node --test test/e2e/story.spec.ts');
+});
+
+test('post-freeze phase-specific commands still reject changed HEAD or fingerprint', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  assert.throws(() => recordValidationPhase(state, {
+    phase: 'expensive_verification', ...binding,
+    headSha: 'def456', verificationCommand: 'node --test test/e2e/story.spec.ts'
+  }), /frozen HEAD and test fingerprint/);
+  assert.throws(() => recordValidationPhase(state, {
+    phase: 'expensive_verification', ...binding,
+    testFingerprint: 'tests-v2', verificationCommand: 'node --test test/e2e/story.spec.ts'
+  }), /frozen HEAD and test fingerprint/);
 });
 
 test('freeze rejects nonterminal or unknown preflight dispositions', () => {
@@ -222,6 +307,37 @@ test('persisted light plan is invalidated when current risk classification escal
   assert.equal(reconciled.phases.targeted_validation.status, 'invalidated');
   assert.equal(reconciled.proposed_binding.head_sha, 'new-head');
   assert.equal(evaluateValidationSequence(reconciled, { currentHeadSha: 'new-head' }).status, 'needs_evidence');
+});
+
+test('same-plan HEAD drift invalidates stale phases and advances the proposed binding', () => {
+  let persisted = stateForHighRisk();
+  persisted.proposed_binding = { head_sha: 'old-head', test_fingerprint: 'tests-v1', verification_command: 'node --test' };
+  persisted = recordValidationPhase(persisted, { phase: 'targeted_validation', ...binding, headSha: 'old-head' });
+  const reconciled = reconcileValidationSequenceState(persisted, {
+    storyId: 'story-risk-sequence', riskProfile: 'workflow_heavy',
+    riskSurfaces: ['core_workflow_state', 'auth_boundary'], headSha: 'new-head'
+  });
+  assert.equal(reconciled.proposed_binding.head_sha, 'new-head');
+  assert.equal(reconciled.phases.targeted_validation.status, 'invalidated');
+});
+
+test('explicit surface-only invalidation does not invent an unknown surface', () => {
+  let state = stateForHighRisk();
+  state = recordValidationPhase(state, { phase: 'targeted_validation', ...binding });
+  state = invalidateValidationSequence(state, { changedSurfaces: ['spec_docs'], reason: 'spec changed' });
+  assert.deepEqual(state.invalidations.at(-1).changed_surfaces, ['spec_docs']);
+  assert.equal(state.phases.targeted_validation.status, 'passed');
+});
+
+test('final review rejects strong provenance from a different review role', () => {
+  let state = stateForHighRisk();
+  for (const phase of ['targeted_validation', 'preflight_review', 'code_frozen', 'expensive_verification']) {
+    state = recordValidationPhase(state, { phase, ...binding });
+  }
+  assert.throws(() => recordValidationPhase(state, {
+    phase: 'final_review', ...binding, ...finalReview,
+    reviewProvenance: { ...finalReview.reviewProvenance, stage: 'gate', role: 'gate_evidence' }
+  }), /implementation:runtime_contract/);
 });
 
 test('final readiness requires final review at current HEAD even when CI supplied expensive evidence', () => {
@@ -362,8 +478,10 @@ test('pending final review at the frozen current HEAD recommends final review wi
   assert.equal(evaluation.next_required_action.ordered_actions.length, 6);
   assert.match(evaluation.next_required_action.ordered_actions[1], /review authorize/);
   assert.match(evaluation.next_required_action.ordered_actions[2], /review start .*--dispatch-authorization/);
+  assert.match(evaluation.next_required_action.ordered_actions[2], /--agent-thread-id '<agent-thread-id>'.*--agent-session-id '<agent-session-id>'/);
   assert.match(evaluation.next_required_action.ordered_actions[3], /review close/);
   assert.match(evaluation.next_required_action.ordered_actions[4], /review record .*--strict-head-binding/);
+  assert.match(evaluation.next_required_action.ordered_actions[4], /--agent-session-id '<agent-session-id>'.*--implementation-session-id '<implementation-session-id>'.*--reviewer-identity separate_session/);
   assert.match(evaluation.next_required_action.ordered_actions[5], /sequence record .*--phase final_review .*--source agent_review/);
   assert.doesNotMatch(evaluation.next_required_action.command, /sequence invalidate/);
 });
@@ -431,8 +549,9 @@ test('sequence CLI persists the planned and recorded workflow through the public
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-validation-sequence-cli-'));
   const canonicalEvidence = path.join(root, '.vibepro', 'pr', 'story-cli-sequence', 'verification-evidence.json');
   await mkdir(path.dirname(canonicalEvidence), { recursive: true });
+  const sequenceCommand = 'node --test test/unit/sequence.test.js';
   const nativeCommand = (kind, phase, extra = {}) => ({
-    kind, status: 'pass', command: 'node --test', executed_at: new Date().toISOString(),
+    kind, status: 'pass', command: sequenceCommand, executed_at: new Date().toISOString(),
     git_context: { head_sha: 'abc123' }, artifact_check: { status: 'verified' },
     observation_check: { status: 'recorded' }, content_binding: { schema_version: '0.1.0', recorded_head_sha: 'abc123' },
     observation: { values: { test_fingerprint: 'tests-v1', validation_phase: phase, ...extra } }
@@ -447,7 +566,7 @@ test('sequence CLI persists the planned and recorded workflow through the public
     '--head', 'abc123',
     '--risk-profile', 'workflow_heavy',
     '--surface', 'core_workflow_state',
-    '--command', 'node --test',
+    '--command', sequenceCommand,
     '--test-fingerprint', 'tests-v1',
     '--json'
   ]);

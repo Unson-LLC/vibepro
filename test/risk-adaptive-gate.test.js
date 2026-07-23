@@ -201,6 +201,50 @@ test('change classifier selects workflow_heavy for cross-surface workflow change
   assert.ok(gateDagChange.risk_surfaces.includes('verification_evidence'));
   assert.ok(gateDagChange.risk_surfaces.includes('review_lifecycle'));
 
+  const reviewRepairChange = classifyChangeRisk({
+    fileGroups: {
+      source: { files: ['src/review-repair.js'] },
+      tests: { files: ['test/review-repair.test.js'] }
+    }
+  });
+  assert.ok(reviewRepairChange.risk_surfaces.includes('review_lifecycle'));
+
+  const gateReviewBoundaryChange = classifyChangeRisk({
+    storySource: {
+      title: 'Atomic gate review contract',
+      background: 'Gate evidence ownership and reviewer lifecycle must remain fail closed.'
+    },
+    fileGroups: {
+      source: { files: ['src/pr-manager.js', 'src/agent-review.js'] },
+      tests: { files: ['test/vibepro-cli.test.js'] }
+    }
+  });
+  assert.equal(gateReviewBoundaryChange.profile, 'workflow_heavy');
+
+  const gateOnlyBoundaryChange = classifyChangeRisk({
+    storySource: { title: 'Atomic gate contract', background: 'Gate orchestration remains fail closed.' },
+    fileGroups: {
+      source: { files: ['src/pr-manager.js'] },
+      tests: { files: ['test/vibepro-cli.test.js'] }
+    }
+  });
+  assert.notEqual(gateOnlyBoundaryChange.profile, 'workflow_heavy');
+
+  const validationSequenceOnlyChange = classifyChangeRisk({
+    storySource: { title: 'Validation sequencing maintenance', background: 'Keep validation ordering correct.' },
+    fileGroups: { source: { files: ['src/validation-sequencing.js'] }, tests: { files: [] } }
+  });
+  assert.ok(validationSequenceOnlyChange.risk_surfaces.includes('gate_orchestration'));
+
+  const reviewOnlyBoundaryChange = classifyChangeRisk({
+    storySource: { title: 'Review lifecycle contract', background: 'Reviewer lifecycle identity remains explicit.' },
+    fileGroups: {
+      source: { files: ['src/agent-review.js'] },
+      tests: { files: ['test/agent-review-independence.test.js'] }
+    }
+  });
+  assert.notEqual(reviewOnlyBoundaryChange.profile, 'workflow_heavy');
+
   const coreWorkflowChange = classifyChangeRisk({
     storySource: {
       title: 'Core workflow state transition hardening',
@@ -722,7 +766,7 @@ Terminal rendering has an illegal-state-representable surface plus deterministic
     '--id', 'story-risk-adaptive',
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/unit/risk-adaptive-gate.test.js',
     '--summary', 'real-byte fixture and headless replay assertion passed; invariant unit makes illegal-state unrepresentable; selected harness could not reproduce one symptom, so contradiction feedback must re-triage'
   ])).exitCode, 0);
 
@@ -768,7 +812,7 @@ The running session reads an unexpected artifact version. The deployment probe e
     '--id', 'story-risk-adaptive',
     '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/integration/risk-adaptive-gate.test.js',
     '--summary', 'version-stamp propagation evidence proves the running session reads the expected artifact version'
   ])).exitCode, 0);
 
@@ -796,6 +840,7 @@ test('pr prepare expands workflow-heavy gate DAG and blocks release without flow
   await mkdir(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'integration'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
 story_id: story-risk-adaptive
 title: FORM preflight workflow gate
@@ -819,6 +864,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   await writeFile(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start', 'route.ts'), 'export async function POST(){ return Response.json({ legacy: "v1" }); }\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
+  await writeFile(path.join(repo, 'test', 'integration', 'workflow-validation.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("workflow validation", () => assert.equal(true, true));\n');
 
   const freshPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
   assert.equal(freshPrepare.exitCode, 0);
@@ -830,9 +876,9 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
-    '--kind', 'unit',
+    '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
     '--summary', 'targeted validation passed',
     '--artifact', '.vibepro/qa/sequence-status.json',
     '--target', 'src/lib/services/formProjectStartService.ts',
@@ -861,7 +907,8 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--head', freshHead,
     '--risk-profile', 'workflow_heavy',
     ...freshSequence.plan.risk_surfaces.flatMap((surface) => ['--surface', surface]),
-    '--command', 'node --test',
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
+    '--command', 'node --test test/integration/workflow-validation.test.js',
     '--test-fingerprint', 'fresh-tests-v1',
     '--evidence', canonicalEvidence,
     '--json'
@@ -873,7 +920,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--phase', 'targeted_validation',
     '--head', freshHead,
-    '--command', 'node --test',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
     '--test-fingerprint', 'fresh-tests-v1',
     '--evidence', canonicalEvidence,
     '--json'
@@ -898,28 +945,30 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
     '--status', 'pass', '--summary', 'aggregate workflow boundary passed',
     '--inspection-summary', `inspected aggregate boundary; risk_surfaces=${freshSequence.plan.preflight_surfaces.slice().sort().join(',')}`,
-    '--inspection-input', 'src/lib/services/formProjectStartService.ts',
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
     '--judgment-delta', 'unverified aggregate workflow boundary became verified',
     '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'boundary-reviewer',
     '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative,
     '--strict-head-binding', '--strict-head-reason', 'validation preflight binds to the planned head'
   ])).exitCode, 0);
   const preflightReviewEvidence = '.vibepro/reviews/story-risk-adaptive/architecture_spec/review-result-architecture_boundary.json';
-  assert.equal((await runCli([
+  let preflightSequenceStderr = '';
+  const preflightSequence = await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'preflight_review',
-    '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
     , '--source', 'agent_review', '--evidence', preflightReviewEvidence
-  ])).exitCode, 0);
+  ], { stderr: { write: (chunk) => { preflightSequenceStderr += chunk; } } });
+  assert.equal(preflightSequence.exitCode, 0, preflightSequenceStderr);
   assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'code_frozen',
-    '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
   ])).exitCode, 0);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
     '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
     '--summary', 'expensive validation passed after code freeze',
     '--artifact', '.vibepro/qa/sequence-status.json',
     '--target', 'src/lib/services/formProjectStartService.ts',
@@ -929,7 +978,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   ])).exitCode, 0);
   assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'expensive_verification',
-    '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1', '--json'
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
     , '--evidence', canonicalEvidence
   ])).exitCode, 0);
   assert.equal((await runCli([
@@ -958,7 +1007,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   let finalSequenceStderr = '';
   const finalSequence = await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'final_review',
-    '--head', freshHead, '--command', 'node --test', '--test-fingerprint', 'fresh-tests-v1',
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1',
     '--source', 'agent_review', '--evidence', '.vibepro/reviews/story-risk-adaptive/implementation/review-result-runtime_contract.json', '--json'
   ], { stderr: { write: (chunk) => { finalSequenceStderr += chunk; } } });
   assert.equal(finalSequence.exitCode, 0, finalSequenceStderr);
@@ -977,7 +1026,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--head', 'persisted-light-head',
     '--risk-profile', 'light',
-    '--command', 'node --test',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
     '--test-fingerprint', 'tests-v1',
     '--evidence', '.vibepro/qa/targeted.json',
     '--json'
@@ -1018,7 +1067,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(reconciledSequence.phases.targeted_validation.status, 'invalidated');
   assert.equal((await runCli([
     'verify', 'record', repo,
-    '--id', 'story-risk-adaptive', '--kind', 'unit', '--status', 'pass', '--command', 'node --test',
+    '--id', 'story-risk-adaptive', '--kind', 'unit', '--status', 'pass', '--command', 'node --test test/risk-adaptive-gate.test.js',
     '--summary', 'targeted validation passed after workflow change',
     '--artifact', '.vibepro/qa/sequence-status.json',
     '--target', 'src/lib/services/formProjectStartService.ts',
@@ -1030,7 +1079,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--phase', 'targeted_validation',
     '--head', currentHead,
-    '--command', 'node --test',
+    '--command', 'node --test test/risk-adaptive-gate.test.js',
     '--test-fingerprint', 'tests-v1',
     '--evidence', canonicalEvidence,
     '--json'
@@ -1047,7 +1096,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'needs_evidence');
   const spineGate = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.equal(spineGate.status, 'needs_evidence');
-  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'needs_evidence'), true);
+  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'passed'), true);
   assert.equal(spineGate.subchecks.some((check) => check.id === 'done_evidence' && check.status === 'needs_evidence'), true);
   const failureModeGate = gateDag.nodes.find((node) => node.id === 'gate:failure_mode_coverage');
   assert.equal(failureModeGate.status, 'missing_coverage');
@@ -1060,7 +1109,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-risk-adaptive\/\]\(\.vibepro\/pr\/story-risk-adaptive\/\)/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
-  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'needs_evidence');
+  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
 
   const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
@@ -1090,7 +1139,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/e2e/risk-adaptive-gate.spec.js',
     '--summary', 'Generic CLI test was mislabeled as E2E'
   ])).exitCode, 0);
 
@@ -1170,12 +1219,20 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   ]);
   const recoveryRecordCommand = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands
     .find((command) => command.startsWith('vibepro review record'));
+  const recoveryCommands = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands;
+  const recoveryStartIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review start'));
+  const recoveryCloseIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review close'));
+  const recoveryRecordIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review record'));
   assert.ok(recoveryRecordCommand);
+  assert.equal(recoveryStartIndex < recoveryCloseIndex && recoveryCloseIndex < recoveryRecordIndex, true);
+  assert.match(recoveryCommands[recoveryStartIndex], /--agent-thread-id '<replacement-agent-thread-id>'.*--agent-session-id '<replacement-agent-session-id>'/);
+  assert.match(recoveryCommands[recoveryCloseIndex], /--agent-id '<replacement-agent-id>'.*--close-reason completed.*--close-evidence '<replacement-agent-close-evidence>'/);
+  assert.match(recoveryRecordCommand, /--agent-thread-id '<replacement-agent-thread-id>'.*--agent-session-id '<replacement-agent-session-id>'.*--implementation-session-id '<implementation-session-id>'.*--reviewer-identity separate_session/);
   assert.match(recoveryRecordCommand, /--inspection-summary "<inspection-summary>"/);
-  assert.match(recoveryRecordCommand, /--inspection-evidence <inspection-evidence>/);
-  assert.match(recoveryRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recoveryRecordCommand, /--inspection-evidence '<inspection-evidence>'/);
+  assert.match(recoveryRecordCommand, /--inspection-input '<inspection-input>'/);
   assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
-  assert.match(recoveryRecordCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recoveryRecordCommand, /--status '<pass\|needs_changes\|block>'/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
     'gate'
   ]);

@@ -3,6 +3,8 @@ import { mkdtemp, readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+
+import { buildAgentReviewRecoveryCommands, buildReviewRecordCommandTemplate } from '../src/pr-manager.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -240,8 +242,8 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
   assert.ok(guidelinesIdx < instructionsIdx, 'Investigation Guidelines must come before Instructions');
   assert.ok(content.includes(INVESTIGATION_GUIDELINES_BLOCK), 'block must be interpolated verbatim');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
-  assert.match(content, /--inspection-evidence <inspection-evidence>/);
-  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--inspection-evidence "<inspection-evidence>"/);
+  assert.match(content, /--inspection-input "<ref>"/);
   assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);
@@ -258,8 +260,8 @@ test('parallel dispatch record command and prompt include inspection fields', as
   const dispatchPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md');
   const content = await readFile(dispatchPath, 'utf8');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
-  assert.match(content, /--inspection-evidence <inspection-evidence>/);
-  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--inspection-evidence "<inspection-evidence>"/);
+  assert.match(content, /--inspection-input "<ref>"/);
   assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);
@@ -269,6 +271,38 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /generated `.vibepro` artifact alone is not a content surface/i);
   assert.match(content, /Do not add `--strict-head-binding` unless making a deliberate CLI override/i);
   assert.match(content, /`--strict-head-reason` is required/i);
+});
+
+test('architecture boundary request and dispatch emit the complete aggregate inspection surface', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'architecture_spec',
+    roles: ['architecture_boundary'],
+    language: 'en'
+  });
+  for (const fileName of ['review-request-architecture_boundary.md', 'parallel-dispatch.md']) {
+    const content = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'architecture_spec', fileName), 'utf8');
+    assert.match(content, /--inspection-input "<design-story-spec-path>"/);
+    assert.match(content, /--inspection-input "<runtime-source-path>"/);
+    assert.match(content, /--inspection-input "<test-path>"/);
+  }
+});
+
+test('PR readiness recovery emits the complete aggregate inspection surface', () => {
+  const commands = buildAgentReviewRecoveryCommands({
+    storyId: 'story-test',
+    stage: 'architecture_spec',
+    role: 'architecture_boundary',
+    recoveryKind: 'missing',
+    lifecycleRecovery: null
+  });
+  assert.match(commands[0], /review prepare .*--stage architecture_spec.*--role architecture_boundary/);
+  const command = commands.find((item) => item.startsWith('vibepro review record'));
+  assert.ok(command, 'PR recovery output must contain a record command');
+  assert.match(command, /--inspection-input '<design-story-spec-path>'/);
+  assert.match(command, /--inspection-input '<runtime-source-path>'/);
+  assert.match(command, /--inspection-input '<test-path>'/);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
@@ -322,6 +356,43 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
   assert.equal(review.inspection.evidence, 'test/foo.test.js');
   assert.deepEqual(review.inspection.inputs, ['src/foo.js', 'test/foo.test.js']);
   assert.deepEqual(review.judgment_delta, ['generic gate pass -> accepted after source and focused test inspection']);
+});
+
+test('recordAgentReview collects the result after an explicitly closed lifecycle', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentId: 'task-test-1',
+    closeReason: 'completed',
+    closeEvidence: 'test/review-inspection-first.test.js'
+  });
+
+  await recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'closed lifecycle result collection regression',
+    inspectionEvidence: 'test/review-inspection-first.test.js',
+    inspectionInputs: ['src/agent-review.js', 'test/review-inspection-first.test.js'],
+    judgmentDeltas: ['result uncollected -> collected after review record'],
+    agentSystem: 'claude_code',
+    executionMode: 'parallel_subagent',
+    agentId: 'task-test-1',
+    agentClosed: true,
+    agentCloseEvidence: 'test/review-inspection-first.test.js'
+  });
+
+  const lifecycle = JSON.parse(await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'lifecycle.json'), 'utf8'));
+  const entry = lifecycle.entries.find((item) => item.agent_id === 'task-test-1');
+  assert.equal(entry.status, 'closed');
+  assert.equal(entry.result_status, 'pass');
+  assert.equal(entry.result_artifact, '.vibepro/reviews/story-test/gate/review-result-gate_evidence.json');
 });
 
 test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {

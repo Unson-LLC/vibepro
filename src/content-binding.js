@@ -212,5 +212,6 @@ function summarizeContentBinding(binding, evaluation, currentGitContext) {
 }
 
 function isInternalWorkspacePath(filePath) {
-  return String(filePath ?? '').startsWith('.vibepro/');
+  const normalized = String(filePath ?? '');
+  return normalized !== '.vibepro/config.json' && normalized.startsWith('.vibepro/');
 }

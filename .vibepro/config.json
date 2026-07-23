@@ -307,6 +307,30 @@
         "max_subagent_count": 22,
         "max_agent_consumption_ms": null,
         "amendment_reason": "Historical repair and stale lifecycle time predates the final frozen HEAD and exhausted duration and aggregate agent-consumption limits. User explicitly authorized merge completion on 2026-07-22. Disable only historical time dimensions and allow only the current-HEAD architecture-boundary, gate-evidence, and release-risk lifecycles plus fresh-context adjudication with lightweight agents; dispatch-count limits remain enforced, and default Story budgets remain unchanged."
+      },
+      "story-vibepro-atomic-scope-review-contract": {
+        "max_subagent_count": 274,
+        "max_agent_consumption_ms": 227000000,
+        "max_review_dispatches_by_role": {
+          "architecture_boundary": 64,
+          "e2e_ux": 24,
+          "gate_coverage": 24,
+          "gate_evidence": 8,
+          "human_usability": 4,
+          "network_runtime": 4,
+          "regression_risk": 56,
+          "release_risk": 8,
+          "runtime_contract": 24,
+          "spec_consistency": 32,
+          "unit_integration": 9,
+          "ux_completion": 14
+        },
+        "amendment_reason": "User authorized immediate completion on 2026-07-22. Exact-HEAD runtime_contract, gate_evidence, and release_risk reviews found stale or malformed coordinator artifacts, then exceeded the 600000 ms lifecycle while those findings were repaired; validation sequencing also requires one aggregate architecture_boundary preflight. Add four final review slots plus one architecture-only replacement because the first passing architecture lifecycle omitted agent session identity and correctly failed separate-session binding. The replacement must bind agent session ID at review start. After the final code-freeze validation, the remaining gate_evidence and release_risk authorizations correctly failed closed because both role budgets were exhausted; add exactly one provenance-recovery dispatch for each role. Authorization also reserves one subagent unit per role even when the coordinator reuses one already independent Luna high reviewer, so reserve exactly two accounting units. The resumed reviewer then exhausted the remaining agent-consumption allowance before authorization; add 1200000 ms for this bounded final review only. The final validation sequence requires one current-HEAD architecture_boundary preflight after the budget commit invalidated the prior strict-HEAD review, so add exactly one architecture-only dispatch and keep every other role frozen. Post-freeze E2E correctly changed the verification fingerprint, so the stale final runtime review could not be reused and the role budget failed closed at 22/22. Reserve one runtime_contract dispatch, one replacement architecture preflight for the resulting budget-only HEAD, and two accounting units for final gate/adjudication closure; add 2400000 ms bounded consumption without widening other role limits. Final current-head preparation exposed five older strict review artifacts that the artifact-consistency gate still requires independently of the final gate reviews. Reserve one bounded replacement for spec consistency, regression risk, unit integration, UX completion, network runtime, and human usability, plus one post-amendment architecture preflight, runtime final, gate evidence, release risk, and independent correction adjudication cycle. Add twelve accounting units and 6000000 ms; no waiver or unrelated role expansion is permitted."
+      },
+      "story-vibepro-trusted-delivery-efficiency-guardrail": {
+        "max_subagent_count": 21,
+        "max_agent_consumption_ms": 3300000,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization and 19 recorded lifecycle runs exhausted the prior Story-local allowance before final closure. User explicitly authorized merge completion on 2026-07-22. Allow only the two current-HEAD gate-evidence and release-risk lifecycles plus fresh-context evidence and judgment adjudication, collected in one lightweight provider run with one bounded 600000 ms consumption allowance; no other review dispatch is permitted, and default Story budgets remain unchanged."
       }
     }
   },
@@ -409,6 +433,18 @@
         "started_at": "2026-07-15",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-atomic-scope-review-contract",
+        "title": "atomic単一PRを現HEADのreview ownershipと検証証跡でfail-closedに裁定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "platform"
       },
       {
         "story_id": "story-vibepro-story-run-portfolio-controller",

@@ -26,7 +26,6 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   if (!ALLOWED_STATUSES.has(options.status)) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
-
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
   await assertManagedWorktreeCommandAllowed(root, {
@@ -46,6 +45,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     status: options.status
   });
   const observation = buildObservation(options, artifactObservedValues);
+  assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
@@ -73,6 +73,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
       artifact_check: artifactCheck,
+      artifact_observed_values: artifactObservedValues,
       observation,
       observation_check: observationCheck,
       executed_at: options.executedAt ?? new Date().toISOString(),
@@ -123,6 +124,72 @@ function resolveRecorderLineage(options, recorderAuthority, dispatchId) {
     : createRunLineageEnvelope({ ...authority, dispatch_id: authority.dispatch_id ?? dispatchId });
   assertRunLineageBinding(lineage, recorderAuthority);
   return lineage;
+}
+
+export function assertCommandMatchesVerificationKind(kind, command, status, observation = null, artifactCheck = null, artifactObservedValues = {}) {
+  if (!PASS_STATUSES.has(status)) return;
+  const normalized = String(command ?? '').trim();
+  if (!normalized) {
+    throw new Error(`passing ${kind} verification evidence requires --command <executed-command>`);
+  }
+  let quote = null;
+  for (let index = 0; index < normalized.length; index += 1) {
+    const char = normalized[index];
+    if (char === '`' || (char === '$' && quote !== "'")) {
+      throw new Error(`passing ${kind} verification evidence requires a single executable command without shell substitution: ${normalized}`);
+    }
+    if (char === '\\' && quote !== "'") {
+      index += 1;
+      continue;
+    }
+    if (quote) {
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      continue;
+    }
+    if (';&|<>\n\r'.includes(char)) {
+      throw new Error(`passing ${kind} verification evidence requires a single executable command without shell control operators: ${normalized}`);
+    }
+  }
+  if (quote) {
+    throw new Error(`passing ${kind} verification evidence requires a single executable command without an unterminated quote: ${normalized}`);
+  }
+  const inspectionOnly = /^(?:git\s+(?:diff|show|status|log|ls-files)|(?:rg|grep|find|ls)\b)/i.test(normalized);
+  const bareNativeTest = /^node\s+--test\s*$/i.test(normalized);
+  const observedTestCount = ['numTotalTests', 'numPassedTests']
+    .map((key) => Number(artifactObservedValues?.[key]))
+    .find((value) => Number.isFinite(value) && value > 0);
+  const observedTapTestCount = ['tests', 'pass']
+    .map((key) => Number(artifactObservedValues?.[key]))
+    .find((value) => Number.isFinite(value) && value > 0);
+  const specializedNativeTest = /(?:^|[\s/_.-])(?:e2e|integration)(?:[\s/_.-]|$)/i.test(normalized);
+  const nativeTestCheck = (!specializedNativeTest
+    && /^node\s+--test\b(?=[^\r\n]*(?:--test-name-pattern(?:=|\s)|\s(?!-)\S+))/i.test(normalized))
+    || (bareNativeTest && artifactCheck?.format === 'vitest_jest' && observedTestCount !== undefined)
+    || (bareNativeTest && artifactCheck?.format === 'tap' && observedTapTestCount !== undefined);
+  const genericUnitCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test|check|unit)\b|npx\s+(?:vitest|jest)\b|pytest\b|cargo\s+test\b|go\s+test\b|make\s+(?:test|check|unit)\b)/i;
+  const integrationCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test:)?integration\b|node\s+--test\b[^\r\n]*\bintegration\b|npx\s+(?:vitest|jest)\b[^\r\n]*\bintegration\b|pytest\b[^\r\n]*\bintegration\b|make\s+integration\b)/i;
+  const e2eCheck = /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:test:)?e2e\b|node\s+--test\b[^\r\n]*\be2e\b|npx\s+(?:playwright|cypress)\b|make\s+e2e\b)/i;
+  const kindChecks = {
+    unit: { test: (value) => genericUnitCheck.test(value) || nativeTestCheck },
+    integration: integrationCheck,
+    e2e: e2eCheck,
+    typecheck: /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:typecheck|check|lint)\b|npx\s+(?:tsc|eslint)\b|(?:tsc|eslint)\b|cargo\s+check\b|go\s+vet\b|make\s+(?:typecheck|check|lint)\b)/i,
+    build: /^(?:(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+(?:(?:[\w-]+:)*build(?:[:][\w-]+)*|compile|typecheck)\b|npx\s+(?:tsc|vite|next)\b|(?:tsc|vite|next)(?:\s+build)?\b|cargo\s+build\b|go\s+build\b|make(?:\s+(?:build|compile))?\b|docker\s+(?:build|compose\b.*\bbuild)\b)/i
+  };
+  const verifiedCiTranscript = /^CI\s+[^:]+:\s+https?:\/\//i.test(normalized)
+    && artifactCheck?.status === 'verified'
+    && artifactCheck?.format === 'ci_import'
+    && Boolean(observation?.values?.head_sha);
+  const executableCheck = verifiedCiTranscript || kindChecks[kind]?.test(normalized) === true;
+  if (inspectionOnly || !executableCheck) {
+    throw new Error(
+      `verify record --kind ${kind} requires a recognized executable ${kind} check; inspection-only or arbitrary command is not valid passing evidence: ${normalized}`
+    );
+  }
 }
 
 export function renderVerificationEvidenceSummary(result) {
@@ -394,6 +461,7 @@ function extractArtifactObservedValues(data, parsed) {
     values[key] = String(value);
   };
   if (parsed.format === 'vitest_jest') {
+    record('numTotalTests', data.numTotalTests);
     record('numFailedTests', data.numFailedTests);
     record('numPassedTests', data.numPassedTests);
     record('success', data.success);
@@ -413,6 +481,12 @@ function extractArtifactObservedValues(data, parsed) {
     record('tests', data.tests);
     record('pass', data.pass);
     record('fail', data.fail);
+  }
+  if (parsed.format === 'ci_import') {
+    record('check', data.observed?.check);
+    record('conclusion', data.observed?.conclusion);
+    record('run_url', data.observed?.run_url);
+    record('head_sha', data.head_sha);
   }
   return values;
 }
@@ -504,6 +578,21 @@ function parseArtifactOutcome(raw) {
     return parseTapArtifactOutcome(raw);
   }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+  if (data.schema_version === '0.1.0'
+    && data.status === 'pass'
+    && data.exit_code === 0
+    && typeof data.head_sha === 'string'
+    && data.head_sha.length > 0
+    && data.observed?.head_sha === data.head_sha
+    && String(data.ci_check?.status).toUpperCase() === 'COMPLETED'
+    && String(data.ci_check?.conclusion).toUpperCase() === 'SUCCESS') {
+    return {
+      format: 'ci_import',
+      outcome: 'pass',
+      detail: `check=${data.observed?.check ?? data.ci_check?.name ?? 'unknown'}, head_sha=${data.head_sha}`,
+      data
+    };
+  }
   if (typeof data.success === 'boolean' || typeof data.numFailedTests === 'number') {
     const failed = data.success === false || (data.numFailedTests ?? 0) > 0;
     return {

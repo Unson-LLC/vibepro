@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getIncompleteReviewRoleReason } from './usage-report.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { resolveArtifactRoute } from './artifact-routing.js';
+import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 
 export const REPAIR_ACTIONS = [
   'run_review',
@@ -77,7 +78,8 @@ export function renderReviewRepair(result) {
   const header = result.dry_run ? '# Review Repair Plan (dry-run)' : '# Review Repair Plan';
   const rows = result.candidates.length
     ? result.candidates.map((candidate) => (
-        `- ${candidate.story_id} ${candidate.stage}:${candidate.role}: ${candidate.action} (${candidate.reason})`
+        `- ${candidate.story_id} ${candidate.stage}:${candidate.role}: ${candidate.action} (${candidate.reason})\n`
+        + candidate.next_commands.map((command) => `  - ${command}`).join('\n')
       )).join('\n')
     : '- no repair candidates';
   const plans = result.plans.length
@@ -131,40 +133,45 @@ function buildRepairCommands({ storyId, stage, role, action }) {
   const roleName = getRoleName(role);
   const latestLifecycle = getLatestLifecycle(role);
   const closeSelector = getCloseSelector(role, action);
-  const replacementFor = latestLifecycle?.lifecycle_id ?? '<previous-lifecycle-id>';
-  const replacementSystem = latestLifecycle?.agent_system ?? '<codex|claude_code>';
+  const replacementFor = latestLifecycle?.lifecycle_id ?? '"<previous-lifecycle-id>"';
+  const replacementSystem = latestLifecycle?.agent_system ?? '"<codex|claude_code>"';
   const startCommand = [
     `vibepro review start . --id ${storyId} --stage ${stage} --role ${roleName}`,
-    `--agent-system ${action === 'replace_timed_out_review' ? replacementSystem : '<codex|claude_code>'}`,
-    '--agent-id "<subagent-id>"',
+    `--agent-system ${action === 'replace_timed_out_review' ? replacementSystem : '"<codex|claude_code>"'}`,
+    '--agent-id "<replacement-agent-id>"',
+    '--agent-thread-id "<replacement-agent-thread-id>"',
+    '--agent-session-id "<replacement-agent-session-id>"',
     '--timeout-ms 600000',
-    action === 'replace_timed_out_review' ? `--replacement-for ${replacementFor}` : null
+    ['replace_timed_out_review', 'close_and_rerecord'].includes(action) ? `--replacement-for ${replacementFor}` : null
   ].filter(Boolean).join(' ');
   const commands = [];
   if (action === 'replace_timed_out_review' || action === 'close_and_rerecord') {
     commands.push(
-      `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} ${closeSelector} --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'} --close-evidence <close-evidence>`
+      `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} ${closeSelector} --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'} --close-evidence "<close-evidence>"`
     );
   }
   commands.push(
     `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${roleName}`,
     startCommand,
-    `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} --agent-id "<subagent-id>" --close-reason completed --close-evidence <close-evidence>`,
+    `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} --agent-id "<replacement-agent-id>" --close-reason completed --close-evidence "<replacement-agent-close-evidence>"`,
     [
       `vibepro review record . --id ${storyId} --stage ${stage} --role ${roleName}`,
-      '--status <pass|needs_changes|block>',
+      '--status "<pass|needs_changes|block>"',
       '--summary "<summary>"',
       '--inspection-summary "<inspection-summary>"',
-      '--inspection-evidence <inspection-evidence>',
-      '--inspection-input <inspection-input>',
+      '--inspection-evidence "<inspection-evidence>"',
+      ...reviewInspectionInputPlaceholders(stage, roleName).map((input) => `--inspection-input "${input}"`),
       '--judgment-delta "<initial judgment -> final judgment because evidence>"',
-      '--agent-system <codex|claude_code>',
+      '--agent-system "<codex|claude_code>"',
       '--execution-mode parallel_subagent',
-      '--agent-id "<subagent-id>"',
-      '--agent-thread-id "<subagent-thread-id>"',
-      '--agent-transcript <artifact>',
+      '--agent-id "<replacement-agent-id>"',
+      '--agent-thread-id "<replacement-agent-thread-id>"',
+      '--agent-session-id "<replacement-agent-session-id>"',
+      '--implementation-session-id "<implementation-session-id>"',
+      '--reviewer-identity separate_session',
+      '--agent-transcript "<replacement-agent-transcript>"',
       '--agent-closed',
-      '--agent-close-evidence <close-evidence>'
+      '--agent-close-evidence "<replacement-agent-close-evidence>"'
     ].join(' ')
   );
   return commands;
@@ -176,6 +183,8 @@ function hasTimedOutLifecycle(role) {
 }
 
 function hasOpenAgentLifecycle(role) {
+  const latest = role?.lifecycle?.latest;
+  if (latest?.status === 'running' || latest?.effective_status === 'running') return true;
   return Boolean(role?.agent_provenance && role.agent_provenance.lifecycle?.agent_closed !== true);
 }
 
@@ -190,9 +199,6 @@ function getLatestLifecycle(role) {
 function getCloseSelector(role, action) {
   if (typeof role === 'string') return '--agent-id "<previous-subagent-id>"';
   const latestLifecycle = getLatestLifecycle(role);
-  if (action === 'close_and_rerecord' && role?.agent_provenance?.agent_id) {
-    return `--agent-id "${role.agent_provenance.agent_id}"`;
-  }
   if (latestLifecycle?.agent_id) return `--agent-id "${latestLifecycle.agent_id}"`;
   if (latestLifecycle?.lifecycle_id) return `--lifecycle-id ${latestLifecycle.lifecycle_id}`;
   if (role?.agent_provenance?.agent_id) return `--agent-id "${role.agent_provenance.agent_id}"`;

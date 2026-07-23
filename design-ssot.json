@@ -3,6 +3,65 @@
   "model": "vibepro-design-ssot-registry-v1",
   "design_roots": [
     {
+      "id": "vibepro-atomic-scope-review-contract",
+      "title": "VibePro Atomic Scope Review Contract",
+      "root_doc": "docs/architecture/vibepro-atomic-scope-review-contract.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Typed atomic single-PR scope acceptance, session-proven current-head review ownership, and Gate DAG reconciliation",
+      "owned_surfaces": [
+        "vibepro pr prepare atomic scope evaluation",
+        "PR split plan",
+        "PR scope judgment and split resolution gates"
+      ],
+      "required_child_kinds": ["story", "spec"],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-public-discovery-live-targets",
       "title": "VibePro Public Discovery Live Targets",
       "root_doc": "docs/architecture/vibepro-public-discovery-live-targets.md",

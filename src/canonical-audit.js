@@ -266,7 +266,17 @@ function summarizeScopeForLlm(scope) {
     route: scope.route,
     changed_file_count: scope.changed_file_count,
     changed_files: summarizeStringList(scope.changed_files, 20),
-    notes: summarizeStringList(scope.notes, 5)
+    notes: summarizeStringList(scope.notes, 5),
+    reasons: summarizeStringList(scope.reasons, 5),
+    signals: Array.isArray(scope.signals) ? scope.signals.slice(0, 10).map((signal) => compactObject({
+      id: signal.id,
+      unsafe_for_atomic_override: signal.unsafe_for_atomic_override,
+      referenced_work_items: summarizeStringList(signal.referenced_work_items, 10),
+      foreign_work_items: summarizeStringList(signal.foreign_work_items, 10),
+      accepted_current_story_lineage: Array.isArray(signal.accepted_current_story_lineage)
+        ? signal.accepted_current_story_lineage.slice(0, 5)
+        : undefined
+    })) : undefined
   });
 }
 

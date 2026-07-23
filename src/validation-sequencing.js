@@ -3,7 +3,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir } from './workspace.js';
+import { assertCommandMatchesVerificationKind } from './verification-evidence.js';
 import { getAgentReviewStatus } from './agent-review.js';
+import {
+  AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS,
+  AGGREGATE_REVIEW
+} from './review-inspection-inputs.js';
 
 export const VALIDATION_SEQUENCE_MODEL = 'vibepro-risk-adaptive-validation-sequencing-v1';
 export const VALIDATION_PHASES = [
@@ -26,8 +31,6 @@ const PREFLIGHT_SENSITIVE_SURFACES = new Set([
 // Preflight is one aggregate architecture-boundary review. The review prompt is
 // scoped by every sensitive surface below, rather than inventing per-surface
 // roles that the canonical Agent Review lifecycle cannot produce.
-const PREFLIGHT_REVIEW = { stage: 'architecture_spec', role: 'architecture_boundary' };
-
 const TERMINAL_PREFLIGHT_DISPOSITIONS = new Set([
   'accepted',
   'rejected',
@@ -37,11 +40,12 @@ const TERMINAL_PREFLIGHT_DISPOSITIONS = new Set([
   'resolved'
 ]);
 
-export function buildValidationSequencePlan({ storyId, riskProfile = 'light', riskSurfaces = [] } = {}) {
+export function buildValidationSequencePlan({ storyId, riskProfile = 'light', riskSurfaces = [], inspectionInputs = [] } = {}) {
   const preflightSurfaces = [...new Set(riskSurfaces.filter((surface) => PREFLIGHT_SENSITIVE_SURFACES.has(surface)))];
   const boundarySensitive = preflightSurfaces.length > 0;
   const required = riskProfile === 'workflow_heavy' || riskProfile === 'api_contract' || boundarySensitive;
-  const reviews = required ? [{ ...PREFLIGHT_REVIEW, surfaces: preflightSurfaces }] : [];
+  const reviews = required ? [{ ...AGGREGATE_REVIEW, surfaces: preflightSurfaces }] : [];
+  const requiredInspectionInputs = normalizeInspectionInputs(inspectionInputs);
   return {
     model: VALIDATION_SEQUENCE_MODEL,
     story_id: storyId ?? null,
@@ -51,6 +55,7 @@ export function buildValidationSequencePlan({ storyId, riskProfile = 'light', ri
     preflight_roles: reviews.map((review) => review.role),
     preflight_reviews: reviews,
     preflight_surfaces: preflightSurfaces,
+    preflight_required_inspection_inputs: requiredInspectionInputs,
     phases: VALIDATION_PHASES
   };
 }
@@ -75,10 +80,19 @@ export function createValidationSequenceState({ plan, headSha = null, testFinger
   };
 }
 
-export function reconcileValidationSequenceState(state, { storyId, riskProfile = 'light', riskSurfaces = [], headSha = null, reconciledAt = new Date().toISOString() } = {}) {
-  const currentPlan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces });
+export function reconcileValidationSequenceState(state, { storyId, riskProfile = 'light', riskSurfaces = [], inspectionInputs = [], headSha = null, reconciledAt = new Date().toISOString() } = {}) {
+  const currentPlan = buildValidationSequencePlan({ storyId, riskProfile, riskSurfaces, inspectionInputs });
   if (!state) return createValidationSequenceState({ plan: currentPlan, headSha, createdAt: reconciledAt });
-  if (samePlan(state.plan, currentPlan)) return state;
+  if (samePlan(state.plan, currentPlan)) {
+    if (!headSha || state.proposed_binding?.head_sha === headSha) return state;
+    const next = invalidateValidationSequence(state, {
+      changedSurfaces: ['unknown'],
+      reason: 'current HEAD differs from the persisted validation binding',
+      invalidatedAt: reconciledAt
+    });
+    next.proposed_binding = { ...next.proposed_binding, head_sha: headSha };
+    return next;
+  }
 
   const next = invalidateValidationSequence(state, {
     changedSurfaces: ['unknown'],
@@ -225,8 +239,14 @@ export async function validateValidationPhaseEvidence(repoRoot, evidencePath, { 
   const commands = Array.isArray(artifact.commands) ? artifact.commands : [];
   const canonicalVerification = artifact.schema_version === '0.1.0'
     && artifact.story_id === storyId
-    && commands.some((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status)
-      && item.git_context?.head_sha === headSha
+    && commands.some((item) => {
+      if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
+      try {
+        assertCommandMatchesVerificationKind(item.kind, item.command, item.status, item.observation, item.artifact_check, item.artifact_observed_values);
+      } catch {
+        return false;
+      }
+      return item.git_context?.head_sha === headSha
       && item.command === verificationCommand
       && item.observation?.values?.test_fingerprint === testFingerprint
       && item.observation?.values?.validation_phase === phase
@@ -236,14 +256,21 @@ export async function validateValidationPhaseEvidence(repoRoot, evidencePath, { 
       && item.observation_check?.status === 'recorded'
       && item.content_binding?.schema_version === '0.1.0'
       && item.content_binding?.recorded_head_sha === headSha
-      && (!notBefore || Date.parse(item.executed_at) >= Date.parse(notBefore)));
+      && (!notBefore || Date.parse(item.executed_at) >= Date.parse(notBefore));
+    });
   if (!canonicalVerification) {
     throw new Error('phase evidence must be passing canonical evidence bound to the Story, HEAD, verification command, and test fingerprint');
   }
   return { status: 'verified', artifact: path.relative(root, absolute).replaceAll('\\', '/') };
 }
 
-export async function validatePreflightReviewEvidence(repoRoot, evidencePath, { storyId, headSha, roles = [], reviews = [] } = {}) {
+export async function validatePreflightReviewEvidence(repoRoot, evidencePath, {
+  storyId,
+  headSha,
+  roles = [],
+  reviews = [],
+  requiredInspectionInputs = []
+} = {}) {
   const provenance = await readFinalReviewProvenance(repoRoot, evidencePath);
   if (provenance.story_id !== storyId || provenance.head_sha !== headSha
     || provenance.status !== 'pass' || !roles.includes(provenance.role)) {
@@ -255,7 +282,39 @@ export async function validatePreflightReviewEvidence(repoRoot, evidencePath, { 
   if (!planned || !provenance.inspection_summary.includes(coverageMarker)) {
     throw new Error(`preflight_review requires canonical inspection coverage metadata: ${coverageMarker}`);
   }
+  validatePreflightInspectionInputs(provenance.inspection_inputs, requiredInspectionInputs);
   return { evidenceValidation: { status: 'verified' }, reviewProvenance: provenance };
+}
+
+export function validatePreflightInspectionInputs(inputs = [], requiredInputs = []) {
+  const normalized = normalizeInspectionInputs(inputs);
+  const hasDesignInput = normalized.some((input) => /^(docs\/management\/stories|docs\/architecture|docs\/specs)(?:\/|$)/.test(input));
+  const hasRuntimeInput = normalized.some((input) => /^(src|bin|lib|app|apps|packages)(?:\/|$)/.test(input));
+  const hasTestInput = normalized.some((input) => /^(test|tests|__tests__)(?:\/|$)/.test(input) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(input));
+  if (!hasDesignInput || !hasRuntimeInput || !hasTestInput) {
+    throw new Error('preflight_review inspection inputs must cover design, runtime, and test surfaces; generated review artifacts or marker text alone are insufficient');
+  }
+  const required = normalizeInspectionInputs(requiredInputs);
+  if (required.length === 0) {
+    throw new Error('preflight_review requires a planned current changed-path inspection union; re-run sequence plan with --inspection-input for every changed path');
+  }
+  const uncovered = required.filter((requiredPath) => (
+    !normalized.some((input) => inspectionInputCoversPath(input, requiredPath))
+  ));
+  if (uncovered.length > 0) {
+    throw new Error(`preflight_review inspection inputs do not cover every planned changed path: ${uncovered.join(', ')}`);
+  }
+  return normalized;
+}
+
+function normalizeInspectionInputs(inputs = []) {
+  return [...new Set(inputs.map((input) => (
+    String(input).trim().replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '')
+  )))].filter(Boolean);
+}
+
+function inspectionInputCoversPath(input, requiredPath) {
+  return input === requiredPath || requiredPath.startsWith(`${input}/`);
 }
 
 function assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId, headSha }) {
@@ -265,6 +324,9 @@ function assertFinalReviewProvenance({ source, evidence, reviewProvenance, story
   if (reviewProvenance.status !== 'pass') throw new Error('final_review Agent Review evidence must have status=pass');
   if (reviewProvenance.story_id !== storyId) throw new Error('final_review Agent Review evidence must match the validation Story');
   if (reviewProvenance.head_sha !== headSha) throw new Error('final_review Agent Review evidence must bind to the frozen HEAD');
+  if (reviewProvenance.stage !== 'implementation' || reviewProvenance.role !== 'runtime_contract') {
+    throw new Error('final_review requires implementation:runtime_contract Agent Review provenance');
+  }
   if (!['codex', 'claude_code'].includes(reviewProvenance.system)
     || reviewProvenance.execution_mode !== 'parallel_subagent'
     || reviewProvenance.evidence_strength !== 'strong'
@@ -291,7 +353,7 @@ export function invalidateValidationSequence(state, { changedSurfaces = [], chan
   const next = structuredClone(state);
   const derivedSurfaces = changedFiles.length > 0
     ? changedFiles.map(classifyChangedFileSurface)
-    : ['unknown'];
+    : changedSurfaces.length > 0 ? [] : ['unknown'];
   const surfaces = [...new Set([...changedSurfaces, ...derivedSurfaces])];
   const unknown = surfaces.length === 0 || surfaces.some((surface) => ['runtime_source', 'tests', 'repo_control', 'other', 'unknown'].includes(surface));
   const invalidated = unknown
@@ -337,7 +399,11 @@ export function evaluateValidationSequence(state, { currentHeadSha = null } = {}
   if (candidateHeadDrifted || completedFinalReviewDrifted) blocking.push('current_head_binding');
   if (state?.frozen_binding) {
     for (const phase of VALIDATION_PHASES) {
-      if (!sameBinding(state.frozen_binding, state?.phases?.[phase]?.binding)) blocking.push(`${phase}_binding`);
+      const phaseBinding = state?.phases?.[phase]?.binding;
+      const matchesFreeze = ['expensive_verification', 'final_review'].includes(phase)
+        ? sameFrozenIdentity(state.frozen_binding, phaseBinding)
+        : sameBinding(state.frozen_binding, phaseBinding);
+      if (!matchesFreeze) blocking.push(`${phase}_binding`);
     }
   }
   const uniqueBlocking = [...new Set(blocking)];
@@ -391,9 +457,11 @@ function assertFreezeAllowed(state, binding) {
 function buildNextRequiredAction(state, blocking) {
   if (!state?.frozen_binding && !isCompleteBinding(state?.proposed_binding)) {
     const surfaces = (state?.plan?.risk_surfaces ?? []).map((surface) => ` --surface ${surface}`).join('');
+    const inspectionInputs = (state?.plan?.preflight_required_inspection_inputs ?? [])
+      .map((input) => ` --inspection-input '${input}'`).join('');
     return {
       phase: 'plan',
-      command: `vibepro sequence plan . --id ${state.story_id} --head ${state?.proposed_binding?.head_sha ?? '<current-head>'} --risk-profile ${state?.plan?.risk_profile ?? 'light'}${surfaces} --command "<verification-command>" --test-fingerprint "<test-fingerprint>"`
+      command: `vibepro sequence plan . --id ${state.story_id} --head ${state?.proposed_binding?.head_sha ?? '<current-head>'} --risk-profile ${state?.plan?.risk_profile ?? 'light'}${surfaces}${inspectionInputs} --command "<verification-command>" --test-fingerprint "<test-fingerprint>"`
     };
   }
   if (state?.frozen_binding && blocking.includes('current_head_binding')) {
@@ -407,16 +475,22 @@ function buildNextRequiredAction(state, blocking) {
     if (['targeted_validation', 'expensive_verification'].includes(phase)) {
       const kind = phase === 'targeted_validation' ? 'unit' : 'e2e';
       const binding = state.frozen_binding ?? state.proposed_binding;
+      const command = phase === 'expensive_verification'
+        ? '<expensive-verification-command>'
+        : binding.verification_command;
       return {
         phase,
-        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(binding.verification_command)} --artifact <test-result.json> --target <tested-path> --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
-        follow_up_command: `vibepro sequence record . --id ${state.story_id} --phase ${phase} --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
+        command: `vibepro verify record . --id ${state.story_id} --kind ${kind} --status pass --command ${JSON.stringify(command)} --artifact '<test-result.json>' --target '<tested-path>' --scenario "${phase} passed" --observed test_fingerprint=${binding.test_fingerprint} --observed validation_phase=${phase} --strict-head-binding`,
+        follow_up_command: `vibepro sequence record . --id ${state.story_id} --phase ${phase} --command ${JSON.stringify(command)} --test-fingerprint ${binding.test_fingerprint} --evidence .vibepro/pr/${state.story_id}/verification-evidence.json`
       };
     }
     if (phase === 'preflight_review') {
-      const review = state.plan?.preflight_reviews?.[0] ?? PREFLIGHT_REVIEW;
+      const review = state.plan?.preflight_reviews?.[0] ?? AGGREGATE_REVIEW;
       const scope = (review.surfaces ?? []).join(',') || 'declared high-risk boundaries';
       const result = `.vibepro/reviews/${state.story_id}/${review.stage}/review-result-${review.role}.json`;
+      const inspectionInputs = state.plan?.preflight_required_inspection_inputs?.length > 0
+        ? state.plan.preflight_required_inspection_inputs
+        : AGGREGATE_INSPECTION_INPUT_PLACEHOLDERS;
       return {
         phase,
         required_review: { ...review, surfaces: review.surfaces ?? [] },
@@ -425,9 +499,9 @@ function buildNextRequiredAction(state, blocking) {
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind preflight --closes-risk "${scope}" --expected-judgment-delta "identify boundary risks before freeze" --reusable-evidence <ref>`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path>`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "aggregate boundary review passed" ${inspectionInputs.map((input) => `--inspection-input '${input}'`).join(' ')} --inspection-summary "reviewed ${scope}; risk_surfaces=${[...(review.surfaces ?? [])].sort().join(',')}" --judgment-delta "no blocking findings" --agent-system '<codex|claude_code>' --agent-id '<agent-id>' --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>'`,
           `vibepro sequence record . --id ${state.story_id} --phase preflight_review --evidence ${result}`
         ]
       };
@@ -443,9 +517,9 @@ function buildNextRequiredAction(state, blocking) {
         ordered_actions: [
           `vibepro review prepare . --id ${state.story_id} --stage ${review.stage} --role ${review.role}`,
           `vibepro review authorize . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --review-kind final --closes-risk "runtime contract regression" --expected-judgment-delta "confirm frozen release candidate" --freeze source,spec,test,review_surface`,
-          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --dispatch-authorization <authorization-id>`,
+          `vibepro review start . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --dispatch-authorization <authorization-id>`,
           `vibepro review close . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --agent-id <agent-id> --close-reason completed --close-evidence <transcript-path>`,
-          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input <reviewed-path> --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --execution-mode parallel_subagent --agent-transcript <transcript-path> --agent-closed --agent-close-evidence <transcript-path> --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
+          `vibepro review record . --id ${state.story_id} --stage ${review.stage} --role ${review.role} --status pass --summary "final current-HEAD runtime contract review passed" --inspection-input '<reviewed-path>' --inspection-summary "reviewed final frozen-HEAD runtime contract" --judgment-delta "no blocking findings" --agent-system <codex|claude_code> --agent-id <agent-id> --agent-thread-id '<agent-thread-id>' --agent-session-id '<agent-session-id>' --implementation-session-id '<implementation-session-id>' --reviewer-identity separate_session --execution-mode parallel_subagent --agent-transcript '<transcript-path>' --agent-closed --agent-close-evidence '<transcript-path>' --strict-head-binding --strict-head-reason "bind final review to the frozen release candidate"`,
           `vibepro sequence record . --id ${state.story_id} --phase final_review --source agent_review --evidence ${result}`
         ]
       };
@@ -471,14 +545,19 @@ function isPreflightClosed(preflight) {
 }
 
 function assertFrozenBinding(state, binding) {
-  if (!sameBinding(state?.frozen_binding, binding)) throw new Error('phase evidence does not match the frozen HEAD, test fingerprint, and verification command');
+  if (!sameFrozenIdentity(state?.frozen_binding, binding)) throw new Error('phase evidence does not match the frozen HEAD and test fingerprint');
 }
 
 function assertExpensiveVerificationComplete(state, binding) {
   if (state?.phases?.expensive_verification?.status !== 'passed'
-    || !sameBinding(state?.phases?.expensive_verification?.binding, binding)) {
-    throw new Error('final_review requires passed expensive_verification at the exact frozen binding');
+    || !sameFrozenIdentity(state?.phases?.expensive_verification?.binding, binding)) {
+    throw new Error('final_review requires passed expensive_verification at the frozen HEAD and test fingerprint');
   }
+}
+
+function sameFrozenIdentity(left, right) {
+  return Boolean(left?.head_sha && left.head_sha === right?.head_sha
+    && left.test_fingerprint && left.test_fingerprint === right?.test_fingerprint);
 }
 
 function sameBinding(left, right) {
@@ -498,7 +577,8 @@ function samePlan(left, right) {
     && left?.risk_profile === right?.risk_profile
     && sameStringSet(left?.risk_surfaces, right?.risk_surfaces)
     && sameStringSet(left?.preflight_roles, right?.preflight_roles)
-    && sameStringSet(left?.preflight_surfaces, right?.preflight_surfaces);
+    && sameStringSet(left?.preflight_surfaces, right?.preflight_surfaces)
+    && sameStringSet(left?.preflight_required_inspection_inputs, right?.preflight_required_inspection_inputs);
 }
 
 function sameStringSet(left = [], right = []) {

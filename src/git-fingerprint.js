@@ -42,16 +42,21 @@ export async function collectGitStatusFingerprints(repoRoot, options = {}) {
     ...USER_PATHSPEC,
     ...additionalUserExcludePaths.map((filePath) => `:(exclude,literal)${filePath}`)
   ];
-  const [statusOutput, userStatusOutput] = await Promise.all([
+  const [statusOutput, userStatusWithoutConfig, configStatusOutput] = await Promise.all([
     gitStatus(repoRoot),
-    gitStatus(repoRoot, userPathspec)
+    gitStatus(repoRoot, userPathspec),
+    gitStatus(repoRoot, ['.vibepro/config.json'])
   ]);
-  const [dirtyDiff, userDirtyDiff] = await Promise.all([
+  const userStatusOutput = [userStatusWithoutConfig, configStatusOutput].filter(Boolean).join('\n');
+  const [dirtyDiff, userDirtyWithoutConfig, configDirtyDiff] = await Promise.all([
     collectDirtyDiff(repoRoot),
-    collectDirtyDiff(repoRoot, userPathspec)
+    collectDirtyDiff(repoRoot, userPathspec),
+    collectDirtyDiff(repoRoot, ['.vibepro/config.json'])
   ]);
+  const userDirtyDiff = [userDirtyWithoutConfig, configDirtyDiff].filter(Boolean).join('\n');
   const fingerprintScope = {
-    user_excludes: userExcludePaths
+    user_excludes: userExcludePaths,
+    user_includes: ['.vibepro/config.json']
   };
   return {
     status_output: statusOutput,

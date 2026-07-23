@@ -67,7 +67,9 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
   const reuseEligible = lowRiskEvidenceChange || smallSourceLowRisk;
   const crossSurface = riskSurfaces.filter((surface) => surface !== 'test_coverage').length >= 3;
   const coreWorkflowHeavy = riskSurfaces.includes('core_workflow_state') && hasWorkflowSignal;
-  const baseProfile = (crossSurface && hasWorkflowSignal) || coreWorkflowHeavy
+  const gateReviewWorkflowHeavy = riskSurfaces.includes('gate_orchestration')
+    && riskSurfaces.includes('review_lifecycle');
+  const baseProfile = (crossSurface && hasWorkflowSignal) || coreWorkflowHeavy || gateReviewWorkflowHeavy
     ? 'workflow_heavy'
     : riskSurfaces.includes('frontend_interaction')
       ? 'ui_interaction'
@@ -347,7 +349,7 @@ function isCoreWorkflowPath(file) {
 }
 
 function isGateOrchestrationPath(file) {
-  return /(^|\/)(pr-manager|change-risk-classifier)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
+  return /(^|\/)(pr-manager|change-risk-classifier|validation-sequencing)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
 }
 
 function isVerificationEvidencePath(file) {
@@ -355,7 +357,7 @@ function isVerificationEvidencePath(file) {
 }
 
 function isReviewLifecyclePath(file) {
-  return /(^|\/)agent-review\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
+  return /(^|\/)(agent-review|review-repair)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
 }
 
 function stripMonorepoPackagePrefix(filePath) {
