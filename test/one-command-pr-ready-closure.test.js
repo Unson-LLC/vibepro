@@ -237,6 +237,19 @@ test('OCR-T-2 missing artifacts are delegated only when needed and no-progress f
   assert.equal((await noMissing.prepare_artifacts(context(baseState, 'prepare_artifacts'))).status, 'continue');
 });
 
+test('OCR-T-3 implementation completion fails closed when the managed HEAD does not advance', async () => {
+  const owners = createOneCommandPrReadyActionOwners(boundaries({
+    dispatchRuntime: async ({ request }) => completedRuntime(request, headA)
+  }));
+
+  const result = await owners.implement(context());
+
+  assert.equal(result.status, 'blocked');
+  assert.equal(result.stop_reason, 'no_progress');
+  assert.equal(result.output_head_sha, headA);
+  assert.match(result.summary, /without advancing the managed-worktree HEAD/);
+});
+
 test('OCR-T-2 material ambiguity returns exactly the bounded seven-field Human Decision descriptor', async () => {
   const descriptor = {
     type: 'scope_split',

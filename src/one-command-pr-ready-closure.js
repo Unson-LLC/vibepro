@@ -113,7 +113,7 @@ export function createOneCommandPrReadyActionOwners(boundaries = {}) {
       runtimeTimeoutMs,
       runtimePollIntervalMs,
       waitForRuntimePoll,
-      requireHeadAdvance: false
+      requireHeadAdvance: true
     }),
 
     verify: async (context) => {
