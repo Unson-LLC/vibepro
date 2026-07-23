@@ -1,9 +1,14 @@
 import { execFile } from 'node:child_process';
-import { cp, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { cp, lstat, mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getAgentReviewStatus } from './agent-review.js';
+import { persistMergeFollowupState } from './merge-manager.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
+import { withStoryTransactionLocks } from './story-transaction-lock.js';
 import {
   buildMergeGateAuthorization,
   resolveCurrentMergeGateStatus
@@ -18,7 +23,14 @@ import {
   refreshManagedWorktree
 } from './managed-worktree.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { resolveArtifactRoute, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import {
+  DEFAULT_ARTIFACT_TEMPLATES,
+  derivePrArtifactTemplate,
+  readArtifactRoutingConfig,
+  resolveArtifactRoute,
+  resolveGateArtifactFile,
+  resolvePrArtifactFile
+} from './artifact-routing.js';
 
 const SCHEMA_VERSION = '0.1.0';
 const DEFAULT_TARGET = 'pr_create';
@@ -42,7 +54,7 @@ export async function startExecution(repoRoot, options = {}) {
     managedWorktree,
     preserveStartedAt: true
   });
-  return writeExecutionStateWithLinkedCopies(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state, options);
 }
 
 export async function getExecutionStatus(repoRoot, options = {}) {
@@ -61,6 +73,7 @@ export async function getExecutionStatus(repoRoot, options = {}) {
       target: options.target ?? existing.target ?? DEFAULT_TARGET,
       startedAt: existing.started_at,
       managedWorktree,
+      repairManagedWorktreeGitExclude: false,
       preserveStartedAt: true
     });
     return {
@@ -106,8 +119,13 @@ export async function getExecutionNext(repoRoot, options = {}) {
 export async function reconcileExecutionState(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute reconcile');
   await assertWorkspaceInitialized(repoRoot, 'execute reconcile');
-  const existing = await readManagedExecutionState(repoRoot, storyId);
-  const state = await buildExecutionState(repoRoot, {
+  const readState = options.readManagedExecutionState ?? readManagedExecutionState;
+  const refreshWorktree = options.refreshManagedWorktree ?? refreshManagedWorktree;
+  const buildState = options.buildExecutionState ?? buildExecutionState;
+  const writeState = options.writeExecutionStateWithLinkedCopies ?? writeExecutionStateWithLinkedCopies;
+  const consumeSyncFailure = options.consumeExecutionStateSyncFailure ?? consumeExecutionStateSyncFailure;
+  const existing = await readState(repoRoot, storyId);
+  const buildOptions = {
     ...options,
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
@@ -117,8 +135,105 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     // (see getExecutionStatus).
     managedWorktree: existing?.managed_worktree ?? null,
     preserveStartedAt: true
+  };
+  const state = await buildState(repoRoot, buildOptions);
+  const initialResult = await writeState(repoRoot, state, {
+    ...options,
+    expectedCurrentState: existing ?? null
   });
-  return writeExecutionStateWithLinkedCopies(repoRoot, state);
+  const recovery = await consumeSyncFailure(repoRoot, {
+    storyId,
+    baseRef: options.baseRef,
+    pr: options.pr
+  });
+  if (!recovery) return initialResult;
+
+  try {
+    const reconciledState = await buildState(repoRoot, buildOptions);
+    return await writeState(repoRoot, reconciledState, {
+      ...options,
+      expectedCurrentState: initialResult.state
+    });
+  } catch (error) {
+    await restoreMergeFollowupStateOrThrow(repoRoot, {
+      storyId,
+      merge: recovery.original,
+      expectedMerge: recovery.recovered,
+      originalError: error,
+      persist: options.persistMergeFollowupState ?? persistMergeFollowupState
+    });
+    throw error;
+  }
+}
+
+async function restoreMergeFollowupStateOrThrow(repoRoot, { storyId, merge, expectedMerge, originalError, persist }) {
+  try {
+    await persist(repoRoot, { storyId, merge, expectedMerge });
+  } catch (restoreError) {
+    const transactionError = new Error(
+      `execution reconciliation failed and the original merge follow-up artifact could not be restored: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`,
+      { cause: originalError }
+    );
+    transactionError.code = 'execution_reconciliation_restore_failed';
+    transactionError.restore_error = restoreError instanceof Error ? restoreError.message : String(restoreError);
+    transactionError.restore_errors = restoreError?.restore_errors ?? [];
+    throw transactionError;
+  }
+}
+
+async function consumeExecutionStateSyncFailure(repoRoot, { storyId, baseRef, pr } = {}) {
+  const root = path.resolve(repoRoot);
+  const mergePath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
+  const merge = await readJsonIfExists(mergePath);
+  if (!merge || merge.execution_state_sync?.status !== 'failed') return null;
+  if (!['merged', 'merged_externally'].includes(merge.delivery?.status)) return null;
+  if (!merge.reconciliation?.reasons?.includes('execution_state_sync_failed')) return null;
+
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  if (!isCurrentPrLifecycleArtifact(merge, currentHeadSha)) return null;
+  const retainedBaseRef = resolveMergeBase(merge);
+  const retainedPrSelector = resolvePrSelector(merge);
+  if (!baseRef || !pr || !retainedBaseRef || !retainedPrSelector) return null;
+  if (stripRemote(retainedBaseRef) !== stripRemote(baseRef)) return null;
+  if (retainedPrSelector !== pr) return null;
+
+  const recoveredAt = new Date().toISOString();
+  const remainingReasons = merge.reconciliation.reasons.filter((reason) => reason !== 'execution_state_sync_failed');
+  const resolvedBaseRef = retainedBaseRef;
+  const recoveryCommand = merge.execution_state_sync.recovery_command
+    ?? `vibepro execute reconcile . --story-id ${storyId} --base ${resolvedBaseRef} --pr ${retainedPrSelector}`;
+  const { stop_reason: stopReason, reconciliation_action: reconciliationAction, ...rest } = merge;
+  const recovered = {
+    ...rest,
+    execution_state_sync: {
+      ...merge.execution_state_sync,
+      previous_status: 'failed',
+      previous_reason: merge.execution_state_sync.reason ?? null,
+      status: 'reconciled',
+      reason: null,
+      recovered_at: recoveredAt
+    },
+    reconciliation: {
+      ...merge.reconciliation,
+      status: remainingReasons.length > 0 ? 'reconciliation_required' : 'reconciled',
+      reasons: remainingReasons,
+      evaluated_at: recoveredAt
+    },
+    reconciliation_action: remainingReasons.length > 0
+      ? {
+          status: 'required',
+          reason: remainingReasons[0],
+          commands: [recoveryCommand]
+        }
+      : {
+          status: 'reconciled',
+          reason: null,
+          commands: []
+        }
+  };
+  if (stopReason && stopReason !== 'execution_state_sync_failed') recovered.stop_reason = stopReason;
+  await persistMergeFollowupState(root, { storyId, merge: recovered, expectedMerge: merge });
+  return { original: merge, recovered };
 }
 
 export async function reconcileAllMergedExecutionStates(repoRoot, options = {}) {
@@ -186,7 +301,7 @@ export async function updateExecutionStateFromPrCreate(repoRoot, createResult, o
     blocking_gate: execution.pr_url ? null : result.state.blocking_gate,
     updated_at: new Date().toISOString()
   };
-  return writeExecutionStateWithLinkedCopies(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state, options);
 }
 
 export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, options = {}) {
@@ -198,18 +313,59 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
     target: options.target ?? DEFAULT_TARGET
   });
   const merge = mergeResult?.merge;
-  if (!merge || !['merged', 'merged_externally'].includes(merge.status)) return result;
+  const deliveryStatus = merge?.delivery?.status ?? merge?.status;
+  if (!merge || !['merged', 'merged_externally'].includes(deliveryStatus)) return result;
+  const mergeFailed = merge.status === 'failed';
+  const reconciliationRequired = merge.reconciliation?.status !== 'reconciled';
+  const reconciliationReasons = merge.reconciliation?.reasons ?? [];
+  const failureReason = merge.stop_reason ?? 'merge_failed';
+  const retainedPrSelector = resolvePrSelector(merge) ?? result.state.pr_url ?? null;
+  const reconciliationAction = merge ? resolveReconciliationAction(merge) : null;
+  await options.beforeMergeStateCommit?.({
+    repoRoot: path.resolve(repoRoot),
+    storyId,
+    observedState: structuredClone(result.state),
+    merge: structuredClone(merge)
+  });
   const state = {
     ...result.state,
-    completion_status: 'merged',
-    current_phase: 'complete',
-    completed_phases: unique([...result.state.completed_phases, 'merge_ready', 'merge']),
-    pr_url: merge.pr?.url ?? result.state.pr_url ?? null,
-    next_actions: [],
-    blocking_gate: null,
+    completion_status: mergeFailed ? 'failed' : reconciliationRequired ? 'merged_reconciliation_required' : 'merged',
+    current_phase: mergeFailed
+      ? ['canonical_audit_persistence_failed', 'canonical_audit_final_persistence_failed'].includes(failureReason)
+        ? 'persist_canonical_audit'
+        : 'merge'
+      : reconciliationRequired ? 'reconcile_delivery' : 'complete',
+    completed_phases: unique([
+      ...result.state.completed_phases.filter((phase) => !(deliveryStatus === 'merged_externally' && phase === 'merge_ready')),
+      ...(deliveryStatus === 'merged' ? ['merge_ready'] : []),
+      'merge'
+    ]),
+    pr_url: retainedPrSelector,
+    delivery: merge.delivery ?? null,
+    reconciliation: merge.reconciliation ?? null,
+    next_actions: mergeFailed
+      ? [`Resolve ${failureReason} and re-run \`vibepro execute merge . --story-id ${storyId} --base ${merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\``]
+      : reconciliationRequired
+      ? reconciliationAction?.commands ?? [
+          `Refresh current-head evidence with \`vibepro pr prepare . --story-id ${storyId} --base ${merge.base ?? 'main'}\``,
+          `Re-run \`vibepro execute merge . --story-id ${storyId} --base ${merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\` after reconciliation`
+        ]
+      : [],
+    blocking_gate: mergeFailed
+      ? { id: 'merge_failure', status: 'blocked', reason: failureReason }
+      : reconciliationRequired
+      ? {
+          id: 'delivery_reconciliation',
+          status: 'blocked',
+          reasons: reconciliationReasons
+        }
+      : null,
     updated_at: new Date().toISOString()
   };
-  return writeExecutionStateWithLinkedCopies(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state, {
+    ...options,
+    expectedCurrentState: result.state
+  });
 }
 
 export function renderExecutionStateSummary(result) {
@@ -225,6 +381,9 @@ export function renderExecutionStateSummary(result) {
 - target: ${state.target}
 - status: ${state.completion_status}
 - phase: ${state.current_phase}
+- delivery: ${state.delivery?.status ?? 'unknown'}
+- reconciliation: ${state.reconciliation?.status ?? 'unknown'}
+- reconciliation_reasons: ${(state.reconciliation?.reasons ?? []).join('|') || 'none'}
 - blocking_gate: ${state.blocking_gate?.id ?? 'none'}
 - managed_worktree: ${managedWorktree.headline}
 - execution_dag: ${executionDag.headline}
@@ -256,6 +415,9 @@ export function renderExecutionNextSummary(result) {
 
 - status: ${next.completion_status}
 - phase: ${next.current_phase}
+- delivery: ${state.delivery?.status ?? 'unknown'}
+- reconciliation: ${state.reconciliation?.status ?? 'unknown'}
+- reconciliation_reasons: ${(state.reconciliation?.reasons ?? []).join('|') || 'none'}
 - blocking_gate: ${next.blocking_gate?.id ?? 'none'}
 - managed_worktree: ${managedWorktree.headline}
 - execution_dag: ${executionDag.headline}
@@ -351,28 +513,72 @@ async function buildExecutionState(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execution state');
   const now = new Date().toISOString();
   const prPreparePath = await resolvePrArtifactFile(root, storyId);
-  const prDir = path.dirname(prPreparePath);
+  const verificationEvidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
+  const prCreatePath = await resolvePrArtifactFile(root, storyId, 'pr-create.json');
+  const prMergePath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
   const gateDagPath = await resolveGateArtifactFile(root, storyId);
-  const [prPrepare, verificationEvidence, prCreate, prMerge, gateDagArtifact, agentReview] = await Promise.all([
+  const [prPrepare, verificationEvidence, prCreate, prMerge, canonicalPrMerge, canonicalBundle, gateDagArtifact, agentReview] = await Promise.all([
     readJsonIfExists(prPreparePath),
-    readJsonIfExists(path.join(prDir, 'verification-evidence.json')),
-    readJsonIfExists(path.join(prDir, 'pr-create.json')),
-    readJsonIfExists(path.join(prDir, 'pr-merge.json')),
+    readJsonIfExists(verificationEvidencePath),
+    readJsonIfExists(prCreatePath),
+    readJsonIfExists(prMergePath),
+    readJsonIfExists(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-merge.json')),
+    readJsonIfExists(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-bundle.json')),
     readJsonIfExists(gateDagPath),
     getAgentReviewStatus(root, { storyId }).catch(() => null)
   ]);
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
-  const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
-  const currentPrMerge = isCurrentPrLifecycleArtifact(prMerge, currentHeadSha) ? prMerge : null;
-  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
-  const gateStatus = resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag);
-  const mergeGateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, gateStatus);
-  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
-  const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const managedWorktree = options.managedWorktree
-    ? await refreshManagedWorktree(root, options.managedWorktree).catch(() => options.managedWorktree)
+    ? await refreshManagedWorktree(root, options.managedWorktree, {
+        repairGitExclude: options.repairManagedWorktreeGitExclude !== false
+      }).catch(() => options.managedWorktree)
     : null;
   const expectedHeadSha = await resolveExecutionExpectedHead(root, managedWorktree, currentHeadSha);
+  const currentPrPrepare = isCurrentPrLifecycleArtifact(prPrepare, expectedHeadSha) ? prPrepare : null;
+  const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, expectedHeadSha) ? prCreate : null;
+  const localCurrentPrMerge = isCurrentPrLifecycleArtifact(prMerge, expectedHeadSha) ? prMerge : null;
+  const currentPrMerge = resolveExecutionPrMerge({
+    local: localCurrentPrMerge,
+    canonical: canonicalPrMerge,
+    bundle: canonicalBundle?.merge ?? null,
+    expectedBaseRef: options.baseRef
+      ?? resolveMergeBase(localCurrentPrMerge)
+      ?? currentPrCreate?.base
+      ?? currentPrPrepare?.git?.base_ref
+      ?? null,
+    expectedPrSelector: resolvePrSelector(localCurrentPrMerge)
+      ?? currentPrCreate?.pr_url
+      ?? null
+  });
+  const resolvedBaseRef = options.baseRef
+    ?? currentPrMerge?.base
+    ?? currentPrMerge?.git?.base_branch
+    ?? currentPrCreate?.base
+    ?? currentPrPrepare?.git?.base_ref
+    ?? 'main';
+  const currentGateDagArtifact = isCurrentPrLifecycleArtifact(gateDagArtifact, expectedHeadSha)
+    ? gateDagArtifact
+    : null;
+  // pr-prepare is the readiness source of truth. A same-HEAD standalone DAG can
+  // still be older because evidence changes do not create a git commit, so it
+  // is only a fallback when no current pr-prepare/pr-create artifact exists.
+  const gateStatus = currentPrPrepare?.gate_status ?? null;
+  const gateDag = currentPrPrepare?.pr_context?.gate_dag
+    ?? currentPrCreate?.gate_dag
+    ?? currentGateDagArtifact
+    ?? null;
+  const currentMergeGateStatus = resolveCurrentMergeGateStatus(
+    currentPrPrepare,
+    expectedHeadSha,
+    gateDag
+  );
+  const mergeGateAuthorization = buildMergeGateAuthorization(
+    gateDag,
+    currentPrCreate,
+    currentMergeGateStatus
+  );
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const executionBlockers = collectRequiredExecutionBlockers(
     buildExecutionDag({
       managedWorktree,
@@ -380,28 +586,60 @@ async function buildExecutionState(repoRoot, options = {}) {
       completionStatus: 'not_prepared',
       expectedHeadSha
     }),
-    { storyId, baseRef: options.baseRef, managedWorktree, expectedHeadSha }
+    { storyId, baseRef: resolvedBaseRef, managedWorktree, expectedHeadSha }
   );
   const executionBlockingGate = executionBlockers[0] ?? null;
-  const blockingGate = executionBlockingGate ?? pickBlockingGate(blockingGates);
+  const delivery = currentPrMerge?.delivery ?? null;
+  const reconciliation = currentPrMerge?.reconciliation ?? null;
+  const hasExplicitDelivery = typeof delivery?.status === 'string';
+  const deliveryStatus = delivery?.status ?? currentPrMerge?.status ?? null;
+  const deliveryObserved = ['merged', 'merged_externally'].includes(deliveryStatus);
+  const reconciliationRequired = deliveryObserved && reconciliation?.status !== 'reconciled';
+  const deliveryResolutionRequired = hasExplicitDelivery && (
+    !deliveryObserved || reconciliation?.status !== 'reconciled'
+  );
+  const mergeFailed = currentPrMerge?.status === 'failed';
+  const mergeFailureGate = mergeFailed
+    ? {
+        id: 'merge_failure',
+        status: 'blocked',
+        reasons: [currentPrMerge?.stop_reason ?? 'merge_failed']
+      }
+    : null;
+  const deliveryReconciliationGate = (deliveryResolutionRequired || reconciliationRequired)
+    ? {
+        id: 'delivery_reconciliation',
+        status: 'blocked',
+        reasons: reconciliation?.reasons ?? []
+      }
+    : null;
+  const blockingGate = mergeFailureGate ?? deliveryReconciliationGate ?? executionBlockingGate ?? pickBlockingGate(blockingGates);
   const prCreated = Boolean(currentPrCreate?.pr_url && currentPrCreate?.dry_run !== true);
-  const merged = currentPrMerge?.status === 'merged' || Boolean(currentPrMerge?.merged_at || currentPrMerge?.merge_commit_sha);
+  const merged = deliveryObserved || (!hasExplicitDelivery && (
+    currentPrMerge?.status === 'merged' || Boolean(currentPrMerge?.merged_at || currentPrMerge?.merge_commit_sha)
+  ));
   const agentReviewSatisfied = isGateAgentReviewSatisfied(agentReview);
   const gatesReadyForPrCreate = gateDag
-    ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
+    ? Boolean((currentPrPrepare || currentPrCreate) && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
   const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
   const prCreatedReadyForMerge = prCreated && !executionBlockingGate && (
-    gateDag ? mergeGateAuthorization.allowed : (!prPrepare || readyForPrCreate)
+    gateDag ? mergeGateAuthorization.allowed : (!currentPrPrepare || readyForPrCreate)
   );
-  const waiverRequired = !prCreatedReadyForMerge && !readyForPrCreate && Boolean(prPrepare) && (
+  const waiverRequired = !prCreatedReadyForMerge && !readyForPrCreate && Boolean(currentPrPrepare) && (
     executionBlockingGate
       ? false
       : gateDag
       ? unresolvedGates.length > 0 && blockingGates.length === 0
       : gateStatus?.execution_gate?.status === 'waiver_required'
   );
-  const completionStatus = merged
+  const completionStatus = mergeFailed
+    ? 'failed'
+    : reconciliationRequired
+    ? 'merged_reconciliation_required'
+    : deliveryResolutionRequired
+    ? 'blocked'
+    : merged
     ? 'merged'
     : prCreatedReadyForMerge
     ? 'pr_created'
@@ -411,10 +649,14 @@ async function buildExecutionState(repoRoot, options = {}) {
         ? 'waiver_required'
       : executionBlockingGate
         ? 'blocked'
-      : prPrepare
+      : currentPrPrepare
         ? 'blocked'
         : 'not_prepared';
-  const currentPhase = merged
+  const currentPhase = mergeFailed
+    ? (deliveryObserved ? 'persist_canonical_audit' : 'merge')
+    : deliveryResolutionRequired
+    ? 'reconcile_delivery'
+    : merged
     ? 'complete'
     : prCreatedReadyForMerge
     ? 'complete'
@@ -430,32 +672,44 @@ async function buildExecutionState(repoRoot, options = {}) {
           ? 'verification'
           : 'prepare_pr';
   const completedPhases = deriveCompletedPhases({
-    prPrepare,
+    prPrepare: currentPrPrepare,
     verificationEvidence,
     agentReviewSatisfied,
     readyForPrCreate,
     prCreated,
     merged,
+    hasExplicitDelivery,
     prMerge: currentPrMerge
   });
   const requiredCommands = buildManagedWorktreeCommands({
-    pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
-    pr_create: buildPrCreateCommand({ storyId, baseRef: options.baseRef })
+    pr_prepare: buildPrPrepareCommand({ storyId, baseRef: resolvedBaseRef }),
+    pr_create: buildPrCreateCommand({ storyId, baseRef: resolvedBaseRef })
   }, managedWorktree, { expectedHeadSha });
-  const nextActions = deriveNextActions({
+  const retainedPrSelector = resolvePrSelector(currentPrMerge);
+  const reconciliationAction = currentPrMerge ? resolveReconciliationAction(currentPrMerge) : null;
+  const nextActions = mergeFailed
+    ? [
+        `Resolve ${currentPrMerge?.stop_reason ?? 'the merge failure'} and re-run \`vibepro execute merge . --story-id ${storyId} --base ${resolvedBaseRef}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\``
+      ]
+    : deliveryResolutionRequired
+    ? reconciliationAction?.commands ?? [
+        `Refresh current-head evidence with \`vibepro pr prepare . --story-id ${storyId} --base ${resolvedBaseRef}\``,
+        `Re-run \`vibepro execute merge . --story-id ${storyId} --base ${resolvedBaseRef}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\` after reconciliation`
+      ]
+    : deriveNextActions({
     storyId,
-    baseRef: options.baseRef,
+    baseRef: resolvedBaseRef,
     managedWorktree,
     expectedHeadSha,
-    prPrepare,
+    prPrepare: currentPrPrepare,
     gateStatus,
     unresolvedGates,
     blockingGate,
     waiverRequired,
     readyForPrCreate,
     prCreated: prCreatedReadyForMerge,
-    merged
-  });
+        merged
+      });
   return {
     schema_version: SCHEMA_VERSION,
     story_id: storyId,
@@ -466,14 +720,16 @@ async function buildExecutionState(repoRoot, options = {}) {
     completed_phases: completedPhases,
     completion_status: completionStatus,
     blocking_gate: blockingGate,
+    delivery,
+    reconciliation,
     next_actions: nextActions,
     required_commands: requiredCommands,
     managed_worktree: managedWorktree,
     execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha, prMerge: currentPrMerge }),
-    last_pr_prepare: prPrepare ? await summarizePrPrepare(root, prPrepare) : null,
+    last_pr_prepare: currentPrPrepare ? await summarizePrPrepare(root, currentPrPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
-    last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
-    pr_url: currentPrCreate?.pr_url ?? currentPrMerge?.pr?.url ?? null
+    last_verification_evidence: verificationEvidence ? await summarizeVerificationEvidence(root, verificationEvidence) : null,
+    pr_url: currentPrCreate?.pr_url ?? retainedPrSelector ?? null
   };
 }
 
@@ -488,24 +744,101 @@ async function resolveExecutionExpectedHead(root, managedWorktree, currentHeadSh
   return currentHeadSha;
 }
 
-function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReviewSatisfied, readyForPrCreate, prCreated, merged, prMerge }) {
+function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReviewSatisfied, readyForPrCreate, prCreated, merged, hasExplicitDelivery, prMerge }) {
   const phases = [];
+  const deliveryMergeReady = hasExplicitDelivery
+    ? prMerge.delivery.status === 'merged'
+    : ['ready_to_merge', 'merged', 'merged_externally'].includes(prMerge?.status);
   if (prPrepare) phases.push('prepare_pr');
   if ((verificationEvidence?.commands ?? []).length > 0) phases.push('verify');
-  if (agentReviewSatisfied || merged) {
+  if (agentReviewSatisfied || (merged && !hasExplicitDelivery)) {
     phases.push('agent_review');
   }
   if (readyForPrCreate) phases.push('ready_for_pr_create');
   if (prCreated) phases.push('create_pr');
-  if (['ready_to_merge', 'merged', 'merged_externally'].includes(prMerge?.status)) phases.push('merge_ready');
+  if (deliveryMergeReady) phases.push('merge_ready');
   if (merged) phases.push('merge');
   return phases;
+}
+
+function resolveExecutionPrMerge({ local, canonical, bundle, expectedBaseRef, expectedPrSelector }) {
+  // Delivery is an observed, monotonic fact. A current local provider failure
+  // may update reconciliation, but it cannot erase a durable positive delivery
+  // preserved in canonical or bundle evidence.
+  if (typeof local?.delivery?.status === 'string') {
+    if (['merged', 'merged_externally'].includes(local.delivery.status)) return local;
+    const observedFallback = expectedBaseRef && expectedPrSelector
+      ? [canonical, bundle].find((artifact) => (
+          ['merged', 'merged_externally'].includes(artifact?.delivery?.status)
+          && deliveryIdentityMatches(artifact, { expectedBaseRef, expectedPrSelector })
+        ))
+      : null;
+    if (observedFallback) {
+      return {
+        ...local,
+        delivery: observedFallback.delivery,
+        merge_commit_sha: local.merge_commit_sha
+          ?? observedFallback.merge_commit_sha
+          ?? observedFallback.delivery?.merge_commit_sha
+          ?? null,
+        merged_at: local.merged_at
+          ?? observedFallback.merged_at
+          ?? observedFallback.delivery?.merged_at
+          ?? null
+      };
+    }
+    return local;
+  }
+  // A legacy local artifact can still be the only durable merge evidence even
+  // though it predates the explicit delivery axis. Keep it in the fallback
+  // set instead of dropping it during an upgrade.
+  const artifacts = [local, canonical, bundle].filter(Boolean);
+  if (local && isMergedArtifact(local)) return local;
+  const explicit = artifacts.filter((artifact) => typeof artifact?.delivery?.status === 'string');
+  const explicitNegative = explicit.find((artifact) => !['merged', 'merged_externally'].includes(artifact.delivery.status));
+  if (explicitNegative) return explicitNegative;
+  const identityBoundFallback = expectedBaseRef && expectedPrSelector
+    ? artifacts.find((artifact) => (
+        isMergedArtifact(artifact)
+        && deliveryIdentityMatches(artifact, { expectedBaseRef, expectedPrSelector })
+      ))
+    : null;
+  return identityBoundFallback ?? null;
+}
+
+function resolvePrSelector(artifact) {
+  return artifact?.pr?.url
+    ?? artifact?.pr?.selector
+    ?? artifact?.delivery?.pr_url
+    ?? artifact?.pr_url
+    ?? null;
+}
+
+function resolveMergeBase(artifact) {
+  return artifact?.base ?? artifact?.git?.base_branch ?? artifact?.git?.base_ref ?? null;
+}
+
+function deliveryIdentityMatches(artifact, { expectedBaseRef, expectedPrSelector }) {
+  const artifactBase = resolveMergeBase(artifact);
+  return Boolean(
+    artifactBase
+    && resolvePrSelector(artifact) === expectedPrSelector
+    && stripRemote(artifactBase) === stripRemote(expectedBaseRef)
+  );
+}
+
+function stripRemote(ref) {
+  return String(ref ?? '')
+    .replace(/^refs\/heads\//, '')
+    .replace(/^refs\/remotes\/[^/]+\//, '')
+    .replace(/^origin\//, '');
 }
 
 function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
   if (!artifact || !currentHeadSha) return false;
   const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
     ?? artifact.current_head_sha
+    ?? artifact.git?.head_sha
     ?? artifact.toolchain?.source_git?.commit
     ?? artifact.git_context?.head_sha
     ?? null;
@@ -589,9 +922,9 @@ function summarizeAgentReview(agentReview) {
   };
 }
 
-function summarizeVerificationEvidence(root, evidence) {
+async function summarizeVerificationEvidence(root, evidence) {
   return {
-    artifact: toWorkspaceRelative(root, path.join(getWorkspaceDir(root), 'pr', evidence.story_id, 'verification-evidence.json')),
+    artifact: toWorkspaceRelative(root, await resolvePrArtifactFile(root, evidence.story_id, 'verification-evidence.json')),
     updated_at: evidence.updated_at ?? null,
     command_count: (evidence.commands ?? []).length,
     kinds: unique((evidence.commands ?? []).map((command) => command.kind).filter(Boolean))
@@ -759,77 +1092,531 @@ function isCriticalUnresolvedGate(gate) {
   return gate.status === 'failed' || gate.status === 'contradicted';
 }
 
-async function writeExecutionState(repoRoot, state) {
-  const root = path.resolve(repoRoot);
-  const filePath = getExecutionStatePath(root, state.story_id);
-  await mkdir(path.dirname(filePath), { recursive: true });
-  await writeJsonAtomic(filePath, state);
+async function writeExecutionStateWithLinkedCopies(repoRoot, state, options = {}) {
+  const currentRoot = path.resolve(repoRoot);
+  const roots = unique([
+    ...collectLinkedExecutionRoots(state).filter((target) => path.resolve(target) !== currentRoot),
+    currentRoot
+  ]);
+  const lockTransaction = options.withStoryTransactionLocks ?? withStoryTransactionLocks;
+  return lockTransaction(roots, state.story_id, () => writeExecutionStateWithLinkedCopiesUnlocked(
+    currentRoot,
+    roots,
+    state,
+    options
+  ));
+}
+
+async function writeExecutionStateWithLinkedCopiesUnlocked(currentRoot, roots, state, options = {}) {
+  const snapshots = await Promise.all(roots.map(async (root) => {
+    const filePath = getExecutionStatePath(root, state.story_id);
+    return {
+      root,
+      file_path: filePath,
+      ...(await readFileSnapshot(filePath))
+    };
+  }));
+  const syncArtifacts = options.syncManagedWorktreeArtifactsToSource ?? syncManagedWorktreeArtifactsToSource;
+  const writeState = options.writeExecutionStateAtomic ?? writeJsonAtomic;
+  const restoreSnapshot = options.restoreExecutionStateSnapshot ?? restoreFileSnapshot;
+  const snapshotArtifacts = options.snapshotManagedWorktreeArtifacts ?? snapshotManagedWorktreeArtifacts;
+  const restoreArtifactSnapshots = options.restoreManagedWorktreeArtifactSnapshots ?? restoreManagedWorktreeArtifactSnapshots;
+  const cleanupArtifactSnapshots = options.cleanupManagedWorktreeArtifactSnapshots ?? cleanupManagedWorktreeArtifactSnapshots;
+  const artifactSnapshots = await snapshotArtifacts(currentRoot, state);
+  const attemptedStateSnapshots = [];
+  let pendingError = null;
+
+  try {
+    if (options.expectedCurrentState !== undefined) {
+      const existingSnapshots = snapshots.filter((snapshot) => snapshot.existed);
+      const conflictingSnapshot = existingSnapshots.find(
+        (snapshot) => !jsonBytesEqualValue(snapshot.bytes, options.expectedCurrentState)
+      );
+      const expectedStateMatches = options.expectedCurrentState === null
+        ? existingSnapshots.length === 0
+        : existingSnapshots.length > 0 && !conflictingSnapshot;
+      if (!expectedStateMatches) {
+        const conflictPath = conflictingSnapshot?.file_path
+          ?? existingSnapshots[0]?.file_path
+          ?? getExecutionStatePath(currentRoot, state.story_id);
+        const conflict = new Error(`execution state changed concurrently; refusing to overwrite newer state: ${conflictPath}`);
+        conflict.code = 'execution_state_transaction_conflict';
+        conflict.artifact_path = conflictPath;
+        throw conflict;
+      }
+    }
+    // Source artifacts and every execution-state authority form one transaction.
+    // The current checkout is written last so it remains the commit point.
+    await syncArtifacts(currentRoot, state, {
+      onArtifactWillWrite: (targetPath) => captureManagedWorktreeArtifactBeforeWrite(artifactSnapshots, targetPath),
+      onArtifactWritten: (targetPath) => captureManagedWorktreeArtifactWrite(artifactSnapshots, targetPath)
+    });
+    for (const snapshot of snapshots) {
+      attemptedStateSnapshots.push(snapshot);
+      await mkdir(path.dirname(snapshot.file_path), { recursive: true });
+      await writeState(snapshot.file_path, state);
+    }
+  } catch (error) {
+    const restoreErrors = [];
+    for (const snapshot of [...attemptedStateSnapshots].reverse()) {
+      try {
+        await restoreExecutionStateSnapshotIfOwned(snapshot, state, restoreSnapshot);
+      } catch (restoreError) {
+        restoreErrors.push({
+          path: snapshot.file_path,
+          message: restoreError instanceof Error ? restoreError.message : String(restoreError)
+        });
+      }
+    }
+    try {
+      await restoreArtifactSnapshots(artifactSnapshots);
+    } catch (restoreError) {
+      const artifactRestoreErrors = Array.isArray(restoreError?.restore_errors)
+        ? restoreError.restore_errors.map((item) => ({ path: item.artifact_path, message: item.message }))
+        : [{
+            path: restoreError?.artifact_path ?? artifactSnapshots?.snapshot_root ?? 'managed-worktree-artifacts',
+            message: restoreError instanceof Error ? restoreError.message : String(restoreError)
+          }];
+      restoreErrors.push(...artifactRestoreErrors);
+    }
+    if (restoreErrors.length > 0) {
+      const transactionError = new Error(
+        `execution state transaction failed and rollback was incomplete: ${restoreErrors.map((item) => item.path).join(', ')}`,
+        { cause: error }
+      );
+      transactionError.code = 'execution_state_transaction_restore_failed';
+      transactionError.restore_errors = restoreErrors;
+      pendingError = transactionError;
+      throw transactionError;
+    }
+    pendingError = error;
+    throw error;
+  } finally {
+    try {
+      await cleanupArtifactSnapshots(artifactSnapshots);
+    } catch (cleanupError) {
+      if (!pendingError) throw cleanupError;
+      pendingError.cleanup_error = cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+    }
+  }
+
   return {
     state,
-    artifact: toWorkspaceRelative(root, filePath),
+    artifact: toWorkspaceRelative(currentRoot, getExecutionStatePath(currentRoot, state.story_id)),
     found: true
   };
 }
 
-async function writeExecutionStateWithLinkedCopies(repoRoot, state) {
-  const result = await writeExecutionState(repoRoot, state);
-  await writeLinkedExecutionStateCopies(repoRoot, state);
-  await syncManagedWorktreeArtifactsToSource(repoRoot, state);
-  return result;
+async function restoreExecutionStateSnapshotIfOwned(snapshot, state, restoreSnapshot) {
+  const current = await readFileSnapshot(snapshot.file_path);
+  if (fileSnapshotsEqual(current, snapshot)) return;
+  if (current.existed && jsonBytesEqualValue(current.bytes, state)) {
+    await restoreSnapshot(snapshot);
+    return;
+  }
+  const error = new Error(`execution state changed concurrently; refusing to overwrite it during rollback: ${snapshot.file_path}`);
+  error.code = 'execution_state_transaction_conflict';
+  error.artifact_path = snapshot.file_path;
+  throw error;
 }
 
-async function writeLinkedExecutionStateCopies(repoRoot, state) {
-  const currentRoot = path.resolve(repoRoot);
-  const targets = collectLinkedExecutionRoots(state)
-    .filter((target) => path.resolve(target) !== currentRoot);
-  for (const target of targets) {
-    const filePath = getExecutionStatePath(target, state.story_id);
-    await mkdir(path.dirname(filePath), { recursive: true });
-    await writeJsonAtomic(filePath, state);
+function fileSnapshotsEqual(left, right) {
+  if (left.existed !== right.existed) return false;
+  if (!left.existed) return true;
+  return Buffer.compare(Buffer.from(left.bytes), Buffer.from(right.bytes)) === 0;
+}
+
+function jsonBytesEqualValue(bytes, value) {
+  try {
+    return JSON.stringify(JSON.parse(Buffer.from(bytes).toString('utf8'))) === JSON.stringify(value);
+  } catch {
+    return false;
   }
 }
 
-async function syncManagedWorktreeArtifactsToSource(repoRoot, state) {
+async function snapshotManagedWorktreeArtifacts(repoRoot, state) {
+  const locations = await managedWorktreeArtifactLocations(repoRoot, state);
+  return {
+    snapshot_root: null,
+    entries: [],
+    allowed_roots: locations?.allowed_roots ?? []
+  };
+}
+
+async function captureManagedWorktreeArtifactBeforeWrite(snapshotSet, targetPath) {
+  const artifactPath = path.resolve(targetPath);
+  if (snapshotSet?.entries?.some((entry) => entry.artifact_path === artifactPath)) return;
+  if (!isManagedWorktreeArtifactPathAllowed(snapshotSet, artifactPath)) {
+    const error = new Error(`managed worktree sync reported an artifact outside its ownership boundary: ${artifactPath}`);
+    error.code = 'managed_worktree_artifact_ownership_invalid';
+    error.artifact_path = artifactPath;
+    throw error;
+  }
+  if (!snapshotSet.snapshot_root) {
+    snapshotSet.snapshot_root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-linked-artifacts-'));
+  }
+  snapshotSet.entries.push(await snapshotManagedWorktreeArtifactFile(
+    snapshotSet.snapshot_root,
+    snapshotSet.entries.length,
+    artifactPath
+  ));
+}
+
+async function captureManagedWorktreeArtifactWrite(snapshotSet, targetPath) {
+  const artifactPath = path.resolve(targetPath);
+  const snapshot = snapshotSet?.entries?.find((entry) => entry.artifact_path === artifactPath);
+  if (!snapshot) {
+    const error = new Error(`managed worktree sync reported a write without a file-level pre-write snapshot: ${artifactPath}`);
+    error.code = 'managed_worktree_artifact_ownership_unknown';
+    error.artifact_path = artifactPath;
+    throw error;
+  }
+  snapshot.written_fingerprint = await fingerprintPath(snapshot.artifact_path);
+}
+
+async function restoreManagedWorktreeArtifactSnapshots(snapshotSet) {
+  const errors = [];
+  const ownedSnapshots = (snapshotSet?.entries ?? []).filter((snapshot) => snapshot.written_fingerprint);
+  for (const snapshot of [...ownedSnapshots].reverse()) {
+    try {
+      const currentFingerprint = await fingerprintPath(snapshot.artifact_path);
+      if (currentFingerprint === snapshot.original_fingerprint) continue;
+      if (!snapshot.written_fingerprint || currentFingerprint !== snapshot.written_fingerprint) {
+        const conflict = new Error(`managed worktree artifact changed concurrently; refusing to overwrite it during rollback: ${snapshot.artifact_path}`);
+        conflict.code = 'managed_worktree_artifact_transaction_conflict';
+        throw conflict;
+      }
+      await rm(snapshot.artifact_path, { force: true });
+      if (!snapshot.existed) continue;
+      await mkdir(path.dirname(snapshot.artifact_path), { recursive: true });
+      await cp(snapshot.backup_path, snapshot.artifact_path, { force: true });
+    } catch (error) {
+      errors.push({
+        artifact_path: snapshot.artifact_path,
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+  if (errors.length > 0) {
+    const error = new Error(`managed worktree artifact rollback was incomplete: ${errors.map((item) => item.artifact_path).join(', ')}`);
+    error.code = 'managed_worktree_artifact_restore_failed';
+    error.artifact_path = errors[0].artifact_path;
+    error.restore_errors = errors;
+    throw error;
+  }
+}
+
+async function snapshotManagedWorktreeArtifactFile(snapshotRoot, index, targetPath) {
+  const artifactPath = path.resolve(targetPath);
+  const backupPath = path.join(snapshotRoot, String(index));
+  try {
+    const metadata = await lstat(artifactPath);
+    if (metadata.isDirectory()) {
+      const error = new Error(`managed worktree artifact ownership must be reported per file: ${artifactPath}`);
+      error.code = 'managed_worktree_artifact_directory_ownership_invalid';
+      error.artifact_path = artifactPath;
+      throw error;
+    }
+    await cp(artifactPath, backupPath, { force: true });
+    return {
+      artifact_path: artifactPath,
+      backup_path: backupPath,
+      existed: true,
+      original_fingerprint: await fingerprintPath(artifactPath),
+      written_fingerprint: null
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      artifact_path: artifactPath,
+      backup_path: backupPath,
+      existed: false,
+      original_fingerprint: 'missing',
+      written_fingerprint: null
+    };
+  }
+}
+
+async function fingerprintPath(targetPath) {
+  try {
+    const metadata = await lstat(targetPath);
+    if (!metadata.isDirectory()) {
+      const bytes = await readFile(targetPath);
+      return `file:${createHash('sha256').update(bytes).digest('hex')}`;
+    }
+    const hash = createHash('sha256');
+    for (const entry of (await readdir(targetPath)).sort()) {
+      hash.update(entry);
+      hash.update('\0');
+      hash.update(await fingerprintPath(path.join(targetPath, entry)));
+      hash.update('\0');
+    }
+    return `dir:${hash.digest('hex')}`;
+  } catch (error) {
+    if (error.code === 'ENOENT') return 'missing';
+    throw error;
+  }
+}
+
+async function cleanupManagedWorktreeArtifactSnapshots(snapshotSet) {
+  if (!snapshotSet?.snapshot_root) return;
+  await rm(snapshotSet.snapshot_root, { recursive: true, force: true });
+}
+
+async function managedWorktreeArtifactLocations(repoRoot, state) {
   const currentRoot = path.resolve(repoRoot);
   const managedPath = state?.managed_worktree?.path ? path.resolve(state.managed_worktree.path) : null;
   const sourceRepo = state?.managed_worktree?.source_repo ? path.resolve(state.managed_worktree.source_repo) : null;
-  if (!managedPath || !sourceRepo || currentRoot !== managedPath || sourceRepo === currentRoot) return;
+  if (!managedPath || !sourceRepo || currentRoot !== managedPath || sourceRepo === currentRoot) return null;
   const workspace = getWorkspaceDir(currentRoot);
   const sourceWorkspace = getWorkspaceDir(sourceRepo);
-  await copyDirectoryIfExists(
-    path.join(workspace, 'pr', state.story_id),
-    path.join(sourceWorkspace, 'pr', state.story_id)
-  );
-  await copyDirectoryIfExists(
-    path.join(workspace, 'reviews', state.story_id),
-    path.join(sourceWorkspace, 'reviews', state.story_id)
-  );
-  await copyDirectoryIfExists(
-    path.join(workspace, 'verification'),
-    path.join(sourceWorkspace, 'verification')
-  );
+  const managedManifest = await readJsonIfExists(path.join(workspace, 'vibepro-manifest.json'));
+  const storyFlowRunIds = unique((managedManifest?.flow_verification_runs ?? [])
+    .filter((run) => run?.story_id === state.story_id && typeof run?.run_id === 'string')
+    .map((run) => run.run_id));
+  const probeStoryId = `${state.story_id}-ownership-probe`;
+  const [managedPrFile, sourcePrFile, managedProbePrFile, sourceProbePrFile, managedReviewRoute, sourceReviewRoute] = await Promise.all([
+    resolvePrArtifactFile(currentRoot, state.story_id),
+    resolvePrArtifactFile(sourceRepo, state.story_id),
+    resolvePrArtifactFile(currentRoot, probeStoryId),
+    resolvePrArtifactFile(sourceRepo, probeStoryId),
+    resolveArtifactRoute(currentRoot, 'review', { storyId: state.story_id }),
+    resolveArtifactRoute(sourceRepo, 'review', { storyId: state.story_id })
+  ]);
+  const managedPrDirectory = path.dirname(managedPrFile);
+  const sourcePrDirectory = path.dirname(sourcePrFile);
+  const prDirectoryIsStoryScoped = managedPrDirectory !== path.dirname(managedProbePrFile)
+    && sourcePrDirectory !== path.dirname(sourceProbePrFile);
+  const prArtifactFileNames = [
+    'pr-prepare.json',
+    'pr-create.json',
+    'verification-evidence.json',
+    'decision-records.json',
+    'pr-merge.json'
+  ];
+  const file_pairs = prDirectoryIsStoryScoped
+    ? []
+    : await Promise.all(prArtifactFileNames.map(async (fileName) => ({
+      source: await resolvePrArtifactFile(currentRoot, state.story_id, fileName),
+      target: await resolvePrArtifactFile(sourceRepo, state.story_id, fileName)
+    })));
+  const directory_pairs = [
+    ...(prDirectoryIsStoryScoped ? [{ source: managedPrDirectory, target: sourcePrDirectory }] : []),
+    {
+      source: managedReviewRoute.canonical.absolute_path,
+      target: sourceReviewRoute.canonical.absolute_path
+    },
+    {
+      source: path.join(workspace, 'verification', state.story_id),
+      target: path.join(sourceWorkspace, 'verification', state.story_id)
+    },
+    ...storyFlowRunIds.map((runId) => ({
+      source: path.join(workspace, 'verification', runId),
+      target: path.join(sourceWorkspace, 'verification', runId)
+    }))
+  ];
+  const manifest = {
+    source: path.join(workspace, 'vibepro-manifest.json'),
+    target: path.join(sourceWorkspace, 'vibepro-manifest.json')
+  };
+  return {
+    file_pairs,
+    directory_pairs,
+    manifest,
+    allowed_roots: [
+      ...file_pairs.map((entry) => entry.target),
+      ...directory_pairs.map((entry) => entry.target),
+      manifest.target
+    ]
+  };
+}
+
+async function listRelativeFiles(root, relativePath = '') {
+  const currentPath = relativePath ? path.join(root, relativePath) : root;
+  try {
+    const metadata = await lstat(currentPath);
+    if (!metadata.isDirectory()) return [relativePath];
+    const files = [];
+    for (const entry of (await readdir(currentPath)).sort()) {
+      files.push(...await listRelativeFiles(root, path.join(relativePath, entry)));
+    }
+    return files;
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+function isManagedWorktreeArtifactPathAllowed(snapshotSet, artifactPath) {
+  return (snapshotSet?.allowed_roots ?? []).some((root) => (
+    artifactPath === root || artifactPath.startsWith(`${root}${path.sep}`)
+  ));
+}
+
+async function readFileSnapshot(filePath) {
+  try {
+    return { existed: true, bytes: await readFile(filePath) };
+  } catch (error) {
+    if (error.code === 'ENOENT') return { existed: false, bytes: null };
+    throw error;
+  }
+}
+
+async function restoreFileSnapshot(snapshot) {
+  if (!snapshot.existed) {
+    await rm(snapshot.file_path, { force: true });
+    return;
+  }
+  await mkdir(path.dirname(snapshot.file_path), { recursive: true });
+  await writeBytesAtomic(snapshot.file_path, snapshot.bytes);
+}
+
+async function syncManagedWorktreeArtifactsToSource(repoRoot, state, options = {}) {
+  const locations = await managedWorktreeArtifactLocations(repoRoot, state);
+  if (!locations) return;
+  for (const pair of locations.file_pairs) {
+    await copyFileIfExists(pair.source, pair.target, options);
+  }
+  for (const pair of locations.directory_pairs) {
+    await copyDirectoryIfExists(pair.source, pair.target, options);
+  }
   await mergeManifestFileIfExists(
-    path.join(workspace, 'vibepro-manifest.json'),
-    path.join(sourceWorkspace, 'vibepro-manifest.json')
+    locations.manifest.source,
+    locations.manifest.target,
+    options
   );
 }
 
-async function collectMergedStoryIds(root) {
-  const ids = new Set();
-  for (const storyId of await safeReaddir(path.join(getWorkspaceDir(root), 'pr'))) {
-    const merge = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json'));
-    if (isMergedArtifact(merge)) ids.add(storyId);
+function compileArtifactTemplateMatcher(template) {
+  const variables = [];
+  let source = '^';
+  let cursor = 0;
+  for (const match of template.matchAll(/\{([a-z_][a-z0-9_]*)\}/g)) {
+    source += template.slice(cursor, match.index).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    source += '([^/]+)';
+    variables.push(match[1]);
+    cursor = match.index + match[0].length;
   }
+  source += template.slice(cursor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return { regex: new RegExp(`${source}$`), variables };
+}
+
+async function collectRoutedPrStoryIds(root) {
+  const { routing } = await readArtifactRoutingConfig(root);
+  const canonicalTemplates = routing?.schema_version === '0.2.0'
+    ? Object.values(routing.profiles ?? {})
+      .map((profile) => profile?.artifacts?.pr?.canonical)
+      .filter((template) => typeof template === 'string' && template)
+    : [routing?.artifacts?.pr?.canonical ?? DEFAULT_ARTIFACT_TEMPLATES.pr];
+  const storyIds = new Set();
+  for (const canonicalTemplate of new Set(canonicalTemplates)) {
+    const mergeTemplate = routing?.schema_version === '0.2.0'
+      ? path.posix.join(path.posix.dirname(canonicalTemplate), 'pr-merge.json')
+      : derivePrArtifactTemplate(canonicalTemplate, 'pr-merge.json');
+    const firstVariable = mergeTemplate.search(/\{[a-z_][a-z0-9_]*\}/);
+    const prefixSource = firstVariable === -1
+      ? path.posix.dirname(mergeTemplate)
+      : mergeTemplate.slice(0, firstVariable);
+    const scanRoot = firstVariable === -1
+      ? prefixSource
+      : prefixSource.slice(0, Math.max(0, prefixSource.lastIndexOf('/')));
+    const { regex, variables } = compileArtifactTemplateMatcher(mergeTemplate);
+    for (const relativePath of await listRelativeFiles(root, scanRoot)) {
+      const normalizedPath = relativePath.split(path.sep).join('/');
+      const match = regex.exec(normalizedPath);
+      if (!match) continue;
+      const artifact = await readJsonIfExists(path.join(root, relativePath));
+      const capturedStoryId = variables.indexOf('story_id');
+      const storyId = artifact?.story?.story_id
+        ?? artifact?.story_id
+        ?? (capturedStoryId === -1 ? null : match[capturedStoryId + 1]);
+      if (typeof storyId === 'string' && storyId.trim()) storyIds.add(storyId.trim());
+    }
+  }
+  return [...storyIds].sort();
+}
+
+async function collectMergedStoryIds(root) {
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const facts = new Map();
+  const ensureFacts = (storyId) => {
+    if (!facts.has(storyId)) {
+      facts.set(storyId, {
+        current_local_delivery_status: null,
+        fallback_delivery_statuses: [],
+        legacy_merged: false,
+        expected_base_ref: null,
+        expected_pr_selector: null
+      });
+    }
+    return facts.get(storyId);
+  };
+  const recordArtifact = (storyId, artifact, { currentLocal = false } = {}) => {
+    if (!artifact) return;
+    const storyFacts = ensureFacts(storyId);
+    if (currentLocal && isCurrentPrLifecycleArtifact(artifact, currentHeadSha)) {
+      storyFacts.expected_base_ref = resolveMergeBase(artifact) ?? storyFacts.expected_base_ref;
+      storyFacts.expected_pr_selector = resolvePrSelector(artifact) ?? storyFacts.expected_pr_selector;
+      storyFacts.current_local_delivery_status = typeof artifact?.delivery?.status === 'string'
+        ? artifact.delivery.status
+        : isMergedArtifact(artifact) ? 'merged' : 'unverified';
+      return;
+    }
+    if (typeof artifact?.delivery?.status === 'string') {
+      if (
+        ['merged', 'merged_externally'].includes(artifact.delivery.status)
+        && !deliveryIdentityMatches(artifact, {
+          expectedBaseRef: storyFacts.expected_base_ref,
+          expectedPrSelector: storyFacts.expected_pr_selector
+        })
+      ) return;
+      storyFacts.fallback_delivery_statuses.push(artifact.delivery.status);
+      return;
+    }
+    storyFacts.legacy_merged ||= Boolean(
+      isMergedArtifact(artifact)
+      && deliveryIdentityMatches(artifact, {
+        expectedBaseRef: storyFacts.expected_base_ref,
+        expectedPrSelector: storyFacts.expected_pr_selector
+      })
+    );
+  };
   const auditRoot = path.join(root, 'docs', 'management', 'audit-artifacts');
+  const mergedStoryDocs = await collectMergedStoryDocs(root);
+  const candidateStoryIds = new Set([
+    ...await collectRoutedPrStoryIds(root),
+    ...await safeReaddir(auditRoot),
+    ...mergedStoryDocs.map((story) => story.story_id)
+  ]);
+  for (const storyId of [...candidateStoryIds].sort()) {
+    const prCreate = await readJsonIfExists(await resolvePrArtifactFile(root, storyId, 'pr-create.json'));
+    if (isCurrentPrLifecycleArtifact(prCreate, currentHeadSha)) {
+      const storyFacts = ensureFacts(storyId);
+      storyFacts.expected_base_ref = resolveMergeBase(prCreate);
+      storyFacts.expected_pr_selector = resolvePrSelector(prCreate);
+    }
+    const merge = await readJsonIfExists(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'));
+    recordArtifact(storyId, merge, { currentLocal: true });
+  }
   for (const storyId of await safeReaddir(auditRoot)) {
     const merge = await readJsonIfExists(path.join(auditRoot, storyId, 'pr', 'pr-merge.json'));
     const bundle = await readJsonIfExists(path.join(auditRoot, storyId, 'audit-bundle.json'));
-    if (isMergedArtifact(merge) || bundle?.merge?.status === 'merged') ids.add(storyId);
+    recordArtifact(storyId, merge);
+    recordArtifact(storyId, bundle?.merge);
   }
-  for (const story of await collectMergedStoryDocs(root)) {
-    ids.add(story.story_id);
+  for (const story of mergedStoryDocs) {
+    ensureFacts(story.story_id).legacy_merged = true;
   }
-  return [...ids].sort();
+  return [...facts.entries()]
+    .filter(([, storyFacts]) => (
+      storyFacts.current_local_delivery_status !== null
+        ? ['merged', 'merged_externally'].includes(storyFacts.current_local_delivery_status)
+        : storyFacts.fallback_delivery_statuses.length > 0
+          ? storyFacts.fallback_delivery_statuses.every((status) => ['merged', 'merged_externally'].includes(status))
+        : storyFacts.legacy_merged
+    ))
+    .map(([storyId]) => storyId)
+    .sort();
 }
 
 async function collectMergedStoryDocs(root) {
@@ -886,10 +1673,14 @@ function inferMissingMergedEvidence(state, evidence) {
 }
 
 function isMergedArtifact(artifact) {
+  if (typeof artifact?.delivery?.status === 'string') {
+    return ['merged', 'merged_externally'].includes(artifact.delivery.status);
+  }
   return artifact?.status === 'merged'
+    || artifact?.status === 'merged_externally'
     || Boolean(artifact?.merged_at)
     || Boolean(artifact?.merge_commit_sha)
-    || artifact?.merge?.status === 'merged';
+    || (artifact?.merge ? isMergedArtifact(artifact.merge) : false);
 }
 
 export async function safeReaddir(dir) {
@@ -911,32 +1702,39 @@ function collectLinkedExecutionRoots(state) {
   ].filter(Boolean).map((target) => path.resolve(target)));
 }
 
-async function copyDirectoryIfExists(source, target) {
-  try {
-    await cp(source, target, { recursive: true, force: true });
-  } catch (error) {
-    if (error.code === 'ENOENT') return;
-    throw error;
+async function copyDirectoryIfExists(source, target, options = {}) {
+  for (const relativePath of await listRelativeFiles(source)) {
+    const sourcePath = relativePath ? path.join(source, relativePath) : source;
+    const targetPath = relativePath ? path.join(target, relativePath) : target;
+    await options.onArtifactWillWrite?.(targetPath);
+    await mkdir(path.dirname(targetPath), { recursive: true });
+    await cp(sourcePath, targetPath, { force: true });
+    await options.onArtifactWritten?.(targetPath);
   }
 }
 
-async function copyFileIfExists(source, target) {
+async function copyFileIfExists(source, target, options = {}) {
   try {
+    await lstat(source);
+    await options.onArtifactWillWrite?.(target);
     await mkdir(path.dirname(target), { recursive: true });
     await cp(source, target, { force: true });
+    await options.onArtifactWritten?.(target);
   } catch (error) {
     if (error.code === 'ENOENT') return;
     throw error;
   }
 }
 
-async function mergeManifestFileIfExists(source, target) {
+async function mergeManifestFileIfExists(source, target, options = {}) {
   const managed = await readJsonIfExists(source);
   if (!managed) return;
   const existing = await readJsonIfExists(target);
   const merged = mergeWorkspaceManifest(existing, managed);
+  await options.onArtifactWillWrite?.(target);
   await mkdir(path.dirname(target), { recursive: true });
   await writeJsonAtomic(target, merged);
+  await options.onArtifactWritten?.(target);
 }
 
 function mergeWorkspaceManifest(existing, managed) {
@@ -998,17 +1796,26 @@ async function readJsonIfExists(filePath) {
 }
 
 async function writeJsonAtomic(filePath, value) {
+  await writeBytesAtomic(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function writeBytesAtomic(filePath, value) {
   const dir = path.dirname(filePath);
   const base = path.basename(filePath);
   const tempPath = path.join(dir, `.${base}.${process.pid}.${Date.now()}.tmp`);
   try {
-    await writeFile(tempPath, `${JSON.stringify(value, null, 2)}\n`);
+    await writeFile(tempPath, value);
     await rename(tempPath, filePath);
   } catch (error) {
     await rm(tempPath, { force: true });
     throw error;
   }
 }
+
+export const __testing__ = {
+  restoreMergeFollowupStateOrThrow,
+  writeExecutionStateWithLinkedCopies
+};
 
 async function gitOptional(repoRoot, args) {
   try {

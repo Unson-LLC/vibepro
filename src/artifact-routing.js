@@ -1,4 +1,4 @@
-import { access, lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { access, lstat, mkdir, readFile, realpath, readdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
@@ -48,6 +48,9 @@ export async function resolveArtifactRoutes(repoRoot, options = {}) {
   for (const kind of ARTIFACT_KINDS) {
     const configured = artifacts[kind] ?? {};
     const canonicalTemplate = configured.canonical ?? DEFAULT_ARTIFACT_TEMPLATES[kind];
+    if (kind === 'pr' && effectiveSchemaVersion === LEGACY_ARTIFACT_ROUTING_SCHEMA_VERSION) {
+      derivePrArtifactTemplate(canonicalTemplate, 'pr-merge.json');
+    }
     const canonical = { ownership: configured.ownership ?? (effectiveSchemaVersion === '0.2.0' ? 'generated' : undefined), ...resolveTemplate(root, kind, canonicalTemplate, variables, 'canonical') };
     const projections = (configured.projections ?? []).map((projection, index) => normalizeProjection(root, kind, projection, index, variables, effectiveSchemaVersion));
     const canonicalWriter = canonical.ownership === 'generated' ? 'vibepro' : 'owner';
@@ -60,6 +63,107 @@ export async function resolveArtifactRoutes(repoRoot, options = {}) {
 export async function resolveArtifactRoute(repoRoot, kind, options = {}) {
   if (!ARTIFACT_KINDS.includes(kind)) throw new ArtifactRoutingError('unknown_kind', `Unknown artifact kind: ${kind}`, { kind });
   return (await resolveArtifactRoutes(repoRoot, options)).routes[kind];
+}
+
+export async function resolvePrArtifactFile(repoRoot, storyId, fileName = 'pr-prepare.json') {
+  const route = await resolveArtifactRoute(repoRoot, 'pr', { storyId });
+  if (fileName === 'pr-prepare.json') {
+    return assertArtifactWritePath(repoRoot, route.canonical.relative_path);
+  }
+  if (route.schema_version === ARTIFACT_ROUTING_SCHEMA_VERSION) {
+    return assertArtifactWritePath(
+      repoRoot,
+      toPosix(path.join(path.dirname(route.canonical.relative_path), fileName))
+    );
+  }
+  const template = derivePrArtifactTemplate(route.canonical.template, fileName);
+  const resolved = resolveTemplate(
+    path.resolve(repoRoot),
+    'pr',
+    template,
+    { story_id: storyId, feature_slug: route.feature_slug },
+    fileName
+  );
+  return assertArtifactWritePath(repoRoot, resolved.relative_path);
+}
+
+export function derivePrArtifactTemplate(canonicalTemplate, fileName) {
+  const normalized = toPosix(canonicalTemplate);
+  if (!normalized.includes('{story_id}')) {
+    throw new ArtifactRoutingError(
+      'invalid_pr_route',
+      'artifact_routing.artifacts.pr.canonical must preserve the full story identity with {story_id}',
+      { template: canonicalTemplate }
+    );
+  }
+  const parent = path.posix.dirname(normalized);
+  if (parent.includes('{story_id}')) {
+    return path.posix.join(parent, fileName);
+  }
+  const basename = path.posix.basename(normalized);
+  if (basename.includes('{story_id}') && basename.endsWith('pr-prepare.json')) {
+    return path.posix.join(parent, basename.slice(0, -'pr-prepare.json'.length) + fileName);
+  }
+  throw new ArtifactRoutingError(
+    'invalid_pr_route',
+    'artifact_routing.artifacts.pr.canonical must preserve {story_id} in the parent directory or in a filename ending with pr-prepare.json',
+    { template: canonicalTemplate }
+  );
+}
+
+export async function resolveGateArtifactFile(repoRoot, storyId) {
+  const route = await resolveArtifactRoute(repoRoot, 'gate', { storyId });
+  return assertArtifactWritePath(repoRoot, route.canonical.relative_path);
+}
+
+export async function discoverPrArtifactStoryIds(repoRoot) {
+  const root = path.resolve(repoRoot);
+  const { routing } = await readArtifactRoutingConfig(root);
+  const template = routing?.artifacts?.pr?.canonical;
+  if (typeof template !== 'string' || !template.includes('{story_id}')) return [];
+  const normalized = toPosix(template);
+  const staticPrefix = normalized.slice(0, normalized.indexOf('{'));
+  const scanRelative = path.posix.dirname(staticPrefix.endsWith('/') ? staticPrefix.slice(0, -1) : staticPrefix);
+  const matcher = artifactTemplateMatcher(normalized);
+  const ids = [];
+  for (const filePath of await listFilesRecursive(path.resolve(root, scanRelative === '.' ? '' : scanRelative))) {
+    const match = toPosix(path.relative(root, filePath)).match(matcher);
+    if (match?.groups?.story_id) ids.push(match.groups.story_id);
+  }
+  return [...new Set(ids)];
+}
+
+function artifactTemplateMatcher(template) {
+  let pattern = '';
+  let cursor = 0;
+  for (const match of template.matchAll(/\{(story_id|feature_slug)\}/g)) {
+    pattern += escapeRegex(template.slice(cursor, match.index));
+    pattern += match[1] === 'story_id' ? '(?<story_id>[^/]+)' : '[^/]+';
+    cursor = match.index + match[0].length;
+  }
+  return new RegExp(`^${pattern}${escapeRegex(template.slice(cursor))}$`);
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function listFilesRecursive(dir) {
+  let entries;
+  try { entries = await readdir(dir, { withFileTypes: true }); }
+  catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+  const files = [];
+  for (const entry of entries) {
+    const target = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...await listFilesRecursive(target));
+    else if (entry.isFile()) files.push(target);
+  }
+  return files;
+}
+
+export async function resolveGraphifyArtifactFile(repoRoot, storyId, fileName = 'graph.json') {
+  const route = await resolveArtifactRoute(repoRoot, 'graphify', { storyId });
+  return assertArtifactWritePath(repoRoot, toPosix(path.join(route.canonical.relative_path, fileName)));
 }
 
 // A rendered projection is an implementation by-product, not an author edit.
@@ -80,9 +184,6 @@ export async function collectCurrentGeneratedProjectionPaths(repoRoot, options =
   }
   return [...new Set(paths)].sort();
 }
-export async function resolvePrArtifactFile(repoRoot, storyId, fileName = 'pr-prepare.json') { const r = await resolveArtifactRoute(repoRoot, 'pr', { storyId }); return fileName === 'pr-prepare.json' ? r.canonical.absolute_path : assertArtifactWritePath(repoRoot, toPosix(path.join(path.dirname(r.canonical.relative_path), fileName))); }
-export async function resolveGateArtifactFile(repoRoot, storyId) { return (await resolveArtifactRoute(repoRoot, 'gate', { storyId })).canonical.absolute_path; }
-export async function resolveGraphifyArtifactFile(repoRoot, storyId, fileName = 'graph.json') { const r = await resolveArtifactRoute(repoRoot, 'graphify', { storyId }); return assertArtifactWritePath(repoRoot, toPosix(path.join(r.canonical.relative_path, fileName))); }
 
 export async function assertArtifactWritePath(repoRoot, relativePath) {
   if (path.isAbsolute(relativePath)) throw new ArtifactRoutingError('absolute_path', 'Artifact write target must be repository-relative and inside the repository', { target: relativePath });

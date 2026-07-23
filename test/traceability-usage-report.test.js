@@ -472,6 +472,9 @@ test('local pr-merge wins over manifest merge record without double counting', a
     story_id: 'story-local-manifest-dupe',
     story: { story_id: 'story-local-manifest-dupe' },
     status: 'merged',
+    base: 'develop',
+    delivery: { status: 'merged', observed: true },
+    reconciliation: { status: 'reconciliation_required', reasons: ['gate_not_ready'] },
     merged_at: '2026-06-19T00:20:00.000Z',
     pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/124' }
   }, null, 2));
@@ -492,10 +495,167 @@ test('local pr-merge wins over manifest merge record without double counting', a
   const report = await createUsageReport(root);
   const story = findStory(report, 'story-local-manifest-dupe');
   assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.latest_delivery_status, 'merged');
+  assert.equal(story.latest_reconciliation_status, 'reconciliation_required');
+  assert.deepEqual(story.latest_reconciliation_reasons, ['gate_not_ready']);
+  assert.equal(story.blocked, true);
+  assert.match(renderUsageReport(report), /delivery=merged reconciliation=reconciliation_required reconciliation_reasons=gate_not_ready/);
+  assert.match(renderUsageReport(report), /reconciliation_action="vibepro pr prepare \. --story-id story-local-manifest-dupe --base develop && vibepro execute merge \. --story-id story-local-manifest-dupe --base develop --pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/124"/);
   assert.equal(story.traceability_resolution.status, 'local_resolved');
   assert.equal(story.traceability_resolution.artifact_source, 'local');
   assert.deepEqual(story.artifact_sources.filter((item) => item.kind === 'pr_merge').map((item) => item.source), ['local']);
   assert.equal(report.artifact_counts.pr, 1);
+});
+
+test('DRS-S-5 canonical recovery equivalence keeps execution-state sync recovery authoritative', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-sync-recovery' }
+  ]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-sync-recovery');
+  await mkdir(localDir, { recursive: true });
+  const reconciliationAction = {
+    status: 'required',
+    reason: 'execution_state_sync_failed',
+    commands: [
+      'vibepro pr prepare . --story-id story-sync-recovery --base release/2026',
+      'vibepro execute merge . --story-id story-sync-recovery --base release/2026 --pr https://github.com/Unson-LLC/vibepro/pull/205'
+    ]
+  };
+  const recoveryCommand = 'vibepro execute reconcile . --story-id story-sync-recovery --base release/2026 --pr https://github.com/Unson-LLC/vibepro/pull/205';
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-sync-recovery',
+    story: { story_id: 'story-sync-recovery' },
+    status: 'merged_externally',
+    base: 'release/2026',
+    delivery: { status: 'merged_externally', observed: true },
+    reconciliation: { status: 'reconciliation_required', reasons: ['execution_state_sync_failed'] },
+    execution_state_sync: {
+      status: 'failed',
+      recovery_command: recoveryCommand
+    },
+    reconciliation_action: reconciliationAction,
+    merged_at: '2026-07-18T00:20:00.000Z',
+    pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/205' }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-sync-recovery');
+  assert.equal(story.latest_reconciliation_action, 'vibepro execute reconcile . --story-id story-sync-recovery --base release/2026 --pr https://github.com/Unson-LLC/vibepro/pull/205');
+  assert.match(renderUsageReport(report), /reconciliation_action="vibepro execute reconcile \. --story-id story-sync-recovery --base release\/2026 --pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/205"/);
+  assert.doesNotMatch(renderUsageReport(report), /story-sync-recovery.*vibepro pr prepare/);
+
+  const canonicalRoot = await setupReportRepo([{ story_id: 'story-sync-recovery' }]);
+  const auditDir = path.join(canonicalRoot, 'docs', 'management', 'audit-artifacts', 'story-sync-recovery');
+  await mkdir(auditDir, { recursive: true });
+  await writeFile(path.join(auditDir, 'audit-index.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-sync-recovery',
+    generated_at: '2026-07-18T00:21:00.000Z',
+    pr_prepare: { present: false },
+    pr_create: { present: false },
+    pr_merge: {
+      present: true,
+      summary: {
+        status: 'merged_externally',
+        base: 'release/2026',
+        delivery: { status: 'merged_externally', observed: true },
+        reconciliation: { status: 'reconciliation_required', reasons: ['execution_state_sync_failed'] },
+        reconciliation_action: reconciliationAction,
+        execution_state_sync: {
+          status: 'failed',
+          recovery_command: recoveryCommand
+        },
+        pr_url: 'https://github.com/Unson-LLC/vibepro/pull/205',
+        merged_at: '2026-07-18T00:20:00.000Z'
+      }
+    },
+    traceability: { present: false },
+    verification: { present: false },
+    review: { summary_count: 0, result_count: 0, pass_count: 0, block_count: 0 },
+    missing_artifacts: []
+  }, null, 2));
+  await writeFile(path.join(auditDir, 'audit-bundle.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-sync-recovery',
+    source: 'execute_merge',
+    promoted_at: '2026-07-18T00:21:00.000Z',
+    handoff_replay_status: 'ready',
+    artifacts: [{ kind: 'audit_index', canonical_path: 'docs/management/audit-artifacts/story-sync-recovery/audit-index.json' }]
+  }, null, 2));
+
+  const canonicalStory = findStory(await createUsageReport(canonicalRoot), 'story-sync-recovery');
+  assert.equal(canonicalStory.latest_reconciliation_action, story.latest_reconciliation_action);
+});
+
+test('merged_externally delivery resolves traceability for active and completed stories', async () => {
+  const stories = [
+    { story_id: 'story-external-active', status: 'active' },
+    { story_id: 'story-external-completed', status: 'completed' }
+  ];
+  const root = await setupReportRepo(stories);
+
+  for (const story of stories) {
+    const prDir = path.join(root, '.vibepro', 'pr', story.story_id);
+    await mkdir(prDir, { recursive: true });
+    await writeFile(path.join(prDir, 'pr-merge.json'), JSON.stringify({
+      schema_version: '0.1.0',
+      story_id: story.story_id,
+      story: { story_id: story.story_id },
+      status: 'merged_externally',
+      base: 'main',
+      delivery: { status: 'merged_externally', observed: true },
+      reconciliation: { status: 'reconciled', reasons: [] },
+      merged_at: '2026-07-18T00:00:00.000Z',
+      pr: { url: `https://github.com/Unson-LLC/vibepro/pull/${story.status === 'active' ? 201 : 202}` }
+    }, null, 2));
+  }
+
+  const report = await createUsageReport(root);
+  for (const story of stories) {
+    const usage = findStory(report, story.story_id);
+    assert.equal(usage.latest_delivery_status, 'merged_externally');
+    assert.equal(
+      usage.traceability_gaps.some((gap) => gap.kind === 'traceability_stale_merge_artifact'),
+      false,
+      `${story.story_id} must accept canonical merged_externally delivery`
+    );
+  }
+});
+
+test('DRS-S-2 manifest-only fallback preserves explicitly unverified delivery', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-manifest-unverified-delivery' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-unverified-delivery': {
+        latest_merge: '.vibepro/pr/story-manifest-unverified-delivery/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/126',
+        latest_merge_commit: 'legacy-sha-must-not-win',
+        latest_merged_at: '2026-06-19T00:30:00.000Z',
+        latest_dry_run: false,
+        latest_status: 'failed',
+        latest_base: 'develop',
+        latest_delivery: { status: 'unverified', observed: false },
+        latest_reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-manifest-unverified-delivery');
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.latest_merge_status, 'failed');
+  assert.equal(story.latest_delivery_status, 'unverified');
+  assert.equal(story.latest_reconciliation_status, 'blocked');
+  assert.deepEqual(story.latest_reconciliation_reasons, ['delivery_not_verified']);
+  assert.match(renderUsageReport(report), /delivery=unverified reconciliation=blocked reconciliation_reasons=delivery_not_verified/);
+  assert.match(renderUsageReport(report), /--base develop --pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/126/);
 });
 
 test('manifest dry-run merge record does not resolve traceability', async () => {
@@ -667,4 +827,37 @@ test('subagent ROI separates wall-clock time from concurrent agent consumption a
   assert.match(rendered, /agent_consumption_minutes: 3/);
   assert.match(rendered, /codex: reviews=2 wall_clock_minutes=2 agent_minutes=3 tokens=2000 missing_tokens=0/);
   assert.match(rendered, /claude_code: reviews=1 wall_clock_minutes=unknown agent_minutes=0 tokens=unknown missing_tokens=1/);
+});
+
+test('configured routes discover route-only PR authority and resolve gate and review artifacts', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-routed-usage-'));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    artifact_routing: { artifacts: {
+      pr: { canonical: '.vibepro/routed/{story_id}-pr-prepare.json' },
+      gate: { canonical: '.vibepro/gates/{story_id}.json' },
+      review: { canonical: '.vibepro/routed-reviews/{story_id}' }
+    } }
+  }));
+  await mkdir(path.join(root, '.vibepro', 'routed'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'routed', 'story-route-only-pr-prepare.json'), JSON.stringify({
+    story: { story_id: 'story-route-only' },
+    created_at: '2026-06-12T00:00:00.000Z',
+    gate_status: { overall_status: 'blocked', ready_for_pr_create: false }
+  }));
+  await mkdir(path.join(root, '.vibepro', 'gates'), { recursive: true });
+  await writeFile(path.join(root, '.vibepro', 'gates', 'story-route-only.json'), JSON.stringify({
+    story_id: 'story-route-only', generated_at: '2026-06-12T00:00:00.000Z', overall_status: 'blocked', nodes: []
+  }));
+  const reviewDir = path.join(root, '.vibepro', 'routed-reviews', 'story-route-only', 'gate');
+  await mkdir(reviewDir, { recursive: true });
+  await writeFile(path.join(reviewDir, 'review-summary.json'), JSON.stringify({
+    story_id: 'story-route-only', updated_at: '2026-06-12T00:00:00.000Z', status: 'needs_changes', roles: []
+  }));
+
+  const report = await createUsageReport(root);
+  const story = report.stories.find((item) => item.story_id === 'story-route-only');
+  assert.equal(story?.prepared, true);
+  assert.equal(story?.latest_gate_status, 'blocked');
+  assert.ok(story?.artifacts.some((artifact) => artifact.includes('routed-reviews/story-route-only/gate/review-summary.json')));
 });

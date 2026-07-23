@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import { discoverPrArtifactStoryIds, resolveGateArtifactFile, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const JOURNEY_SCHEMA_VERSION = '0.1.0';
@@ -701,34 +701,48 @@ async function readGraphifyEvidence(root) {
 }
 
 async function readGateEvidence(root) {
-  const configuredStoryIds = await readConfiguredStoryIds(root);
-  if (configuredStoryIds.length > 0) {
-    const evidence = [];
-    for (const storyId of configuredStoryIds) {
-      const verificationPath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
-      const gateDagPath = await resolveGateArtifactFile(root, storyId);
-      evidence.push(...await readVerificationEvidence(path.dirname(verificationPath), root, storyId));
-      evidence.push(...await readGateDagEvidence(path.dirname(gateDagPath), root, storyId));
-    }
-    return evidence;
+  const [configuredStoryIds, routedStoryIds, catalogStories, docStories] = await Promise.all([
+    readConfiguredStoryIds(root),
+    discoverPrArtifactStoryIds(root),
+    readCatalogStories(root),
+    readStoryDocs(root)
+  ]);
+  let storyIds = [...new Set([
+    ...configuredStoryIds,
+    ...routedStoryIds,
+    ...catalogStories.map((story) => story.story_id),
+    ...docStories.map((story) => story.story_id)
+  ].filter(Boolean))];
+  if (storyIds.length === 0 && !await hasConfiguredPrRoute(root)) {
+    storyIds = await safeDirectoryNames(path.join(root, '.vibepro', 'pr'));
   }
-  const prRoot = path.join(getWorkspaceDir(root), 'pr');
-  let entries;
+  const evidence = [];
+  for (const storyId of storyIds) {
+    const verificationPath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
+    const gateDagPath = await resolveGateArtifactFile(root, storyId);
+    evidence.push(...await readVerificationEvidence(verificationPath, root, storyId));
+    evidence.push(...await readGateDagEvidence(gateDagPath, root, storyId));
+  }
+  return evidence;
+}
+
+async function hasConfiguredPrRoute(root) {
   try {
-    entries = await readdir(prRoot, { withFileTypes: true });
+    const config = JSON.parse(await readFile(path.join(root, '.vibepro', 'config.json'), 'utf8'));
+    return typeof config.artifact_routing?.artifacts?.pr?.canonical === 'string';
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+async function safeDirectoryNames(dir) {
+  try {
+    return (await readdir(dir, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
   } catch (error) {
     if (error.code === 'ENOENT') return [];
     throw error;
   }
-  const evidence = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const storyId = entry.name;
-    const prDir = path.join(prRoot, storyId);
-    evidence.push(...await readVerificationEvidence(prDir, root, storyId));
-    evidence.push(...await readGateDagEvidence(prDir, root, storyId));
-  }
-  return evidence;
 }
 
 async function readConfiguredStoryIds(root) {
@@ -741,8 +755,7 @@ async function readConfiguredStoryIds(root) {
   }
 }
 
-async function readVerificationEvidence(prDir, root, storyId) {
-  const evidencePath = path.join(prDir, 'verification-evidence.json');
+async function readVerificationEvidence(evidencePath, root, storyId) {
   let parsed;
   try {
     parsed = JSON.parse(await readFile(evidencePath, 'utf8'));
@@ -767,8 +780,7 @@ async function readVerificationEvidence(prDir, root, storyId) {
     : [];
 }
 
-async function readGateDagEvidence(prDir, root, storyId) {
-  const gateDagPath = path.join(prDir, 'gate-dag.json');
+async function readGateDagEvidence(gateDagPath, root, storyId) {
   let parsed;
   try {
     parsed = JSON.parse(await readFile(gateDagPath, 'utf8'));

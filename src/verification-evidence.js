@@ -8,6 +8,7 @@ import { collectGitContext } from './git-fingerprint.js';
 import { collectCurrentGeneratedProjectionPaths } from './artifact-routing.js';
 import { buildContentBinding } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
@@ -47,9 +48,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const observation = buildObservation(options, artifactObservedValues);
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   const observationCheck = buildObservationCheck({ status: options.status, observation });
-  const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
-  await mkdir(prDir, { recursive: true });
-  const evidencePath = path.join(prDir, 'verification-evidence.json');
+  const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
   const contentBinding = await buildContentBinding(root, {
     gitContext,
     strictHead: options.strictHeadBinding === true,

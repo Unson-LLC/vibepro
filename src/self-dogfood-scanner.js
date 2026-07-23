@@ -3,7 +3,7 @@ import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import { discoverPrArtifactStoryIds, readArtifactRoutingConfig, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -130,6 +130,14 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
   if (options.storyId) {
     return scanResolvedStoryGateArtifacts(repoRoot, options.storyId);
   }
+  const configuredStoryIds = await readConfiguredStoryIds(repoRoot);
+  const routedStoryIds = await discoverPrArtifactStoryIds(repoRoot);
+  const storyIds = [...new Set([...configuredStoryIds, ...routedStoryIds])];
+  if (storyIds.length > 0) {
+    return (await Promise.all(storyIds.map((storyId) => scanResolvedStoryGateArtifacts(repoRoot, storyId)))).flat();
+  }
+  const { routing } = await readArtifactRoutingConfig(repoRoot);
+  if (routing?.artifacts?.pr) return [];
   const prDir = path.join(workspaceDir, 'pr');
   if (!(await exists(prDir))) return [];
   const entries = await readdir(prDir, { withFileTypes: true });
@@ -148,7 +156,7 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
     const hasGateDag = await exists(gateDagPath);
     const hasCreate = await exists(createPath);
     const hasSummaryGateContract = hasPrepare && !hasGateDag
-      ? await hasSummaryDepthFinalGateContract(storyPrDir, storyId)
+      ? await hasSummaryDepthFinalGateContract(repoRoot, storyId)
       : false;
     if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
       findings.push({
@@ -226,7 +234,7 @@ async function scanResolvedStoryGateArtifacts(repoRoot, storyId) {
   const hasCreate = await exists(createPath);
   const findings = [];
   const hasSummaryGateContract = hasPrepare && !hasGateDag
-    ? await hasSummaryDepthFinalGateContract(storyPrDir, storyId)
+    ? await hasSummaryDepthFinalGateContract(repoRoot, storyId)
     : false;
   if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
     findings.push({
@@ -287,9 +295,9 @@ async function scanResolvedStoryGateArtifacts(repoRoot, storyId) {
   return findings;
 }
 
-async function hasSummaryDepthFinalGateContract(storyPrDir, storyId) {
-  const evidencePlan = await readJson(path.join(storyPrDir, 'evidence-plan.json'));
-  const decisionIndex = await readJson(path.join(storyPrDir, 'decision-index.json'));
+async function hasSummaryDepthFinalGateContract(repoRoot, storyId) {
+  const evidencePlan = await readJson(await resolvePrArtifactFile(repoRoot, storyId, 'evidence-plan.json'));
+  const decisionIndex = await readJson(await resolvePrArtifactFile(repoRoot, storyId, 'decision-index.json'));
   if (!evidencePlan || !decisionIndex) return false;
   if (evidencePlan.evidence_depth !== 'summary' || decisionIndex.evidence_depth !== 'summary') return false;
   if (decisionIndex.story_id && decisionIndex.story_id !== storyId) return false;
@@ -385,6 +393,30 @@ function hasEscapedNewlinePrBody(body) {
 }
 
 async function findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, options = {}) {
+  if (options.storyId) {
+    const createPath = await resolvePrArtifactFile(repoRoot, options.storyId, 'pr-create.json');
+    if (!(await exists(createPath))) return null;
+    const prCreate = await readJson(createPath);
+    return isValidPrCreateEvidence(prCreate, currentPr) && matchesCurrentPr(prCreate, currentPr)
+      ? { story_id: options.storyId, path: toWorkspaceRelative(repoRoot, createPath), evidence: prCreate }
+      : null;
+  }
+  const configuredStoryIds = await readConfiguredStoryIds(repoRoot);
+  const routedStoryIds = await discoverPrArtifactStoryIds(repoRoot);
+  const storyIds = [...new Set([...configuredStoryIds, ...routedStoryIds])];
+  if (storyIds.length > 0) {
+    for (const storyId of storyIds) {
+      const createPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.json');
+      if (!(await exists(createPath))) continue;
+      const prCreate = await readJson(createPath);
+      if (isValidPrCreateEvidence(prCreate, currentPr) && matchesCurrentPr(prCreate, currentPr)) {
+        return { story_id: storyId, path: toWorkspaceRelative(repoRoot, createPath), evidence: prCreate };
+      }
+    }
+    return null;
+  }
+  const { routing } = await readArtifactRoutingConfig(repoRoot);
+  if (routing?.artifacts?.pr) return null;
   const prDir = path.join(workspaceDir, 'pr');
   if (!(await exists(prDir))) return null;
   const entries = await readdir(prDir, { withFileTypes: true });
@@ -400,6 +432,16 @@ async function findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, o
     }
   }
   return null;
+}
+
+async function readConfiguredStoryIds(repoRoot) {
+  try {
+    const config = await readJson(path.join(repoRoot, '.vibepro', 'config.json'));
+    return [...new Set((config?.brainbase?.stories ?? []).map((story) => story?.story_id ?? story?.id).filter(Boolean))];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 function isValidPrCreateEvidence(prCreate, currentPr) {

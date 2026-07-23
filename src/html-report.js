@@ -1,4 +1,5 @@
 import { localizedText } from './language.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
 import { describeScanStatus } from './scan-status.js';
 
 export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
@@ -287,10 +288,27 @@ export function renderPrCreateHtml(execution, options = {}) {
 }
 
 export function renderPrMergeHtml(merge, options = {}) {
-  const results = merge.results.length === 0
+  const recordedResults = Array.isArray(merge.results) ? merge.results : [];
+  const results = recordedResults.length === 0
     ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
-    : merge.results;
+    : recordedResults;
   const language = options.language ?? merge.output?.language ?? 'ja';
+  const reconciliationAction = resolveReconciliationAction(merge);
+  const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
+  const restoreErrors = Array.isArray(persistenceDetails?.restore_errors)
+    ? persistenceDetails.restore_errors
+    : [];
+  const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
+    ? [
+        `sync_status: failed`,
+        `sync_reason: ${merge.execution_state_sync.reason}`,
+        `followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
+        ...(persistenceDetails?.code ? [`persistence_code: ${persistenceDetails.code}`] : []),
+        ...(persistenceDetails?.cause ? [`original_error: ${persistenceDetails.cause}`] : []),
+        `rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`,
+        ...restoreErrors.map((item) => `restore_error: ${item.artifact_path ?? '-'}: ${item.message ?? 'unknown restore error'}`)
+      ]
+    : [];
   return renderDocument({
     title: 'VibePro Execute Merge',
     reportType: 'pr-merge',
@@ -310,6 +328,8 @@ export function renderPrMergeHtml(merge, options = {}) {
         ${metricCard('Base', merge.base ?? '-', merge.pr?.base_ref_name ?? '-')}
         ${metricCard('Merge commit', merge.merge_commit_sha ?? '-', merge.merged_at ?? 'not merged')}
         ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
+        ${metricCard('Delivery', merge.delivery?.status ?? 'unknown', merge.delivery?.source ?? '-')}
+        ${metricCard('Reconciliation', merge.reconciliation?.status ?? 'unknown', (merge.reconciliation?.reasons ?? []).join(', ') || 'no reasons')}
       </section>
       ${renderPrLifecycleFreshnessPanel(merge.artifact_freshness, language)}
       <section>
@@ -340,6 +360,16 @@ export function renderPrMergeHtml(merge, options = {}) {
           ${renderList(merge.warnings?.length ? merge.warnings : ['なし'])}
         </div>
       </section>
+      ${reconciliationAction ? `
+      <section>
+        <h2>Required Follow-up</h2>
+        ${renderList(reconciliationAction.commands)}
+      </section>` : ''}
+      ${synchronizationDiagnostics.length > 0 ? `
+      <section>
+        <h2>Synchronization and Rollback Diagnostics</h2>
+        ${renderList(synchronizationDiagnostics)}
+      </section>` : ''}
       <section>
         <h2>Check Rollup</h2>
         ${renderList((merge.pr?.checks ?? []).map((check) => `${check.name}: ${check.status}/${check.conclusion || '-'}`))}

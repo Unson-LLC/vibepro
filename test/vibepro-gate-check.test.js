@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -116,6 +116,31 @@ test('gate check is read-only: leaves existing .vibepro/pr/<story-id> artifacts 
   // precision; a sub-millisecond tolerance still proves the file was
   // restored rather than freshly rewritten by `preparePullRequest`.
   assert.ok(Math.abs(statAfter.mtimeMs - statBefore.mtimeMs) < 1);
+});
+
+test('gate check rejects snapshot routes through an external symlink without touching outside files', async () => {
+  const repo = await makeGitRepoWithStory('story-gate-check');
+  const outside = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gate-check-outside-'));
+  const sentinel = path.join(outside, 'sentinel.txt');
+  await writeFile(sentinel, 'outside-authority\n');
+  await symlink(outside, path.join(repo, 'linked'), 'dir');
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = {
+    artifacts: {
+      pr: { canonical: 'linked/pr/{story_id}/pr-prepare.json' },
+      gate: { canonical: 'linked/gate/{story_id}/gate-dag.json' }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = await runCli(['gate', 'check', repo, '--story-id', 'story-gate-check', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.result.status, 'error');
+  assert.match(result.result.error, /repository root|travers/i);
+  assert.equal(await readFile(sentinel, 'utf8'), 'outside-authority\n');
 });
 
 test('gate check reports a clean error for a nonexistent story id', async () => {
@@ -237,6 +262,20 @@ title: Docs Only Update Spec
     '--json'
   ]);
   assert.equal(adjudication.exitCode, 0);
+
+  const verification = await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-gate-check',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/vibepro-gate-check.test.js',
+    '--summary', 'AC-1 docs-only contract is demonstrated by the committed fixture',
+    '--target', 'docs/management/stories/active/story-gate-check.md',
+    '--scenario', 'AC-1: ドキュメントのみの変更である',
+    '--observed', 'changed_surface=story_and_spec_docs_only',
+    '--json'
+  ]);
+  assert.equal(verification.exitCode, 0, JSON.stringify(verification, null, 2));
 
   const result = await runCli(['gate', 'check', repo, '--story-id', 'story-gate-check', '--base', 'main', '--ci', '--json']);
 

@@ -14,10 +14,10 @@ import {
   isCurrentGeneratedProjection,
   projectArtifact,
   resolveArtifactRoute,
+  resolveArtifactRoutes,
   resolveGateArtifactFile,
   resolveGraphifyArtifactFile,
   resolvePrArtifactFile,
-  resolveArtifactRoutes,
   writeArtifactProjections
 } from '../src/artifact-routing.js';
 import { collectGitContext } from '../src/git-fingerprint.js';
@@ -26,6 +26,7 @@ import { readInferredSpec, writeInferredSpec } from '../src/spec-store.js';
 import { createStoryTasks } from '../src/story-task-generator.js';
 import { runCli } from '../src/cli.js';
 import { createTasksFromPlan } from '../src/task-manager.js';
+import { createUsageReport } from '../src/usage-report.js';
 import { importGraphifyArtifacts } from '../src/graphify-adapter.js';
 
 const execFileAsync = promisify(execFile);
@@ -37,8 +38,7 @@ test('upgraded repository keeps legacy catalog Stories operable while the select
   assert.ok(stories.some((story) => story.story_id === 'story-vibepro-story-run-portfolio-controller'));
   for (const story of stories) {
     const resolved = await resolveArtifactRoutes(root, { storyId: story.story_id });
-    if (story.story_id === 'story-vibepro-routing-profiles-rendered-projections') {
-      assert.equal(story.artifact_profile, 'feature_packet');
+    if (story.artifact_profile) {
       assert.equal(resolved.profile, story.artifact_profile);
       assert.equal(resolved.variables.feature_slug, story.feature_slug);
     } else {
@@ -802,6 +802,27 @@ test('write containment rejects a configured path through a symlink outside the 
   );
 });
 
+test('PR and Gate resolvers reject canonical routes through an external symlink', async () => {
+  const root = await repo({
+    artifact_routing: {
+      artifacts: {
+        pr: { canonical: 'linked/pr/{story_id}/pr-prepare.json' },
+        gate: { canonical: 'linked/gate/{story_id}/gate-dag.json' }
+      }
+    }
+  });
+  const outside = await mkdtemp(path.join(os.tmpdir(), 'vibepro-artifact-resolver-outside-'));
+  await symlink(outside, path.join(root, 'linked'), 'dir');
+  await assert.rejects(
+    resolvePrArtifactFile(root, 'story-example'),
+    (error) => error.code === 'repository_traversal'
+  );
+  await assert.rejects(
+    resolveGateArtifactFile(root, 'story-example'),
+    (error) => error.code === 'repository_traversal'
+  );
+});
+
 test('architecture and accepted spec read and write the same configured canonical paths', async () => {
   const root = await repo({
     artifact_routing: {
@@ -985,6 +1006,45 @@ test('projections fail closed for artifact kinds without a centralized writer', 
   );
 });
 
+test('flat PR routes preserve story identity in every lifecycle sibling filename', async () => {
+  const root = await repo({
+    artifact_routing: {
+      artifacts: { pr: { canonical: '.vibepro/routed/{story_id}-pr-prepare.json' } }
+    }
+  });
+
+  assert.equal(
+    path.relative(root, await resolvePrArtifactFile(root, 'story-a', 'pr-merge.json')),
+    path.join('.vibepro', 'routed', 'story-a-pr-merge.json')
+  );
+  assert.equal(
+    path.relative(root, await resolvePrArtifactFile(root, 'story-b', 'pr-create.json')),
+    path.join('.vibepro', 'routed', 'story-b-pr-create.json')
+  );
+});
+
+test('PR routes fail closed when sibling lifecycle files cannot preserve story identity', async () => {
+  const root = await repo({
+    artifact_routing: {
+      artifacts: { pr: { canonical: '.vibepro/routed/prepare-{story_id}.json' } }
+    }
+  });
+  await assert.rejects(
+    resolveArtifactRoute(root, 'pr', { storyId: 'story-example' }),
+    (error) => error.code === 'invalid_pr_route'
+  );
+});
+
+test('PR routes reject feature slugs that can collide across distinct story identities', async () => {
+  const root = await repo({ artifact_routing: { artifacts: {
+    pr: { canonical: '.vibepro/routed/{feature_slug}/pr-prepare.json' }
+  } } });
+  await assert.rejects(
+    resolvePrArtifactFile(root, 'story-alpha', 'pr-merge.json'),
+    (error) => error.code === 'invalid_pr_route' && /\{story_id\}/.test(error.message)
+  );
+});
+
 test('directory artifact routes cannot contain another artifact destination', async () => {
   const root = await repo({
     artifact_routing: {
@@ -1028,7 +1088,7 @@ test('Story Architecture Spec Task Graphify Review Gate PR status migration use 
   config.artifact_routing = { artifacts: {
     review: { canonical: 'docs/features/{feature_slug}/reviews' },
     gate: { canonical: 'docs/features/{feature_slug}/gate-dag.json' },
-    pr: { canonical: 'docs/features/{feature_slug}/pr-prepare.json' }
+    pr: { canonical: '.vibepro/routed/{story_id}-pr-prepare.json' }
   } };
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await execFileAsync('git', ['add', '.'], { cwd: root });
@@ -1051,15 +1111,77 @@ test('Story Architecture Spec Task Graphify Review Gate PR status migration use 
     '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'
   ], { stdout: silent, stderr: silent });
   assert.equal(prepare.exitCode, 0, commandOutput);
+  const verification = await runCli([
+    'verify', 'record', root, '--id', 'story-routing-lifecycle', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test test/routing.test.js', '--target', 'src/index.js', '--observed', 'exit_code=0'
+  ], { stdout: silent, stderr: silent });
+  assert.equal(verification.exitCode, 0, commandOutput);
 
   const featureDir = path.join(root, 'docs/features/routing-lifecycle');
+  const routedDir = path.join(root, '.vibepro/routed');
+  const routedArtifact = (file) => path.join(routedDir, `story-routing-lifecycle-${file}`);
   await access(path.join(featureDir, 'reviews/architecture_spec/review-plan.json'));
   await access(path.join(featureDir, 'gate-dag.json'));
-  const prArtifact = JSON.parse(await readFile(path.join(featureDir, 'pr-prepare.json'), 'utf8'));
+  const prArtifact = JSON.parse(await readFile(routedArtifact('pr-prepare.json'), 'utf8'));
   assert.equal(prArtifact.story.story_id, 'story-routing-lifecycle');
+  assert.equal(prArtifact.artifact_refs['pr-prepare.json'], '.vibepro/routed/story-routing-lifecycle-pr-prepare.json');
+  assert.equal(prArtifact.artifact_refs['pr-body.md'], '.vibepro/routed/story-routing-lifecycle-pr-body.md');
+  assert.equal(
+    JSON.parse(await readFile(routedArtifact('verification-evidence.json'), 'utf8')).story_id,
+    'story-routing-lifecycle',
+    'verification producer must use the configured PR authority'
+  );
+  await access(routedArtifact('evidence-reuse.json'));
+  await access(routedArtifact('decision-index.json'));
+  await access(routedArtifact('pr-body.md'));
+  const prBody = await readFile(routedArtifact('pr-body.md'), 'utf8');
+  assert.match(prBody, /\.vibepro\/routed\/story-routing-lifecycle-pr-prepare\.json/);
+  assert.doesNotMatch(prBody, /\.vibepro\/pr\/story-routing-lifecycle\/pr-prepare\.json/);
+  const usage = await createUsageReport(root);
+  assert.equal(
+    usage.stories.find((story) => story.story_id === 'story-routing-lifecycle')?.prepared,
+    true,
+    'usage reporting must discover PR artifacts through the configured canonical route'
+  );
+  const currentHead = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root })).stdout.trim();
+  await writeFile(routedArtifact('pr-create.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    mode: 'pr_create',
+    dry_run: true,
+    workspace_initialized: true,
+    story: { story_id: 'story-routing-lifecycle' },
+    task_context: null,
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', summary: { needs_evidence_count: 0 }, nodes: [] },
+    execution_gate: { status: 'passed', pr_create_allowed: true },
+    gate_override: null,
+    toolchain: { source_git: { commit: currentHead, branch: 'feature/routing' } },
+    base: 'main',
+    head: 'feature/routing',
+    title: 'Configured route lifecycle',
+    body_file: '.vibepro/routed/story-routing-lifecycle-pr-body.md',
+    prepare_artifacts: {},
+    warnings: [],
+    commands: [],
+    results: [],
+    created_at: new Date().toISOString()
+  }, null, 2)}\n`);
+  const refreshedPrepare = await runCli([
+    'pr', 'prepare', root, '--base', 'main', '--story-id', 'story-routing-lifecycle', '--allow-extra-files',
+    '--evidence-depth', 'full', '--evidence-depth-reason', 'routing lifecycle read test',
+    '--evidence-depth-consumer', 'artifact-routing-test', '--evidence-depth-target', 'gate:e2e'
+  ], { stdout: silent, stderr: silent });
+  assert.equal(refreshedPrepare.exitCode, 0, commandOutput);
+  assert.equal(refreshedPrepare.result.preparation.lifecycle_artifacts.status, 'current');
+  assert.equal(
+    refreshedPrepare.result.preparation.lifecycle_artifacts.artifacts.find((artifact) => artifact.kind === 'pr_create')?.exists,
+    true,
+    'lifecycle inspection must read pr-create from the configured canonical route'
+  );
   await assert.rejects(access(path.join(root, '.vibepro/reviews/story-routing-lifecycle')));
   await assert.rejects(access(path.join(root, '.vibepro/pr/story-routing-lifecycle/gate-dag.json')));
   await assert.rejects(access(path.join(root, '.vibepro/pr/story-routing-lifecycle/pr-prepare.json')));
+  await assert.rejects(access(path.join(root, '.vibepro/pr/story-routing-lifecycle/verification-evidence.json')));
 });
 
 test('named profile Graphify review and PR producers leave the removed legacy directory absent', async () => {

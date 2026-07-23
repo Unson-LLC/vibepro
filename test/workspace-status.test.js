@@ -50,11 +50,16 @@ test('workspace status reads configured PR canonical instead of legacy scan root
   await writeFile(path.join(linked, '.vibepro', 'config.json'), JSON.stringify({
     artifact_routing: {
       schema_version: '0.1.0',
-      artifacts: { pr: { canonical: 'features/{feature_slug}/pr-prepare.json' } }
-    },
-    brainbase: { stories: [{ story_id: 'story-routed-status' }] }
+      artifacts: { pr: { canonical: 'features/{story_id}/pr-prepare.json' } }
+    }
   }));
-  const artifactPath = path.join(linked, 'features', 'routed-status', 'pr-prepare.json');
+  await mkdir(path.join(linked, '.vibepro', 'pr', 'legacy-decoy'), { recursive: true });
+  await writeFile(path.join(linked, '.vibepro', 'pr', 'legacy-decoy', 'pr-prepare.json'), JSON.stringify({
+    story: { story_id: 'legacy-decoy' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    artifact_freshness: { artifact_head_sha: head }
+  }));
+  const artifactPath = path.join(linked, 'features', 'story-routed-status', 'pr-prepare.json');
   await mkdir(path.dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, JSON.stringify({
     story: { story_id: 'story-routed-status', title: 'Routed' },
@@ -67,6 +72,7 @@ test('workspace status reads configured PR canonical instead of legacy scan root
   assert.equal(routed.stories[0].story_id, 'story-routed-status');
   assert.equal(routed.stories[0].status, 'active_ready');
   assert.equal(routed.stories[0].artifact_path, await realpath(artifactPath));
+  assert.equal(routed.stories.some((story) => story.story_id === 'legacy-decoy'), false);
 });
 
 test('workspace status derives readiness per worktree without trusting canonical health', async () => {

@@ -126,6 +126,34 @@ function argvFromReplayCommand(command) {
   return command.split(/\s+/).slice(1);
 }
 
+test('DRS-CONTRACT-008 canonical promotion reports each persisted file ownership immediately', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-owned-write-'));
+  const storyId = 'story-canonical-owned-write';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId }
+  });
+  const observed = [];
+
+  await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    onArtifactWritten: async (artifactPath) => {
+      await readFile(artifactPath);
+      observed.push(path.resolve(artifactPath));
+    }
+  });
+
+  const canonicalDir = path.join(root, 'docs', 'management', 'audit-artifacts', storyId);
+  for (const relativePath of [
+    path.join('pr', 'pr-prepare.json'),
+    'audit-index.json',
+    'decision-summary.md',
+    'audit-bundle.json'
+  ]) {
+    assert.ok(observed.includes(path.join(canonicalDir, relativePath)), relativePath);
+  }
+});
+
 test('canonical audit bundle copies handoff references and reports unresolved references', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-self-contained-'));
   const storyId = 'story-canonical-self-contained';
@@ -365,6 +393,21 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
     storyId,
     merge: {
       status: 'merged',
+      base: 'release/2026',
+      delivery: { status: 'merged', observed: true },
+      reconciliation: { status: 'reconciliation_required', reasons: ['gate_not_ready'] },
+      reconciliation_action: {
+        status: 'required',
+        reason: 'execution_state_sync_failed',
+        commands: [
+          'vibepro pr prepare . --story-id story-compact --base release/2026',
+          'vibepro execute merge . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
+        ]
+      },
+      execution_state_sync: {
+        status: 'failed',
+        recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
+      },
       merged_at: '2026-06-23T00:05:00.000Z',
       merge_commit_sha: 'abc123',
       pr: { url: 'https://github.com/example/repo/pull/1' }
@@ -372,6 +415,10 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   });
   const bundle = promoted.bundle;
 
+  assert.equal(bundle.merge.delivery.status, 'merged');
+  assert.equal(bundle.merge.reconciliation.status, 'reconciliation_required');
+  assert.equal(bundle.merge.base, 'release/2026');
+  assert.equal(bundle.merge.reconciliation_action.commands[0], bundle.merge.execution_state_sync.recovery_command);
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
   assert.equal(Object.hasOwn(bundle, 'cost_summary'), false);
@@ -392,6 +439,13 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(auditIndex.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
   assert.equal(auditIndex.cost_summary.raw_source_artifact_lines > auditIndex.cost_summary.artifact_lines, true);
   assert.equal(auditIndex.pr_prepare.present, true);
+  assert.equal(auditIndex.pr_merge.summary.delivery.status, 'merged');
+  assert.deepEqual(auditIndex.pr_merge.summary.reconciliation.reasons, ['gate_not_ready']);
+  assert.equal(auditIndex.pr_merge.summary.base, 'release/2026');
+  assert.equal(auditIndex.pr_merge.summary.reconciliation_action.commands[0], auditIndex.pr_merge.summary.execution_state_sync.recovery_command);
+  const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
+  assert.match(decisionSummary, /pr_merge: merged delivery=merged reconciliation=reconciliation_required reasons=gate_not_ready/);
+  assert.equal(auditIndex.automation_value_audit.merge_context.delivery.status, 'merged');
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
   assert.equal(auditIndex.evidence_reuse.verification_command_timestamps[0].executed_at, '2026-06-23T00:02:00.000Z');
@@ -414,6 +468,8 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(Object.hasOwn(replayPayload, 'decision_index'), false);
   assert.equal(replayPayload.cost_summary_ref.pointer, '/cost_summary');
   assert.equal(replayPayload.verdict.pr_prepare, 'ready_for_review');
+  assert.equal(replayPayload.merge.delivery.status, 'merged');
+  assert.equal(replayPayload.merge.reconciliation.status, 'reconciliation_required');
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
   assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);

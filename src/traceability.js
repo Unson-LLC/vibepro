@@ -3,7 +3,8 @@ import { mkdir, readdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
+import { toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -31,6 +32,7 @@ export function buildTraceability(existing, {
   evidence = [],
   acceptanceCriteria = null,
   scenarioClauses = null,
+  scenarioLineage = null,
   now = null
 }) {
   const timestamp = now ?? new Date().toISOString();
@@ -59,6 +61,11 @@ export function buildTraceability(existing, {
     : Array.isArray(existing?.scenario_clauses)
       ? existing.scenario_clauses
       : [];
+  const scenario_lineage = scenarioLineage && typeof scenarioLineage === 'object'
+    ? scenarioLineage
+    : existing?.scenario_lineage && typeof existing.scenario_lineage === 'object'
+      ? existing.scenario_lineage
+      : null;
   return {
     schema_version: TRACEABILITY_SCHEMA_VERSION,
     story_id: storyId,
@@ -68,13 +75,14 @@ export function buildTraceability(existing, {
     evidence: mergedEvidence,
     acceptance_criteria,
     scenario_clauses,
-    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses }),
+    scenario_lineage,
+    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses, scenario_lineage }),
     created_at: existing?.created_at ?? timestamp,
     updated_at: timestamp
   };
 }
 
-export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [] } = {}) {
+export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [], scenario_lineage = null } = {}) {
   const clauses = [...acceptance_criteria, ...scenario_clauses];
   const countByStatus = (status) => clauses.filter((item) => item.status === status).length;
   return {
@@ -84,6 +92,15 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
     mapped_count: countByStatus('mapped'),
     weakly_mapped_count: countByStatus('weakly_mapped'),
     unmapped_count: countByStatus('unmapped'),
+    scenario_lineage: scenario_lineage && typeof scenario_lineage === 'object'
+      ? {
+          status: scenario_lineage.status ?? 'mapped',
+          story_scenario_ids: scenario_lineage.story_scenario_ids ?? [],
+          mapped_story_scenario_ids: scenario_lineage.mapped_story_scenario_ids ?? [],
+          missing_story_scenario_ids: scenario_lineage.missing_story_scenario_ids ?? [],
+          unknown_story_scenario_ids: scenario_lineage.unknown_story_scenario_ids ?? []
+        }
+      : null,
     examples: clauses
       .filter((item) => item.status === 'unmapped' || item.status === 'weakly_mapped')
       .slice(0, 3)
@@ -98,16 +115,19 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
 }
 
 export function buildTraceabilityClauseMap({
+  storyId = '',
   storyText = '',
   changedFiles = [],
   tests = [],
   evidence = [],
   scenarioClauses = []
 } = {}) {
+  const storyScenarioIds = extractStoryScenarioIds(storyText);
   const criteria = extractAcceptanceCriteria(storyText).map((criterion) => (
     buildClauseTraceabilityItem({
       ...criterion,
       type: 'acceptance_criterion',
+      storyId,
       changedFiles,
       tests,
       evidence
@@ -119,17 +139,52 @@ export function buildTraceabilityClauseMap({
       text: scenario.statement ?? scenario.text ?? String(scenario),
       source_line: scenario.source_line ?? null,
       type: 'scenario_clause',
+      storyId,
       changedFiles,
       tests,
-      evidence
+      evidence,
+      storyScenarioIds: Array.isArray(scenario.story_scenario_ids) ? scenario.story_scenario_ids : [],
+      knownStoryScenarioIds: storyScenarioIds
     })
   ));
-  return { acceptance_criteria: criteria, scenario_clauses: scenarios };
+  const mappedStoryScenarioIds = [...new Set(scenarios.flatMap((scenario) => scenario.story_scenario_ids ?? []))];
+  return {
+    acceptance_criteria: criteria,
+    scenario_clauses: scenarios,
+    scenario_lineage: {
+      status: scenarios.some((scenario) => scenario.scenario_lineage_status === 'invalid')
+        || storyScenarioIds.some((id) => !mappedStoryScenarioIds.includes(id))
+        ? 'unmapped'
+        : 'mapped',
+      story_scenario_ids: storyScenarioIds,
+      mapped_story_scenario_ids: mappedStoryScenarioIds,
+      missing_story_scenario_ids: storyScenarioIds.filter((id) => !mappedStoryScenarioIds.includes(id)),
+      unknown_story_scenario_ids: mappedStoryScenarioIds.filter((id) => !storyScenarioIds.includes(id))
+    }
+  };
 }
 
-function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles, tests, evidence }) {
+function extractStoryScenarioIds(storyText) {
+  return [...new Set(String(storyText ?? '').match(/\b[A-Z0-9]+-STORY-[A-Z0-9-]+\b/g) ?? [])];
+}
+
+function buildClauseTraceabilityItem({
+  id,
+  text,
+  source_line,
+  type,
+  storyId,
+  changedFiles,
+  tests,
+  evidence,
+  storyScenarioIds = [],
+  knownStoryScenarioIds = []
+}) {
   const matchedFiles = changedFiles.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
-  const matchedTests = tests.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
+  const matchedTests = tests.filter((file) => (
+    clauseMatchesPathOrText({ id, text, value: file.path ?? file })
+    || testContentExplicitlyTargetsClause({ id, storyId, file })
+  ));
   const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
     evidenceTargetsClause({ id, text, item })
     || evidenceRefMatchesClauseId({ id, item })
@@ -139,7 +194,11 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
     || clauseMatchesPathOrText({ id, text, value: item.summary })
   ));
   const broadEvidence = evidence.some((item) => item.type === 'pr_artifact') && matchedEvidence.length === 0 && matchedTests.length === 0 && matchedReviewFindings.length === 0;
-  const status = matchedTests.length > 0 || matchedEvidence.length > 0 || matchedReviewFindings.length > 0
+  const unknownStoryScenarioIds = storyScenarioIds.filter((scenarioId) => !knownStoryScenarioIds.includes(scenarioId));
+  const scenarioLineageInvalid = type === 'scenario_clause' && unknownStoryScenarioIds.length > 0;
+  const status = scenarioLineageInvalid
+    ? 'unmapped'
+    : matchedTests.length > 0 || matchedEvidence.length > 0 || matchedReviewFindings.length > 0
     ? 'mapped'
     : matchedFiles.length > 0 || broadEvidence
       ? 'weakly_mapped'
@@ -157,6 +216,9 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
     source_text: text,
     source_line,
     status,
+    story_scenario_ids: storyScenarioIds,
+    scenario_lineage_status: scenarioLineageInvalid ? 'invalid' : 'valid',
+    unknown_story_scenario_ids: unknownStoryScenarioIds,
     mapped_files: matchedFiles.map((file) => file.path ?? file),
     mapped_tests: matchedTests.map((file) => file.path ?? file),
     mapped_evidence: matchedEvidence.map((item) => ({
@@ -177,6 +239,25 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
     })),
     weak_mapping_reason: weakReason
   };
+}
+
+function testContentExplicitlyTargetsClause({ id, storyId, file }) {
+  if (!file || typeof file !== 'object' || typeof file.content !== 'string') return false;
+  const normalizedId = String(id ?? '').trim();
+  const normalizedStoryId = String(storyId ?? '').trim();
+  if (!normalizedId || !normalizedStoryId) return false;
+  const escapedId = normalizedId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedStoryId = normalizedStoryId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const qualifiedReference = new RegExp(
+    `(^|[^a-z0-9])${escapedStoryId}[:#/]${escapedId}(?=$|[^a-z0-9])`,
+    'i'
+  );
+  if (qualifiedReference.test(file.content)) return true;
+
+  const normalizedPath = String(file.path ?? '').toLowerCase();
+  const storyOwnedPath = normalizedPath.includes(normalizedStoryId.toLowerCase());
+  return storyOwnedPath
+    && new RegExp(`(^|[^a-z0-9])${escapedId}(?=$|[^a-z0-9])`, 'i').test(file.content);
 }
 
 function isStrongClauseEvidence(item) {
@@ -257,16 +338,16 @@ function clauseMatchesPathOrText({ id, text, value }) {
   return words.some((word) => target.includes(word));
 }
 
-export function traceabilityArtifactPath(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'traceability.json');
+export async function traceabilityArtifactPath(repoRoot, storyId) {
+  return resolvePrArtifactFile(path.resolve(repoRoot), storyId, 'traceability.json');
 }
 
 export async function readTraceability(repoRoot, storyId) {
-  return readJsonIfExists(traceabilityArtifactPath(repoRoot, storyId));
+  return readJsonIfExists(await traceabilityArtifactPath(repoRoot, storyId));
 }
 
 export async function bindStoryTraceability(repoRoot, { storyId, storyDocPath = null, source, lifecycle, evidence = [] }) {
-  const artifactPath = traceabilityArtifactPath(repoRoot, storyId);
+  const artifactPath = await traceabilityArtifactPath(repoRoot, storyId);
   const existing = await readJsonIfExists(artifactPath);
   const traceability = buildTraceability(existing, { storyId, storyDocPath, source, lifecycle, evidence });
   await mkdir(path.dirname(artifactPath), { recursive: true });
@@ -380,9 +461,8 @@ async function listOtherWorktrees(root) {
 async function collectWorktreeEvidence(worktrees, storyId) {
   const evidence = [];
   for (const worktree of worktrees) {
-    const prDir = path.join(getWorkspaceDir(worktree), 'pr', storyId);
     for (const file of REAL_PR_ARTIFACT_FILES) {
-      const artifactPath = path.join(prDir, file);
+      const artifactPath = await resolvePrArtifactFile(worktree, storyId, file);
       if (await readJsonIfExists(artifactPath) === null) continue;
       evidence.push({
         type: 'worktree_artifact',
@@ -404,9 +484,8 @@ async function realpathIfExists(filePath) {
 }
 
 async function hasRealPrArtifact(root, storyId) {
-  const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   for (const file of REAL_PR_ARTIFACT_FILES) {
-    if (await readJsonIfExists(path.join(prDir, file))) return true;
+    if (await readJsonIfExists(await resolvePrArtifactFile(root, storyId, file))) return true;
   }
   return false;
 }

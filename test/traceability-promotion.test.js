@@ -7,7 +7,8 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { buildTraceabilityClauseMap } from '../src/traceability.js';
+import { writeInferredSpec } from '../src/spec-store.js';
+import { backfillTraceability, buildTraceabilityClauseMap } from '../src/traceability.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -25,7 +26,7 @@ async function writeJson(filePath, value) {
 
 const STORY_DOC = '---\nstory_id: story-test-promo\ntitle: Promotion story\n---\n\n# Story\n\n## Background\nTest.\n\n## Acceptance Criteria\n- Touch README only.\n';
 
-async function setupPrepareRepo() {
+async function setupPrepareRepo({ storyDoc = STORY_DOC, spec = null } = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-trace-promo-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
   await git(root, ['init', '-b', 'main']);
@@ -33,7 +34,8 @@ async function setupPrepareRepo() {
   await git(root, ['config', 'user.name', 'VibePro Test']);
   await runCli(['init', root, '--story-id', 'story-test-promo', '--title', 'Promotion story']);
   await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', 'story-test-promo.md'), STORY_DOC);
+  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', 'story-test-promo.md'), storyDoc);
+  if (spec) await writeInferredSpec(root, 'story-test-promo', spec);
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'init']);
   await git(root, ['switch', '-c', 'feature/promo']);
@@ -111,6 +113,84 @@ test('pr prepare links verification evidence when present and stays idempotent o
   const second = await readJson(traceabilityPath(root, 'story-test-promo'));
   assert.equal(second.evidence.length, first.evidence.length, 'rerun must not duplicate evidence');
   assert.equal(second.created_at, first.created_at, 'created_at must be preserved');
+});
+
+test('configured PR route is the single traceability read and write authority', async () => {
+  const root = await setupPrepareRepo();
+  const legacy = traceabilityPath(root, 'story-test-promo');
+  const legacyBefore = await readFile(legacy, 'utf8');
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = { artifacts: { pr: { canonical: '.vibepro/routed/{story_id}-pr-prepare.json' } } };
+  await writeJson(configPath, config);
+  await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
+
+  const routed = path.join(root, '.vibepro', 'routed', 'story-test-promo-traceability.json');
+  assert.equal((await readJson(routed)).story_id, 'story-test-promo');
+  assert.equal(await readFile(legacy, 'utf8'), legacyBefore, 'legacy path must not be mutated after route selection');
+});
+
+test('traceability backfill recognizes a real artifact at the configured PR authority', async () => {
+  const root = await setupPrepareRepo();
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = { artifacts: { pr: { canonical: '.vibepro/routed/{story_id}-pr-prepare.json' } } };
+  await writeJson(configPath, config);
+  await mkdir(path.join(root, '.vibepro', 'routed'), { recursive: true });
+  await writeJson(path.join(root, '.vibepro', 'routed', 'story-test-promo-pr-create.json'), {
+    schema_version: '0.1.0', story: { story_id: 'story-test-promo' }
+  });
+
+  const result = await backfillTraceability(root, { dryRun: true, storyId: 'story-test-promo' });
+  assert.deepEqual(result.candidates, [], 'routed real PR evidence must suppress speculative backfill');
+});
+
+test('pr prepare propagates scenario lineage and fails the actual gate for missing and unknown Story scenario ids', async () => {
+  const root = await setupPrepareRepo({
+    storyDoc: '---\nstory_id: story-test-promo\ntitle: Promotion story\n---\n\n# Story\n\n## Background\nTest lineage only.\n\n## Scenarios\n- `PROMO-STORY-S-001`: known scenario.\n- `PROMO-STORY-S-002`: missing scenario.\n',
+    spec: {
+      schema_version: '0.1.0',
+      story_id: 'story-test-promo',
+      clauses: [{
+        id: 'PROMO-SCENARIO-001',
+        type: 'scenario',
+        statement: 'Unknown scenario mapping must fail closed.',
+        story_scenario_ids: ['PROMO-STORY-S-001', 'PROMO-STORY-S-999']
+      }]
+    }
+  });
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test', 'promo.test.js'), "test('story-test-promo:S-001 exercises the mapped accepted-spec scenario', () => {});\n");
+  await git(root, ['add', 'test/promo.test.js']);
+  await git(root, ['commit', '-m', 'test: cover promo scenario']);
+  await runCli([
+    'verify', 'record', root, '--id', 'story-test-promo', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/promo.test.js', '--target', 'test/promo.test.js',
+    '--scenario', 'story-test-promo:S-001', '--observed', 'result=pass'
+  ]);
+  const result = await runCli([
+    'pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main',
+    '--evidence-depth', 'full',
+    '--evidence-depth-reason', 'integration test inspects the persisted gate DAG lineage projection',
+    '--evidence-depth-consumer', 'traceability-promotion-test',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--json'
+  ]);
+  const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'gate-dag.json'));
+  const traceability = await readJson(traceabilityPath(root, 'story-test-promo'));
+  const summary = gateDag.summary.traceability_clause_coverage;
+  const gate = gateDag.nodes.find((node) => node.id === 'gate:traceability_clause_coverage');
+
+  assert.equal(summary.scenario_lineage.status, 'unmapped');
+  assert.deepEqual(summary.scenario_lineage.missing_story_scenario_ids, ['PROMO-STORY-S-002']);
+  assert.deepEqual(summary.scenario_lineage.unknown_story_scenario_ids, ['PROMO-STORY-S-999']);
+  assert.equal(gate.status, 'needs_evidence');
+  assert.equal(traceability.scenario_lineage.status, 'unmapped');
+  assert.deepEqual(traceability.coverage_summary.scenario_lineage, summary.scenario_lineage);
+  assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
+  assert.ok(result.result.preparation.gate_status.unresolved_gates.some((item) => item.id === 'gate:traceability_clause_coverage'));
+  assert.match(gate.reason, /scenario lineage missing=1, unknown=1/);
+  assert.ok(gate.required_actions.some((action) => action.includes('PROMO-STORY-S-002')));
 });
 
 test('pr prepare refreshes stale verification evidence binding on rerun', async () => {
@@ -218,6 +298,109 @@ test('broad verification command and artifact paths do not map every AC', () => 
   });
   assert.equal(map.acceptance_criteria[0].status, 'unmapped');
   assert.equal(map.acceptance_criteria[1].status, 'unmapped');
+});
+
+test('clause map binds explicit AC and scenario ids from test content without prefix collisions', () => {
+  const storyId = 'story-vibepro-delivery-reconciliation-state';
+  const storyText = [
+    '# Story',
+    '',
+    '## Acceptance Criteria',
+    '- First clause.',
+    '- Second clause.',
+    '- Third clause.',
+    '- External delivery preserves expected topology.'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({
+    storyId,
+    storyText,
+    changedFiles: [],
+    tests: [{
+      path: 'test/delivery-reconciliation.test.js',
+      content: [
+        `test('${storyId}:AC-4 keeps external delivery topology reconciled', () => {});`,
+        `test('${storyId}:S-004 records the clean external-delivery scenario', () => {});`,
+        "test('AC-40 must not bind AC-4 by prefix', () => {});"
+      ].join('\n')
+    }],
+    scenarioClauses: [
+      { id: 'S-004', statement: 'Clean external delivery remains reconciled.' },
+      { id: 'S-005', statement: 'Unrelated scenario remains visible.' }
+    ]
+  });
+
+  assert.equal(map.acceptance_criteria[3].status, 'mapped');
+  assert.deepEqual(map.acceptance_criteria[3].mapped_tests, ['test/delivery-reconciliation.test.js']);
+  assert.equal(map.scenario_clauses[0].status, 'mapped');
+  assert.equal(map.scenario_clauses[1].status, 'unmapped');
+
+  const collisionOnly = buildTraceabilityClauseMap({
+    storyId,
+    storyText,
+    tests: [{ path: 'test/collision.test.js', content: "test('AC-40 only', () => {});" }]
+  });
+  assert.notEqual(collisionOnly.acceptance_criteria[3].status, 'mapped');
+});
+
+test('clause map rejects an unqualified clause id owned by another Story', () => {
+  const storyId = 'story-vibepro-delivery-reconciliation-state';
+  const map = buildTraceabilityClauseMap({
+    storyId,
+    storyText: '## Acceptance Criteria\n- AC-4: expected topology remains reconciled.',
+    tests: [{
+      path: 'test/guarded-run-session.test.js',
+      content: "test('GRS-S-4 S-004 AC-4 belongs to guarded run', () => {});"
+    }],
+    scenarioClauses: [{ id: 'S-004', statement: 'Clean external delivery remains reconciled.' }]
+  });
+
+  assert.equal(map.acceptance_criteria[0].status, 'unmapped');
+  assert.equal(map.scenario_clauses[0].status, 'unmapped');
+});
+
+test('scenario lineage fails closed for missing and unknown Story scenario ids', () => {
+  const storyText = [
+    '## Scenarios',
+    '- `DRS-STORY-S-001`: managed delivery.',
+    '- `DRS-STORY-S-002`: external delivery.'
+  ].join('\n');
+  const missing = buildTraceabilityClauseMap({
+    storyText,
+    scenarioClauses: [{ id: 'DRS-SCENARIO-001', story_scenario_ids: ['DRS-STORY-S-001'], statement: 'Managed delivery.' }]
+  });
+  assert.equal(missing.scenario_lineage.status, 'unmapped');
+  assert.deepEqual(missing.scenario_lineage.missing_story_scenario_ids, ['DRS-STORY-S-002']);
+
+  const unknown = buildTraceabilityClauseMap({
+    storyText,
+    scenarioClauses: [{ id: 'DRS-SCENARIO-001', story_scenario_ids: ['DRS-STORY-S-999'], statement: 'Wrong delivery.' }]
+  });
+  assert.equal(unknown.scenario_clauses[0].status, 'unmapped');
+  assert.equal(unknown.scenario_clauses[0].scenario_lineage_status, 'invalid');
+  assert.deepEqual(unknown.scenario_lineage.unknown_story_scenario_ids, ['DRS-STORY-S-999']);
+});
+
+test('delivery reconciliation scenario lineage preserves the reviewed Story-to-Spec matrix', async () => {
+  const storyText = await readFile(new URL('../docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md', import.meta.url), 'utf8');
+  const spec = JSON.parse(await readFile(new URL('./fixtures/delivery-reconciliation-scenario-lineage.json', import.meta.url), 'utf8'));
+  const scenarios = spec.clauses.filter((clause) => clause.type === 'scenario' && Array.isArray(clause.story_scenario_ids));
+  const map = buildTraceabilityClauseMap({ storyText, scenarioClauses: scenarios });
+  assert.equal(map.scenario_lineage.status, 'mapped');
+  assert.deepEqual(Object.fromEntries(scenarios.map((clause) => [clause.id, clause.story_scenario_ids])), {
+    'S-001': ['DRS-STORY-S-003'],
+    'S-002': ['DRS-STORY-S-005'],
+    'S-003': ['DRS-STORY-S-001'],
+    'S-004': ['DRS-STORY-S-002'],
+    'S-005': ['DRS-STORY-S-003'],
+    'S-006': ['DRS-STORY-UNVERIFIED-004'],
+    'S-007': ['DRS-STORY-S-001'],
+    'S-008': ['DRS-STORY-S-005'],
+    'S-009': ['DRS-STORY-S-005'],
+    'S-010': ['DRS-STORY-S-006'],
+    'S-011': ['DRS-STORY-S-005'],
+    'S-012': ['DRS-STORY-S-005', 'DRS-STORY-TXN-007', 'DRS-STORY-ROUTE-008'],
+    'S-013': ['DRS-STORY-RECOVERY-009']
+  });
 });
 
 async function makeFakeGhMerge(state) {

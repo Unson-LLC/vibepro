@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { normalizeActiveStories } from './story-manager.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const SCHEMA_VERSION = '0.1.0';
 const COMPLETED_STATUS = 'completed';
@@ -82,7 +83,7 @@ export async function recordPerformanceRun(repoRoot, options = {}) {
   const metricId = requiredOption(options.metricId, '--metric-id <id>');
   const metric = await readPerformanceMetric(root, storyId, metricId);
   const runId = options.runId ?? createRunId();
-  const runDir = path.join(getPerformanceRunDir(root, storyId));
+  const runDir = await getPerformanceRunDir(root, storyId);
   await mkdir(runDir, { recursive: true });
 
   const status = normalizeStatus(options.status ?? COMPLETED_STATUS);
@@ -316,7 +317,7 @@ async function readPerformanceMetrics(repoRoot, storyId) {
 }
 
 async function readPerformanceRuns(repoRoot, storyId) {
-  const runDir = getPerformanceRunDir(repoRoot, storyId);
+  const runDir = await getPerformanceRunDir(repoRoot, storyId);
   let files;
   try {
     files = (await readdir(runDir)).filter((file) => file.endsWith('.json')).sort();
@@ -723,8 +724,9 @@ function requiredOption(value, name) {
   return value;
 }
 
-function getPerformanceRunDir(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'performance-runs');
+async function getPerformanceRunDir(repoRoot, storyId) {
+  const sentinel = await resolvePrArtifactFile(repoRoot, storyId, path.join('performance-runs', '.route'));
+  return path.dirname(sentinel);
 }
 
 function safeFileName(value) {

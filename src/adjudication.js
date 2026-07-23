@@ -76,7 +76,7 @@ export async function readAdjudicationIfExists(repoRoot, storyId) {
 }
 
 async function readVerificationEvidenceEntries(repoRoot, storyId) {
-  const evidencePath = path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'verification-evidence.json');
+  const evidencePath = await resolvePrArtifactFile(path.resolve(repoRoot), storyId, 'verification-evidence.json');
   try {
     const parsed = JSON.parse(await readFile(evidencePath, 'utf8'));
     return Array.isArray(parsed?.commands) ? parsed.commands : [];

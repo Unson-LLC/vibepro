@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 export const EVIDENCE_REUSE_VERSION = '0.1.0';
 export const EVIDENCE_REUSE_MODEL = 'vibepro-evidence-summary-reuse-v1';
@@ -13,7 +14,7 @@ const FRESH_REUSE_STATUSES = new Set(['hit', 'miss']);
 
 export async function readEvidenceReuseIfExists(repoRoot, storyId) {
   if (!storyId) return null;
-  const filePath = getEvidenceReusePath(repoRoot, storyId);
+  const filePath = await getEvidenceReusePath(repoRoot, storyId);
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
@@ -23,7 +24,7 @@ export async function readEvidenceReuseIfExists(repoRoot, storyId) {
 }
 
 export function getEvidenceReusePath(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'evidence-reuse.json');
+  return resolvePrArtifactFile(path.resolve(repoRoot), storyId, 'evidence-reuse.json');
 }
 
 export function buildEvidenceReuse({

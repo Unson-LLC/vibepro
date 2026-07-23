@@ -163,10 +163,11 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
-async function runCliWithStdout(args) {
+async function runCliWithStdout(args, io = {}) {
   let stdout = '';
   let stderr = '';
   const result = await runCli(args, {
+    ...io,
     stdout: {
       write(chunk) {
         stdout += chunk;
@@ -231,16 +232,33 @@ if (args[0] !== 'pr') {
   process.stderr.write('unexpected gh command: ' + args.join(' '));
   process.exit(1);
 }
+
 if (args[1] === 'view') {
   const merged = state.merged === true;
   const fieldsArg = args[args.indexOf('--json') + 1] || '';
+  if (state.viewExitCode && !fieldsArg.includes('mergedAt')) {
+    process.stderr.write(state.viewStderr || 'provider view failed');
+    process.exit(state.viewExitCode);
+  }
   if (fieldsArg.includes('mergedAt')) {
+    if (state.postMergeViewExitCode) {
+      process.stderr.write(state.postMergeViewStderr || 'post-merge provider view failed');
+      process.exit(state.postMergeViewExitCode);
+    }
+    if (state.malformedPostMergeJson) {
+      console.log('{malformed post-merge provider response');
+      process.exit(0);
+    }
     console.log(JSON.stringify({
       url: state.url,
       state: merged ? 'MERGED' : 'OPEN',
       mergedAt: merged ? state.mergedAt : null,
       mergeCommit: merged && !state.omitMergeCommit ? { oid: state.mergeCommit } : null
     }));
+    process.exit(0);
+  }
+  if (state.malformedPrViewJson) {
+    console.log('{malformed provider response');
     process.exit(0);
   }
   console.log(JSON.stringify({
@@ -281,6 +299,18 @@ process.exit(1);
 `);
   await chmod(ghPath, 0o755);
   return { binDir, statePath };
+}
+
+async function writeCurrentGateDag(repo, storyId, currentHeadSha, gateDag) {
+  const boundGateDag = { ...gateDag, current_head_sha: currentHeadSha };
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await writeJson(path.join(prDir, 'gate-dag.json'), boundGateDag);
+  const preparePath = path.join(prDir, 'pr-prepare.json');
+  const prepare = await readJson(preparePath);
+  prepare.current_head_sha = currentHeadSha;
+  prepare.git = { ...(prepare.git ?? {}), head_sha: currentHeadSha };
+  prepare.pr_context = { ...(prepare.pr_context ?? {}), gate_dag: boundGateDag };
+  await writeJson(preparePath, prepare);
 }
 
 async function gitFingerprintHash(repo) {
@@ -12452,11 +12482,13 @@ title: PR準備
 
   const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(started.exitCode, 0);
+  const currentHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
 
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   const gateDag = {
     schema_version: '0.1.0',
+    current_head_sha: currentHeadSha,
     overall_status: 'needs_verification',
     nodes: [
       {
@@ -12471,10 +12503,12 @@ title: PR準備
   await writeFile(path.join(prDir, 'gate-dag.json'), `${JSON.stringify(gateDag, null, 2)}\n`);
   await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
     story_id: 'story-pr-prepare',
+    current_head_sha: currentHeadSha,
     pr_context: { gate_dag: gateDag }
   }, null, 2)}\n`);
   await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
     story_id: 'story-pr-prepare',
+    current_head_sha: currentHeadSha,
     pr_url: 'https://github.example.test/unson/vibepro/pull/171',
     dry_run: false
   }, null, 2)}\n`);
@@ -12899,7 +12933,7 @@ test('execute status treats a normally advanced managed worktree as the current 
   );
 });
 
-test('execute status keeps merged execution state and review completion aligned with artifacts', async () => {
+test('execute status keeps merged delivery without inferring incomplete review evidence', async () => {
   const repo = await makeGitRepoWithStory();
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
@@ -12935,6 +12969,8 @@ test('execute status keeps merged execution state and review completion aligned 
     current_head_sha: headSha,
     merged_at: '2026-06-15T00:00:00.000Z',
     merge_commit_sha: headSha,
+    delivery: { status: 'merged', merge_commit_sha: headSha },
+    reconciliation: { status: 'reconciled', reasons: [] },
     pr: { url: 'https://github.example.test/unson/vibepro/pull/999' }
   });
   await writeJson(path.join(reviewDir, 'review-result-gate_evidence.json'), {
@@ -12993,13 +13029,19 @@ test('execute status keeps merged execution state and review completion aligned 
       }
     ]
   });
+  await mkdir(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    completion_status: 'pr_created'
+  });
 
   const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(status.exitCode, 0);
   assert.equal(status.result.state.completion_status, 'merged');
   assert.equal(status.result.state.pr_url, 'https://github.example.test/unson/vibepro/pull/999');
-  assert.equal(status.result.state.completed_phases.includes('agent_review'), true);
-  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'passed');
+  assert.equal(status.result.state.completed_phases.includes('agent_review'), false);
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'pending');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'pr_created')?.status, 'passed');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
 });
@@ -13058,6 +13100,12 @@ test('execute status does not advance from stale pr lifecycle artifacts', async 
       artifact_head_sha: oldHead,
       current_head_sha: currentHead
     }
+  });
+  await mkdir(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    completion_status: 'blocked'
   });
 
   const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
@@ -13666,6 +13714,7 @@ process.exit(99);
   assert.match(html, /MWP-AC-5 noncritical current-HEAD waiver fixture/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
+  assert.equal(manifest.pr_merges['story-pr-prepare'].latest_base, 'main');
   assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
 });
 
@@ -14419,6 +14468,9 @@ test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_claus
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.delivery.status, 'merged');
+  assert.equal(result.result.merge.reconciliation.status, 'reconciled');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, []);
   assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
@@ -14436,6 +14488,9 @@ test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_claus
   assert.equal(prMergeArtifact.gate_authorization.gate_override.waiver_policy, 'cli_reason');
   assert.deepEqual(prMergeArtifact.gate_authorization.gate_override.critical_unresolved_gates, []);
   assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(prMergeArtifact.delivery.status, 'merged');
+  assert.equal(prMergeArtifact.reconciliation.status, 'reconciled');
+  assert.deepEqual(prMergeArtifact.reconciliation.reasons, []);
   assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
   assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
   assert.equal(prMergeArtifact.cost_accounting_collection.status, 'available');
@@ -14475,6 +14530,10 @@ test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_claus
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
+  assert.equal(executionState.delivery.status, 'merged');
+  assert.equal(executionState.reconciliation.status, 'reconciled');
+  assert.deepEqual(executionState.next_actions, []);
+  assert.equal(executionState.blocking_gate, null);
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'passed');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
@@ -14511,7 +14570,7 @@ test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_claus
   assert.equal(remoteMainParent, headSha);
 });
 
-test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts when merge commit evidence is missing', async () => {
+test('CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -14585,37 +14644,37 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     'story-pr-prepare',
     '--base',
     'main',
+    '--delete-branch',
     '--json'
   ], {
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
   });
 
-  assert.equal(result.exitCode, 1);
-  assert.equal(result.result.merge.status, 'failed');
-  assert.equal(result.result.merge.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'blocked');
+  assert.equal(result.result.merge.stop_reason, 'pr_delivery_unverified');
+  assert.equal(result.result.merge.delivery.status, 'unverified');
+  assert.equal(result.result.merge.reconciliation.status, 'blocked');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, ['delivery_not_verified']);
   assert.equal(result.result.merge.merge_commit_sha, null);
-  assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
-  assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
-  assert.equal(result.result.merge.canonical_audit.persistence.pushed, false);
+  assert.equal(result.result.merge.branch_cleanup.remote.attempted, false);
+  assert.equal((await git(remote, ['show-ref', '--verify', 'refs/heads/feature/test-story'])).stdout.trim().length > 0, true);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
-  assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'failed');
-  assert.equal(prMergeArtifact.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
-  const canonicalPrMergeArtifact = await readJson(path.join(
-    repo,
-    'docs',
-    'management',
-    'audit-artifacts',
-    'story-pr-prepare',
-    'pr',
-    'pr-merge.json'
-  ));
-  // story-vibepro-idempotent-audit-persistence: canonical_audit persistence
-  // bookkeeping is excluded from the promoted view; the failure is still recorded on
-  // the merge result and the local .vibepro/pr artifact (asserted above).
-  assert.equal(canonicalPrMergeArtifact.canonical_audit, undefined);
-  assert.equal(canonicalPrMergeArtifact.status, 'failed');
-  assert.equal(canonicalPrMergeArtifact.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(prMergeArtifact.delivery.status, 'unverified');
+  assert.equal(prMergeArtifact.reconciliation.status, 'blocked');
+  await assert.rejects(
+    () => readJson(path.join(
+      repo,
+      'docs',
+      'management',
+      'audit-artifacts',
+      'story-pr-prepare',
+      'pr',
+      'pr-merge.json'
+    )),
+    /ENOENT/
+  );
 
   const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
   assert.equal(remoteMain, headSha);
@@ -14624,6 +14683,702 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     remoteMainTree,
     /docs\/management\/audit-artifacts\/story-pr-prepare\/audit-bundle\.json/
   );
+});
+
+test('DRS-SCENARIO-007 provider command and JSON failures persist blocked delivery evidence', async (t) => {
+  const makeProviderFailureFixture = async () => {
+    const repo = await makeGitRepoWithStory();
+    const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-provider-failure-remote-'));
+    await git(remote, ['init', '--bare']);
+    await git(repo, ['remote', 'add', 'origin', remote]);
+    await git(repo, ['push', '-u', 'origin', 'main']);
+    await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+    await prepareExecuteMergeDryRunFixture(repo);
+    return { repo, remote, headSha: (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim() };
+  };
+
+  const writePriorDelivery = async (repo, headSha, {
+    legacy = false,
+    base = 'main',
+    selector = 'https://github.example.test/unson/vibepro/pull/123'
+  } = {}) => {
+    const artifact = {
+      schema_version: '0.1.0',
+      story: { story_id: 'story-pr-prepare' },
+      current_head_sha: headSha,
+      status: 'merged_externally',
+      base,
+      pr: { selector },
+      merge_commit_sha: headSha,
+      merged_at: '2026-06-07T00:32:55Z',
+      reconciliation: { status: 'reconciled', reasons: [] }
+    };
+    if (!legacy) {
+      artifact.delivery = {
+        status: 'merged_externally',
+        observed: true,
+        source: 'github_pr',
+        pr_url: selector,
+        merge_commit_sha: headSha,
+        merged_at: '2026-06-07T00:32:55Z'
+      };
+    }
+    await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), artifact);
+  };
+
+  const makeManagedMergeState = (headSha, remote, overrides = {}) => ({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote,
+    ...overrides
+  });
+
+  await t.test('nonzero provider command remains unverified', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.result.merge.stop_reason, 'pr_view_failed');
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.base, 'main');
+    assert.equal(artifact.pr.selector, 'https://github.example.test/unson/vibepro/pull/123');
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('malformed provider JSON fails closed with explicit classification', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge({
+      malformedPrViewJson: true,
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.result.merge.stop_reason, 'pr_view_response_parse_failed');
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.base, 'main');
+    assert.equal(artifact.pr.selector, 'https://github.example.test/unson/vibepro/pull/123');
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('provider command failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('provider JSON failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge({
+      malformedPrViewJson: true,
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('base fetch failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-fetch-failure-bin-'));
+    const realGit = (await execFileAsync('which', ['git'])).stdout.trim();
+    await writeFile(path.join(binDir, 'git'), `#!/usr/bin/env node
+const { spawnSync } = require('node:child_process');
+const args = process.argv.slice(2);
+if (args.includes('fetch')) {
+  process.stderr.write('simulated base fetch failure\\n');
+  process.exit(73);
+}
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+process.exit(result.status ?? 1);
+`);
+    await chmod(path.join(binDir, 'git'), 0o755);
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.stop_reason, 'base_fetch_failed');
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['base_fetch_failed']);
+  });
+
+  await t.test('legacy merged artifact is normalized before provider failure preservation', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha, { legacy: true });
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.source, 'legacy_pr_merge');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('initial managed merge post-processing command failure exits one and remains unverified', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74,
+      postMergeViewStderr: 'post-merge provider unavailable'
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.result.merge.status, 'failed');
+    assert.equal(result.result.merge.stop_reason, 'post_merge_pr_view_failed');
+    assert.equal(result.result.merge.delivery.status, 'unverified');
+    assert.deepEqual(result.result.merge.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('post-merge provider command failure preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('post-merge malformed JSON preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      malformedPostMergeJson: true
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('post-merge base fetch failure preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote));
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-second-fetch-failure-bin-'));
+    const realGit = (await execFileAsync('which', ['git'])).stdout.trim();
+    const fetchCountPath = path.join(binDir, 'fetch-count.txt');
+    await writeFile(path.join(binDir, 'git'), `#!/usr/bin/env node
+const fs = require('node:fs');
+const { spawnSync } = require('node:child_process');
+const args = process.argv.slice(2);
+if (args[0] === 'fetch') {
+  const count = Number(fs.existsSync(${JSON.stringify(fetchCountPath)}) ? fs.readFileSync(${JSON.stringify(fetchCountPath)}, 'utf8') : '0') + 1;
+  fs.writeFileSync(${JSON.stringify(fetchCountPath)}, String(count));
+  if (count === 2) {
+    process.stderr.write('simulated post-merge base fetch failure\\n');
+    process.exit(73);
+  }
+}
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+process.exit(result.status ?? 1);
+`);
+    await chmod(path.join(binDir, 'git'), 0o755);
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.stop_reason, 'post_merge_base_fetch_failed');
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['base_fetch_failed']);
+  });
+
+  await t.test('post-merge failure does not preserve a prior delivery with a different selector', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha, {
+      selector: 'https://github.example.test/unson/vibepro/pull/999'
+    });
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 1);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+});
+
+test('DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-persistence-failure-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const { headSha } = await prepareExecuteMergeDryRunFixture(repo);
+
+  await writeFile(path.join(remote, 'hooks', 'pre-receive'), `#!/bin/sh
+while read old new ref
+do
+  if [ "$ref" = "refs/heads/main" ] && [ "$old" = "${headSha}" ] && [ "$new" != "${headSha}" ]; then
+    echo "reject canonical audit persistence" >&2
+    exit 1
+  fi
+done
+exit 0
+`);
+  await chmod(path.join(remote, 'hooks', 'pre-receive'), 0o755);
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
+  });
+
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.result.merge.status, 'failed');
+  assert.equal(result.result.merge.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(result.result.merge.delivery.status, 'merged');
+  assert.equal(result.result.merge.merge_commit_sha, headSha);
+  assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
+  assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_push_failed');
+  const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  assert.equal(artifact.status, 'failed');
+  assert.equal(artifact.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(artifact.delivery.status, 'merged');
+  assert.equal((await git(remote, ['rev-parse', 'main'])).stdout.trim(), headSha);
+});
+
+test('DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure', async () => {
+  const repo = await makeGitRepoWithStory();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const mergeBeforeSync = {
+    story: { story_id: 'story-pr-prepare' },
+    status: 'merged',
+    base: 'develop',
+    current_head_sha: headSha,
+    dry_run: false,
+    merge_commit_sha: 'observed-merge-sha',
+    delivery: { status: 'merged', observed: true, merge_commit_sha: 'observed-merge-sha', pr_url: 'https://github.com/Unson-LLC/vibepro/pull/777' },
+    reconciliation: { status: 'reconciled', reasons: [] },
+    pr: { selector: 'https://github.com/Unson-LLC/vibepro/pull/777' }
+  };
+  await writeJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'),
+    mergeBeforeSync
+  );
+  const returnedMerge = {
+    ...structuredClone(mergeBeforeSync),
+    canonical_audit: {
+      bundle: 'docs/management/audit-artifacts/story-pr-prepare/audit-bundle.json',
+      artifact_count: 7,
+      missing_artifact_count: 0
+    }
+  };
+  const result = await runCliWithStdout([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--json'
+  ], {
+    executeMerge: async () => ({
+      merge: returnedMerge,
+      artifacts: {
+        pr_merge_json: path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json')
+      }
+    }),
+    updateExecutionStateFromPrMerge: async () => {
+      throw new Error('simulated state write failure');
+    }
+  });
+
+  assert.equal(result.exitCode, 1);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.status, 'merged');
+  assert.equal(output.dry_run, false);
+  assert.equal(output.delivery.status, 'merged');
+  assert.equal(output.merge_commit_sha, 'observed-merge-sha');
+  assert.equal(output.execution_state_sync.status, 'failed');
+  assert.equal(
+    output.execution_state_sync.followup_persistence,
+    'persisted',
+    output.execution_state_sync.persistence_error
+  );
+  assert.match(output.execution_state_sync.recovery_command, /vibepro execute reconcile .*--base develop/);
+  assert.match(output.execution_state_sync.recovery_command, /--pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/777/);
+  assert.match(result.stderr, /Execution-state synchronization failed after merge processing/);
+  assert.match(result.stderr, /simulated state write failure/);
+  const localFollowup = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  const canonicalFollowup = await readJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ));
+  for (const artifact of [localFollowup, canonicalFollowup]) {
+    assert.equal(artifact.delivery.status, 'merged');
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.equal(artifact.stop_reason, 'execution_state_sync_failed');
+    assert.match(artifact.execution_state_sync.recovery_command, /--base develop/);
+  }
+
+  const rejectedRecoveries = [
+    ['--base', 'develop', '--pr', 'https://github.com/Unson-LLC/vibepro/pull/778'],
+    ['--base', 'main', '--pr', 'https://github.com/Unson-LLC/vibepro/pull/777'],
+    ['--base', 'develop'],
+    ['--pr', 'https://github.com/Unson-LLC/vibepro/pull/777'],
+    []
+  ];
+  for (const identityArgs of rejectedRecoveries) {
+    const rejected = await runCliWithStdout([
+      'execute',
+      'reconcile',
+      repo,
+      '--story-id',
+      'story-pr-prepare',
+      ...identityArgs,
+      '--json'
+    ]);
+    assert.equal(rejected.exitCode, 2, `${identityArgs.join(' ')}\n${rejected.stderr}`);
+    assert.equal(JSON.parse(rejected.stdout).reconciliation.status, 'reconciliation_required');
+    assert.equal(
+      (await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'))).execution_state_sync.status,
+      'failed'
+    );
+  }
+
+  const canonicalReportPath = path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.html'
+  );
+  const canonicalReport = await readFile(canonicalReportPath, 'utf8');
+  await rm(canonicalReportPath);
+  await mkdir(canonicalReportPath);
+  const snapshotTree = async (root, relative = '') => {
+    const entries = await readdir(path.join(root, relative), { withFileTypes: true });
+    const snapshot = [];
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      const entryRelative = path.join(relative, entry.name);
+      if (entry.isDirectory()) {
+        snapshot.push({ path: entryRelative, type: 'directory' });
+        snapshot.push(...await snapshotTree(root, entryRelative));
+      } else {
+        snapshot.push({
+          path: entryRelative,
+          type: 'file',
+          content: await readFile(path.join(root, entryRelative), 'utf8')
+        });
+      }
+    }
+    return snapshot;
+  };
+  const localPrDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  const canonicalStoryDir = path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare'
+  );
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const localTreeBeforeFailedPersistence = await snapshotTree(localPrDir);
+  const canonicalTreeBeforeFailedPersistence = await snapshotTree(canonicalStoryDir);
+  const manifestBeforeFailedPersistence = await readFile(manifestPath, 'utf8');
+  const failedPersistence = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(failedPersistence.exitCode, 1);
+  assert.equal(
+    (await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'))).execution_state_sync.status,
+    'failed'
+  );
+  assert.equal(
+    (await readJson(path.join(
+      repo,
+      'docs',
+      'management',
+      'audit-artifacts',
+      'story-pr-prepare',
+      'pr',
+      'pr-merge.json'
+    ))).execution_state_sync.status,
+    'failed'
+  );
+  assert.deepEqual(await snapshotTree(localPrDir), localTreeBeforeFailedPersistence);
+  assert.deepEqual(await snapshotTree(canonicalStoryDir), canonicalTreeBeforeFailedPersistence);
+  assert.equal(await readFile(manifestPath, 'utf8'), manifestBeforeFailedPersistence);
+  await rm(canonicalReportPath, { recursive: true });
+  await writeFile(canonicalReportPath, canonicalReport);
+
+  const retainedReasonLocal = {
+    ...localFollowup,
+    reconciliation: {
+      ...localFollowup.reconciliation,
+      reasons: [...localFollowup.reconciliation.reasons, 'checks_not_ready']
+    }
+  };
+  const retainedReasonCanonical = {
+    ...canonicalFollowup,
+    reconciliation: {
+      ...canonicalFollowup.reconciliation,
+      reasons: [...canonicalFollowup.reconciliation.reasons, 'checks_not_ready']
+    }
+  };
+  await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), retainedReasonLocal);
+  await writeJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ), retainedReasonCanonical);
+  const retainedReason = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(retainedReason.exitCode, 2);
+  const retainedReasonArtifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  assert.equal(retainedReasonArtifact.execution_state_sync.status, 'reconciled');
+  assert.deepEqual(retainedReasonArtifact.reconciliation.reasons, ['checks_not_ready']);
+  assert.equal(retainedReasonArtifact.reconciliation_action.status, 'required');
+  assert.deepEqual(retainedReasonArtifact.reconciliation_action.commands, [
+    'vibepro execute reconcile . --story-id story-pr-prepare --base develop --pr https://github.com/Unson-LLC/vibepro/pull/777'
+  ]);
+
+  await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), localFollowup);
+  await writeJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ), canonicalFollowup);
+
+  const reconciled = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(reconciled.exitCode, 0, reconciled.stderr);
+  const reconciledState = JSON.parse(reconciled.stdout);
+  assert.equal(reconciledState.completion_status, 'merged');
+  assert.equal(reconciledState.delivery.status, 'merged');
+  assert.equal(reconciledState.reconciliation.status, 'reconciled');
+  assert.deepEqual(reconciledState.next_actions, []);
+  const recoveredLocal = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  const recoveredCanonical = await readJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ));
+  for (const artifact of [recoveredLocal, recoveredCanonical]) {
+    assert.equal(artifact.delivery.status, 'merged');
+    assert.equal(artifact.base, 'develop');
+    assert.equal(artifact.delivery.pr_url, 'https://github.com/Unson-LLC/vibepro/pull/777');
+    assert.equal(artifact.execution_state_sync.status, 'reconciled');
+    assert.equal(artifact.execution_state_sync.previous_status, 'failed');
+    assert.equal(artifact.reconciliation.status, 'reconciled');
+    assert.deepEqual(artifact.reconciliation.reasons, []);
+    assert.deepEqual(artifact.reconciliation_action.commands, []);
+    assert.equal(artifact.stop_reason, undefined);
+  }
+});
+
+test('DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails', async () => {
+  const repo = await makeGitRepoWithStory();
+  const result = await runCliWithStdout([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'develop', '--json'
+  ], {
+    executeMerge: async () => ({
+      merge: {
+        story: { story_id: 'story-pr-prepare' },
+        status: 'merged',
+        base: 'develop',
+        dry_run: false,
+        delivery: { status: 'merged', merge_commit_sha: 'observed-merge-sha' },
+        reconciliation: { status: 'reconciled', reasons: [] },
+        pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/778' }
+      }
+    }),
+    updateExecutionStateFromPrMerge: async () => {
+      const original = new Error('simulated state write failure');
+      original.code = 'execution_state_write_failed';
+      throw original;
+    },
+    persistMergeFollowupState: async (_root, { merge, expectedMerge }) => {
+      assert.equal(expectedMerge.reconciliation.status, 'reconciled');
+      assert.equal(expectedMerge.execution_state_sync, undefined);
+      assert.equal(merge.execution_state_sync.status, 'failed');
+      const primary = new Error('simulated follow-up persistence failure');
+      const rollback = new Error('simulated follow-up rollback failure', { cause: primary });
+      rollback.code = 'merge_followup_transaction_restore_failed';
+      rollback.restore_errors = [{ artifact_path: '/tmp/pr-merge.json', message: 'concurrent operator update' }];
+      throw rollback;
+    },
+    persistMergeRecoveryState: async (root, { merge, expectedMerge }) => {
+      assert.equal(root, repo);
+      assert.equal(expectedMerge.execution_state_sync, undefined);
+      assert.equal(merge.execution_state_sync.status, 'failed');
+    }
+  });
+
+  assert.equal(result.exitCode, 1);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.delivery.status, 'merged');
+  assert.equal(output.reconciliation.status, 'reconciliation_required');
+  assert.equal(output.execution_state_sync.followup_persistence, 'failed');
+  assert.equal(output.execution_state_sync.recovery_persistence, 'persisted_local');
+  assert.match(output.execution_state_sync.persistence_error, /follow-up rollback failure/);
+  assert.equal(output.execution_state_sync.error.code, 'execution_state_write_failed');
+  assert.equal(output.execution_state_sync.persistence_error_details.code, 'merge_followup_transaction_restore_failed');
+  assert.equal(output.execution_state_sync.persistence_error_details.cause, 'simulated follow-up persistence failure');
+  assert.equal(
+    output.execution_state_sync.persistence_error_details.cause_details.message,
+    'simulated follow-up persistence failure'
+  );
+  assert.deepEqual(output.execution_state_sync.persistence_error_details.restore_errors, [
+    { artifact_path: '/tmp/pr-merge.json', message: 'concurrent operator update' }
+  ]);
+  assert.match(result.stderr, /state write failure/);
+  assert.match(result.stderr, /follow-up persistence failed/);
 });
 
 test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)', async () => {
@@ -15092,7 +15847,7 @@ test('generated managed worktree pr prepare path keeps execution binding', async
   );
 });
 
-test('managed worktree pr prepare recovers execution binding from the source checkout state', async () => {
+test('managed worktree pr prepare does not overwrite a divergent local execution binding', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = await readJson(configPath);
@@ -15102,6 +15857,8 @@ test('managed worktree pr prepare recovers execution binding from the source che
   const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(started.exitCode, 0);
   const worktreePath = started.result.state.managed_worktree.path;
+  const sourceStatePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
+  const sourceStateBefore = await readJson(sourceStatePath);
 
   await writeFile(path.join(worktreePath, 'src-recovered-binding.js'), 'export const recoveredBinding = true;\n');
   await git(worktreePath, ['add', 'src-recovered-binding.js']);
@@ -15130,12 +15887,11 @@ test('managed worktree pr prepare recovers execution binding from the source che
   assert.equal(prepare.result.preparation.pr_context.managed_worktree.managed_worktree.path, worktreePath);
 
   const localState = await readJson(localStatePath);
-  assert.equal(localState.managed_worktree.path, worktreePath);
-  assert.equal(localState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
-  assert.equal(localState.execution_dag.nodes.some((node) => node.id === 'head_bound' && node.status === 'passed'), true);
+  assert.equal(localState.managed_worktree, null);
+  assert.equal(localState.execution_dag, null);
 
-  const sourceState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
-  assert.equal(sourceState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
+  const sourceState = await readJson(sourceStatePath);
+  assert.deepEqual(sourceState, sourceStateBefore);
 });
 
 test('execute start quarantines corrupt existing execution state before writing', async () => {
@@ -15166,10 +15922,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'ac:1',
@@ -15188,7 +15945,7 @@ architecture_docs:
         reason: 'E2E evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -15197,7 +15954,7 @@ architecture_docs:
   assert.equal(result.result.state.completion_status, 'blocked');
   assert.deepEqual(result.result.state.next_actions, ['E2E evidence is missing']);
 
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'review:preflight:gate:gate_evidence',
@@ -15208,14 +15965,14 @@ architecture_docs:
         reason: 'stale review preflight blocks dispatch'
       }
     ]
-  }, null, 2)}\n`);
+  });
   const preflightResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(preflightResult.exitCode, 0);
   assert.equal(preflightResult.result.state.blocking_gate.id, 'review:preflight:gate:gate_evidence');
   assert.equal(preflightResult.result.state.completion_status, 'blocked');
   assert.deepEqual(preflightResult.result.state.next_actions, ['stale review preflight blocks dispatch']);
 
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:judgment_agent_workflow_evidence_lifecycle',
@@ -15226,7 +15983,7 @@ architecture_docs:
         reason: 'Agent workflow route requires current-bound recorded agent review evidence'
       }
     ]
-  }, null, 2)}\n`);
+  });
   const lifecycleResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(lifecycleResult.exitCode, 0);
   assert.equal(lifecycleResult.result.state.blocking_gate, null);
@@ -15238,14 +15995,38 @@ architecture_docs:
   );
 });
 
+test('DRS-S-5 execute reconcile returns nonzero for canonical persistence failure', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    status: 'failed',
+    stop_reason: 'canonical_audit_persistence_failed',
+    current_head_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] },
+    pr: { url: 'https://example.test/pr/1' }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.state.completion_status, 'failed');
+  assert.equal(result.result.state.blocking_gate.id, 'merge_failure');
+});
+
 test('execute state treats route contract gates as PR blockers', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
   const assertBlocksGate = async (node, expectedReason) => {
-    await writeFile(gateDagPath, `${JSON.stringify({ nodes: [node] }, null, 2)}\n`);
+    await writeCurrentGateDag(repo, storyId, currentHeadSha, { nodes: [node] });
     const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
     assert.equal(result.exitCode, 0);
     assert.equal(result.result.state.completion_status, 'blocked');
@@ -15301,10 +16082,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'architecture',
@@ -15315,7 +16097,7 @@ architecture_docs:
         reason: 'ADR evidence should be resolved or waived'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -15346,7 +16128,9 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
     pr: { url: 'https://github.com/example/repo/pull/123' },
     status: 'merged',
     merged_at: '2026-06-12T00:06:00.000Z',
-    merge_commit_sha: head
+    merge_commit_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
   });
   await mkdir(path.join(repo, '.vibepro', 'executions', storyId), { recursive: true });
   await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
@@ -15355,6 +16139,88 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
     completion_status: 'pr_created',
     managed_worktree: null
   });
+  const unverifiedStoryId = 'story-unverified-must-not-reconcile-as-merged';
+  await mkdir(path.join(repo, '.vibepro', 'pr', unverifiedStoryId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', unverifiedStoryId, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: unverifiedStoryId },
+    status: 'blocked',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head,
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+  const canonicalUnverifiedStoryId = 'story-canonical-unverified-must-not-reconcile-as-merged';
+  await mkdir(path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId), { recursive: true });
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'audit-bundle.json'),
+    {
+      schema_version: '0.1.0',
+      story_id: canonicalUnverifiedStoryId,
+      merge: {
+        status: 'merged',
+        merged_at: '2026-06-12T00:06:00.000Z',
+        merge_commit_sha: head,
+        delivery: { status: 'unverified' },
+        reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+      }
+    }
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'pr'),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'pr', 'pr-merge.json'),
+    { status: 'merged', merge_commit_sha: head, merged_at: '2026-06-12T00:06:00.000Z' }
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unverifiedStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unverifiedStoryId, 'audit-bundle.json'),
+    { story_id: unverifiedStoryId, merge: { status: 'merged', merge_commit_sha: head } }
+  );
+  const unboundCanonicalStoryId = 'story-canonical-positive-without-trusted-identity';
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unboundCanonicalStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unboundCanonicalStoryId, 'audit-bundle.json'),
+    {
+      story_id: unboundCanonicalStoryId,
+      merge: {
+        status: 'merged',
+        base: 'main',
+        pr: { selector: 'https://github.com/example/repo/pull/999' },
+        delivery: { status: 'merged', merge_commit_sha: head },
+        reconciliation: { status: 'reconciled', reasons: [] }
+      }
+    }
+  );
+  const completedButUnverifiedStoryId = 'story-completed-doc-but-unverified';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'completed'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'management', 'stories', 'completed', `${completedButUnverifiedStoryId}.md`),
+    `---\nstory_id: ${completedButUnverifiedStoryId}\nstatus: completed\n---\n\n# Completed but unverified\n`
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', completedButUnverifiedStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', completedButUnverifiedStoryId, 'audit-bundle.json'),
+    {
+      story_id: completedButUnverifiedStoryId,
+      merge: {
+        status: 'merged',
+        delivery: { status: 'unverified' },
+        reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+      }
+    }
+  );
 
   const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
   assert.equal(result.exitCode, 0);
@@ -15371,6 +16237,195 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
   assert.equal(state.execution_dag.nodes.find((node) => node.id === 'pr_created').status, 'passed');
 });
 
+test('DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = {
+    artifacts: {
+      pr: { canonical: '.vibepro/routed-pr/{story_id}-pr-prepare.json' }
+    }
+  };
+  await writeJson(configPath, config);
+
+  const routedMergedStory = 'story-routed-bulk-merged';
+  const routedUnverifiedStory = 'story-routed-bulk-unverified';
+  for (const [storyId, deliveryStatus] of [
+    [routedMergedStory, 'merged'],
+    [routedUnverifiedStory, 'unverified']
+  ]) {
+    const routedDir = path.join(repo, '.vibepro', 'routed-pr');
+    await mkdir(routedDir, { recursive: true });
+    await writeJson(path.join(routedDir, `${storyId}-pr-create.json`), {
+      schema_version: '0.1.0',
+      current_head_sha: head,
+      story: { story_id: storyId },
+      pr_url: `https://github.com/example/repo/pull/${storyId}`,
+      status: 'created'
+    });
+    await writeJson(path.join(routedDir, `${storyId}-pr-merge.json`), {
+      schema_version: '0.1.0',
+      current_head_sha: head,
+      story: { story_id: storyId },
+      status: deliveryStatus === 'merged' ? 'merged' : 'blocked',
+      delivery: { status: deliveryStatus, merge_commit_sha: deliveryStatus === 'merged' ? head : null },
+      reconciliation: {
+        status: deliveryStatus === 'merged' ? 'reconciled' : 'blocked',
+        reasons: deliveryStatus === 'merged' ? [] : ['delivery_not_verified']
+      }
+    });
+  }
+
+  const legacyMergedDecoyDir = path.join(repo, '.vibepro', 'pr', routedUnverifiedStory);
+  await mkdir(legacyMergedDecoyDir, { recursive: true });
+  await writeJson(path.join(legacyMergedDecoyDir, 'pr-merge.json'), {
+    current_head_sha: head,
+    story: { story_id: routedUnverifiedStory },
+    status: 'merged',
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+  const legacyUnverifiedDecoyDir = path.join(repo, '.vibepro', 'pr', routedMergedStory);
+  await mkdir(legacyUnverifiedDecoyDir, { recursive: true });
+  await writeJson(path.join(legacyUnverifiedDecoyDir, 'pr-merge.json'), {
+    current_head_sha: head,
+    story: { story_id: routedMergedStory },
+    status: 'blocked',
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0, JSON.stringify(result.result, null, 2));
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, routedMergedStory);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+  assert.equal(result.result.stories.some((story) => story.story_id === routedUnverifiedStory), false);
+});
+
+test('DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-named-profile-bulk-merged';
+  const featureSlug = 'named-profile-bulk-merged';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  const canonicalByKind = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: '.vibepro/packets/{feature_slug}/pr-prepare.json'
+  };
+  const artifacts = Object.fromEntries(Object.entries(canonicalByKind).map(([kind, canonical]) => [kind, {
+    canonical,
+    ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated'
+  }]));
+  config.brainbase.stories.push({
+    story_id: storyId,
+    title: 'Named profile bulk reconciliation',
+    artifact_profile: 'feature_packet',
+    feature_slug: featureSlug
+  });
+  config.artifact_routing = {
+    schema_version: '0.2.0',
+    profiles: {
+      feature_packet: { artifacts },
+      governance_packet: { artifacts: structuredClone(artifacts) }
+    }
+  };
+  await writeJson(configPath, config);
+  const storyPath = path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`);
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: ${featureSlug}\n---\n`);
+  const packetDir = path.join(repo, '.vibepro', 'packets', featureSlug);
+  await mkdir(packetDir, { recursive: true });
+  await writeJson(path.join(packetDir, 'pr-create.json'), {
+    schema_version: '0.2.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    pr_url: 'https://github.com/example/repo/pull/200',
+    status: 'created'
+  });
+  await writeJson(path.join(packetDir, 'pr-merge.json'), {
+    schema_version: '0.2.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0, JSON.stringify(result.result, null, 2));
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, storyId);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+  assert.equal(result.result.stories[0].evidence.some((item) => item.kind === 'pr_merge'), true);
+});
+
+test('DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-legacy-reconcile-required';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].after_status, 'merged_reconciliation_required');
+});
+
+test('DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-current-local-bulk-priority';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  const canonicalDir = path.join(repo, 'docs', 'management', 'audit-artifacts', storyId, 'pr');
+  await mkdir(prDir, { recursive: true });
+  await mkdir(canonicalDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+  await writeJson(path.join(canonicalDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    status: 'blocked',
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, storyId);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+});
+
 test('execute state treats workflow-heavy gates as critical blockers', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
@@ -15385,10 +16440,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:release_confidence',
@@ -15399,7 +16455,7 @@ architecture_docs:
         reason: 'workflow-heavy release evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -15422,10 +16478,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:design_quality',
@@ -15436,7 +16493,7 @@ architecture_docs:
         reason: 'design quality evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);

@@ -1,7 +1,9 @@
 ---
 story_id: story-vibepro-cli-status-honesty
 title: VibePro CLI Status Honesty Spec
-parent_design: vibepro-cli-status-honesty
+parent_design:
+  - vibepro-cli-status-honesty
+  - story-vibepro-delivery-reconciliation-state
 ---
 
 # Spec
@@ -17,8 +19,11 @@ parent_design: vibepro-cli-status-honesty
     query the merged path already uses — and populates
     `merge.merge_commit_sha` and `merge.merged_at` from it.
   - It verifies `merge_commit_sha` is an ancestor of `origin/<base>`
-    (`gitIsAncestor`). On success:
-    - `merge.status = 'merged_externally'`, `merge.stop_reason = null`.
+    (`gitIsAncestor`). On success, delivery is preserved as
+    `merge.delivery.status = 'merged_externally'`. The compatibility
+    `merge.status` is also `merged_externally`; `merge.stop_reason` is null
+    only when current local evidence is reconciled, otherwise it is
+    `delivery_reconciliation_required`.
     - A warning records that the PR was merged outside `vibepro execute
       merge` and was reconciled.
     - The shared post-merge pipeline runs unchanged: `pr-merge.json` /

@@ -1,0 +1,438 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "description": "GitHub delivery is verified against origin/base before branch cleanup; canonical audit persistence and execution-state synchronization are independent fail-closed boundaries.",
+      "mermaid": "flowchart LR\n  GH[GitHub merge fact] --> A[origin/base ancestry]\n  A -->|unverified| B[blocked; branch retained]\n  A -->|verified| D[immutable delivery]\n  D --> C[canonical audit persistence]\n  C --> E[execution-state synchronization]\n  C -->|failure| CF[failed; retry persistence]\n  E -->|failure| EF[non-zero; surface sync failure]\n  E --> R[mutable reconciliation]"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "DRS-CONTRACT-001",
+      "type": "invariant",
+      "statement": "Merge results expose independent delivery and reconciliation objects while retaining top-level status only as a compatibility projection.",
+      "rationale": "Delivery is an immutable external fact; reconciliation is mutable local follow-up state.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "delivery" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/merge-manager.js", "must_contain": "reconciliation_required" }],
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "reconciliation_required" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-002",
+      "type": "invariant",
+      "statement": "An external merge is not accepted as delivered unless its merge commit is an ancestor of the configured base ref.",
+      "rationale": "A GitHub response alone must not manufacture a canonical delivery fact.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "could not be confirmed" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "merged PR commit is not on origin/base" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-003",
+      "type": "scenario",
+      "story_scenario_ids": ["DRS-STORY-S-003"],
+      "statement": "Given observed external delivery with gate or HEAD drift, when merge execution reconciles it, then delivery remains observed, reconciliation becomes required, and the CLI exits non-zero.",
+      "rationale": "Post-delivery drift must be actionable without rewriting history.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "State transition" }],
+        "code_refs": [
+          { "file": "src/merge-manager.js", "anchor": "collectDeliveryReconciliationReasons" },
+          { "file": "src/cli.js", "anchor": "reconciliation_required" },
+          { "file": "src/execution-state.js", "anchor": "merged_reconciliation_required" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "gate drift" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-004",
+      "type": "invariant",
+      "statement": "Expected post-merge topology, including a closed PR and a branch no longer fresh against base, does not by itself require reconciliation.",
+      "rationale": "Those differences are consequences of a valid merge rather than evidence drift.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "collectDeliveryReconciliationReasons" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/cli-status-honesty.test.js", "must_cover": "DRS-S-4 DRS-S-6 execute merge reconciles an already-merged PR as merged_externally with a full merge record" },
+          { "file_glob": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts", "must_cover": "DRS-SCENARIO-001 .*already-merged PR as merged_externally" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-005",
+      "type": "scenario",
+      "story_scenario_ids": ["DRS-STORY-S-005"],
+      "statement": "Given delivered but unreconciled state, when the delivery workflow state transition updates execution state, then traceability records merged delivery while execution remains in reconcile_delivery with explicit next actions.",
+      "rationale": "Handoff must reconstruct both what shipped and what still needs attention.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/execution-state.js", "anchor": "reconcile_delivery" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "traceability.lifecycle" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-006",
+      "type": "scenario",
+      "story_scenario_ids": ["DRS-STORY-S-001"],
+      "statement": "Given a normal managed merge succeeds, when VibePro refreshes the configured base and verifies the merge commit ancestry, then delivery is merged, reconciliation is reconciled, and the command succeeds.",
+      "rationale": "The delivery authority must use post-merge remote evidence rather than a precondition snapshot.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "Post-merge base fetch" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "successful GitHub merge" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-001",
+      "story_scenario_ids": ["DRS-STORY-S-002"],
+      "type": "scenario",
+      "statement": "Given GitHub reports an externally merged PR and origin/base contains its merge commit, when merge execution reconciles current evidence, then delivery is merged_externally, reconciliation is reconciled, and the command succeeds.",
+      "rationale": "Externally completed delivery remains a valid immutable fact when the canonical base confirms it.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "State transition" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "merged_externally" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "already-merged PR as merged_externally" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-002",
+      "story_scenario_ids": ["DRS-STORY-S-003"],
+      "type": "scenario",
+      "statement": "Given GitHub reports an externally merged PR but current required gates are not ready, when merge execution reconciles it, then delivery remains merged_externally, reconciliation is reconciliation_required with gate_not_ready, and the command exits non-zero.",
+      "rationale": "Current governance drift must remain blocking without erasing the observed delivery fact.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "State transition" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "gate_not_ready" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/cli-status-honesty.test.js", "must_cover": "gate drift" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-003",
+      "story_scenario_ids": ["DRS-STORY-UNVERIFIED-004"],
+      "type": "scenario",
+      "statement": "Given a VibePro-managed merge command reports success, when the merged view or base ancestry cannot verify the merge commit, then delivery remains unverified and the operation is blocked.",
+      "rationale": "A successful external command is not authoritative delivery evidence.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 1 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "pr_delivery_unverified" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "merge commit evidence is missing" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-004",
+      "story_scenario_ids": ["DRS-STORY-S-001"],
+      "type": "scenario",
+      "statement": "Given a normal managed merge succeeds, when VibePro refreshes origin/base and verifies the merge commit ancestry, then delivery is merged, reconciliation is reconciled, and the command succeeds.",
+      "rationale": "The delivery authority must observe the post-merge remote ref rather than the precondition snapshot.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "Post-merge base fetch" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "successful GitHub merge" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-007",
+      "type": "invariant",
+      "statement": "State semantics and projection surfaces preserve delivery and reconciliation as independent axes; recovery retains the delivered PR selector and non-default base; provider failures persist blocked evidence; external delivery does not imply historical merge readiness; unresolved reconciliation cannot report automation readiness as ready; and sync-failure follow-up uses the exact persisted pr-merge identity.",
+      "rationale": "A correct core artifact is insufficient if handoff and audit surfaces collapse its meaning.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [
+          { "file": "src/execution-state.js", "anchor": "delivery" },
+          { "file": "src/merge-manager.js", "anchor": "expectedMerge" },
+          { "file": "src/canonical-audit.js", "anchor": "reconciliation" },
+          { "file": "src/html-report.js", "anchor": "Reconciliation" },
+          { "file": "src/usage-report.js", "anchor": "latest_reconciliation_status" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/delivery-reconciliation-state.test.js", "must_cover": "both delivery axes" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "does not invent historical merge readiness" },
+          { "file_glob": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts", "must_cover": "shipped VibePro binary preserves observed delivery and reconciles exact identity" },
+          { "file_glob": "test/traceability-usage-report.test.js", "must_cover": "latest_reconciliation_status" },
+          { "file_glob": "test/canonical-audit-self-contained.test.js", "must_cover": "reconciliation" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-INHERITED-000",
+      "type": "invariant",
+      "statement": "A started agent review without a persisted dispatch authorization id remains invalid independently of delivery reconciliation state.",
+      "rationale": "This branch predates and is unchanged by the delivery reconciliation Story.",
+      "inherited_behavior": {
+        "condition": "!startedEntry?.dispatch_authorization_id",
+        "classification": "existing",
+        "files": ["src/agent-review.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/agent-review.js", "anchor": "!startedEntry?.dispatch_authorization_id" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/review-inspection-first.test.js", "must_cover": "authorization" }]
+      }
+    },
+    {
+      "id": "DRS-INHERITED-001",
+      "type": "invariant",
+      "statement": "Agent review continues to reject a lifecycle operation when no authorization id can be resolved.",
+      "rationale": "This review-lifecycle branch predates and is unchanged by the delivery reconciliation Story.",
+      "inherited_behavior": {
+        "condition": "!authorizationId",
+        "classification": "unchanged",
+        "files": ["src/agent-review.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/agent-review.js", "anchor": "!authorizationId" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/review-inspection-first.test.js", "must_cover": "authorization" }]
+      }
+    },
+    {
+      "id": "DRS-INHERITED-002",
+      "type": "invariant",
+      "statement": "A denied gate authorization continues to emit the pre-existing warning; it does not erase independently observed delivery, whose drift is handled by reconciliation_required.",
+      "rationale": "The warning branch is unchanged, while this Story owns the separate post-delivery reconciliation semantics.",
+      "inherited_behavior": {
+        "condition": "!gateAuthorization.allowed",
+        "classification": "unchanged",
+        "files": ["src/merge-manager.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "Merge gate authorization rejected" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts", "must_cover": "delivery remains observed" }]
+      }
+    },
+    {
+      "id": "DRS-INHERITED-003",
+      "type": "invariant",
+      "statement": "Evidence reuse continues to project optional session attribution when sessions are present.",
+      "rationale": "This projection predates and is unchanged by the delivery reconciliation Story.",
+      "inherited_behavior": {
+        "condition": "sessions.length > 0",
+        "classification": "unchanged",
+        "files": ["src/evidence-reuse.js"]
+      },
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "code_refs": [{ "file": "src/evidence-reuse.js", "anchor": "sessions.length > 0" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/evidence-summary-reuse.test.js", "must_cover": "session attribution" }]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-008",
+      "type": "invariant",
+      "statement": "Transaction and concurrency recovery atomically publishes generation-bound locks, fences stale initializers, serializes verified takeover and release, compares observed execution-state values before each commit, and rolls back only exact per-write transaction-owned artifacts without overwriting concurrent operator state.",
+      "rationale": "Immutable delivery has no value if recovery can destroy a newer operator decision.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 7 }],
+        "code_refs": [
+          { "file": "src/story-transaction-lock.js", "anchor": "withStoryTransactionLocks" },
+          { "file": "src/execution-state.js", "anchor": "expectedState" },
+          { "file": "src/merge-manager.js", "anchor": "persistMergeFollowupState" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/story-transaction-lock.test.js", "must_cover": "paused initializer cannot overwrite a successor owner" },
+          { "file_glob": "test/story-transaction-lock.test.js", "must_cover": "retiring owner never quarantines a successor generation" },
+          { "file_glob": "test/story-transaction-lock.test.js", "must_cover": "stale transition" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "source artifact rollback preserves an interleaved writer" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "merge follow-up rollback restores only proven transaction-owned files" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "reconciliation initial write rejects a concurrent operator state" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "stale successful result after concurrent state advance" },
+          { "file_glob": "test/canonical-audit-self-contained.test.js", "must_cover": "canonical promotion reports each persisted file ownership immediately" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-CONTRACT-009",
+      "type": "invariant",
+      "statement": "Routed and linked authority recovery discovers only the configured PR route, compares every existing local or linked execution-state authority against its observed value or absence, accepts a linked-only baseline, and restores only transaction-owned routed artifacts without consuming legacy or unrelated authority.",
+      "rationale": "Recovery is unsafe when the correct state is written through the wrong route or only one linked authority is restored.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],
+        "code_refs": [
+          { "file": "src/execution-state.js", "anchor": "collectLinkedExecutionRoots" },
+          { "file": "src/managed-worktree.js", "anchor": "deliveryObserved" },
+          { "file": "src/merge-manager.js", "anchor": "resolvePrArtifactFile" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/execution-state.test.js", "must_cover": "linked-only observed authority is a valid compare-and-swap baseline" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "compare-and-swap rejects a concurrent linked-authority update" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "linked artifact sync and rollback honor the configured PR route" },
+          { "file_glob": "test/vibepro-cli.test.js", "must_cover": "execute reconcile --all-merged discovers only the configured PR route" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-005",
+      "story_scenario_ids": ["DRS-STORY-S-005"],
+      "type": "scenario",
+      "statement": "Given delivery is observed but canonical audit persistence fails, when execution status is rebuilt, then completion remains failed, delivery remains observed, and retry guidance is present.",
+      "rationale": "An immutable delivery fact must not hide a mutable but blocking persistence failure.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [
+          { "file": "src/merge-manager.js", "anchor": "canonical_audit_persistence_failed" },
+          { "file": "src/execution-state.js", "anchor": "mergeFailureGate" },
+          { "file": "src/cli.js", "anchor": "result.merge.status === 'failed'" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/execution-state.test.js", "must_cover": "canonical persistence failure actionable" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-006",
+      "story_scenario_ids": ["DRS-STORY-S-005"],
+      "type": "scenario",
+      "statement": "Given delivery is observed but execution-state synchronization fails, the CLI returns the observed merge result, persists reconciliation_required to local and canonical artifacts with an explicit recovery command, and exits non-zero.",
+      "rationale": "A secondary state-write failure must not suppress the already observed delivery fact or leave recovery ambiguous.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [
+          { "file": "src/cli.js", "anchor": "execution_state_sync" },
+          { "file": "src/merge-manager.js", "anchor": "persistMergeFollowupState" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "preserves observed delivery across execution-state synchronization failure" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-007",
+      "story_scenario_ids": ["DRS-STORY-S-006"],
+      "type": "scenario",
+      "statement": "Given a provider command fails or its JSON is malformed, merge execution writes an explicit blocked artifact without inferring delivery; retrying an already observed external merge remains idempotent and does not manufacture historical merge readiness.",
+      "rationale": "Provider transport and parse failures must fail closed while preserving only identity-bound delivery facts already observed for the same PR and base.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [
+          { "file": "src/merge-manager.js", "anchor": "provider_command_failed" },
+          { "file": "src/execution-state.js", "anchor": "deliveryIdentityMatches" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/vibepro-cli.test.js", "must_cover": "provider command and JSON failures" },
+          { "file_glob": "test/execution-state.test.js", "must_cover": "nested base identity" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-008",
+      "story_scenario_ids": ["DRS-STORY-S-005"],
+      "type": "scenario",
+      "statement": "Given execution-state synchronization fails after delivery was observed, text, HTML, usage, and compact canonical projections expose the same single ordered reconciliation action, beginning with execute reconcile and never mixing it with prepare-and-merge guidance.",
+      "rationale": "A preserved delivery fact is not operationally useful when handoff surfaces disagree about the first recovery command.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [
+          { "file": "src/reconciliation-action.js", "anchor": "resolveReconciliationAction" },
+          { "file": "src/canonical-audit.js", "anchor": "reconciliation_action" },
+          { "file": "src/html-report.js", "anchor": "Required Follow-up" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/delivery-reconciliation-state.test.js", "must_cover": "one authoritative recovery action" },
+          { "file_glob": "test/traceability-usage-report.test.js", "must_cover": "canonical recovery equivalence" }
+        ]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-009",
+      "story_scenario_ids": ["DRS-STORY-S-005", "DRS-STORY-TXN-007", "DRS-STORY-ROUTE-008"],
+      "type": "scenario",
+      "statement": "Given the persisted execute-reconcile recovery command is run after execution-state synchronization failed, successful state persistence consumes only that failure, requires exact stored and supplied base/PR identity, preserves delivery/base/PR identity in local and canonical artifacts, retains unrelated reconciliation reasons, rolls back local/canonical/manifest artifacts on partial persistence failure, and converges execution state to merged and reconciled without merge retry guidance.",
+      "rationale": "A recovery command is valuable only when executing it resolves the recorded boundary failure rather than looping back to merge after delivery is already observed.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }],
+        "code_refs": [
+          { "file": "src/execution-state.js", "anchor": "consumeExecutionStateSyncFailure" },
+          { "file": "src/merge-manager.js", "anchor": "persistMergeFollowupState" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/vibepro-cli.test.js", "must_cover": "preserves observed delivery across execution-state synchronization failure" }]
+      }
+    },
+    {
+      "id": "DRS-SCENARIO-010",
+      "story_scenario_ids": [
+        "DRS-STORY-RECOVERY-009"
+      ],
+      "type": "scenario",
+      "statement": "Given canonical follow-up persistence fails after delivery was observed and its transaction is rolled back, the CLI exits one. When expected-merge CAS succeeds it persists local-only recovery with the exact delivery and PR/base identity, does not treat that degraded artifact as canonical success, and a later execute reconcile with the same identity rebuilds canonical authority and execution state to reconciled. When expected-merge CAS fails it preserves the newer operator state and returns merge_recovery_state_conflict with recovery_persistence failed.",
+      "rationale": "A secondary persistence failure must retain actionable recovery when ownership is still valid, while never overwriting newer operator authority or reporting false success.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "index": 9 }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-delivery-reconciliation-state.md", "section": "Failure policy" }
+        ],
+        "code_refs": [
+          { "file": "src/cli.js", "anchor": "persistMergeRecoveryState" }
+        ],
+        "test_refs": [
+          { "file": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts", "case": "persists local recovery when canonical follow-up persistence fails" }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts", "must_cover": "canonical follow-up persistence fails" }
+        ]
+      }
+    }
+  ]
+}
