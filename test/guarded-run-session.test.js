@@ -79,6 +79,52 @@ test('OCR-S-1 canonical one-command request defaults to autonomous with codex th
   assert.deepEqual(explicitLegacy.provider_fallbacks, ['custom-runtime']);
 });
 
+test('OCR-S-1 production owner returns a persisted typed runtime stop without replaying the same transition', async (t) => {
+  const fixture = await createFixture(t, { mode: 'required' });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'capability-limited-runtime',
+    async probe() {
+      return {
+        available: true,
+        capabilities: [],
+        sandbox: 'workspace-write',
+        approval_policy: 'managed'
+      };
+    },
+    async start() {
+      throw new Error('start must not run without the required workspace_write capability');
+    },
+    async status() { return { status: 'failed' }; },
+    async cancel() {},
+    async collect_result() { throw new Error('no runtime result exists'); }
+  }] });
+  const session = fixture.session({ agentRuntimeCoordinator: coordinator });
+  await session.run(fixture.source, {
+    storyId: STORY_ID,
+    actionProfile: 'autonomous',
+    providerFallbacks: ['capability-limited-runtime']
+  });
+  const previous = process.env.VIBEPRO_NEXT_BEST_ACTION;
+  process.env.VIBEPRO_NEXT_BEST_ACTION = 'off';
+  t.after(() => previous === undefined
+    ? delete process.env.VIBEPRO_NEXT_BEST_ACTION
+    : (process.env.VIBEPRO_NEXT_BEST_ACTION = previous));
+
+  const result = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(result.state.status, 'waiting_for_runtime');
+  assert.equal(result.state.stop_reason.code, 'runtime_unavailable');
+  assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write']);
+  assert.deepEqual(
+    result.state.transitions.filter(({ to }) => to === 'waiting_for_runtime')
+      .map(({ from, to }) => [from, to]),
+    [['running', 'waiting_for_runtime']]
+  );
+  assert.deepEqual(await session.status(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID
+  }), result.state);
+});
+
 test('AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const calls = [];

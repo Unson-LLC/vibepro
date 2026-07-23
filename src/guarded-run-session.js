@@ -529,7 +529,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       };
     }
   }
-  if (outcomeStatus !== loaded.state.status) {
+  if (outcomeStatus !== next.status) {
     next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
