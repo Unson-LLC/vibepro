@@ -22,7 +22,7 @@ test('story-vibepro-autonomous-action-dag AAD-S-1 through AAD-S-7 workflow repla
     maxBuffer: 8 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# fail 0\b/);
+  assert.match(result.stdout, /(?:#|ℹ) fail 0\b/);
   for (const scenario of [
     { clause: 'AC-1 S-002', pattern: /AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners/ },
     { clause: 'AC-2 S-003', pattern: /AAD-S-2 policy-denied autonomous actions fail closed before their runner executes/ },

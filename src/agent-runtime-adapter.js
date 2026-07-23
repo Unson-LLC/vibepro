@@ -1,15 +1,18 @@
 import { createHash } from 'node:crypto';
 import { appendProviderObservation, assertProviderIdentityUniqueness, createRunLineageEnvelope } from './run-lineage.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 
 export { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 
 const REQUIRED_METHODS = Object.freeze(['probe', 'start', 'status', 'cancel', 'collect_result']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled', 'timed_out']);
-const RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES]);
+const RUNTIME_STATUSES = new Set(['queued', 'running', 'running_detached', 'permission_wait', 'stalled', ...TERMINAL_STATUSES]);
 const RUNTIME_TRANSITIONS = new Map([
-  ['queued', new Set(['queued', 'running', 'permission_wait', ...TERMINAL_STATUSES])],
-  ['running', new Set(['running', 'permission_wait', ...TERMINAL_STATUSES])],
-  ['permission_wait', new Set(['permission_wait', 'running', ...TERMINAL_STATUSES])]
+  ['queued', new Set(['queued', 'running', 'running_detached', 'permission_wait', 'stalled', ...TERMINAL_STATUSES])],
+  ['running', new Set(['running', 'running_detached', 'permission_wait', 'stalled', ...TERMINAL_STATUSES])],
+  ['running_detached', new Set(['running_detached', 'running', 'permission_wait', 'stalled', ...TERMINAL_STATUSES])],
+  ['permission_wait', new Set(['permission_wait', 'running', 'running_detached', 'stalled', ...TERMINAL_STATUSES])],
+  ['stalled', new Set(['stalled', 'running', 'running_detached', ...TERMINAL_STATUSES])]
 ]);
 const WAIT_REASONS = new Set(['runtime_unavailable', 'quota_exceeded', 'permission_wait', 'auth_denied', 'runtime_probe_timeout']);
 const ROLES = new Set(['implementation', 'review']);
@@ -30,14 +33,17 @@ export function defineAgentRuntimeAdapter(adapter) {
       throw new AgentRuntimeError('invalid_adapter', `runtime adapter requires ${method}()`);
     }
   }
-  return Object.freeze({
+  const defined = {
     id: requireText(adapter.id, 'adapter.id'),
     probe: adapter.probe.bind(adapter),
     start: adapter.start.bind(adapter),
     status: adapter.status.bind(adapter),
     cancel: adapter.cancel.bind(adapter),
     collect_result: adapter.collect_result.bind(adapter)
-  });
+  };
+  if (typeof adapter.detach === 'function') defined.detach = adapter.detach.bind(adapter);
+  if (typeof adapter.reconcile === 'function') defined.reconcile = adapter.reconcile.bind(adapter);
+  return Object.freeze(defined);
 }
 
 export function createAgentRuntimeCoordinator({ adapters = [], now = () => new Date() } = {}) {
@@ -50,6 +56,8 @@ export function createAgentRuntimeCoordinator({ adapters = [], now = () => new D
   return {
     dispatch: (runState, request, options = {}) => dispatch(registry, now, runState, request, options),
     poll: (runState, dispatchId, options = {}) => poll(registry, now, runState, dispatchId, options),
+    detach: (runState, dispatchId) => detach(registry, now, runState, dispatchId),
+    reconcile: (runState, dispatchId, options = {}) => reconcile(registry, now, runState, dispatchId, options),
     cancel: (runState, dispatchId) => cancel(registry, now, runState, dispatchId)
   };
 }
@@ -65,10 +73,24 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
     throw error;
   }
   const existing = findDispatch(runState, request.dispatch_id);
-  if (existing && existing.provider_run_id && !TERMINAL_STATUSES.has(existing.status)) {
-    return { state: { ...runState, status: 'running', stop_reason: null }, dispatch: existing, reused: true };
+  if (existing && existing.input_head_sha !== request.input_head_sha) {
+    if (input.surface_unchanged_after_rebase !== true || existing.inspection_surface_hash !== request.inspection_surface_hash) {
+      throw new AgentRuntimeError('stale_head', 'logical dispatch reuse across HEAD changes requires an explicit unchanged-surface assertion');
+    }
+    const rebound = {
+      ...existing,
+      input_head_sha: request.input_head_sha,
+      surface_rebound_from_head_sha: existing.input_head_sha,
+      updated_at: iso(now)
+    };
+    return { state: upsertDispatch(runState, rebound), dispatch: rebound, reused: true };
   }
-  if (existing?.status === 'completed') return { state: runState, dispatch: existing, reused: true };
+  if (existing?.provider_run_id) {
+    const state = TERMINAL_STATUSES.has(existing.status)
+      ? runState
+      : { ...runState, status: 'running', stop_reason: null };
+    return { state, dispatch: existing, reused: true };
+  }
   if (existing?.stop_reason?.code === 'orphaned_agent') return { state: runState, dispatch: existing, reused: true };
 
   const adapter = registry.get(request.adapter_id);
@@ -101,6 +123,7 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
       request.requirements.timeout_ms,
       'runtime_start_timeout'
     ));
+    const startedAt = iso(now);
     const dispatchRecord = {
       ...request,
       provider_run_id: started.provider_run_id,
@@ -110,8 +133,10 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
       sandbox: capability.sandbox,
       approval_policy: capability.approval_policy,
       status: 'running',
-      started_at: iso(now),
-      updated_at: iso(now),
+      started_at: startedAt,
+      logical_started_at: startedAt,
+      attempt_started_at: startedAt,
+      updated_at: startedAt,
       result: null,
       stop_reason: null
     };
@@ -186,10 +211,14 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
     return containUncertainRuntime(registry, now, runState, current,
       'stale_head', 'runtime dispatch input HEAD no longer matches the authoritative Run HEAD');
   }
+  if (typeof adapter.detach === 'function' && typeof adapter.reconcile === 'function' &&
+      current.status === 'running' && Date.parse(iso(now)) - Date.parse(current.started_at) >= current.requirements.monitor_boundary_ms) {
+    return detach(registry, now, runState, dispatchId);
+  }
   let observed;
   try {
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_status_timeout'
     ));
@@ -198,6 +227,68 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
       error.code === 'runtime_status_timeout' || error.code === 'provider_identity_conflict' || error.code === 'provider_observation_conflict'
         ? error.code : 'runtime_status_failed', error.message);
   }
+  return applyObservedStatus(registry, now, runState, current, observed, options);
+}
+
+async function detach(registry, now, runState, dispatchId) {
+  const current = requireDispatch(runState, dispatchId);
+  if (TERMINAL_STATUSES.has(current.status) || current.status === 'running_detached') {
+    return { state: runState, dispatch: current, reused: true };
+  }
+  if (!current.provider_run_id) throw new AgentRuntimeError('runtime_not_started', 'waiting runtime dispatch has no provider run to detach');
+  const adapter = requireAdapter(registry, current.adapter_id);
+  if (typeof adapter.detach !== 'function' || typeof adapter.reconcile !== 'function') {
+    throw new AgentRuntimeError('detached_runtime_unsupported', 'runtime adapter must implement detach() and reconcile() before monitor-boundary detachment');
+  }
+  await withTimeout(adapter.detach({
+    provider_run_id: current.provider_run_id,
+    dispatch_id: current.dispatch_id,
+    monitor_boundary_ms: current.requirements.monitor_boundary_ms
+  }), current.requirements.timeout_ms, 'runtime_detach_timeout');
+  const next = {
+    ...current,
+    status: 'running_detached',
+    detached_at: iso(now),
+    updated_at: iso(now),
+    stop_reason: null
+  };
+  return {
+    state: { ...upsertDispatch(runState, next), status: 'running', stop_reason: null },
+    dispatch: next,
+    reused: false
+  };
+}
+
+async function reconcile(registry, now, runState, dispatchId, options = {}) {
+  const current = requireDispatch(runState, dispatchId);
+  if (TERMINAL_STATUSES.has(current.status)) return { state: runState, dispatch: current, reused: true };
+  const adapter = requireAdapter(registry, current.adapter_id);
+  if (typeof adapter.reconcile !== 'function') return poll(registry, now, runState, dispatchId, options);
+  let observed;
+  try {
+    observed = normalizeStatus(await withTimeout(adapter.reconcile({
+      provider_run_id: current.provider_run_id,
+      dispatch_id: current.dispatch_id,
+      dispatch: current
+    }), current.requirements.timeout_ms, 'runtime_reconcile_timeout'));
+  } catch (error) {
+    const next = {
+      ...current,
+      status: current.status === 'running_detached' ? 'running_detached' : current.status,
+      updated_at: iso(now),
+      stop_reason: {
+        code: error.code ?? 'runtime_reconcile_failed',
+        message: error.message,
+        details: { recoverable_from_inbox: true }
+      }
+    };
+    return { state: upsertDispatch(runState, next), dispatch: next, reused: false };
+  }
+  return applyObservedStatus(registry, now, runState, current, observed, options);
+}
+
+async function applyObservedStatus(registry, now, runState, current, observed, options = {}) {
+  const adapter = requireAdapter(registry, current.adapter_id);
   if (!isAllowedRuntimeTransition(current.status, observed.status)) {
     return containUncertainRuntime(registry, now, runState, current,
       'invalid_runtime_transition', `runtime status cannot transition from ${current.status} to ${observed.status}`);
@@ -205,8 +296,28 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
   if (observed.status === 'permission_wait') {
     return waitingExisting(runState, current, 'permission_wait', observed.message ?? 'runtime requires permission', now);
   }
+  if (observed.status === 'stalled') {
+    return failed(runState, current, 'runtime_stalled', observed.message ?? 'runtime made no bounded progress', now);
+  }
   if (!TERMINAL_STATUSES.has(observed.status)) {
-    const next = { ...current, status: observed.status, updated_at: iso(now), stop_reason: observed.stop_reason ?? null };
+    const preserveDetached = current.status === 'running_detached' && observed.status === 'running';
+    const next = {
+      ...current,
+      status: preserveDetached ? 'running_detached' : observed.status,
+      provider_run_id: observed.provider_run_id ?? current.provider_run_id,
+      provider_session_id: observed.provider_session_id ?? current.provider_session_id ?? null,
+      session_id: observed.session_id ?? current.session_id ?? null,
+      thread_id: observed.thread_id ?? current.thread_id ?? null,
+      updated_at: iso(now),
+      stop_reason: observed.stop_reason ?? null,
+      progress_checkpoint: observed.progress_checkpoint ?? current.progress_checkpoint ?? null,
+      partial_results: observed.partial_results ?? current.partial_results ?? [],
+      attempts: observed.attempts ?? current.attempts ?? 1,
+      usage_accounting: observed.usage_accounting ?? current.usage_accounting ?? null,
+      recovery_plan: observed.recovery_plan ?? current.recovery_plan ?? null,
+      logical_started_at: observed.logical_started_at ?? current.logical_started_at ?? current.started_at,
+      attempt_started_at: observed.attempt_started_at ?? current.attempt_started_at ?? current.started_at
+    };
     next.lineage = appendRuntimeObservation(next.lineage, current.adapter_id, observed, next);
     assertProviderIdentityUniqueness([
       ...(options.providerIdentityRecords ?? []),
@@ -222,7 +333,7 @@ async function poll(registry, now, runState, dispatchId, options = {}) {
   }
   try {
     const result = normalizeResult(await withTimeout(
-      adapter.collect_result({ provider_run_id: current.provider_run_id }),
+      adapter.collect_result({ provider_run_id: current.provider_run_id, dispatch_id: current.dispatch_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_result_timeout'
     ), current);
@@ -250,16 +361,16 @@ async function containUncertainRuntime(registry, now, runState, current, failure
   const adapter = requireAdapter(registry, current.adapter_id);
   let observed;
   try {
-    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
+    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_cancel_status_timeout'
     ));
     if (!TERMINAL_STATUSES.has(observed.status)) {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));
@@ -282,17 +393,17 @@ async function cancel(registry, now, runState, dispatchId) {
   const adapter = requireAdapter(registry, current.adapter_id);
   let observed;
   try {
-    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
+    await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current }), current.requirements.timeout_ms, 'runtime_cancel_timeout');
     observed = normalizeStatus(await withTimeout(
-      adapter.status({ provider_run_id: current.provider_run_id }),
+      adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
       current.requirements.timeout_ms,
       'runtime_cancel_status_timeout'
     ));
   } catch (error) {
     try {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));
@@ -302,9 +413,9 @@ async function cancel(registry, now, runState, dispatchId) {
   }
   if (!TERMINAL_STATUSES.has(observed.status)) {
     try {
-      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
+      await withTimeout(adapter.cancel({ provider_run_id: current.provider_run_id, dispatch: current, force: true }), current.requirements.timeout_ms, 'runtime_force_cancel_timeout');
       observed = normalizeStatus(await withTimeout(
-        adapter.status({ provider_run_id: current.provider_run_id }),
+        adapter.status({ provider_run_id: current.provider_run_id, dispatch: current }),
         current.requirements.timeout_ms,
         'runtime_force_cancel_status_timeout'
       ));
@@ -349,7 +460,12 @@ function normalizeRequest(state, input) {
   if (role === 'review' && !capabilities.includes('review')) {
     throw new AgentRuntimeError('review_capability_required', 'review runtime must request the review capability');
   }
-  const dispatchId = `dispatch-${createHash('sha256').update(`${runId}:${adapterId}:${taskId}:${role}:${headSha}:${reviewerIdentity ?? ''}:${input.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
+  const inspectionSurfaceHash = requireText(input.inspection_surface_hash ?? headSha, 'inspection_surface_hash');
+  const dispatchId = deriveDispatchIdentity({
+    run_id: runId, adapter_id: adapterId, task_id: taskId, role,
+    inspection_surface_hash: inspectionSurfaceHash, reviewer_identity: reviewerIdentity,
+    implementation_session_id: input.implementation_session_id ?? null
+  });
   return {
     dispatch_id: dispatchId,
     run_id: runId,
@@ -362,11 +478,38 @@ function normalizeRequest(state, input) {
     implementation_identity: input.implementation_identity ?? null,
     implementation_session_id: input.implementation_session_id ?? null,
     lineage: createDispatchLineage(state, input, dispatchId, runId, headSha),
+    inspection_surface_hash: inspectionSurfaceHash,
+    requested_judgments: Array.isArray(input.requested_judgments) ? input.requested_judgments : [],
+    previous_judgments: Array.isArray(input.previous_judgments) ? input.previous_judgments : [],
+    previous_surface_hash: input.previous_surface_hash ?? null,
+    changed_paths: Array.isArray(input.changed_paths) ? input.changed_paths.map(String) : [],
+    review_binding: normalizeReviewBinding(input.review_binding, role),
     requirements: {
       capabilities,
       timeout_ms: positiveInteger(input.requirements?.timeout_ms, 'timeout_ms'),
+      monitor_boundary_ms: positiveInteger(input.requirements?.monitor_boundary_ms ?? 600000, 'monitor_boundary_ms'),
+      no_progress_deadline_ms: positiveInteger(input.requirements?.no_progress_deadline_ms ?? 900000, 'no_progress_deadline_ms'),
+      max_wall_clock_ms: positiveInteger(input.requirements?.max_wall_clock_ms ?? 3600000, 'max_wall_clock_ms'),
+      max_attempts: positiveInteger(input.requirements?.max_attempts ?? 1, 'max_attempts'),
+      max_cost_usd: nonNegativeNumber(input.requirements?.max_cost_usd ?? 0, 'max_cost_usd'),
       managed_worktree: requireText(input.requirements?.managed_worktree, 'managed_worktree')
     }
+  };
+}
+
+function normalizeReviewBinding(value, role) {
+  if (value === undefined || value === null) return null;
+  if (role !== 'review' || !value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_request', 'review_binding is supported only for review dispatches');
+  }
+  return {
+    stage: requireText(value.stage, 'review_binding.stage'),
+    role: requireText(value.role, 'review_binding.role'),
+    inspection_inputs: requireStringArray(value.inspection_inputs, 'review_binding.inspection_inputs'),
+    strict_head_binding: value.strict_head_binding === true,
+    strict_head_reason: value.strict_head_binding === true
+      ? requireText(value.strict_head_reason, 'review_binding.strict_head_reason')
+      : null
   };
 }
 
@@ -394,6 +537,8 @@ function normalizeStarted(value) {
     run_id: value.run_id ?? null,
     dispatch_id: value.dispatch_id ?? null,
     head_sha: value.head_sha ?? null
+    ,progress_checkpoint: value.progress_checkpoint ?? null
+    ,partial_results: Array.isArray(value.partial_results) ? value.partial_results : null
   };
 }
 
@@ -413,7 +558,11 @@ function normalizeStatus(value) {
     story_id: value.story_id ?? null,
     run_id: value.run_id ?? null,
     dispatch_id: value.dispatch_id ?? null,
-    head_sha: value.head_sha ?? null
+    head_sha: value.head_sha ?? null,
+    attempts: Number.isInteger(value.attempts) ? value.attempts : null,
+    usage_accounting: value.usage_accounting === undefined ? null : normalizeUsageAccounting(value.usage_accounting),
+    partial_results: Array.isArray(value.partial_results) ? value.partial_results : null,
+    recovery_plan: value.recovery_plan ?? null
   };
 }
 
@@ -431,12 +580,22 @@ function normalizeResult(value, dispatchRecord) {
   if (value.usage_accounting !== undefined) {
     result.usage_accounting = normalizeUsageAccounting(value.usage_accounting);
   }
+  if (Array.isArray(value.partial_results)) result.partial_results = value.partial_results;
+  if (Array.isArray(value.judgments)) result.judgments = value.judgments;
+  if (value.surface_hash !== undefined) result.surface_hash = value.surface_hash;
+  if (result.surface_hash !== undefined && result.surface_hash !== dispatchRecord.inspection_surface_hash) {
+    throw new AgentRuntimeError('runtime_surface_mismatch', 'runtime result surface must match the dispatch inspection surface');
+  }
   if (dispatchRecord.role === 'review') {
     if (result.changed_files.length > 0) {
       throw new AgentRuntimeError('review_mutation_forbidden', 'review runtime result must not contain changed files');
     }
-    if (result.head_sha !== dispatchRecord.input_head_sha) {
-      throw new AgentRuntimeError('runtime_head_mismatch', 'review result HEAD must match the dispatch input HEAD');
+    const acceptedResultHeads = new Set([
+      dispatchRecord.input_head_sha,
+      dispatchRecord.surface_rebound_from_head_sha
+    ].filter(Boolean));
+    if (!acceptedResultHeads.has(result.head_sha)) {
+      throw new AgentRuntimeError('runtime_head_mismatch', 'review result HEAD must match the dispatch input HEAD or its explicitly unchanged-surface predecessor');
     }
     const actualIdentity = requireText(value.agent_identity ?? dispatchRecord.agent_identity, 'review agent_identity');
     if (actualIdentity === dispatchRecord.implementation_identity ||
@@ -467,10 +626,12 @@ function normalizeResult(value, dispatchRecord) {
       throw new AgentRuntimeError('invalid_runtime_result', 'review result requires closed lifecycle');
     }
     result.review = normalizeReviewResult(value);
+    if (dispatchRecord.review_binding) {
+      result.review_record = normalizeRuntimeReviewRecord(value.review_record);
+    }
   }
   return result;
 }
-
 function normalizeReviewResult(value) {
   const status = requireText(value.status, 'review status');
   if (!new Set(['pass', 'needs_changes', 'block']).has(status)) {
@@ -507,6 +668,43 @@ function normalizeReviewFindings(value) {
   });
 }
 
+function normalizeRuntimeReviewRecord(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review result requires review_record for its persisted review binding');
+  }
+  const status = requireText(value.status, 'review_record.status');
+  if (!['pass', 'needs_changes', 'block'].includes(status)) {
+    throw new AgentRuntimeError('invalid_runtime_result', `unsupported review_record.status: ${status}`);
+  }
+  return {
+    status,
+    summary: requireText(value.summary, 'review_record.summary'),
+    findings: normalizeRuntimeReviewFindings(value.findings ?? []),
+    inspection_summary: requireText(value.inspection_summary, 'review_record.inspection_summary'),
+    inspection_evidence: requireText(value.inspection_evidence, 'review_record.inspection_evidence'),
+    judgment_deltas: requireStringArray(value.judgment_deltas, 'review_record.judgment_deltas')
+  };
+}
+
+function normalizeRuntimeReviewFindings(value) {
+  if (!Array.isArray(value)) {
+    throw new AgentRuntimeError('invalid_runtime_result', 'review_record.findings must be an array');
+  }
+  return value.map((finding, index) => {
+    if (!finding || typeof finding !== 'object' || Array.isArray(finding)) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review_record.findings[${index}] must be an object`);
+    }
+    const unknown = Object.keys(finding).filter((key) => !['id', 'severity', 'detail'].includes(key));
+    if (unknown.length > 0) {
+      throw new AgentRuntimeError('invalid_runtime_result', `review_record.findings[${index}] contains unsupported fields: ${unknown.join(', ')}`);
+    }
+    return {
+      id: requireText(finding.id, `review_record.findings[${index}].id`),
+      severity: requireText(finding.severity, `review_record.findings[${index}].severity`),
+      detail: requireText(finding.detail, `review_record.findings[${index}].detail`)
+    };
+  });
+}
 function normalizeUsageAccounting(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new AgentRuntimeError('invalid_runtime_result', 'usage_accounting must be an object');
@@ -607,6 +805,11 @@ function requireStringArray(value, name) {
 
 function positiveInteger(value, name) {
   if (!Number.isInteger(value) || value <= 0) throw new AgentRuntimeError('invalid_request', `${name} must be a positive integer`);
+  return value;
+}
+
+function nonNegativeNumber(value, name) {
+  if (!Number.isFinite(value) || value < 0) throw new AgentRuntimeError('invalid_request', `${name} must be a non-negative number`);
   return value;
 }
 

@@ -289,6 +289,20 @@ test('ARA-S-5 duplicate dispatch is reused and cancel confirms terminal runtime'
   assert.equal(cancelled.dispatch.stop_reason.code, 'runtime_cancelled');
 });
 
+test('CDI-S-4 CDI-S-10 terminal failure cannot replacement-spawn the same logical dispatch', async () => {
+  const adapter = fakeAdapter({ async status() { return { status: 'failed', message: 'bounded attempt exhausted' }; } });
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
+  const started = await coordinator.dispatch(state, request);
+  const failed = await coordinator.poll(started.state, started.dispatch.dispatch_id);
+  const replay = await coordinator.dispatch(failed.state, request);
+
+  assert.equal(failed.dispatch.status, 'failed');
+  assert.equal(replay.reused, true);
+  assert.equal(replay.dispatch.provider_run_id, 'provider-1');
+  assert.equal(replay.dispatch.started_at, started.dispatch.started_at);
+  assert.equal(adapter.starts(), 1);
+});
+
 test('ARA-S-5 nonterminal cancel fails closed as orphaned agent', async () => {
   const adapter = fakeAdapter({ async cancel() {}, async status() { return { status: 'running' }; } });
   const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });

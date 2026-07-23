@@ -19,6 +19,7 @@ import { runCli } from '../src/cli.js';
 import { resolveGitIdentity } from '../src/git-identity.js';
 import { createHumanDecision } from '../src/human-decision-checkpoint.js';
 import { createAgentRuntimeCoordinator } from '../src/agent-runtime-adapter.js';
+import { createCodexGuardedRunBridge } from '../src/codex-runtime-bridge.js';
 
 const STORY_ID = 'story-guarded-run-test';
 const FIRST_TIME = '2026-07-15T01:02:03.000Z';
@@ -836,7 +837,192 @@ test('ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bri
   assert.equal(reviews[0].review.agentId, 'reviewer-2');
   assert.equal(reviews[0].review.agentClosed, true);
   assert.equal(reviews[0].review.implementationSessionId, 'implementation-session');
+  assert.equal(reviews[0].review.runtimeDispatchId, started.dispatch.dispatch_id);
+  const replayedGate = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'duplicate runtime review' }
+  });
+  assert.equal(replayedGate.reused, true);
+  assert.equal(reviews.length, 1);
   assert.equal(run.current_head_sha, persisted.current_head_sha);
+});
+
+test('CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitly unchanged rebase surface', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  let runtimeStatus = 'running';
+  const reviews = [];
+  const coordinator = createAgentRuntimeCoordinator({ adapters: [{
+    id: 'fixture-runtime',
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async start() { starts += 1; return { provider_run_id: 'provider-rebase', agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase' }; },
+    async status() { return { status: runtimeStatus }; }, async cancel() {},
+    async collect_result() {
+      return {
+        completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'reused old-HEAD review',
+        agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase', lifecycle: 'closed',
+        status: 'pass', inspection_summary: 'rebase surface inspected',
+        inspection_evidence: 'runtime/rebase-review', inspection_inputs: ['src/agent-runtime-adapter.js'],
+        judgment_delta: ['old HEAD -> current HEAD because surface is unchanged'], findings: [],
+        review_record: { status: 'pass', summary: 'surface unchanged', findings: [], inspection_summary: 'rebase surface inspected', inspection_evidence: 'runtime/rebase-review', judgment_deltas: ['old HEAD -> current HEAD because surface is unchanged'] }
+      };
+    }
+  }] });
+  const session = fixture.session({
+    agentRuntimeCoordinator: coordinator,
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; }
+  });
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'fixture-runtime', task_id: 'review-rebase', role: 'review', reviewer_identity: 'reviewer-rebase',
+    implementation_identity: 'implementer', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-stable',
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/agent-runtime-adapter.js'], strict_head_binding: false },
+    requirements: { capabilities: ['review'], timeout_ms: 1000, managed_worktree: run.execution_context.root_realpath }
+  };
+  const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  const rebasedHead = 'b'.repeat(40);
+  fixture.setHead(fixture.source, rebasedHead);
+  const rebound = await session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, request: { ...request, surface_unchanged_after_rebase: true }
+  });
+  assert.equal(rebound.reused, true);
+  assert.equal(rebound.dispatch.dispatch_id, started.dispatch.dispatch_id);
+  assert.equal(rebound.dispatch.input_head_sha, rebasedHead);
+  assert.equal(rebound.dispatch.surface_rebound_from_head_sha, run.current_head_sha);
+  assert.equal(rebound.state.current_head_sha, rebasedHead);
+  assert.equal(starts, 1);
+  runtimeStatus = 'completed';
+  const completed = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.status, 'completed');
+  assert.equal(completed.dispatch.result.head_sha, run.current_head_sha);
+  const recorded = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'surface unchanged' }
+  });
+  assert.equal(recorded.review.status, 'pass');
+  assert.equal(reviews.length, 1);
+});
+
+test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  let completionHandler;
+  const reviews = [];
+  const host = {
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async spawn() { starts += 1; return { provider_run_id: 'provider-detached', agent_identity: 'reviewer-detached', thread_id: 'thread-detached' }; },
+    async status() { return { status: 'running' }; },
+    async shutdown() { return { status: 'cancelled' }; },
+    async subscribeCompletion({ onEvent }) { completionHandler = onEvent; return { subscription_id: 'subscription-detached' }; },
+    registerResumeHandler() {},
+    async wake() {},
+    async detach() {}
+  };
+  const guardedRunDependencies = fixture.dependencies();
+  const bridge = createCodexGuardedRunBridge({
+    repoRoot: fixture.source,
+    host,
+    now: guardedRunDependencies.now,
+    guardedRunDependencies,
+    recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: 'pass' }; }
+  });
+  const session = bridge.session;
+  const run = await session.run(fixture.source, { storyId: STORY_ID });
+  const request = {
+    adapter_id: 'codex-subagent', task_id: 'detached-review', role: 'review', reviewer_identity: 'reviewer-detached',
+    implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', inspection_surface_hash: 'surface-a',
+    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
+  };
+  const started = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  fixture.setTime('2026-07-15T01:12:03.000Z');
+  const detached = await session.pollRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(detached.dispatch.status, 'running_detached');
+  assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
+  await completionHandler({
+    event_id: 'guarded-run-completion', kind: 'completed', surface_hash: 'surface-a',
+    result: {
+      changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'detached review pass',
+      agent_identity: 'reviewer-detached', thread_id: 'thread-detached', lifecycle: 'closed',
+      status: 'pass', inspection_summary: 'Inspected detached review completion',
+      inspection_inputs: ['src/codex-runtime-bridge.js'],
+      judgment_delta: ['running_detached -> pass after Inbox recovery'], findings: []
+    }
+  });
+  const completed = await session.reconcileRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
+  assert.equal(completed.dispatch.status, 'completed');
+  const recorded = await session.recordRuntimeReview(fixture.source, {
+    storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id,
+    review: { stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'Codex Inbox review' }
+  });
+  assert.equal(recorded.review.status, 'pass');
+  assert.equal(reviews[0].review.agentClosed, true);
+  assert.equal(reviews[0].review.agentThreadId, 'thread-detached');
+  const duplicate = await session.dispatchRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, request });
+  assert.equal(duplicate.reused, true);
+  assert.equal(starts, 1);
+});
+
+test('CDI-S-8 production bridge rejects a host without push resume registration', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  assert.throws(() => createCodexGuardedRunBridge({
+    repoRoot: fixture.source,
+    host: {
+      async probe() {}, async spawn() {}, async status() {}, async shutdown() {},
+      async subscribeCompletion() {}, async wake() {}
+    },
+    guardedRunDependencies: fixture.dependencies()
+  }), /registerResumeHandler/);
+});
+
+test('CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const guardedRunDependencies = fixture.dependencies();
+  const reviews = [];
+  const run = await fixture.session().run(fixture.source, { storyId: STORY_ID });
+  let completionHandler;
+  let resumeHandler;
+  let starts = 0;
+  const host = {
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async spawn() { starts += 1; return { provider_run_id: 'provider-cli', agent_identity: 'reviewer-cli', thread_id: 'thread-cli' }; },
+    async status() { return { status: 'running', attempts: 1, usage_accounting: { cost_usd: 0.1 } }; },
+    async shutdown() { return { status: 'cancelled' }; },
+    async subscribeCompletion({ onEvent }) { completionHandler = onEvent; return { subscription_id: 'subscription-cli' }; },
+    registerResumeHandler({ resume }) { resumeHandler = resume; },
+    async wake(notification) { return resumeHandler({ story_id: STORY_ID, run_id: RUN_ID, ...notification }); },
+    async detach() {}
+  };
+  const requestPath = path.join(fixture.source, 'runtime-request.json');
+  await writeFile(requestPath, `${JSON.stringify({
+    adapter_id: 'codex-subagent', task_id: 'cli-review', role: 'review', reviewer_identity: 'reviewer-cli',
+    implementation_identity: 'implementer-cli', implementation_session_id: 'implementation-cli', inspection_surface_hash: 'surface-cli',
+    review_binding: { stage: 'gate', role: 'gate_evidence', inspection_inputs: ['src/cli.js'] },
+    requirements: { capabilities: ['review'], timeout_ms: 1000, monitor_boundary_ms: 600000, managed_worktree: run.execution_context.root_realpath }
+  }, null, 2)}\n`);
+  const io = { stdout: { write() {} }, stderr: { write() {} }, codexSubagentHost: host, guardedRunDependencies: { ...guardedRunDependencies, recordAgentReview: async (repo, review) => { reviews.push({ repo, review }); return { status: review.status }; } } };
+  const dispatched = await runCli([
+    'execute', 'runtime-dispatch', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID, '--request', requestPath, '--json'
+  ], io);
+  assert.equal(dispatched.exitCode, 0);
+  assert.equal(starts, 1);
+  assert.equal(typeof resumeHandler, 'function');
+
+  fixture.setTime('2026-07-15T01:12:03.000Z');
+  const polled = await runCli([
+    'execute', 'runtime-poll', fixture.source, '--story-id', STORY_ID, '--run-id', RUN_ID,
+    '--dispatch-id', dispatched.result.dispatch.dispatch_id, '--json'
+  ], io);
+  assert.equal(polled.result.dispatch.status, 'running_detached');
+  await completionHandler({
+    event_id: 'cli-completion', kind: 'completed', surface_hash: 'surface-cli',
+    result: { completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'CLI review complete', agent_identity: 'reviewer-cli', thread_id: 'thread-cli', lifecycle: 'closed', review_record: { status: 'pass', summary: 'CLI review pass', findings: [], inspection_summary: 'Inspected the public runtime path', inspection_evidence: 'runtime-inbox/cli-completion', judgment_deltas: ['detached -> pass after Inbox recovery'] } }
+  });
+  const persisted = await fixture.session().status(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(persisted.runtime_dispatches[0].status, 'completed');
+  assert.equal(reviews.length, 1);
+  assert.equal(reviews[0].review.agentClosed, true);
 });
 
 test('Guarded Run rejects provider identities already persisted in a separate Run artifact', async (t) => {

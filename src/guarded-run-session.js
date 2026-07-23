@@ -6,6 +6,7 @@ import { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
 import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 import {
   evaluateGateReadiness as defaultReadGateReadiness,
   preparePullRequest as defaultPreparePullRequest,
@@ -111,6 +112,8 @@ export function createGuardedRunSession(dependencies = {}) {
     orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options),
     dispatchRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'dispatch'),
     pollRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'poll'),
+    detachRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'detach'),
+    reconcileRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'reconcile'),
     cancelRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'cancel'),
     recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
   };
@@ -119,7 +122,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   if (!deps.agentRuntimeCoordinator) {
     throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
   }
-  const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: operation === 'dispatch' });
+  const loaded = await loadSelectedRun(deps, repoRoot, options);
   const dispatchAuthority = runtimeDispatchAuthority(loaded.state);
   if (operation === 'dispatch' && dispatchAuthority.error) {
     throw contractError('worktree_mismatch', dispatchAuthority.error, {
@@ -141,6 +144,26 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
     throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
   }
   const identityBefore = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
+  let runtimeState = loaded.state;
+  if (operation === 'dispatch' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    const candidateId = deriveDispatchIdentity({
+      run_id: loaded.state.run_id,
+      adapter_id: options.request?.adapter_id,
+      task_id: options.request?.task_id,
+      role: options.request?.role,
+      inspection_surface_hash: options.request?.inspection_surface_hash,
+      reviewer_identity: options.request?.reviewer_identity ?? null,
+      implementation_session_id: options.request?.implementation_session_id ?? null
+    });
+    const existing = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === candidateId);
+    if (!existing || options.request?.surface_unchanged_after_rebase !== true || existing.inspection_surface_hash !== options.request?.inspection_surface_hash) {
+      throw new GuardedRunError('stale_head', 'Runtime dispatch across a HEAD change requires an existing logical dispatch and an explicit unchanged-surface assertion', {
+        expected_head_sha: loaded.state.current_head_sha,
+        actual_head_sha: identityBefore.head_sha
+      });
+    }
+    runtimeState = { ...loaded.state, current_head_sha: identityBefore.head_sha };
+  }
   if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
     throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
       expected_head_sha: loaded.state.current_head_sha,
@@ -149,7 +172,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   }
   const providerIdentityRecords = await readPersistedProviderIdentityRecords(deps, loaded.authorityIdentity.root_realpath);
   let result = operation === 'dispatch'
-    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, loaded.state, options.request, { providerIdentityRecords })
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, runtimeState, options.request, { providerIdentityRecords })
     : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
@@ -164,7 +187,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
       )
     };
   }
-  if (operation === 'poll' && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
+  if ((operation === 'poll' || operation === 'reconcile') && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
     const actualIdentity = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
     if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
       throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
@@ -189,7 +212,7 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
       }
     };
   }
-  if (operation === 'poll' && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
+  if ((operation === 'poll' || operation === 'reconcile') && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
     result = {
       ...result,
       state: {
@@ -254,7 +277,19 @@ async function dispatchRuntimeWithFallbacks(coordinator, state, request, options
 }
 async function recordRuntimeReview(deps, repoRoot, options) {
   return recordGuardedRuntimeReview({
-    deps, repoRoot, options, loadRun: loadSelectedRun, createError: (code, message) => new GuardedRunError(code, message)
+    deps,
+    repoRoot,
+    options,
+    loadRun: loadSelectedRun,
+    createError: (code, message) => new GuardedRunError(code, message),
+    now: () => toIso(deps.now()),
+    persistRun: (state, loaded) => persistAuthorityThenMirror(
+      deps,
+      state,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'agent_runtime_review_recorded'
+    )
   });
 }
 async function orchestrateRun(deps, repoRoot, options) {

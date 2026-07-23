@@ -156,6 +156,7 @@ import {
   renderGuardedRunSummary
 } from './guarded-run-session.js';
 import { composeProductionRuntimeDependencies } from './agent-runtime-connectors.js';
+import { createCodexGuardedRunBridge } from './codex-runtime-bridge.js';
 import {
   StoryRunPortfolioError,
   createStoryRunPortfolioController,
@@ -336,6 +337,10 @@ Review record migration:
 
 Guarded Run sessions:
   vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
+  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
       Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
       --action-profile autonomous selects the closed Action DAG. --disable-autonomous-actions audibly falls back to legacy for new or resumed Runs.
@@ -596,6 +601,10 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
 
 Guarded Runセッション:
   vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
+  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
       --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
       --action-profile autonomousで閉じたAction DAGを選択します。--disable-autonomous-actionsは新規・再開Runを監査可能な形でlegacyへフォールバックします。
@@ -2397,6 +2406,7 @@ export async function runCli(argv, io = {}) {
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',
+        'runtime-dispatch', 'runtime-poll', 'runtime-reconcile', 'runtime-ingest',
         'start', 'next', 'reconcile', 'merge',
         'portfolio-create', 'portfolio-status', 'portfolio-advance', 'portfolio-decide', 'portfolio-promote'
       ]);
@@ -2418,13 +2428,33 @@ export async function runCli(argv, io = {}) {
           || subcommand === 'watch'
           || subcommand === 'resume'
           || subcommand === 'cancel'
+          || subcommand === 'runtime-dispatch'
+          || subcommand === 'runtime-poll'
+          || subcommand === 'runtime-reconcile'
+          || subcommand === 'runtime-ingest'
           || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
         const jsonOutput = hasFlag(rest, '--json');
-        const guardedRun = createGuardedRunSession(composeProductionRuntimeDependencies(
-          io.guardedRunDependencies ?? {},
-          { env: io.env ?? process.env }
-        ));
+        const bridge = io.codexSubagentHost
+          ? createCodexGuardedRunBridge({
+            repoRoot,
+            host: io.codexSubagentHost,
+            now: io.guardedRunDependencies?.now,
+            guardedRunDependencies: io.guardedRunDependencies ?? {},
+            recordAgentReview: io.guardedRunDependencies?.recordAgentReview ?? recordAgentReview
+          })
+          : null;
+        await bridge?.ready;
+        const guardedRun = bridge?.session ?? createGuardedRunSession(composeProductionRuntimeDependencies(
+            io.guardedRunDependencies ?? {},
+            { env: io.env ?? process.env }
+          ));
         try {
+          if (subcommand.startsWith('runtime-') && !bridge) {
+            throw new GuardedRunError(
+              'runtime_unavailable',
+              'Codex runtime commands require VIBEPRO_CODEX_HOST_MODULE or an embedded codexSubagentHost'
+            );
+          }
           const guardedPolicyFlags = [
             '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
             '--max-tokens', '--max-cost-usd', '--retry-backoff-ms',
@@ -2474,7 +2504,46 @@ export async function runCli(argv, io = {}) {
               { action_profile: runOptions.actionProfile, supported_profiles: ['legacy', 'autonomous'] }
             );
           }
-          const result = subcommand === 'run'
+          let runtimeRequest = null;
+          if (subcommand === 'runtime-dispatch') {
+            const requestPath = getOption(rest, '--request');
+            if (!requestPath) throw new GuardedRunError('runtime_request_required', 'runtime-dispatch requires --request <json-file>');
+            try {
+              runtimeRequest = JSON.parse(await readFile(path.resolve(requestPath), 'utf8'));
+            } catch (error) {
+              throw new GuardedRunError('runtime_request_invalid', `Cannot read runtime request: ${error.message}`, { request_path: requestPath });
+            }
+          }
+          let runtimeEvent = null;
+          if (subcommand === 'runtime-ingest') {
+            const eventPath = getOption(rest, '--event');
+            if (!eventPath) throw new GuardedRunError('runtime_event_required', 'runtime-ingest requires --event <json-file>');
+            try {
+              runtimeEvent = JSON.parse(await readFile(path.resolve(eventPath), 'utf8'));
+            } catch (error) {
+              throw new GuardedRunError('runtime_event_invalid', `Cannot read runtime event: ${error.message}`, { event_path: eventPath });
+            }
+          }
+          const runtimeOptions = {
+            storyId: executionOptions.storyId,
+            runId: runOptions.runId,
+            dispatchId: getOption(rest, '--dispatch-id'),
+            request: runtimeRequest
+          };
+          const result = subcommand === 'runtime-dispatch'
+            ? await guardedRun.dispatchRuntime(repoRoot, runtimeOptions)
+            : subcommand === 'runtime-poll'
+              ? await guardedRun.pollRuntime(repoRoot, runtimeOptions)
+            : subcommand === 'runtime-reconcile'
+              ? await guardedRun.reconcileRuntime(repoRoot, runtimeOptions)
+              : subcommand === 'runtime-ingest'
+                ? await bridge.ingestCompletion({
+                  story_id: executionOptions.storyId,
+                  run_id: runOptions.runId,
+                  dispatch_id: runtimeOptions.dispatchId,
+                  event: runtimeEvent
+                })
+                : subcommand === 'run'
             ? runOptions.until
               ? runOptions.dryRun
                 ? await guardedRun.orchestrate(repoRoot, runOptions)

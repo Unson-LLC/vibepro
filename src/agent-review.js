@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
@@ -357,22 +358,33 @@ export async function recordAgentReview(repoRoot, options = {}) {
   }, `review-${stage}-${role}`);
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
-  const lifecycle = await readLifecycle(root, storyId, stage);
-  const inspection = buildInspectionBlock(options);
-  const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
-  const freshnessPolicy = resolveReviewFreshnessPolicy(reviewPolicy, role, options);
-  const generatedProjectionPaths = freshnessPolicy.effective_mode === 'content_surface'
-    ? await collectCurrentGeneratedProjectionPaths(root, { storyId })
-    : [];
-  const contentBinding = await buildContentBinding(root, {
-    gitContext,
-    strictHead: freshnessPolicy.effective_mode === 'strict_head',
-    inspectionInputs: inspection.inputs,
-    artifacts,
-    excludeSurfacePaths: generatedProjectionPaths
-  });
-  const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
-  let result = {
+  const resultPath = getReviewResultPath(reviewDir, role);
+  const releaseRuntimeLock = options.runtimeDispatchId
+    ? await acquireRuntimeReviewLock(reviewDir, options.runtimeDispatchId)
+    : null;
+  try {
+    if (options.runtimeDispatchId) {
+      const existing = await readJsonIfExists(resultPath);
+      if (existing?.runtime_dispatch_id === options.runtimeDispatchId) {
+        return finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result: existing, gitContext, reviewPolicy, reused: true });
+      }
+    }
+    const lifecycle = await readLifecycle(root, storyId, stage);
+    const inspection = buildInspectionBlock(options);
+    const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
+    const freshnessPolicy = resolveReviewFreshnessPolicy(reviewPolicy, role, options);
+    const generatedProjectionPaths = freshnessPolicy.effective_mode === 'content_surface'
+      ? await collectCurrentGeneratedProjectionPaths(root, { storyId })
+      : [];
+    const contentBinding = await buildContentBinding(root, {
+      gitContext,
+      strictHead: freshnessPolicy.effective_mode === 'strict_head',
+      inspectionInputs: inspection.inputs,
+      artifacts,
+      excludeSurfacePaths: generatedProjectionPaths
+    });
+    const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
+    let result = {
     schema_version: '0.1.0',
     story_id: storyId,
     stage,
@@ -395,37 +407,50 @@ export async function recordAgentReview(repoRoot, options = {}) {
     content_binding: contentBinding,
     ...(lineage ? { lineage } : {}),
     source_fingerprint: sourceFingerprint,
+    ...(options.runtimeDispatchId ? { runtime_dispatch_id: options.runtimeDispatchId } : {}),
     agent_provenance: buildAgentProvenance(root, {
       ...options,
       lifecycleEntries: lifecycle.entries,
       defaultRequestPath: getReviewRequestPath(reviewDir, role)
     }),
     agent_usage: buildAgentUsage(options)
-  };
-  const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey); if (operationIdempotencyKey) result.operation_idempotency_key = operationIdempotencyKey;
-  if (requiresInspectionForPass(result) && !result.inspection.summary) {
-    throw new Error(
-      `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
-    );
+    };
+    const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
+    if (operationIdempotencyKey) result.operation_idempotency_key = operationIdempotencyKey;
+    if (requiresInspectionForPass(result) && !result.inspection.summary) {
+      throw new Error(
+        `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
+      );
+    }
+    if (requiresInspectionForPass(result) && result.inspection.inputs.length === 0) {
+      throw new Error(
+        `review record ${stage}:${role} pass requires --inspection-input <ref> so handoff readers can reconstruct the inspected inputs.`
+      );
+    }
+    if (requiresInspectionForPass(result) && !hasBoundInspectionSurface(result.inspection.inputs, contentBinding)) {
+      throw new Error(
+        `review record ${stage}:${role} pass requires at least one existing --inspection-input file outside .vibepro so the actual inspected surface is captured.`
+      );
+    }
+    if (requiresInspectionForPass(result) && result.judgment_delta.length === 0) {
+      throw new Error(
+        `review record ${stage}:${role} pass requires --judgment-delta <text> so handoff readers can see how the review conclusion was reached.`
+      );
+    }
+    return await finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result, gitContext, reviewPolicy, reused: false });
+  } finally {
+    await releaseRuntimeLock?.();
   }
-  if (requiresInspectionForPass(result) && result.inspection.inputs.length === 0) {
-    throw new Error(
-      `review record ${stage}:${role} pass requires --inspection-input <ref> so handoff readers can reconstruct the inspected inputs.`
-    );
-  }
-  if (requiresInspectionForPass(result) && !hasBoundInspectionSurface(result.inspection.inputs, contentBinding)) {
-    throw new Error(
-      `review record ${stage}:${role} pass requires at least one existing --inspection-input file outside .vibepro so the actual inspected surface is captured.`
-    );
-  }
-  if (requiresInspectionForPass(result) && result.judgment_delta.length === 0) {
-    throw new Error(
-      `review record ${stage}:${role} pass requires --judgment-delta <text> so handoff readers can see how the review conclusion was reached.`
-    );
-  }
-  const resultPath = getReviewResultPath(reviewDir, role);
+}
+
+async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir, resultPath, result, gitContext, reviewPolicy, reused }) {
+  const operationIdempotencyKey = result.operation_idempotency_key ?? null;
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
-  const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null; if (existingResult?.operation_idempotency_key === operationIdempotencyKey) result = existingResult;
+  const existingResult = operationIdempotencyKey ? await readJsonIfExists(resultPath) : null;
+  if (existingResult?.operation_idempotency_key === operationIdempotencyKey) {
+    result = existingResult;
+    reused = true;
+  }
   const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   if (efficiencyPolicy && result.agent_provenance.lifecycle?.agent_closed) {
     const lifecycle = await readLifecycle(root, storyId, stage);
@@ -491,7 +516,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
     review: result,
     summary,
     artifact: toWorkspaceRelative(root, resultPath),
-    history_artifact: toWorkspaceRelative(root, historyPath)
+    history_artifact: toWorkspaceRelative(root, historyPath),
+    reused
   };
 }
 
@@ -3386,6 +3412,36 @@ function getReviewResultHistoryDir(reviewDir) {
 function getReviewResultHistoryPath(reviewDir, role, recordedAt) {
   const timestamp = String(recordedAt).replace(/[^0-9A-Za-z.-]/g, '-');
   return path.join(getReviewResultHistoryDir(reviewDir), `review-result-${role}-${timestamp}.json`);
+}
+
+async function acquireRuntimeReviewLock(reviewDir, runtimeDispatchId, {
+  staleMs = 120000,
+  waitMs = staleMs
+} = {}) {
+  const lockId = crypto.createHash('sha256').update(runtimeDispatchId).digest('hex');
+  const lockPath = path.join(reviewDir, `.runtime-review-${lockId}.lock`);
+  const startedAt = Date.now();
+  let backoffMs = 10;
+  while (true) {
+    try {
+      await mkdir(lockPath);
+      await writeFile(path.join(lockPath, 'owner.json'), `${JSON.stringify({ runtime_dispatch_id: runtimeDispatchId, acquired_at: new Date().toISOString() }, null, 2)}\n`);
+      return async () => rm(lockPath, { recursive: true, force: true });
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      const lockStat = await stat(lockPath).catch(() => null);
+      if (!lockStat) continue;
+      if (Date.now() - lockStat.mtimeMs > staleMs) {
+        await rm(lockPath, { recursive: true, force: true });
+        continue;
+      }
+      if (Date.now() - startedAt >= waitMs) {
+        throw new Error(`runtime review recording is already in progress for dispatch ${runtimeDispatchId}`);
+      }
+      await delay(backoffMs);
+      backoffMs = Math.min(backoffMs * 2, 250);
+    }
+  }
 }
 
 async function listReviewResultHistoryArtifacts(repoRoot, reviewDir, role) {

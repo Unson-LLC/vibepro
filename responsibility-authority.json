@@ -469,6 +469,46 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.codex_runtime.detached_completion_delivery",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-codex-detached-completion-inbox.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-codex-detached-completion-inbox.md",
+        "docs/specs/vibepro-codex-detached-completion-inbox.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/agent-completion-inbox.js",
+          "src/codex-runtime-bridge.js",
+          "src/codex-runtime-output-contract.js",
+          "src/codex-subagent-host-worker.js",
+          "src/codex-subagent-host.js",
+          "src/codex-subagent-runtime-adapter.js"
+        ],
+        "symbols": [
+          "running_detached",
+          "runtime-ingest",
+          "createCodexGuardedRunBridge",
+          "createCodexSubagentHost"
+        ],
+        "risk_surfaces": [
+          "queue_worker",
+          "service_orchestration",
+          "core_workflow_state",
+          "review_lifecycle"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.diagnostics.scan_conclusiveness",
       "primary_authority": {
         "kind": "architecture",
