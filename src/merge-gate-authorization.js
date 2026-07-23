@@ -13,6 +13,17 @@ export function buildMergeGateAuthorization(gateDag, currentPrCreate, currentGat
       };
     }
     if (currentPrCreate) {
+      if (
+        currentGateStatus?.overall_status !== 'ready_for_review'
+        || currentGateStatus?.ready_for_pr_create !== true
+      ) {
+        return {
+          allowed: false,
+          source: 'none',
+          reason: 'current_gate_status_not_ready',
+          gate_override: null
+        };
+      }
       const currentUnresolvedGateIds = normalizeGateIds(currentGateStatus?.unresolved_gates);
       const currentCriticalGateIds = normalizeGateIds(currentGateStatus?.critical_unresolved_gates);
       if (currentUnresolvedGateIds.reason || currentCriticalGateIds.reason) {

@@ -41,6 +41,8 @@ test('MWP-AC-1 persisted ready DAG rejects unknown or mismatched current routed 
     { overall_status: 'ready_for_review' },
     currentPrCreate,
     {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
       unresolved_gates: [{ id: 'gate:e2e' }],
       critical_unresolved_gates: [{ id: 'gate:e2e' }]
     }
@@ -52,6 +54,8 @@ test('MWP-AC-1 persisted ready DAG rejects unknown or mismatched current routed 
     { overall_status: 'ready_for_review' },
     currentPrCreate,
     {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
       unresolved_gates: [{ id: 'gate:validation_sequencing' }],
       critical_unresolved_gates: []
     }
@@ -63,12 +67,38 @@ test('MWP-AC-1 persisted ready DAG rejects unknown or mismatched current routed 
     { overall_status: 'ready_for_review' },
     currentPrCreate,
     {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
       unresolved_gates: [],
       critical_unresolved_gates: []
     }
   );
   assert.equal(current.allowed, true);
   assert.equal(current.source, 'gate_dag');
+
+  for (const inconsistentStatus of [
+    {
+      overall_status: 'blocked',
+      ready_for_pr_create: false,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
+    {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: false,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    }
+  ]) {
+    const inconsistent = buildMergeGateAuthorization(
+      { overall_status: 'ready_for_review' },
+      currentPrCreate,
+      inconsistentStatus
+    );
+    assert.equal(inconsistent.allowed, false);
+    assert.equal(inconsistent.source, 'none');
+    assert.equal(inconsistent.reason, 'current_gate_status_not_ready');
+  }
 });
 
 test('MWP-AC-2 current PR create auditable noncritical waiver authorizes merge', () => {
