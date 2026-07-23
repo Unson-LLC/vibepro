@@ -14591,9 +14591,14 @@ test('CAA-VERIFY-001 execute merge fails closed before canonical audit when merg
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
@@ -15402,9 +15407,14 @@ test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and ski
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
@@ -15521,9 +15531,14 @@ test('execute merge deletes the remote branch and records local cleanup skip whe
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
