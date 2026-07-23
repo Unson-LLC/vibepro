@@ -6476,6 +6476,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -6485,10 +6494,17 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-23T02:59:27.304Z"
+  "updated_at": "2026-07-23T04:29:42.681Z"
 }

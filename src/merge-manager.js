@@ -12,7 +12,10 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
-import { buildMergeGateAuthorization } from './merge-gate-authorization.js';
+import {
+  buildMergeGateAuthorization,
+  resolveCurrentMergeGateStatus
+} from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -45,7 +48,8 @@ export async function executeMerge(repoRoot, options = {}) {
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
-  const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, prPrepare?.gate_status ?? null);
+  const currentGateStatus = resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag);
+  const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus);
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });

@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-import { buildMergeGateAuthorization } from '../../src/merge-gate-authorization.js';
+import {
+  buildMergeGateAuthorization,
+  resolveCurrentMergeGateStatus
+} from '../../src/merge-gate-authorization.js';
 
 const HEAD_SHA = 'a'.repeat(40);
 
-test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-7 S-001 authorization contract replay', () => {
+test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-7 ac-8 S-001 authorization contract replay', () => {
   assert.equal(
     buildMergeGateAuthorization({ overall_status: 'ready_for_review' }, null).source,
     'gate_dag',
@@ -66,6 +69,19 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-7 S-001 authoriza
     'allow_needs_verification',
     'ac-7 Gate waiver scope is not expanded beyond the accepted noncritical policy'
   );
+  const staleGateStatus = resolveCurrentMergeGateStatus(
+    {
+      git: { head_sha: '0'.repeat(40) },
+      gate_status: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      pr_context: { gate_dag: { overall_status: 'needs_verification' } }
+    },
+    HEAD_SHA,
+    { overall_status: 'needs_verification' }
+  );
+  assert.equal(staleGateStatus, null, 'ac-8 stale pr-prepare authority fails closed');
   assert.equal(
     authorized.allowed && !rejected.allowed,
     true,

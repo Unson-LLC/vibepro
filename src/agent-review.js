@@ -436,43 +436,49 @@ export async function recordAgentReview(repoRoot, options = {}) {
       throw new Error(`review record ${stage}:${role} requires a lifecycle started from a consumed dispatch authorization when delivery efficiency policy is enabled`);
     }
   }
-  if (existingResult?.operation_idempotency_key !== operationIdempotencyKey) await Promise.all([writeJson(resultPath, result), writeJson(historyPath, result)]);
   let summary = null;
-  await updateLifecycle(root, storyId, stage, (lifecycle) => {
-    if (!result.agent_provenance.lifecycle?.agent_closed) return;
-    let entry = findLifecycleEntry(lifecycle.entries, {
-      role,
-      agentId: result.agent_provenance.agent_id,
-      agentSystem: result.agent_provenance.system
-    });
-    if (!entry) {
-      if (efficiencyPolicy) {
-        throw new Error(`review record ${stage}:${role} cannot synthesize lifecycle evidence when delivery efficiency policy is enabled`);
-      }
-      entry = buildSyntheticLifecycleEntryFromReviewResult(result, root, resultPath);
-      lifecycle.entries.push(entry);
-      return;
-    }
-    if (entry.closed_at) {
-      if (entry.close_reason !== 'completed') {
+  await updateLifecycle(root, storyId, stage, async (lifecycle) => {
+    if (result.agent_provenance.lifecycle?.agent_closed) {
+      let entry = findLifecycleEntry(lifecycle.entries, {
+        role,
+        agentId: result.agent_provenance.agent_id,
+        agentSystem: result.agent_provenance.system
+      });
+      if (!entry) {
+        if (efficiencyPolicy) {
+          throw new Error(`review record ${stage}:${role} cannot synthesize lifecycle evidence when delivery efficiency policy is enabled`);
+        }
+        entry = buildSyntheticLifecycleEntryFromReviewResult(result, root, resultPath);
+        lifecycle.entries.push(entry);
+      } else if (entry.closed_at && entry.close_reason !== 'completed') {
         throw new Error(
           `review record ${stage}:${role} cannot attach a result to lifecycle closed as ${entry.close_reason ?? 'unknown'}`
         );
       }
-      entry.result_artifact = toWorkspaceRelative(root, resultPath);
-      entry.result_status = result.status;
-      if (!entry.close_evidence) {
+
+      if (entry.closed_at) {
+        entry.result_artifact = toWorkspaceRelative(root, resultPath);
+        entry.result_status = result.status;
+        if (!entry.close_evidence) {
+          entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
+        }
+      } else {
+        entry.status = 'closed';
+        entry.closed_at = result.recorded_at ?? new Date().toISOString();
+        entry.close_reason = 'completed';
         entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
+        entry.result_artifact = toWorkspaceRelative(root, resultPath);
+        entry.result_status = result.status;
       }
-      return;
     }
-    entry.status = 'closed';
-    entry.closed_at = result.recorded_at ?? new Date().toISOString();
-    entry.close_reason = 'completed';
-    entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
-    entry.result_artifact = toWorkspaceRelative(root, resultPath);
-    entry.result_status = result.status;
+
   }, async () => {
+    // Persist lifecycle authority first. A later result write failure leaves
+    // an explicit lifecycle pointer to missing evidence, which fails closed;
+    // the inverse would expose an unauthorized durable review result.
+    if (existingResult?.operation_idempotency_key !== operationIdempotencyKey) {
+      await Promise.all([writeJson(resultPath, result), writeJson(historyPath, result)]);
+    }
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
   });

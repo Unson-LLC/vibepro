@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildMergeGateAuthorization, validateMergeGateOverride } from '../src/merge-gate-authorization.js';
+import {
+  buildMergeGateAuthorization,
+  resolveCurrentMergeGateStatus,
+  validateMergeGateOverride
+} from '../src/merge-gate-authorization.js';
 
 const auditableOverride = {
   allowed: true,
@@ -93,4 +97,28 @@ test('MWP-AC-3 current critical Gate status cannot be suppressed by waiver autho
   );
   assert.equal(result.allowed, false);
   assert.equal(result.reason, 'current_gate_status_contains_critical_gates');
+});
+
+test('MWP-AC-8 waiver reconciliation rejects stale or inconsistently routed pr-prepare authority', () => {
+  const currentHead = 'a'.repeat(40);
+  const currentDag = { overall_status: 'needs_verification' };
+  const prPrepare = {
+    git: { head_sha: currentHead },
+    gate_status: matchingGateStatus,
+    pr_context: { gate_dag: currentDag }
+  };
+  assert.equal(resolveCurrentMergeGateStatus(prPrepare, currentHead, currentDag), matchingGateStatus);
+  assert.equal(resolveCurrentMergeGateStatus(prPrepare, 'b'.repeat(40), currentDag), null);
+  assert.equal(resolveCurrentMergeGateStatus(
+    prPrepare,
+    currentHead,
+    { overall_status: 'blocked' }
+  ), null);
+  const stale = buildMergeGateAuthorization(
+    currentDag,
+    { gate_override: auditableOverride },
+    resolveCurrentMergeGateStatus(prPrepare, 'b'.repeat(40), currentDag)
+  );
+  assert.equal(stale.allowed, false);
+  assert.equal(stale.reason, 'current_gate_status_unknown');
 });

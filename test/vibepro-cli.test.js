@@ -364,7 +364,13 @@ async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepar
     story: { story_id: storyId, title: 'PR準備' },
     gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: storyId,
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13190,7 +13196,13 @@ test('story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_
       critical_unresolved_gates: []
     },
     pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'needs_verification',
+    nodes: [],
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13675,7 +13687,7 @@ process.exit(99);
   );
 });
 
-test('story-vibepro-merge-waiver-propagation ac:3 S-001 auth_denied omitted or conflicting waiver targets fail before GitHub merge', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before GitHub merge', async () => {
   const cases = [
     {
       name: 'omitted targets',
@@ -13708,6 +13720,22 @@ test('story-vibepro-merge-waiver-propagation ac:3 S-001 auth_denied omitted or c
         critical_unresolved_gates: []
       },
       expectedReason: 'current_gate_status_contains_critical_gates'
+    },
+    {
+      name: 'stale pr-prepare status',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'stale status must not authorize merge',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      prPrepareHeadSha: '0'.repeat(40),
+      expectedReason: 'current_gate_status_unknown'
     }
   ];
 
@@ -13733,7 +13761,7 @@ test('story-vibepro-merge-waiver-propagation ac:3 S-001 auth_denied omitted or c
           }))
         }
       },
-      git: { base_ref: 'main', head_sha: headSha }
+      git: { base_ref: 'main', head_sha: fixture.prPrepareHeadSha ?? headSha }
     });
     await writeJson(path.join(prDir, 'pr-create.json'), {
       schema_version: '0.1.0',
@@ -13869,7 +13897,7 @@ test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_claus
       critical_unresolved_gates: []
     },
     pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',

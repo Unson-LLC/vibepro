@@ -540,6 +540,49 @@ test('delivery efficiency lifecycle collects a completed result after explicit c
   assert.equal(lifecycle.entries[0].result_status, 'pass');
 });
 
+test('review record persists no result after timeout, replacement, or manual shutdown', async () => {
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const root = await setupRepo();
+    await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+    const started = await startCloseable(root);
+    await closeAgentReviewLifecycle(root, {
+      storyId: 'story-test',
+      stage: 'gate',
+      role: 'gate_evidence',
+      lifecycleId: started.lifecycle.lifecycle_id,
+      closeReason,
+      closeEvidence: `${closeReason} fixture`,
+      cancellationConfirmed: closeReason !== 'timeout'
+    });
+    await assert.rejects(() => recordAgentReview(root, {
+      storyId: 'story-test',
+      stage: 'gate',
+      role: 'gate_evidence',
+      status: 'pass',
+      summary: 'must not persist',
+      inspectionSummary: 'inspected rejected lifecycle',
+      inspectionInputs: ['src/agent-review.js'],
+      judgmentDeltas: ['pending -> rejected'],
+      agentSystem: 'claude_code',
+      executionMode: 'parallel_subagent',
+      agentId: 'task-test-1',
+      agentClosed: true
+    }), new RegExp(`closed as ${closeReason}`));
+    const reviewDir = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate');
+    assert.equal(
+      (await readdir(reviewDir)).includes('review-result-gate_evidence.json'),
+      false,
+      `${closeReason} must not leave a current result`
+    );
+    const history = await readdir(path.join(reviewDir, 'history')).catch(() => []);
+    assert.equal(
+      history.some((file) => file.startsWith('review-result-gate_evidence-')),
+      false,
+      `${closeReason} must not leave review history`
+    );
+  }
+});
+
 test('getAgentReviewStatus surfaces empty handoff arrays for missing roles', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

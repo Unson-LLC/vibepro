@@ -30,6 +30,18 @@ export function buildMergeGateAuthorization(gateDag, currentPrCreate, currentGat
   };
 }
 
+export function resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag = null) {
+  const preparedHeadSha = prPrepare?.git?.head_sha ?? prPrepare?.git?.head_ref ?? null;
+  if (!currentHeadSha || preparedHeadSha !== currentHeadSha || !prPrepare?.gate_status) {
+    return null;
+  }
+  const preparedGateDag = prPrepare?.pr_context?.gate_dag ?? null;
+  if (gateDag && preparedGateDag && gateDag.overall_status !== preparedGateDag.overall_status) {
+    return null;
+  }
+  return prPrepare.gate_status;
+}
+
 export function validateMergeGateOverride(gateOverride) {
   if (!gateOverride || gateOverride.allowed !== true) {
     return { allowed: false, reason: 'gate_override_not_allowed' };

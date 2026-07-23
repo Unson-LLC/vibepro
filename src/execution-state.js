@@ -4,7 +4,10 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getAgentReviewStatus } from './agent-review.js';
-import { buildMergeGateAuthorization } from './merge-gate-authorization.js';
+import {
+  buildMergeGateAuthorization,
+  resolveCurrentMergeGateStatus
+} from './merge-gate-authorization.js';
 import {
   buildExecutionDag,
   buildManagedWorktreeCommands,
@@ -361,8 +364,8 @@ async function buildExecutionState(repoRoot, options = {}) {
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
   const currentPrMerge = isCurrentPrLifecycleArtifact(prMerge, currentHeadSha) ? prMerge : null;
-  const gateStatus = prPrepare?.gate_status ?? null;
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
+  const gateStatus = resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag);
   const mergeGateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, gateStatus);
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);

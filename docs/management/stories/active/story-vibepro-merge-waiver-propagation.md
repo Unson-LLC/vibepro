@@ -2,8 +2,7 @@
 story_id: story-vibepro-merge-waiver-propagation
 title: PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する
 status: active
-parent_design:
-  - story-vibepro-merge-waiver-propagation
+parent_design: story-vibepro-merge-waiver-propagation
 reason: PR createで承認・永続化済みの非critical waiverをmerge時に再入力させる案は判断の二重化と証跡分裂を招く。current HEADに束縛されたpr-create artifactだけをauthorityとし、理由・policy・対象Gate一覧を現行Gate statusと照合してcritical unresolvedなしを再検証する。既存のready_for_review経路は互換維持し、artifactがstale・欠落・不正・現行Gateと不一致なら従来どおりfail-closedに戻せる。
 ---
 
@@ -30,10 +29,11 @@ VibeProはwaiver schema、current-HEAD binding、critical gate拒否、merge pre
 - [x] AC-5 dry-run contract testと実merge fixtureで、正規 `execute merge` が同じ判定を用いることを証明する。
 - [x] AC-6 self-dogfoodの `review close → review record` で、事前authorization済みの完了結果を回収済みとして永続化し、同じroleのreplacement再dispatch閉路を起こさない。
 - [x] AC-7 waiverの対象Gate一覧とcritical一覧をcurrent `pr-prepare.gate_status` と完全照合し、対象欠落・不一致・現行critical GateありはGitHub操作前にfail-closedになる。
+- [x] AC-8 `pr-prepare.gate_status` 自体がcurrent HEADかつ同じrouted Gate DAGに属する場合だけwaiver照合へ使い、staleまたは不整合なstatusはGitHub操作前に拒否する。
 
 ## シナリオ
 
-S-001: `ready_for_review` またはcurrent HEADへ束縛された非critical waiverからmerge authorizationへ遷移し、GitHub checksを通過した場合だけmergedへ進む。stale・malformed・対象不一致・current critical Gate・parse/persistence failureのいずれかではGitHub操作前に`gate_not_ready`へ戻る。
+S-001: `ready_for_review` またはcurrent HEADへ束縛された非critical waiverからmerge authorizationへ遷移し、GitHub checksを通過した場合だけmergedへ進む。stale・malformed・対象不一致・current critical Gate・staleなpr-prepare status・parse/persistence failureのいずれかではGitHub操作前に`gate_not_ready`へ戻る。
 
 S-002: review lifecycleが明示的に`completed`でcloseされた場合だけ同一dispatchの結果を回収してrecordedへ遷移する。timeout・replaced・manual shutdownでは結果を後付けせず、replacementを暗黙dispatchしない。
 
