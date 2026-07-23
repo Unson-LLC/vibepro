@@ -13736,6 +13736,31 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
       },
       prPrepareHeadSha: '0'.repeat(40),
       expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'same status but differently routed critical gate',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'same overall status must not conceal a different critical gate surface',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      expectedReason: 'current_gate_status_unknown'
     }
   ];
 
@@ -13779,6 +13804,9 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         current_head_sha: headSha
       }
     });
+    if (fixture.routedGateDag) {
+      await writeJson(path.join(prDir, 'gate-dag.json'), fixture.routedGateDag);
+    }
     const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-target-reconcile-bin-'));
     const ghCallLog = path.join(binDir, 'gh-called.log');
     await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node

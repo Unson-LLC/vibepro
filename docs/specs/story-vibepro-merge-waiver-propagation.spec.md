@@ -12,7 +12,7 @@ related_architecture:
 
 - `INV-001`: A `ready_for_review` Gate DAG authorizes merge without a waiver.
 - `INV-002`: A stale, missing, malformed, target-mismatched, or critical-gate-bearing authority fails closed before GitHub operations.
-- `INV-003`: Waiver target and critical Gate ID sets exactly match a current-HEAD `pr-prepare.gate_status` routed through the same Gate DAG.
+- `INV-003`: Waiver target and critical Gate ID sets exactly match a current-HEAD `pr-prepare.gate_status` whose embedded Gate DAG has the same authorization surface (overall status plus required node identity, type, status, and critical classification) as the routed Gate DAG.
 
 ## Contracts
 

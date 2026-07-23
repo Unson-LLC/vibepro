@@ -36,7 +36,7 @@ export function resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag
     return null;
   }
   const preparedGateDag = prPrepare?.pr_context?.gate_dag ?? null;
-  if (gateDag && preparedGateDag && gateDag.overall_status !== preparedGateDag.overall_status) {
+  if (gateDag && preparedGateDag && !sameGateDagAuthorizationSurface(gateDag, preparedGateDag)) {
     return null;
   }
   return prPrepare.gate_status;
@@ -104,4 +104,26 @@ function normalizeGateIds(gates) {
 
 function sameGateIds(left, right) {
   return left.length === right.length && left.every((id, index) => id === right[index]);
+}
+
+function sameGateDagAuthorizationSurface(left, right) {
+  return JSON.stringify(normalizeGateDagAuthorizationSurface(left))
+    === JSON.stringify(normalizeGateDagAuthorizationSurface(right));
+}
+
+function normalizeGateDagAuthorizationSurface(gateDag) {
+  const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
+  return {
+    overall_status: gateDag?.overall_status ?? null,
+    nodes: nodes
+      .map((node) => ({
+        id: typeof node?.id === 'string' ? node.id.trim() : null,
+        type: node?.type ?? null,
+        status: node?.status ?? null,
+        required: node?.required ?? null,
+        critical: node?.critical ?? null,
+        severity: node?.severity ?? null
+      }))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+  };
 }

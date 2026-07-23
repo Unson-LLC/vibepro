@@ -101,7 +101,10 @@ test('MWP-AC-3 current critical Gate status cannot be suppressed by waiver autho
 
 test('MWP-AC-8 waiver reconciliation rejects stale or inconsistently routed pr-prepare authority', () => {
   const currentHead = 'a'.repeat(40);
-  const currentDag = { overall_status: 'needs_verification' };
+  const currentDag = {
+    overall_status: 'needs_verification',
+    nodes: [{ id: 'gate:validation_sequencing', type: 'validation', status: 'needs_evidence', required: true }]
+  };
   const prPrepare = {
     git: { head_sha: currentHead },
     gate_status: matchingGateStatus,
@@ -113,6 +116,14 @@ test('MWP-AC-8 waiver reconciliation rejects stale or inconsistently routed pr-p
     prPrepare,
     currentHead,
     { overall_status: 'blocked' }
+  ), null);
+  assert.equal(resolveCurrentMergeGateStatus(
+    prPrepare,
+    currentHead,
+    {
+      overall_status: 'needs_verification',
+      nodes: [{ id: 'gate:e2e', type: 'e2e', status: 'needs_evidence', required: true, critical: true }]
+    }
   ), null);
   const stale = buildMergeGateAuthorization(
     currentDag,

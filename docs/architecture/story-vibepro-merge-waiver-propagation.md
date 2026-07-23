@@ -16,7 +16,7 @@ status: active
 2. `execute merge` が `artifact_freshness` とHEAD SHAの一致を検証し、currentな `pr-create.json` だけを採用する。
 3. `gate_dag.overall_status=ready_for_review` なら通常authorizationを返す。
 4. 通常readyでない場合、`gate_override.allowed=true`、空でないreason/policy、空でない有効な対象Gate一覧、`critical_unresolved_gates=[]` を検証する。
-5. `pr-prepare.git.head_sha` がcurrent HEADと一致し、その `pr_context.gate_dag` が実際に評価するGate DAGと同じstatusを持つ場合だけ `gate_status` をauthorityとして採用する。
+5. `pr-prepare.git.head_sha` がcurrent HEADと一致し、その `pr_context.gate_dag` が実際に評価するGate DAGと同じoverall status・required node ID・type・status・critical classificationを持つ場合だけ `gate_status` をauthorityとして採用する。
 6. waiverの対象Gate ID集合とcritical Gate ID集合をcurrent `pr-prepare.gate_status` と完全照合し、対象欠落・集合不一致・現行critical Gateありはfail-closedにする。
 7. merge artifactへauthorization sourceとwaiver監査情報を記録し、その他のGitHub preconditionとANDでmerge可否を決める。
 8. self-dogfood reviewでは、事前authorization済みlifecycleが `completed` で明示close済みでも、続く `review record` が同じlifecycleへresult artifact/statusを結線する。timeout/manual shutdownには結果を後付けしない。
