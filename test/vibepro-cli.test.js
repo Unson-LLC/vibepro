@@ -13175,7 +13175,7 @@ test('required managed worktree backfills VibePro control files when reusing an 
   );
 });
 
-test('execute merge dry-run plans external checks without executing them', async () => {
+test('story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
   await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
@@ -13557,7 +13557,7 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(inferred.result.merge.cost_accounting.token_accounting.total_tokens, 250);
 });
 
-test('execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector', async () => {
   const repo = await makeGitRepoWithStory();
   const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await writeFile(path.join(repo, 'src-stale-merge-selector.js'), 'export const staleMergeSelector = true;\n');
@@ -13665,7 +13665,7 @@ process.exit(99);
   );
 });
 
-test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
+test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);

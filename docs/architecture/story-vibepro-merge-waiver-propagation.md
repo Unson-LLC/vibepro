@@ -12,6 +12,24 @@
 4. 通常readyでない場合、`gate_override.allowed=true`、空でないreason/policy、`critical_unresolved_gates=[]` をすべて満たす場合だけwaiver authorizationを返す。
 5. merge artifactへauthorization sourceとwaiver監査情報を記録し、その他のGitHub preconditionとANDでmerge可否を決める。
 
+## Threat model
+
+```mermaid
+flowchart LR
+  Current["current HEAD pr-create artifact"] --> Validate["schema + reason + policy + critical=0"]
+  Ready["ready_for_review Gate DAG"] --> Authorize["merge gate authorization"]
+  Validate --> Authorize
+  Stale["stale / missing artifact"] --> Reject["gate_not_ready"]
+  Malformed["missing reason or policy"] --> Reject
+  Critical["critical unresolved gate"] --> Reject
+  Authorize --> Preconditions["GitHub checks + review + base freshness"]
+  Preconditions --> Merge["host-owned GitHub merge"]
+```
+
+`pr-create.json` のHEAD bindingを信頼境界とし、stale・欠落・schema不正・critical gateを
+理由だけで昇格させない。VibeProはauthorization policyと監査artifactを所有し、GitHubは
+外部preconditionと実mergeを所有する。
+
 ## Authority / compatibility / rollback
 
 - Authority: Gate waiverの正本は同一HEADの `pr-create.json`。`execute merge` のCLI引数や推測では再生成しない。
