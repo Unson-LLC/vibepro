@@ -636,3 +636,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-independent-
 なし
 
 <!-- vibepro-release-pr:382:end -->
+
+<!-- vibepro-release-pr:383:start -->
+## [#383](https://github.com/Unson-LLC/vibepro/pull/383) story-vibepro-merge-waiver-propagation - PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する
+
+- Author: @sintariran
+- Merged: 2026-07-23T08:34:02Z
+- Commit: `822599fc9ca91f1e726d089d3765f2270c92bd96`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-merge-waiver-propagation.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-merge-waiver-propagation.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:383:end -->
