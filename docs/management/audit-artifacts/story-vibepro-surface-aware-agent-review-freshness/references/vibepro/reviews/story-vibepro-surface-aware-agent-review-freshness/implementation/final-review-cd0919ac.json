@@ -1,0 +1,57 @@
+{
+  "status": "needs_changes",
+  "summary": "The cd0919ac runtime and regression-test change are contract-correct, including explicit strict-head compatibility, but the final review package is not recordable yet because the generated request, canonical verification evidence, and implementation lifecycle remain bound to the prior 5ade483c HEAD.",
+  "inspection_summary": "Inspected the complete 5ade483c-to-cd0919ac delta, the changed pr-ship stale-role test, surface-aware and explicit strict policy paths, current generated request/evidence, and implementation lifecycle. Independently ran five current-HEAD contract tests covering content-surface reuse, role-specific invalidation, strict override, pr-ship recovery output, and unresolved merge-delta fail-closed behavior; all five passed.",
+  "inspection_evidence": "At HEAD cd0919ac66ae0db8c1114f6d5acec30044d37d20, node --test --test-name-pattern \"pr ship dry-run restores Agent Review commands from explicitly strict stale role gates|gate evidence and release risk reviews survive|merge reuse invalidates only the role|review strict HEAD CLI override|review status keeps stale review when merge delta diff cannot be resolved\" test/vibepro-cli.test.js test/content-scoped-evidence-freshness.test.js passed 5/5. Generated request and verification artifacts still report 5ade483c.",
+  "inspection_inputs": [
+    "git diff 5ade483c1848edf56c1f0e11782cb616cc3281b2..cd0919ac66ae0db8c1114f6d5acec30044d37d20",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/vibepro-cli.test.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-request-runtime_contract.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/lifecycle.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    "node --test --test-name-pattern \"pr ship dry-run restores Agent Review commands from explicitly strict stale role gates|gate evidence and release risk reviews survive|merge reuse invalidates only the role|review strict HEAD CLI override|review status keeps stale review when merge delta diff cannot be resolved\" test/vibepro-cli.test.js test/content-scoped-evidence-freshness.test.js"
+  ],
+  "judgment_delta": [
+    "Initial concern that the CI repair merely weakened the old strict assertion -> resolved because the test now opts into strict_head through the public CLI with a mandatory rationale, then exercises the same HEAD-change stale recovery path.",
+    "Initial concern that surface-aware default or fail-closed behavior regressed -> resolved by current-HEAD tests proving unchanged gate/release surfaces survive rebase, changed role surfaces stale selectively, and unresolved legacy merge deltas stale.",
+    "Initial concern that current evidence and provenance were sufficient for a final pass -> not resolved because the review request and canonical unit/E2E evidence identify 5ade483c, and the latest implementation lifecycle is closed and also bound to 5ade483c; no cd0919ac authorization/start record is present.",
+    "Runtime code judgment is pass -> final review-package judgment is needs_changes until current-HEAD verification artifacts and an authorized cd0919ac lifecycle are generated, after which this same contract surface can be independently re-reviewed and recorded."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "runtime-review-current-head-evidence-stale",
+      "detail": "The canonical implementation review request and verification-evidence.json remain bound to 5ade483c, not frozen candidate cd0919ac. Although an independent current-HEAD 5-test subset passed, the required current-HEAD generated verification package has not been refreshed."
+    },
+    {
+      "severity": "high",
+      "id": "runtime-review-current-head-lifecycle-missing",
+      "detail": "The latest implementation runtime_contract lifecycle (82689304-d5fc-4c14-90c8-6385422f8713) is closed and bound to 5ade483c. No authorized and started lifecycle bound to cd0919ac was found, so required separate-session provenance and lifecycle closure cannot be recorded fail-closed for this candidate."
+    }
+  ],
+  "review_context": {
+    "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+    "stage": "implementation",
+    "role": "runtime_contract",
+    "review_kind": "final",
+    "head_sha": "cd0919ac66ae0db8c1114f6d5acec30044d37d20",
+    "base_sha": "236937dfe33eb407f912086d54bfbd3d7d699874",
+    "dirty": false,
+    "agent_system": "codex",
+    "agent_id": "/root/sarf_final_review",
+    "agent_thread_id": "/root/sarf_final_review",
+    "agent_session_id": "/root/sarf_final_review",
+    "reviewer_identity": "separate_session",
+    "execution_mode": "parallel_subagent",
+    "lifecycle_id": null,
+    "dispatch_authorization_id": null
+  }
+}

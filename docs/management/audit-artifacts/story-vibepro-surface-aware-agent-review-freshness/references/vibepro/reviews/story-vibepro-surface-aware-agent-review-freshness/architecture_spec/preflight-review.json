@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+  "agent_id": "/root/sarf_preflight_review",
+  "findings": [],
+  "tests": {
+    "passed": 40,
+    "failed": 0
+  }
+}

@@ -1,0 +1,1307 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-23T22:49:29.964Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:843eec165fa3f88102586cd31f2a6ba481561ba3fdf8ddd8c1ef556ddd185039",
+    "compressed_hash": "sha256:32dc28636a0560327cf71c6c13b17aebc0348d1e428f664958ad291145cf484c",
+    "expanded_bytes": 19330,
+    "compressed_bytes": 3787,
+    "expanded_line_count": 497,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-surface-aware-agent-review-freshness",
+    "cost": {
+      "compressed_bytes": 3787,
+      "expanded_bytes": 19330,
+      "expanded_line_count": 497,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/384",
+    "merge_commit_sha": "f55312ecdf68c6a012147e89b317b237872e74fc",
+    "merged_at": "2026-07-23T22:49:28Z",
+    "current_head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...2411506a2ffdbe98d28776fcc5af44fd4e823f06"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 94,
+    "copied_reference_count": 80,
+    "unresolved_reference_count": 9,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-surface-aware-agent-review-freshness"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:843eec165fa3f88102586cd31f2a6ba481561ba3fdf8ddd8c1ef556ddd185039"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:d100562bd6931eaaea0b64a0e7be92ada234eb23eaf220bf9b5f94a9d8823688",
+      "audit_digest": "sha256:d100562bd6931eaaea0b64a0e7be92ada234eb23eaf220bf9b5f94a9d8823688",
+      "line_count": 200,
+      "raw_line_count": 200,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:48f6b552d34a5334d3c8c6873aee770415cec548774a1010c7b178d022cfe135",
+      "audit_digest": "sha256:f456c55e5b1140dc9bd1b9bf6bb8382a22361d5191d6b08fc2da9e690df51f70",
+      "line_count": 10997,
+      "raw_line_count": 41505,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:3f2a374273adba532de6e9ff8f35d79bcdba77513b79fc8f0430df80590fc2eb",
+      "audit_digest": "sha256:2be4961493ee7884a8c75bf35c4f5f763d908b902ab38023631164f97c6b8201",
+      "line_count": 2691,
+      "raw_line_count": 5721,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:36504b8c3ff1535fdf7cf10d93fb9647aceeeff0a2f027ff1f1bb86b3c7bd472",
+      "audit_digest": "sha256:1c83400a67c62b048000a3dee9dcf0851d6486cbabb6978a76c895c809db1148",
+      "line_count": 97,
+      "raw_line_count": 892,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:d813e9f6906b67afcf089f6aaf23ea6adadfdc57be6c9378e253de2e3c6a5ed2",
+      "audit_digest": "sha256:9046fa981226e9819c866002eac0261f7de09b24ee81a1c2119ec8bb82fcd84e",
+      "line_count": 2730,
+      "raw_line_count": 5829,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:b50e84756817e6b73e2dd63e1a9add21b4398f228334cc893df3d0c979e4a81e",
+      "audit_digest": "sha256:b50e84756817e6b73e2dd63e1a9add21b4398f228334cc893df3d0c979e4a81e",
+      "line_count": 564,
+      "raw_line_count": 564,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:43504d7f9b18deaa12f371492ee9beb6b9f3f4a24d7e550d22e9b30529f0f2d7",
+      "audit_digest": "sha256:4201d33fe6ce5b5d5aeb69ab237529e3d1b15aae4d2316e722337083fe88eab6",
+      "line_count": 76,
+      "raw_line_count": 495,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:910060bb9f72da840825f713ce9d7c3e848abc4f257625335c0426b3bd2d5a99",
+      "audit_digest": "sha256:910060bb9f72da840825f713ce9d7c3e848abc4f257625335c0426b3bd2d5a99",
+      "line_count": 229,
+      "raw_line_count": 229,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:f0e160a2723229ae2b33604043db35839df2850635d6d676efc82607d76d35a7",
+      "audit_digest": "sha256:f0e160a2723229ae2b33604043db35839df2850635d6d676efc82607d76d35a7",
+      "line_count": 251,
+      "raw_line_count": 251,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:cbbd43bbe1a2a6e232d448633fda2bebaf43f48fe05d79873c06ee8c77bc7891",
+      "audit_digest": "sha256:cbbd43bbe1a2a6e232d448633fda2bebaf43f48fe05d79873c06ee8c77bc7891",
+      "line_count": 1374,
+      "raw_line_count": 1374,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:1cc15a4fbf6275890df9abd129e1ab1ce9e2ffe3c055764e04e3d7a04ac2246b",
+      "audit_digest": "sha256:1cc15a4fbf6275890df9abd129e1ab1ce9e2ffe3c055764e04e3d7a04ac2246b",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:161a031244891d2eadbe51cec502bd9bb99b3f206f836800846c087084f77465",
+      "audit_digest": "sha256:161a031244891d2eadbe51cec502bd9bb99b3f206f836800846c087084f77465",
+      "line_count": 235,
+      "raw_line_count": 235,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:9d749f8612103bd63a59d818ab192f5c86260bac3f0221988c2ab714d3160ed3",
+      "audit_digest": "sha256:9d749f8612103bd63a59d818ab192f5c86260bac3f0221988c2ab714d3160ed3",
+      "line_count": 1789,
+      "raw_line_count": 1789,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:c9cc48745f82f80d94493924515eec045aaf24203d5f77ae222cb51fa4dc4985",
+      "audit_digest": "sha256:c9cc48745f82f80d94493924515eec045aaf24203d5f77ae222cb51fa4dc4985",
+      "line_count": 1377,
+      "raw_line_count": 1377,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:604327d0e42fd39e86b747bd4c173bdff4a597b7f025594c68483f57ff8eb4b9",
+      "audit_digest": "sha256:604327d0e42fd39e86b747bd4c173bdff4a597b7f025594c68483f57ff8eb4b9",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:4235a74a4ace2924aebed0e83b83d29c0b2835f2d7d573a50f1e5d7f1e603ce6",
+      "audit_digest": "sha256:4235a74a4ace2924aebed0e83b83d29c0b2835f2d7d573a50f1e5d7f1e603ce6",
+      "line_count": 187,
+      "raw_line_count": 187,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:3fd96b52587aa227412c734a85757828a62f2ea87cbf2a11dc4751323d697ad7",
+      "audit_digest": "sha256:3fd96b52587aa227412c734a85757828a62f2ea87cbf2a11dc4751323d697ad7",
+      "line_count": 1766,
+      "raw_line_count": 1766,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:b73604dcdb463d2a91a4d60c645ad0d1d7579a917f87b12b150365f36f9aa0b1",
+      "audit_digest": "sha256:b73604dcdb463d2a91a4d60c645ad0d1d7579a917f87b12b150365f36f9aa0b1",
+      "line_count": 1372,
+      "raw_line_count": 1372,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:988ec4fc4a5a9ed133742b6c6f6aca03ca46624084ccd2e03ab6b12ace6cd3fa",
+      "audit_digest": "sha256:988ec4fc4a5a9ed133742b6c6f6aca03ca46624084ccd2e03ab6b12ace6cd3fa",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:effbfb254428c0a65ea0ddeb01949ea41faa293469b458d42a22737d338ab357",
+      "audit_digest": "sha256:effbfb254428c0a65ea0ddeb01949ea41faa293469b458d42a22737d338ab357",
+      "line_count": 181,
+      "raw_line_count": 181,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/audit-replay-bundle.json.gz",
+      "digest": "sha256:3b7fdb0e9c662a04341aeff71195d23799a11afd02ca9bfdb6bc657c8c3773c8",
+      "audit_digest": "sha256:3b7fdb0e9c662a04341aeff71195d23799a11afd02ca9bfdb6bc657c8c3773c8",
+      "line_count": 1761,
+      "raw_line_count": 1761,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/analyze.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/analyze.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-354e0f7d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-354e0f7d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-6ed774dc.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-6ed774dc.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-cd0919ac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-cd0919ac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-09.606Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-09.606Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-33.738Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-33.738Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T20-52-57.602Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T20-52-57.602Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-07-00.274Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-07-00.274Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-20.697Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-20.697Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-42.815Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-42.815Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-21-03.288Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-21-03.288Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-33-02.800Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-33-02.800Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-34-02.479Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-34-02.479Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-59-45.888Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-59-45.888Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-00-07.117Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-00-07.117Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-05-25.592Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-05-25.592Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-10-14.196Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-10-14.196Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-29-02.498Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-29-02.498Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-00.046Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-00.046Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-21.506Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-21.506Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review-72f46856.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review-72f46856.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-354e0f7d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-354e0f7d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-72f46856.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-72f46856.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-18-27.800Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-18-27.800Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-27-39.450Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-27-39.450Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T20-50-34.974Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T20-50-34.974Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-07-03.278Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-07-03.278Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-36-47.435Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-36-47.435Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T22-17-14.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T22-17-14.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-6ed774dc.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-6ed774dc.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-cd0919ac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-cd0919ac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-25-07.501Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-25-07.501Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-39-33.623Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-39-33.623Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T22-13-02.794Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T22-13-02.794Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-surface-aware-agent-review-freshness/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/validation-sequencing/story-vibepro-surface-aware-agent-review-freshness/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/adjudication/story-vibepro-surface-aware-agent-review-freshness/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/diagnostics/2026-07-23T172000Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/analyze.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ci-evidence/analyze.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-354e0f7d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-354e0f7d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-6ed774dc.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-6ed774dc.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-cd0919ac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-cd0919ac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-09.606Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-09.606Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-33.738Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T17-38-33.738Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T20-52-57.602Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T20-52-57.602Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-07-00.274Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-07-00.274Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-20.697Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-20.697Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-42.815Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-10-42.815Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-21-03.288Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-21-03.288Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-33-02.800Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-33-02.800Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-34-02.479Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-34-02.479Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-59-45.888Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T21-59-45.888Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-00-07.117Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-00-07.117Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-05-25.592Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-05-25.592Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-10-14.196Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-10-14.196Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-29-02.498Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-29-02.498Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-00.046Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-00.046Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-21.506Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/history/review-result-architecture_boundary-2026-07-23T22-30-21.506Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review-72f46856.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review-72f46856.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/preflight-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-354e0f7d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-354e0f7d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-72f46856.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-72f46856.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-18-27.800Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-18-27.800Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-27-39.450Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T17-27-39.450Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T20-50-34.974Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T20-50-34.974Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-07-03.278Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-07-03.278Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-36-47.435Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T21-36-47.435Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T22-17-14.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/history/review-result-gate_evidence-2026-07-23T22-17-14.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-2411506a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-2411506a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-5ade483c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-5ade483c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-6ed774dc.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-6ed774dc.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-cd0919ac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review-cd0919ac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/final-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-25-07.501Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-25-07.501Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-39-33.623Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T21-39-33.623Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T22-13-02.794Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/history/review-result-runtime_contract-2026-07-23T22-13-02.794Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/stories/story-vibepro-surface-aware-agent-review-freshness/diagnostics/2026-07-23T172000Z/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-surface-aware-agent-review-freshness/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-surface-aware-agent-review-freshness/references/vibepro/validation-sequencing/story-vibepro-surface-aware-agent-review-freshness/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 6679381
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T172000Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 980898
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 6561386
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 539792
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/orphaned-head-replacement.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-surface-aware-agent-review-freshness/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-surface-aware-agent-review-freshness/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

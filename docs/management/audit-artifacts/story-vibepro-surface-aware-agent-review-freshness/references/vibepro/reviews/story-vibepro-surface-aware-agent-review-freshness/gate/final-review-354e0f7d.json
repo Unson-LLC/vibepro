@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "summary": "HEAD 354e0f7dd7080971c0af8e910f542713fd5136be の最終 gate_evidence 判定は pass。gate_evidence/release_risk は content_surface 既定となり、missing・unknown diff・hash mismatch は fail closed、dirty fingerprint・inspection・provenance・lifecycle保証、legacy merge-delta、理由付き strict_head override の互換性を維持している。",
+  "findings": [],
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    ".vibepro/config.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/expensive-e2e.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/lifecycle.json"
+  ],
+  "inspection_evidence": [
+    "git rev-parse HEAD => 354e0f7dd7080971c0af8e910f542713fd5136be",
+    "focused-tests.json => pass, 39 tests, 0 failures; implementation and focused-test files are byte-identical to recorded b5229ef surface",
+    "expensive-e2e.json => pass, 8 tests, 0 failures; current .spec.ts is byte-identical to recorded b5229ef surface and contains executable AC-1 through AC-8 assertions",
+    "Architecture contains formal headings: Freshness State Machine, Fail-closed Boundaries, Compatibility, Rollback",
+    "lifecycle 846f6c25-5fe0-48bc-af7a-d8a23724e9c6 is running on exact HEAD 354e0f7d with surface digest 3d8bca82 and authorized budget 10/11"
+  ],
+  "judgment_delta": [
+    "built-in high-risk role names might still force HEAD-wide invalidation -> resolveReviewFreshnessPolicy/getRolePolicy use content_surface by default and preserve only explicit reasoned strict_head",
+    "rebase or unrelated commit might bypass safety checks -> content binding validates surface existence/hash and dirty fingerprint first; legacy results alone use merge-delta, where unresolved diff or intersecting paths stale fail closed",
+    "surface reuse might weaken inspection/provenance/lifecycle guarantees -> focused lifecycle tests preserve required inspection inputs, separate-agent provenance, authorization/start/close/record, and reject incomplete or invalid lifecycle evidence",
+    "Architecture repair might be cosmetic or incomplete -> required state-machine, fail-closed, compatibility, and rollback anchors now explicitly delimit evaluation order and safety boundaries",
+    "E2E evidence was recorded before the final documentation repair -> implementation, focused tests, and eight-case E2E file are byte-identical to the passing recorded surface; only Architecture anchors and bounded Story-local review budget changed"
+  ]
+}

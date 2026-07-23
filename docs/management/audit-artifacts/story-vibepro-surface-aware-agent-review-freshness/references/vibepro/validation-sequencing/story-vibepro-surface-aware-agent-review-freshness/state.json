@@ -1,0 +1,205 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "created_at": "2026-07-23T22:37:04.273Z",
+  "updated_at": "2026-07-23T22:39:42.865Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+    "required": true,
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "review_lifecycle",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "review_lifecycle"
+    ],
+    "preflight_required_inspection_inputs": [
+      "design-ssot.json",
+      "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+      "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "docs/guide/agent-review.md",
+      "docs/guide/release-and-audit.md",
+      "docs/ja/guide/agent-review.md",
+      "docs/ja/releases/2026-07.md",
+      "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+      "docs/releases/2026-07.md",
+      "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+      "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+      "src/agent-review.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+      "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+      "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+      "test/vibepro-cli.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+    "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+    "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T22:37:05.002Z",
+      "binding": {
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+        "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "reason": "Independent architecture preflight covers every planned changed path on current HEAD.",
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-23T22:37:05.906Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed review_lifecycle; risk_surfaces=review_lifecycle; independently inspected all planned inputs including compatibility dispatch E2E on final fixed HEAD",
+        "inspection_inputs": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+          "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+          "docs/guide/agent-review.md",
+          "docs/guide/release-and-audit.md",
+          "docs/ja/guide/agent-review.md",
+          "docs/ja/releases/2026-07.md",
+          "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+          "docs/releases/2026-07.md",
+          "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+          "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+          "src/agent-review.js",
+          "src/content-binding.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/review-inspection-first.test.js",
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts"
+        ]
+      },
+      "binding": {
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+        "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "reason": "Tracked implementation is frozen at the pushed current HEAD.",
+      "evidence": [
+        "2411506a2ffdbe98d28776fcc5af44fd4e823f06"
+      ],
+      "recorded_at": "2026-07-23T22:37:06.327Z",
+      "binding": {
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+        "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "reason": "Current frozen HEAD E2E matrix passed 8/8 with verified TAP evidence.",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T22:39:30.981Z",
+      "binding": {
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "reason": "Independent final runtime contract review passed on the frozen current HEAD.",
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-23T22:39:42.865Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Independent final review of current HEAD 2411506a; focused 39/39, acceptance E2E 8/8, and preflight DAG E2E 2/2 passed with no findings.",
+        "inspection_inputs": [
+          "src/agent-review.js",
+          "src/content-binding.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/review-inspection-first.test.js",
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+          "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+          "docs/specs/vibepro-surface-aware-agent-review-freshness.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+        "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+        "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+    "test_fingerprint": "0c5a631ae213ac6b216de97099fb5a51cccbf315b49f0a1b8e0cd52774b8f90f",
+    "verification_command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+  },
+  "invalidations": []
+}

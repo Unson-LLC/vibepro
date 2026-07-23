@@ -1,0 +1,1174 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "updated_at": "2026-07-23T22:22:14.291Z",
+  "events": [
+    {
+      "event_id": "4c34fd56-c655-432c-bef0-2bd1a6d6224e",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "#381後の未解決gapを独立Storyの8 ACへ具体化し差分もその一点に集中する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:20.400Z"
+    },
+    {
+      "event_id": "367b0e6e-4b85-479a-87ba-c8790dd0eb7c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "built-in strictがmerge-delta前にstale化する実装現実を差分とrebase/merge fixtureが直接扱う",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:21.112Z"
+    },
+    {
+      "event_id": "3c1c5dd7-f9bb-4629-b966-1667c34a92e4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "content-surface既定、fail-closed、dirty/provenance/lifecycle、理由付きstrictがSpec・実装・testで対応する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:21.879Z"
+    },
+    {
+      "event_id": "91e9e6a2-92f5-44d1-ac28-a38903036687",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "content binding、legacy merge-delta、明示strictの境界と評価順序が文書と回帰testに対応する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:22.502Z"
+    },
+    {
+      "event_id": "2758f55c-5051-47a6-8220-5323d26cefb8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "missing/hash不一致、差分不能、input変更、dirty、provenance/lifecycle、strict HEADを安全側へ倒す",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:23.254Z"
+    },
+    {
+      "event_id": "a156a1b3-6fc2-4891-b4cf-04940f0f4486",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "focused suiteとgit操作E2EがAC全経路を実行し現HEADでもpassした",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:23.835Z"
+    },
+    {
+      "event_id": "5536d172-67a4-436a-b87f-9b0842a6dd3d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "artifact schemaを変えずcontent-surface、legacy、explicit strictを維持し英日guide/release noteも同期する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:24.907Z"
+    },
+    {
+      "event_id": "0a7461cd-0497-4e13-b96a-9193cd5c2713",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "migration不要で保存済みsurface/hashを読め、built-in strict map復元でrollback可能",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:25.643Z"
+    },
+    {
+      "event_id": "45d0b7c1-1c60-4174-80f0-d4cb3f57df84",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "authorize/start/close/recordとprovenance authorityは不変でfreshnessだけを変更する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:26.823Z"
+    },
+    {
+      "event_id": "fc87c902-6283-4387-9f0f-07f56c579a74",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "小さいpolicy差分と対応する契約・test・docからなる単一判断単位である",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:28.118Z"
+    },
+    {
+      "event_id": "fc35d03a-06bc-4a08-8ab4-596e8afb058c",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "英日release noteに挙動、移行不要、fail-closed、rollbackを記載し追加operator actionは不要",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:29.552Z"
+    },
+    {
+      "event_id": "fa96a098-6de0-4267-b2c4-a21976d38049",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schemaは不変でstrict reason validationも維持され新規partial schema経路を作らない",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:31.259Z"
+    },
+    {
+      "event_id": "4f339a0e-e0be-4b65-801a-3a3d5caf22c1",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "inspection、provenance、closed lifecycleのintegration coverageがsurface freshnessとは独立して残る",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:32.581Z"
+    },
+    {
+      "event_id": "de220597-da9d-4b40-abce-c2066873242c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "covered分類の下でmain advance、rebase、merge、role別stale、unresolved、strictの状態遷移を検証する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+      "recorded_at": "2026-07-23T17:26:33.713Z"
+    },
+    {
+      "event_id": "e2375202-174d-4ff7-b268-5dccdb7f9f1d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:28.953Z"
+    },
+    {
+      "event_id": "af9b14bb-88fb-4182-83c0-edf9998f5583",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:current_reality.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:29.598Z"
+    },
+    {
+      "event_id": "975a71c3-b853-4bd0-9fed-286e2358a4a6",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:invariants.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:30.297Z"
+    },
+    {
+      "event_id": "a1a29fe6-f6da-4c5c-81e9-b5bbfa8f11b8",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:30.831Z"
+    },
+    {
+      "event_id": "17a65815-7836-4ce5-abf5-42cc9f4f9e99",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:failure_modes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:31.522Z"
+    },
+    {
+      "event_id": "30a50a1f-4349-4ad1-ab35-e79cd64a59ba",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for spine:done_evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:32.031Z"
+    },
+    {
+      "event_id": "1d0d026b-7ebd-483f-8760-2234fc60363d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for axis:public_contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:32.888Z"
+    },
+    {
+      "event_id": "d0e16da7-a0c8-4eef-99b8-138306626cfb",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for axis:rollback_sensitive.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:33.625Z"
+    },
+    {
+      "event_id": "6d1fee44-fbb5-4603-a7d1-b37f9e787207",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for axis:execution_topology.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:34.076Z"
+    },
+    {
+      "event_id": "486621bc-b6c4-4697-a36a-8693b264a2e4",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for axis:scope_reviewability.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:34.630Z"
+    },
+    {
+      "event_id": "d2d94d93-cd1d-4bc7-b489-0ad9c12b9070",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for axis:release_ops.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:35.223Z"
+    },
+    {
+      "event_id": "92a5112b-ee4d-430b-a8ee-acb7e58dfa59",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for failure_mode:schema_failure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:35.710Z"
+    },
+    {
+      "event_id": "d8530ff7-dc80-4090-999b-b8eda971e6f8",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD adjudicator found the judgment premise and evidence sound for failure_mode:workflow_state_regression.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:36.202Z"
+    },
+    {
+      "event_id": "a4995122-fbfb-4ab4-9b13-c16c4e3804ff",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator found not_required conflicts with AC-6 and the changed review lifecycle surface; this item must be classified covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:02:36.650Z"
+    },
+    {
+      "event_id": "1af9f975-bc5c-45cc-9944-f151b6e6190b",
+      "type": "premise_correction",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "corrects_verdict_id": "a4995122-fbfb-4ab4-9b13-c16c4e3804ff",
+      "wrong_premise": "evidence_lifecycle_regression is not_required",
+      "corrected_premise": "evidence_lifecycle_regression is covered because AC-6 explicitly requires dirty fingerprint, inspection input, provenance, and review lifecycle guarantees across reuse modes",
+      "reason": "Story AC-6, Spec invariants, and focused lifecycle regression tests directly cover this failure mode.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+          "sha256": "7fae525f8f1e20af4ebfff37d8b10be1cccfa93d6305417263b629e798e6210a"
+        },
+        {
+          "artifact": "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+          "sha256": "842ce51063b0eb05c3b08e45a4a03bc167054bb8e3a2479a83052f16f3f64172"
+        },
+        {
+          "artifact": "test/review-inspection-first.test.js",
+          "sha256": "4572b146f15943ce110d61437949755f9a19a2dbf037867d46b52a911c0aa778"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:03:07.574Z"
+    },
+    {
+      "event_id": "1be9d59a-17a3-4204-b706-0bd45443d590",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "1af9f975-bc5c-45cc-9944-f151b6e6190b",
+      "reason": "Independent second judge confirmed AC-6, Spec invariants, and lifecycle tests support classifying evidence_lifecycle_regression as covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_gate_review",
+        "session_ref": "/root/current_gate_review"
+      },
+      "head_commit": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+      "recorded_at": "2026-07-23T18:05:13.442Z"
+    },
+    {
+      "event_id": "f9616ed5-ee32-4ebc-81ee-91192bdb85e9",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story isolates the remaining built-in strict_head gap after PR #381 and does not reuse or overwrite that Story.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:26.800Z"
+    },
+    {
+      "event_id": "4a51ca09-d326-4c76-8a07-e5ae3cbec308",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story and Architecture correctly identify that unconditional role strictness prevented gate_evidence/release_risk from reaching surface or merge-delta reuse.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:27.292Z"
+    },
+    {
+      "event_id": "221cf91d-f2df-4b77-80df-c435593c74b1",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Formal Spec invariants match implementation: content_surface default, hash and dirty binding, fail-closed behavior, and reasoned strict override.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:27.839Z"
+    },
+    {
+      "event_id": "ced59a36-97ee-49eb-989e-bc4e2b38c82d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is limited to Agent Review freshness and explicitly excludes adjudication and verification-evidence freshness redesign.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:28.355Z"
+    },
+    {
+      "event_id": "efeb7d5d-3dd1-4454-ae5c-79120364d1a6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing/unbound/hash-mismatched surfaces, unresolved deltas, dirty mismatch, and strict HEAD mismatch have explicit stale outcomes and regression coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:28.990Z"
+    },
+    {
+      "event_id": "0819d1cf-c9fa-43fa-b174-686751d03cd6",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head E2E passes 8/8 and selected freshness/lifecycle regressions pass 6/6; Story, Architecture, Spec, code, and tests agree.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:29.528Z"
+    },
+    {
+      "event_id": "59a13307-803b-474a-932d-92cbd90d4f7b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "English/Japanese guidance and release notes describe the new default and retained explicit strict override without changing stored artifact compatibility.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:30.227Z"
+    },
+    {
+      "event_id": "92232c05-cb6f-4775-aad8-09a73c57539a",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback restores the built-in strict role map; stored content bindings remain readable and require no migration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:31.109Z"
+    },
+    {
+      "event_id": "1b58780b-b955-483d-988e-9e5a30cbc060",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture now formally anchors the freshness state machine and fail-closed boundaries, matching bindReviewResult, content binding evaluation, and legacy merge-delta flow.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:31.648Z"
+    },
+    {
+      "event_id": "d185f1f4-b2a5-4920-a34c-02c8cb5e9c1a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The final repair adds only missing Architecture headings and a specifically authorized Story-local budget amendment; implementation intent remains focused.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:32.219Z"
+    },
+    {
+      "event_id": "52b500ff-deb9-44ff-b9ef-c8c685c12032",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Release guidance states the behavior, operator impact, fail-closed boundary, and rollback; no schema or artifact migration is required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:32.792Z"
+    },
+    {
+      "event_id": "d0d4bcd6-6869-4a34-b2e6-fbcfde11acb7",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No persisted schema is changed; existing content binding model and legacy artifact paths are retained.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:33.402Z"
+    },
+    {
+      "event_id": "c81e1090-af2a-4b31-846b-6278cced9f44",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The prior classifier correction remains sound: this failure mode is covered, not not_required, because AC-6 and the Spec explicitly preserve dirty, inspection, provenance, authorization, closure, and lifecycle guarantees, with current passing regressions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:33.925Z"
+    },
+    {
+      "event_id": "d29d2d03-6467-40ff-a3af-7f43d2f391a1",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current tests cover current, stale, reused_merge_delta, unresolved fail-closed, role-specific invalidation, and explicit strict state transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "final-adjudication-354e0f7d"
+      },
+      "head_commit": "354e0f7dd7080971c0af8e910f542713fd5136be",
+      "recorded_at": "2026-07-23T21:09:34.464Z"
+    },
+    {
+      "event_id": "8403e111-d186-4303-bd6a-0109306a4a50",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The independent Story closes the residual built-in strict_head gap after PR #381 without replacing its merge-delta contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:11.080Z"
+    },
+    {
+      "event_id": "c25035b7-6a03-42b1-be7a-089aa08bc43a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, code, and scenario replay agree that unconditional role strictness previously prevented surface-aware reuse.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:11.486Z"
+    },
+    {
+      "event_id": "e77df11f-41e6-4639-8043-a8707b304e98",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Formal Spec, Architecture, implementation, and tests agree on content_surface defaults, hash and dirty binding, fail-closed behavior, and explicit strict overrides.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:11.918Z"
+    },
+    {
+      "event_id": "abbb55ec-846f-4134-a2d8-ba536392649c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is bounded to Agent Review freshness and excludes adjudication and verification-evidence freshness redesign.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:12.352Z"
+    },
+    {
+      "event_id": "88a029fa-4efa-42d6-b699-ef0433780f78",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current flow and artifact replay cover missing, unbound, changed, unresolved, dirty, lifecycle, provenance, and strict mismatch failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:12.767Z"
+    },
+    {
+      "event_id": "ed896860-5774-4a41-b171-1ffdae52e394",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head 39/39 unit, 8/8 E2E, typecheck, and three independent closed reviews provide outcome-bound completion evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:13.206Z"
+    },
+    {
+      "event_id": "45e2e2c6-6f9c-48ec-93aa-6152381f4936",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI/config compatibility is retained, guides document the new default and reasoned strict override, and legacy review behavior remains covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:13.623Z"
+    },
+    {
+      "event_id": "63e29e53-b4db-4aed-880e-d41e06888e36",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback restores the built-in strict role map; stored content bindings remain readable and need no migration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:14.034Z"
+    },
+    {
+      "event_id": "4ceccb1c-28fa-4da5-9f7f-3de2d157fef3",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Architecture state machine, runtime-contract review, lifecycle tests, and three closed review lifecycles cover binding, reuse, stale, provenance, and handoff topology.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:14.464Z"
+    },
+    {
+      "event_id": "d5e60992-28b4-4d90-a4d1-69e84db87be6",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent freshness-policy change with aligned Story, Architecture, Spec, implementation, tests, guides, and release notes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:14.885Z"
+    },
+    {
+      "event_id": "02107ea0-67e9-4e7f-ab59-c2a16968114e",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "English and Japanese release notes and operator guidance state behavior, no-action migration, fail-closed boundaries, and rollback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:15.292Z"
+    },
+    {
+      "event_id": "05af9885-901a-45aa-8c04-806fafa73e5f",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No persisted schema changes; the existing content-binding model and legacy artifact evaluation remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:15.735Z"
+    },
+    {
+      "event_id": "5d4cf9a1-2cdd-49d7-a41b-b7c4c1fc0240",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The covered premise is sound: AC-6, current 39/39 lifecycle tests, and three strong-provenance closed reviews directly verify lifecycle preservation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:28.426Z"
+    },
+    {
+      "event_id": "9523e959-0f1d-4f84-8ce9-fa3db5debcbb",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current tests cover current, stale, reused merge-delta, unresolved fail-closed, role-specific invalidation, and explicit strict transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "recorded_at": "2026-07-23T21:42:29.023Z"
+    },
+    {
+      "event_id": "d16972b0-9422-4b46-835b-388cbd67c57d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story independently closes the residual built-in strict_head gap after PR #381 without replacing its merge-delta contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:06.075Z"
+    },
+    {
+      "event_id": "edf13efe-543a-4292-b627-9f27839c4008",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, implementation, replay evidence, and gate review agree that unconditional role strictness previously blocked surface-aware reuse.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:13.874Z"
+    },
+    {
+      "event_id": "23a7db51-2ec3-46b5-b2f1-edf61d397867",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec, Architecture, code, and tests align on content_surface defaults, hash and dirty binding, fail-closed behavior, and explicit strict overrides.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:21.227Z"
+    },
+    {
+      "event_id": "588ac79a-4ba7-46e7-b86e-6834a45e5c39",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is bounded to Agent Review freshness and excludes adjudication and verification-evidence freshness redesign.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:28.500Z"
+    },
+    {
+      "event_id": "d572f2ee-dfa6-4c9f-9aaf-b788f2130667",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current replay covers missing, unbound, changed, unresolved, dirty, provenance, lifecycle, and strict mismatch failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:35.311Z"
+    },
+    {
+      "event_id": "1bb3b031-4a8c-4eb1-8c4c-489848aad378",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head unit 39/39, E2E 8/8, all CI pass, and an independent closed/pass gate review provide outcome-bound evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:43.688Z"
+    },
+    {
+      "event_id": "f978be99-d30f-4868-8c71-c6ba0a20c880",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI and config compatibility remain, guides describe the new default and strict override, and legacy behavior is regression-tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:51.873Z"
+    },
+    {
+      "event_id": "f38869d3-4977-4811-ab5c-920a65305a0e",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback restores the built-in strict role map; stored content bindings stay readable and require no migration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:20:59.698Z"
+    },
+    {
+      "event_id": "9a9f5a7e-d876-49ba-b8f5-2c33ee8ecd18",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Architecture state machine, lifecycle tests, current CI, and closed gate lifecycle cover binding, reuse, stale, provenance, and handoff topology.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:21:09.607Z"
+    },
+    {
+      "event_id": "9f94bcec-47ea-4ccf-a23d-0c3c98e9d57d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent freshness-policy change with aligned Story, Architecture, Spec, code, tests, guides, and releases.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:21:16.314Z"
+    },
+    {
+      "event_id": "dfadd84d-da87-43bd-87c8-9cd5047e6168",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "English and Japanese release notes and operator guidance state behavior, no-action migration, fail-closed boundaries, and rollback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:21:23.255Z"
+    },
+    {
+      "event_id": "66154457-414f-494b-ad13-bbc4d859b875",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No persisted schema changes; the existing content-binding model and legacy artifact evaluation remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:21:30.055Z"
+    },
+    {
+      "event_id": "2905f3dc-0df3-4e10-b6cc-4a32b69bdec3",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current tests cover current, stale, reused merge-delta, unresolved fail-closed, role-specific invalidation, and explicit strict transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:21:42.952Z"
+    },
+    {
+      "event_id": "142faa0a-6cf3-4a10-b9be-057d844abde2",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The corrected covered premise remains sound: AC-6, current lifecycle tests, and the strong-provenance closed gate review directly verify lifecycle preservation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:22:14.152Z"
+    }
+  ]
+}

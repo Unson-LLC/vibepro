@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "gate_evidence and release_risk default to content_surface while reasoned role policy and CLI strict overrides remain strict_head.",
+      "rationale": "Remove the role-name exception that preempts the content and merge-delta freshness contracts.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+            "section": "Decision"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "getRolePolicy"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/content-scoped-evidence-freshness.test.js",
+            "must_cover": "gate evidence and release risk reviews survive"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-23T16:59:11.307Z",
+      "last_revised_at": "2026-07-23T17:30:32.503Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given reviewed gate and release surfaces, when unrelated main movement is rebased into the branch, then unchanged content bindings remain current.",
+      "rationale": "Proves the unresolved gap after PR #381 without weakening the recorded inspection surface.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+            "section": "Freshness State Machine"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "bindReviewResult"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/content-scoped-evidence-freshness.test.js",
+            "anchor": "survive unrelated main advance and rebase"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-23T16:59:11.307Z",
+      "last_revised_at": "2026-07-23T17:30:32.503Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a content-bound review, when its inspected file, projection lineage, contract, or release-impact input changes or cannot be resolved, then the impacted review becomes stale.",
+      "rationale": "The reuse path must remain fail closed for missing, unbound, or mismatched surfaces and unresolved legacy deltas.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 3
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+            "section": "Fail-closed Boundaries"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/content-binding.js",
+            "anchor": "evaluateContentBinding"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "evaluateMergeDeltaReviewReuse"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "anchor": "merge delta diff cannot be resolved"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-23T16:59:11.307Z",
+      "last_revised_at": "2026-07-23T17:30:32.503Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Given a reasoned strict_head override, when HEAD changes, then the review becomes stale while dirty fingerprint, inspection input, provenance, and lifecycle validation remain enforced for all reuse modes.",
+      "rationale": "Preserves explicit commit-wide binding and all existing trust guarantees.",
+      "inherited_behaviors": [
+        {
+          "condition": "!supplied && !runAuthority",
+          "classification": "unchanged",
+          "files": [
+            "src/agent-review.js"
+          ]
+        },
+        {
+          "condition": "!startedEntry?.dispatch_authorization_id",
+          "classification": "unchanged",
+          "files": [
+            "src/agent-review.js"
+          ]
+        }
+      ],
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 6
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 7
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+            "section": "Compatibility"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "resolveReviewFreshnessPolicy"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/content-scoped-evidence-freshness.test.js",
+            "anchor": "strict HEAD CLI override"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-23T16:59:11.307Z",
+      "last_revised_at": "2026-07-23T17:30:32.503Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Review freshness trust boundary",
+      "mermaid": "flowchart LR\n  Head[HEAD changes] --> Policy{Explicit strict policy?}\n  Policy -->|yes| Stale[stale on HEAD mismatch]\n  Policy -->|no| Binding{Recorded surface resolves and hashes match?}\n  Binding -->|yes| Provenance{Dirty fingerprint, inspection, provenance, lifecycle valid?}\n  Binding -->|no| Closed[fail closed as stale]\n  Provenance -->|yes| Current[reuse review]\n  Provenance -->|no| Closed"
+    }
+  ],
+  "generated_at": "2026-07-23T16:59:11.304Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-07-23T16:59:11.304Z"
+}

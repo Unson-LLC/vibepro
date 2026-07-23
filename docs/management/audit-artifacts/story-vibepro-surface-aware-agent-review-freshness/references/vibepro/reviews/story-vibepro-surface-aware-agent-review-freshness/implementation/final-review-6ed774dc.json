@@ -1,0 +1,50 @@
+{
+  "status": "pass",
+  "summary": "Frozen HEAD 6ed774dc independently satisfies the runtime contract: gate_evidence and release_risk now default to content_surface, unchanged recorded surfaces survive unrelated main movement and rebase or merge, changed or unresolved surfaces fail closed, and reasoned strict_head plus legacy, dirty-fingerprint, inspection, provenance, and lifecycle behavior remain compatible.",
+  "inspection_summary": "Inspected the full origin/main...6ed774dc change surface, the #381-derived merge-delta path, content-binding evaluation order, Story/Architecture/Spec lineage, generated review plan and current-HEAD verification evidence; independently reran the focused freshness and inspection-first suites with 39/39 passing.",
+  "inspection_evidence": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js => 39 passed, 0 failed at HEAD 6ed774dc77d187c42b894e2f073a50580c72e631; .vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json records current-HEAD E2E 8/8 and focused 39/39.",
+  "inspection_inputs": [
+    "git diff --stat origin/main...6ed774dc77d187c42b894e2f073a50580c72e631",
+    "git diff origin/main...6ed774dc77d187c42b894e2f073a50580c72e631 -- src/agent-review.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    ".vibepro/config.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-request-runtime_contract.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/parallel-dispatch.md",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+  ],
+  "judgment_delta": [
+    "Initial concern that removing built-in strict_head could bypass conservative invalidation -> resolved because build/evaluateContentBinding rejects missing, unbound, unreadable, or hash-mismatched surfaces before reuse, and bindReviewResult separately preserves dirty-fingerprint checks.",
+    "Initial concern that gate_evidence and release_risk would still stale before reaching #381 merge-delta reuse -> resolved because getRolePolicy no longer injects built-in strict roles, generated policy reports content_surface, current content bindings survive HEAD movement, and legacy records still reach evaluateMergeDeltaReviewReuse.",
+    "Initial concern that release-impact or generated lineage changes could silently reuse another role's review -> resolved by role-specific inspection inputs and tests proving only the role bound to the changed projection-lineage or release-impact file becomes stale.",
+    "Initial concern that compatibility guarantees might regress -> resolved by current-HEAD tests for reasoned CLI and role strict_head, unresolved merge-delta fail-closed behavior, inspection requirements, agent provenance, authorization, closure, and lifecycle replacement semantics.",
+    "Initial concern that the post-354e lineage repair changed runtime behavior -> resolved because the final delta only adds explicit parent_design metadata and Story-local budget rationale; source and contract tests remain unchanged and current-HEAD evidence was regenerated."
+  ],
+  "findings": [],
+  "review_context": {
+    "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+    "stage": "implementation",
+    "role": "runtime_contract",
+    "review_kind": "final",
+    "head_sha": "6ed774dc77d187c42b894e2f073a50580c72e631",
+    "base_sha": "236937dfe33eb407f912086d54bfbd3d7d699874",
+    "dirty": false,
+    "agent_system": "codex",
+    "agent_id": "/root/sarf_final_review",
+    "agent_thread_id": "/root/sarf_final_review",
+    "agent_session_id": "runtime-6ed774dc",
+    "reviewer_identity": "separate_session",
+    "execution_mode": "parallel_subagent",
+    "lifecycle_id": "b564d4af-c938-44a5-bd5e-dcf16a084492",
+    "dispatch_authorization_id": "5fe722b9-9713-45bc-9e24-abc943868330",
+    "replacement_for": "df6487e3-e52a-4ed3-9999-4e8500595a82"
+  }
+}

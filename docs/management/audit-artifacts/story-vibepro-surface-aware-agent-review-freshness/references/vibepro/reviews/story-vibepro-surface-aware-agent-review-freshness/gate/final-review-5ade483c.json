@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "summary": "HEAD 5ade483c1848edf56c1f0e11782cb616cc3281b2 の gate_evidence は pass。gate_evidence/release_risk の content_surface 既定、content bindingとlegacy merge-deltaのfail-closed、dirty fingerprint、inspection/provenance/lifecycle、理由付きstrict_head互換性がcurrent-head verificationで維持されている。",
+  "findings": [],
+  "inspection_summary": "review request、origin/mainからの最終変更面、Story/Architecture/Spec lineage、agent-review/content-binding実装、focused・E2E・typecheck verification records、architecture review、正式lifecycleを独立照合した。unit 39/39とAC別E2E 8/8は5ade483cのstrict-head、dirty=false、missing surfaceなしで記録されている。6ed774dc以降のruntime codeとtestsはbyte-identicalで、追加差分は設計lineage frontmatterとStory限定review budgetのみである。",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json; lifecycle 7700ddb0-1155-4068-80b3-93d99189ab18; authorization ad9eca29-a9a9-4fa0-bbab-8e3286c798f3",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-request-gate_evidence.md",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    ".vibepro/config.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/expensive-e2e.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-5ade483c.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/lifecycle.json",
+    "command: git diff 6ed774dc77d187c42b894e2f073a50580c72e631..HEAD",
+    "command: git diff --quiet 6ed774dc:<runtime-and-test-file> HEAD:<runtime-and-test-file>"
+  ],
+  "judgment_delta": [
+    "review requestのreuse keyがtimestamp/head差でstale -> canonical unit/E2E recordsはその後5ade483cへstrict-headで再記録され、dirty=false・missing surfaceなしのためcurrent evidenceとしてpass",
+    "gate_evidence/release_riskがHEAD変更だけで全面失効する懸念 -> built-in strict role例外はなくcontent_surface既定、明示的かつ理由付きstrict_headだけがHEAD-boundなので契約どおり",
+    "missing・hash mismatch・changed-files不明を楽観再利用する懸念 -> evaluateContentBindingがmissing/hash mismatchをstaleにし、legacy merge-deltaもdiff不明またはinspection surface交差をstaleにするためfail closed",
+    "surface再利用でdirty・inspection・provenance・lifecycle検査が迂回される懸念 -> status fingerprint照合とinspection-first/lifecycle testsが必須入力、独立agent provenance、authorize-start-close-recordを維持し39/39 pass",
+    "legacy/content_surface/strict経路の一部だけが検証された懸念 -> focused fixturesが3経路とnegative casesを直接assertし、AC別E2E 8/8がmain advance、rebase/merge、role別stale、unknown diff、strict overrideまで網羅",
+    "最終lineage修復がruntime contractを変えた懸念 -> 6ed774dc以降のsrcおよびtestはbyte-identicalで、Story/Architecture/Specのparent_design追加はcanonical lineageを明確化するだけ"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "tests": 39,
+    "failures": 0,
+    "flow_replay": true,
+    "artifact_replay": true,
+    "scenario_clause_e2e": true,
+    "agent_review_lifecycle_regression": true
+  },
+  "head_sha": "b5229ef644cefebd4b1b38b2ee06553483f0adba",
+  "command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js"
+}
