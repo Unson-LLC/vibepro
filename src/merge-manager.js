@@ -12,6 +12,10 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import {
+  buildMergeGateAuthorization,
+  resolveCurrentMergeGateStatus
+} from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -44,6 +48,8 @@ export async function executeMerge(repoRoot, options = {}) {
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
+  const currentGateStatus = resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag);
+  const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus);
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });
@@ -103,9 +109,10 @@ export async function executeMerge(repoRoot, options = {}) {
       checks: []
     },
     gate_dag: gateDag,
+    gate_authorization: gateAuthorization,
     preconditions: {
       pr_selector_resolved: Boolean(prSelector),
-      gate_ready: gateDag?.overall_status === 'ready_for_review',
+      gate_ready: gateAuthorization.allowed,
       clean_worktree: nonWorkspaceDirtyFiles.length === 0,
       base_freshness: {
         status: 'unknown',
@@ -159,6 +166,11 @@ export async function executeMerge(repoRoot, options = {}) {
     cost_accounting_collection: costAccountingResult.collection
   };
   merge.warnings.push(...costAccountingResult.warnings);
+  if (!gateAuthorization.allowed) {
+    merge.warnings.push(
+      `Merge gate authorization rejected (${gateAuthorization.reason}). Run \`vibepro pr prepare\` and \`vibepro pr create\` again for the current HEAD, then retry the merge after resolving critical gates or supplying a complete noncritical waiver.`
+    );
+  }
 
   if (!prSelector) {
     merge.stop_reason = 'pr_selector_missing';
@@ -210,6 +222,18 @@ export async function executeMerge(repoRoot, options = {}) {
       merge.status = 'dry_run_planned';
       merge.stop_reason = 'external_checks_skipped_dry_run';
     }
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return { merge, artifacts };
+  }
+
+  if (merge.preconditions.gate_ready !== true) {
+    merge.status = 'blocked';
+    merge.stop_reason = 'gate_not_ready';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return { merge, artifacts };
   }
@@ -785,6 +809,10 @@ export function renderPrMergeSummary(result) {
 ## Preconditions
 
 - gate_ready: ${merge.preconditions.gate_ready ? 'passed' : 'blocked'}
+- gate_authorization_source: ${merge.gate_authorization?.source ?? 'none'}
+- gate_authorization_reason: ${merge.gate_authorization?.reason ?? '-'}
+- gate_override_policy: ${merge.gate_authorization?.gate_override?.waiver_policy ?? '-'}
+- gate_override_critical_unresolved: ${merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-'}
 - clean_worktree: ${merge.preconditions.clean_worktree ? 'passed' : 'blocked'}
 - base_freshness: ${merge.preconditions.base_freshness.status}
 - remote_head_match: ${merge.preconditions.remote_head_match.status}
@@ -800,6 +828,10 @@ ${merge.commands.map((command) => `- ${command}`).join('\n')}
 
 - checks: ${checks.length}
 - failing_or_pending: ${failures.length}
+
+## Warnings / Next Actions
+
+${(merge.warnings ?? []).map((warning) => `- ${warning}`).join('\n') || '- none'}
 `;
 }
 

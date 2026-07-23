@@ -364,7 +364,13 @@ async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepar
     story: { story_id: storyId, title: 'PR準備' },
     gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: storyId,
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13175,7 +13181,7 @@ test('required managed worktree backfills VibePro control files when reusing an 
   );
 });
 
-test('execute merge dry-run plans external checks without executing them', async () => {
+test('story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
   await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
@@ -13183,9 +13189,20 @@ test('execute merge dry-run plans external checks without executing them', async
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'needs_verification',
+    nodes: [],
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13195,8 +13212,15 @@ test('execute merge dry-run plans external checks without executing them', async
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
@@ -13244,6 +13268,8 @@ process.exit(99);
   assert.equal(result.result.merge.preconditions.checks_ready.status, 'not_run');
   assert.equal(result.result.merge.preconditions.review_policy.status, 'not_run');
   assert.equal(result.result.merge.preconditions.open_pull_request.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.gate_ready, true);
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr view')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('git fetch origin main')), true);
@@ -13257,12 +13283,19 @@ process.exit(99);
   assert.equal(artifact.status, 'dry_run_planned');
   assert.equal(artifact.dry_run, true);
   assert.equal(artifact.results.length, 0);
+  assert.equal(artifact.gate_authorization.source, 'pr_create_gate_override');
+  assert.equal(artifact.gate_authorization.reason, 'MWP-AC-5 noncritical current-HEAD waiver fixture');
+  assert.equal(artifact.gate_authorization.gate_override.waiver_policy, 'cli_reason');
+  assert.deepEqual(artifact.gate_authorization.gate_override.critical_unresolved_gates, []);
   assert.equal(
     await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
     false
   );
   const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
   assert.match(html, /data-vibepro-report="pr-merge"/);
+  assert.match(html, /Gate Authorization/);
+  assert.match(html, /pr_create_gate_override/);
+  assert.match(html, /MWP-AC-5 noncritical current-HEAD waiver fixture/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
   assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
@@ -13541,7 +13574,7 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(inferred.result.merge.cost_accounting.token_accounting.total_tokens, 250);
 });
 
-test('execute merge dry-run ignores stale pr-create selectors', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector', async () => {
   const repo = await makeGitRepoWithStory();
   const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await writeFile(path.join(repo, 'src-stale-merge-selector.js'), 'export const staleMergeSelector = true;\n');
@@ -13552,8 +13585,13 @@ test('execute merge dry-run ignores stale pr-create selectors', async () => {
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
     git: { base_ref: 'main', head_sha: currentHead }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
@@ -13563,6 +13601,12 @@ test('execute merge dry-run ignores stale pr-create selectors', async () => {
     dry_run: false,
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'stale waiver must never authorize merge',
+      critical_unresolved_gates: []
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
@@ -13593,6 +13637,8 @@ process.exit(99);
     'story-pr-prepare',
     '--base',
     'main',
+    '--pr',
+    '123',
     '--dry-run',
     '--json'
   ], {
@@ -13602,16 +13648,277 @@ process.exit(99);
   assert.equal(result.exitCode, 2);
   assert.equal(await pathExists(ghCallLog), false);
   assert.equal(result.result.merge.status, 'blocked');
-  assert.equal(result.result.merge.stop_reason, 'pr_selector_missing');
-  assert.equal(result.result.merge.commands.length, 0);
-  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(result.result.merge.stop_reason, 'gate_not_ready');
+  assert.equal(result.result.merge.gate_authorization.allowed, false);
+  assert.equal(result.result.merge.gate_authorization.reason, 'gate_override_not_allowed');
+  assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Merge gate authorization rejected')), true);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('vibepro pr prepare')), true);
+  const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(artifact.gate_authorization.allowed, false);
+  assert.equal(artifact.gate_authorization.reason, 'gate_override_not_allowed');
+  const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
+  assert.match(html, /Gate Authorization/);
+  assert.match(html, /gate_override_not_allowed/);
+  assert.match(html, /vibepro pr prepare/);
+  let textStdout = '';
+  const textResult = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--pr',
+    '123',
+    '--dry-run'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stdout: { write(chunk) { textStdout += chunk; } }
+  });
+  assert.equal(textResult.exitCode, 2);
+  assert.match(textStdout, /Warnings \/ Next Actions/);
+  assert.match(textStdout, /vibepro pr prepare/);
+  assert.match(textStdout, /vibepro pr create/);
   assert.equal(
     await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
     false
   );
 });
 
-test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations', async () => {
+  const cases = [
+    {
+      name: 'omitted targets',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'target audit is required',
+        critical_unresolved_gates: []
+      },
+      expectedReason: 'gate_override_targets_missing'
+    },
+    {
+      name: 'conflicting current critical gate',
+      gateStatus: {
+        unresolved_gates: [
+          { id: 'gate:validation_sequencing' },
+          { id: 'gate:e2e' }
+        ],
+        critical_unresolved_gates: [{ id: 'gate:e2e' }]
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'critical authority must not be suppressed',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      expectedReason: 'current_gate_status_contains_critical_gates'
+    },
+    {
+      name: 'stale pr-prepare status',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'stale status must not authorize merge',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      prPrepareHeadSha: '0'.repeat(40),
+      expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'same status but differently routed critical gate',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'same overall status must not conceal a different critical gate surface',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'routed critical gate with missing embedded gate dag',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'missing embedded authority must not conceal the routed critical gate',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      omitEmbeddedGateDag: true,
+      expectedReason: 'current_gate_status_unknown'
+    }
+  ];
+
+  for (const fixture of cases) {
+    const repo = await makeGitRepoWithStory();
+    const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+    const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+    await mkdir(prDir, { recursive: true });
+    await writeJson(path.join(prDir, 'pr-prepare.json'), {
+      story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+      gate_status: {
+        overall_status: 'needs_verification',
+        ready_for_pr_create: false,
+        ...fixture.gateStatus
+      },
+      pr_context: fixture.omitEmbeddedGateDag ? {} : {
+        gate_dag: {
+          overall_status: 'needs_verification',
+          nodes: fixture.gateStatus.unresolved_gates.map((gate) => ({
+            ...gate,
+            required: true,
+            status: 'needs_evidence'
+          }))
+        }
+      },
+      git: { base_ref: 'main', head_sha: fixture.prPrepareHeadSha ?? headSha }
+    });
+    await writeJson(path.join(prDir, 'pr-create.json'), {
+      schema_version: '0.1.0',
+      mode: 'pr_create',
+      dry_run: false,
+      story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+      gate_override: fixture.gateOverride,
+      base: 'main',
+      pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+      current_head_sha: headSha,
+      artifact_freshness: {
+        kind: 'pr_create',
+        status: 'current',
+        artifact_head_sha: headSha,
+        current_head_sha: headSha
+      }
+    });
+    if (fixture.routedGateDag) {
+      await writeJson(path.join(prDir, 'gate-dag.json'), fixture.routedGateDag);
+    }
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-target-reconcile-bin-'));
+    const ghCallLog = path.join(binDir, 'gh-called.log');
+    await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+    await chmod(path.join(binDir, 'gh'), 0o755);
+
+    const result = await runCli([
+      'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--json'
+    ], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+    });
+
+    assert.equal(result.exitCode, 2, fixture.name);
+    assert.equal(result.result.merge.dry_run, false, fixture.name);
+    assert.equal(result.result.merge.stop_reason, 'gate_not_ready', fixture.name);
+    assert.equal(result.result.merge.results.length, 0, fixture.name);
+    assert.equal(await pathExists(ghCallLog), false, fixture.name);
+    assert.equal(result.result.merge.gate_authorization.reason, fixture.expectedReason, fixture.name);
+  }
+});
+
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), '{ malformed');
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-parse-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let parseFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { parseFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(parseFailureStderr, /JSON|position|property name/i);
+});
+
+test('story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main', head_sha: head }
+  });
+  await mkdir(path.join(prDir, 'pr-merge.json'));
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-persistence-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let persistenceFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { persistenceFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(persistenceFailureStderr, /directory|EISDIR|rename/i);
+});
+
+test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -13640,15 +13947,20 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
-    overall_status: 'ready_for_review',
+    overall_status: 'needs_verification',
     nodes: [],
-    summary: { needs_evidence_count: 0 }
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13658,8 +13970,15 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/124',
@@ -13732,6 +14051,7 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
   assert.equal(result.result.merge.branch_cleanup.requested, false);
@@ -13743,6 +14063,10 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 600000);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMergeArtifact.gate_authorization.source, 'pr_create_gate_override');
+  assert.equal(prMergeArtifact.gate_authorization.reason, 'MWP-AC-5 noncritical current-HEAD waiver fixture');
+  assert.equal(prMergeArtifact.gate_authorization.gate_override.waiver_policy, 'cli_reason');
+  assert.deepEqual(prMergeArtifact.gate_authorization.gate_override.critical_unresolved_gates, []);
   assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
   assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
   assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);

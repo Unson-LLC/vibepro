@@ -290,6 +290,15 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-merge-waiver-propagation": {
+        "max_subagent_count": 9,
+        "amendment_reason": "The delivery requires three implementation roles and three distinct gate roles. One bounded replacement pass consumed the remaining three lifecycle slots after concrete implementation findings. The user explicitly approved raising this Story-only cap from six to nine on 2026-07-23. Reuse the same three lightweight agents for the required gate roles, and permit no further budget amendment or replacement loop."
+      },
+      "story-vibepro-trusted-delivery-efficiency-guardrail": {
+        "max_subagent_count": 21,
+        "max_agent_consumption_ms": 3300000,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization and 19 recorded lifecycle runs exhausted the prior Story-local allowance before final closure. User explicitly authorized merge completion on 2026-07-22. Allow only the two current-HEAD gate-evidence and release-risk lifecycles plus fresh-context evidence and judgment adjudication, collected in one lightweight provider run with one bounded 600000 ms consumption allowance; no other review dispatch is permitted, and default Story budgets remain unchanged."
+      },
       "story-vibepro-independent-review-orchestration": {
         "max_elapsed_ms": null,
         "max_observed_work_ms": null,
@@ -303,6 +312,18 @@
   },
   "brainbase": {
     "stories": [
+      {
+        "story_id": "story-vibepro-merge-waiver-propagation",
+        "title": "PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "quality"
+      },
       {
         "story_id": "story-vibepro-artifact-output-routing",
         "title": "成果物の正本出力先をリポジトリ設定で一意に制御する",
@@ -691,6 +712,6 @@
         "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-independent-review-orchestration"
+    "current_story_id": "story-vibepro-merge-waiver-propagation"
   }
 }

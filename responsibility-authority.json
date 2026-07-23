@@ -49,7 +49,9 @@
       ],
       "owned_surfaces": {
         "paths": [
+          "src/merge-gate-authorization.js",
           "src/merge-manager.js",
+          "src/execution-state.js",
           "src/task-manager.js",
           "src/usage-report.js"
         ],
