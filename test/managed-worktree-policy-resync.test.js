@@ -132,6 +132,35 @@ test('read-only refresh preserves managed worktree policy control files', async 
   assert.equal(refreshed.policy_sync.last_event.status, 'synced');
 });
 
+test('execute status preserves managed worktree controls when execution state is missing', async (t) => {
+  const { root, managedWorktree } = await makeRepoWithManagedWorktree();
+  t.after(async () => rm(root, { recursive: true, force: true }));
+  const configPath = path.join(managedWorktree.path, '.vibepro', 'config.json');
+  const policySyncPath = path.join(managedWorktree.path, '.vibepro', 'policy-sync.json');
+  const { stdout: gitExcludeOutput } = await git(managedWorktree.path, ['rev-parse', '--git-path', 'info/exclude']);
+  const gitExcludePath = path.resolve(managedWorktree.path, gitExcludeOutput.trim());
+
+  await updateParentConfig(root, (config) => {
+    config.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
+  });
+  await refreshManagedWorktree(root, managedWorktree);
+
+  const sourceConfig = await readJson(path.join(root, '.vibepro', 'config.json'));
+  sourceConfig.budgets = { max_elapsed_ms: 1234 };
+  await writeJson(path.join(root, '.vibepro', 'config.json'), sourceConfig);
+
+  const configBefore = await readFile(configPath, 'utf8');
+  const policySyncBefore = await readFile(policySyncPath, 'utf8');
+  const gitExcludeBefore = await readFile(gitExcludePath, 'utf8');
+  const result = await getExecutionStatus(root, { storyId: STORY_ID });
+
+  assert.equal(result.found, false);
+  assert.equal(await readFile(configPath, 'utf8'), configBefore);
+  assert.equal(await readFile(policySyncPath, 'utf8'), policySyncBefore);
+  assert.equal(await readFile(gitExcludePath, 'utf8'), gitExcludeBefore);
+  assert.equal(result.state.managed_worktree.policy_sync.status, 'needs_sync');
+});
+
 // story-vibepro-managed-worktree-policy-resync ac:3 policy sections removed from the parent are removed from the worktree copy
 test('refreshManagedWorktree mirrors policy section removal from the parent config', async (t) => {
   const { root, managedWorktree } = await makeRepoWithManagedWorktree();

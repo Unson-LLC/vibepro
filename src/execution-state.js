@@ -93,7 +93,9 @@ export async function getExecutionStatus(repoRoot, options = {}) {
     ...options,
     storyId,
     target: options.target ?? DEFAULT_TARGET,
-    managedWorktree
+    managedWorktree,
+    repairManagedWorktreeGitExclude: false,
+    syncManagedWorktreePolicy: false
   });
   return {
     state,
