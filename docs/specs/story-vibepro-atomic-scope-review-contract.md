@@ -140,7 +140,13 @@ stateDiagram-v2
 
 ## Release and rollback
 
-This is a CLI policy change with no migration or operator action. The release note is the PR decision summary and Story-to-contract traceability. Operators verify `pr-prepare.json` and the Gate DAG; unexpected atomic acceptance is observable as `atomic_scope.status = accepted` with its owner map and structured lineage. Rollback is to revert the atomic acceptance policy while retaining generated split lanes and the legacy automatic split recommendation. The VibePro maintainer owns release and rollback.
+Release note: this is a CLI policy change with no data migration, feature flag, daemon restart, or mandatory user action. It permits `atomic_single_pr` only after typed dependency boundaries, lifecycle-bound current-HEAD owner coverage, current verification, and required final reviews all pass. Metadata-free Stories and the legacy automatic split recommendation remain compatible.
+
+Rollout plan: the VibePro maintainer owns release. Before merge, the current HEAD must have passing `pr prepare`, required reviews, adjudication, and CI. After merge, run the metadata-free/small-PR regression on canonical `main`. Use the first `atomic_single_pr` Story as a canary and compare `pr-prepare.json`, `split-plan.json`, and `gate-dag.json`; all three must expose the same accepted reason, lane set, owner map, and typed lineage. Abort rollout if an accepted atomic scope has any unowned changed path, any typed unsafe signal, or a non-passing scope/split Gate.
+
+Observability evidence: owner-visible release evidence is `.vibepro/pr/<story-id>/pr-prepare.json`, `split-plan.json`, and `gate-dag.json`. For every atomic canary, the maintainer checks `atomic_scope.status`, `rejection_reasons`, unowned changed-path count, typed unsafe signals, and accepted current-story lineage. Unexpected acceptance, cross-artifact status disagreement, or one or more unowned paths is a release incident. The support handoff contains Story ID, HEAD SHA, the three artifact paths, and the failing command.
+
+Rollback instruction: trigger rollback on unexpected atomic acceptance, changed legacy split behavior, cross-artifact accepted/rejected disagreement, or an owner-map omission that cannot be repaired on the same HEAD. Revert the release merge with `git revert <release-merge-sha>`, then run `node bin/vibepro.js pr prepare . --story-id <canary-story-id> --base origin/main --view blocking-gates --json`. Confirm that legacy split recommendations and lanes remain, atomic acceptance no longer occurs, and the metadata-free Story fixture passes. If revert or verification fails, stop further merges and escalate the artifacts and failing command to the VibePro maintainer.
 
 ## Acceptance Scenarios
 
