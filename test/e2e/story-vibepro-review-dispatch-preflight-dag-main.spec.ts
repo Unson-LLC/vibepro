@@ -272,7 +272,10 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance covers dispatch pre
   const stale = await preflightFor(staleRepo);
   assert.equal(stale.node.preflight_kind, 'git_stability');
   assert.equal(stale.node.status, 'failed');
-  assert.match(String(stale.node.reason), /dirty worktree fingerprint|review was recorded for/);
+  assert.match(
+    String(stale.node.reason),
+    /content-bound evidence surface changed|dirty worktree fingerprint|review was recorded for/,
+  );
 
   const runningRepo = await makeStoryRepo();
   await recordGateEvidence(runningRepo);
