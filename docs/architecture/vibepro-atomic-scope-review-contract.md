@@ -29,6 +29,8 @@ status: designed
 
 path-surface gateのstructured observationは、scenario/valueのsurface語だけでは十分でない。`observation.targets[]`が全changed pathのそれぞれ、またはその親directoryを指す場合だけ当該surfaceをcoverする。free-form legacy evidenceの互換読取はatomic metadataを持たないStoryだけに限定し、atomic Storyではtarget未束縛のkeyword evidenceを採用しない。`.vibepro/config.json`は生成artifactではなくtracked control-plane sourceなのでcontent binding対象に含めるが、他の`.vibepro/*`証跡はreview surfaceから除外する。
 
+一時worktreeや生成artifactを失って復旧した場合、過去のreview/evidenceを現在状態へ暗黙継承しない。Story/Specを再登録し、current HEADで検証を再実行し、`gate_evidence`と`release_risk`の各final reviewerが全generated laneのchanged pathをinspection inputとして所有してからowner mapを再構成する。両reviewがclose・recordされるまではatomic scopeを`rejected`に保ち、完了後の同一prepareでのみ`accepted`へ再調停する。
+
 responsibility authority resolverは、required evidenceへ複数のcurrent commandが一致するとき、対象responsibilityのcontract clause IDを含むcommandを優先する。scenario名だけ一致するatomic scope replayを、別contractのauthority証跡として先着順に採用しない。このresolver境界はatomic owner-mapの入力を正しく保つためのruntime依存であり、既存authority registryのfail-closed validationは変更しない。
 
 ## Compatibility and Rollback
