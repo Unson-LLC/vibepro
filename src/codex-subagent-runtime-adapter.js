@@ -180,8 +180,12 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
       if (reconciled.completion?.kind !== 'completed') throw new Error('Codex completion result is not present in the persistent inbox');
       const partialResults = matchingPartialResults(reconciled, record?.request.inspection_surface_hash ?? dispatch?.inspection_surface_hash);
       await persistentInbox.acknowledge(logicalDispatchId, reconciled.completion.event_id);
+      const completionPayload = normalizeReviewCompletionPayload(
+        reconciled.completion.payload,
+        record?.request ?? dispatch
+      );
       return {
-        ...reconciled.completion.payload,
+        ...completionPayload,
         completion_status: 'completed',
         partial_results: partialResults,
         judgments: mergeJudgments(
@@ -193,7 +197,7 @@ export function createCodexSubagentRuntimeAdapter({ repoRoot, host, inbox, now =
             changedPaths: record?.request.changed_paths
           }).reusable_judgments,
           partialResults,
-          reconciled.completion.payload?.judgments
+          completionPayload?.judgments
         ),
         surface_hash: reconciled.completion.surface_hash
       };
@@ -275,6 +279,22 @@ function matchingPartialResults(reconciled, expectedSurfaceHash) {
   return reconciled.events
     .filter((event) => event.kind === 'partial_result' && event.surface_hash === expectedSurfaceHash)
     .map((event) => event.payload);
+}
+
+function normalizeReviewCompletionPayload(payload, request) {
+  if (request?.role !== 'review' || !payload?.review_record) return payload;
+  const review = payload.review_record;
+  return {
+    ...payload,
+    status: payload.status ?? review.status,
+    inspection_summary: payload.inspection_summary ?? review.inspection_summary,
+    inspection_evidence: payload.inspection_evidence ?? review.inspection_evidence,
+    inspection_inputs: payload.inspection_inputs
+      ?? request.review_binding?.inspection_inputs
+      ?? (typeof review.inspection_evidence === 'string' ? [review.inspection_evidence] : []),
+    judgment_delta: payload.judgment_delta ?? review.judgment_deltas,
+    findings: payload.findings ?? review.findings
+  };
 }
 
 function assertHost(host) {

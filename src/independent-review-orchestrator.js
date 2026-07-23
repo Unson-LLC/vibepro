@@ -1,8 +1,8 @@
-import { createHash } from 'node:crypto';
 import {
   authorizeAgentReviewDispatch, closeAgentReviewLifecycle, prepareAgentReview,
   recordAgentReview, startAgentReviewLifecycle
 } from './agent-review.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 
 // Owns the runtime-neutral execution of the existing Agent Review DAG.
 // It deliberately has no CLI, filesystem, or PR-manager dependency: the Guarded
@@ -237,7 +237,7 @@ export async function recordGuardedRuntimeReview({ deps, repoRoot, options, load
     ...(options.review ?? {}), storyId: loaded.state.story_id,
     agentSystem: options.review?.agentSystem ?? 'codex', executionMode: 'parallel_subagent',
     agentId: provenance.agent_identity, agentThreadId: provenance.thread_id,
-    agentSessionId: provenance.session_id, agentClosed: true, reviewerIdentity: 'separate_session',
+    agentSessionId: provenance.session_id, agentClosed: true,
     implementationSessionId: dispatch.implementation_session_id,
     runtimeDispatchId: dispatch.dispatch_id
   });
@@ -262,14 +262,17 @@ export async function recordGuardedRuntimeReview({ deps, repoRoot, options, load
 function validateRuntimeReviewDispatch(dispatch, currentHeadSha, createError) {
   const result = dispatch?.result;
   const provenance = result?.review_provenance;
-  const expected = dispatch && `dispatch-${createHash('sha256').update(`${dispatch.run_id}:${dispatch.adapter_id}:${dispatch.task_id}:${dispatch.role}:${dispatch.input_head_sha}:${dispatch.reviewer_identity ?? ''}:${dispatch.implementation_session_id ?? ''}`).digest('hex').slice(0, 16)}`;
+  const expected = dispatch && deriveDispatchIdentity(dispatch);
   const correlated = Boolean(dispatch?.session_id || dispatch?.thread_id)
     && provenance?.session_id === dispatch?.session_id && provenance?.thread_id === dispatch?.thread_id;
   const separate = correlated && ![provenance?.session_id, provenance?.thread_id].includes(dispatch?.implementation_session_id);
+  const resultHeadAccepted = result?.head_sha === currentHeadSha
+    || (dispatch?.review_binding?.strict_head_binding !== true
+      && result?.head_sha === dispatch?.surface_rebound_from_head_sha);
   const valid = dispatch?.role === 'review' && dispatch.dispatch_id === expected && dispatch.status === 'completed'
     && dispatch.sandbox === 'read-only' && dispatch.requirements?.capabilities?.includes('review')
     && !dispatch.requirements?.capabilities?.includes('workspace_write') && Array.isArray(result?.changed_files)
-    && result.changed_files.length === 0 && dispatch.input_head_sha === currentHeadSha && result.head_sha === currentHeadSha
+    && result.changed_files.length === 0 && dispatch.input_head_sha === currentHeadSha && resultHeadAccepted
     && provenance?.execution_mode === 'parallel_subagent' && provenance.agent_identity === dispatch.reviewer_identity
     && provenance.agent_identity === dispatch.agent_identity && provenance.agent_identity !== dispatch.implementation_identity
     && provenance.lifecycle === 'closed' && separate;

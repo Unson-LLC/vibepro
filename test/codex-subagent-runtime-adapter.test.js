@@ -49,7 +49,7 @@ test('CDI-S-2 completion emitted during spawn is subscribed first and persisted 
   const host = fakeCodexHost();
   host.completeDuringSpawn({
     event_id: 'immediate-completion', kind: 'completed', observed_at: '2026-07-22T01:00:00.000Z', surface_hash: 'surface-a',
-    result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'completed inside spawn', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+    result: completedReviewResult('completed inside spawn')
   });
   const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
   const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
@@ -105,14 +105,33 @@ function reviewRequest(repoRoot) {
   };
 }
 
+function completedReviewResult(summary, extra = {}) {
+  return {
+    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary,
+    agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed',
+    status: 'pass', inspection_summary: `Inspected ${summary}`,
+    inspection_inputs: ['src/codex-subagent-runtime-adapter.js'],
+    judgment_delta: [`pending -> pass after ${summary}`], findings: [],
+    ...extra
+  };
+}
+
 test('CDI-S-1 CDI-S-2 CDI-S-3 CDI-S-4 CDI-S-9 Codex path detaches at ten minutes then completes through push/inbox/reconcile without replacement', async (t) => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-codex-path-'));
   t.after(() => rm(repoRoot, { recursive: true, force: true }));
   const host = fakeCodexHost();
   const adapter = createCodexSubagentRuntimeAdapter({ repoRoot, host });
   const coordinator = createAgentRuntimeCoordinator({ adapters: [adapter] });
-  const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
-  const duplicate = await coordinator.dispatch(started.state, reviewRequest(repoRoot));
+  const request = {
+    ...reviewRequest(repoRoot),
+    review_binding: {
+      stage: 'implementation', role: 'runtime_contract',
+      inspection_inputs: ['src/codex-subagent-runtime-adapter.js'],
+      strict_head_binding: false
+    }
+  };
+  const started = await coordinator.dispatch(baseState, request);
+  const duplicate = await coordinator.dispatch(started.state, request);
   const detached = await coordinator.detach(started.state, started.dispatch.dispatch_id);
   assert.equal(detached.dispatch.status, 'running_detached');
   assert.equal(host.metrics().shutdowns, 0);
@@ -121,11 +140,22 @@ test('CDI-S-1 CDI-S-2 CDI-S-3 CDI-S-4 CDI-S-9 Codex path detaches at ten minutes
 
   await host.emit({
     event_id: 'codex-completion-1', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z', surface_hash: 'surface-a',
-    result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'review passed', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed', judgments: [{ judgment_id: 'correctness', verdict: 'pass' }] }
+    result: {
+      changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'review passed',
+      agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed',
+      review_record: {
+        status: 'pass', summary: 'review passed', inspection_summary: 'Inspected detached completion',
+        inspection_evidence: 'test/codex-subagent-runtime-adapter.test.js',
+        judgment_deltas: ['running -> detached -> completed'], findings: []
+      },
+      judgments: [{ judgment_id: 'correctness', verdict: 'pass' }]
+    }
   });
   const recovered = await coordinator.reconcile(detached.state, detached.dispatch.dispatch_id);
   assert.equal(recovered.dispatch.status, 'completed');
   assert.equal(recovered.dispatch.result.review_provenance.lifecycle, 'closed');
+  assert.equal(recovered.dispatch.result.review.status, 'pass');
+  assert.deepEqual(recovered.dispatch.result.review.inspection_inputs, request.review_binding.inspection_inputs);
   assert.equal(host.metrics().wakes, 1);
   assert.equal(host.metrics().shutdowns, 0);
   assert.equal(host.metrics().spawns, 1);
@@ -212,11 +242,9 @@ test('CDI-S-5 CDI-S-6 bounded recovery resumes only unfinished judgments and rea
   await host.emit({
     event_id: 'completion-correctness', provider_run_id: 'codex-provider-2', kind: 'completed',
     observed_at: clock.toISOString(), surface_hash: 'surface-a',
-    result: {
-      changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'recovered unfinished judgment',
-      agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed',
+    result: completedReviewResult('recovered unfinished judgment', {
       judgments: [{ judgment_id: 'correctness', verdict: 'pass' }]
-    }
+    })
   });
   const completed = await coordinator.reconcile(resumed.state, resumed.dispatch.dispatch_id);
   assert.equal(completed.dispatch.status, 'completed');
@@ -304,7 +332,7 @@ test('CDI-S-3 lost wake notification still reconciles the inbox result', async (
   const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
   await host.emit({
     event_id: 'lost-wake-completion', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z', surface_hash: 'surface-a',
-    result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'persisted first', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+    result: completedReviewResult('persisted first')
   });
   const recovered = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.equal(recovered.dispatch.status, 'completed');
@@ -320,7 +348,7 @@ test('CDI-S-3 a successor process reconciles a persisted completion without adap
   const detached = await firstCoordinator.detach(started.state, started.dispatch.dispatch_id);
   await host.emit({
     event_id: 'successor-completion', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z', surface_hash: 'surface-a',
-    result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'successor recovered', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+    result: completedReviewResult('successor recovered')
   });
 
   const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
@@ -347,7 +375,7 @@ test('CDI-S-3 successor drains host completion from persisted managed authority'
     return [{
       event_id: 'managed-authority-completion', kind: 'completed', observed_at: '2026-07-22T01:10:01.000Z',
       dispatch_id: detached.dispatch.dispatch_id, provider_run_id: detached.dispatch.provider_run_id, surface_hash: 'surface-a',
-      result: { changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'drained from managed authority', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed' }
+      result: completedReviewResult('drained from managed authority')
     }];
   };
   const successor = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot: sourceRoot, host: successorHost })] });
@@ -495,9 +523,9 @@ test('CDI-S-6 actual spawn receives only unfinished judgments and completion mer
   request.requested_judgments = [{ judgment_id: 'security' }, { judgment_id: 'correctness' }];
   const started = await coordinator.dispatch(baseState, request);
   assert.deepEqual(host.metrics().lastSpawnRequest.requested_judgments.map((item) => item.judgment_id), ['correctness']);
-  await host.emit({ event_id: 'recovery-done', kind: 'completed', surface_hash: 'surface-a', result: {
-    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'remaining complete', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed', judgments: [{ judgment_id: 'correctness', verdict: 'pass' }]
-  } });
+  await host.emit({ event_id: 'recovery-done', kind: 'completed', surface_hash: 'surface-a', result:
+    completedReviewResult('remaining complete', { judgments: [{ judgment_id: 'correctness', verdict: 'pass' }] })
+  });
   const completed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.deepEqual(completed.dispatch.result.judgments.map((item) => item.judgment_id), ['security', 'correctness']);
   assert.equal(host.metrics().spawns, 1);
@@ -543,9 +571,9 @@ test('CDI-S-7 completion for a different surface is contained and cannot close r
   const host = fakeCodexHost();
   const coordinator = createAgentRuntimeCoordinator({ adapters: [createCodexSubagentRuntimeAdapter({ repoRoot, host })] });
   const started = await coordinator.dispatch(baseState, reviewRequest(repoRoot));
-  await host.emit({ event_id: 'wrong-surface', kind: 'completed', surface_hash: 'surface-b', result: {
-    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'wrong', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed'
-  } });
+  await host.emit({ event_id: 'wrong-surface', kind: 'completed', surface_hash: 'surface-b', result:
+    completedReviewResult('wrong')
+  });
   const contained = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.notEqual(contained.dispatch.status, 'completed');
   assert.equal(contained.dispatch.stop_reason.code, 'invalid_runtime_result');
@@ -561,9 +589,9 @@ test('CDI-S-6 CDI-S-7 partial judgments from a different surface are not reused'
     event_id: 'wrong-partial', kind: 'partial_result', surface_hash: 'surface-b',
     payload: { judgment_id: 'security', verdict: 'pass' }
   });
-  await host.emit({ event_id: 'right-completion', kind: 'completed', surface_hash: 'surface-a', result: {
-    changed_files: [], head_sha: 'head-a', test_suggestions: [], summary: 'right surface', agent_identity: 'reviewer-codex', thread_id: 'thread-codex', lifecycle: 'closed'
-  } });
+  await host.emit({ event_id: 'right-completion', kind: 'completed', surface_hash: 'surface-a', result:
+    completedReviewResult('right surface')
+  });
   const completed = await coordinator.reconcile(started.state, started.dispatch.dispatch_id);
   assert.equal(completed.dispatch.status, 'completed');
   assert.deepEqual(completed.dispatch.result.partial_results, []);

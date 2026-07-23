@@ -8,7 +8,11 @@ const MAX_TEXT_LENGTH = 65536;
 const PAYLOAD_KEYS = Object.freeze({
   progress: new Set(['heartbeat', 'message', 'progress_percent']),
   partial_result: new Set(['judgment_id', 'verdict', 'detail', 'reason', 'summary', 'findings', 'surface_paths', 'judgments']),
-  completed: new Set(['completion_status', 'changed_files', 'head_sha', 'test_suggestions', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'review_record', 'judgments', 'message', 'usage_accounting']),
+  completed: new Set([
+    'completion_status', 'changed_files', 'head_sha', 'test_suggestions', 'summary', 'agent_identity', 'thread_id', 'lifecycle',
+    'status', 'inspection_summary', 'inspection_evidence', 'inspection_inputs', 'judgment_delta', 'findings',
+    'review_record', 'judgments', 'message', 'usage_accounting'
+  ]),
   failed: new Set(['message', 'error_code', 'head_sha', 'usage_accounting']),
   cancelled: new Set(['message', 'error_code', 'head_sha', 'usage_accounting'])
 });
@@ -137,10 +141,10 @@ function normalizeEvent(input, now) {
 
 function validatePayload(kind, payload) {
   assertAllowedKeys(payload, PAYLOAD_KEYS[kind], `${kind} payload`);
-  for (const key of ['message', 'error_code', 'head_sha', 'completion_status', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'judgment_id', 'verdict', 'detail', 'reason']) {
+  for (const key of ['message', 'error_code', 'head_sha', 'completion_status', 'summary', 'agent_identity', 'thread_id', 'lifecycle', 'status', 'inspection_summary', 'inspection_evidence', 'judgment_id', 'verdict', 'detail', 'reason']) {
     if (payload[key] !== undefined) requireText(payload[key], key);
   }
-  for (const key of ['changed_files', 'test_suggestions', 'surface_paths']) validateStringArray(payload[key], key);
+  for (const key of ['changed_files', 'test_suggestions', 'surface_paths', 'inspection_inputs', 'judgment_delta']) validateStringArray(payload[key], key);
   if (payload.heartbeat !== undefined && typeof payload.heartbeat !== 'boolean') throw new TypeError('heartbeat must be a boolean');
   if (payload.progress_percent !== undefined && (!Number.isFinite(payload.progress_percent) || payload.progress_percent < 0 || payload.progress_percent > 100)) {
     throw new TypeError('progress_percent must be between 0 and 100');

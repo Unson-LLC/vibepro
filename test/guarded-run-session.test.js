@@ -863,6 +863,9 @@ test('CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitl
       return {
         completion_status: 'completed', changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'reused old-HEAD review',
         agent_identity: 'reviewer-rebase', thread_id: 'thread-rebase', lifecycle: 'closed',
+        status: 'pass', inspection_summary: 'rebase surface inspected',
+        inspection_evidence: 'runtime/rebase-review', inspection_inputs: ['src/agent-runtime-adapter.js'],
+        judgment_delta: ['old HEAD -> current HEAD because surface is unchanged'], findings: [],
         review_record: { status: 'pass', summary: 'surface unchanged', findings: [], inspection_summary: 'rebase surface inspected', inspection_evidence: 'runtime/rebase-review', judgment_deltas: ['old HEAD -> current HEAD because surface is unchanged'] }
       };
     }
@@ -939,7 +942,13 @@ test('CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and re
   assert.equal((await session.status(fixture.source, { storyId: STORY_ID, runId: RUN_ID })).runtime_dispatches[0].status, 'running_detached');
   await completionHandler({
     event_id: 'guarded-run-completion', kind: 'completed', surface_hash: 'surface-a',
-    result: { changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'detached review pass', agent_identity: 'reviewer-detached', thread_id: 'thread-detached', lifecycle: 'closed' }
+    result: {
+      changed_files: [], head_sha: run.current_head_sha, test_suggestions: [], summary: 'detached review pass',
+      agent_identity: 'reviewer-detached', thread_id: 'thread-detached', lifecycle: 'closed',
+      status: 'pass', inspection_summary: 'Inspected detached review completion',
+      inspection_inputs: ['src/codex-runtime-bridge.js'],
+      judgment_delta: ['running_detached -> pass after Inbox recovery'], findings: []
+    }
   });
   const completed = await session.reconcileRuntime(fixture.source, { storyId: STORY_ID, runId: RUN_ID, dispatchId: started.dispatch.dispatch_id });
   assert.equal(completed.dispatch.status, 'completed');
