@@ -94,7 +94,11 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
   if (existing?.stop_reason?.code === 'orphaned_agent') return { state: runState, dispatch: existing, reused: true };
 
   const adapter = registry.get(request.adapter_id);
-  if (!adapter) return waiting(runState, request, 'runtime_unavailable', 'requested runtime adapter is not registered', now);
+  if (!adapter) {
+    return waiting(runState, request, 'runtime_unavailable',
+      'requested runtime adapter is not registered', now,
+      runtimeRecoveryDetails(runState, request));
+  }
   let capability;
   try {
     capability = normalizeProbe(await withTimeout(
@@ -104,22 +108,14 @@ async function dispatch(registry, now, runState, input = {}, options = {}) {
     ));
   } catch (error) {
     const reason = WAIT_REASONS.has(error.code) ? error.code : 'runtime_unavailable';
-    return waiting(runState, request, reason, error.message, now);
+    return waiting(runState, request, reason, error.message, now,
+      runtimeRecoveryDetails(runState, request));
   }
   const missing = request.requirements.capabilities.filter((item) => !capability.capabilities.includes(item));
   if (!capability.available || missing.length > 0) {
     return waiting(runState, request, capability.reason ?? 'runtime_unavailable', missing.length > 0
       ? `runtime lacks required capabilities: ${missing.join(', ')}`
-      : 'runtime is unavailable', now, {
-      provider: request.adapter_id,
-      missing_capabilities: missing,
-      recovery: {
-        action: 'resume_run',
-        story_id: runState.story_id,
-        run_id: runState.run_id,
-        required_capabilities: request.requirements.capabilities
-      }
-    });
+      : 'runtime is unavailable', now, runtimeRecoveryDetails(runState, request, missing));
   }
   if (request.role === 'review' && capability.sandbox !== 'read-only') {
     return waiting(runState, request, 'review_readonly_unavailable',
@@ -742,6 +738,19 @@ function waiting(state, request, code, message, now, details = {}) {
   const record = { ...request, provider_run_id: null, status: 'waiting_for_runtime', started_at: null, updated_at: iso(now), result: null,
     stop_reason: { code, message, details } };
   return { state: { ...upsertDispatch(state, record), status: 'waiting_for_runtime', stop_reason: record.stop_reason }, dispatch: record, reused: false };
+}
+
+function runtimeRecoveryDetails(runState, request, missingCapabilities = request.requirements.capabilities) {
+  return {
+    provider: request.adapter_id,
+    missing_capabilities: [...missingCapabilities],
+    recovery: {
+      action: 'resume_run',
+      story_id: runState.story_id,
+      run_id: runState.run_id,
+      required_capabilities: [...request.requirements.capabilities]
+    }
+  };
 }
 
 function waitingExisting(state, current, code, message, now, details = {}) {
