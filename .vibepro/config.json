@@ -291,9 +291,9 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-codex-detached-completion-inbox": {
-        "max_subagent_count": 28,
-        "max_agent_consumption_ms": 22540404,
-        "amendment_reason": "Twenty-six historical review lifecycles and 21340404 ms of agent consumption predate final current-HEAD closure. User explicitly authorized merge completion on 2026-07-22. Reuse only the three existing Codex agents: two current-HEAD gate roles with at most one bounded 600000 ms lifecycle each, plus fresh-context evidence and judgment adjudication; no replacement spawn or further budget amendment is permitted."
+        "max_subagent_count": 31,
+        "max_agent_consumption_ms": 36996879,
+        "amendment_reason": "Twenty-eight historical review lifecycles and 35196879 ms of agent consumption predate final current-HEAD closure. The user explicitly authorized one bounded recovery on 2026-07-23: at most three new lightweight Codex agents, each with at most one 600000 ms lifecycle, for the two current-HEAD gate roles and fresh-context evidence plus judgment adjudication. No replacement spawn, repeated wait, or further budget amendment is permitted."
       },
       "story-vibepro-merge-waiver-propagation": {
         "max_subagent_count": 9,
