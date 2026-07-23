@@ -1,0 +1,188 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "updated_at": "2026-07-23T11:04:14.835Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-15",
+      "verdict": "demonstrated",
+      "reason": "2親merge、canonical refs、tracking SHAとfull lineageをartifactへ伝播する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:14.834Z"
+    },
+    {
+      "clause_id": "AC-14",
+      "verdict": "demonstrated",
+      "reason": "canonical Story登録混在は許容し独立repo-control変更はunsafeとする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:14.595Z"
+    },
+    {
+      "clause_id": "AC-13",
+      "verdict": "demonstrated",
+      "reason": "malformed JSONとinvalid/partial payloadの具体的reject/error/fail経路をcurrent-head E2Eとunitで実証した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:14.328Z"
+    },
+    {
+      "clause_id": "AC-12",
+      "verdict": "demonstrated",
+      "reason": "workflow_heavyをgate orchestrationとreview lifecycleの両surfaceへ適用する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:14.117Z"
+    },
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "typed declarationのschema failureをfail-closedにしauth_deniedへ誤分類しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:13.807Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "separate session、identity、timeout拒否、replacement recoveryを実証した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:13.579Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "複数commitはsignalに留めforeign typed lineageのみunsafeとして拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:13.366Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "contract ID束縛commandを未修飾commandより優先解決する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:13.086Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "accepted atomic scopeでGate DAGとsplit resolutionを再計算する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:12.804Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "metadata-free Storyとsmall PRはlegacy判定を維持する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:12.557Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "changed paths全件をstructured verification surfaceへ束縛する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:12.308Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "unit、CI integration、build、typecheck、required E2Eがcurrent HEADでpassした。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:12.106Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "全laneをcumulative_atomic_headとして同一HEADで検証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:11.918Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "current HEAD changed pathsとrequired reviewer owner mapを結合しowner不足を拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:11.708Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "型付き境界とunsafe signalが未完了・散文のみ・malformed・非連結入力をfail-closedで拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-ad40-7000-a616-b2c794efc259",
+        "session_ref": "019f8e9e-ad40-7000-a616-b2c794efc259"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:11.539Z"
+    }
+  ]
+}

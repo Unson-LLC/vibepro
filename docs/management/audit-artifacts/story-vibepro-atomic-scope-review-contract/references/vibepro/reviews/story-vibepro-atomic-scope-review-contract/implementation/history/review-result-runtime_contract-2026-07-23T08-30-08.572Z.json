@@ -1,0 +1,184 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Frozen current-head runtime contract review passed after post-freeze E2E.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed final frozen-HEAD runtime contracts, strict-head 39-path evidence, path-surface and failure-mode gates, sequence binding, and post-freeze verification.",
+    "evidence": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-8724ae54.tap",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+      "docs/architecture/vibepro-atomic-scope-review-contract.md",
+      "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+      "src/pr-manager.js",
+      "src/validation-sequencing.js",
+      "src/verification-evidence.js",
+      "src/content-binding.js",
+      "src/agent-review.js",
+      "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+      "test/validation-sequencing.test.js",
+      "test/risk-adaptive-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "runtime path-surface and failure-mode findings: needs_changes -> pass because frozen strict-head and post-freeze executable evidence are complete"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "expected_root": null,
+    "expected_head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+    "current_head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "expected_root": null,
+      "expected_head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "current_head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T08:30:08.572Z",
+  "git_context": {
+    "head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+    "current_branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T08:30:08.352Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind final review to the frozen release candidate"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-atomic-scope-review-contract.md",
+        "sha256": "bd8ab55a93bddc236303c6d081ed4eee4beb31080787c9c5220180ab347f0617",
+        "size": 10722
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+        "sha256": "dc2d3ede5d7f022322e2bad51e32bce6d3580a3c461a98aa9a4cd9af5a4df045",
+        "size": 7890
+      },
+      {
+        "path": "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+        "sha256": "37031d73938aa20dadfab23d871a30e7e1cf2642c276449537c1b1bf9d927346",
+        "size": 17642
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "62c7c226ab6cd69eae369ab2355dc44458c4902e2c95e0fc34ff3e025f00eb33",
+        "size": 181656
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "795232311861842f9663b4b4d902d30edeab4ac7ff05759b9dfff626736b5d10",
+        "size": 8208
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "d731114cf447a3851dce980a92b898396a42d6dfcb35fd9d7ee7c749e1ead0aa",
+        "size": 697942
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "0d05983a35b3cfad91924798ee641f44a6ca83b96ed5021c3af9b06b622cbdd9",
+        "size": 32630
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "79eeecc69f2f2752df71ac659af99a40f4d3c0f7aec5377893e7901075016cad",
+        "size": 26428
+      },
+      {
+        "path": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "sha256": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "size": 27111
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "ad36c6f86f4955aea5a20f2f3521b378e53a6d120e8112119410e264321cf3d5",
+        "size": 94084
+      },
+      {
+        "path": "test/validation-sequencing.test.js",
+        "sha256": "9c657989974082fafc05206bb7836792d80425378b79df0ef1a76e4371aac027",
+        "size": 33589
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "12b09fef4aeb8efcfc8921dc59074d9f4e259ee06261d75f0400c5cbce8efb21"
+  },
+  "source_fingerprint": "01f7b230b78327274cbd4fcf56e73b52c5198cd86625a4718c6795ec24f6f72e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f8e13-d3cf-72f2-8e42-9bf95dea7128",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "019f8e13-d3cf-72f2-8e42-9bf95dea7128",
+    "session_id": "019f8e13-d3cf-72f2-8e42-9bf95dea7128",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-8724ae54-final.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f8e13-d3cf-72f2-8e42-9bf95dea7128",
+      "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

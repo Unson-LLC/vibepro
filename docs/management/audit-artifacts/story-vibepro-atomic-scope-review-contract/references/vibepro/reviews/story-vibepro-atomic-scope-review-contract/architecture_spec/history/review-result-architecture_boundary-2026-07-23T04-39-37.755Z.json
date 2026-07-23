@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "block",
+  "summary": "AC-9 fixed; reviewer blocked on dirty selector and pre-refresh path-surface snapshot",
+  "findings": [
+    {
+      "severity": "P1",
+      "id": "working_tree_scope",
+      "detail": "current_story selector was dirty during review"
+    },
+    {
+      "severity": "P1",
+      "id": "path_surface_snapshot",
+      "detail": "review consumed pr-prepare before current evidence refresh"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "all 39 paths inspected; AC-9 and aggregate contract tests pass",
+    "evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+    "inputs": [
+      "docs/architecture/vibepro-atomic-scope-review-contract.md",
+      "src/validation-sequencing.js",
+      "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "AC-9 red -> fixed, but review snapshot blocked by dirty selector and stale prepare"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "expected_root": null,
+    "expected_head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+    "current_head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "expected_root": null,
+      "expected_head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+      "current_head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T04:39:37.755Z",
+  "git_context": {
+    "head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+    "current_branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "14dc54160e33dadfa17c0776fb2ec13f971186d4714387fcec8da8cd735d4213",
+    "user_status_fingerprint_hash": "14dc54160e33dadfa17c0776fb2ec13f971186d4714387fcec8da8cd735d4213",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T04:39:37.725Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-head preflight review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "c58152d52f09a461457bde762abce947b82595a6",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-atomic-scope-review-contract.md",
+        "sha256": "f64d2300a810f006188d988293921ebb2129989c739c79e9047961b579ed7bb0",
+        "size": 7847
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "0d05983a35b3cfad91924798ee641f44a6ca83b96ed5021c3af9b06b622cbdd9",
+        "size": 32630
+      },
+      {
+        "path": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "sha256": "96d89636a2a89adfb689976a215bec9ee399c396064d04a9b133450329188cee",
+        "size": 15052
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0e26a400f7d9cf400b04e28e76d9acf7b53275d5be21ef37edc8982f89c0b069"
+  },
+  "source_fingerprint": "c52da57b2c0555552e6e061ee5722a931d1093c069fc576ddc479aa7a2e0fc3c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f8d3e-4514-74a1-8cbe-f4f3b27baa39",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f8d3e-4514-74a1-8cbe-f4f3b27baa39",
+    "session_id": "019f8d3e-4514-74a1-8cbe-f4f3b27baa39",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f8d3e-4514-74a1-8cbe-f4f3b27baa39",
+      "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

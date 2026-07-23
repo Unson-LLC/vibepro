@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "block",
+  "summary": "Release contract docs are present, but rollback/canary compatibility execution and pre-PR readiness remain unclosed.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "rollback-rehearsal-not-demonstrated",
+      "detail": "Actual rollback or focused canary compatibility execution is not separately evidenced."
+    },
+    {
+      "severity": "high",
+      "id": "release-readiness-not-joined",
+      "detail": "Current review join, atomic owner map, and pre-PR source/CI evidence remain incomplete."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "observability-contract-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "rollback-instruction-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        "docs/management/architecture/architecture-vibepro-atomic-scope-review-contract.md"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "rollout-release-note-missing",
+      "disposition": "accepted",
+      "resolved_by": [
+        "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md"
+  ],
+  "inspection": {
+    "summary": "Inspected current-head release docs, verification evidence, and readiness state.",
+    "evidence": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-prepare.json",
+    "inputs": [
+      "docs/management/architecture/architecture-vibepro-atomic-scope-review-contract.md",
+      "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "Documentation risks are closed; focused rollback/canary execution remains necessary."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "expected_root": null,
+    "expected_head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+    "current_head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "expected_root": null,
+      "expected_head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "current_head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T06:51:59.248Z",
+  "git_context": {
+    "head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+    "current_branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T06:51:59.236Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Release-risk result is bound to current release contract and evidence surface."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "eea4888842e4325cb852a3064591aac5cdd452ff",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+        "sha256": "283d7be92683607bad29964e2d527334705f9eb8d6498c87ebbd06b7bfcc92c4",
+        "size": 19614
+      }
+    ],
+    "missing_files": [
+      "docs/management/architecture/architecture-vibepro-atomic-scope-review-contract.md"
+    ],
+    "surface_hash": "15517b7b8da1fe1516c7ab471c3c24aa1c396a3a202b8fded03ced28d06588cb"
+  },
+  "source_fingerprint": "7761b256190f4a729c50a22594c2f794df60bfc5c81cd4c3b3830f25d060006c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f8db7-8c9d-7512-a1b9-01a7b8355076",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

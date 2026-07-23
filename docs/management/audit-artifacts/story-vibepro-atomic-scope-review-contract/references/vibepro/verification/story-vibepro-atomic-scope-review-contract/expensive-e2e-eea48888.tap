@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: ASR-E2E-001 replays the complete atomic review workflow contract
+ok 1 - ASR-E2E-001 replays the complete atomic review workflow contract
+  ---
+  duration_ms: 197289.821584
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 197398.311834

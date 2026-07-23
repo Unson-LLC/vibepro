@@ -1,0 +1,1233 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "atomic_scope": {
+    "status": "rejected",
+    "strategy": "atomic_single_pr",
+    "reason": "The requirements SSOT, runtime implementation, executable E2E gate, and design lineage are one fail-closed contract: separating them would make the policy unverifiable against the exact code and review surface it governs, so all generated lanes must be reviewed and validated on one cumulative current HEAD.",
+    "review_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "dependency_boundaries": [
+      {
+        "from": "repo-control",
+        "to": "requirements-ssot"
+      },
+      {
+        "from": "requirements-ssot",
+        "to": "runtime-behavior"
+      },
+      {
+        "from": "runtime-behavior",
+        "to": "e2e-gate"
+      },
+      {
+        "from": "e2e-gate",
+        "to": "misc-follow-up"
+      }
+    ],
+    "generated_lane_ids": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "missing_review_facets": [],
+    "missing_reason_facets": [],
+    "missing_dependency_facets": [],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [],
+    "unsafe_scope_reasons": [],
+    "review_owner_map_verified": false,
+    "next_actions": [
+      {
+        "type": "record_current_head_review_owners",
+        "missing_required_roles": [],
+        "roles_requiring_surface_coverage": [
+          "gate:gate_evidence",
+          "gate:release_risk"
+        ],
+        "unowned_review_facets": [
+          "repo-control",
+          "requirements-ssot",
+          "runtime-behavior",
+          "e2e-gate",
+          "misc-follow-up"
+        ],
+        "uncovered_paths": [
+          ".vibepro/config.json",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+          "src/agent-review.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/cli.js",
+          "src/git-fingerprint.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/review-repair.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "test/agent-review-independence.test.js",
+          "test/ci-evidence-import.test.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/decision-records.test.js",
+          "test/review-inspection-first.test.js",
+          "test/review-repair.test.js",
+          "test/risk-adaptive-gate.test.js",
+          "test/validation-sequencing.test.js",
+          "test/verification-evidence-artifact-check.test.js",
+          "test/verification-observation.test.js",
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+          "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+          "design-ssot.json",
+          "docs/ja/reference/cli.md",
+          "docs/reference/cli.md"
+        ],
+        "prepare_commands": [
+          "vibepro review prepare . --id story-vibepro-atomic-scope-review-contract --stage gate --role gate_evidence",
+          "vibepro review prepare . --id story-vibepro-atomic-scope-review-contract --stage gate --role release_risk"
+        ],
+        "follow_up_command": "vibepro review status . --id story-vibepro-atomic-scope-review-contract",
+        "command": "vibepro review prepare . --id story-vibepro-atomic-scope-review-contract --stage gate --role gate_evidence",
+        "follow_up": "vibepro review status . --id story-vibepro-atomic-scope-review-contract"
+      },
+      {
+        "type": "rerun_atomic_scope_decision",
+        "command": "vibepro pr prepare . --story-id story-vibepro-atomic-scope-review-contract"
+      }
+    ],
+    "review_owner_map": [
+      {
+        "facet": "repo-control",
+        "changed_paths": [
+          ".vibepro/config.json"
+        ],
+        "owners": [],
+        "uncovered_paths": [
+          ".vibepro/config.json"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "requirements-ssot",
+        "changed_paths": [
+          "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+          "docs/architecture/vibepro-atomic-scope-review-contract.md"
+        ],
+        "owners": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8ea9-54b0-7b40-9c3f-dee8c3d19608",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+              "docs/specs/story-vibepro-atomic-scope-review-contract.md"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8eb3-9986-7772-80f7-91fcfe5a78f2",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "docs/architecture/vibepro-atomic-scope-review-contract.md"
+            ]
+          }
+        ],
+        "uncovered_paths": [
+          "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "runtime-behavior",
+        "changed_paths": [
+          "src/agent-review.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/git-fingerprint.js",
+          "src/html-report.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/responsibility-authority.js",
+          "src/review-inspection-inputs.js",
+          "src/review-repair.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "test/agent-review-independence.test.js",
+          "test/ci-evidence-import.test.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/decision-records.test.js",
+          "test/responsibility-authority.test.js",
+          "test/review-inspection-first.test.js",
+          "test/review-repair.test.js",
+          "test/risk-adaptive-gate.test.js",
+          "test/validation-sequencing.test.js",
+          "test/verification-evidence-artifact-check.test.js",
+          "test/verification-observation.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "owners": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8ea9-54b0-7b40-9c3f-dee8c3d19608",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "src/responsibility-authority.js",
+              "test/responsibility-authority.test.js"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8eb3-9986-7772-80f7-91fcfe5a78f2",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "src/content-binding.js",
+              "src/html-report.js",
+              "src/responsibility-authority.js",
+              "src/review-inspection-inputs.js",
+              "test/responsibility-authority.test.js"
+            ]
+          }
+        ],
+        "uncovered_paths": [
+          "src/agent-review.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/cli.js",
+          "src/git-fingerprint.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/review-repair.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "test/agent-review-independence.test.js",
+          "test/ci-evidence-import.test.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/decision-records.test.js",
+          "test/review-inspection-first.test.js",
+          "test/review-repair.test.js",
+          "test/risk-adaptive-gate.test.js",
+          "test/validation-sequencing.test.js",
+          "test/verification-evidence-artifact-check.test.js",
+          "test/verification-observation.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "e2e-gate",
+        "changed_paths": [
+          "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+          "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+          "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+        ],
+        "owners": [
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8eb3-9986-7772-80f7-91fcfe5a78f2",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+            ]
+          }
+        ],
+        "uncovered_paths": [
+          "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+          "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+        ],
+        "owned": false
+      },
+      {
+        "facet": "misc-follow-up",
+        "changed_paths": [
+          "design-ssot.json",
+          "docs/ja/reference/cli.md",
+          "docs/reference/cli.md",
+          "responsibility-authority.json"
+        ],
+        "owners": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8ea9-54b0-7b40-9c3f-dee8c3d19608",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "responsibility-authority.json"
+            ]
+          },
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "effective_status": "pass",
+            "binding_mode": "strict_head",
+            "reviewer_identity": "separate_session",
+            "reviewer_identity_source": "lifecycle_agent_binding",
+            "reviewer_session_id": "019f8eb3-9986-7772-80f7-91fcfe5a78f2",
+            "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+            "covered_paths": [
+              "responsibility-authority.json"
+            ]
+          }
+        ],
+        "uncovered_paths": [
+          "design-ssot.json",
+          "docs/ja/reference/cli.md",
+          "docs/reference/cli.md"
+        ],
+        "owned": false
+      }
+    ],
+    "unowned_review_facets": [
+      "repo-control",
+      "requirements-ssot",
+      "runtime-behavior",
+      "e2e-gate",
+      "misc-follow-up"
+    ],
+    "automatic_split_required": true,
+    "rejection_reasons": [
+      "atomic scope requires a current-head reviewer owner map with every configured role passing"
+    ],
+    "source_ref": "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md"
+  },
+  "rationale": [
+    "差分が 42 files あり、レビュー可能な目安 30 files を超えている",
+    "repo制御ファイルやagent設定が差分に含まれている",
+    "baseからのcommitが 60 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+    "5 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 33 changed files が一致し、144 related files を影響調査候補にした",
+    "型付きatomic scopeを不採用: atomic scope requires a current-head reviewer owner map with every configured role passing"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5077,
+    "edge_count": 11416,
+    "matched_file_count": 33,
+    "related_file_count": 144,
+    "investigation_files": [
+      "bin/vibepro.js",
+      "scripts/check-public-manual-build.mjs",
+      "scripts/generate-cli-reference.mjs",
+      "scripts/npm-release-lock.mjs",
+      "scripts/post-merge-release.mjs",
+      "src/adjudication.js",
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/architecture-conformance.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/artifact-routing.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/codex-manager.js",
+      "src/content-binding.js",
+      "src/decision-records.js",
+      "src/delivery-efficiency-guardrail.js",
+      "src/design-modernize.js",
+      "src/design-ssot.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/agent-review.js",
+        "matched_nodes": [
+          "src_agent_review_js",
+          "src_agent_review_localizedevidencehandlingblock",
+          "src_agent_review_localizedinvestigationguidelinesblock",
+          "src_agent_review_localizedagentskilldisciplineblock",
+          "src_agent_review_buildcoordinatorinstructions",
+          "src_agent_review_prepareagentreview",
+          "src_agent_review_recordagentreview",
+          "src_agent_review_resolverecorderlineage"
+        ],
+        "related_files": [
+          "scripts/npm-release-lock.mjs",
+          "src/artifact-routing.js",
+          "src/checkpoint-manager.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/delivery-efficiency-guardrail.js",
+          "src/evidence-reuse.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/language.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "src/canonical-audit.js",
+        "matched_nodes": [
+          "src_canonical_audit_js",
+          "src_canonical_audit_getcanonicalauditdir",
+          "src_canonical_audit_projectprprepareforllm",
+          "src_canonical_audit_bindstoryplaceholders",
+          "src_canonical_audit_summarizeprprepareforllm",
+          "src_canonical_audit_summarizegatestatusforllm",
+          "src_canonical_audit_summarizegatedagforllm",
+          "src_canonical_audit_summarizegatelistforllm"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/evidence-cost-budget.js",
+          "src/guarded-run-session.js",
+          "src/human-decision-checkpoint.js",
+          "src/merge-manager.js",
+          "src/next-best-action-controller.js",
+          "src/pr-artifact-budget.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/usage-report.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/change-risk-classifier.js",
+        "matched_nodes": [
+          "src_change_risk_classifier_js",
+          "src_change_risk_classifier_classifychangerisk",
+          "src_change_risk_classifier_buildchangedsurfacefiles",
+          "src_change_risk_classifier_islowriskevidencechange",
+          "src_change_risk_classifier_islowriskevidencepath",
+          "src_change_risk_classifier_issmallsourcelowriskchange",
+          "src_change_risk_classifier_buildevidencereusepolicy",
+          "src_change_risk_classifier_resolveregressionhits"
+        ],
+        "related_files": [
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js"
+        ]
+      },
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_parsevalidationdisposition",
+          "src_cli_renderartifactroutes",
+          "src_cli_renderartifactmigrationplan",
+          "src_cli_resolvediagnosisphaseoption",
+          "src_cli_getoption",
+          "src_cli_defaultsessionid"
+        ],
+        "related_files": [
+          "bin/vibepro.js",
+          "scripts/generate-cli-reference.mjs",
+          "scripts/npm-release-lock.mjs",
+          "scripts/post-merge-release.mjs",
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
+          "src/architecture-conformance.js",
+          "src/architecture-readiness.js"
+        ]
+      },
+      {
+        "file": "src/content-binding.js",
+        "matched_nodes": [
+          "src_content_binding_js",
+          "src_content_binding_buildcontentbinding",
+          "src_content_binding_evaluatecontentbinding",
+          "src_content_binding_normalizesurfacepath",
+          "src_content_binding_collectsurfacerefs",
+          "src_content_binding_arrayof",
+          "src_content_binding_snapshotfile",
+          "src_content_binding_dedupesurfacefiles"
+        ],
+        "related_files": [
+          "scripts/check-public-manual-build.mjs",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/verification-evidence.js"
+        ]
+      },
+      {
+        "file": "src/git-fingerprint.js",
+        "matched_nodes": [
+          "src_git_fingerprint_js",
+          "src_git_fingerprint_collectgitcontext",
+          "src_git_fingerprint_collectgitstatusfingerprints",
+          "src_git_fingerprint_normalizeuserexcludepaths",
+          "src_git_fingerprint_fingerprinthashforcontext",
+          "src_git_fingerprint_comparefingerprintcontexts",
+          "src_git_fingerprint_fullfingerprinthashforcontext",
+          "src_git_fingerprint_hashfingerprint"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/managed-worktree.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "src/html-report.js",
+        "matched_nodes": [
+          "src_html_report_js",
+          "src_html_report_renderprpreparehtml",
+          "src_html_report_rendergatedaghtml",
+          "src_html_report_rendersplitplanhtml",
+          "src_html_report_renderlineageevidence",
+          "src_html_report_renderprcreatehtml",
+          "src_html_report_renderprmergehtml",
+          "src_html_report_renderprlifecycleartifactspanel"
+        ],
+        "related_files": [
+          "src/language.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js",
+          "src/scan-status.js",
+          "src/story-html.js"
+        ]
+      },
+      {
+        "file": "src/independent-review-orchestrator.js",
+        "matched_nodes": [
+          "src_independent_review_orchestrator_js",
+          "src_independent_review_orchestrator_createdefaultagentreviewops",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror_constructor",
+          "src_independent_review_orchestrator_orchestrateindependentreview",
+          "src_independent_review_orchestrator_createindependentreviewactionrunner",
+          "src_independent_review_orchestrator_createguardedindependentreviewrunner",
+          "src_independent_review_orchestrator_recordguardedruntimereview"
+        ],
+        "related_files": [
+          "src/guarded-run-session.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_evaluategatereadiness",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/artifact-routing.js",
+          "src/authorization-scoring.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js"
+        ]
+      },
+      {
+        "file": "src/responsibility-authority.js",
+        "matched_nodes": [
+          "src_responsibility_authority_js",
+          "src_responsibility_authority_resolveresponsibilityauthority",
+          "src_responsibility_authority_buildresponsibilityauthoritygate",
+          "src_responsibility_authority_renderresponsibilityauthorityprsection",
+          "src_responsibility_authority_readresponsibilityregistryfiles",
+          "src_responsibility_authority_readdomaincontractfiles",
+          "src_responsibility_authority_readjsonfile",
+          "src_responsibility_authority_listjsonfiles"
+        ],
+        "related_files": [
+          "src/pr-manager.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "src/review-inspection-inputs.js",
+        "matched_nodes": [
+          "src_review_inspection_inputs_js",
+          "src_review_inspection_inputs_reviewinspectioninputplaceholders"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/review-repair.js"
+        ]
+      },
+      {
+        "file": "src/review-repair.js",
+        "matched_nodes": [
+          "src_review_repair_js",
+          "src_review_repair_buildreviewrepairplan",
+          "src_review_repair_renderreviewrepair",
+          "src_review_repair_evaluaterolerepair",
+          "src_review_repair_buildrepaircommands",
+          "src_review_repair_hastimedoutlifecycle",
+          "src_review_repair_hasopenagentlifecycle",
+          "src_review_repair_getrolename"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/review-inspection-inputs.js",
+          "src/usage-report.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/validation-sequencing.js",
+        "matched_nodes": [
+          "src_validation_sequencing_js",
+          "src_validation_sequencing_buildvalidationsequenceplan",
+          "src_validation_sequencing_createvalidationsequencestate",
+          "src_validation_sequencing_reconcilevalidationsequencestate",
+          "src_validation_sequencing_recordvalidationphase",
+          "src_validation_sequencing_readfinalreviewprovenance",
+          "src_validation_sequencing_validatevalidationphaseevidence",
+          "src_validation_sequencing_validatepreflightreviewevidence"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/workspace.js",
+          "test/ci-evidence-import.test.js",
+          "test/validation-sequencing.test.js"
+        ]
+      },
+      {
+        "file": "src/verification-evidence.js",
+        "matched_nodes": [
+          "src_verification_evidence_js",
+          "src_verification_evidence_recordverificationevidence",
+          "src_verification_evidence_resolverecorderlineage",
+          "src_verification_evidence_assertcommandmatchesverificationkind",
+          "src_verification_evidence_renderverificationevidencesummary",
+          "src_verification_evidence_formatmanagedworktreecontextsummary",
+          "src_verification_evidence_readevidence",
+          "src_verification_evidence_normalizewarning"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/artifact-routing.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/uiux-prepare.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "test/agent-review-independence.test.js",
+        "matched_nodes": [
+          "test_agent_review_independence_test_js",
+          "test_agent_review_independence_test_git",
+          "test_agent_review_independence_test_readjson",
+          "test_agent_review_independence_test_setuprepo",
+          "test_agent_review_independence_test_recordgateevidencereview"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/ci-evidence-import.test.js",
+        "matched_nodes": [
+          "test_ci_evidence_import_test_js",
+          "test_ci_evidence_import_test_git",
+          "test_ci_evidence_import_test_readjson",
+          "test_ci_evidence_import_test_makefakeghchecks",
+          "test_ci_evidence_import_test_setuprepo",
+          "test_ci_evidence_import_test_rollup",
+          "test_ci_evidence_import_test_evidencepath",
+          "test_ci_evidence_import_test_writephaseevidence"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/validation-sequencing.js",
+          "test/validation-sequencing.test.js"
+        ]
+      },
+      {
+        "file": "test/content-scoped-evidence-freshness.test.js",
+        "matched_nodes": [
+          "test_content_scoped_evidence_freshness_test_js",
+          "test_content_scoped_evidence_freshness_test_git",
+          "test_content_scoped_evidence_freshness_test_captureruncli",
+          "test_content_scoped_evidence_freshness_test_makegitrepowithstory",
+          "test_content_scoped_evidence_freshness_test_findgate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/decision-records.test.js",
+        "matched_nodes": [
+          "test_decision_records_test_js",
+          "test_decision_records_test_makeworkspacerepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_atomic_scope_review_contract_main_spec_ts",
+          "e2e_story_vibepro_atomic_scope_review_contract_main_spec_runpubliccli",
+          "e2e_story_vibepro_atomic_scope_review_contract_main_spec_assertpublicclirejected"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_fake_value_hardening_main_spec_js",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_git",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_readjson",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_writejson",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_pathexists",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_runcliwithoutput",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_makestoryrepo",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_nodebyid"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_independent_review_orchestration_acceptance_spec_ts",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_git",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_fixture",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_reviewoptions",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_lifecycle",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_dispatchruntime",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_pollruntime"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_ts",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_git",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_readjson",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_makestoryrepo",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_prepareprartifacts",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_recordgateevidence",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_nodebyid",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_preflightfor"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_review_status_required_only_main_test_js",
+          "e2e_story_vibepro_review_status_required_only_main_test_git",
+          "e2e_story_vibepro_review_status_required_only_main_test_readjson",
+          "e2e_story_vibepro_review_status_required_only_main_test_writejson",
+          "e2e_story_vibepro_review_status_required_only_main_test_makereviewstatusrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_risk_adaptive_validation_sequencing_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_js",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_git",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_readjson",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_makeworkflowrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/responsibility-authority.test.js",
+        "matched_nodes": [
+          "test_responsibility_authority_test_js",
+          "test_responsibility_authority_test_writereviewedworkspacestatus",
+          "test_responsibility_authority_test_responsibilityentry",
+          "test_responsibility_authority_test_makefixturerepo",
+          "test_responsibility_authority_test_writestorydocs",
+          "test_responsibility_authority_test_writeresponsibilityfixture",
+          "test_responsibility_authority_test_writereadonlyreportingresponsibilityfixture",
+          "test_responsibility_authority_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/review-inspection-first.test.js",
+        "matched_nodes": [
+          "test_review_inspection_first_test_js",
+          "test_review_inspection_first_test_git",
+          "test_review_inspection_first_test_setuprepo",
+          "test_review_inspection_first_test_startcloseable"
+        ],
+        "related_files": [
+          "src/agent-review.js"
+        ]
+      },
+      {
+        "file": "test/review-repair.test.js",
+        "matched_nodes": [
+          "test_review_repair_test_js",
+          "test_review_repair_test_git",
+          "test_review_repair_test_fileexists",
+          "test_review_repair_test_role",
+          "test_review_repair_test_healthyrole",
+          "test_review_repair_test_writereviewsummary",
+          "test_review_repair_test_setuprepairrepo",
+          "test_review_repair_test_findcandidate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/risk-adaptive-gate.test.js",
+        "matched_nodes": [
+          "test_risk_adaptive_gate_test_js",
+          "test_risk_adaptive_gate_test_git",
+          "test_risk_adaptive_gate_test_readjson",
+          "test_risk_adaptive_gate_test_hashfingerprint",
+          "test_risk_adaptive_gate_test_cleangitfingerprinthash",
+          "test_risk_adaptive_gate_test_gitfingerprinthash",
+          "test_risk_adaptive_gate_test_collectuntrackedfingerprint",
+          "test_risk_adaptive_gate_test_makegitrepo"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/validation-sequencing.test.js",
+        "matched_nodes": [
+          "test_validation_sequencing_test_js",
+          "test_validation_sequencing_test_stateforhighrisk",
+          "test_validation_sequencing_test_nativecommand"
+        ],
+        "related_files": [
+          "src/validation-sequencing.js",
+          "test/ci-evidence-import.test.js"
+        ]
+      },
+      {
+        "file": "test/verification-evidence-artifact-check.test.js",
+        "matched_nodes": [
+          "test_verification_evidence_artifact_check_test_js",
+          "test_verification_evidence_artifact_check_test_makeworkspacerepo",
+          "test_verification_evidence_artifact_check_test_evidencefileexists",
+          "test_verification_evidence_artifact_check_test_latestcommand"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/verification-observation.test.js",
+        "matched_nodes": [
+          "test_verification_observation_test_js",
+          "test_verification_observation_test_git",
+          "test_verification_observation_test_readjson",
+          "test_verification_observation_test_setuprepo",
+          "test_verification_observation_test_evidencepath",
+          "test_verification_observation_test_writestory",
+          "test_verification_observation_test_writeevidence"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_runcli",
+          "test_vibepro_cli_test_ispassingreviewrecord",
+          "test_vibepro_cli_test_firstexistingreviewfixture",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng"
+        ],
+        "related_files": [
+          "src/run-context-capsule.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "repo-control",
+      "order": 5,
+      "title": "Repository control and agent policy",
+      "category": "repo_control",
+      "recommendation": "separate_pr",
+      "files": [
+        ".vibepro/config.json"
+      ],
+      "required_gates": [
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "アプリ挙動変更とrepo制御変更が混ざっていないか",
+        "無関係なagent設定やignore規則を巻き込んでいないか"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-atomic-scope-review-contract-repo-control"
+    },
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+        "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+        "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+        "docs/architecture/vibepro-atomic-scope-review-contract.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-atomic-scope-review-contract-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/agent-review.js",
+        "src/canonical-audit.js",
+        "src/change-risk-classifier.js",
+        "src/cli.js",
+        "src/content-binding.js",
+        "src/git-fingerprint.js",
+        "src/html-report.js",
+        "src/independent-review-orchestrator.js",
+        "src/pr-manager.js",
+        "src/responsibility-authority.js",
+        "src/review-inspection-inputs.js",
+        "src/review-repair.js",
+        "src/validation-sequencing.js",
+        "src/verification-evidence.js",
+        "test/agent-review-independence.test.js",
+        "test/ci-evidence-import.test.js",
+        "test/content-scoped-evidence-freshness.test.js",
+        "test/decision-records.test.js",
+        "test/responsibility-authority.test.js",
+        "test/review-inspection-first.test.js",
+        "test/review-repair.test.js",
+        "test/risk-adaptive-gate.test.js",
+        "test/validation-sequencing.test.js",
+        "test/verification-evidence-artifact-check.test.js",
+        "test/verification-observation.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate",
+        "E2E Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 26,
+      "graph_investigation_files": [
+        "bin/vibepro.js",
+        "scripts/check-public-manual-build.mjs",
+        "scripts/generate-cli-reference.mjs",
+        "scripts/npm-release-lock.mjs",
+        "scripts/post-merge-release.mjs",
+        "src/adjudication.js",
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/architecture-conformance.js",
+        "src/architecture-readiness.js"
+      ],
+      "suggested_branch": "feat/vibepro-atomic-scope-review-contract-runtime-behavior"
+    },
+    {
+      "id": "e2e-gate",
+      "order": 30,
+      "title": "E2E and verification harness",
+      "category": "verification",
+      "recommendation": "separate_pr",
+      "files": [
+        "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+        "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+        "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+        "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+      ],
+      "required_gates": [
+        "E2E Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "E2E harnessが失敗exit codeを握りつぶしていないか",
+        "PR Gateが変更対象のE2Eに正しくスコープされているか"
+      ],
+      "file_count": 7,
+      "graph_investigation_files": [
+        "src/agent-review.js",
+        "src/cli.js",
+        "src/run-context-capsule.js"
+      ],
+      "suggested_branch": "feat/vibepro-atomic-scope-review-contract-e2e-gate"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "docs/ja/reference/cli.md",
+        "docs/reference/cli.md",
+        "responsibility-authority.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-atomic-scope-review-contract-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "repo-control",
+    "requirements-ssot",
+    "runtime-behavior",
+    "e2e-gate",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 5,
+      "cumulative_gate_count": 1,
+      "requires_cumulative_e2e": true,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "repo-control",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "git diff --check",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29998560865/job/89177996950"
+        ],
+        "cumulative_checks": [],
+        "review_note": "repo-control は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-reporter=tap test/responsibility-authority.test.js test/agent-review-independence.test.js test/design-input-judgment.test.js test/independent-review-orchestrator.test.js test/risk-adaptive-gate.test.js test/validation-sequencing.test.js test/verification-observation.test.js test/content-scoped-evidence-freshness.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29998560865/job/89177996950"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
+      },
+      {
+        "lane_id": "e2e-gate",
+        "gate_mode": "cumulative_after_dependencies",
+        "depends_on": [
+          "repo-control",
+          "requirements-ssot",
+          "runtime-behavior"
+        ],
+        "isolated_checks": [
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29998560865/job/89177996950",
+          "Playwright harness smoke if runtime dependencies are already merged"
+        ],
+        "cumulative_checks": [
+          "node --test --test-reporter=tap test/responsibility-authority.test.js test/agent-review-independence.test.js test/design-input-judgment.test.js test/independent-review-orchestrator.test.js test/risk-adaptive-gate.test.js test/validation-sequencing.test.js test/verification-observation.test.js test/content-scoped-evidence-freshness.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29998560865/job/89177996950",
+          "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+        ],
+        "review_note": "e2e-gate は単体PRだけで完了判定せず、repo-control -> requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": true,
+      "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
+      "commands": [
+        "node --test --test-reporter=tap test/responsibility-authority.test.js test/agent-review-independence.test.js test/design-input-judgment.test.js test/independent-review-orchestrator.test.js test/risk-adaptive-gate.test.js test/validation-sequencing.test.js test/verification-observation.test.js test/content-scoped-evidence-freshness.test.js",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/29998560865/job/89177996950",
+        "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "repo-control",
+      "action": "Create feat/vibepro-atomic-scope-review-contract-repo-control with 1 files",
+      "command": "git switch -c feat/vibepro-atomic-scope-review-contract-repo-control \"<base>\" && git add .vibepro/config.json"
+    },
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-atomic-scope-review-contract-requirements-ssot with 4 files",
+      "command": "git switch -c feat/vibepro-atomic-scope-review-contract-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md docs/specs/story-vibepro-atomic-scope-review-contract.md docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json docs/architecture/vibepro-atomic-scope-review-contract.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-atomic-scope-review-contract-runtime-behavior with 26 files",
+      "command": "git switch -c feat/vibepro-atomic-scope-review-contract-runtime-behavior \"<base>\" && git add src/agent-review.js src/canonical-audit.js src/change-risk-classifier.js src/cli.js src/content-binding.js src/git-fingerprint.js src/html-report.js src/independent-review-orchestrator.js src/pr-manager.js src/responsibility-authority.js src/review-inspection-inputs.js src/review-repair.js src/validation-sequencing.js src/verification-evidence.js test/agent-review-independence.test.js test/ci-evidence-import.test.js test/content-scoped-evidence-freshness.test.js test/decision-records.test.js test/responsibility-authority.test.js test/review-inspection-first.test.js test/review-repair.test.js test/risk-adaptive-gate.test.js test/validation-sequencing.test.js test/verification-evidence-artifact-check.test.js test/verification-observation.test.js test/vibepro-cli.test.js"
+    },
+    {
+      "lane_id": "e2e-gate",
+      "action": "Create feat/vibepro-atomic-scope-review-contract-e2e-gate with 7 files",
+      "command": "git switch -c feat/vibepro-atomic-scope-review-contract-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts test/e2e/story-vibepro-fake-value-hardening-main.spec.js test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts test/e2e/story-vibepro-review-status-required-only-main.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-atomic-scope-review-contract-misc-follow-up with 4 files",
+      "command": "git switch -c feat/vibepro-atomic-scope-review-contract-misc-follow-up \"<base>\" && git add design-ssot.json docs/ja/reference/cli.md docs/reference/cli.md responsibility-authority.json"
+    }
+  ]
+}

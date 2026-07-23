@@ -1,0 +1,16 @@
+{
+  "agent_id": "019f8d69-22e3-7fe3-b3fb-5504c7598943",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "status": "needs_changes",
+  "summary": "Gate evidence is not yet final: invalid observation targets, incomplete adjudication and review lifecycle, and disputed changed-path coverage remain.",
+  "findings": [
+    "gate-binding-not-closed",
+    "unit-observation-targets-nonexistent",
+    "changed-path-coverage-unproven",
+    "failure-mode-coverage-not-adjudicated",
+    "integration-surface-mismatch",
+    "passing-claims-without-artifacts",
+    "review-summary-not-closed"
+  ]
+}

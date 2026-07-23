@@ -1,0 +1,280 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "created_at": "2026-07-23T10:17:32.893Z",
+  "updated_at": "2026-07-23T10:56:05.739Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-atomic-scope-review-contract",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "core_workflow_state",
+      "gate_orchestration",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "service_orchestration",
+      "test_coverage",
+      "verification_evidence"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "core_workflow_state",
+          "gate_orchestration",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "core_workflow_state",
+      "gate_orchestration",
+      "review_lifecycle"
+    ],
+    "preflight_required_inspection_inputs": [
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "docs/architecture/vibepro-atomic-scope-review-contract.md",
+      "docs/ja/reference/cli.md",
+      "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+      "docs/reference/cli.md",
+      "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+      "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+      "responsibility-authority.json",
+      "src/agent-review.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/cli.js",
+      "src/content-binding.js",
+      "src/git-fingerprint.js",
+      "src/html-report.js",
+      "src/independent-review-orchestrator.js",
+      "src/pr-manager.js",
+      "src/responsibility-authority.js",
+      "src/review-inspection-inputs.js",
+      "src/review-repair.js",
+      "src/validation-sequencing.js",
+      "src/verification-evidence.js",
+      "test/agent-review-independence.test.js",
+      "test/ci-evidence-import.test.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/decision-records.test.js",
+      "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+      "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+      "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+      "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+      "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+      "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "test/responsibility-authority.test.js",
+      "test/review-inspection-first.test.js",
+      "test/review-repair.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/validation-sequencing.test.js",
+      "test/verification-evidence-artifact-check.test.js",
+      "test/verification-observation.test.js",
+      "test/vibepro-cli.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+    "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+    "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "reason": "ASR-E2E-001 passed with flow, failure-mode, path-surface and clause observations",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T10:28:53.605Z",
+      "binding": {
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "reason": "aggregate current-head architecture boundary review passed",
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-23T10:41:57.947Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-atomic-scope-review-contract",
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "Reviewed all 42 changed paths and core_workflow_state,gate_orchestration,review_lifecycle; risk_surfaces=core_workflow_state,gate_orchestration,review_lifecycle; resolver has zero unregistered or invalid entries.",
+        "inspection_inputs": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/vibepro-atomic-scope-review-contract.md",
+          "docs/ja/reference/cli.md",
+          "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+          "docs/reference/cli.md",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json",
+          "responsibility-authority.json",
+          "src/agent-review.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/git-fingerprint.js",
+          "src/html-report.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/responsibility-authority.js",
+          "src/review-inspection-inputs.js",
+          "src/review-repair.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "test/agent-review-independence.test.js",
+          "test/ci-evidence-import.test.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/decision-records.test.js",
+          "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+          "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+          "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+          "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+          "test/responsibility-authority.test.js",
+          "test/review-inspection-first.test.js",
+          "test/review-repair.test.js",
+          "test/risk-adaptive-gate.test.js",
+          "test/validation-sequencing.test.js",
+          "test/verification-evidence-artifact-check.test.js",
+          "test/verification-observation.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "reason": "source, spec, test, and review surfaces frozen at 081a8dfc after passing preflight",
+      "evidence": [],
+      "recorded_at": "2026-07-23T10:42:03.527Z",
+      "binding": {
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "reason": "Current-head full Story E2E passed and concretely demonstrates fail-closed parse/schema/lifecycle/workflow paths.",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-23T10:48:03.542Z",
+      "binding": {
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "reason": "Closed independent current-head runtime contract review passed with no findings.",
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-23T10:56:05.739Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-atomic-scope-review-contract",
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Inspected frozen runtime transitions, negative paths, canonical current-head E2E/unit/CI evidence, and lifecycle freshness; no blocking runtime defect found.",
+        "inspection_inputs": [
+          "docs/architecture/vibepro-atomic-scope-review-contract.md",
+          "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+          "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+          "src/pr-manager.js",
+          "src/agent-review.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "src/review-repair.js",
+          "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+          "test/vibepro-cli.test.js",
+          "test/validation-sequencing.test.js",
+          "test/review-repair.test.js",
+          "test/verification-evidence-artifact-check.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+        "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+    "test_fingerprint": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+    "verification_command": "node --test --test-reporter=tap test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+  },
+  "invalidations": [
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-23T10:26:21.569Z"
+    }
+  ]
+}

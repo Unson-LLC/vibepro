@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "summary": "origin/main基準で39 changed paths、required inspection inputs、fail-closed、CLI/sequence、AC-9、current path-surface evidenceを確認し、atomic aggregate inspection contractをpassと判定した。",
+  "inspection_summary": "origin/main=d08f42d8、HEAD=c58152d5。39 changed pathsとpreflight required unionはmissing=0/extra=0。AC-9、empty/missing input fail-closed、CLI/sequence contract、changed_path_inventory current evidenceを確認。軽量testは55/55、main E2Eは1/1 pass。",
+  "judgment_delta": "unverified -> pass: current HEADへ束縛された39-path union、fail-closed条件、CLI/sequence実行証跡、AC-9 E2Eを根拠に独立判定した。",
+  "findings": [],
+  "agent_id": "019f8d50-6988-7e41-9fd9-91a504b026c7",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "service_tier": "priority"
+}

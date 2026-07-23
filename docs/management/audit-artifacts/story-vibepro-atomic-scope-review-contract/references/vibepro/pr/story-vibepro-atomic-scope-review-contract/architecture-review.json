@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "created_at": "2026-07-23T11:28:22.693Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-atomic-scope-review-contract.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-atomic-scope-review-contract.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-atomic-scope-review-contract.md, docs/specs/story-vibepro-atomic-scope-review-contract.vibepro.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-23T11:28:19.483Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-atomic-scope-review-contract-recovered/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-atomic-scope-review-contract-recovered/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "6668be921b51b292cd50d4dbe5b9dc80885f52a1",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

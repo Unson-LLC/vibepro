@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: resolver matches cleanup responsibility contract and blocks without current evidence
+ok 1 - resolver matches cleanup responsibility contract and blocks without current evidence
+  ---
+  duration_ms: 225.745167
+  type: 'test'
+  ...
+# Subtest: resolver passes matched contract when current-head evidence is bound to required observations
+ok 2 - resolver passes matched contract when current-head evidence is bound to required observations
+  ---
+  duration_ms: 227.317542
+  type: 'test'
+  ...
+# Subtest: resolver accepts verify-record git context and observed values as current responsibility evidence
+ok 3 - resolver accepts verify-record git context and observed values as current responsibility evidence
+  ---
+  duration_ms: 227.821459
+  type: 'test'
+  ...
+# Subtest: resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+ok 4 - resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+  ---
+  duration_ms: 223.852167
+  type: 'test'
+  ...
+# Subtest: resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+ok 5 - resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+  ---
+  duration_ms: 245.886167
+  type: 'test'
+  ...
+# Subtest: resolver does not satisfy contract evidence with unrelated generic unit pass
+ok 6 - resolver does not satisfy contract evidence with unrelated generic unit pass
+  ---
+  duration_ms: 317.096542
+  type: 'test'
+  ...
+# Subtest: resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+ok 7 - resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+  ---
+  duration_ms: 332.968333
+  type: 'test'
+  ...
+# Subtest: resolver emits no_registered_authority for unregistered high-risk state surfaces
+ok 8 - resolver emits no_registered_authority for unregistered high-risk state surfaces
+  ---
+  duration_ms: 276.569708
+  type: 'test'
+  ...
+# Subtest: resolver uses the accepted Run-lineage Architecture registry contract
+ok 9 - resolver uses the accepted Run-lineage Architecture registry contract
+  ---
+  duration_ms: 3.989
+  type: 'test'
+  ...
+# Subtest: resolver does not classify derive-only workspace status as an unregistered state responsibility
+ok 10 - resolver does not classify derive-only workspace status as an unregistered state responsibility
+  ---
+  duration_ms: 224.505375
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when workspace status contains a state mutation
+ok 11 - resolver fails closed when workspace status contains a state mutation
+  ---
+  duration_ms: 230.7685
+  type: 'test'
+  ...
+# Subtest: resolver applies workspace status exemption without hiding unregistered CLI wiring
+ok 12 - resolver applies workspace status exemption without hiding unregistered CLI wiring
+  ---
+  duration_ms: 244.689125
+  type: 'test'
+  ...
+# Subtest: resolver retains a mixed worker candidate beside read-only workspace status
+ok 13 - resolver retains a mixed worker candidate beside read-only workspace status
+  ---
+  duration_ms: 220.536667
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when reviewed workspace status gains an indirect git side effect
+ok 14 - resolver fails closed when reviewed workspace status gains an indirect git side effect
+  ---
+  duration_ms: 208.980042
+  type: 'test'
+  ...
+# Subtest: resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+ok 15 - resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+  ---
+  duration_ms: 218.6575
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when matched registry entry is missing required fields
+ok 16 - resolver fails closed when matched registry entry is missing required fields
+  ---
+  duration_ms: 201.850208
+  type: 'test'
+  ...
+# Subtest: resolver fails closed on malformed responsibility registry JSON
+ok 17 - resolver fails closed on malformed responsibility registry JSON
+  ---
+  duration_ms: 205.404042
+  type: 'test'
+  ...
+# Subtest: root registry resolves VibePro core responsibility authorities with contract-bound evidence
+ok 18 - root registry resolves VibePro core responsibility authorities with contract-bound evidence
+  ---
+  duration_ms: 12.309166
+  type: 'test'
+  ...
+# Subtest: resolver prefers contract-bound evidence over an earlier unqualified scenario match
+ok 19 - resolver prefers contract-bound evidence over an earlier unqualified scenario match
+  ---
+  duration_ms: 1.801542
+  type: 'test'
+  ...
+# Subtest: resolver does not fan out a shared risk surface across path-anchored responsibilities
+ok 20 - resolver does not fan out a shared risk surface across path-anchored responsibilities
+  ---
+  duration_ms: 246.519834
+  type: 'test'
+  ...
+# Subtest: resolver preserves standalone risk matching for an explicitly risk-only responsibility
+ok 21 - resolver preserves standalone risk matching for an explicitly risk-only responsibility
+  ---
+  duration_ms: 217.638708
+  type: 'test'
+  ...
+# Subtest: resolver lets a contract clause path supplement a non-matching registry path
+ok 22 - resolver lets a contract clause path supplement a non-matching registry path
+  ---
+  duration_ms: 197.1995
+  type: 'test'
+  ...
+# Subtest: resolver matches symbols only in changed production lines
+ok 23 - resolver matches symbols only in changed production lines
+  ---
+  duration_ms: 337.658041
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol added on a changed production line
+ok 24 - resolver matches a symbol added on a changed production line
+  ---
+  duration_ms: 379.987583
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when the production diff cannot be read
+ok 25 - resolver fails closed for symbol matching when the production diff cannot be read
+  ---
+  duration_ms: 217.983875
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when no diff base is provided
+ok 26 - resolver fails closed for symbol matching when no diff base is provided
+  ---
+  duration_ms: 189.932833
+  type: 'test'
+  ...
+# Subtest: resolver compares an explicit head even when another branch is checked out
+ok 27 - resolver compares an explicit head even when another branch is checked out
+  ---
+  duration_ms: 536.493333
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol in an untracked production file
+ok 28 - resolver matches a symbol in an untracked production file
+  ---
+  duration_ms: 398.503958
+  type: 'test'
+  ...
+# Subtest: resolver ignores registered symbols that appear only in test files or story text
+ok 29 - resolver ignores registered symbols that appear only in test files or story text
+  ---
+  duration_ms: 192.575667
+  type: 'test'
+  ...
+# Subtest: resolver does not match a contract from responsibility reference alone
+ok 30 - resolver does not match a contract from responsibility reference alone
+  ---
+  duration_ms: 196.0015
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+ok 31 - pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+  ---
+  duration_ms: 1495.269416
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8539.8315
