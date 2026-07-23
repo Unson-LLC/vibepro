@@ -4121,6 +4121,41 @@ test('NBA-S-7 production orchestration persists an escape decision after two no-
   assert.equal(prepareCalls, 1);
 });
 
+test('NBA-S-7 autonomous escape resumes at the canonical diagnose node after human resolution', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  const session = fixture.session();
+  await session.run(fixture.source, { storyId: STORY_ID, actionProfile: 'autonomous' });
+
+  const escaped = await session.orchestrate(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    checkpointReason: 'no_progress',
+    noProgressCount: 2,
+    stateDelta: { finding: 'unchanged' }
+  });
+
+  assert.equal(escaped.state.status, 'waiting_for_human');
+  assert.equal(escaped.state.pending_decision.stop_node_id, 'diagnose');
+  const resumed = await session.resume(fixture.source, {
+    storyId: STORY_ID,
+    runId: RUN_ID,
+    decisionId: escaped.state.pending_decision.decision_id,
+    answer: 'continue after re-diagnosing the bounded scope'
+  });
+  assert.equal(resumed.status, 'running');
+  assert.equal(resumed.resume_from_node_id, 'diagnose');
+  assert.equal(resumed.human_decision_journal.at(-1).stop_node_id, 'diagnose');
+
+  const continued = await session.orchestrate(fixture.source, { storyId: STORY_ID, runId: RUN_ID });
+  assert.equal(continued.plan[0].node_id, 'diagnose');
+  assert.notEqual(continued.state.resume_from_node_id, 'pr_prepare');
+  assert.equal(continued.state.action_journal[0].action_id, 'diagnose');
+  assert.equal(
+    continued.state.action_journal.some((entry) => entry.action_id === 'pr_prepare'),
+    false
+  );
+});
+
 test('HDC-S-3 resume rejects a different pending decision without mutating the waiting Run', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const session = fixture.session();

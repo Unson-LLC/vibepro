@@ -632,6 +632,10 @@ function buildSelectedSafeActionPlan(state, actionId) {
   return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
 }
 
+function controllerEscapeResumeNode(state) {
+  return state.action_profile === 'autonomous' ? 'diagnose' : 'pr_prepare';
+}
+
 async function applyControllerEscape(deps, repoRoot, state, decision, timestamp) {
   const actionId = decision.selected_action_id;
   let humanDecision;
@@ -663,7 +667,7 @@ async function applyControllerEscape(deps, repoRoot, state, decision, timestamp)
       decision_id: humanDecision.decision_id,
       type: humanDecision.type,
       artifact: path.join('.vibepro', 'executions', state.story_id, 'runs', state.run_id, 'decisions', `${humanDecision.decision_id}.json`),
-      stop_node_id: 'pr_prepare'
+      stop_node_id: controllerEscapeResumeNode(state)
     }
   });
 }
