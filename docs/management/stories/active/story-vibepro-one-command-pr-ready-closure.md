@@ -56,5 +56,5 @@ updated_at: 2026-07-23
 
 - Real CLI dogfood: `run-20260723T121501Z-793c40ad`。managed worktreeで7-action DAGを開始し、利用可能runtimeの`workspace_write`不足を`runtime_unavailable`として型付き永続化した。
 - Targeted runtime E2E: current-HEAD strict bindingで17/17 pass。
-- Independent preflight review: current HEADでpass。run-sessionからCLIへの逆依存、先行connector/reviewの二重実装、human authority越境はいずれもなし。
+- Independent preflight review: current HEADへ再bindしてから判定する。確認対象はrun-sessionからCLIへの逆依存、先行connector/reviewの二重実装、human authority越境。
 - PR-readyの最終権威はcurrent-HEAD `pr-prepare.json`、CIは`verify import-ci`、mergeは明示的な`execute merge`とし、各artifactを同じStory監査へ記録する。

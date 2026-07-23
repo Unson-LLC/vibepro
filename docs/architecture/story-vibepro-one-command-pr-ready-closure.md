@@ -119,4 +119,4 @@ The canonical planned cases and their public surfaces are fixed in
 Autonomous Action DAG and connector tests remain regression inputs; they are not
 treated as proof of the new default or production closure.
 
-Target architecture conformance is compared to latest `origin/main` at `edb155a3009eabb21d87aa2c6d19fb66afc62dac`: 73 baseline violations (66 undeclared dependencies, 4 budget violations, 3 orphans). New code and the previously orphaned production connector belong to `run-session`, add no run-session-to-CLI dependency beyond main's existing 9-edge baseline, and must not increase the total.
+Target architecture conformance is compared to latest `origin/main` at `236937dfe33eb407f912086d54bfbd3d7d699874`: 81 baseline violations (66 undeclared dependencies, 5 budget violations, 10 orphans). Current HEAD has 80 violations (66 undeclared dependencies, 5 budget violations, 9 orphans). New code and the previously orphaned production connector belong to `run-session`, add no new run-session-to-CLI reverse dependency, and improve the total by one.
