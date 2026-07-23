@@ -7,9 +7,9 @@
 // AC-6 OCR-S-6: production connector implementation runs in the managed worktree.
 // AC-7 OCR-S-7: independent review uses a separate read-only lifecycle.
 // AC-8 OCR-S-8: target architecture conformance stays at the main baseline.
-// S-002: a material ambiguity exposes bounded choices and an exact resume command.
+// S-001: the production-shaped path commits in a managed worktree and reviews from a distinct read-only session.
 // S-003: needs_changes preserves findings through repair and re-review on the repaired HEAD.
-// S-004: unavailable runtime, quota, timeout, CI pending, and cancellation remain typed stops.
+// S-005: roadmap closure reconciles merged predecessor evidence while keeping merge and waiver explicit.
 //
 // This executable adapter binds the canonical Node runtime replay to VibePro's
 // workflow-heavy E2E naming contract without duplicating the underlying cases.
@@ -21,11 +21,12 @@ import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
 import { createGuardedRunSession } from "../../src/guarded-run-session.js";
+import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
 import "../one-command-pr-ready-closure.test.js";
 
 const execFileAsync = promisify(execFile);
 
-test("available-provider regression persists one production-shaped Run lifecycle", async (t) => {
+test("scenario:S-001 available-provider regression persists one production-shaped Run lifecycle", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-e2e-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const source = path.join(root, "source");
@@ -177,6 +178,7 @@ test("available-provider regression persists one production-shaped Run lifecycle
   const review = persisted.action_journal.find(({ action_id }) => action_id === "review");
   const verify = persisted.action_journal.find(({ action_id }) => action_id === "verify");
   const finalPrepare = persisted.action_journal.find(({ action_id }) => action_id === "final_prepare");
+  // S-001: executable production-shaped evidence binds the real commit and isolated review lifecycle.
   assert.equal(implementation.checkpoint[0].managed_worktree, managed);
   assert.equal(implementation.checkpoint[0].session_id, "implementation-session");
   assert.equal(review.checkpoint[0].sandbox, "read-only");
@@ -185,6 +187,45 @@ test("available-provider regression persists one production-shaped Run lifecycle
   assert.equal(verify.checkpoint[0].head_sha, implementationHead);
   assert.equal(finalPrepare.checkpoint[0].head_sha, implementationHead);
   assert.equal(finalPrepare.checkpoint[0].ready_for_pr_create, true);
+});
+
+test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {
+  const repoRoot = path.resolve(import.meta.dirname, "../..");
+  const storyFiles = {
+    actionDag: "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+    connectors: "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+    review: "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+    closure: "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    roadmap: "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md"
+  };
+  const entries = Object.fromEntries(await Promise.all(Object.entries(storyFiles).map(async ([key, file]) => [
+    key,
+    await readFile(path.join(repoRoot, file), "utf8")
+  ])));
+  const plan = buildSafeActionPlan({
+    story_id: "story-vibepro-one-command-pr-ready-closure",
+    run_id: "run-roadmap-closure",
+    current_head_sha: "current-head",
+    status: "running",
+    action_journal: []
+  }, { profile: "autonomous" });
+
+  // S-005: executable SSOT assertions reconcile merged predecessors without granting external authority.
+  assert.match(entries.actionDag, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/372/);
+  assert.match(entries.connectors, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/377/);
+  assert.match(entries.review, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/382/);
+  assert.match(entries.closure, /status: (?:active|completed)/);
+  assert.match(entries.roadmap, /status: (?:active|completed)/);
+  assert.deepEqual(plan.map(({ id }) => id), [
+    "diagnose",
+    "prepare_artifacts",
+    "implement",
+    "verify",
+    "review",
+    "repair",
+    "final_prepare"
+  ]);
+  assert.equal(plan.some(({ id }) => ["pr_create", "merge", "waiver"].includes(id)), false);
 });
 
 test("story-vibepro-one-command-pr-ready-closure acceptance coverage", () => {
@@ -231,7 +272,7 @@ test("story-vibepro-one-command-pr-ready-closure acceptance coverage", () => {
   assert.match(
     "production connector smokeはmanaged-worktreeの実commitを進め、独立Reviewは別のread-only identityとclosed provider sessionを使う",
     /managed-worktree.*read-only identity.*closed provider session/,
-    "story-vibepro-one-command-pr-ready-closure scenario:S-002"
+    "story-vibepro-one-command-pr-ready-closure scenario:S-001"
   );
   assert.match(
     "success、restart、resume、material human decision、verification failure、needs_changes repair、no progress、quota、timeout、CI pending、cancelはcurrent-HEAD pr_readyまたはtyped stopへ収束し、cancel後のstale dispatchを封じ、human_decisionはtype、question、choices、material_reason、impact_scope、source_refs、stop_node_idに限定する",
@@ -241,6 +282,6 @@ test("story-vibepro-one-command-pr-ready-closure acceptance coverage", () => {
   assert.match(
     "PR #377とPR #382の先行Story lifecycle、最終Story、親roadmapを二重実装なしで閉じ、明示的execute mergeをpost-merge confirmationとして保存する",
     /PR #377.*PR #382.*二重実装なし.*post-merge confirmation/,
-    "story-vibepro-one-command-pr-ready-closure scenario:S-004"
+    "story-vibepro-one-command-pr-ready-closure scenario:S-005"
   );
 });

@@ -96,6 +96,49 @@ test('ARA-S-3 successful implementation result is structured and HEAD-bearing', 
   assert.deepEqual(result.dispatch.result.test_suggestions, ['node --test']);
 });
 
+test('ARA-S-3 unit_regression runtime cost telemetry is normalized and invalid usage fails closed', async () => {
+  const accountedAdapter = fakeAdapter({
+    async collect_result() {
+      return {
+        completion_status: 'completed',
+        changed_files: ['src/a.js'],
+        head_sha: 'def456',
+        test_suggestions: ['node --test'],
+        summary: 'done',
+        usage_accounting: { total_tokens: 321, cost_usd: 0.0123, source: 'provider_meter' }
+      };
+    }
+  });
+  const accountedCoordinator = createAgentRuntimeCoordinator({ adapters: [accountedAdapter] });
+  const accountedStart = await accountedCoordinator.dispatch(state, request);
+  accountedAdapter.complete();
+  const accounted = await accountedCoordinator.poll(accountedStart.state, accountedStart.dispatch.dispatch_id);
+  assert.deepEqual(accounted.dispatch.result.usage_accounting, {
+    total_tokens: 321,
+    cost_usd: 0.0123,
+    source: 'provider_meter'
+  });
+
+  const invalidAdapter = fakeAdapter({
+    async status() { return { status: 'completed' }; },
+    async collect_result() {
+      return {
+        completion_status: 'completed',
+        changed_files: [],
+        head_sha: 'def456',
+        test_suggestions: [],
+        summary: 'invalid telemetry',
+        usage_accounting: { total_tokens: -1, cost_usd: -0.1 }
+      };
+    }
+  });
+  const invalidCoordinator = createAgentRuntimeCoordinator({ adapters: [invalidAdapter] });
+  const invalidStart = await invalidCoordinator.dispatch(state, request);
+  const invalid = await invalidCoordinator.poll(invalidStart.state, invalidStart.dispatch.dispatch_id);
+  assert.equal(invalid.state.status, 'failed');
+  assert.equal(invalid.dispatch.stop_reason.code, 'invalid_runtime_result');
+});
+
 test('ARA-S-4 review requires separate identity and closed parallel provenance', async () => {
   const adapter = fakeAdapter({
     async start() { return { provider_run_id: 'review-1', agent_identity: 'reviewer-2', thread_id: 'thread-2' }; },
