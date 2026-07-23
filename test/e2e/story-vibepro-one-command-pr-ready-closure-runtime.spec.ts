@@ -267,14 +267,23 @@ test("scenario:S-001 public guarded Run composes production owners for available
   });
   assert.equal(invocation.exitCode, 0, cliOutput);
   const result = invocation.result;
+  assert.equal(
+    result.state.action_profile,
+    "autonomous",
+    "AC-1: the public guarded one-command path defaults to the autonomous closure profile"
+  );
   const artifact = path.join(managed, ".vibepro", "executions", storyId, "runs", result.state.run_id, "state.json");
   const persisted = JSON.parse(await readFile(artifact, "utf8"));
-  assert.equal(result.state.status, "pr_ready", JSON.stringify({
-    stop_reason: result.state.stop_reason,
-    current_head_sha: result.state.current_head_sha,
-    runtime_dispatches: result.state.runtime_dispatches,
-    action_journal: result.state.action_journal
-  }));
+  assert.equal(
+    result.state.status,
+    "pr_ready",
+    `AC-3: only current-HEAD final prepare may produce pr_ready; AC-7: the dedicated self-dogfood fixture reaches pr_ready\n${JSON.stringify({
+      stop_reason: result.state.stop_reason,
+      current_head_sha: result.state.current_head_sha,
+      runtime_dispatches: result.state.runtime_dispatches,
+      action_journal: result.state.action_journal
+    })}`
+  );
   assert.equal(persisted.current_head_sha, repairedHead);
   assert.notEqual(repairedHead, implementationHead);
   assert.notEqual(implementationHead, initialHead);
@@ -284,12 +293,24 @@ test("scenario:S-001 public guarded Run composes production owners for available
   const finalPrepare = persisted.action_journal.findLast(({ action_id }) => action_id === "final_prepare");
   // S-001: public CLI entered the production run-session owner composition; no
   // custom implementation, repair, or review action runner produced this evidence.
-  assert.deepEqual(implementations.map(({ result }) => result.head_sha), [implementationHead, repairedHead]);
-  assert.equal(implementations.every(({ requirements }) => requirements.managed_worktree === managed), true);
+  assert.deepEqual(
+    implementations.map(({ result }) => result.head_sha),
+    [implementationHead, repairedHead],
+    "AC-2: the canonical implementation owner commits both implementation and repair"
+  );
+  assert.equal(
+    implementations.every(({ requirements }) => requirements.managed_worktree === managed),
+    true,
+    "AC-6: production connector mutations are constrained to the managed worktree"
+  );
   assert.equal(reviewCalls, 2);
   assert.equal(verify.length, 2);
   assert.deepEqual(reviews.map(({ result }) => result.review.status), ["needs_changes", "pass"]);
-  assert.equal(reviews.every(({ sandbox }) => sandbox === "read-only"), true);
+  assert.equal(
+    reviews.every(({ sandbox }) => sandbox === "read-only"),
+    true,
+    "AC-2: independent review runs through a separate read-only lifecycle"
+  );
   assert.equal(reviews.every(({ result }) => result.review_provenance.lifecycle === "closed"), true);
   assert.equal(reviews.every(({ reviewer_identity, implementation_identity }) =>
     reviewer_identity !== implementation_identity), true);
@@ -345,7 +366,11 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
       }
     })
   });
-  assert.equal((await noProgress.prepare_artifacts(context("prepare_artifacts"))).stop_reason, "no_progress");
+  assert.equal(
+    (await noProgress.prepare_artifacts(context("prepare_artifacts"))).stop_reason,
+    "no_progress",
+    "AC-5: no-progress terminates with a typed stop"
+  );
 
   const descriptor = {
     type: "scope_split",
@@ -360,7 +385,11 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
     ...defaults,
     readReadiness: async () => ({ human_decision: descriptor })
   });
-  assert.equal((await decision.prepare_artifacts(context("prepare_artifacts"))).status, "waiting_for_human");
+  assert.equal(
+    (await decision.prepare_artifacts(context("prepare_artifacts"))).status,
+    "waiting_for_human",
+    "AC-5: material decisions stop for explicit human input"
+  );
 
   const verificationFailure = createOneCommandPrReadyActionOwners({
     ...defaults,
@@ -370,7 +399,11 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
       preparation: { gate_status: { next_required_actions: ["focused verification failed"] } }
     })
   });
-  assert.equal((await verificationFailure.verify(context("verify"))).stop_reason, "verification_failed");
+  assert.equal(
+    (await verificationFailure.verify(context("verify"))).stop_reason,
+    "verification_failed",
+    "AC-5: verification failure remains a typed terminal"
+  );
 
   const ciPending = createOneCommandPrReadyActionOwners({
     ...defaults,
@@ -581,8 +614,16 @@ test("scenario:S-005 roadmap closure keeps external authority explicit and prede
   assert.match(entries.actionDag, /status: completed[\s\S]*PR #372: `https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/372`/);
   assert.match(entries.connectors, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/377/);
   assert.match(entries.review, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/382/);
-  assert.match(entries.closure, /^status: active$/m);
-  assert.match(entries.roadmap, /^status: active$/m);
+  assert.match(
+    entries.closure,
+    /^status: active$/m,
+    "AC-8: the final Story stays active at the pre-PR boundary"
+  );
+  assert.match(
+    entries.roadmap,
+    /^status: active$/m,
+    "AC-8: the parent roadmap stays active at the pre-PR boundary"
+  );
   assert.deepEqual(plan.map(({ id }) => id), [
     "diagnose",
     "prepare_artifacts",
@@ -592,5 +633,9 @@ test("scenario:S-005 roadmap closure keeps external authority explicit and prede
     "repair",
     "final_prepare"
   ]);
-  assert.equal(plan.some(({ id }) => ["pr_create", "merge", "waiver"].includes(id)), false);
+  assert.equal(
+    plan.some(({ id }) => ["pr_create", "merge", "waiver"].includes(id)),
+    false,
+    "AC-4: PR creation, merge, and waiver remain explicit human operations"
+  );
 });
