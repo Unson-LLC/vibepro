@@ -840,6 +840,7 @@ test('pr prepare expands workflow-heavy gate DAG and blocks release without flow
   await mkdir(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'integration'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
 story_id: story-risk-adaptive
 title: FORM preflight workflow gate
@@ -863,6 +864,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   await writeFile(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start', 'route.ts'), 'export async function POST(){ return Response.json({ legacy: "v1" }); }\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
+  await writeFile(path.join(repo, 'test', 'integration', 'workflow-validation.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("workflow validation", () => assert.equal(true, true));\n');
 
   const freshPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
   assert.equal(freshPrepare.exitCode, 0);
@@ -905,6 +907,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--head', freshHead,
     '--risk-profile', 'workflow_heavy',
     ...freshSequence.plan.risk_surfaces.flatMap((surface) => ['--surface', surface]),
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
     '--command', 'node --test test/integration/workflow-validation.test.js',
     '--test-fingerprint', 'fresh-tests-v1',
     '--evidence', canonicalEvidence,
@@ -942,20 +945,20 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
     '--status', 'pass', '--summary', 'aggregate workflow boundary passed',
     '--inspection-summary', `inspected aggregate boundary; risk_surfaces=${freshSequence.plan.preflight_surfaces.slice().sort().join(',')}`,
-    '--inspection-input', 'docs/management/stories/active/story-risk-adaptive.md',
-    '--inspection-input', 'src/lib/services/formProjectStartService.ts',
-    '--inspection-input', 'test/risk-adaptive-gate.test.js',
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
     '--judgment-delta', 'unverified aggregate workflow boundary became verified',
     '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'boundary-reviewer',
     '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative,
     '--strict-head-binding', '--strict-head-reason', 'validation preflight binds to the planned head'
   ])).exitCode, 0);
   const preflightReviewEvidence = '.vibepro/reviews/story-risk-adaptive/architecture_spec/review-result-architecture_boundary.json';
-  assert.equal((await runCli([
+  let preflightSequenceStderr = '';
+  const preflightSequence = await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'preflight_review',
     '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
     , '--source', 'agent_review', '--evidence', preflightReviewEvidence
-  ])).exitCode, 0);
+  ], { stderr: { write: (chunk) => { preflightSequenceStderr += chunk; } } });
+  assert.equal(preflightSequence.exitCode, 0, preflightSequenceStderr);
   assert.equal((await runCli([
     'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'code_frozen',
     '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
@@ -1093,7 +1096,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'needs_evidence');
   const spineGate = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.equal(spineGate.status, 'needs_evidence');
-  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'needs_evidence'), true);
+  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'passed'), true);
   assert.equal(spineGate.subchecks.some((check) => check.id === 'done_evidence' && check.status === 'needs_evidence'), true);
   const failureModeGate = gateDag.nodes.find((node) => node.id === 'gate:failure_mode_coverage');
   assert.equal(failureModeGate.status, 'missing_coverage');
@@ -1106,7 +1109,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-risk-adaptive\/\]\(\.vibepro\/pr\/story-risk-adaptive\/\)/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
-  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'needs_evidence');
+  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
 
   const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
