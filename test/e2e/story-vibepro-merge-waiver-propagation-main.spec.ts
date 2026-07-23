@@ -6,11 +6,11 @@ import { buildMergeGateAuthorization } from '../../src/merge-gate-authorization.
 
 const HEAD_SHA = 'a'.repeat(40);
 
-test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10 ac-11 S-001 authorization contract replay', () => {
+test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-7 S-001 authorization contract replay', () => {
   assert.equal(
     buildMergeGateAuthorization({ overall_status: 'ready_for_review' }, null).source,
     'gate_dag',
-    'ac-5 AC-1 ready_for_review remains waiver-free'
+    'ac-1 AC-1 ready_for_review remains waiver-free'
   );
 
   const authorized = buildMergeGateAuthorization(
@@ -32,11 +32,11 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10
       critical_unresolved_gates: []
     }
   );
-  assert.equal(authorized.allowed, true, 'ac-6 AC-2 current HEAD audited noncritical waiver satisfies merge precondition');
+  assert.equal(authorized.allowed, true, 'ac-2 AC-2 current HEAD audited noncritical waiver satisfies merge precondition');
   assert.equal(
     authorized.source,
     'pr_create_gate_override',
-    'ac-1 VibePro owns waiver schema current-HEAD binding and merge precondition authorization'
+    'ac-2 VibePro owns waiver schema current-HEAD binding and merge precondition authorization'
   );
 
   const rejected = buildMergeGateAuthorization(
@@ -54,17 +54,17 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10
       }
     }
   );
-  assert.equal(rejected.allowed, false, 'ac-11 critical Gate cannot be waived by reason alone');
+  assert.equal(rejected.allowed, false, 'ac-3 critical Gate cannot be waived by reason alone');
   assert.equal(
     rejected.reason,
     'gate_override_contains_critical_gates',
-    'ac-7 AC-3 stale malformed or critical authority fails closed'
+    'ac-3 AC-3 stale malformed or critical authority fails closed'
   );
 
   assert.equal(
     authorized.gate_override.waiver_policy,
     'allow_needs_verification',
-    'ac-10 Gate waiver scope is not expanded beyond the accepted noncritical policy'
+    'ac-7 Gate waiver scope is not expanded beyond the accepted noncritical policy'
   );
   assert.equal(
     authorized.allowed && !rejected.allowed,
@@ -73,7 +73,7 @@ test('story-vibepro-merge-waiver-propagation ac-1 ac-2 ac-3 ac-5 ac-6 ac-7 ac-10
   );
 });
 
-test('story-vibepro-merge-waiver-propagation ac-2 ac-3 ac-4 ac-8 ac-9 ac-12 ac-13 production wiring and audit fixture replay', async () => {
+test('story-vibepro-merge-waiver-propagation ac-4 ac-5 ac-6 S-002 production wiring and audit fixture replay', async () => {
   const [authorization, mergeManager, executionState, cliFixture] = await Promise.all([
     readFile(new URL('../../src/merge-gate-authorization.js', import.meta.url), 'utf8'),
     readFile(new URL('../../src/merge-manager.js', import.meta.url), 'utf8'),
@@ -84,33 +84,33 @@ test('story-vibepro-merge-waiver-propagation ac-2 ac-3 ac-4 ac-8 ac-9 ac-12 ac-1
   assert.match(
     mergeManager,
     /statusCheckRollup[\s\S]*reviewDecision/,
-    'ac-2 GitHub owns PR checks review policy mergeability and actual merge'
+    'ac-5 GitHub owns PR checks review policy mergeability and actual merge'
   );
   assert.match(
     mergeManager,
     /buildMergeGateAuthorization/,
-    'ac-3 merge adds no new waiver input and introduces no raw merge bypass'
+    'ac-5 merge adds no new waiver input and introduces no raw merge bypass'
   );
   assert.match(
     executionState,
     /mergeGateAuthorization/,
-    'ac-4 PR #381 runtime lifecycle and PR #370 budget policy remain separate from this authorization binding'
+    'ac-6 PR #381 runtime lifecycle and PR #370 budget policy remain separate from this authorization binding'
   );
-  assert.match(mergeManager, /gate_authorization/, 'ac-8 AC-4 pr-merge preserves authorization source and waiver audit');
+  assert.match(mergeManager, /gate_authorization/, 'ac-4 AC-4 pr-merge preserves authorization source and waiver audit');
   assert.match(
     cliFixture,
     /MWP-AC-5 noncritical current-HEAD waiver fixture/,
-    'ac-9 AC-5 dry-run and actual merge fixture use the same decision'
+    'ac-5 AC-5 dry-run and actual merge fixture use the same decision'
   );
-  assert.match(cliFixture, /prMergeArtifact\.gate_authorization/, 'ac-9 AC-5 actual merge persists the shared decision');
+  assert.match(cliFixture, /prMergeArtifact\.gate_authorization/, 'ac-5 AC-5 actual merge persists the shared decision');
   assert.doesNotMatch(
     authorization,
     /subagent|running_detached|review budget/i,
-    'ac-12 default review budget policy and Agent Runtime lifecycle are not changed'
+    'ac-6 S-002 default review budget policy is unchanged and completed review results are collected without implicit replacement'
   );
   assert.doesNotMatch(
     authorization,
     /Projects Classic/i,
-    'ac-13 GitHub CLI Projects Classic remediation is outside this Story'
+    'ac-5 GitHub CLI Projects Classic remediation is outside this Story'
   );
 });
