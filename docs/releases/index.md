@@ -149,3 +149,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:358:start -->
 - [PR #358](https://github.com/Unson-LLC/vibepro/pull/358) — [2026-07](/releases/2026-07): story-vibepro-atomic-scope-review-contract - 大規模Storyが自ら追加したscope policyで自身の単一PRを承認できる循環を除く
 <!-- vibepro-release-index-pr:358:end -->
+
+<!-- vibepro-release-index-pr:381:start -->
+- [PR #381](https://github.com/Unson-LLC/vibepro/pull/381) — [2026-07](/releases/2026-07): story-vibepro-codex-detached-completion-inbox - 10分wait超過でsubagent成果を失わず、後継Runが完了通知を回収したい
+<!-- vibepro-release-index-pr:381:end -->

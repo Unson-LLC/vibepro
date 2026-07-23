@@ -678,3 +678,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-atomic-scope
 なし
 
 <!-- vibepro-release-pr:358:end -->
+
+<!-- vibepro-release-pr:381:start -->
+## [#381](https://github.com/Unson-LLC/vibepro/pull/381) story-vibepro-codex-detached-completion-inbox - 10分wait超過でsubagent成果を失わず、後継Runが完了通知を回収したい
+
+- Author: @sintariran
+- Merged: 2026-07-23T16:44:09Z
+- Commit: `1d98d4af969291976d4747547288628ef481d315`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-codex-detached-completion-inbox.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-codex-detached-completion-inbox.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:381:end -->
