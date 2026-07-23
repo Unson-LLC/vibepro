@@ -172,6 +172,16 @@
       "id": "S-OCR-6",
       "type": "scenario",
       "statement": "Roadmap closure reconciles the already merged Production Runtime Connectors and Independent Review Orchestration Story lifecycles from PR #377 and PR #382, then closes the final Story and parent roadmap from dogfood, current-HEAD Gate, and imported CI evidence without reimplementing either predecessor. The later explicit execute merge is a second-phase confirmation persisted in pr-merge.json and the canonical audit, not a future-SHA prerequisite embedded in the same Git commit.",
+      "inherited_behaviors": [
+        {
+          "condition": "PR #377 and PR #382 are already merged and their implementation surfaces are outside this closure Story",
+          "classification": "unchanged",
+          "files": [
+            "src/agent-runtime-connectors.js",
+            "src/independent-review-orchestrator.js"
+          ]
+        }
+      ],
       "origin": {
         "story_refs": [
           { "kind": "acceptance_criteria", "id": "OCR-S-8" }

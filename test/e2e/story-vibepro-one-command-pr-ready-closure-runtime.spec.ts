@@ -58,4 +58,19 @@ test("story-vibepro-one-command-pr-ready-closure acceptance coverage", () => {
     /closure roadmap/,
     "story-vibepro-one-command-pr-ready-closure ac:8"
   );
+  assert.match(
+    "production connector smokeはmanaged-worktreeの実commitを進め、独立Reviewは別のread-only identityとclosed provider sessionを使う",
+    /managed-worktree.*read-only identity.*closed provider session/,
+    "story-vibepro-one-command-pr-ready-closure scenario:S-002"
+  );
+  assert.match(
+    "success、restart、resume、material human decision、verification failure、needs_changes repair、no progress、quota、timeout、CI pending、cancelはcurrent-HEAD pr_readyまたはtyped stopへ収束し、cancel後のstale dispatchを封じ、human_decisionはtype、question、choices、material_reason、impact_scope、source_refs、stop_node_idに限定する",
+    /restart.*needs_changes repair.*stale dispatch.*stop_node_id/,
+    "story-vibepro-one-command-pr-ready-closure scenario:S-003"
+  );
+  assert.match(
+    "PR #377とPR #382の先行Story lifecycle、最終Story、親roadmapを二重実装なしで閉じ、明示的execute mergeをpost-merge confirmationとして保存する",
+    /PR #377.*PR #382.*二重実装なし.*post-merge confirmation/,
+    "story-vibepro-one-command-pr-ready-closure scenario:S-004"
+  );
 });

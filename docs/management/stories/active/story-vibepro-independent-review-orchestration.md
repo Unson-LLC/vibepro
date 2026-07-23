@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-independent-review-orchestration
 parent_design: vibepro-autonomous-implementation-closure-roadmap
-vibepro_story_id: story-vibepro-autonomous-implementation-closure-roadmap
+vibepro_story_id: story-vibepro-one-command-pr-ready-closure
 title: Required Reviewを独立agentへ自動dispatchして記録する
 status: completed
 view: dev
