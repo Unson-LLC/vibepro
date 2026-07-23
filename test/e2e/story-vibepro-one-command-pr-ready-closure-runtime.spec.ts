@@ -6,7 +6,7 @@
 // AC-5 OCR-S-5: success, resume, decision, failure, repair, limits, CI wait, and cancel converge or stop typed.
 // AC-6 OCR-S-6: production connector implementation runs in the managed worktree.
 // AC-7 OCR-S-7: independent review uses a separate read-only lifecycle.
-// AC-8 OCR-S-8: target architecture conformance stays at the main baseline.
+// AC-8 OCR-S-8: pre-PR closure proves all merged predecessors while the final Story and roadmap remain active.
 // S-001: the production-shaped path commits in a managed worktree and reviews from a distinct read-only session.
 // S-003: needs_changes preserves findings through repair and re-review on the repaired HEAD.
 // S-005: roadmap closure reconciles merged predecessor evidence while keeping merge and waiver explicit.
@@ -558,6 +558,7 @@ test("scenario:S-004 public guarded Run CLI persists typed stops across resume, 
 test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {
   const repoRoot = path.resolve(import.meta.dirname, "../..");
   const storyFiles = {
+    actionDag: "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
     connectors: "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
     review: "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
     closure: "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
@@ -575,11 +576,13 @@ test("scenario:S-005 roadmap closure keeps external authority explicit and prede
     action_journal: []
   }, { profile: "autonomous" });
 
-  // S-005: executable SSOT assertions reconcile merged predecessors without granting external authority.
+  // AC-8 / S-005: pre-PR executable SSOT assertions prove the staged closure
+  // boundary without treating the Story's own acceptance prose as evidence.
+  assert.match(entries.actionDag, /status: completed[\s\S]*PR #372: `https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/372`/);
   assert.match(entries.connectors, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/377/);
   assert.match(entries.review, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/382/);
-  assert.match(entries.closure, /status: (?:active|completed)/);
-  assert.match(entries.roadmap, /status: (?:active|completed)/);
+  assert.match(entries.closure, /^status: active$/m);
+  assert.match(entries.roadmap, /^status: active$/m);
   assert.deepEqual(plan.map(({ id }) => id), [
     "diagnose",
     "prepare_artifacts",
@@ -627,11 +630,6 @@ test("story-vibepro-one-command-pr-ready-closure acceptance coverage", () => {
     "self-dogfoodで専用fixture StoryがTrusted PR-readyへ到達する",
     /Trusted PR-ready/,
     "story-vibepro-one-command-pr-ready-closure ac:7"
-  );
-  assert.match(
-    "PR #377と#382の証跡、current-HEAD Gate、CI、execute mergeの監査確認でclosure roadmapを完了へ閉じる",
-    /closure roadmap/,
-    "story-vibepro-one-command-pr-ready-closure ac:8"
   );
   assert.match(
     "production connector smokeはmanaged-worktreeの実commitを進め、独立Reviewは別のread-only identityとclosed provider sessionを使う",
