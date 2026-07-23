@@ -7,6 +7,11 @@ status: active
 view: dev
 period: 2026-07
 category: quality
+architecture_docs:
+  - docs/architecture/story-vibepro-one-command-pr-ready-closure.md
+spec_docs:
+  - docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json
+  - docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md
 related_stories:
   - story-vibepro-autonomous-action-dag
   - story-vibepro-production-runtime-connectors
